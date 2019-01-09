@@ -71,9 +71,22 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 while (_tagTracker.Count > 0)
                 {
                     var tracker = _tagTracker.Pop();
-                    var element = SyntaxFactory.MarkupElement(tracker.StartTag, builder.Consume(), endTag: null);
-                    builder.AddRange(tracker.PreviousNodes);
-                    builder.Add(element);
+                    if (IsVoidElement(tracker.TagName))
+                    {
+                        // We were tracking a void element but we reached the end of the document without finding a matching end tag.
+                        // So, close that element and move its content to its parent.
+                        var children = builder.Consume();
+                        var voidElement = SyntaxFactory.MarkupElement(tracker.StartTag, EmptySyntaxList, endTag: null);
+                        builder.AddRange(tracker.PreviousNodes);
+                        builder.Add(voidElement);
+                        builder.AddRange(children);
+                    }
+                    else
+                    {
+                        var element = SyntaxFactory.MarkupElement(tracker.StartTag, builder.Consume(), endTag: null);
+                        builder.AddRange(tracker.PreviousNodes);
+                        builder.Add(element);
+                    }
                 }
 
                 var markup = SyntaxFactory.MarkupBlock(builder.ToList());
@@ -533,6 +546,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private bool TryRecoverStartTag(in SyntaxListBuilder<RazorSyntaxNode> builder, string endTagName, MarkupEndTagSyntax endTag)
         {
+            // First check if the tag we're tracking is a void tag. If so, we need to close it out before moving on.
+            while (_tagTracker.Count > 0 &&
+                !string.Equals(CurrentStartTagName, endTagName, StringComparison.OrdinalIgnoreCase) &&
+                IsVoidElement(CurrentStartTagName))
+            {
+                var tracker = _tagTracker.Pop();
+                var children = builder.Consume();
+                var voidElement = SyntaxFactory.MarkupElement(tracker.StartTag, EmptySyntaxList, endTag: null);
+                builder.AddRange(tracker.PreviousNodes);
+                builder.Add(voidElement);
+                builder.AddRange(children);
+            }
+
             var malformedTagCount = 0;
             foreach (var tag in _tagTracker)
             {
@@ -647,7 +673,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     // Completed tags in code blocks have no accepted characters.
                     SpanContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
 
-                    if (tagMode != MarkupTagMode.SelfClosing && ParserHelpers.VoidElements.Contains(tagName))
+                    if (tagMode != MarkupTagMode.SelfClosing && IsVoidElement(tagName))
                     {
                         // This is a void element.
                         // Technically, void elements like "meta" are not allowed to have end tags. Just in case they do,
@@ -2112,6 +2138,21 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
 
             return last.Green;
+        }
+
+        private static bool IsVoidElement(string tagName)
+        {
+            if (string.IsNullOrEmpty(tagName))
+            {
+                return false;
+            }
+
+            if (tagName.StartsWith("!"))
+            {
+                tagName = tagName.Substring(1);
+            }
+
+            return ParserHelpers.VoidElements.Contains(tagName);
         }
 
         private enum ParseMode
