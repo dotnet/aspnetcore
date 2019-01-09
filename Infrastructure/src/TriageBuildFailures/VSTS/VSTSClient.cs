@@ -266,10 +266,13 @@ namespace TriageBuildFailures.VSTS
                     Path = uri,
                     Query = query.ToString()
                 };
-                var request = new HttpRequestMessage(verb, uriBuilder.Uri);
 
                 var response = await RetryHelpers.RetryAsync(
-                    async () => await client.SendAsync(request),
+                    async () =>
+                    {
+                        var request = new HttpRequestMessage(verb, uriBuilder.Uri);
+                        return await client.SendAsync(request);
+                    },
                     _reporter);
 
                 if (response.IsSuccessStatusCode)
