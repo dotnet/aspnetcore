@@ -40,6 +40,7 @@ $projects = @(
         BaseOutputPath = "AspNetCoreModuleV2";
         PackageSubPath = "`$(AspNetCoreModuleOutOfProcessVersion)\";
         PropetyName = "AspNetCoreModuleV2OutOfProcessHandler"
+        HandlerPath = "2.0.0"
      }
 );
 $currentPlatform = @{
