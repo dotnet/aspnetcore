@@ -2,26 +2,24 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
-using System.IO.Pipelines;
+using System.Buffers;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Http
+namespace System.IO.Pipelines
 {
-    public class ReadOnlyPipeStream : WriteOnlyStream
+    public class ReadOnlyPipeStream : ReadOnlyStream
     {
-        private PipeWriter _pipeWriter;
+        private readonly PipeReader _pipeReader;
 
-        public ReadOnlyPipeStream(PipeWriter pipeWriter)
+        public ReadOnlyPipeStream(PipeReader pipeReader)
         {
-            _pipeWriter = pipeWriter;
+            _pipeReader = pipeReader;
         }
 
         public override bool CanSeek => false;
 
-        public override long Length
-            => throw new NotSupportedException();
+        public override long Length => throw new NotSupportedException();
 
         public override long Position
         {
@@ -31,12 +29,11 @@ namespace Microsoft.AspNetCore.Http
 
         public override void Flush()
         {
-            FlushAsync(default(CancellationToken)).GetAwaiter().GetResult();
         }
 
         public override Task FlushAsync(CancellationToken cancellationToken)
         {
-            return _pipeWriter.FlushAsync(cancellationToken).AsTask();
+            return Task.CompletedTask;
         }
 
         public override long Seek(long offset, SeekOrigin origin)
@@ -49,14 +46,15 @@ namespace Microsoft.AspNetCore.Http
             throw new NotSupportedException();
         }
 
-        public override void Write(byte[] buffer, int offset, int count)
+        public override int Read(byte[] buffer, int offset, int count)
         {
-            WriteAsync(buffer, offset, count, default(CancellationToken)).GetAwaiter().GetResult();
+            // TODO do we care about blocking synchronous IO here?
+            return ReadAsync(buffer, offset, count).GetAwaiter().GetResult();
         }
 
-        public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
+        public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
-            var task = WriteAsync(buffer, offset, count, default(CancellationToken), state);
+            var task = ReadAsync(buffer, offset, count, default(CancellationToken), state);
             if (callback != null)
             {
                 task.ContinueWith(t => callback.Invoke(t));
@@ -64,18 +62,18 @@ namespace Microsoft.AspNetCore.Http
             return task;
         }
 
-        public override void EndWrite(IAsyncResult asyncResult)
+        public override int EndRead(IAsyncResult asyncResult)
         {
-            ((Task<object>)asyncResult).GetAwaiter().GetResult();
+            return ((Task<int>)asyncResult).GetAwaiter().GetResult();
         }
 
-        private Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken, object state)
+        private Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken, object state)
         {
-            var tcs = new TaskCompletionSource<object>(state);
-            var task = WriteAsync(buffer, offset, count, cancellationToken);
+            var tcs = new TaskCompletionSource<int>(state);
+            var task = ReadAsync(buffer, offset, count, cancellationToken);
             task.ContinueWith((task2, state2) =>
             {
-                var tcs2 = (TaskCompletionSource<object>)state2;
+                var tcs2 = (TaskCompletionSource<int>)state2;
                 if (task2.IsCanceled)
                 {
                     tcs2.SetCanceled();
@@ -86,21 +84,100 @@ namespace Microsoft.AspNetCore.Http
                 }
                 else
                 {
-                    tcs2.SetResult(null);
+                    tcs2.SetResult(task2.Result);
                 }
             }, tcs, cancellationToken);
             return tcs.Task;
         }
 
-        public override ValueTask WriteAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default)
+        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            // For the first write, ensure headers are flushed if WriteDataAsync isn't called.
-            //if (cancellationToken.IsCancellationRequested)
-            //{
-            //    return Task.FromCanceled(cancellationToken);
-            //}
+            return ReadAsyncInternal(new Memory<byte>(buffer, offset, count), cancellationToken).AsTask();
+        }
 
-            //return _pipeWriter.WriteAsync(data, cancellationToken).AsTask();
+        public override ValueTask<int> ReadAsync(Memory<byte> destination, CancellationToken cancellationToken = default)
+        {
+            return ReadAsyncInternal(destination, cancellationToken);
+        }
+
+        private async ValueTask<int> ReadAsyncInternal(Memory<byte> buffer, CancellationToken cancellationToken)
+        {
+            // TODO do we care about catching ConnectionAbortedException here?
+            while (true)
+            {
+                var result = await _pipeReader.ReadAsync(cancellationToken);
+                var readableBuffer = result.Buffer;
+                var readableBufferLength = readableBuffer.Length;
+
+                var consumed = readableBuffer.End;
+                var actual = 0;
+                try
+                {
+                    if (!readableBuffer.IsEmpty)
+                    {
+                        actual = (int)Math.Min(readableBufferLength, buffer.Length);
+
+                        var slice = readableBuffer.Slice(0, actual);
+                        consumed = readableBuffer.GetPosition(actual);
+                        slice.CopyTo(buffer.Span);
+
+                        return actual;
+                    }
+
+                    if (result.IsCompleted)
+                    {
+                        return 0;
+                    }
+                }
+                finally
+                {
+                    _pipeReader.AdvanceTo(consumed);
+                }
+            }
+        }
+
+        public override Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
+        {
+            if (destination == null)
+            {
+                throw new ArgumentNullException(nameof(destination));
+            }
+            if (bufferSize <= 0)
+            {
+                throw new ArgumentException("TODO make logging good");
+            }
+
+            return CopyToAsyncInternal(destination, cancellationToken);
+        }
+
+        private async Task CopyToAsyncInternal(Stream destination, CancellationToken cancellationToken)
+        {
+            while (true)
+            {
+                var result = await _pipeReader.ReadAsync(cancellationToken);
+                var readableBuffer = result.Buffer;
+                var readableBufferLength = readableBuffer.Length;
+
+                try
+                {
+                    if (!readableBuffer.IsEmpty)
+                    {
+                        foreach (var memory in readableBuffer)
+                        {
+                            await destination.WriteAsync(memory, cancellationToken);
+                        }
+                    }
+
+                    if (result.IsCompleted)
+                    {
+                        return;
+                    }
+                }
+                finally
+                {
+                    _pipeReader.AdvanceTo(readableBuffer.End);
+                }
+            }
         }
     }
 }

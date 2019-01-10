@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 
 namespace System.IO.Pipelines
 {
-    public sealed class BufferSegment : ReadOnlySequenceSegment<byte>
+    internal sealed class BufferSegment : ReadOnlySequenceSegment<byte>
     {
         private IMemoryOwner<byte> _memoryOwner;
         private BufferSegment _next;
