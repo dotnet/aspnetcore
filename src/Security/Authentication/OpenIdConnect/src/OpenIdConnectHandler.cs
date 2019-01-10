@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                     return true;
                 }
                 // Ensure the 'iss' parameter corresponds to the 'iss' stored in the authentication ticket.
-                if (!string.Equals(sid, message.Iss, StringComparison.Ordinal))
+                if (!string.Equals(iss, message.Iss, StringComparison.Ordinal))
                 {
                     Logger.RemoteSignOutIssuerInvalid();
                     return true;
