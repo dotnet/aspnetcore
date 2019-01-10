@@ -1,7 +1,7 @@
 <Project>
 
   <PropertyGroup Condition="'$(BlazorBuildReferenceFromSource)'==''">
-    <BlazorJsPath>$(MSBuildThisFileDirectory)../tools/blazor/blazor.*.js</BlazorJsPath>
+    <BlazorJsPath>$(MSBuildThisFileDirectory)../tools/blazor/components.*.js</BlazorJsPath>
   </PropertyGroup>
 
   <PropertyGroup Label="Blazor build outputs">

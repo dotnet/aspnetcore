@@ -22,6 +22,6 @@
     <file src="build\**" target="build" />
     <file src="targets\**" target="targets" />
     <file src="$publishdir$netcoreapp3.0\**\*" target="tools/" />
-    <file src="..\..\..\src\Microsoft.AspNetCore.Components.Browser.JS\dist\blazor.*.js" target="tools/blazor" />
+    <file src="..\..\..\src\Microsoft.AspNetCore.Components.Browser.JS\dist\components.*.js" target="tools/blazor" />
   </files>
 </package>
