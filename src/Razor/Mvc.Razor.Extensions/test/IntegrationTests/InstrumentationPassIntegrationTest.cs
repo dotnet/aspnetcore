@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.IntegrationTests
 {
     public class InstrumentationPassIntegrationTest : IntegrationTestBase
     {
-        [Fact(Skip="https://github.com/aspnet/AspNetCore/issues/6549"]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549")]
         public void BasicTest()
         {
             // Arrange
