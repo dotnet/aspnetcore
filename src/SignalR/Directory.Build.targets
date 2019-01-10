@@ -1,7 +1,10 @@
 ﻿<Project>
-  <PropertyGroup>
-    <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == 'netcoreapp2.2' ">$(MicrosoftNETCoreApp22PackageVersion)</RuntimeFrameworkVersion>
-    <!-- aspnet/BuildTools#662 Don't police what version of NetCoreApp we use -->
-    <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.targets))\Directory.Build.targets" />
+
+  <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
+    <!-- Don't run SignalR tests in parallel with others. This causes OutOfMemoryException on hosted Azure Pipelines agents. -->
+    <TestGroupName>SignalR</TestGroupName>
+
+    <RuntimeIdentifier Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">win7-x86</RuntimeIdentifier>
   </PropertyGroup>
 </Project>

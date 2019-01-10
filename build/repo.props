@@ -64,7 +64,9 @@
                       $(RepositoryRoot)src\Middleware\WebSockets\samples\**\*.csproj;
                       $(RepositoryRoot)src\Middleware\NodeServices.Sockets\**\*.csproj;
                       $(RepositoryRoot)src\Tools\dotnet-watch\test\TestProjects\**\*.csproj;
-                      $(RepositoryRoot)src\Razor\Razor.Design\test\testassets\**\*.*proj
+                      $(RepositoryRoot)src\Razor\Razor.Design\test\testassets\**\*.*proj;
+                      $(RepositoryRoot)src\SignalR\clients\cpp\**\*.*proj;
+                      $(RepositoryRoot)src\SignalR\clients\ts\**\node_modules\**\*.*proj;
                       " />
   </ItemGroup>
 
@@ -72,7 +74,9 @@
     <!-- Project selection can be overridden on the command line by passing in -projects -->
     <When Condition="'$(Projects)' != ''">
       <ItemGroup>
-        <ProjectToBuild Include="$(Projects)" Exclude="@(ProjectToExclude)" />
+        <ProjectToBuild Include="$(Projects)" Exclude="@(ProjectToExclude)">
+          <RestoreInParallel Condition="'%(Extension)' == '.npmproj'">false</RestoreInParallel>
+        </ProjectToBuild>
       </ItemGroup>
     </When>
     <Otherwise>
@@ -81,13 +85,20 @@
 
         <ProjectToExclude Include="@(SamplesProject)" Condition="'$(BuildSamples)' == 'false' "/>
 
-        <NpmProjectDirectory Include="$(RepositoryRoot)src\Middleware\CORS\test\FunctionalTests\" />
-
         <ProjectToBuild Condition=" '$(OS)' == 'Windows_NT' AND '$(MSBuildRuntimeType)' != 'Core' " Include="$(RepositoryRoot)src\Servers\**\*.vcxproj">
           <!-- Required to prevent triggering double-builds. See eng\targets\ResolveIisReferences.targets for details. -->
           <AdditionalProperties Condition="'$(SharedFxRid)' == 'win-x64'">Platform=x64</AdditionalProperties>
           <AdditionalProperties Condition="'$(SharedFxRid)' == 'win-x86'">Platform=x86</AdditionalProperties>
         </ProjectToBuild>
+
+        <ProjectToBuild Condition="'$(SkipNpm)' != 'true'"
+                        Include="$(RepositoryRoot)src\SignalR\**\*.npmproj"
+                        RestoreInParallel="false"
+                        Exclude="@(ProjectToExclude)" />
+
+        <ProjectToBuild Condition="'$(SkipJavaClient)' != 'true'"
+                        Include="$(RepositoryRoot)src\SignalR\**\*.javaproj"
+                        Exclude="@(ProjectToExclude)" />
 
         <ProjectToBuild Include="
                           $(RepositoryRoot)src\DefaultBuilder\**\*.*proj;
@@ -108,11 +119,15 @@
                           $(RepositoryRoot)src\Mvc\**\*.*proj;
                           $(RepositoryRoot)src\Azure\**\*.*proj;
                           $(RepositoryRoot)src\MusicStore\**\*.*proj;
+                          $(RepositoryRoot)src\SignalR\**\*.csproj;
                           "
                         Exclude="
                           @(ProjectToExclude);
+                          $(RepositoryRoot)**\node_modules\**\*;
                           $(RepositoryRoot)**\bin\**\*;
-                          $(RepositoryRoot)**\obj\**\*;" />
+                          $(RepositoryRoot)**\obj\**\*;">
+          <RestoreInParallel Condition="'%(Extension)' == '.npmproj'">false</RestoreInParallel>
+        </ProjectToBuild>
       </ItemGroup>
     </Otherwise>
   </Choose>

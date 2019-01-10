@@ -23,7 +23,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServerComparison.TestSites", "testassets\ServerComparison.TestSites\ServerComparison.TestSites.csproj", "{9D402831-ED2C-4026-925E-30F48371064A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.IIS", "IIS\src\Microsoft.AspNetCore.Server.IIS\Microsoft.AspNetCore.Server.IIS.csproj", "{6516E482-75AA-4B76-B9A6-87ABEE1DB625}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.IIS", "IIS\IIS\src\Microsoft.AspNetCore.Server.IIS.csproj", "{6516E482-75AA-4B76-B9A6-87ABEE1DB625}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

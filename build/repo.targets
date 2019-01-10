@@ -18,7 +18,6 @@
     <PrepareDependsOn>SetTeamCityBuildNumberToVersion;$(PrepareDependsOn)</PrepareDependsOn>
     <PrepareDependsOn Condition="'$(_ProjectsOnly)' != 'true'">$(PrepareDependsOn);VerifyPackageArtifactConfig;VerifyExternalDependencyConfig;PrepareOutputPaths</PrepareDependsOn>
     <CleanDependsOn>$(CleanDependsOn);CleanArtifacts;CleanRepoArtifacts</CleanDependsOn>
-    <RestoreDependsOn Condition=" '$(SkipNpm)' != 'true' ">$(RestoreDependsOn);RestoreNpm</RestoreDependsOn>
     <RestoreDependsOn>$(RestoreDependsOn);InstallDotNet;RestoreProjects</RestoreDependsOn>
     <CompileDependsOn>$(CompileDependsOn);BuildProjects;PackSharedSources</CompileDependsOn>
     <CompileDependsOn Condition="'$(_ProjectsOnly)' != 'true'">$(CompileDependsOn);PackProjects;BuildRepositories;BuildSharedFx</CompileDependsOn>
@@ -31,13 +30,6 @@
     <GetArtifactInfoDependsOn>$(GetArtifactInfoDependsOn);ResolveSharedSourcesPackageInfo</GetArtifactInfoDependsOn>
     <GetArtifactInfoDependsOn  Condition="'$(_ProjectsOnly)' != 'true'">$(GetArtifactInfoDependsOn);ResolveRepoInfo</GetArtifactInfoDependsOn>
   </PropertyGroup>
-
-  <Target Name="RestoreNpm" Condition="@(NpmProjectDirectory->Count()) != 0">
-    <Message Text="Restoring NPM modules" Importance="high" />
-
-    <!-- Always run `npm ci` because `npm install` has a tendancy to churn package-lock.json for no apparent reason. -->
-    <Exec Command="npm ci" WorkingDirectory="%(NpmProjectDirectory.Identity)" Condition=" '%(NpmProjectDirectory.Identity)' != '' " />
-  </Target>
 
   <Target Name="PrepareOutputPaths">
     <MakeDir Directories="$(ArtifactsDir);$(BuildDir)" />

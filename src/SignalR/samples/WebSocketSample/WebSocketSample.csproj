@@ -3,7 +3,5 @@
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.2;net461</TargetFrameworks>
     <OutputType>Exe</OutputType>
-    <!-- Don't create a NuGet package -->
-    <IsPackable>false</IsPackable>
   </PropertyGroup>
 </Project>

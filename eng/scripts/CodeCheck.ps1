@@ -15,10 +15,19 @@ $repoRoot = Resolve-Path "$PSScriptRoot/../../"
 
 [string[]] $errors = @()
 
+function LogError([string]$message) {
+    Write-Host -f Red "error: $message"
+    $script:errors += $message
+}
+
 try {
     #
     # Solutions
     #
+
+    if ($ci) {
+        & $repoRoot/build.cmd /t:InstallDotNet
+    }
 
     Write-Host "Checking that solutions are up to date"
 
@@ -31,7 +40,7 @@ try {
             | % {
                 $proj = Join-Path $slnDir $_
                 if (-not (Test-Path $proj)) {
-                    $errors += "Missing project. Solution references a project which does not exist: $proj. [$sln] "
+                    LogError "Missing project. Solution references a project which does not exist: $proj. [$sln] "
                 }
             }
         }
@@ -42,6 +51,7 @@ try {
 
     Write-Host "Re-running code generation"
 
+    Write-Host "Re-generating ProjectReference.props"
     Invoke-Block {
         [string[]] $generateArgs = @()
         if ($ci) {
@@ -50,16 +60,32 @@ try {
         & $repoRoot/build.cmd /t:GenerateProjectList @generateArgs
     }
 
+    Write-Host "Re-generating package baselines"
+    $dotnet = 'dotnet'
+    if ($ci) {
+        $dotnet = "$repoRoot/.dotnet/x64/dotnet.exe"
+    }
+    Invoke-Block {
+        & $dotnet run -p "$repoRoot/eng/tools/BaselineGenerator/"
+    }
+
     Write-Host "git diff"
     & git diff --ignore-space-at-eol --exit-code
     if ($LastExitCode -ne 0) {
         $status = git status -s | Out-String
         $status = $status -replace "`n","`n    "
-        $errors += "Generated code is not up to date."
+        LogError "Generated code is not up to date."
     }
 }
 finally {
+    Write-Host ""
+    Write-Host "Summary:"
+    Write-Host ""
+    Write-Host "   $($errors.Length) error(s)"
+    Write-Host ""
+
     foreach ($err in $errors) {
+
         Write-Host -f Red "error : $err"
     }
 

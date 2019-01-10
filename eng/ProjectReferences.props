@@ -128,5 +128,18 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Authentication.AzureADB2C.UI" ProjectPath="$(RepositoryRoot)src\Azure\AzureAD\Authentication.AzureADB2C.UI\src\Microsoft.AspNetCore.Authentication.AzureADB2C.UI.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" ProjectPath="$(RepositoryRoot)src\Azure\AzureAppServices.HostingStartup\src\Microsoft.AspNetCore.AzureAppServices.HostingStartup.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.AzureAppServicesIntegration" ProjectPath="$(RepositoryRoot)src\Azure\AzureAppServicesIntegration\src\Microsoft.AspNetCore.AzureAppServicesIntegration.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR.Client.Core" ProjectPath="$(RepositoryRoot)src\SignalR\clients\csharp\Client.Core\src\Microsoft.AspNetCore.SignalR.Client.Core.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR.Client" ProjectPath="$(RepositoryRoot)src\SignalR\clients\csharp\Client\src\Microsoft.AspNetCore.SignalR.Client.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Http.Connections.Client" ProjectPath="$(RepositoryRoot)src\SignalR\clients\csharp\Http.Connections.Client\src\Microsoft.AspNetCore.Http.Connections.Client.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Http.Connections.Common" ProjectPath="$(RepositoryRoot)src\SignalR\common\Http.Connections.Common\src\Microsoft.AspNetCore.Http.Connections.Common.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Http.Connections" ProjectPath="$(RepositoryRoot)src\SignalR\common\Http.Connections\src\Microsoft.AspNetCore.Http.Connections.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR.Protocols.Json" ProjectPath="$(RepositoryRoot)src\SignalR\common\Protocols.Json\src\Microsoft.AspNetCore.SignalR.Protocols.Json.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" ProjectPath="$(RepositoryRoot)src\SignalR\common\Protocols.MessagePack\src\Microsoft.AspNetCore.SignalR.Protocols.MessagePack.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR.Common" ProjectPath="$(RepositoryRoot)src\SignalR\common\SignalR.Common\src\Microsoft.AspNetCore.SignalR.Common.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR.Core" ProjectPath="$(RepositoryRoot)src\SignalR\server\Core\src\Microsoft.AspNetCore.SignalR.Core.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR.Redis" ProjectPath="$(RepositoryRoot)src\SignalR\server\Redis\src\Microsoft.AspNetCore.SignalR.Redis.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR" ProjectPath="$(RepositoryRoot)src\SignalR\server\SignalR\src\Microsoft.AspNetCore.SignalR.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR.Specification.Tests" ProjectPath="$(RepositoryRoot)src\SignalR\server\Specification.Tests\src\Microsoft.AspNetCore.SignalR.Specification.Tests.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" ProjectPath="$(RepositoryRoot)src\SignalR\server\StackExchangeRedis\src\Microsoft.AspNetCore.SignalR.StackExchangeRedis.csproj" />
   </ItemGroup>
 </Project>
