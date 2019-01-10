@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Tests
             }, setTestEnvVars: true);
         }
 
-        [Theory(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
+        [Theory(Skip = "https://github.com/aspnet/AspNetCore/issues/6549")]
         [InlineData("Development", "InvalidOperationException: Cannot consume scoped service")]
         [InlineData("Production", "Success")]
         public async Task CreateDefaultBuilder_InitializesDependencyInjectionSettingsBasedOnEnv(string environment, string expected)
