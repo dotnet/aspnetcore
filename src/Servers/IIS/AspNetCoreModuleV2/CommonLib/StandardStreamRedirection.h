@@ -18,6 +18,8 @@ public:
 
     ~StandardStreamRedirection() noexcept(false);
 
+private:
+
     void Start();
     void Stop();
 
@@ -46,7 +48,6 @@ public:
             OBSERVE_CAUGHT_EXCEPTION();
         }
     }
-private:
 
     // Thread functions
     void ReadStdErrHandleInternal();
