@@ -40,6 +40,8 @@
 
   <ItemGroup>
     <ProjectReference Include="$(RepositoryRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
+    <ProjectReference Include="$(RepositoryRoot)src\Servers\IIS\IIS\test\testassets\TestTasks\TestTasks.csproj" ReferenceOutputAssembly="false" />
+
     <Reference Include="Microsoft.NETCore.Windows.ApiSets" />
     <Reference Include="Microsoft.Web.Administration" />
     <Reference Include="System.ServiceProcess.ServiceController" />

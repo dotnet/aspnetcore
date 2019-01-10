@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json" />
+    <Reference Include="Newtonsoft.Json" PrivateAssets="All" Publish="true" />
   </ItemGroup>
 
 </Project>

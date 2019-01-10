@@ -8,6 +8,7 @@
     <RuntimeIdentifiers Condition="'$(Configuration)' != 'RuntimeStore'">win7-x86;win7-x64;linux-x64;osx-x64</RuntimeIdentifiers>
     <Configurations>Debug;Release;RuntimeStore</Configurations>
     <DebugType Condition="'$(TargetFramework)' == 'net461'">full</DebugType>
+    <InProcessTestSite>true</InProcessTestSite>
   </PropertyGroup>
 
   <Import Project="$(RepositoryRoot)src\Servers\IIS\build\testsite.props" />
