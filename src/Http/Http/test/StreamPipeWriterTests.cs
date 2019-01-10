@@ -12,7 +12,7 @@ using Xunit;
 
 namespace System.IO.Pipelines.Tests
 {
-    public class StreamPipeWriterTests : PipeTest
+    public class StreamPipeWriterTests : StreamPipeTest
     {
         [Fact]
         public async Task CanWriteAsyncMultipleTimesIntoSameBlock()

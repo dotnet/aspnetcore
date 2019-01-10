@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace System.IO.Pipelines
 {
-    public class WriteOnlyPipeStream : WriteOnlyStream
+    public class WriteOnlyPipeStream : Stream
     {
         private PipeWriter _pipeWriter;
 
@@ -17,14 +17,29 @@ namespace System.IO.Pipelines
 
         public override bool CanSeek => false;
 
-        public override long Length
-            => throw new NotSupportedException();
+        public override bool CanRead => false;
+
+        public override bool CanWrite => true;
+
+        public override long Length => throw new NotSupportedException();
 
         public override long Position
         {
             get => throw new NotSupportedException();
             set => throw new NotSupportedException();
         }
+
+        public override int ReadTimeout
+        {
+            get => throw new NotSupportedException();
+            set => throw new NotSupportedException();
+        }
+
+        public override int Read(byte[] buffer, int offset, int count)
+            => throw new NotSupportedException();
+
+        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+          => throw new NotSupportedException();
 
         public override void Flush()
         {

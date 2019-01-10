@@ -1,15 +1,113 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace Microsoft.AspNetCore.Http.Tests
+using System.Buffers;
+using System.Threading;
+using System.Threading.Tasks;
+using Xunit;
+
+namespace System.IO.Pipelines.Tests
 {
     public class ReadingAdaptersInteropTests
     {
-        public async Task BasicE2E()
+        [Fact]
+        public async Task CheckBasicReadInterop()
         {
-            // Create StreamAdapter
-            // Create PipeAdapter
-            // See what happens
+            var pipe = new Pipe();
+            var readStream = new ReadOnlyPipeStream(pipe.Reader);
+            var pipeReader = new StreamPipeReader(readStream);
+
+            await pipe.Writer.WriteAsync(new byte[10]);
+            var res = await pipeReader.ReadAsync();
+            Assert.Equal(new byte[10], res.Buffer.ToArray());
+        }
+
+        [Fact]
+        public async Task CheckVeryNestedReadInterop()
+        {
+            var pipe = new Pipe();
+            var reader = pipe.Reader;
+            for (var i = 0; i < 3; i++)
+            {
+                var readStream = new ReadOnlyPipeStream(reader);
+                reader = new StreamPipeReader(readStream);
+            }
+
+            await pipe.Writer.WriteAsync(new byte[10]);
+            var res = await reader.ReadAsync();
+            Assert.Equal(new byte[10], res.Buffer.ToArray());
+        }
+
+        [Fact]
+        public async Task ReadsCanBeCanceledViaProvidedCancellationToken()
+        {
+            var readOnlyStream = new ReadOnlyPipeStream(new HangingPipeReader());
+            var pipeReader = new StreamPipeReader(readOnlyStream);
+
+            var cts = new CancellationTokenSource(1);
+            await Task.Delay(1);
+            await Assert.ThrowsAsync<TaskCanceledException>(async () => await pipeReader.ReadAsync(cts.Token));
+        }
+
+        [Fact]
+        public async Task ReadCanBeCancelledViaCancelPendingReadWhenReadIsAsync()
+        {
+            var readOnlyStream = new ReadOnlyPipeStream(new HangingPipeReader());
+            var pipeReader = new StreamPipeReader(readOnlyStream);
+
+            var result = new ReadResult();
+            var tcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var task = Task.Run(async () =>
+            {
+                var readingTask = pipeReader.ReadAsync();
+                tcs.SetResult(0);
+                result = await readingTask;
+            });
+            await tcs.Task;
+            pipeReader.CancelPendingRead();
+            await task;
+
+            Assert.True(result.IsCanceled);
+        }
+
+        private class HangingPipeReader : PipeReader
+        {
+            public override void AdvanceTo(SequencePosition consumed)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void CancelPendingRead()
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void Complete(Exception exception = null)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void OnWriterCompleted(Action<Exception, object> callback, object state)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override async ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
+            {
+                await Task.Delay(30000, cancellationToken);
+                return new ReadResult();
+            }
+
+            public override bool TryRead(out ReadResult result)
+            {
+                result = new ReadResult();
+                return false;
+            }
         }
     }
 }

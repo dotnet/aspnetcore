@@ -13,9 +13,11 @@ namespace System.IO.Pipelines.Tests
         public Stream WritingStream { get; set; }
 
         public Pipe Pipe { get; set; }
+
         public PipeReader Reader => Pipe.Reader;
 
         public PipeWriter Writer => Pipe.Writer;
+
         public PipeStreamTest()
         {
             Pipe = new Pipe();
@@ -34,11 +36,29 @@ namespace System.IO.Pipelines.Tests
             await WritingStream.WriteAsync(Encoding.ASCII.GetBytes(input));
         }
 
+        public async Task WriteStringToPipeAsync(string input)
+        {
+            await Writer.WriteAsync(Encoding.ASCII.GetBytes(input));
+        }
+
+        public async Task WriteByteArrayToPipeAsync(byte[] input)
+        {
+            await Writer.WriteAsync(input);
+        }
+
         public async Task<string> ReadFromPipeAsStringAsync()
         {
             var readResult = await Reader.ReadAsync();
             var result = Encoding.ASCII.GetString(readResult.Buffer.ToArray());
             Reader.AdvanceTo(readResult.Buffer.End);
+            return result;
+        }
+
+        public async Task<string> ReadFromStreamAsStringAsync()
+        {
+            var memory = new Memory<byte>(new byte[4096]);
+            var readLength = await ReadingStream.ReadAsync(memory);
+            var result = Encoding.ASCII.GetString(memory.ToArray(), 0, readLength);
             return result;
         }
 
@@ -48,6 +68,13 @@ namespace System.IO.Pipelines.Tests
             var result = readResult.Buffer.ToArray();
             Reader.AdvanceTo(readResult.Buffer.End);
             return result;
+        }
+
+        public async Task<byte[]> ReadFromStreamAsByteArrayAsync(int size)
+        {
+            var memory = new Memory<byte>(new byte[size]);
+            var readLength = await ReadingStream.ReadAsync(memory);
+            return memory.Slice(0, readLength).ToArray();
         }
     }
 }

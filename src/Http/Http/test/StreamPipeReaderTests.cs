@@ -11,7 +11,7 @@ using Xunit;
 
 namespace System.IO.Pipelines.Tests
 {
-    public partial class StreamPipeReaderTests : PipeTest
+    public partial class StreamPipeReaderTests : StreamPipeTest
     {
         [Fact]
         public async Task CanRead()

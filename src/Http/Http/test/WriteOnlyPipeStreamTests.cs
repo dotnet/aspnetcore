@@ -23,6 +23,12 @@ namespace System.IO.Pipelines.Tests
         }
 
         [Fact]
+        public void CanWriteTrue()
+        {
+            Assert.True(WritingStream.CanWrite);
+        }
+
+        [Fact]
         public void LengthThrows()
         {
             Assert.Throws<NotSupportedException>(() => WritingStream.Length);
@@ -181,6 +187,5 @@ namespace System.IO.Pipelines.Tests
             WritingStream.EndWrite(asyncResult);
             Assert.Equal(expected, await ReadFromPipeAsByteArrayAsync());
         }
-
     }
 }
