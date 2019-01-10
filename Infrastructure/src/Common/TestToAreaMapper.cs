@@ -37,7 +37,7 @@ namespace Common
                 ("AuthSamples", "area-security"),
                 ("E2ETests", "area-mvc"),
                 ("FunctionalTests", "area-mvc"),
-                ("IIS.FunctionalTests", "area-servers"),
+                ("IIS", "area-servers"),
                 ("MvcBenchmarks", "area-mvc"),
                 ("ServerComparison", "area-servers"),
                 ("Templates", "area-tools"),
