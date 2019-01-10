@@ -2,12 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Hosting.Internal
+namespace Microsoft.AspNetCore.Http.Features
 {
     public class RequestServicesFeature : IServiceProvidersFeature, IDisposable
     {
@@ -19,7 +16,6 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
         public RequestServicesFeature(HttpContext context, IServiceScopeFactory scopeFactory)
         {
-            Debug.Assert(scopeFactory != null);
             _context = context;
             _scopeFactory = scopeFactory;
         }
@@ -28,7 +24,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         {
             get
             {
-                if (!_requestServicesSet)
+                if (!_requestServicesSet && _scopeFactory != null)
                 {
                     _context.Response.RegisterForDispose(this);
                     _scope = _scopeFactory.CreateScope();

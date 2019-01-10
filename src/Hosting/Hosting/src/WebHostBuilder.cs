@@ -272,13 +272,11 @@ namespace Microsoft.AspNetCore.Hosting
             services.AddSingleton<DiagnosticSource>(listener);
 
             services.AddTransient<IApplicationBuilderFactory, ApplicationBuilderFactory>();
-            services.AddTransient<IHttpContextFactory, HttpContextFactory>();
+            services.AddTransient<IHttpContextFactory, DefaultHttpContextFactory>();
             services.AddScoped<IMiddlewareFactory, MiddlewareFactory>();
             services.AddOptions();
             services.AddLogging();
 
-            // Conjure up a RequestServices
-            services.AddTransient<IStartupFilter, AutoRequestServicesStartupFilter>();
             services.AddTransient<IServiceProviderFactory<IServiceCollection>, DefaultServiceProviderFactory>();
 
             if (!string.IsNullOrEmpty(_options.StartupAssembly))
