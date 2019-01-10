@@ -4,16 +4,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Threading;
-using System.Text;
 using Xunit;
 using Xunit.Sdk;
-using System.Text.RegularExpressions;
-using Microsoft.AspNetCore.Razor.Language.Syntax;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
@@ -175,44 +172,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return Regex.Replace(content, "(?<!\r)\n", "\r\n", RegexOptions.None, TimeSpan.FromSeconds(10));
         }
 
-        internal virtual void BaselineTest(RazorSyntaxTree syntaxTree, bool verifySyntaxTree = true)
+        internal virtual void BaselineTest(RazorSyntaxTree syntaxTree, bool verifySyntaxTree = true, bool ensureFullFidelity = true)
         {
             if (verifySyntaxTree)
             {
-                SyntaxTreeVerifier.Verify(syntaxTree);
+                SyntaxTreeVerifier.Verify(syntaxTree, ensureFullFidelity);
             }
 
             AssertSyntaxTreeNodeMatchesBaseline(syntaxTree);
         }
 
-        internal RazorSyntaxTree ParseBlock(string document, bool designTime)
-        {
-            return ParseBlock(RazorLanguageVersion.Latest, document, designTime);
-        }
-
-        internal RazorSyntaxTree ParseBlock(RazorLanguageVersion version, string document, bool designTime)
-        {
-            return ParseBlock(version, document, null, designTime);
-        }
-
-        internal RazorSyntaxTree ParseBlock(string document, IEnumerable<DirectiveDescriptor> directives, bool designTime)
-        {
-            return ParseBlock(RazorLanguageVersion.Latest, document, directives, designTime);
-        }
-
         internal abstract RazorSyntaxTree ParseBlock(RazorLanguageVersion version, string document, IEnumerable<DirectiveDescriptor> directives, bool designTime);
 
-        internal RazorSyntaxTree ParseDocument(string document, bool designTime = false, RazorParserFeatureFlags featureFlags = null)
-        {
-            return ParseDocument(RazorLanguageVersion.Latest, document, designTime, featureFlags);
-        }
-
-        internal RazorSyntaxTree ParseDocument(RazorLanguageVersion version, string document, bool designTime = false, RazorParserFeatureFlags featureFlags = null)
-        {
-            return ParseDocument(version, document, null, designTime, featureFlags);
-        }
-
-        internal RazorSyntaxTree ParseDocument(string document, IEnumerable<DirectiveDescriptor> directives, bool designTime = false, RazorParserFeatureFlags featureFlags = null)
+        internal RazorSyntaxTree ParseDocument(string document, bool designTime = false, IEnumerable<DirectiveDescriptor> directives = null, RazorParserFeatureFlags featureFlags = null)
         {
             return ParseDocument(RazorLanguageVersion.Latest, document, directives, designTime, featureFlags);
         }
@@ -271,11 +243,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return syntaxTree;
         }
 
-        internal RazorSyntaxTree ParseCodeBlock(string document, bool designTime = false)
-        {
-            return ParseCodeBlock(RazorLanguageVersion.Latest, document, Enumerable.Empty<DirectiveDescriptor>(), designTime);
-        }
-
         internal virtual RazorSyntaxTree ParseCodeBlock(
             RazorLanguageVersion version,
             string document,
@@ -306,86 +273,39 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         internal virtual void ParseBlockTest(string document)
         {
-            ParseBlockTest(document, null, false, new RazorDiagnostic[0]);
+            ParseBlockTest(document, null, false);
         }
 
-        internal virtual void ParseBlockTest(string document, IEnumerable<DirectiveDescriptor> directives)
+        internal virtual void ParseBlockTest(string document, bool designTime)
         {
-            ParseBlockTest(document, directives, null);
-        }
-
-        internal virtual void ParseBlockTest(string document, params RazorDiagnostic[] expectedErrors)
-        {
-            ParseBlockTest(document, false, expectedErrors);
-        }
-
-        internal virtual void ParseBlockTest(string document, bool designTime, params RazorDiagnostic[] expectedErrors)
-        {
-            ParseBlockTest(document, null, designTime, expectedErrors);
+            ParseBlockTest(document, null, designTime);
         }
 
         internal virtual void ParseBlockTest(RazorLanguageVersion version, string document)
         {
-            ParseBlockTest(version, document, false, null);
+            ParseBlockTest(version, document, false);
         }
 
-        internal virtual void ParseBlockTest(string document, IEnumerable<DirectiveDescriptor> directives, params RazorDiagnostic[] expectedErrors)
+        internal virtual void ParseBlockTest(string document, IEnumerable<DirectiveDescriptor> directives)
         {
-            ParseBlockTest(document, directives, false, expectedErrors);
+            ParseBlockTest(document, directives, false);
         }
 
-        internal virtual void ParseBlockTest(RazorLanguageVersion version, string document, bool designTime, params RazorDiagnostic[] expectedErrors)
+        internal virtual void ParseBlockTest(RazorLanguageVersion version, string document, bool designTime)
         {
-            ParseBlockTest(version, document, null, designTime, expectedErrors);
+            ParseBlockTest(version, document, null, designTime);
         }
 
-        internal virtual void ParseBlockTest(string document, IEnumerable<DirectiveDescriptor> directives, bool designTime, params RazorDiagnostic[] expectedErrors)
+        internal virtual void ParseBlockTest(string document, IEnumerable<DirectiveDescriptor> directives, bool designTime)
         {
-            ParseBlockTest(RazorLanguageVersion.Latest, document, directives, designTime, expectedErrors);
+            ParseBlockTest(RazorLanguageVersion.Latest, document, directives, designTime);
         }
 
-        internal virtual void ParseBlockTest(RazorLanguageVersion version, string document, IEnumerable<DirectiveDescriptor> directives, bool designTime, params RazorDiagnostic[] expectedErrors)
+        internal virtual void ParseBlockTest(RazorLanguageVersion version, string document, IEnumerable<DirectiveDescriptor> directives, bool designTime)
         {
             var result = ParseBlock(version, document, directives, designTime);
 
-            BaselineTest(result);
-        }
-
-        internal virtual void SingleSpanBlockTest(string document)
-        {
-            SingleSpanBlockTest(document, default, default);
-        }
-
-        internal virtual void SingleSpanBlockTest(string document, BlockKindInternal blockKind, SpanKindInternal spanType, AcceptedCharactersInternal acceptedCharacters = AcceptedCharactersInternal.Any)
-        {
-            SingleSpanBlockTest(document, blockKind, spanType, acceptedCharacters, expectedError: null);
-        }
-
-        internal virtual void SingleSpanBlockTest(string document, string spanContent, BlockKindInternal blockKind, SpanKindInternal spanType, AcceptedCharactersInternal acceptedCharacters = AcceptedCharactersInternal.Any)
-        {
-            SingleSpanBlockTest(document, spanContent, blockKind, spanType, acceptedCharacters, expectedErrors: null);
-        }
-
-        internal virtual void SingleSpanBlockTest(string document, BlockKindInternal blockKind, SpanKindInternal spanType, params RazorDiagnostic[] expectedError)
-        {
-            SingleSpanBlockTest(document, document, blockKind, spanType, expectedError);
-        }
-
-        internal virtual void SingleSpanBlockTest(string document, string spanContent, BlockKindInternal blockKind, SpanKindInternal spanType, params RazorDiagnostic[] expectedErrors)
-        {
-            SingleSpanBlockTest(document, spanContent, blockKind, spanType, AcceptedCharactersInternal.Any, expectedErrors ?? new RazorDiagnostic[0]);
-        }
-
-        internal virtual void SingleSpanBlockTest(string document, BlockKindInternal blockKind, SpanKindInternal spanType, AcceptedCharactersInternal acceptedCharacters, params RazorDiagnostic[] expectedError)
-        {
-            SingleSpanBlockTest(document, document, blockKind, spanType, acceptedCharacters, expectedError);
-        }
-
-        internal virtual void SingleSpanBlockTest(string document, string spanContent, BlockKindInternal blockKind, SpanKindInternal spanType, AcceptedCharactersInternal acceptedCharacters, params RazorDiagnostic[] expectedErrors)
-        {
-            var result = ParseBlock(document, designTime: false);
-
-            BaselineTest(result);
+            BaselineTest(result, ensureFullFidelity: false);
         }
 
         internal virtual void ParseDocumentTest(string document)
@@ -393,14 +313,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseDocumentTest(document, null, false);
         }
 
-        internal virtual void ParseDocumentTest(string document, params RazorDiagnostic[] expectedErrors)
+        internal virtual void ParseDocumentTest(string document, IEnumerable<DirectiveDescriptor> directives)
         {
-            ParseDocumentTest(document, false, expectedErrors);
-        }
-
-        internal virtual void ParseDocumentTest(string document, IEnumerable<DirectiveDescriptor> directives, params RazorDiagnostic[] expectedErrors)
-        {
-            ParseDocumentTest(document, directives, false, expectedErrors);
+            ParseDocumentTest(document, directives, false);
         }
 
         internal virtual void ParseDocumentTest(string document, bool designTime)
@@ -408,14 +323,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseDocumentTest(document, null, designTime);
         }
 
-        internal virtual void ParseDocumentTest(string document, bool designTime, params RazorDiagnostic[] expectedErrors)
+        internal virtual void ParseDocumentTest(string document, IEnumerable<DirectiveDescriptor> directives, bool designTime)
         {
-            ParseDocumentTest(document, null, designTime, expectedErrors);
-        }
-
-        internal virtual void ParseDocumentTest(string document, IEnumerable<DirectiveDescriptor> directives, bool designTime, params RazorDiagnostic[] expectedErrors)
-        {
-            var result = ParseDocument(document, directives, designTime);
+            var result = ParseDocument(document, designTime, directives);
 
             BaselineTest(result);
         }
