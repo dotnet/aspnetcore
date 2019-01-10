@@ -256,7 +256,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalFact]
-        public async Task RemoveHostfxrFromApp_InProcessHostfxrInvalid()
+        public async Task RemoveHostfxrFromApp_InProcessHostfxrAPIAbsent()
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite, publish: true);
             deploymentParameters.ApplicationType = ApplicationType.Standalone;
@@ -269,6 +269,20 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult);
 
             EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessHostfxrInvalid(deploymentResult), Logger);
+        }
+
+        [ConditionalFact]
+        public async Task RemoveHostfxrFromApp_InProcessHostfxrLoadFailure()
+        {
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite, publish: true);
+            deploymentParameters.ApplicationType = ApplicationType.Standalone;
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            // We don't distinguish between load failure types so making dll empty should be enough
+            File.WriteAllText(Path.Combine(deploymentResult.ContentRoot, "hostfxr.dll"), "");
+            await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult);
+
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessHostfxrUnableToLoad(deploymentResult), Logger);
         }
 
         [ConditionalFact]

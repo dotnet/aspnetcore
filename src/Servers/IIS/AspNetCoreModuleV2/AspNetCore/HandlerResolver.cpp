@@ -214,9 +214,7 @@ try
     DWORD          dwBufferSize = s_initialGetNativeSearchDirectoriesBufferSize;
     DWORD          dwRequiredBufferSize = 0;
 
-    RETURN_LAST_ERROR_IF_NULL(m_hHostFxrDll = LoadLibraryW(hostfxrOptions.GetHostFxrLocation().c_str()));
-
-    auto const hostFxr = HostFxr::CreateFromLoadedModule();
+    m_hHostFxrDll.Load(hostfxrOptions.GetHostFxrLocation());
 
     {
         auto redirectionOutput = LoggingHelpers::CreateOutputs(
@@ -227,7 +225,7 @@ try
             );
 
         StandardStreamRedirection stdOutRedirection(*redirectionOutput.get(), m_pServer.IsCommandLineLaunch());
-        auto hostFxrErrorRedirection = hostFxr.RedirectOutput(redirectionOutput.get());
+        auto hostFxrErrorRedirection = m_hHostFxrDll.RedirectOutput(redirectionOutput.get());
 
         struNativeSearchPaths.resize(dwBufferSize);
         while (TRUE)
@@ -237,7 +235,7 @@ try
 
             hostfxrOptions.GetArguments(hostfxrArgc, hostfxrArgv);
 
-            const auto intHostFxrExitCode = hostFxr.GetNativeSearchDirectories(
+            const auto intHostFxrExitCode = m_hHostFxrDll.GetNativeSearchDirectories(
                 hostfxrArgc,
                 hostfxrArgv.get(),
                 struNativeSearchPaths.data(),

@@ -189,11 +189,11 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
 
             hostFxrResolutionResult->GetArguments(context->m_argc, context->m_argv);
             THROW_IF_FAILED(SetEnvironmentVariablesOnWorkerProcess());
-            context->m_hostFxr = HostFxr::CreateFromLoadedModule();
+            context->m_hostFxr.Load();
         }
         else
         {
-            context->m_hostFxr = HostFxr(s_fMainCallback, nullptr, nullptr);
+            context->m_hostFxr.SetMain(s_fMainCallback);
         }
 
         // There can only ever be a single instance of .NET Core

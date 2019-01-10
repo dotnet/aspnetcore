@@ -39,6 +39,7 @@
 #define ASPNETCORE_EVENT_RECYCLE_FAILURE_CONFIGURATION_MSG   L"Failed to recycle application due to a configuration change at '%s'. Recycling worker process."
 #define ASPNETCORE_EVENT_MODULE_DISABLED_MSG                 L"AspNetCore Module is disabled"
 #define ASPNETCORE_EVENT_HOSTFXR_DLL_INVALID_VERSION_MSG     L"Hostfxr version used does not support 'hostfxr_get_native_search_directories', update the version of hostfxr to a higher version. Path to hostfxr: '%s'."
+#define ASPNETCORE_EVENT_HOSTFXR_DLL_UNABLE_TO_LOAD_MSG      L"Unable to load '%s'. This might be cause by architecture mismatch between IIS application pool and published application"
 #define ASPNETCORE_EVENT_HOSTFXR_FAILURE_MSG                 L"Invoking hostfxr to find the inprocess request handler failed without finding any native dependencies. This most likely means the app is misconfigured, please check the versions of Microsoft.NetCore.App and Microsoft.AspNetCore.App that are targeted by the application and are installed on the machine."
 #define ASPNETCORE_EVENT_INPROCESS_THREAD_EXCEPTION_MSG      L"Application '%s' with physical root '%s' hit unexpected managed exception, exception code = '0x%x'. Please check the stderr logs for more information."
 #define ASPNETCORE_EVENT_INPROCESS_THREAD_EXCEPTION_STDOUT_MSG L"Application '%s' with physical root '%s' hit unexpected managed exception, exception code = '0x%x'. Last 4KB characters of captured stdout and stderr logs:\r\n%s"

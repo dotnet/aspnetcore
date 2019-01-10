@@ -185,6 +185,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             return $"Hostfxr version used does not support 'hostfxr_get_native_search_directories', update the version of hostfxr to a higher version. Path to hostfxr: '(.*)'.";
         }
 
+        public static string InProcessHostfxrUnableToLoad(IISDeploymentResult deploymentResult)
+        {
+            return $"Unable to load '(.*)'. This might be cause by architecture mismatch between IIS application pool and published application";
+        }
+
         public static string InProcessFailedToFindNativeDependencies(IISDeploymentResult deploymentResult)
         {
             return "Invoking hostfxr to find the inprocess request handler failed without finding any native dependencies. " +
