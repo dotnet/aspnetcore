@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Hosting.WindowsServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Hosting
@@ -19,7 +20,7 @@ namespace Microsoft.AspNetCore.Hosting
         // Reasonable timeout for our test operations to complete.
         private static readonly TimeSpan OperationTimeout = TimeSpan.FromSeconds( 5 );
 
-        [Fact]
+        [ConditionalFact]
         public async Task StopBeforeServiceStarted()
         {
             var host = new WebHostBuilder().UseServer(new FakeServer()).Configure(x => { }).Build();
@@ -33,7 +34,7 @@ namespace Microsoft.AspNetCore.Hosting
                 () => Task.Delay(OperationTimeout, applicationLifetime.ApplicationStopped));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task StopAfterServiceStarted()
         {
             var host = new WebHostBuilder().UseServer( new FakeServer() ).Configure( x => { } ).Build();
