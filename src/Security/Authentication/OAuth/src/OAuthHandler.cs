@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNetCore.Authentication.OAuth
@@ -215,6 +216,18 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                 Context, Scheme, Options,
                 properties, authorizationEndpoint);
             await Events.RedirectToAuthorizationEndpoint(redirectContext);
+
+            var location = Context.Response.Headers[HeaderNames.Location];
+            if (location == StringValues.Empty)
+            {
+                location = "(not set)";
+            }
+            var cookie = Context.Response.Headers[HeaderNames.SetCookie];
+            if (cookie == StringValues.Empty)
+            {
+                cookie = "(not set)";
+            }
+            Logger.HandleChallenge(location, cookie);
         }
 
         protected virtual string BuildChallengeUrl(AuthenticationProperties properties, string redirectUri)

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
@@ -13,6 +13,8 @@
     <None Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
+  <Import Project="$(MvcTestingTargets)" Condition="'$(MvcTestingTargets)' != ''" />
+
   <ItemGroup>
     <ProjectReference Include="..\..\testassets\Identity.DefaultUI.WebSite\Identity.DefaultUI.WebSite.csproj" />
 
@@ -21,26 +23,5 @@
     <Reference Include="Microsoft.EntityFrameworkCore.InMemory" />
     <Reference Include="AngleSharp" />
   </ItemGroup>
-
-  <Import Project="$(MvcTestingTargets)" Condition="'$(MvcTestingTargets)' != ''" />
-
-  <Target Name="CopyViews" AfterTargets="Build" Condition="$(TargetFramework) != ''">
-    <ItemGroup>
-      <_IdentityUIViewsAssemblies Include="$(MSBuildThisFileDirectory)..\..\UI\src\bin\$(Configuration)\netcoreapp3.0\Microsoft.AspNetCore.Identity.UI.Views.*.dll" />
-    </ItemGroup>
-    <Copy
-      SourceFiles="@(_IdentityUIViewsAssemblies)"
-      DestinationFolder="$(OutputPath)" />
-  </Target>
-
-  <Target Name="VerifyBuildOutputs" AfterTargets="Build" Condition="$(TargetFramework) != ''">
-    <ItemGroup>
-      <ExpectedOutputFile Include="$(OutputPath)Microsoft.AspNetCore.Identity.UI.Views.V3.dll" />
-      <ExpectedOutputFile Include="$(OutputPath)Microsoft.AspNetCore.Identity.UI.Views.V4.dll" />
-    </ItemGroup>
-
-    <Error Text="Unable to find precompiled view file %(ExpectedOutputFile.Identity)"
-           Condition="!Exists('%(ExpectedOutputFile.Identity)')" />
-  </Target>
 
 </Project>

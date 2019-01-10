@@ -19,12 +19,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
 
         internal SegmentReadStream(List<byte[]> segments, long length)
         {
-            if (segments == null)
-            {
-                throw new ArgumentNullException(nameof(segments));
-            }
-
-            _segments = segments;
+            _segments = segments ?? throw new ArgumentNullException(nameof(segments));
             _length = length;
         }
 

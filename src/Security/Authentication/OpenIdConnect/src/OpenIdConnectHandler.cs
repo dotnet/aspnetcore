@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
@@ -266,7 +267,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 throw new NotImplementedException($"An unsupported authentication method has been configured: {Options.AuthenticationMethod}");
             }
 
-            Logger.SignedOut(Scheme.Name);
+            Logger.AuthenticationSchemeSignedOut(Scheme.Name);
         }
 
         /// <summary>
@@ -292,12 +293,12 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             {
                 if (signOut.Result.Handled)
                 {
-                    Logger.SignoutCallbackRedirectHandledResponse();
+                    Logger.SignOutCallbackRedirectHandledResponse();
                     return true;
                 }
                 if (signOut.Result.Skipped)
                 {
-                    Logger.SignoutCallbackRedirectSkipped();
+                    Logger.SignOutCallbackRedirectSkipped();
                     return false;
                 }
                 if (signOut.Result.Failure != null)
@@ -320,6 +321,22 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// </summary>
         /// <returns></returns>
         protected override async Task HandleChallengeAsync(AuthenticationProperties properties)
+        {
+            await HandleChallengeAsyncInternal(properties);
+            var location = Context.Response.Headers[HeaderNames.Location];
+            if (location == StringValues.Empty)
+            {
+                location = "(not set)";
+            }
+            var cookie = Context.Response.Headers[HeaderNames.SetCookie];
+            if (cookie == StringValues.Empty)
+            {
+                cookie = "(not set)";
+            }
+            Logger.HandleChallenge(location, cookie);
+        }
+
+        private async Task HandleChallengeAsyncInternal(AuthenticationProperties properties)
         {
             Logger.EnteringOpenIdAuthenticationHandlerHandleUnauthorizedAsync(GetType().FullName);
 

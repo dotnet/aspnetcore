@@ -76,9 +76,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             var activator = new RazorPageActivator(
                 modelMetadataProvider,
                 new UrlHelperFactory(),
-                new JsonHelper(
-                    new JsonOutputFormatter(new JsonSerializerSettings(), ArrayPool<char>.Shared),
-                    ArrayPool<char>.Shared),
+                Mock.Of<IJsonHelper>(),
                 new DiagnosticListener("Microsoft.AspNetCore"),
                 new HtmlTestEncoder(),
                 modelExpressionProvider);

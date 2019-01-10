@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Routing;
@@ -101,6 +102,11 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         /// <returns>The RequestBody Stream.</returns>
         public abstract Stream Body { get; set; }
+
+        /// <summary>
+        /// Gets or sets the request body pipe <see cref="PipeReader"/>.
+        /// </summary>
+        public abstract PipeReader BodyPipe { get; set; }
 
         /// <summary>
         /// Checks the Content-Type header for form types.

@@ -3,9 +3,15 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <IsPackable>false</IsPackable>
+    <DefaultItemExcludes>${DefaultItemExcludes};node_modules\**</DefaultItemExcludes>
     <!-- WebDriver is not strong-named signed -->
     <SignAssembly>false</SignAssembly>
   </PropertyGroup>
+
+  <Target Name="EnsureNpmRestored" BeforeTargets="Build" Condition="!Exists('node_modules') AND '$(BlazorAllTests)'=='true'">
+    <Message Importance="high" Text="Restoring dependencies using 'npm'. This may take several minutes..." />
+    <Exec Command="npm ci" />
+  </Target>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="$(AspNetCorePackageVersion)" />
@@ -30,6 +36,10 @@
     <ProjectReference Include="..\..\samples\ComponentsApp.Server\ComponentsApp.Server.csproj" />
     <ProjectReference Include="..\testapps\BasicTestApp\BasicTestApp.csproj" />
     <ProjectReference Include="..\testapps\TestServer\TestServer.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\..\Shared\Process\ProcessExtensions.cs" Link="Shared\ProcessExtensions.cs" />
   </ItemGroup>
 
 </Project>

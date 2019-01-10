@@ -36,13 +36,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Repository Include="AzureIntegration" />
     <Repository Include="Components" />
     <Repository Include="SignalR" />
     <Repository Include="Templating" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
 
     <!-- Test-only repos -->
     <Repository Include="AuthSamples" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
-    <Repository Include="MusicStore"  PatchPolicy="AlwaysUpdateAndCascadeVersions" />
   </ItemGroup>
 </Project>

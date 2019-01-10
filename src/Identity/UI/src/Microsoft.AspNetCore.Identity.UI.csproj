@@ -60,7 +60,7 @@
     <UIFrameworkVersionMoniker Include="V4" />
   </ItemGroup>
 
-  <Target Name="BuildRazorViews" AfterTargets="Build">
+  <Target Name="BuildRazorViews" DependsOnTargets="Compile" BeforeTargets="Build">
     <Message Text="Building razor views assemblies" Importance="High" />
     <MSbuild Projects="$(MSBuildThisFile)"
              Targets="BuildForUI"
@@ -124,10 +124,11 @@
     Name="_GetRazorDlls" BeforeTargets="GetCopyToOutputDirectoryItems">
 
     <ItemGroup>
-      <_AllItemsFullPathWithTargetPath Include="$(MSBuildThisFileDirectory)$(IntermediateOutputPath)%(UIFrameworkVersionMoniker.Identity)\$(TargetName).Views.%(UIFrameworkVersionMoniker.Identity).*" />
+      <_GeneratedRazorViews Include="$(TargetDir)$(TargetName).Views.%(UIFrameworkVersionMoniker.Identity).dll" />
+      <_GeneratedRazorViews Include="$(TargetDir)$(TargetName).Views.%(UIFrameworkVersionMoniker.Identity).pdb" />
 
-      <AllItemsFullPathWithTargetPath Include="%(_AllItemsFullPathWithTargetPath.FullPath)">
-        <TargetPath>%(Filename)%(Extension)</TargetPath>
+      <AllItemsFullPathWithTargetPath Include="%(_GeneratedRazorViews.FullPath)">
+        <TargetPath>%(FileName)%(Extension)</TargetPath>
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </AllItemsFullPathWithTargetPath>
     </ItemGroup>
@@ -149,8 +150,8 @@
 
   <Target Name="VerifyBuildOutputs" AfterTargets="BuildRazorViews">
     <ItemGroup>
-      <ExpectedOutputFile Include="$(OutputPath)Microsoft.AspNetCore.Identity.UI.Views.V3.dll" />
-      <ExpectedOutputFile Include="$(OutputPath)Microsoft.AspNetCore.Identity.UI.Views.V4.dll" />
+      <ExpectedOutputFile Include="$(TargetDir)Microsoft.AspNetCore.Identity.UI.Views.V3.dll" />
+      <ExpectedOutputFile Include="$(TargetDir)Microsoft.AspNetCore.Identity.UI.Views.V4.dll" />
     </ItemGroup>
 
     <Error Text="Unable to find precompiled view file %(ExpectedOutputFile.Identity)"

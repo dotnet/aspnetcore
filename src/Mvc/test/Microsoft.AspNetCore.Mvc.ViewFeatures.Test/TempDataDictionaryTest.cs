@@ -11,29 +11,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
     public class TempDataDictionaryTest
     {
         [Fact]
-        public void ThrowscdException_OnSettingValue_AndWhenSessionIsNotEnabled()
-        {
-            // Arrange
-            var tempData = new TempDataDictionary(new DefaultHttpContext(), new SessionStateTempDataProvider());
-
-            // Act & Assert
-            Assert.Throws<InvalidOperationException>(() =>
-            {
-                tempData["key1"] = "value1";
-            });
-        }
-
-        [Fact]
-        public void Keep_DoesNotThrowException_WhenDataIsNotLoaded()
-        {
-            // Arrange
-            var tempData = new TempDataDictionary(new DefaultHttpContext(), new SessionStateTempDataProvider());
-
-            // Act & Assert
-            tempData.Keep();
-        }
-
-        [Fact]
         public void TempData_Load_CreatesEmptyDictionaryIfProviderReturnsNull()
         {
             // Arrange
@@ -190,12 +167,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         public void TempData_RemovalOfKeysAreCaseInsensitive()
         {
             var tempData = new TempDataDictionary(new DefaultHttpContext(), new NullTempDataProvider());
-            object fooValue;
             tempData["Foo"] = "Foo";
             tempData["Bar"] = "Bar";
 
             // Act
-            tempData.TryGetValue("foo", out fooValue);
+            tempData.TryGetValue("foo", out var fooValue);
             var barValue = tempData["bar"];
             tempData.Save();
 

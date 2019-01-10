@@ -38,17 +38,6 @@
     <?define SchemaGuid = "e629b31a-3d56-4b5c-959c-586fc1c55599" ?>
 <?endif ?>
 
-<!-- ANCM dlls must be provided in specified root folder -->
-<?if $(var.PreBuiltANCMV2Root) = "" ?>
-  <?error PreBuiltANCMV2Root must be defined ?>
-<?endif?>
-
-<?define AspNetCoreTargetPath = "$(var.PreBuiltANCMV2Root)$(var.Platform)\aspnetcorev2.dll" ?>
-<?define AspNetCoreWoW64TargetPath = "$(var.PreBuiltANCMV2Root)x86\aspnetcorev2.dll" ?>
-<?define AspNetCoreHandlerPath = "$(var.PreBuiltANCMV2Root)$(var.Platform)\$(var.ANCMOutOfProcessNugetPackageHandlerVersion)\aspnetcorev2_outofprocess.dll" ?>
-<?define AspNetCoreHandlerWoW64Path = "$(var.PreBuiltANCMV2Root)x86\$(var.ANCMOutOfProcessNugetPackageHandlerVersion)\aspnetcorev2_outofprocess.dll" ?>
-<?define AspNetCoreSchemaPath = "$(var.PreBuiltANCMV2Schema)aspnetcore_schema_v2.xml" ?>
-
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:dep="http://schemas.microsoft.com/wix/DependencyExtension">
     <Product Id="$(var.ProductCode)"
           Name="!(loc.AspNetCoreIISExpressModuleProductNameV2)"
@@ -175,7 +164,7 @@
             <Component Id="AspNetCoreModule" Guid="84ed6ce6-c8a3-4fa8-a872-c98a1d15dd4f" Win64="$(var.IsWin64)">
               <File Id="AspNetCoreModuleDll"
                     Name="aspnetcorev2.dll"
-                    Source="$(var.AspNetCoreTargetPath)"
+                    Source="$(var.AspNetCoreV2.TargetPath)"
                     DiskId="1"
                     Vital="yes">
               </File>
@@ -188,7 +177,7 @@
               <Component Id="AspNetCoreModuleHandler" Guid="559EF726-B25C-480F-AFA4-32D0BA8B2376" Win64="$(var.IsWin64)">
                 <File Id="AspNetCoreModuleHandlerDll"
                       Name="aspnetcorev2_outofprocess.dll"
-                      Source="$(var.AspNetCoreHandlerPath)"
+                      Source="$(var.AspNetCoreV2Handler.TargetPath)"
                       DiskId="1"
                       Vital="yes">
                 </File>
@@ -218,7 +207,7 @@
                 <Component Id="AspNetCoreModule.wow" Guid="45ba5011-a619-4d06-8a8d-155b1f9732b3" Win64="no">
                   <File Id="AspNetCoreModuleDll.wow"
                         Name="aspnetcorev2.dll"
-                        Source="$(var.AspNetCoreWoW64TargetPath)"
+                        Source="$(var.AspNetCoreV2WoW64.TargetPath)"
                         DiskId="1"
                         Vital="yes">
                   </File>
@@ -231,7 +220,7 @@
                   <Component Id="AspNetCoreModuleHandler.wow" Guid="0A8EDB50-7D85-4825-8010-D27EFAF061B6" Win64="no">
                     <File Id="AspNetCoreModuleHandlerDll.wow"
                           Name="aspnetcorev2_outofprocess.dll"
-                          Source="$(var.AspNetCoreHandlerWoW64Path)"
+                          Source="$(var.AspNetCoreV2HandlerWoW64.TargetPath)"
                           DiskId="1"
                           Vital="yes">
                     </File>

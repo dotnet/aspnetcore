@@ -96,9 +96,6 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 // Conjure up a RequestServices
                 services.TryAddTransient<IStartupFilter, AutoRequestServicesStartupFilter>();
 
-                // Ensure object pooling is available everywhere.
-                services.TryAddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
-
                 // Support UseStartup(assemblyName)
                 if (!string.IsNullOrEmpty(webHostOptions.StartupAssembly))
                 {

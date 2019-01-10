@@ -7,8 +7,6 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
-    <RepositoryBuildOrder Include="AzureIntegration" Order="15" />
-    <RepositoryBuildOrder Include="MusicStore" Order="16" />
     <RepositoryBuildOrder Include="SignalR" Order="16" />
     <RepositoryBuildOrder Include="AuthSamples" Order="16" />
     <RepositoryBuildOrder Include="Components" Order="17" />

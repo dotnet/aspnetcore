@@ -127,12 +127,12 @@ namespace Microsoft.AspNetCore.Authentication
             {
                 if (ticketContext.Result.Handled)
                 {
-                    Logger.SigninHandled();
+                    Logger.SignInHandled();
                     return true;
                 }
                 else if (ticketContext.Result.Skipped)
                 {
-                    Logger.SigninSkipped();
+                    Logger.SignInSkipped();
                     return false;
                 }
             }

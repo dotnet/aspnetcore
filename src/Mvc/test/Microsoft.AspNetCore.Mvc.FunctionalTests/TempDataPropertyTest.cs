@@ -38,13 +38,13 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var redirectResponse = await Client.PostAsync("TempDataProperty/CreateForView", content);
 
             // Assert 1
-            Assert.Equal(HttpStatusCode.Redirect, redirectResponse.StatusCode);
+            await redirectResponse.AssertStatusCodeAsync(HttpStatusCode.Redirect);
 
             // Act 2
             var response = await Client.SendAsync(GetRequest(redirectResponse.Headers.Location.ToString(), redirectResponse));
 
             // Assert 2
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
             var body = await response.Content.ReadAsStringAsync();
             Assert.Equal(expected, body.ToString().Trim());
         }

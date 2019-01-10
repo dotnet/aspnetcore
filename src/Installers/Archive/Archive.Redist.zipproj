@@ -71,7 +71,7 @@
     <WriteLinesToFile File="$(SvgBadgeOutputPath)" Lines="$(SvgBadgeContent)" Overwrite="true" />
   </Target>
 
-  <Target Name="Build" DependsOnTargets="PrepareForBuild;ResolveProjectReferences;GetTargetPath">
+  <Target Name="Build" DependsOnTargets="PrepareForBuild;ResolveProjectReferences;GetTargetPath;GenerateMetadataFiles">
     <DownloadFile Condition=" ! Exists('$(DotNetRuntimeArchive)')"
       SourceUrl="$(DotNetRuntimeDownloadUrl)$(DotNetAssetRootAccessTokenSuffix)"
       DestinationFolder="$(BaseIntermediateOutputPath)"

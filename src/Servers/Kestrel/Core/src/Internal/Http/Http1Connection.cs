@@ -54,10 +54,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 _context.TimeoutControl,
                 this);
 
+            Input = _context.Transport.Input;
             Output = _http1Output;
         }
 
-        public PipeReader Input => _context.Transport.Input;
+        public PipeReader Input { get; }
 
         public bool RequestTimedOut => _requestTimedOut;
 

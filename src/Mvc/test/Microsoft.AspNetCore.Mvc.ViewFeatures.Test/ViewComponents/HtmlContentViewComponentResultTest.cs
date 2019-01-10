@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Mvc
                 actionContext,
                 view,
                 viewData,
-                new TempDataDictionary(actionContext.HttpContext, new SessionStateTempDataProvider()),
+                new TempDataDictionary(actionContext.HttpContext, Mock.Of<ITempDataProvider>()),
                 TextWriter.Null,
                 new HtmlHelperOptions());
 

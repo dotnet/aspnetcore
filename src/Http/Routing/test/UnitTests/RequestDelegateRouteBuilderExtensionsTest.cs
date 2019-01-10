@@ -127,7 +127,6 @@ namespace Microsoft.AspNetCore.Routing
         private static IServiceProvider CreateServices()
         {
             var services = new ServiceCollection();
-            services.AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
             services.AddOptions();
             services.AddRouting();
             services.AddLogging();

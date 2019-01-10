@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing.xunit;
-using Newtonsoft.Json;
+using Microsoft.Win32;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
@@ -105,6 +105,67 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             StopServer();
             // Verify that in this scenario where.exe was invoked only once by shim and request handler uses cached value
             Assert.Equal(1, TestSink.Writes.Count(w => w.Message.Contains("Invoking where.exe to find dotnet.exe")));
+        }
+
+        [ConditionalTheory]
+        [InlineData(RuntimeArchitecture.x64)]
+        [InlineData(RuntimeArchitecture.x86)]
+        [RequiresNewShim]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        public async Task StartsWithDotnetInstallLocation(RuntimeArchitecture runtimeArchitecture)
+        {
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
+            deploymentParameters.RuntimeArchitecture = runtimeArchitecture;
+
+            // IIS doesn't allow empty PATH
+            deploymentParameters.EnvironmentVariables["PATH"] = ".";
+            deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("processPath", "dotnet"));
+
+            // Key is always in 32bit view
+            using (var localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32))
+            {
+                var installDir = DotNetCommands.GetDotNetInstallDir(runtimeArchitecture);
+                using (new TestRegistryKey(
+                    localMachine,
+                    "SOFTWARE\\dotnet\\Setup\\InstalledVersions\\" + runtimeArchitecture + "\\sdk",
+                    "InstallLocation",
+                    installDir))
+                {
+                    var deploymentResult = await DeployAsync(deploymentParameters);
+                    await deploymentResult.AssertStarts();
+                    StopServer();
+                    // Verify that in this scenario dotnet.exe was found using InstallLocation lookup
+                    // I would've liked to make a copy of dotnet directory in this test and use it for verification
+                    // but dotnet roots are usually very large on dev machines so this test would take disproportionally long time and disk space
+                    Assert.Equal(1, TestSink.Writes.Count(w => w.Message.Contains($"Found dotnet.exe in InstallLocation at '{installDir}\\dotnet.exe'")));
+                }
+            }
+        }
+
+        [ConditionalFact]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        public async Task DoesNotStartIfDisabled()
+        {
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
+
+            using (new TestRegistryKey(
+                Registry.LocalMachine,
+                "SOFTWARE\\Microsoft\\IIS Extensions\\IIS AspNetCore Module V2\\Parameters",
+                "DisableANCM",
+                1))
+            {
+                var deploymentResult = await DeployAsync(deploymentParameters);
+                // Disabling ANCM produces no log files
+                deploymentResult.AllowNoLogs();
+
+                var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
+
+                Assert.False(response.IsSuccessStatusCode);
+
+                StopServer();
+
+                EventLogHelpers.VerifyEventLogEvent(deploymentResult, "AspNetCore Module is disabled");
+            }
         }
 
         public static TestMatrix TestVariants

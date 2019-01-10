@@ -1,9 +1,9 @@
 <Project>
-  <!-- 
+  <!--
     All of the core logic for components is now provided by the Razor SDK.
 
     This file now contains some *very temporary* settings to make projects
-    that use components use similar defaults to 2.X-based Blazor projects. 
+    that use components use similar defaults to 2.X-based Blazor projects.
   -->
   <PropertyGroup>
     <_EnableAllInclusiveRazorSdk>true</_EnableAllInclusiveRazorSdk>
@@ -28,9 +28,4 @@
     <RazorComponent Include="@(Content->WithMetadataValue('Extension', '.cshtml'))" />
   </ItemGroup>
 
-  <Target Name="_RemoveFilesFromRazorGenerate" AfterTargets="ResolveRazorGenerateInputs">
-    <ItemGroup>
-      <RazorGenerate Remove="@(RazorGenerate)" />
-    </ItemGroup>
-  </Target>
 </Project>

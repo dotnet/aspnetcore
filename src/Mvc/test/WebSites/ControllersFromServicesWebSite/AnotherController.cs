@@ -9,9 +9,9 @@ namespace ControllersFromServicesWebSite
     public class AnotherController : Controller
     {
         [HttpGet]
-        public int Get()
+        public IActionResult Get()
         {
-            return 1;
+            return new ContentResult { Content = "1" };
         }
 
         [HttpGet("InServicesViewComponent")]
