@@ -7,6 +7,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Runtime.Serialization;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Options;
@@ -629,7 +630,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             var attributes = new[]
             {
                 new TestBinderTypeProvider(),
-                new TestBinderTypeProvider() { BinderType = typeof(string) }
+                new TestBinderTypeProvider() { BinderType = typeof(ComplexTypeModelBinder) }
             };
 
             var provider = CreateProvider(attributes);
@@ -638,7 +639,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             var metadata = provider.GetMetadataForType(typeof(string));
 
             // Assert
-            Assert.Same(typeof(string), metadata.BinderType);
+            Assert.Same(typeof(ComplexTypeModelBinder), metadata.BinderType);
         }
 
         [Fact]
@@ -647,8 +648,8 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             // Arrange
             var attributes = new[]
             {
-                new TestBinderTypeProvider() { BinderType = typeof(int) },
-                new TestBinderTypeProvider() { BinderType = typeof(string) }
+                new TestBinderTypeProvider() { BinderType = typeof(ComplexTypeModelBinder) },
+                new TestBinderTypeProvider() { BinderType = typeof(SimpleTypeModelBinder) }
             };
 
             var provider = CreateProvider(attributes);
@@ -657,7 +658,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             var metadata = provider.GetMetadataForType(typeof(string));
 
             // Assert
-            Assert.Same(typeof(int), metadata.BinderType);
+            Assert.Same(typeof(ComplexTypeModelBinder), metadata.BinderType);
         }
 
         [Fact]

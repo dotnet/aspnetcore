@@ -123,8 +123,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public abstract ModelBindingResult Result { get; set; }
 
         /// <summary>
-        /// Pushes a layer of state onto this context. Model binders will call this as part of recursion when binding
-        /// properties or collection items.
+        /// Pushes a layer of state onto this context. <see cref="IModelBinder"/> implementations will call this as part
+        /// of recursion when binding properties or collection items.
         /// </summary>
         /// <param name="modelMetadata">
         /// <see cref="ModelBinding.ModelMetadata"/> to assign to the <see cref="ModelMetadata"/> property.
@@ -143,8 +143,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             object model);
 
         /// <summary>
-        /// Pushes a layer of state onto this context. Model binders will call this as part of recursion when binding
-        /// properties or collection items.
+        /// Pushes a layer of state onto this context. <see cref="IModelBinder"/> implementations will call this as part
+        /// of recursion when binding properties or collection items.
         /// </summary>
         /// <returns>
         /// A <see cref="NestedScope"/> scope object which should be used in a <c>using</c> statement where

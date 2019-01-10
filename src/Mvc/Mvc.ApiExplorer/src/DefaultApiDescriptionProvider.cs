@@ -240,8 +240,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             foreach (var parameter in context.Results)
             {
                 if (parameter.Source == BindingSource.Path ||
-                    parameter.Source == BindingSource.ModelBinding ||
-                    parameter.Source == BindingSource.Custom)
+                    parameter.Source == BindingSource.ModelBinding)
                 {
                     if (routeParameters.TryGetValue(parameter.Name, out var routeInfo))
                     {

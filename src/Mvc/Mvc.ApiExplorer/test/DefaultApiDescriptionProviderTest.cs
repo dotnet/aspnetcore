@@ -191,8 +191,6 @@ namespace Microsoft.AspNetCore.Mvc.Description
             var action = CreateActionDescriptor(nameof(FromRouting));
             action.AttributeRouteInfo = new AttributeRouteInfo { Template = template };
 
-            var parameterDescriptor = action.Parameters[0];
-
             // Act
             var descriptions = GetApiDescriptions(action);
 
@@ -270,7 +268,7 @@ namespace Microsoft.AspNetCore.Mvc.Description
         [InlineData("api/products/{id}", nameof(FromModelBinding), "Path")]
         [InlineData("api/products/{id?}", nameof(FromModelBinding), "ModelBinding")]
         [InlineData("api/products/{id=5}", nameof(FromModelBinding), "ModelBinding")]
-        [InlineData("api/products/{id}", nameof(FromCustom), "Custom")]
+        [InlineData("api/products/{id=5}", nameof(FromBinderType), "ModelBinding")]
         public void GetApiDescription_ParameterDescription_IncludesRouteInfo(
             string template,
             string methodName,
@@ -1329,8 +1327,25 @@ namespace Microsoft.AspNetCore.Mvc.Description
             var description = Assert.Single(descriptions);
 
             var parameter = Assert.Single(description.ParameterDescriptions);
-            Assert.Equal("product", parameter.Name);
+            Assert.Equal("id", parameter.Name);
             Assert.Same(BindingSource.Custom, parameter.Source);
+        }
+
+        [Fact]
+        public void GetApiDescription_ParameterDescription_SourceFromModelBinding_WithBinderType()
+        {
+            // Arrange
+            var action = CreateActionDescriptor(nameof(AcceptsProduct_ModelBinding));
+
+            // Act
+            var descriptions = GetApiDescriptions(action);
+
+            // Assert
+            var description = Assert.Single(descriptions);
+
+            var parameter = Assert.Single(description.ParameterDescriptions);
+            Assert.Equal("id", parameter.Name);
+            Assert.Same(BindingSource.ModelBinding, parameter.Source);
         }
 
         [Fact]
@@ -1492,7 +1507,6 @@ namespace Microsoft.AspNetCore.Mvc.Description
         {
             // Arrange
             var action = CreateActionDescriptor(nameof(AcceptsCycle));
-            var parameterDescriptor = action.Parameters.Single();
 
             // Act
             var descriptions = GetApiDescriptions(action);
@@ -1511,7 +1525,6 @@ namespace Microsoft.AspNetCore.Mvc.Description
         {
             // Arrange
             var action = CreateActionDescriptor(nameof(AcceptsHasCollection));
-            var parameterDescriptor = action.Parameters.Single();
 
             // Act
             var descriptions = GetApiDescriptions(action);
@@ -1531,7 +1544,6 @@ namespace Microsoft.AspNetCore.Mvc.Description
         {
             // Arrange
             var action = CreateActionDescriptor(nameof(AcceptsHasCollection_Complex));
-            var parameterDescriptor = action.Parameters.Single();
 
             // Act
             var descriptions = GetApiDescriptions(action);
@@ -2010,7 +2022,12 @@ namespace Microsoft.AspNetCore.Mvc.Description
         }
 
         // This will show up as source = unknown
-        private void AcceptsProduct_Custom([ModelBinder(BinderType = typeof(BodyModelBinder))] Product product)
+        private void AcceptsProduct_Custom(
+            [ModelBinder(BindingSourceKey.Custom, BinderType = typeof(BodyModelBinder))] int id)
+        {
+        }
+
+        private void AcceptsProduct_ModelBinding([ModelBinder(BinderType = typeof(BodyModelBinder))] int id)
         {
         }
 
@@ -2074,7 +2091,7 @@ namespace Microsoft.AspNetCore.Mvc.Description
         {
         }
 
-        private void FromCustom([ModelBinder(BinderType = typeof(BodyModelBinder))] int id)
+        private void FromBinderType([ModelBinder(typeof(BodyModelBinder))] int id)
         {
         }
 

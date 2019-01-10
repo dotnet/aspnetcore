@@ -10,7 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.Extensions.Options;
 using Xunit;
 
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             // Assert
             var parameterModel = Assert.Single(action.Parameters);
             Assert.NotNull(parameterModel.BindingInfo);
-            Assert.Same(BindingSource.Custom, parameterModel.BindingInfo.BindingSource);
+            Assert.Same(BindingSource.ModelBinding, parameterModel.BindingInfo.BindingSource);
         }
 
         [Fact]
@@ -163,7 +163,7 @@ Environment.NewLine + "int b";
 
             var bindingInfo = parameter.BindingInfo;
             Assert.NotNull(bindingInfo);
-            Assert.Same(BindingSource.Custom, bindingInfo.BindingSource);
+            Assert.Same(BindingSource.ModelBinding, bindingInfo.BindingSource);
             Assert.Null(bindingInfo.BinderModelName);
         }
 
@@ -184,7 +184,7 @@ Environment.NewLine + "int b";
 
             var bindingInfo = parameter.BindingInfo;
             Assert.NotNull(bindingInfo);
-            Assert.Same(BindingSource.Custom, bindingInfo.BindingSource);
+            Assert.Same(BindingSource.ModelBinding, bindingInfo.BindingSource);
             Assert.Equal("foo", bindingInfo.BinderModelName);
         }
 
@@ -740,7 +740,6 @@ Environment.NewLine + "int b";
         private static InferParameterBindingInfoConvention GetConvention(
             IModelMetadataProvider modelMetadataProvider = null)
         {
-            var loggerFactory = NullLoggerFactory.Instance;
             modelMetadataProvider = modelMetadataProvider ?? new EmptyModelMetadataProvider();
             return new InferParameterBindingInfoConvention(modelMetadataProvider);
         }
@@ -999,7 +998,7 @@ Environment.NewLine + "int b";
         private class ParameterWithBindingInfo
         {
             [HttpGet("test")]
-            public IActionResult Action([ModelBinder(typeof(object))] Car car) => null;
+            public IActionResult Action([ModelBinder(typeof(ComplexTypeModelBinder))] Car car) => null;
         }
     }
 }
