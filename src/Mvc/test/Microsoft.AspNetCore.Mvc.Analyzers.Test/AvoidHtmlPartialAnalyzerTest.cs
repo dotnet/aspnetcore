@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             Assert.Empty(result);
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549")]
         public async Task NoDiagnosticsAreReturned_ForNonUseOfHtmlPartial()
         {
             // Arrange
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             Assert.Empty(result);
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549")]
         public async Task NoDiagnosticsAreReturned_ForUseOfHtmlPartialAsync()
         {
             // Arrange
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             Assert.Empty(result);
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549")]
         public async Task DiagnosticsAreReturned_ForUseOfHtmlPartial()
         {
             // Arrange
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
                 });
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549")]
         public async Task DiagnosticsAreReturned_ForUseOfHtmlPartial_WithAdditionalParameters()
         {
             // Arrange
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
                 });
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549")]
         public async Task DiagnosticsAreReturned_ForUseOfHtmlPartial_InSections()
         {
             // Arrange
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
                 });
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549")]
         public async Task NoDiagnosticsAreReturned_ForUseOfRenderPartialAsync()
         {
             // Arrange
@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             Assert.Empty(result);
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549")]
         public async Task DiagnosticsAreReturned_ForUseOfRenderPartial()
         {
             // Arrange
@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
                 });
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549")]
         public async Task DiagnosticsAreReturned_ForUseOfRenderPartial_WithAdditionalParameters()
         {
             // Arrange
@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
                 });
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549")]
         public async Task DiagnosticsAreReturned_ForUseOfRenderPartial_InSections()
         {
             // Arrange
