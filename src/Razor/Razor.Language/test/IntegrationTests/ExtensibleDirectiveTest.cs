@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
     // Extensible directives only have codegen for design time, so we're only testing that.
     public class ExtensibleDirectiveTest : IntegrationTestBase
     {
-        [Fact]
+        [Fact(Skip="https://github.com/aspnet/AspNetCore/issues/6549")]
         public void NamespaceToken()
         {
             // Arrange

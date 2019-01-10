@@ -23,14 +23,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.IntegrationTests
         private CSharpCompilation BaseCompilation => MvcShim.BaseCompilation.WithAssemblyName("AppCode");
 
         #region Runtime
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         public void InvalidNamespaceAtEOF_Runtime()
         {
             var compilation = BaseCompilation;
             RunRuntimeTest(compilation);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         public void IncompleteDirectives_Runtime()
         {
             var appCode = @"
@@ -43,7 +43,7 @@ public class MyService<TModel>
             RunRuntimeTest(compilation);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         public void InheritsViewModel_Runtime()
         {
             var appCode = @"
@@ -67,7 +67,7 @@ public class MyModel
             RunRuntimeTest(compilation);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         public void InheritsWithViewImports_Runtime()
         {
             var appCode = @"
@@ -91,7 +91,7 @@ public class MyModel
             RunRuntimeTest(compilation);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         public void MalformedPageDirective_Runtime()
         {
             var compilation = BaseCompilation;
@@ -99,7 +99,7 @@ public class MyModel
             RunRuntimeTest(compilation);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         public void Basic_Runtime()
         {
             var compilation = BaseCompilation;
@@ -107,7 +107,7 @@ public class MyModel
             RunRuntimeTest(compilation);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         public void Sections_Runtime()
         {
             var appCode = $@"
@@ -124,7 +124,7 @@ public class InputTestTagHelper : {typeof(TagHelper).FullName}
             RunRuntimeTest(compilation);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         public void _ViewImports_Runtime()
         {
             var compilation = BaseCompilation;
@@ -132,7 +132,7 @@ public class InputTestTagHelper : {typeof(TagHelper).FullName}
             RunRuntimeTest(compilation);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         public void Inject_Runtime()
         {
             var appCode = @"
@@ -146,7 +146,7 @@ public class MyApp
             RunRuntimeTest(compilation);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         public void InjectWithModel_Runtime()
         {
             var appCode = @"
@@ -169,7 +169,7 @@ public class MyApp
             RunRuntimeTest(compilation);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         public void InjectWithSemicolon_Runtime()
         {
             var appCode = @"
@@ -193,7 +193,7 @@ public class MyService<TModel>
             RunRuntimeTest(compilation);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         public void Model_Runtime()
         {
             var compilation = BaseCompilation;
@@ -201,7 +201,7 @@ public class MyService<TModel>
             RunRuntimeTest(compilation);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         public void ModelExpressionTagHelper_Runtime()
         {
             var appCode = $@"
@@ -217,7 +217,7 @@ public class InputTestTagHelper : {typeof(TagHelper).FullName}
             RunRuntimeTest(compilation);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         public void RazorPages_Runtime()
         {
             var appCode = $@"
@@ -231,7 +231,7 @@ public class DivTagHelper : {typeof(TagHelper).FullName}
             RunRuntimeTest(compilation);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         public void RazorPagesWithRouteTemplate_Runtime()
         {
             var compilation = BaseCompilation;
@@ -239,7 +239,7 @@ public class DivTagHelper : {typeof(TagHelper).FullName}
             RunRuntimeTest(compilation);
         }
 
-        [Fact]
+                [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         public void RazorPagesWithoutModel_Runtime()
         {
             var appCode = $@"
@@ -253,21 +253,21 @@ public class DivTagHelper : {typeof(TagHelper).FullName}
             RunRuntimeTest(compilation);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         public void PageWithNamespace_Runtime()
         {
             var compilation = BaseCompilation;
             RunRuntimeTest(compilation);
         }
 
-        [Fact]
+                [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         public void ViewWithNamespace_Runtime()
         {
             var compilation = BaseCompilation;
             RunRuntimeTest(compilation);
         }
 
-        [Fact]
+                [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         public void ViewComponentTagHelper_Runtime()
         {
             var appCode = $@"
@@ -291,7 +291,7 @@ public class AllTagHelper : {typeof(TagHelper).FullName}
             RunRuntimeTest(compilation);
         }
 
-        [Fact]
+                [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         public void RazorPageWithNoLeadingPageDirective_Runtime()
         {
             var compilation = BaseCompilation;
@@ -301,14 +301,14 @@ public class AllTagHelper : {typeof(TagHelper).FullName}
         #endregion
 
         #region DesignTime
-        [Fact]
+                [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         public void InvalidNamespaceAtEOF_DesignTime()
         {
             var compilation = BaseCompilation;
             RunDesignTimeTest(compilation);
         }
 
-        [Fact]
+                [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         public void IncompleteDirectives_DesignTime()
         {
             var appCode = @"
@@ -323,7 +323,7 @@ public class MyService<TModel>
             RunDesignTimeTest(compilation);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         public void InheritsViewModel_DesignTime()
         {
             var appCode = @"
@@ -348,7 +348,7 @@ public class MyModel
             RunDesignTimeTest(compilation);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         public void InheritsWithViewImports_DesignTime()
         {
             var appCode = @"
@@ -374,21 +374,21 @@ public abstract class MyPageModel<T> : Page
             RunDesignTimeTest(compilation);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         public void MalformedPageDirective_DesignTime()
         {
             var compilation = BaseCompilation;
             RunDesignTimeTest(compilation);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         public void Basic_DesignTime()
         {
             var compilation = BaseCompilation;
             RunDesignTimeTest(compilation);
         }
 
-        [Fact]
+                [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         public void Sections_DesignTime()
         {
             var appCode = $@"
@@ -405,14 +405,14 @@ public class InputTestTagHelper : {typeof(TagHelper).FullName}
             RunDesignTimeTest(compilation);
         }
 
-        [Fact]
+                [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         public void _ViewImports_DesignTime()
         {
             var compilation = BaseCompilation;
             RunDesignTimeTest(compilation);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         public void Inject_DesignTime()
         {
             var appCode = @"
@@ -426,7 +426,7 @@ public class MyApp
             RunDesignTimeTest(compilation);
         }
 
-        [Fact]
+                [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         public void InjectWithModel_DesignTime()
         {
             var appCode = @"
@@ -450,7 +450,7 @@ public class MyApp
             RunDesignTimeTest(compilation);
         }
 
-        [Fact]
+                [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         public void InjectWithSemicolon_DesignTime()
         {
             var appCode = @"
@@ -474,14 +474,14 @@ public class MyApp
             RunDesignTimeTest(compilation);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         public void Model_DesignTime()
         {
             var compilation = BaseCompilation;
             RunDesignTimeTest(compilation);
         }
 
-        [Fact]
+                [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         public void MultipleModels_DesignTime()
         {
             var appCode = @"
@@ -495,7 +495,7 @@ public class ThisShouldBeGenerated
             RunDesignTimeTest(compilation);
         }
         
-        [Fact]
+                [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         public void ModelExpressionTagHelper_DesignTime()
         {
             var appCode = $@"
@@ -512,7 +512,7 @@ public class InputTestTagHelper : {typeof(TagHelper).FullName}
             RunDesignTimeTest(compilation);
         }
 
-        [Fact]
+                [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         public void RazorPages_DesignTime()
         {
             var appCode = $@"
@@ -526,7 +526,7 @@ public class DivTagHelper : {typeof(TagHelper).FullName}
             RunDesignTimeTest(compilation);
         }
 
-        [Fact]
+                [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         public void RazorPagesWithRouteTemplate_DesignTime()
         {
             var compilation = BaseCompilation;
@@ -534,7 +534,7 @@ public class DivTagHelper : {typeof(TagHelper).FullName}
             RunDesignTimeTest(compilation);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         public void RazorPagesWithoutModel_DesignTime()
         {
             var appCode = $@"
@@ -548,21 +548,21 @@ public class DivTagHelper : {typeof(TagHelper).FullName}
             RunDesignTimeTest(compilation);
         }
 
-        [Fact]
+                [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         public void PageWithNamespace_DesignTime()
         {
             var compilation = BaseCompilation;
             RunDesignTimeTest(compilation);
         }
 
-        [Fact]
+                [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         public void ViewWithNamespace_DesignTime()
         {
             var compilation = BaseCompilation;
             RunDesignTimeTest(compilation);
         }
 
-        [Fact]
+                [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         public void ViewComponentTagHelper_DesignTime()
         {
             var appCode = $@"
@@ -586,7 +586,7 @@ public class AllTagHelper : {typeof(TagHelper).FullName}
             RunDesignTimeTest(compilation);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         public void RazorPageWithNoLeadingPageDirective_DesignTime()
         {
             var compilation = BaseCompilation;

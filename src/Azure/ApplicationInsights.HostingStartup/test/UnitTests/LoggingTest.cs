@@ -17,7 +17,7 @@ namespace ApplicationInsightsJavaScriptSnippetTest
         {
         }
 
-        [Theory]
+        [Theory(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         [InlineData(ApplicationType.Portable)]
         [InlineData(ApplicationType.Standalone)]
         public async Task DefaultAILogFiltersApplied(ApplicationType applicationType)
@@ -53,7 +53,7 @@ namespace ApplicationInsightsJavaScriptSnippetTest
             Assert.Contains("Specific trace log", responseText);
         }
 
-        [Theory]
+        [Theory(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         [InlineData(ApplicationType.Portable)]
         [InlineData(ApplicationType.Standalone)]
         public async Task CustomAILogFiltersApplied(ApplicationType applicationType)

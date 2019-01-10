@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 {
     public class HtmlAttributeIntegrationTest : IntegrationTestBase
     {
-        [Fact]
+        [Fact(Skip="https://github.com/aspnet/AspNetCore/issues/6549")]
         public void HtmlWithDataDashAttribute()
         {
             // Arrange
@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             AssertDocumentNodeMatchesBaseline(codeDocument.GetDocumentIntermediateNode());
         }
 
-        [Fact]
+        [Fact(Skip="https://github.com/aspnet/AspNetCore/issues/6549")]
         public void HtmlWithConditionalAttribute()
         {
             // Arrange

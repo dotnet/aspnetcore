@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             "TestFiles",
             "DefaultRazorProjectFileSystem");
 
-        [Theory]
+        [Theory(Skip="https://github.com/aspnet/AspNetCore/issues/6549")]
         [InlineData(null)]
         [InlineData("")]
         public void NormalizeAndEnsureValidPath_ThrowsIfPathIsNullOrEmpty(string path)
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             ExceptionAssert.ThrowsArgumentNullOrEmptyString(() => fileSystem.NormalizeAndEnsureValidPath(path), "path");
         }
 
-        [Fact]
+        [Fact(Skip="https://github.com/aspnet/AspNetCore/issues/6549")]
         public void NormalizeAndEnsureValidPath_NormalizesToAbsolutePath()
         {
             // Arrange
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             Assert.Equal("C:/some/test/path/root/file.cshtml", absolutePath);
         }
 
-        [Fact]
+        [Fact(Skip="https://github.com/aspnet/AspNetCore/issues/6549")]
         public void NormalizeAndEnsureValidPath_NormalizesToAbsolutePathWithoutForwardSlash()
         {
             // Arrange
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             Assert.Equal("C:/some/test/path/root/file.cshtml", absolutePath);
         }
 
-        [Fact]
+        [Fact(Skip="https://github.com/aspnet/AspNetCore/issues/6549")]
         public void NormalizeAndEnsureValidPath_NormalizesToForwardSlashes()
         {
             // Arrange
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             Assert.Equal("C:/some/test/path/root/something/file.cshtml", absolutePath);
         }
 
-        [Fact]
+        [Fact(Skip="https://github.com/aspnet/AspNetCore/issues/6549")]
         public void EnumerateItems_DiscoversAllCshtmlFiles()
         {
             // Arrange
@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 });
         }
 
-        [Fact]
+        [Fact(Skip="https://github.com/aspnet/AspNetCore/issues/6549")]
         public void EnumerateItems_DiscoversAllCshtmlFiles_UnderSpecifiedBasePath()
         {
             // Arrange
@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 });
         }
 
-        [Fact]
+        [Fact(Skip="https://github.com/aspnet/AspNetCore/issues/6549")]
         public void EnumerateItems_ReturnsEmptySequence_WhenBasePathDoesNotExist()
         {
             // Arrange
@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             Assert.Empty(items);
         }
 
-        [Fact]
+        [Fact(Skip="https://github.com/aspnet/AspNetCore/issues/6549")]
         public void FindHierarchicalItems_FindsItemsWithMatchingNames()
         {
             // Arrange
@@ -219,7 +219,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 });
         }
 
-        [Fact]
+        [Fact(Skip="https://github.com/aspnet/AspNetCore/issues/6549")]
         public void GetItem_ReturnsFileFromDisk()
         {
             // Arrange
@@ -237,7 +237,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             Assert.Equal(Path.Combine("Views", "About", "About.cshtml"), item.RelativePhysicalPath);
         }
 
-        [Fact]
+        [Fact(Skip="https://github.com/aspnet/AspNetCore/issues/6549")]
         public void GetItem_ReturnsNotFoundResult()
         {
             // Arrange

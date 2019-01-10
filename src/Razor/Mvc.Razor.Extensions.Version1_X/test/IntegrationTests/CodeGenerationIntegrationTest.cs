@@ -25,14 +25,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.IntegrationTests
 
         private CSharpCompilation BaseCompilation => MvcShim.BaseCompilation.WithAssemblyName("AppCode");
 
-        [Fact]
+        [Fact(Skip="https://github.com/aspnet/AspNetCore/issues/6549")]
         public void InvalidNamespaceAtEOF_DesignTime()
         {
             var compilation = BaseCompilation;
             RunDesignTimeTest(compilation);
         }
 
-        [Fact]
+        [Fact(Skip="https://github.com/aspnet/AspNetCore/issues/6549")]
         public void IncompleteDirectives_DesignTime()
         {
             var appCode = @"
@@ -46,7 +46,7 @@ public class MyService<TModel>
             RunDesignTimeTest(compilation);
         }
 
-        [Fact]
+        [Fact(Skip="https://github.com/aspnet/AspNetCore/issues/6549")]
         public void InheritsViewModel_DesignTime()
         {
             var appCode = @"
@@ -70,7 +70,7 @@ public class MyModel
             RunDesignTimeTest(compilation);
         }
 
-        [Fact]
+        [Fact(Skip="https://github.com/aspnet/AspNetCore/issues/6549")]
         public void InheritsWithViewImports_DesignTime()
         {
             var appCode = @"
@@ -95,14 +95,14 @@ public class MyModel
             RunDesignTimeTest(compilation);
         }
 
-        [Fact]
+        [Fact(Skip="https://github.com/aspnet/AspNetCore/issues/6549")]
         public void Basic_DesignTime()
         {
             var compilation = BaseCompilation;
             RunDesignTimeTest(compilation);
         }
 
-        [Fact]
+        [Fact(Skip="https://github.com/aspnet/AspNetCore/issues/6549")]
         public void Sections_DesignTime()
         {
             var appCode = $@"
@@ -119,14 +119,14 @@ public class InputTestTagHelper : {typeof(TagHelper).FullName}
             RunDesignTimeTest(compilation);
         }
 
-        [Fact]
+        [Fact(Skip="https://github.com/aspnet/AspNetCore/issues/6549")]
         public void _ViewImports_DesignTime()
         {
             var compilation = BaseCompilation;
             RunDesignTimeTest(compilation);
         }
 
-        [Fact]
+        [Fact(Skip="https://github.com/aspnet/AspNetCore/issues/6549")]
         public void Inject_DesignTime()
         {
             var appCode = @"
@@ -139,7 +139,7 @@ public class MyApp
             RunDesignTimeTest(compilation);
         }
 
-        [Fact]
+        [Fact(Skip="https://github.com/aspnet/AspNetCore/issues/6549")]
         public void InjectWithModel_DesignTime()
         {
             var appCode = @"
@@ -162,7 +162,7 @@ public class MyApp
             RunDesignTimeTest(compilation);
         }
 
-        [Fact]
+        [Fact(Skip="https://github.com/aspnet/AspNetCore/issues/6549")]
         public void InjectWithSemicolon_DesignTime()
         {
             var appCode = @"
@@ -185,14 +185,14 @@ public class MyApp
             RunDesignTimeTest(compilation);
         }
 
-        [Fact]
+        [Fact(Skip="https://github.com/aspnet/AspNetCore/issues/6549")]
         public void Model_DesignTime()
         {
             var compilation = BaseCompilation;
             RunDesignTimeTest(compilation);
         }
 
-        [Fact]
+        [Fact(Skip="https://github.com/aspnet/AspNetCore/issues/6549")]
         public void MultipleModels_DesignTime()
         {
             var appCode = @"
@@ -205,7 +205,7 @@ public class ThisShouldBeGenerated
             RunDesignTimeTest(compilation);
         }
         
-        [Fact]
+        [Fact(Skip="https://github.com/aspnet/AspNetCore/issues/6549")]
         public void ModelExpressionTagHelper_DesignTime()
         {
             var appCode = $@"
@@ -221,7 +221,7 @@ public class InputTestTagHelper : {typeof(TagHelper).FullName}
             RunDesignTimeTest(compilation);
         }
 
-        [Fact]
+        [Fact(Skip="https://github.com/aspnet/AspNetCore/issues/6549")]
         public void ViewComponentTagHelper_DesignTime()
         {
             var appCode = $@"

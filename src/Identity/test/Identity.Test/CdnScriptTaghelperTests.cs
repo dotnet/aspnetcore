@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             _output = output;
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         public async Task IdentityUI_ScriptTags_SubresourceIntegrityCheck()
         {
             var slnDir = GetSolutionDir();

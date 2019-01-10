@@ -17,11 +17,11 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
     {
         public WebHostBuilderTests(ITestOutputHelper output) : base(output) { }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549")]
         public async Task InjectedStartup_DefaultApplicationNameIsEntryAssembly_CoreClr()
             => await InjectedStartup_DefaultApplicationNameIsEntryAssembly(RuntimeFlavor.CoreClr);
 
-        [ConditionalFact]
+        [ConditionalFact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549")]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [OSSkipCondition(OperatingSystems.Linux)]
         public async Task InjectedStartup_DefaultApplicationNameIsEntryAssembly_Clr()

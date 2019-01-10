@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
     // This is just a basic integration test. There are detailed tests for the VCTH visitor and descriptor factory.
     public class ViewComponentTagHelperDescriptorProviderTest
     {
-        [Fact]
+        [Fact(Skip="https://github.com/aspnet/AspNetCore/issues/6549")]
         public void DescriptorProvider_FindsVCTH()
         {
             // Arrange

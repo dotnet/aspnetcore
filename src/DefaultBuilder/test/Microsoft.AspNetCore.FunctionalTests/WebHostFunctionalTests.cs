@@ -28,25 +28,25 @@ namespace Microsoft.AspNetCore.Tests
             _testSitesPath = GetTestSitesPath();
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         public async Task Start_RequestDelegate_Url()
         {
             await ExecuteStartOrStartWithTest(deploymentResult => deploymentResult.HttpClient.GetAsync(string.Empty), "StartRequestDelegateUrlApp");
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         public async Task Start_RouteBuilder_Url()
         {
             await ExecuteStartOrStartWithTest(deploymentResult => deploymentResult.HttpClient.GetAsync("/route"), "StartRouteBuilderUrlApp");
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         public async Task StartWith_IApplicationBuilder_Url()
         {
             await ExecuteStartOrStartWithTest(deploymentResult => deploymentResult.HttpClient.GetAsync(string.Empty), "StartWithIApplicationBuilderUrlApp");
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         public async Task CreateDefaultBuilder_InitializeWithDefaults()
         {
             var applicationName = "CreateDefaultBuilderApp";
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Tests
             }, setTestEnvVars: true);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         public async Task CreateDefaultBuilderOfT_InitializeWithDefaults()
         {
             var applicationName = "CreateDefaultBuilderOfTApp";
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Tests
             }, setTestEnvVars: true);
         }
 
-        [Theory]
+        [Theory(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         [InlineData("Development", "InvalidOperationException: Cannot consume scoped service")]
         [InlineData("Production", "Success")]
         public async Task CreateDefaultBuilder_InitializesDependencyInjectionSettingsBasedOnEnv(string environment, string expected)
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Tests
             }, setTestEnvVars: true, environment: environment);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
         public void LoggingConfigurationSectionPassedToLoggerByDefault()
         {
             try
