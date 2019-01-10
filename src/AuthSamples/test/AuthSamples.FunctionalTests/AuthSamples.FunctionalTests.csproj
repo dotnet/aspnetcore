@@ -17,8 +17,8 @@
     <ProjectReference Include="..\..\samples\Cookies\Cookies.csproj" />
     <ProjectReference Include="..\..\samples\ClaimsTransformation\ClaimsTransformation.csproj" />
     <ProjectReference Include="..\..\samples\DynamicSchemes\DynamicSchemes.csproj" />
-    <ProjectReference Include="..\..\samples\PathSchemeSelection\PathSchemeSelection.csproj" />
     <ProjectReference Include="..\..\samples\Identity.ExternalClaims\Identity.ExternalClaims.csproj" />
+    <ProjectReference Include="..\..\samples\PathSchemeSelection\PathSchemeSelection.csproj" />
   </ItemGroup>
 
   <ItemGroup>
