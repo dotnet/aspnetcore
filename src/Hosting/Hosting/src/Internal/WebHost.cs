@@ -309,7 +309,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             }
             _stopped = true;
 
-            _logger?.Shutdown();
+            _logger.Shutdown();
 
             var timeoutToken = new CancellationTokenSource(Options.ShutdownTimeout).Token;
             if (!cancellationToken.CanBeCanceled)
@@ -351,7 +351,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 }
                 catch (Exception ex)
                 {
-                    _logger?.ServerShutdownException(ex);
+                    _logger.ServerShutdownException(ex);
                 }
             }
 

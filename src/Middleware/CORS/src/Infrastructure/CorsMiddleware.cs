@@ -173,7 +173,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
 
             if (corsPolicy == null)
             {
-                Logger?.NoCorsPolicyFound();
+                Logger.NoCorsPolicyFound();
                 await _next(context);
                 return;
             }
@@ -204,7 +204,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             }
             catch (Exception exception)
             {
-                middleware.Logger?.FailedToSetCorsHeaders(exception);
+                middleware.Logger.FailedToSetCorsHeaders(exception);
             }
             return Task.CompletedTask;
         }

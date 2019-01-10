@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Http;
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
 
             if (!initMatchResults.Success)
             {
-                context.Logger?.UrlRewriteNotMatchedRule(Name);
+                context.Logger.UrlRewriteNotMatchedRule(Name);
                 return;
             }
 
@@ -62,12 +62,12 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
                 condResult = ConditionEvaluator.Evaluate(Conditions, context, initMatchResults.BackReferences);
                 if (!condResult.Success)
                 {
-                    context.Logger?.UrlRewriteNotMatchedRule(Name);
+                    context.Logger.UrlRewriteNotMatchedRule(Name);
                     return;
                 }
             }
 
-            context.Logger?.UrlRewriteMatchedRule(Name);
+            context.Logger.UrlRewriteMatchedRule(Name);
             // at this point we know the rule passed, evaluate the replacement.
             Action.ApplyAction(context, initMatchResults?.BackReferences, condResult?.BackReferences);
         }

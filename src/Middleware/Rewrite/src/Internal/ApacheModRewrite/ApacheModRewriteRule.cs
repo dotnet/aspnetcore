@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite
 
             if (!initMatchRes.Success)
             {
-                context.Logger?.ModRewriteNotMatchedRule();
+                context.Logger.ModRewriteNotMatchedRule();
                 return;
             }
 
@@ -36,14 +36,14 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite
                 var condResult = ConditionEvaluator.Evaluate(Conditions, context, initMatchRes.BackReferences);
                 if (!condResult.Success)
                 {
-                    context.Logger?.ModRewriteNotMatchedRule();
+                    context.Logger.ModRewriteNotMatchedRule();
                     return;
                 }
             }
 
             // At this point, we know our rule passed, first apply pre conditions,
             // which can modify things like the cookie or env, and then apply the action
-            context.Logger?.ModRewriteMatchedRule();
+            context.Logger.ModRewriteMatchedRule();
 
             foreach (var action in Actions)
             {
