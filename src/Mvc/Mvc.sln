@@ -216,41 +216,41 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ViewCompilation", "ViewComp
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "testAssets", "testAssets", "{5C8A337A-956B-4045-A680-4A61942D0866}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Razor.ViewCompilation", "ViewCompilation\ViewCompilation\src\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.csproj", "{99BB0544-6AA4-4787-B396-0AE77D022547}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Razor.ViewCompilation", "ViewCompilation\src\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.csproj", "{99BB0544-6AA4-4787-B396-0AE77D022547}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Tasks", "ViewCompilation\ViewCompilation.Tasks\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Tasks.csproj", "{0BB79FE3-F376-4352-97B3-382F7FFDDBE9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Tasks", "ViewCompilation.Tasks\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Tasks.csproj", "{0BB79FE3-F376-4352-97B3-382F7FFDDBE9}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Test", "ViewCompilation\ViewCompilation\test\UnitTests\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Test.csproj", "{4A300DA7-A19B-459D-96CA-C999B2CCABFD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Test", "ViewCompilation\test\UnitTests\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Test.csproj", "{4A300DA7-A19B-459D-96CA-C999B2CCABFD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApplicationUsingRelativePaths", "ViewCompilation\ViewCompilation\testassets\ApplicationUsingRelativePaths\ApplicationUsingRelativePaths.csproj", "{53663DBF-D7FF-4BBF-8211-909237616049}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApplicationUsingRelativePaths", "ViewCompilation\testassets\ApplicationUsingRelativePaths\ApplicationUsingRelativePaths.csproj", "{53663DBF-D7FF-4BBF-8211-909237616049}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApplicationWithConfigureMvc", "ViewCompilation\ViewCompilation\testassets\ApplicationWithConfigureMvc\ApplicationWithConfigureMvc.csproj", "{134CDB3F-76CF-44D8-9621-F865092ACF20}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApplicationWithConfigureMvc", "ViewCompilation\testassets\ApplicationWithConfigureMvc\ApplicationWithConfigureMvc.csproj", "{134CDB3F-76CF-44D8-9621-F865092ACF20}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApplicationWithCustomInputFiles", "ViewCompilation\ViewCompilation\testassets\ApplicationWithCustomInputFiles\ApplicationWithCustomInputFiles.csproj", "{23F77F9B-2979-4DF0-9096-C090CE7BE09D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApplicationWithCustomInputFiles", "ViewCompilation\testassets\ApplicationWithCustomInputFiles\ApplicationWithCustomInputFiles.csproj", "{23F77F9B-2979-4DF0-9096-C090CE7BE09D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApplicationWithParseErrors", "ViewCompilation\ViewCompilation\testassets\ApplicationWithParseErrors\ApplicationWithParseErrors.csproj", "{B079D8A1-6CC1-46D8-948A-523AA6836FF9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApplicationWithParseErrors", "ViewCompilation\testassets\ApplicationWithParseErrors\ApplicationWithParseErrors.csproj", "{B079D8A1-6CC1-46D8-948A-523AA6836FF9}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApplicationWithRazorSdkNeitherUsed", "ViewCompilation\ViewCompilation\testassets\ApplicationWithRazorSdkNeitherUsed\ApplicationWithRazorSdkNeitherUsed.csproj", "{7CD48059-3ACF-4435-B6D5-F4F4B379F8B1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApplicationWithRazorSdkNeitherUsed", "ViewCompilation\testassets\ApplicationWithRazorSdkNeitherUsed\ApplicationWithRazorSdkNeitherUsed.csproj", "{7CD48059-3ACF-4435-B6D5-F4F4B379F8B1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApplicationWithRazorSdkPrecompilationUsed", "ViewCompilation\ViewCompilation\testassets\ApplicationWithRazorSdkPrecompilationUsed\ApplicationWithRazorSdkPrecompilationUsed.csproj", "{21C75A50-991B-44D2-B684-732733969C23}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApplicationWithRazorSdkPrecompilationUsed", "ViewCompilation\testassets\ApplicationWithRazorSdkPrecompilationUsed\ApplicationWithRazorSdkPrecompilationUsed.csproj", "{21C75A50-991B-44D2-B684-732733969C23}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApplicationWithRazorSdkUsed", "ViewCompilation\ViewCompilation\testassets\ApplicationWithRazorSdkUsed\ApplicationWithRazorSdkUsed.csproj", "{92A8AB5D-4BA1-43B4-A769-62DCDEFEB04C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApplicationWithRazorSdkUsed", "ViewCompilation\testassets\ApplicationWithRazorSdkUsed\ApplicationWithRazorSdkUsed.csproj", "{92A8AB5D-4BA1-43B4-A769-62DCDEFEB04C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApplicationWithTagHelpers", "ViewCompilation\ViewCompilation\testassets\ApplicationWithTagHelpers\ApplicationWithTagHelpers.csproj", "{ABF8187A-F6FF-4722-B625-897B385F6CEC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApplicationWithTagHelpers", "ViewCompilation\testassets\ApplicationWithTagHelpers\ApplicationWithTagHelpers.csproj", "{ABF8187A-F6FF-4722-B625-897B385F6CEC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClassLibraryTagHelper", "ViewCompilation\ViewCompilation\testassets\ClassLibraryTagHelper\ClassLibraryTagHelper.csproj", "{6EFC8D17-47E9-44F7-897E-4F1102B16DF4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClassLibraryTagHelper", "ViewCompilation\testassets\ClassLibraryTagHelper\ClassLibraryTagHelper.csproj", "{6EFC8D17-47E9-44F7-897E-4F1102B16DF4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PublishWithEmbedViewSources", "ViewCompilation\ViewCompilation\testassets\PublishWithEmbedViewSources\PublishWithEmbedViewSources.csproj", "{B2624173-3535-4138-9F90-420D83772ABC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PublishWithEmbedViewSources", "ViewCompilation\testassets\PublishWithEmbedViewSources\PublishWithEmbedViewSources.csproj", "{B2624173-3535-4138-9F90-420D83772ABC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RazorPagesApp", "ViewCompilation\ViewCompilation\testassets\RazorPagesApp\RazorPagesApp.csproj", "{1403D49E-C3DB-49E8-A888-541F0C8F9DCD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RazorPagesApp", "ViewCompilation\testassets\RazorPagesApp\RazorPagesApp.csproj", "{1403D49E-C3DB-49E8-A888-541F0C8F9DCD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleApp", "ViewCompilation\ViewCompilation\testassets\SimpleApp\SimpleApp.csproj", "{36C62FC6-8496-492D-A2F9-BF68CC6520BB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleApp", "ViewCompilation\testassets\SimpleApp\SimpleApp.csproj", "{36C62FC6-8496-492D-A2F9-BF68CC6520BB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleAppWithAssemblyRename", "ViewCompilation\ViewCompilation\testassets\SimpleAppWithAssemblyRename\SimpleAppWithAssemblyRename.csproj", "{D54A8DCC-801E-4407-A9CC-01E4C33A72EB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleAppWithAssemblyRename", "ViewCompilation\testassets\SimpleAppWithAssemblyRename\SimpleAppWithAssemblyRename.csproj", "{D54A8DCC-801E-4407-A9CC-01E4C33A72EB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StrongNamedApp", "ViewCompilation\ViewCompilation\testassets\StrongNamedApp\StrongNamedApp.csproj", "{13CB4F98-F361-4989-BBC2-0B0ECDAC68F3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StrongNamedApp", "ViewCompilation\testassets\StrongNamedApp\StrongNamedApp.csproj", "{13CB4F98-F361-4989-BBC2-0B0ECDAC68F3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.FunctionalTests", "ViewCompilation\ViewCompilation\test\FunctionalTests\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.FunctionalTests.csproj", "{0A2B5ED2-E9A7-41A5-9B0F-10007673F2D9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.FunctionalTests", "ViewCompilation\test\FunctionalTests\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.FunctionalTests.csproj", "{0A2B5ED2-E9A7-41A5-9B0F-10007673F2D9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

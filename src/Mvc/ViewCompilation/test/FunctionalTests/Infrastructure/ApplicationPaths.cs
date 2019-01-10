@@ -13,7 +13,7 @@ namespace FunctionalTests
         public static string SolutionDirectory { get; } = GetSolutionDirectory();
 
         public static string GetTestAppDirectory(string appName) =>
-            Path.Combine(SolutionDirectory, "ViewCompilation", "ViewCompilation", "testassets", appName);
+            Path.Combine(SolutionDirectory, "ViewCompilation", "testassets", appName);
 
         private static string GetSolutionDirectory()
         {
