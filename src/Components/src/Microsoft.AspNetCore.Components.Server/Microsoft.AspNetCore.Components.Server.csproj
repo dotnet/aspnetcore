@@ -24,6 +24,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- We need .Browser.JS to build first so we can embed its .js output -->
+    <ProjectReference Include="..\Microsoft.AspNetCore.Components.Browser.JS\Microsoft.AspNetCore.Components.Browser.JS.csproj" ReferenceOutputAssembly="false" />
     <EmbeddedResource Include="..\Microsoft.AspNetCore.Components.Browser.JS\dist\components.server.js" LogicalName="%(Filename)%(Extension)" />
   </ItemGroup>
 
