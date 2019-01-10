@@ -39,8 +39,5 @@
     <Repository Include="Scaffolding" PatchPolicy="AlwaysUpdate" />
     <Repository Include="Templating" PatchPolicy="AlwaysUpdateAndCascadeVersions" RootPath="$(RepositoryRoot)src\Templating\" />
     <Repository Include="EntityFrameworkCore" />
-
-    <!-- Test-only repos -->
-    <Repository Include="AuthSamples" PatchPolicy="AlwaysUpdateAndCascadeVersions" RootPath="$(RepositoryRoot)src\AuthSamples\" />
   </ItemGroup>
 </Project>

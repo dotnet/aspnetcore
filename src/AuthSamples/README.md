@@ -1,10 +1,6 @@
 AuthSamples
 =================
 
-This repo contains ASP.NET Core samples for Authentication, Authorization, Identity, etc..
-
-This project is part of ASP.NET Core. You can find samples, documentation and getting started instructions for ASP.NET Core at the [Home](https://github.com/aspnet/home) repo.
-
 ## Building from source
 
 To run a complete build on command line only, execute `build.cmd` or `build.sh` without arguments.
