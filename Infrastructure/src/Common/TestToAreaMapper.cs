@@ -44,6 +44,7 @@ namespace Common
                 ("Microsoft.DotNet.Watcher", "area-tools"),
                 ("Microsoft.AspNetCore.Identity", "area-identity"),
                 ("Microsoft.VisualStudio.Editor.Razor", "area-mvc"),
+                ("Microsoft.AspNetCore.Razor", "area-mvc"),
 
                 // Tools
                 ("Microsoft.VisualStudio.Web.CodeGeneration", "area-webtools"),
