@@ -42,20 +42,19 @@ namespace Microsoft.AspNetCore.Http
                 _httpContextAccessor.HttpContext = httpContext;
             }
 
-            var formFeature = new FormFeature(httpContext.Request, _formOptions);
-            featureCollection.Set<IFormFeature>(formFeature);
+            httpContext.FormOptions = _formOptions;
 
             return httpContext;
         }
 
-        private static HttpContext CreateHttpContext(IFeatureCollection featureCollection)
+        private static DefaultHttpContext CreateHttpContext(IFeatureCollection featureCollection)
         {
             if (featureCollection is IHttpContextContainer container)
             {
                 return container.HttpContext;
             }
 
-            return new ReusableHttpContext(featureCollection);
+            return new DefaultHttpContext(featureCollection);
         }
 
         public void Dispose(HttpContext httpContext)

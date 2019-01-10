@@ -12,34 +12,33 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http.Internal
 {
-    public class DefaultHttpRequest : HttpRequest
+    public sealed class DefaultHttpRequest : HttpRequest
     {
         // Lambdas hoisted to static readonly fields to improve inlining https://github.com/dotnet/roslyn/issues/13624
         private readonly static Func<IFeatureCollection, IHttpRequestFeature> _nullRequestFeature = f => null;
         private readonly static Func<IFeatureCollection, IQueryFeature> _newQueryFeature = f => new QueryFeature(f);
-        private readonly static Func<HttpRequest, IFormFeature> _newFormFeature = r => new FormFeature(r);
+        private readonly static Func<DefaultHttpRequest, IFormFeature> _newFormFeature = r => new FormFeature(r, r._context.FormOptions ?? FormOptions.Default);
         private readonly static Func<IFeatureCollection, IRequestCookiesFeature> _newRequestCookiesFeature = f => new RequestCookiesFeature(f);
         private readonly static Func<IFeatureCollection, IRouteValuesFeature> _newRouteValuesFeature = f => new RouteValuesFeature();
         private readonly static Func<HttpContext, IRequestBodyPipeFeature> _newRequestBodyPipeFeature = context => new RequestBodyPipeFeature(context);
 
-        private HttpContext _context;
+        private readonly DefaultHttpContext _context;
         private FeatureReferences<FeatureInterfaces> _features;
 
-        public DefaultHttpRequest(HttpContext context)
-        {
-            Initialize(context);
-        }
-
-        public virtual void Initialize(HttpContext context)
+        public DefaultHttpRequest(DefaultHttpContext context)
         {
             _context = context;
-            _features = new FeatureReferences<FeatureInterfaces>(context.Features);
+            _features = new FeatureReferences<FeatureInterfaces>(_context.Features);
         }
 
-        public virtual void Uninitialize()
+        public void Initialize()
         {
-            _context = null;
-            _features = default(FeatureReferences<FeatureInterfaces>);
+            _features = new FeatureReferences<FeatureInterfaces>(_context.Features);
+        }
+
+        public void Uninitialize()
+        {
+            _features = default;
         }
 
         public override HttpContext HttpContext => _context;

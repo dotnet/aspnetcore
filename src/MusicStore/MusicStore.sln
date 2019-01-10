@@ -36,12 +36,9 @@ Global
 		RuntimeStore|Any CPU = RuntimeStore|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{3CFBED5D-2ED8-49DB-96FB-BDAA748DC5A0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3CFBED5D-2ED8-49DB-96FB-BDAA748DC5A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3CFBED5D-2ED8-49DB-96FB-BDAA748DC5A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3CFBED5D-2ED8-49DB-96FB-BDAA748DC5A0}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3CFBED5D-2ED8-49DB-96FB-BDAA748DC5A0}.RuntimeStore|Any CPU.ActiveCfg = RuntimeStore|Any CPU
-		{3CFBED5D-2ED8-49DB-96FB-BDAA748DC5A0}.RuntimeStore|Any CPU.Build.0 = RuntimeStore|Any CPU
+		{3CFBED5D-2ED8-49DB-96FB-BDAA748DC5A0}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{3CFBED5D-2ED8-49DB-96FB-BDAA748DC5A0}.Release|Any CPU.ActiveCfg = Release|x86
+		{3CFBED5D-2ED8-49DB-96FB-BDAA748DC5A0}.RuntimeStore|Any CPU.ActiveCfg = RuntimeStore|x86
 		{CA663205-77DE-4E55-B300-85594181B5A9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CA663205-77DE-4E55-B300-85594181B5A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CA663205-77DE-4E55-B300-85594181B5A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
