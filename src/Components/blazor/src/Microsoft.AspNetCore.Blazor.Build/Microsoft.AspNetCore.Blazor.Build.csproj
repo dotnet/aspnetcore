@@ -43,8 +43,8 @@
     <ExcludePackageFileFromSigning Include="System.Text.Encoding.CodePages.dll" />
 
     <!-- JS files -->
-    <ExcludePackageFileFromSigning Include="blazor.server.js" />
-    <ExcludePackageFileFromSigning Include="blazor.webassembly.js" />
+    <ExcludePackageFileFromSigning Include="components.server.js" />
+    <ExcludePackageFileFromSigning Include="components.webassembly.js" />
   </ItemGroup>
 
   <!-- Executes /t:Publish for all target frameworks before packing-->

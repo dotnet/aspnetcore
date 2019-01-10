@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Builder
         private static Lazy<string> BlazorServerJsContent = new Lazy<string>(() =>
         {
             var thisAssembly = typeof(RazorComponentsApplicationBuilderExtensions).Assembly;
-            var resourceStream = thisAssembly.GetManifestResourceStream("blazor.server.js");
+            var resourceStream = thisAssembly.GetManifestResourceStream("components.server.js");
             using (var streamReader = new StreamReader(resourceStream))
             {
                 return streamReader.ReadToEnd();
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Builder
 
         private Dictionary<string, FrameworkFileInfo> _frameworkFiles = new[]
         {
-            new FrameworkFileInfo("/blazor.server.js", BlazorServerJsContent.Value),
+            new FrameworkFileInfo("/components.server.js", BlazorServerJsContent.Value),
 
             // This is needed temporarily until we implement a proper version of
             // library-embedded static resources for Razor Components apps.

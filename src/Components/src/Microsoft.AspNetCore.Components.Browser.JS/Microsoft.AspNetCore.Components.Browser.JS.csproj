@@ -22,13 +22,13 @@
     <Exec Command="npm ci" />
   </Target>
 
-  <Target Name="RunWebpack" AfterTargets="ResolveReferences" Inputs="@(WebpackInputs)" Outputs="dist\blazor.webassembly.js;dist\blazor.server.js" DependsOnTargets="EnsureNpmRestored">
+  <Target Name="RunWebpack" AfterTargets="ResolveReferences" Inputs="@(WebpackInputs)" Outputs="dist\components.webassembly.js;dist\components.server.js" DependsOnTargets="EnsureNpmRestored">
     <RemoveDir Directories="dist" />
     <Exec Command="npm run build:debug" Condition="'$(Configuration)' == 'Debug'" />
     <Exec Command="npm run build:production" Condition="'$(Configuration)' != 'Debug'" />
     <ItemGroup>
-      <EmbeddedResource Include="dist\blazor.webassembly.js" LogicalName="blazor./blazor.webassembly.js" />
-      <EmbeddedResource Include="dist\blazor.server.js" LogicalName="blazor./blazor.server.js" />
+      <EmbeddedResource Include="dist\components.webassembly.js" LogicalName="blazor./components.webassembly.js" />
+      <EmbeddedResource Include="dist\components.server.js" LogicalName="blazor./components.server.js" />
     </ItemGroup>
   </Target>
 </Project>
