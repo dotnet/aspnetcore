@@ -44,13 +44,11 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
             _charPool = new JsonArrayPool<char>(charPool);
         }
 
-        /// <inheritdoc />
         public IHtmlContent Serialize(object value)
         {
             return Serialize(value, _defaultSettingsJsonSerializer);
         }
 
-        /// <inheritdoc />
         public IHtmlContent Serialize(object value, JsonSerializerSettings serializerSettings)
         {
             if (serializerSettings == null)
@@ -71,7 +69,10 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
                     ArrayPool = _charPool,
                 };
 
-                jsonSerializer.Serialize(jsonWriter, value);
+                using (jsonWriter)
+                {
+                    jsonSerializer.Serialize(jsonWriter, value);
+                }
 
                 return new HtmlString(stringWriter.ToString());
             }
@@ -80,6 +81,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
         private static JsonSerializer CreateHtmlSafeSerializer(JsonSerializerSettings serializerSettings)
         {
             var jsonSerializer = JsonSerializer.Create(serializerSettings);
+            // Ignore the user configured StringEscapeHandling and always escape it.
             jsonSerializer.StringEscapeHandling = StringEscapeHandling.EscapeHtml;
             return jsonSerializer;
         }

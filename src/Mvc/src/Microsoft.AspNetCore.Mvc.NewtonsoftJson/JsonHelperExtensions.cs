@@ -23,6 +23,10 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// The <see cref="JsonSerializerSettings"/> to be used by the serializer.
         /// </param>
         /// <returns>A new <see cref="IHtmlContent"/> containing the serialized JSON.</returns>
+        /// <remarks>
+        /// The value for <see cref="JsonSerializerSettings.StringEscapeHandling" /> from <paramref name="serializerSettings"/>
+        /// is ignored by this method and <see cref="StringEscapeHandling.EscapeHtml"/> is always used.
+        /// </remarks>
         public static IHtmlContent Serialize(
             this IJsonHelper jsonHelper,
             object value,
