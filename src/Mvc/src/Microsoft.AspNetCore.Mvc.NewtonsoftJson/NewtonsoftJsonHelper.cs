@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
     /// </summary>
     internal class NewtonsoftJsonHelper : IJsonHelper
     {
+        // Perf: JsonSerializers are relatively expensive to create, and are thread safe. Cache the serializer
         private readonly JsonSerializer _defaultSettingsJsonSerializer;
         private readonly IArrayPool<char> _charPool;
 
