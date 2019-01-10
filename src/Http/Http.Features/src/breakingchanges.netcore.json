@@ -13,7 +13,6 @@
     },
     {
       "TypeId": "public class Microsoft.AspNetCore.Http.Authentication.AuthenticateInfo",
-    {
       "Kind": "Removal"
     },
     {
