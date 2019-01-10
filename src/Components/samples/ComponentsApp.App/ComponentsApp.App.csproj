@@ -5,8 +5,8 @@
     <OutputType>Library</OutputType>
   </PropertyGroup>
 
-  <!-- Required temporarily until the .Build package is split in two (one for Razor Components, one for Blazor) -->
-  <Import Project="..\..\src\Microsoft.AspNetCore.Components.Build\targets\RazorCompilation.targets" />
+  <!-- Local equivalent to a package reference to Microsoft.AspNetCore.Components.Build -->
+  <Import Project="..\..\src\Microsoft.AspNetCore.Components.Build\ReferenceFromSource.props" />
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(AspNetCorePackageVersion)" />
