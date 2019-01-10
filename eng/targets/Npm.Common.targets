@@ -13,8 +13,9 @@
   </Target>
 
   <Target Name="Restore">
-    <!-- Always use 'npm ci' because 'npm install' churns the package-lock.json file for no apparent reason. -->
-    <Exec Command="npm ci" />
+    <Message Importance="High" Text="Running npm install on $(MSBuildProjectFullPath)" />
+    <Exec Command="npm ci" Condition="'$(CI)' == 'true'" />
+    <Exec Command="npm install --no-optional" Condition="'$(CI)' != 'true'" />
   </Target>
 
   <Target Name="PrepareForBuild">
