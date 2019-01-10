@@ -162,14 +162,16 @@ namespace Test
         {
             // Arrange
             AdditionalSyntaxTrees.Add(Parse(@"
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 
 namespace Test
 {
     public class MyComponent : ComponentBase, IComponent
     {
-        void IComponent.SetParameters(ParameterCollection parameters)
+        Task IComponent.SetParametersAsync(ParameterCollection parameters)
         {
+            return Task.CompletedTask;
         }
     }
 }

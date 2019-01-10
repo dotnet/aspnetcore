@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Components
         protected Task InvokeAsync(Func<Task> workItem)
             => _renderHandle.InvokeAsync(workItem);
 
-        void IComponent.Init(RenderHandle renderHandle)
+        void IComponent.Configure(RenderHandle renderHandle)
         {
             // This implicitly means a ComponentBase can only be associated with a single
             // renderer. That's the only use case we have right now. If there was ever a need,
@@ -174,26 +174,106 @@ namespace Microsoft.AspNetCore.Components
         /// Method invoked to apply initial or updated parameters to the component.
         /// </summary>
         /// <param name="parameters">The parameters to apply.</param>
-        public virtual void SetParameters(ParameterCollection parameters)
+        public virtual Task SetParametersAsync(ParameterCollection parameters)
         {
             parameters.SetParameterProperties(this);
-
             if (!_hasCalledInit)
             {
-                _hasCalledInit = true;
-                OnInit();
+                return RunInitAndSetParameters();
+            }
+            else
+            {
+                OnParametersSet();
+                // If you override OnInitAsync or OnParametersSetAsync and return a noncompleted task,
+                // then by default we automatically re-render once each of those tasks completes.
+                var isAsync = false;
+                Task parametersTask = null;
+                (isAsync, parametersTask) = ProcessLifeCycletask(OnParametersSetAsync());
+                StateHasChanged();
+                // We call StateHasChanged here so that we render after OnParametersSet and after the
+                // synchronous part of OnParametersSetAsync has run, and in case there is async work
+                // we trigger another render.
+                if (isAsync)
+                {
+                    return parametersTask;
+                }
 
-                // If you override OnInitAsync and return a noncompleted task, then by default
-                // we automatically re-render once that task completes.
-                var initTask = OnInitAsync();
-                ContinueAfterLifecycleTask(initTask);
+                return Task.CompletedTask;
+            }
+        }
+
+        private async Task RunInitAndSetParameters()
+        {
+            _hasCalledInit = true;
+            var initIsAsync = false;
+
+            OnInit();
+            Task initTask = null;
+            (initIsAsync, initTask) = ProcessLifeCycletask(OnInitAsync());
+            if (initIsAsync)
+            {
+                // Call state has changed here so that we render after the sync part of OnInitAsync has run
+                // and wait for it to finish before we continue. If no async work has been done yet, we want
+                // to defer calling StateHasChanged up until the first bit of async code happens or until
+                // the end.
+                StateHasChanged();
+                await initTask;
             }
 
             OnParametersSet();
-            var parametersTask = OnParametersSetAsync();
-            ContinueAfterLifecycleTask(parametersTask);
-
+            Task parametersTask = null;
+            var setParametersIsAsync = false;
+            (setParametersIsAsync, parametersTask) = ProcessLifeCycletask(OnParametersSetAsync());
+            // We always call StateHasChanged here as we want to trigger a rerender after OnParametersSet and
+            // the synchronous part of OnParametersSetAsync has run, triggering another re-render in case there
+            // is additional async work.
             StateHasChanged();
+            if (setParametersIsAsync)
+            {
+                await parametersTask;
+            }
+        }
+
+        private (bool isAsync, Task asyncTask) ProcessLifeCycletask(Task task)
+        {
+            if (task == null)
+            {
+                throw new ArgumentNullException(nameof(task));
+            }
+
+            switch (task.Status)
+            {
+                // If it's already completed synchronously, no need to await and no
+                // need to issue a further render (we already rerender synchronously).
+                // Just need to make sure we propagate any errors.
+                case TaskStatus.RanToCompletion:
+                case TaskStatus.Canceled:
+                    return (false, null);
+                case TaskStatus.Faulted:
+                    HandleException(task.Exception);
+                    return (false, null);
+                // For incomplete tasks, automatically re-render on successful completion
+                default:
+                    return (true, ReRenderAsyncTask(task));
+            }
+        }
+
+        private async Task ReRenderAsyncTask(Task task)
+        {
+            try
+            {
+                await task;
+                StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                // Either the task failed, or it was cancelled, or StateHasChanged threw.
+                // We want to report task failure or StateHasChanged exceptions only.
+                if (!task.IsCanceled)
+                {
+                    HandleException(ex);
+                }
+            }
         }
 
         private async void ContinueAfterLifecycleTask(Task task)
@@ -260,19 +340,24 @@ namespace Microsoft.AspNetCore.Components
             var onAfterRenderTask = OnAfterRenderAsync();
             if (onAfterRenderTask != null && onAfterRenderTask.Status != TaskStatus.RanToCompletion)
             {
-                onAfterRenderTask.ContinueWith(task =>
-                {
                 // Note that we don't call StateHasChanged to trigger a render after
                 // handling this, because that would be an infinite loop. The only
                 // reason we have OnAfterRenderAsync is so that the developer doesn't
                 // have to use "async void" and do their own exception handling in
                 // the case where they want to start an async task.
+                var taskWithHandledException = HandleAfterRenderException(onAfterRenderTask);
+            }
+        }
 
-                if (task.Exception != null)
-                    {
-                        HandleException(task.Exception);
-                    }
-                });
+        private async Task HandleAfterRenderException(Task parentTask)
+        {
+            try
+            {
+                await parentTask;
+            }
+            catch (Exception e)
+            {
+                HandleException(e);
             }
         }
     }

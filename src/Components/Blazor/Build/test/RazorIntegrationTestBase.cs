@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -376,7 +377,13 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         {
             var renderer = new TestRenderer();
             renderer.AttachComponent(component);
-            component.SetParameters(ParameterCollection.Empty);
+            var task = component.SetParametersAsync(ParameterCollection.Empty);
+            // we will have to change this method if we add a test that does actual async work.
+            Assert.True(task.Status.HasFlag(TaskStatus.RanToCompletion) || task.Status.HasFlag(TaskStatus.Faulted));
+            if (task.IsFaulted)
+            {
+                ExceptionDispatchInfo.Capture(task.Exception.InnerException).Throw();
+            }
             return renderer.LatestBatchReferenceFrames;
         }
 

@@ -1,9 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using System;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Test
@@ -193,10 +194,10 @@ namespace Microsoft.AspNetCore.Components.Test
             // not throw, then be sure also to add a test to verify that injection
             // occurs before lifecycle methods.
 
-            public void Init(RenderHandle renderHandle)
+            public void Configure(RenderHandle renderHandle)
                 => throw new NotImplementedException();
 
-            public void SetParameters(ParameterCollection parameters)
+            public Task SetParametersAsync(ParameterCollection parameters)
                 => throw new NotImplementedException();
         }
     }

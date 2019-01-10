@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components.Test.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Test
@@ -372,7 +373,7 @@ namespace Microsoft.AspNetCore.Components.Test
         static CascadingValue<T> CreateCascadingValueComponent<T>(T value, string name = null)
         {
             var supplier = new CascadingValue<T>();
-            supplier.Init(new RenderHandle(new TestRenderer(), 0));
+            supplier.Configure(new RenderHandle(new TestRenderer(), 0));
 
             var supplierParams = new Dictionary<string, object>
             {
@@ -422,10 +423,10 @@ namespace Microsoft.AspNetCore.Components.Test
 
         class TestComponentBase : IComponent
         {
-            public void Init(RenderHandle renderHandle)
+            public void Configure(RenderHandle renderHandle)
                 => throw new NotImplementedException();
 
-            public void SetParameters(ParameterCollection parameters)
+            public Task SetParametersAsync(ParameterCollection parameters)
                 => throw new NotImplementedException();
         }
 

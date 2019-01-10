@@ -1049,9 +1049,9 @@ namespace Microsoft.AspNetCore.Components.Test
 
         private class TestComponent : IComponent
         {
-            public void Init(RenderHandle renderHandle) { }
+            public void Configure(RenderHandle renderHandle) { }
 
-            public void SetParameters(ParameterCollection parameters)
+            public Task SetParametersAsync(ParameterCollection parameters)
                 => throw new NotImplementedException();
         }
 
