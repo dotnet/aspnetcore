@@ -45,6 +45,5 @@
 
   <ItemGroup>
     <ShippedRepository Include="EntityFrameworkCore" />
-    <ShippedRepository Include="MvcPrecompilation" RootPath="$(RepositoryRoot)src\MvcPrecompilation\"/>
   </ItemGroup>
 </Project>
