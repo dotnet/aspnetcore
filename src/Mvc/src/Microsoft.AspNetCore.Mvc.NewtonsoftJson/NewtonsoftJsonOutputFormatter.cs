@@ -3,7 +3,6 @@
 
 using System;
 using System.Buffers;
-using System.ComponentModel;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -64,36 +63,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         protected JsonSerializerSettings SerializerSettings { get; }
 
         /// <summary>
-        /// Gets the <see cref="JsonSerializerSettings"/> used to configure the <see cref="JsonSerializer"/>.
-        /// </summary>
-        /// <remarks>
-        /// Any modifications to the <see cref="JsonSerializerSettings"/> object after this
-        /// <see cref="NewtonsoftJsonOutputFormatter"/> has been used will have no effect.
-        /// </remarks>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        public JsonSerializerSettings PublicSerializerSettings => SerializerSettings;
-
-        /// <summary>
-        /// Writes the given <paramref name="value"/> as JSON using the given
-        /// <paramref name="writer"/>.
-        /// </summary>
-        /// <param name="writer">The <see cref="TextWriter"/> used to write the <paramref name="value"/></param>
-        /// <param name="value">The value to write as JSON.</param>
-        public void WriteObject(TextWriter writer, object value)
-        {
-            if (writer == null)
-            {
-                throw new ArgumentNullException(nameof(writer));
-            }
-
-            using (var jsonWriter = CreateJsonWriter(writer))
-            {
-                var jsonSerializer = CreateJsonSerializer();
-                jsonSerializer.Serialize(jsonWriter, value);
-            }
-        }
-
-        /// <summary>
         /// Called during serialization to create the <see cref="JsonWriter"/>.
         /// </summary>
         /// <param name="writer">The <see cref="TextWriter"/> used to write.</param>
@@ -145,7 +114,11 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var response = context.HttpContext.Response;
             using (var writer = context.WriterFactory(response.Body, selectedEncoding))
             {
-                WriteObject(writer, context.Object);
+                using (var jsonWriter = CreateJsonWriter(writer))
+                {
+                    var jsonSerializer = CreateJsonSerializer();
+                    jsonSerializer.Serialize(jsonWriter, context.Object);
+                }
 
                 // Perf: call FlushAsync to call WriteAsync on the stream with any content left in the TextWriter's
                 // buffers. This is better than just letting dispose handle it (which would result in a synchronous
