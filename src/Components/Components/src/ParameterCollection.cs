@@ -13,6 +13,7 @@ namespace Microsoft.AspNetCore.Components
     /// </summary>
     public readonly struct ParameterCollection
     {
+        private const string GeneratedParameterCollectionElementName = "__ARTIFICIAL_PARAMETER_COLLECTION";
         private static readonly RenderTreeFrame[] _emptyCollectionFrames = new RenderTreeFrame[]
         {
             RenderTreeFrame.Element(0, string.Empty).WithComponentSubtreeLength(1)
@@ -195,6 +196,26 @@ namespace Microsoft.AspNetCore.Components
             {
                 builder.Append(_frames, _ownerIndex + 1, numEntries);
             }
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="ParameterCollection"/> from the given <see cref="IDictionary{TKey, TValue}"/>.
+        /// </summary>
+        /// <param name="parameters">The <see cref="IDictionary{TKey, TValue}"/> with the parameters.</param>
+        /// <returns>A <see cref="ParameterCollection"/>.</returns>
+        public static ParameterCollection FromDictionary(IDictionary<string, object> parameters)
+        {
+            var frames = new RenderTreeFrame[parameters.Count + 1];
+            frames[0] = RenderTreeFrame.Element(0, GeneratedParameterCollectionElementName)
+                .WithElementSubtreeLength(frames.Length);
+
+            var i = 0;
+            foreach (var kvp in parameters)
+            {
+                frames[++i] = RenderTreeFrame.Attribute(i, kvp.Key, kvp.Value);
+            }
+
+            return new ParameterCollection(frames, 0);
         }
     }
 }

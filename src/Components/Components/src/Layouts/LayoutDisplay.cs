@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.RenderTree;
 
@@ -34,16 +35,17 @@ namespace Microsoft.AspNetCore.Components.Layouts
         IDictionary<string, object> PageParameters { get; set; }
 
         /// <inheritdoc />
-        public void Init(RenderHandle renderHandle)
+        public void Configure(RenderHandle renderHandle)
         {
             _renderHandle = renderHandle;
         }
 
         /// <inheritdoc />
-        public void SetParameters(ParameterCollection parameters)
+        public Task SetParametersAsync(ParameterCollection parameters)
         {
             parameters.SetParameterProperties(this);
             Render();
+            return Task.CompletedTask;
         }
 
         private void Render()

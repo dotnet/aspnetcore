@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Text.Encodings.Web;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -385,7 +387,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         {
             public RenderHandle RenderHandle { get; private set; }
 
-            public void Init(RenderHandle renderHandle)
+            public void Configure(RenderHandle renderHandle)
             {
                 RenderHandle = renderHandle;
             }
@@ -393,9 +395,106 @@ namespace Microsoft.AspNetCore.Components.Rendering
             [Inject]
             Func<ParameterCollection, RenderFragment> CreateRenderFragment { get; set; }
 
-            public void SetParameters(ParameterCollection parameters)
+            public Task SetParametersAsync(ParameterCollection parameters)
             {
                 RenderHandle.Render(CreateRenderFragment(parameters));
+                return Task.CompletedTask;
+            }
+        }
+
+        [Fact]
+        public async Task CanRender_AsyncComponent()
+        {
+            // Arrange
+            var expectedHtml = new[] {
+                "<", "p", ">", "20", "</", "p", ">" };
+            var serviceProvider = new ServiceCollection().AddSingleton<AsyncComponent>().BuildServiceProvider();
+
+            var htmlRenderer = new HtmlRenderer(serviceProvider, _encoder);
+
+            // Act
+            var result = await htmlRenderer.RenderComponentAsync<AsyncComponent>(ParameterCollection.FromDictionary(new Dictionary<string, object>
+            {
+                ["Value"] = 10
+            }));
+
+            // Assert
+            Assert.Equal(expectedHtml, result);
+        }
+
+        [Fact]
+        public async Task CanRender_NestedAsyncComponents()
+        {
+            // Arrange
+            var expectedHtml = new[] {
+                "<", "p", ">", "20", "</", "p", ">",
+                "<", "p", ">", "80", "</", "p", ">"
+            };
+
+            var serviceProvider = new ServiceCollection().AddSingleton<AsyncComponent>().BuildServiceProvider();
+
+            var htmlRenderer = new HtmlRenderer(serviceProvider, _encoder);
+
+            // Act
+            var result = await htmlRenderer.RenderComponentAsync<NestedAsyncComponent>(ParameterCollection.FromDictionary(new Dictionary<string, object>
+            {
+                ["Nested"] = false,
+                ["Value"] = 10
+            }));
+
+            // Assert
+            Assert.Equal(expectedHtml, result);
+        }
+
+
+        private class NestedAsyncComponent : ComponentBase
+        {
+            [Parameter] public bool Nested { get; set; }
+            [Parameter] public int Value { get; set; }
+
+            protected override async Task OnInitAsync()
+            {
+                Value = Value * 2;
+                await Task.Yield();
+            }
+
+            protected override void BuildRenderTree(RenderTreeBuilder builder)
+            {
+                base.BuildRenderTree(builder);
+                builder.OpenElement(0, "p");
+                builder.AddContent(1, Value.ToString());
+                builder.CloseElement();
+                if (!Nested)
+                {
+                    builder.OpenComponent<NestedAsyncComponent>(2);
+                    builder.AddAttribute(3, "Nested", true);
+                    builder.AddAttribute(4, "Value", Value * 2);
+                    builder.CloseComponent();
+                }
+            }
+        }
+
+        private class AsyncComponent : ComponentBase
+        {
+            public AsyncComponent()
+            {
+            }
+
+            [Parameter]
+            public int Value { get; set; }
+
+            protected override async Task OnInitAsync()
+            {
+                Value = Value * 2;
+                await Task.Delay(Value * 100);
+            }
+
+            protected override void BuildRenderTree(RenderTreeBuilder builder)
+            {
+                base.BuildRenderTree(builder);
+                builder.OpenElement(0, "p");
+                builder.AddContent(1, Value.ToString());
+                builder.CloseElement();
             }
         }
 
@@ -403,14 +502,15 @@ namespace Microsoft.AspNetCore.Components.Rendering
         {
             private RenderHandle _renderHandle;
 
-            public void Init(RenderHandle renderHandle)
+            public void Configure(RenderHandle renderHandle)
             {
                 _renderHandle = renderHandle;
             }
 
-            public void SetParameters(ParameterCollection parameters)
+            public Task SetParametersAsync(ParameterCollection parameters)
             {
                 _renderHandle.Render(CreateRenderFragment(parameters));
+                return Task.CompletedTask;
             }
 
             private RenderFragment CreateRenderFragment(ParameterCollection parameters)
@@ -433,14 +533,15 @@ namespace Microsoft.AspNetCore.Components.Rendering
             [Inject]
             public RenderFragment Fragment { get; set; }
 
-            public void Init(RenderHandle renderHandle)
+            public void Configure(RenderHandle renderHandle)
             {
                 _renderHandle = renderHandle;
             }
 
-            public void SetParameters(ParameterCollection parameters)
+            public Task SetParametersAsync(ParameterCollection parameters)
             {
                 _renderHandle.Render(Fragment);
+                return Task.CompletedTask;
             }
         }
     }

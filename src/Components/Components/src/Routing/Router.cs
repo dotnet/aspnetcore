@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Layouts;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Services;
@@ -38,7 +39,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         private RouteTable Routes { get; set; }
 
         /// <inheritdoc />
-        public void Init(RenderHandle renderHandle)
+        public void Configure(RenderHandle renderHandle)
         {
             _renderHandle = renderHandle;
             _baseUri = UriHelper.GetBaseUri();
@@ -47,12 +48,13 @@ namespace Microsoft.AspNetCore.Components.Routing
         }
 
         /// <inheritdoc />
-        public void SetParameters(ParameterCollection parameters)
+        public Task SetParametersAsync(ParameterCollection parameters)
         {
             parameters.SetParameterProperties(this);
             var types = ComponentResolver.ResolveComponents(AppAssembly);
             Routes = RouteTable.Create(types);
             Refresh();
+            return Task.CompletedTask;
         }
 
         /// <inheritdoc />

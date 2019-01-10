@@ -193,23 +193,22 @@ namespace Microsoft.AspNetCore.Components.Test
             // Assert
             Assert.Single(renderer.Batches);
 
-            // Completes task started by OnParametersSetAsync
+            // Completes task started by OnInitAsync
             component.Counter = 2;
+            initTask.SetResult(true);
+
+            // Component should be rendered again 2 times
+            // after on init async
+            // after set parameters
+            Assert.Equal(3, renderer.Batches.Count);
+
+            // Completes task started by OnParametersSetAsync
+            component.Counter = 3;
             parametersSetTask.SetResult(false);
 
             // Component should be rendered again
-            Assert.Equal(2, renderer.Batches.Count);
-
-            // Completes task started by OnInitAsync
-            // NOTE: We will probably change this behavior. It would make more sense for the base class
-            // to wait until InitAsync is completed before proceeding with SetParametersAsync, rather
-            // that running the two lifecycle methods in parallel. This will come up as a requirement
-            // when implementing async server-side prerendering.
-            component.Counter = 3;
-            initTask.SetResult(true);
-
-            // Component should be rendered again
-            Assert.Equal(3, renderer.Batches.Count);
+            // after the async part of onparameterssetasync completes
+            Assert.Equal(4, renderer.Batches.Count);
         }
 
         [Fact]
@@ -232,8 +231,9 @@ namespace Microsoft.AspNetCore.Components.Test
             component.Counter = 2;
             initTask.SetCanceled();
 
-            // Component should not be rendered again
-            Assert.Single(renderer.Batches);
+            // Component should only be rendered again due to
+            // the call to StateHasChanged after SetParametersAsync
+            Assert.Equal(2,renderer.Batches.Count);
         }
 
         [Fact]

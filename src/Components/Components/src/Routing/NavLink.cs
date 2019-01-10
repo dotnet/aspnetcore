@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Components.Routing
 {
@@ -50,7 +51,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         [Inject] private IUriHelper UriHelper { get; set; }
 
         /// <inheritdoc />
-        public void Init(RenderHandle renderHandle)
+        public void Configure(RenderHandle renderHandle)
         {
             _renderHandle = renderHandle;
 
@@ -59,7 +60,7 @@ namespace Microsoft.AspNetCore.Components.Routing
         }
 
         /// <inheritdoc />
-        public void SetParameters(ParameterCollection parameters)
+        public Task SetParametersAsync(ParameterCollection parameters)
         {
             // Capture the parameters we want to do special things with, plus all as a dictionary
             parameters.TryGetValue(RenderTreeBuilder.ChildContent, out _childContent);
@@ -73,6 +74,7 @@ namespace Microsoft.AspNetCore.Components.Routing
             _hrefAbsolute = href == null ? null : UriHelper.ToAbsoluteUri(href).AbsoluteUri;
             _isActive = ShouldMatch(UriHelper.GetAbsoluteUri());
             _renderHandle.Render(Render);
+            return Task.CompletedTask;
         }
 
         /// <inheritdoc />

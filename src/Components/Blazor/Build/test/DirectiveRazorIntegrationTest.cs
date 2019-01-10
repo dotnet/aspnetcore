@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Layouts;
 using Microsoft.AspNetCore.Components.Test.Helpers;
@@ -149,12 +150,13 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             [Parameter]
             RenderFragment Body { get; set; }
 
-            public void Init(RenderHandle renderHandle)
+            public void Configure(RenderHandle renderHandle)
             {
             }
 
-            public void SetParameters(ParameterCollection parameters)
+            public Task SetParametersAsync(ParameterCollection parameters)
             {
+                return Task.CompletedTask;
             }
         }
 

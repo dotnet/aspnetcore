@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.RenderTree;
 
@@ -139,7 +140,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 parameters = parameters.WithCascadingParameters(_cascadingParameters);
             }
 
-            Component.SetParameters(parameters);
+            _renderer.AddToPendingTasks(Component.SetParametersAsync(parameters));
         }
 
         public void NotifyCascadingValueChanged()
@@ -148,7 +149,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 ? new ParameterCollection(_latestDirectParametersSnapshot.Buffer, 0)
                 : ParameterCollection.Empty;
             var allParams = directParams.WithCascadingParameters(_cascadingParameters);
-            Component.SetParameters(allParams);
+            var task = Component.SetParametersAsync(allParams);
+            _renderer.AddToPendingTasks(task);
         }
 
         private bool AddCascadingParameterSubscriptions()
