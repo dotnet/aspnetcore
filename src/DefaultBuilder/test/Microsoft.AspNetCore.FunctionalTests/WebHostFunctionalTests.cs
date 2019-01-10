@@ -28,25 +28,25 @@ namespace Microsoft.AspNetCore.Tests
             _testSitesPath = GetTestSitesPath();
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549")]
         public async Task Start_RequestDelegate_Url()
         {
             await ExecuteStartOrStartWithTest(deploymentResult => deploymentResult.HttpClient.GetAsync(string.Empty), "StartRequestDelegateUrlApp");
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549")]
         public async Task Start_RouteBuilder_Url()
         {
             await ExecuteStartOrStartWithTest(deploymentResult => deploymentResult.HttpClient.GetAsync("/route"), "StartRouteBuilderUrlApp");
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549")]
         public async Task StartWith_IApplicationBuilder_Url()
         {
             await ExecuteStartOrStartWithTest(deploymentResult => deploymentResult.HttpClient.GetAsync(string.Empty), "StartWithIApplicationBuilderUrlApp");
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549")]
         public async Task CreateDefaultBuilder_InitializeWithDefaults()
         {
             var applicationName = "CreateDefaultBuilderApp";
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Tests
             }, setTestEnvVars: true);
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549")]
         public async Task CreateDefaultBuilderOfT_InitializeWithDefaults()
         {
             var applicationName = "CreateDefaultBuilderOfTApp";
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Tests
             }, setTestEnvVars: true, environment: environment);
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549"]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549")]
         public void LoggingConfigurationSectionPassedToLoggerByDefault()
         {
             try
