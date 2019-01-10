@@ -54,9 +54,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Compon
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StandaloneApp", "blazor\samples\StandaloneApp\StandaloneApp.csproj", "{B241434A-1642-44CC-AE9A-2012B5C5BD02}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.Build.Test", "test\Microsoft.AspNetCore.Components.Build.Test\Microsoft.AspNetCore.Components.Build.Test.csproj", "{709C7EBE-EB93-4F6D-9491-D714B0D2E898}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Blazor.Build.Test", "blazor\test\Microsoft.AspNetCore.Blazor.Build.Test\Microsoft.AspNetCore.Blazor.Build.Test.csproj", "{709C7EBE-EB93-4F6D-9491-D714B0D2E898}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.Build", "src\Microsoft.AspNetCore.Components.Build\Microsoft.AspNetCore.Components.Build.csproj", "{8B3D0F1C-0E38-4E6D-BFF1-C4FDA0CD9815}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Blazor.Build", "blazor\src\Microsoft.AspNetCore.Blazor.Build\Microsoft.AspNetCore.Blazor.Build.csproj", "{8B3D0F1C-0E38-4E6D-BFF1-C4FDA0CD9815}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.Browser.JS", "src\Microsoft.AspNetCore.Components.Browser.JS\Microsoft.AspNetCore.Components.Browser.JS.csproj", "{8A19B1CE-9B62-4440-93B3-152DDBB39D0A}"
 EndProject
@@ -95,6 +95,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Blazor.Test", "blazor\test\Microsoft.AspNetCore.Blazor.Test\Microsoft.AspNetCore.Blazor.Test.csproj", "{85813607-297F-4D39-92F7-89379FD80D70}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.Browser", "src\Microsoft.AspNetCore.Components.Browser\Microsoft.AspNetCore.Components.Browser.csproj", "{E52F5005-26EA-4764-8ECF-41D324AAA6D9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.Build", "src\Microsoft.AspNetCore.Components.Build\Microsoft.AspNetCore.Components.Build.csproj", "{ABDBB486-6F40-4EA0-8ED1-BF995F534F13}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -334,6 +336,14 @@ Global
 		{E52F5005-26EA-4764-8ECF-41D324AAA6D9}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E52F5005-26EA-4764-8ECF-41D324AAA6D9}.ReleaseNoVSIX|Any CPU.ActiveCfg = Release|Any CPU
 		{E52F5005-26EA-4764-8ECF-41D324AAA6D9}.ReleaseNoVSIX|Any CPU.Build.0 = Release|Any CPU
+		{ABDBB486-6F40-4EA0-8ED1-BF995F534F13}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ABDBB486-6F40-4EA0-8ED1-BF995F534F13}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ABDBB486-6F40-4EA0-8ED1-BF995F534F13}.DebugNoVSIX|Any CPU.ActiveCfg = Debug|Any CPU
+		{ABDBB486-6F40-4EA0-8ED1-BF995F534F13}.DebugNoVSIX|Any CPU.Build.0 = Debug|Any CPU
+		{ABDBB486-6F40-4EA0-8ED1-BF995F534F13}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ABDBB486-6F40-4EA0-8ED1-BF995F534F13}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ABDBB486-6F40-4EA0-8ED1-BF995F534F13}.ReleaseNoVSIX|Any CPU.ActiveCfg = Release|Any CPU
+		{ABDBB486-6F40-4EA0-8ED1-BF995F534F13}.ReleaseNoVSIX|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -357,8 +367,8 @@ Global
 		{F8996835-41F7-4663-91DF-3B5652ADC37D} = {4D367450-96E9-4C8C-8B56-EED8ADE3A20D}
 		{7FD8C650-74B3-4153-AEA1-00F4F6AF393D} = {B867E038-B3CE-43E3-9292-61568C46CDEB}
 		{B241434A-1642-44CC-AE9A-2012B5C5BD02} = {C7B9207E-BF85-422D-9EBC-E243C399F619}
-		{709C7EBE-EB93-4F6D-9491-D714B0D2E898} = {ADA3AE29-F6DE-49F6-8C7C-B321508CAE8E}
-		{8B3D0F1C-0E38-4E6D-BFF1-C4FDA0CD9815} = {B867E038-B3CE-43E3-9292-61568C46CDEB}
+		{709C7EBE-EB93-4F6D-9491-D714B0D2E898} = {32B33872-B599-4913-9F90-EDB5F9E24B18}
+		{8B3D0F1C-0E38-4E6D-BFF1-C4FDA0CD9815} = {AD41FFD8-2C0C-4F0C-9537-25C2A3A7A1F4}
 		{8A19B1CE-9B62-4440-93B3-152DDBB39D0A} = {B867E038-B3CE-43E3-9292-61568C46CDEB}
 		{8FD8636E-AFA5-434D-8857-06D02686741A} = {ADA3AE29-F6DE-49F6-8C7C-B321508CAE8E}
 		{2838CB6F-D2C7-4C0A-A994-C72E56F16984} = {4AE0D35B-D97A-44D0-8392-C9240377DCCE}
@@ -378,6 +388,7 @@ Global
 		{A42AC30B-45E3-4907-99A9-9ABDA45973D7} = {AD41FFD8-2C0C-4F0C-9537-25C2A3A7A1F4}
 		{85813607-297F-4D39-92F7-89379FD80D70} = {32B33872-B599-4913-9F90-EDB5F9E24B18}
 		{E52F5005-26EA-4764-8ECF-41D324AAA6D9} = {B867E038-B3CE-43E3-9292-61568C46CDEB}
+		{ABDBB486-6F40-4EA0-8ED1-BF995F534F13} = {B867E038-B3CE-43E3-9292-61568C46CDEB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {504DA352-6788-4DC0-8705-82167E72A4D3}

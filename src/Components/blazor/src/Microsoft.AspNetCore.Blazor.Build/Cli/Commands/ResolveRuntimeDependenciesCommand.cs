@@ -1,13 +1,13 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Extensions.CommandLineUtils;
 using System;
 using System.IO;
+using Microsoft.Extensions.CommandLineUtils;
 
-namespace Microsoft.AspNetCore.Components.Build.Cli.Commands
+namespace Microsoft.AspNetCore.Blazor.Build.Cli.Commands
 {
-    internal class WriteBootJsonCommand
+    class ResolveRuntimeDependenciesCommand
     {
         public static void Command(CommandLineApplication command)
         {
@@ -15,24 +15,21 @@ namespace Microsoft.AspNetCore.Components.Build.Cli.Commands
                 "The path to a file that lists the paths to given referenced dll files",
                 CommandOptionType.SingleValue);
 
-            var embeddedResourcesFile = command.Option("--embedded-resources",
-                "The path to a file that lists the paths of .NET assemblies that may contain embedded resources (typically, referenced assemblies in their pre-linked states)",
-                CommandOptionType.SingleValue);
+            var baseClassLibrary = command.Option("--base-class-library",
+                "Full path to a directory in which BCL assemblies can be found",
+                CommandOptionType.MultipleValue);
 
             var outputPath = command.Option("--output",
-                "Path to the output file",
+                "Path to the output file that will contain the list with the full paths of the resolved assemblies",
                 CommandOptionType.SingleValue);
 
             var mainAssemblyPath = command.Argument("assembly",
                 "Path to the assembly containing the entry point of the application.");
 
-            var linkerEnabledFlag = command.Option("--linker-enabled",
-                "If set, specifies that the application is being built with linking enabled.",
-                CommandOptionType.NoValue);
-
             command.OnExecute(() =>
             {
-                if (string.IsNullOrEmpty(mainAssemblyPath.Value) || !outputPath.HasValue())
+                if (string.IsNullOrEmpty(mainAssemblyPath.Value) ||
+                    !baseClassLibrary.HasValue() || !outputPath.HasValue())
                 {
                     command.ShowHelp(command.Name);
                     return 1;
@@ -44,16 +41,12 @@ namespace Microsoft.AspNetCore.Components.Build.Cli.Commands
                         ? File.ReadAllLines(referencesFile.Value())
                         : Array.Empty<string>();
 
-                    var embeddedResourcesSources = embeddedResourcesFile.HasValue()
-                        ? File.ReadAllLines(embeddedResourcesFile.Value())
-                        : Array.Empty<string>();
-
-                    BootJsonWriter.WriteFile(
+                    RuntimeDependenciesResolver.ResolveRuntimeDependencies(
                         mainAssemblyPath.Value,
                         referencesSources,
-                        embeddedResourcesSources,
-                        linkerEnabledFlag.HasValue(),
+                        baseClassLibrary.Values.ToArray(),
                         outputPath.Value());
+
                     return 0;
                 }
                 catch (Exception ex)

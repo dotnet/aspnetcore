@@ -8,7 +8,7 @@ using System.IO;
 using System.Linq;
 using Mono.Cecil;
 
-namespace Microsoft.AspNetCore.Components.Build
+namespace Microsoft.AspNetCore.Blazor.Build
 {
     internal class RuntimeDependenciesResolver
     {

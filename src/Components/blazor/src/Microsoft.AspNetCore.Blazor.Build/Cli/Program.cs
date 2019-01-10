@@ -1,10 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Components.Build.Cli.Commands;
+using Microsoft.AspNetCore.Blazor.Build.Cli.Commands;
 using Microsoft.Extensions.CommandLineUtils;
 
-namespace Microsoft.AspNetCore.Components.Build
+namespace Microsoft.AspNetCore.Blazor.Build
 {
     static class Program
     {
@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Components.Build
         {
             var app = new CommandLineApplication
             {
-                Name = "Microsoft.AspNetCore.Components.Build"
+                Name = "Microsoft.AspNetCore.Blazor.Build"
             };
             app.HelpOption("-?|-h|--help");
 
