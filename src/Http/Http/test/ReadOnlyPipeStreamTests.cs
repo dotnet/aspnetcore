@@ -127,6 +127,21 @@ namespace System.IO.Pipelines.Tests
             pipeReader.Verify(m => m.ReadAsync(token));
         }
 
+        [Fact]
+        public async Task CopyToAsyncWorks()
+        {
+            const int expectedSize = 8000;
+            var expected = new byte[expectedSize];
+
+            await WriteByteArrayToPipeAsync(expected);
+
+            Writer.Complete();
+            var destStream = new MemoryStream();
+
+            await ReadingStream.CopyToAsync(destStream);
+
+            Assert.Equal(expectedSize, destStream.Length);
+        }
 
         private async Task<Mock<PipeReader>> SetupMockPipeReader()
         {
