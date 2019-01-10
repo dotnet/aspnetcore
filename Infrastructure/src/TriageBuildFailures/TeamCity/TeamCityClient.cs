@@ -169,14 +169,6 @@ namespace TriageBuildFailures.TeamCity
             var authInfo = $"{Config.User}:{Config.Password}";
             var authEncoded = Convert.ToBase64String(Encoding.Default.GetBytes(authInfo));
 
-            var request = new HttpRequestMessage(method, requestUri);
-            request.Headers.Authorization = new AuthenticationHeaderValue("Basic", authEncoded);
-
-            if (body != null)
-            {
-                request.Content = new StringContent(body);
-            }
-
             using (var client = new HttpClient())
             {
                 if (timeout != null)
@@ -185,7 +177,16 @@ namespace TriageBuildFailures.TeamCity
                 }
 
                 var response = await RetryHelpers.RetryAsync(
-                    async () => await client.SendAsync(request),
+                    async () =>
+                    {
+                        var request = new HttpRequestMessage(method, requestUri);
+                        request.Headers.Authorization = new AuthenticationHeaderValue("Basic", authEncoded);
+                        if (body != null)
+                        {
+                            request.Content = new StringContent(body);
+                        }
+                        return await client.SendAsync(request);
+                    },
                     _reporter);
 
                 if (response.StatusCode == HttpStatusCode.OK)
