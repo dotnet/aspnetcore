@@ -16,8 +16,8 @@ $repoRoot = Resolve-Path "$PSScriptRoot/../../"
 [string[]] $errors = @()
 
 function LogError([string]$message) {
-    Write-Host -f Red "error: $messsage"
-    $errors += $message
+    Write-Host -f Red "error: $message"
+    $script:errors += $message
 }
 
 try {
@@ -81,7 +81,6 @@ finally {
     Write-Host ""
 
     foreach ($err in $errors) {
-
         Write-Host -f Red "error : $err"
     }
 

@@ -70,17 +70,16 @@
     <!-- Project selection can be overridden on the command line by passing in -projects -->
     <When Condition="'$(Projects)' != ''">
       <ItemGroup>
-        <ProjectToBuild Include="$(Projects)" Exclude="@(ProjectToExclude)" />
+        <ProjectToBuild Include="$(Projects)" Exclude="@(ProjectToExclude)">
+          <RestoreInParallel Condition="'%(Extension)' == '.npmproj'">false</RestoreInParallel>
+        </ProjectToBuild>
       </ItemGroup>
     </When>
     <Otherwise>
       <ItemGroup>
-        <SamplesProject Include="$(RepositoryRoot)src\**\samples\**\*.csproj;"/>
-
-        <ProjectToExclude Include="@(SamplesProject)" Condition="'$(BuildSamples)' == 'false' "/>
-
-        <ProjectToBuild Condition="'$(SkipSignalRTypescriptClient)' != 'true'"
+        <ProjectToBuild Condition="'$(SkipNpm)' != 'true'"
                         Include="$(RepositoryRoot)src\SignalR\**\*.npmproj"
+                        RestoreInParallel="false"
                         Exclude="@(ProjectToExclude)" />
 
         <ProjectToBuild Include="
@@ -108,7 +107,9 @@
                           @(ProjectToExclude);
                           $(RepositoryRoot)**\node_modules\**\*;
                           $(RepositoryRoot)**\bin\**\*;
-                          $(RepositoryRoot)**\obj\**\*;" />
+                          $(RepositoryRoot)**\obj\**\*;">
+          <RestoreInParallel Condition="'%(Extension)' == '.npmproj'">false</RestoreInParallel>
+        </ProjectToBuild>
       </ItemGroup>
     </Otherwise>
   </Choose>
