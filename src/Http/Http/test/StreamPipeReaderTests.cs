@@ -148,16 +148,22 @@ namespace System.IO.Pipelines.Tests
             Assert.NotEqual(readResult, readResult2);
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/4621")]
+        [Fact]
         public async Task ReadCanBeCancelledViaProvidedCancellationToken()
         {
-            var pipeReader = new StreamPipeReader(new HangingStream());
-            var cts = new CancellationTokenSource(1);
-            await Task.Delay(1);
-            await Assert.ThrowsAsync<TaskCanceledException>(async () => await pipeReader.ReadAsync(cts.Token));
+            for (var i = 0; i < 100; i++)
+            {
+                var pipeReader = new StreamPipeReader(new HangingStream());
+                var cts = new CancellationTokenSource(1);
+                await Assert.ThrowsAsync<TaskCanceledException>(async () =>
+                {
+                    var res = await pipeReader.ReadAsync(cts.Token);
+                    throw new Exception($"Read somehow succeeded. ReadResult: isCanceled:{res.IsCanceled} isCompleted:{res.IsCompleted} bufferSize:{res.Buffer.Length}");
+                });
+            }
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/4621")]
+        [Fact]
         public async Task ReadCanBeCanceledViaCancelPendingReadWhenReadIsAsync()
         {
             var pipeReader = new StreamPipeReader(new HangingStream());
