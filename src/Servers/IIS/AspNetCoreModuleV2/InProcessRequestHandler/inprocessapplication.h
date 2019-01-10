@@ -6,7 +6,7 @@
 #include <thread>
 #include "InProcessApplicationBase.h"
 #include "InProcessOptions.h"
-#include "BaseOutputManager.h"
+#include "HostFxr.h"
 
 class IN_PROCESS_HANDLER;
 typedef REQUEST_NOTIFICATION_STATUS(WINAPI * PFN_REQUEST_HANDLER) (IN_PROCESS_HANDLER* pInProcessHandler, void* pvRequestHandlerContext);
@@ -115,16 +115,22 @@ private:
     {
         ExecuteClrContext():
             m_argc(0),
-            m_pProc(nullptr),
+            m_hostFxr(nullptr, nullptr, nullptr),
             m_exitCode(0),
             m_exceptionCode(0)
         {
         }
 
-        DWORD m_argc;
-        std::unique_ptr<PCWSTR[]>   m_argv;
-        hostfxr_main_fn m_pProc;
+        ~ExecuteClrContext()
+        {
+            m_redirectionOutput = nullptr;
+        }
 
+        DWORD m_argc;
+        std::unique_ptr<PCWSTR[]> m_argv;
+
+        HostFxr m_hostFxr;
+        RedirectionOutput* m_redirectionOutput;
         int m_exitCode;
         int m_exceptionCode;
     };
@@ -159,7 +165,7 @@ private:
 
     static IN_PROCESS_APPLICATION*  s_Application;
 
-    std::unique_ptr<BaseOutputManager> m_pLoggerProvider;
+    std::shared_ptr<StringStreamRedirectionOutput> m_stringRedirectionOutput;
 
     inline static const LPCSTR      s_exeLocationParameterName = "InProcessExeLocation";
 

@@ -46,3 +46,14 @@ std::wstring to_wide_string(const std::string &source, const unsigned int codePa
 
     return destination;
 }
+
+std::string to_multi_byte_string(const std::wstring& text, const unsigned int codePage)
+{
+    auto const encodedByteCount = WideCharToMultiByte(codePage, 0, text.data(), -1, nullptr, 0, nullptr, nullptr);
+
+    std::string encodedBytes;
+    encodedBytes.resize(encodedByteCount);
+    WideCharToMultiByte(codePage, 0, text.data(), -1, encodedBytes.data(), encodedByteCount, nullptr, nullptr);
+    encodedBytes.resize(encodedByteCount - 1);
+    return encodedBytes;
+}

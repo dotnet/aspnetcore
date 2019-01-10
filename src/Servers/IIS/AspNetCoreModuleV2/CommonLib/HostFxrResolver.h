@@ -9,12 +9,9 @@
 #include <optional>
 #include <string>
 
-typedef INT(*hostfxr_get_native_search_directories_fn) (CONST INT argc, CONST PCWSTR* argv, PWSTR buffer, DWORD buffer_size, DWORD* required_buffer_size);
-typedef INT(*hostfxr_main_fn) (CONST DWORD argc, CONST PCWSTR argv[]);
-
 #define READ_BUFFER_SIZE 4096
 
-class HOSTFXR_UTILITY
+class HostFxrResolver
 {
 public:
 
@@ -67,7 +64,6 @@ private:
     GetAbsolutePathToHostFxr(
         const std::filesystem::path & dotnetPath
     );
-
 
     static
     std::optional<std::filesystem::path>

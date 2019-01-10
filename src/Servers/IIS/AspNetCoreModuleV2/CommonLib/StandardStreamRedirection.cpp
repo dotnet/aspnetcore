@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
-#include "PipeOutputManager.h"
+#include "StandardStreamRedirection.h"
 
 #include "stdafx.h"
 #include "Exceptions.h"
@@ -13,29 +13,27 @@
 #define LOG_IF_DUPFAIL(err) do { if (err == -1) { LOG_IF_FAILED(HRESULT_FROM_WIN32(_doserrno)); } } while (0, 0);
 #define LOG_IF_ERRNO(err) do { if (err != 0) { LOG_IF_FAILED(HRESULT_FROM_WIN32(_doserrno)); } } while (0, 0);
 
-PipeOutputManager::PipeOutputManager()
-    : PipeOutputManager( /* fEnableNativeLogging */ true)
-{
-}
 
-PipeOutputManager::PipeOutputManager(bool fEnableNativeLogging) :
-    BaseOutputManager(fEnableNativeLogging),
+StandardStreamRedirection::StandardStreamRedirection(RedirectionOutput& output, bool commandLineLaunch) :
+    m_output(output),
     m_hErrReadPipe(INVALID_HANDLE_VALUE),
     m_hErrWritePipe(INVALID_HANDLE_VALUE),
     m_hErrThread(nullptr),
-    m_numBytesReadTotal(0)
+    m_disposed(false),
+    m_commandLineLaunch(commandLineLaunch)
 {
+    TryStartRedirection();
 }
 
-PipeOutputManager::~PipeOutputManager()
+StandardStreamRedirection::~StandardStreamRedirection() noexcept(false)
 {
-    PipeOutputManager::Stop();
+    TryStopRedirection();
 }
 
 // Start redirecting stdout and stderr into a pipe
 // Continuously read the pipe on a background thread
 // until Stop is called.
-void PipeOutputManager::Start()
+void StandardStreamRedirection::Start()
 {
     SECURITY_ATTRIBUTES     saAttr = { 0 };
     HANDLE                  hStdErrReadPipe;
@@ -57,8 +55,8 @@ void PipeOutputManager::Start()
     m_hErrReadPipe = hStdErrReadPipe;
     m_hErrWritePipe = hStdErrWritePipe;
 
-    stdoutWrapper = std::make_unique<StdWrapper>(stdout, STD_OUTPUT_HANDLE, hStdErrWritePipe, m_enableNativeRedirection);
-    stderrWrapper = std::make_unique<StdWrapper>(stderr, STD_ERROR_HANDLE, hStdErrWritePipe, m_enableNativeRedirection);
+    stdoutWrapper = std::make_unique<StdWrapper>(stdout, STD_OUTPUT_HANDLE, hStdErrWritePipe, !m_commandLineLaunch);
+    stderrWrapper = std::make_unique<StdWrapper>(stderr, STD_ERROR_HANDLE, hStdErrWritePipe, !m_commandLineLaunch);
 
     LOG_IF_FAILED(stdoutWrapper->StartRedirection());
     LOG_IF_FAILED(stderrWrapper->StartRedirection());
@@ -80,7 +78,7 @@ void PipeOutputManager::Start()
 // and prints any output that was captured in the pipe.
 // If more than 30Kb was written to the pipe, that output will
 // be thrown away.
-void PipeOutputManager::Stop()
+void StandardStreamRedirection::Stop()
 {
     DWORD    dwThreadStatus = 0;
 
@@ -123,12 +121,13 @@ void PipeOutputManager::Stop()
     // Don't check return value as IO may or may not be completed already.
     if (m_hErrThread != nullptr)
     {
+        LOG_INFO(L"Canceling standard stream pipe reader");
         CancelSynchronousIo(m_hErrThread);
     }
 
     // GetExitCodeThread returns 0 on failure; thread status code is invalid.
     if (m_hErrThread != nullptr &&
-        !LOG_LAST_ERROR_IF(GetExitCodeThread(m_hErrThread, &dwThreadStatus) == 0) &&
+        !LOG_LAST_ERROR_IF(!GetExitCodeThread(m_hErrThread, &dwThreadStatus)) &&
         dwThreadStatus == STILL_ACTIVE)
     {
         // Wait for graceful shutdown, i.e., the exit of the background thread or timeout
@@ -155,72 +154,38 @@ void PipeOutputManager::Stop()
         CloseHandle(m_hErrReadPipe);
         m_hErrReadPipe = INVALID_HANDLE_VALUE;
     }
-
-    // If we captured any output, relog it to the original stdout
-    // Useful for the IIS Express scenario as it is running with stdout and stderr
-    m_stdOutContent = to_wide_string(std::string(m_pipeContents, m_numBytesReadTotal), GetConsoleOutputCP());
-
-    if (!m_stdOutContent.empty())
-    {
-        // printf will fail in in full IIS
-        if (wprintf(m_stdOutContent.c_str()) != -1)
-        {
-            // Need to flush contents for the new stdout and stderr
-            _flushall();
-        }
-    }
 }
 
-std::wstring PipeOutputManager::GetStdOutContent()
-{
-    return m_stdOutContent;
-}
 
 void
-PipeOutputManager::ReadStdErrHandle(
+StandardStreamRedirection::ReadStdErrHandle(
     LPVOID pContext
 )
 {
-    auto pLoggingProvider = static_cast<PipeOutputManager*>(pContext);
+    auto pLoggingProvider = static_cast<StandardStreamRedirection*>(pContext);
     DBG_ASSERT(pLoggingProvider != NULL);
     pLoggingProvider->ReadStdErrHandleInternal();
 }
 
 void
-PipeOutputManager::ReadStdErrHandleInternal()
+StandardStreamRedirection::ReadStdErrHandleInternal()
 {
+    std::string tempBuffer;
+    tempBuffer.resize(PIPE_READ_SIZE);
+
     // If ReadFile ever returns false, exit the thread
     DWORD dwNumBytesRead = 0;
     while (true)
     {
-        // Fill a maximum of MAX_PIPE_READ_SIZE into a buffer.
         if (ReadFile(m_hErrReadPipe,
-            &m_pipeContents[m_numBytesReadTotal],
-            MAX_PIPE_READ_SIZE - m_numBytesReadTotal,
+            tempBuffer.data(),
+            PIPE_READ_SIZE,
             &dwNumBytesRead,
             nullptr))
         {
-            m_numBytesReadTotal += dwNumBytesRead;
-            if (m_numBytesReadTotal >= MAX_PIPE_READ_SIZE)
-            {
-                break;
-            }
+            m_output.Append(to_wide_string(tempBuffer.substr(0, dwNumBytesRead), GetConsoleOutputCP()));
         }
         else
-        {
-            return;
-        }
-    }
-
-    // Using std::string as a wrapper around new char[] so we don't need to call delete
-    // Also don't allocate on stack as stack size is 128KB by default.
-    std::string tempBuffer; 
-    tempBuffer.resize(MAX_PIPE_READ_SIZE);
-
-    // After reading the maximum amount of data, keep reading in a loop until Stop is called on the output manager.
-    while (true)
-    {
-        if (!ReadFile(m_hErrReadPipe, tempBuffer.data(), MAX_PIPE_READ_SIZE, &dwNumBytesRead, nullptr))
         {
             return;
         }

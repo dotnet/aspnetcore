@@ -6,10 +6,9 @@ param($Mode)
 
 Remove-Item "HKLM:\SOFTWARE\Microsoft\IIS Extensions\IIS AspNetCore Module V2\Parameters" -ErrorAction Ignore;
 
-$DumpFolder = "$env:ASPNETCORE_TEST_LOG_DIR\dumps"
 if (!($DumpFolder))
 {
-    $DumpFolder = "$PSScriptRoot\..\artifacts\dumps"
+    $DumpFolder = "$PSScriptRoot\..\..\..\..\artifacts\dumps"
 }
 if (!(Test-Path $DumpFolder))
 {
