@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 {
     public class RazorTemplateEngineIntegrationTest : IntegrationTestBase
     {
-        [Fact]
+        [Fact(Skip="https://github.com/aspnet/AspNetCore/issues/6549")]
         public void GenerateCodeWithDefaults()
         {
             // Arrange
@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             AssertCSharpDocumentMatchesBaseline(cSharpDocument);
         }
 
-        [Fact]
+        [Fact(Skip="https://github.com/aspnet/AspNetCore/issues/6549")]
         public void GenerateCodeWithBaseType()
         {
             // Arrange
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             AssertCSharpDocumentMatchesBaseline(cSharpDocument);
         }
 
-        [Fact]
+        [Fact(Skip="https://github.com/aspnet/AspNetCore/issues/6549")]
         public void GenerateCodeWithConfigureClass()
         {
             // Arrange
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             AssertCSharpDocumentMatchesBaseline(cSharpDocument);
         }
 
-        [Fact]
+        [Fact(Skip="https://github.com/aspnet/AspNetCore/issues/6549")]
         public void GenerateCodeWithSetNamespace()
         {
             // Arrange
