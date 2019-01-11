@@ -43,8 +43,8 @@
     <ExcludePackageFileFromSigning Include="System.Text.Encoding.CodePages.dll" />
 
     <!-- JS files -->
-    <ExcludePackageFileFromSigning Include="blazor.server.js" />
-    <ExcludePackageFileFromSigning Include="blazor.webassembly.js" />
+    <ExcludePackageFileFromSigning Include="components.server.js" />
+    <ExcludePackageFileFromSigning Include="components.webassembly.js" />
   </ItemGroup>
 
   <!-- Executes /t:Publish for all target frameworks before packing-->
@@ -72,7 +72,7 @@
     <PackageReference Include="Microsoft.Extensions.CommandLineUtils" Version="1.1.1" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Composite" Version="$(AspNetCorePackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="$(AspNetCorePackageVersion)" />
-    <PackageReference Include="Mono.Cecil" Version="0.10.0-beta7" />
+    <PackageReference Include="Mono.Cecil" Version="$(MonoCecilPackageVersion)" />
     <PackageReference Include="System.CodeDom" Version="4.4.0" />
   </ItemGroup>
 </Project>

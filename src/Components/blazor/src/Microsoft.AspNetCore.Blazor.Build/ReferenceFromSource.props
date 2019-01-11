@@ -13,7 +13,7 @@
 
   <PropertyGroup>
     <BlazorBuildReferenceFromSource>true</BlazorBuildReferenceFromSource>
-    <BlazorJsPath>$(MSBuildThisFileDirectory)../../../src/Microsoft.AspNetCore.Components.Browser.JS/dist/blazor.*.js</BlazorJsPath>
+    <BlazorJsPath>$(MSBuildThisFileDirectory)../../../src/Microsoft.AspNetCore.Components.Browser.JS/dist/components.*.js</BlazorJsPath>
   </PropertyGroup>
 
   <Import Project="$(MSBuildThisFileDirectory)targets/All.props" />

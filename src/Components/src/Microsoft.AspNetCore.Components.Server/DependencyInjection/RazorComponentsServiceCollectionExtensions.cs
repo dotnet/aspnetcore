@@ -12,33 +12,17 @@ using Microsoft.JSInterop;
 namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
-    /// Extension methods to configure an <see cref="IServiceCollection"/> for Server-Side Blazor.
+    /// Extension methods to configure an <see cref="IServiceCollection"/> for interactive components.
     /// </summary>
-    public static class ServerSideBlazorServiceCollectionExtensions
+    public static class RazorComponentsServiceCollectionExtensions
     {
         /// <summary>
-        /// Adds Server-Side Blazor services to the service collection.
+        /// Adds Razor Component services to the service collection.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
+        /// <param name="startupType">A Razor Components project startup type.</param>
         /// <returns>The <see cref="IServiceCollection"/>.</returns>
-        public static IServiceCollection AddServerSideBlazor(
-            this IServiceCollection services)
-        {
-            if (services == null)
-            {
-                throw new ArgumentNullException(nameof(services));
-            }
-
-            return AddServerSideBlazor(services, null);
-        }
-
-        /// <summary>
-        /// Adds Server-Side Blazor services to the service collection.
-        /// </summary>
-        /// <param name="services">The <see cref="IServiceCollection"/>.</param>
-        /// <param name="startupType">A Blazor startup type.</param>
-        /// <returns>The <see cref="IServiceCollection"/>.</returns>
-        public static IServiceCollection AddServerSideBlazor(
+        public static IServiceCollection AddRazorComponents(
             this IServiceCollection services,
             Type startupType)
         {
@@ -52,16 +36,16 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(startupType));
             }
 
-            return AddServerSideBlazorCore(services, startupType);
+            return AddRazorComponentsCore(services, startupType);
         }
 
         /// <summary>
-        /// Adds Server-Side Blazor services to the service collection.
+        /// Adds Razor Component app services to the service collection.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
-        /// <typeparam name="TStartup">A Blazor startup type.</typeparam>
+        /// <typeparam name="TStartup">A Components app startup type.</typeparam>
         /// <returns>The <see cref="IServiceCollection"/>.</returns>
-        public static IServiceCollection AddServerSideBlazor<TStartup>(
+        public static IServiceCollection AddRazorComponents<TStartup>(
             this IServiceCollection services)
         {
             if (services == null)
@@ -69,14 +53,14 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(services));
             }
 
-            return AddServerSideBlazorCore(services, typeof(TStartup));
+            return AddRazorComponentsCore(services, typeof(TStartup));
         }
 
-        private static IServiceCollection AddServerSideBlazorCore(
+        private static IServiceCollection AddRazorComponentsCore(
             IServiceCollection services,
             Type startupType)
         {
-            AddStandardServerSideBlazorServices(services);
+            AddStandardRazorComponentsServices(services);
 
             if (startupType != null)
             {
@@ -94,7 +78,7 @@ namespace Microsoft.Extensions.DependencyInjection
                     if (circuitFactoryOptions.StartupActions.ContainsKey(endpoint))
                     {
                         throw new InvalidOperationException(
-                            "Multiple Server Side Blazor entries are configured to use " +
+                            "Multiple Components app entries are configured to use " +
                             $"the same endpoint '{endpoint}'.");
                     }
 
@@ -108,11 +92,11 @@ namespace Microsoft.Extensions.DependencyInjection
             return services;
         }
 
-        private static void AddStandardServerSideBlazorServices(IServiceCollection services)
+        private static void AddStandardRazorComponentsServices(IServiceCollection services)
         {
             // Here we add a bunch of services that don't vary in any way based on the
             // user's configuration. So even if the user has multiple independent server-side
-            // Blazor entrypoints, this lot is the same and repeated registrations are a no-op.
+            // Components entrypoints, this lot is the same and repeated registrations are a no-op.
             services.TryAddSingleton<CircuitFactory, DefaultCircuitFactory>();
             services.TryAddScoped<ICircuitAccessor, DefaultCircuitAccessor>();
             services.TryAddScoped<Circuit>(s => s.GetRequiredService<ICircuitAccessor>().Circuit);
@@ -122,7 +106,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             // We've discussed with the SignalR team and believe it's OK to have repeated
             // calls to AddSignalR (making the nonfirst ones no-ops). If we want to change
-            // this in the future, we could change AddServerSideBlazor to be an extension
+            // this in the future, we could change AddComponents to be an extension
             // method on ISignalRServerBuilder so the developer always has to chain it onto
             // their own AddSignalR call. For now we're keeping it like this because it's
             // simpler for developers in common cases.
