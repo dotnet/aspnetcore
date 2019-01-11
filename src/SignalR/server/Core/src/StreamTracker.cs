@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.SignalR
 
             public ChannelConverter()
             {
-                _channel = Channel.CreateUnbounded<T>();
+                _channel = Channel.CreateBounded<T>(10);
             }
 
             public Type GetItemType()
