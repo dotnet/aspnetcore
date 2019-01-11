@@ -16,7 +16,7 @@
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="$(SignalRPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="$(AspNetCorePackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="$(AspNetCorePackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="$(AspNetCorePackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="$(AspNetCorePackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -26,7 +26,7 @@
   <ItemGroup>
     <!-- We need .Browser.JS to build first so we can embed its .js output -->
     <ProjectReference Include="..\Microsoft.AspNetCore.Components.Browser.JS\Microsoft.AspNetCore.Components.Browser.JS.csproj" ReferenceOutputAssembly="false" />
-    <EmbeddedResource Include="..\Microsoft.AspNetCore.Components.Browser.JS\dist\components.server.js" LogicalName="%(Filename)%(Extension)" />
+    <EmbeddedResource Include="..\Microsoft.AspNetCore.Components.Browser.JS\dist\components.server.js" LogicalName="frameworkFiles.%(Filename)%(Extension)" />
   </ItemGroup>
 
 </Project>

@@ -4,6 +4,8 @@
 using System;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Server.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.FileProviders;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -54,17 +56,36 @@ namespace Microsoft.AspNetCore.Builder
             // Use embedded static content for /_framework
             builder.Map("/_framework", frameworkBuilder =>
             {
-                frameworkBuilder.UseStaticFiles(new StaticFileOptions
-                {
-                    FileProvider = new FrameworkFilesProvider(),
-                    OnPrepareResponse = BlazorApplicationBuilderExtensions.SetCacheHeaders
-                });
+                UseFrameworkFiles(frameworkBuilder);
             });
 
             // Use SPA fallback routing for anything else
             builder.UseSpa(spa => { });
 
             return builder;
+        }
+
+        private static void UseFrameworkFiles(IApplicationBuilder builder)
+        {
+            builder.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new EmbeddedFileProvider(
+                    typeof(RazorComponentsApplicationBuilderExtensions).Assembly,
+                    "frameworkFiles"),
+                OnPrepareResponse = BlazorApplicationBuilderExtensions.SetCacheHeaders
+            });
+
+            // TODO: Remove this
+            // This is needed temporarily only until we implement a proper version
+            // of library-embedded static resources for Razor Components apps.
+            builder.Map("/blazor.boot.json", bootJsonBuilder =>
+            {
+                bootJsonBuilder.Use(async (ctx, next) =>
+                {
+                    ctx.Response.ContentType = "application/json";
+                    await ctx.Response.WriteAsync(@"{ ""cssReferences"": [], ""jsReferences"": [] }");
+                });
+            });
         }
     }
 }
