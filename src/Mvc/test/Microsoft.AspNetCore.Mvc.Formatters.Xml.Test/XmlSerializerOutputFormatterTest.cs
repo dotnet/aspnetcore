@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             }
         }
 
-        [Theory]
+        [Theory(Skip = "https://github.com/aspnet/AspNetCore/issues/6628")]
         [MemberData(nameof(CanIndentOutputConditionallyData))]
         public async Task XmlSerializer_CanIndentOutputConditionally(bool indent, object input, string expectedOutput)
         {
