@@ -73,16 +73,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private unsafe void ParseRequestLine(TRequestHandler handler, byte* data, int length)
         {
             // Get Method and set the offset
-            var method = HttpUtilities.GetKnownMethod(data, length, out var offset);
+            var method = HttpUtilities.GetKnownMethod(data, length, out var pathStartOffset);
 
             Span<byte> customMethod = default;
             if (method == HttpMethod.Custom)
             {
-                customMethod = GetUnknownMethod(data, length, out offset);
+                customMethod = GetUnknownMethod(data, length, out pathStartOffset);
             }
 
+            // Use a new offset var as pathStartOffset needs to be on stack
+            // as its passed by reference above so can't be in register.
             // Skip space
-            offset++;
+            var offset = pathStartOffset + 1;
             if (offset >= length)
             {
                 // Start of path not found
