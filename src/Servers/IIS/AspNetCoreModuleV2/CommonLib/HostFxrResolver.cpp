@@ -263,9 +263,8 @@ HostFxrResolver::GetAbsolutePathToDotnet(
 
     const auto installationLocation = RegistryKey::TryGetString(
         HKEY_LOCAL_MACHINE,
-        std::wstring(L"SOFTWARE\\dotnet\\Setup\\InstalledVersions\\") + platform + L"\\sdk",
-        L"InstallLocation",
-        RRF_SUBKEY_WOW6432KEY);
+        std::wstring(L"SOFTWARE\\WOW6432Node\\dotnet\\Setup\\InstalledVersions\\") + platform + L"\\sdk",
+        L"InstallLocation");
 
     if (installationLocation.has_value())
     {
