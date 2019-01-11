@@ -17,7 +17,6 @@
 
   <ItemGroup>
     <None Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
-    <Compile Include="$(BuildVariablesGeneratedFile)" Condition="Exists('$(BuildVariablesGeneratedFile)')" />
   </ItemGroup>
 
   <!-- The test projects rely on these binaries being available -->
@@ -56,6 +55,9 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
       </GeneratedFileContents>
     </PropertyGroup>
     <WriteLinesToFile Lines="$(GeneratedFileContents)" File="$(BuildVariablesGeneratedFile)" Overwrite="true" WriteOnlyWhenDifferent="true" Condition="'$(MSBuildRuntimeType)' == 'Full'" />
+    <ItemGroup>
+      <Compile Include="$(BuildVariablesGeneratedFile)"  Condition="Exists('$(BuildVariablesGeneratedFile)')" />
+    </ItemGroup>
   </Target>
 
 </Project>
