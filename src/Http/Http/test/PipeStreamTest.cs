@@ -70,10 +70,15 @@ namespace System.IO.Pipelines.Tests
             return result;
         }
 
-        public async Task<byte[]> ReadFromStreamAsByteArrayAsync(int size)
+        public Task<byte[]> ReadFromStreamAsByteArrayAsync(int size)
+        {
+            return ReadFromStreamAsByteArrayAsync(size, ReadingStream);
+        }
+
+        public async Task<byte[]> ReadFromStreamAsByteArrayAsync(int size, Stream stream)
         {
             var memory = new Memory<byte>(new byte[size]);
-            var readLength = await ReadingStream.ReadAsync(memory);
+            var readLength = await stream.ReadAsync(memory);
             return memory.Slice(0, readLength).ToArray();
         }
     }

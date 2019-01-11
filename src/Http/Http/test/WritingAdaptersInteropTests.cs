@@ -12,7 +12,7 @@ namespace System.IO.Pipelines.Tests
     public class WritingAdaptersInteropTests : PipeStreamTest
     {
         [Fact]
-        public async Task CheckBasicWriteInterop()
+        public async Task CheckBasicWritePipeApi()
         {
             var pipe = new Pipe();
             var writeOnlyStream = new WriteOnlyPipeStream(pipe.Writer);
@@ -24,7 +24,7 @@ namespace System.IO.Pipelines.Tests
         }
 
         [Fact]
-        public async Task CheckVeryNestedWriteInterop()
+        public async Task CheckNestedPipeApi()
         {
             var pipe = new Pipe();
             var writer = pipe.Writer;
@@ -40,7 +40,37 @@ namespace System.IO.Pipelines.Tests
             Assert.Equal(new byte[10], res.Buffer.ToArray());
         }
 
-        // have to check other internleaved combo
+        [Fact]
+        public async Task CheckBasicWriteStreamApi()
+        {
+            var stream = new MemoryStream();
+            var pipeWriter = new StreamPipeWriter(stream);
+            var writeOnlyStream = new WriteOnlyPipeStream(pipeWriter);
+
+            await writeOnlyStream.WriteAsync(new byte[10]);
+
+            stream.Position = 0;
+            var res = await ReadFromStreamAsByteArrayAsync(10, stream);
+            Assert.Equal(new byte[10], res);
+        }
+
+        [Fact]
+        public async Task CheckNestedStreamApi()
+        {
+            var stream = new MemoryStream();
+            Stream writeOnlyStream = stream;
+            for (var i = 0; i < 3; i++)
+            {
+                var pipeWriter = new StreamPipeWriter(writeOnlyStream);
+                writeOnlyStream = new WriteOnlyPipeStream(pipeWriter);
+            }
+
+            await writeOnlyStream.WriteAsync(new byte[10]);
+
+            stream.Position = 0;
+            var res = await ReadFromStreamAsByteArrayAsync(10, stream);
+            Assert.Equal(new byte[10], res);
+        }
 
         [Fact]
         public async Task WritesCanBeCanceledViaProvidedCancellationToken()

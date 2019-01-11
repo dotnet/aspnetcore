@@ -11,7 +11,7 @@ namespace System.IO.Pipelines.Tests
     public class ReadingAdaptersInteropTests
     {
         [Fact]
-        public async Task CheckBasicReadInterop()
+        public async Task CheckBasicReadPipeApi()
         {
             var pipe = new Pipe();
             var readStream = new ReadOnlyPipeStream(pipe.Reader);
@@ -23,7 +23,7 @@ namespace System.IO.Pipelines.Tests
         }
 
         [Fact]
-        public async Task CheckVeryNestedReadInterop()
+        public async Task CheckNestedPipeApi()
         {
             var pipe = new Pipe();
             var reader = pipe.Reader;
@@ -36,6 +36,39 @@ namespace System.IO.Pipelines.Tests
             await pipe.Writer.WriteAsync(new byte[10]);
             var res = await reader.ReadAsync();
             Assert.Equal(new byte[10], res.Buffer.ToArray());
+        }
+
+        [Fact]
+        public async Task CheckBasicReadStreamApi()
+        {
+            var stream = new MemoryStream();
+            await stream.WriteAsync(new byte[10]);
+            var pipeReader = new StreamPipeReader(stream);
+            var readOnlyStream = new ReadOnlyPipeStream(pipeReader);
+
+            var resSize = await readOnlyStream.ReadAsync(new byte[10]);
+
+            Assert.Equal(10, resSize);
+        }
+
+        [Fact]
+        public async Task CheckNestedStreamApi()
+        {
+            var stream = new MemoryStream();
+            await stream.WriteAsync(new byte[10]);
+
+            Stream readOnlyStream = stream;
+            for (var i = 0; i < 3; i++)
+            {
+                var pipeReader = new StreamPipeReader(readOnlyStream);
+                readOnlyStream = new ReadOnlyPipeStream(pipeReader);
+            }
+
+            await readOnlyStream.WriteAsync(new byte[10]);
+
+            var resSize = await readOnlyStream.ReadAsync(new byte[10]);
+
+            Assert.Equal(10, resSize);
         }
 
         [Fact]
