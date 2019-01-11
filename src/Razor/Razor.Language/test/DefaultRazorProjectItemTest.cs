@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             "TestFiles",
             "DefaultRazorProjectFileSystem");
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549")]
         public void DefaultRazorProjectItem_SetsProperties()
         {
             // Arrange
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             Assert.Equal("Home.cshtml", projectItem.RelativePhysicalPath);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549")]
         public void Exists_ReturnsFalseWhenFileDoesNotExist()
         {
             // Arrange
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             Assert.False(projectItem.Exists);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549")]
         public void Read_ReturnsReadStream()
         {
             // Arrange
