@@ -12,7 +12,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    public partial class HttpResponseHeaders : HttpHeaders
+    public sealed partial class HttpResponseHeaders : HttpHeaders
     {
         private static readonly byte[] _CrLf = new[] { (byte)'\r', (byte)'\n' };
         private static readonly byte[] _colonSpace = new[] { (byte)':', (byte)' ' };

@@ -11,7 +11,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    public partial class HttpRequestHeaders : HttpHeaders
+    public sealed partial class HttpRequestHeaders : HttpHeaders
     {
         private static long ParseContentLength(string value)
         {

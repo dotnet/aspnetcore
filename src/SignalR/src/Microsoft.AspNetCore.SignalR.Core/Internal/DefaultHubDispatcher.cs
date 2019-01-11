@@ -113,11 +113,11 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                     connection.StartClientTimeout();
                     break;
 
-                case StreamDataMessage streamItem:
+                case StreamItemMessage streamItem:
                     Log.ReceivedStreamItem(_logger, streamItem);
                     return ProcessStreamItem(connection, streamItem);
 
-                case StreamCompleteMessage streamCompleteMessage:
+                case CompletionMessage streamCompleteMessage:
                     // closes channels, removes from Lookup dict
                     // user's method can see the channel is complete and begin wrapping up
                     Log.CompletingStream(_logger, streamCompleteMessage);
@@ -149,14 +149,14 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 "Failed to bind Stream message.",
                 bindingFailureMessage.BindingFailure.SourceException, _enableDetailedErrors);
 
-            var message = new StreamCompleteMessage(bindingFailureMessage.Id, errorString);
+            var message = CompletionMessage.WithError(bindingFailureMessage.Id, errorString);
             Log.ClosingStreamWithBindingError(_logger, message);
             connection.StreamTracker.Complete(message);
 
             return Task.CompletedTask;
         }
 
-        private Task ProcessStreamItem(HubConnectionContext connection, StreamDataMessage message)
+        private Task ProcessStreamItem(HubConnectionContext connection, StreamItemMessage message)
         {
             Log.ReceivedStreamItem(_logger, message);
             return connection.StreamTracker.ProcessItem(message);
@@ -174,7 +174,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             }
             else
             {
-                bool isStreamCall = descriptor.HasStreamingParameters;
+                bool isStreamCall = descriptor.StreamingParameters != null;
                 return Invoke(descriptor, connection, hubMethodInvocationMessage, isStreamResponse, isStreamCall);
             }
         }
@@ -206,26 +206,15 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
                 hub = hubActivator.Create();
 
-                if (isStreamCall)
-                {
-                    // swap out placeholders for channels
-                    var args = hubMethodInvocationMessage.Arguments;
-                    for (int i = 0; i < args.Length; i++)
-                    {
-                        var placeholder = args[i] as StreamPlaceholder;
-                        if (placeholder == null)
-                        {
-                            continue;
-                        }
-
-                        Log.StartingParameterStream(_logger, placeholder.StreamId);
-                        var itemType = methodExecutor.MethodParameters[i].ParameterType.GetGenericArguments()[0];
-                        args[i] = connection.StreamTracker.AddStream(placeholder.StreamId, itemType);
-                    }
-                }
-
                 try
                 {
+                    var clientStreamLength = hubMethodInvocationMessage.StreamIds?.Length ?? 0;
+                    var serverStreamLength = descriptor.StreamingParameters?.Count ?? 0;
+                    if (clientStreamLength != serverStreamLength)
+                    {
+                        throw new HubException($"Client sent {clientStreamLength} stream(s), Hub method expects {serverStreamLength}.");
+                    }
+
                     InitializeHub(hub, connection);
                     Task invocation = null;
 
@@ -236,6 +225,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                         // In order to add the synthetic arguments we need a new array because the invocation array is too small (it doesn't know about synthetic arguments)
                         arguments = new object[descriptor.OriginalParameterTypes.Count];
 
+                        var streamPointer = 0;
                         var hubInvocationArgumentPointer = 0;
                         for (var parameterPointer = 0; parameterPointer < arguments.Length; parameterPointer++)
                         {
@@ -248,11 +238,17 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                             }
                             else
                             {
-                                // This is the only synthetic argument type we currently support
                                 if (descriptor.OriginalParameterTypes[parameterPointer] == typeof(CancellationToken))
                                 {
                                     cts = CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAborted);
                                     arguments[parameterPointer] = cts.Token;
+                                }
+                                else if (isStreamCall && ReflectionHelper.IsStreamingType(descriptor.OriginalParameterTypes[parameterPointer], mustBeDirectType: true))
+                                {
+                                    Log.StartingParameterStream(_logger, hubMethodInvocationMessage.StreamIds[streamPointer]);
+                                    var itemType = descriptor.StreamingParameters[streamPointer];
+                                    arguments[parameterPointer] = connection.StreamTracker.AddStream(hubMethodInvocationMessage.StreamIds[streamPointer], itemType);
+                                    streamPointer++;
                                 }
                                 else
                                 {
@@ -301,6 +297,25 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                                 await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
                                     ErrorMessageHelper.BuildErrorMessage($"An unexpected error occurred invoking '{hubMethodInvocationMessage.Target}' on the server.", ex, _enableDetailedErrors));
                                 return;
+                            }
+                            finally
+                            {
+                                // Stream response handles cleanup in StreamResultsAsync
+                                // And normal invocations handle cleanup below in the finally
+                                if (isStreamCall)
+                                {
+                                    hubActivator?.Release(hub);
+                                    scope.Dispose();
+                                    foreach (var stream in hubMethodInvocationMessage.StreamIds)
+                                    {
+                                        try
+                                        {
+                                            connection.StreamTracker.Complete(CompletionMessage.Empty(stream));
+                                        }
+                                        // ignore failures, it means the client already completed the streams
+                                        catch { }
+                                    }
+                                }
                             }
 
                             await connection.WriteAsync(CompletionMessage.WithResult(hubMethodInvocationMessage.InvocationId, result));
