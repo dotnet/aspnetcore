@@ -2,7 +2,7 @@
   <PropertyGroup>
     <AspNetCoreMajorVersion>2</AspNetCoreMajorVersion>
     <AspNetCoreMinorVersion>2</AspNetCoreMinorVersion>
-    <AspNetCorePatchVersion>1</AspNetCorePatchVersion>
+    <AspNetCorePatchVersion>2</AspNetCorePatchVersion>
     <PreReleaseLabel>servicing</PreReleaseLabel>
     <PreReleaseBrandingLabel></PreReleaseBrandingLabel>
     <BuildNumber Condition="'$(BuildNumber)' == '' OR '$(UsingLocalBuildNumber)' == 'true'">$([System.DateTime]::Now.ToString('yyMMdd'))-99</BuildNumber>
