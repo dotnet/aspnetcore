@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         [Fact]
         public void HasTitle()
         {
-            Assert.Equal("Server Side Blazor", Browser.Title);
+            Assert.Equal("Razor Components", Browser.Title);
         }
 
         [Fact]
