@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 {
     public class BasicIntegrationTest : IntegrationTestBase
     {
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549")]
         public void Empty()
         {
             // Arrange
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             AssertDocumentNodeMatchesBaseline(codeDocument.GetDocumentIntermediateNode());
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549")]
         public void HelloWorld()
         {
             // Arrange
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             AssertDocumentNodeMatchesBaseline(codeDocument.GetDocumentIntermediateNode());
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549")]
         public void CustomDirective()
         {
             // Arrange
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             AssertDocumentNodeMatchesBaseline(codeDocument.GetDocumentIntermediateNode());
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549")]
         public void BuildEngine_CallProcess()
         {
             // Arrange
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             Assert.NotNull(codeDocument.GetDocumentIntermediateNode());
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549")]
         public void CSharpDocument_Runtime_PreservesParserErrors()
         {
             // Arrange
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             Assert.Equal(expected, error);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549")]
         public void CSharpDocument_DesignTime_PreservesParserErrors()
         {
             // Arrange
