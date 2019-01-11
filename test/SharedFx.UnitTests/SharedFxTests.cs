@@ -47,6 +47,28 @@ namespace Microsoft.AspNetCore
             Assert.NotNull(depsFile["compilationOptions"]);
             Assert.Empty(depsFile["compilationOptions"]);
             Assert.NotEmpty(depsFile["runtimes"][config.RuntimeIdentifier]);
+
+            var targetLibraries = depsFile["targets"][target];
+            Assert.All(targetLibraries, libEntry =>
+            {
+                var lib = Assert.IsType<JProperty>(libEntry);
+                if (lib.Value["runtime"] == null)
+                {
+                    return;
+                }
+
+                Assert.All(lib.Value["runtime"], item =>
+                {
+                    var obj = Assert.IsType<JProperty>(item);
+                    var assemblyVersion = obj.Value["assemblyVersion"];
+                    Assert.NotNull(assemblyVersion);
+                    Assert.NotEmpty(assemblyVersion.Value<string>());
+
+                    var fileVersion = obj.Value["fileVersion"];
+                    Assert.NotNull(fileVersion);
+                    Assert.NotEmpty(fileVersion.Value<string>());
+                });
+            });
         }
 
         [Theory]
