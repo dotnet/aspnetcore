@@ -13,7 +13,7 @@ public:
     std::optional<DWORD> TryGetDWORD(HKEY section, const std::wstring& subSectionName, const std::wstring& valueName, DWORD flags = 0);
 
     static
-    std::optional<std::wstring> TryGetString(HKEY section, const std::wstring& subSectionName, const std::wstring& valueName, DWORD flags = 0);
+    std::optional<std::wstring> TryGetString(HKEY section, const std::wstring& subSectionName, const std::wstring& valueName);
 
 private:
     static

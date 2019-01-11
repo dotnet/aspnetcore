@@ -16,11 +16,11 @@ std::optional<DWORD> RegistryKey::TryGetDWORD(HKEY section, const std::wstring& 
     return dwData;
 }
 
-std::optional<std::wstring> RegistryKey::TryGetString(HKEY section, const std::wstring& subSectionName, const std::wstring& valueName, DWORD flags)
+std::optional<std::wstring> RegistryKey::TryGetString(HKEY section, const std::wstring& subSectionName, const std::wstring& valueName)
 {
     DWORD cbData;
 
-    if (!CheckReturnValue(RegGetValue(section, subSectionName.c_str(), valueName.c_str(), RRF_RT_REG_SZ | flags, nullptr, nullptr, &cbData)))
+    if (!CheckReturnValue(RegGetValue(section, subSectionName.c_str(), valueName.c_str(), RRF_RT_REG_SZ, nullptr, nullptr, &cbData)))
     {
         return std::nullopt;
     }
@@ -28,7 +28,7 @@ std::optional<std::wstring> RegistryKey::TryGetString(HKEY section, const std::w
     std::wstring data;
     data.resize(cbData / sizeof(wchar_t));
 
-    if (!CheckReturnValue(RegGetValue(section, subSectionName.c_str(), valueName.c_str(), RRF_RT_REG_SZ | flags, nullptr, data.data(), &cbData)))
+    if (!CheckReturnValue(RegGetValue(section, subSectionName.c_str(), valueName.c_str(), RRF_RT_REG_SZ, nullptr, data.data(), &cbData)))
     {
         return std::nullopt;
     }

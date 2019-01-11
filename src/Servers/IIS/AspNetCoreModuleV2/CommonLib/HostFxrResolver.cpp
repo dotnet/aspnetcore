@@ -260,7 +260,6 @@ HostFxrResolver::GetAbsolutePathToDotnet(
 
     auto isWow64Process = Environment::IsRunning64BitProcess();
 
-    DWORD flags = 0;
     std::wstring regKeySubSection;
 
     if (isWow64Process)
@@ -270,14 +269,12 @@ HostFxrResolver::GetAbsolutePathToDotnet(
     else
     {
         regKeySubSection = L"SOFTWARE\\dotnet\\Setup\\InstalledVersions\\x86\\sdk";
-        flags = RRF_SUBKEY_WOW6432KEY;
     }
 
     const auto installationLocation = RegistryKey::TryGetString(
         HKEY_LOCAL_MACHINE,
         regKeySubSection,
-        L"InstallLocation",
-        flags);
+        L"InstallLocation");
 
     if (installationLocation.has_value())
     {
