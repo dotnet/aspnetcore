@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 {
     public class TagHelpersIntegrationTest : IntegrationTestBase
     {
-        [Fact]
+        [Fact(Skip="https://github.com/aspnet/AspNetCore/issues/6549")]
         public void SimpleTagHelpers()
         {
             // Arrange
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             AssertDocumentNodeMatchesBaseline(codeDocument.GetDocumentIntermediateNode());
         }
 
-        [Fact]
+        [Fact(Skip="https://github.com/aspnet/AspNetCore/issues/6549")]
         public void TagHelpersWithBoundAttributes()
         {
             // Arrange
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             AssertDocumentNodeMatchesBaseline(codeDocument.GetDocumentIntermediateNode());
         }
 
-        [Fact]
+        [Fact(Skip="https://github.com/aspnet/AspNetCore/issues/6549")]
         public void NestedTagHelpers()
         {
             // Arrange
