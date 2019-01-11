@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.Hosting;
+using EnvironmentName = Microsoft.Extensions.Hosting.EnvironmentName;
 
 namespace Microsoft.AspNetCore.Mvc.Testing
 {
@@ -70,7 +71,14 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         /// <summary>
         /// Gets the <see cref="TestServer"/> created by this <see cref="WebApplicationFactory{TEntryPoint}"/>.
         /// </summary>
-        public TestServer Server => _server;
+        public TestServer Server
+        {
+            get
+            {
+                EnsureServer();
+                return _server;
+            }
+        }
 
         /// <summary>
         /// Gets the <see cref="IReadOnlyList{WebApplicationFactory}"/> of factories created from this factory
@@ -123,12 +131,11 @@ namespace Microsoft.AspNetCore.Mvc.Testing
 
             EnsureDepsFile();
 
-            var hostBuilder = HostFactoryResolver.ResolveHostBuilderFactory<IHostBuilder>(typeof(TEntryPoint).Assembly)?.Invoke(Array.Empty<string>());
+            var hostBuilder = CreateHostBuilder();
             if (hostBuilder != null)
             {
                 hostBuilder.ConfigureWebHost(webHostBuilder =>
                 {
-                    webHostBuilder.UseEnvironment("Development");
                     SetContentRoot(webHostBuilder);
                     _configuration(webHostBuilder);
                     webHostBuilder.UseTestServer();
@@ -286,10 +293,29 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         }
 
         /// <summary>
+        /// Creates a <see cref="IHostBuilder"/> used to set up <see cref="TestServer"/>.
+        /// </summary>
+        /// <remarks>
+        /// The default implementation of this method looks for a <c>public static IHostBuilder CreateHostBuilder(string[] args)</c>
+        /// method defined on the entry point of the assembly of <typeparamref name="TEntryPoint" /> and invokes it passing an empty string
+        /// array as arguments.
+        /// </remarks>
+        /// <returns>A <see cref="IHostBuilder"/> instance.</returns>
+        protected virtual IHostBuilder CreateHostBuilder()
+        {
+            var hostBuilder = HostFactoryResolver.ResolveHostBuilderFactory<IHostBuilder>(typeof(TEntryPoint).Assembly)?.Invoke(Array.Empty<string>());
+            if (hostBuilder != null)
+            {
+                hostBuilder.UseEnvironment(EnvironmentName.Development);
+            }
+            return hostBuilder;
+        }
+
+        /// <summary>
         /// Creates a <see cref="IWebHostBuilder"/> used to set up <see cref="TestServer"/>.
         /// </summary>
         /// <remarks>
-        /// The default implementation of this method looks for a <c>public static IWebHostBuilder CreateDefaultBuilder(string[] args)</c>
+        /// The default implementation of this method looks for a <c>public static IWebHostBuilder CreateWebHostBuilder(string[] args)</c>
         /// method defined on the entry point of the assembly of <typeparamref name="TEntryPoint" /> and invokes it passing an empty string
         /// array as arguments.
         /// </remarks>
@@ -299,15 +325,17 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             var builder = WebHostBuilderFactory.CreateFromTypesAssemblyEntryPoint<TEntryPoint>(Array.Empty<string>());
             if (builder == null)
             {
-                throw new InvalidOperationException(Resources.FormatMissingCreateWebHostBuilderMethod(
+                throw new InvalidOperationException(Resources.FormatMissingBuilderMethod(
+                    nameof(IHostBuilder),
                     nameof(IWebHostBuilder),
                     typeof(TEntryPoint).Assembly.EntryPoint.DeclaringType.FullName,
                     typeof(WebApplicationFactory<TEntryPoint>).Name,
+                    nameof(CreateHostBuilder),
                     nameof(CreateWebHostBuilder)));
             }
             else
             {
-                return builder.UseEnvironment("Development");
+                return builder.UseEnvironment(EnvironmentName.Development);
             }
         }
 
