@@ -74,16 +74,26 @@ Copyright (c) .NET Foundation. All rights reserved.
     Returns="@(RazorGenerateWithTargetPath)">
   </Target>
 
+  <!--
+    Using DependsOnTargets here because real dependencies of this target aren't defined in
+    a downlevel (pre-3.0) SDK.
+  -->
   <Target 
     Name="RazorGenerateComponentDesignTime" 
-    DependsOnTargets="ResolveRazorComponentInputs;AssignRazorComponentTargetPaths" 
+    DependsOnTargets="$(_RazorGenerateComponentDesignTimeDependsOn)" 
     Returns="@(RazorComponentWithTargetPath)">
   </Target>
 
-  <!-- Called by the project system to update generated declaration files -->
+
+  <!--
+    Using DependsOnTargets here because real dependencies of this target aren't defined in
+    a downlevel (pre-3.0) SDK.
+
+    Called by the project system to update generated declaration files
+  -->
   <Target 
     Name="RazorGenerateComponentDeclarationDesignTime" 
-    DependsOnTargets="ResolveRazorConfiguration;ResolveRazorComponentInputs;AssignRazorComponentTargetPaths;RazorGenerateComponentDeclaration">
+    DependsOnTargets="$(_RazorGenerateComponentDeclarationDesignTimeDependsOn)">
   </Target>
 
 </Project>

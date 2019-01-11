@@ -78,4 +78,13 @@ Copyright (c) .NET Foundation. All rights reserved.
     <None Remove="**\*.razor" />
   </ItemGroup>
 
+  <!-- 
+    Wire-ups for design-time build targets. These have to be here because the design time targetes need to exist
+    on a downlevel SDK which doesn't have components support.
+  -->
+  <PropertyGroup>
+    <_RazorGenerateComponentDeclarationDesignTimeDependsOn>ResolveRazorConfiguration;ResolveRazorComponentInputs;AssignRazorComponentTargetPaths;RazorGenerateComponentDeclaration</_RazorGenerateComponentDeclarationDesignTimeDependsOn>
+    <_RazorGenerateComponentDesignTimeDependsOn>ResolveRazorComponentInputs;AssignRazorComponentTargetPaths</_RazorGenerateComponentDesignTimeDependsOn>
+  </PropertyGroup>
+
 </Project>
