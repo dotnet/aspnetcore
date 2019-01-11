@@ -2113,7 +2113,8 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
     Inherits from <see cref=""T:Microsoft.AspNetCore.Razor.TagHelpers.TagHelper""/>.
     </remarks>
 </member>
-";
+".Replace(@"
+", Environment.NewLine);
 
             // Act
             var descriptor = factory.CreateDescriptor(typeSymbol);
@@ -2161,13 +2162,15 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
     This <see cref=""P:DocumentedTagHelper.SummaryProperty""/> is of type <see cref=""T:System.String""/>.
     </summary>
 </member>
-",
+".Replace(@"
+", Environment.NewLine),
 @"<member name=""P:DocumentedTagHelper.RemarksProperty"">
     <remarks>
     The <see cref=""P:DocumentedTagHelper.SummaryProperty""/> may be <c>null</c>.
     </remarks>
 </member>
-",
+".Replace(@"
+", Environment.NewLine),
 @"<member name=""P:DocumentedTagHelper.RemarksAndSummaryProperty"">
     <summary>
     This is a complex <see cref=""T:System.Collections.Generic.List`1""/>.
@@ -2176,7 +2179,8 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
     <see cref=""P:DocumentedTagHelper.SummaryProperty""/><see cref=""P:DocumentedTagHelper.RemarksProperty""/>
     </remarks>
 </member>
-",
+".Replace(@"
+", Environment.NewLine),
                     };
 
             // Act
