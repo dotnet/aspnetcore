@@ -115,10 +115,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
 
                 var b = beta.CreateInstance("Beta.B");
                 b.GetType().GetMethod("Write").Invoke(b, new object[] { builder, "Test B" });
-                var expected = @"Delta: Gamma: Alpha: Test A
-Delta: Gamma: Beta: Test B
-";
-
+                var expected = "Delta: Gamma: Alpha: Test A" + Environment.NewLine + "Delta: Gamma: Beta: Test B" + Environment.NewLine;
                 var actual = builder.ToString();
 
                 Assert.Equal(expected, actual);
