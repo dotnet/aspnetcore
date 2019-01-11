@@ -290,11 +290,12 @@
       <HelixTestProjects>@(CsProjects)</HelixTestProjects>
     </PropertyGroup>
     <Message Text="Projects=$(HelixTestProjects)" />
-    <MSBuild Projects="$(MSBuildThisFileDirectory)..\test\helix.proj"
+    <Exec Command="dotnet msbuild $(MSBuildThisFileDirectory)..\test\helix.proj">
+    <!-- <MSBuild Projects="$(MSBuildThisFileDirectory)..\test\helix.proj"
              Targets="Test"
              Properties="ProjectsToTest=$(HelixTestProjects)"
              ContinueOnError="ErrorAndStop"
-             BuildInParallel="false" />
+             BuildInParallel="false" /> -->
   </Target>
 
 </Project>
