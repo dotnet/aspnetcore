@@ -27,11 +27,12 @@
       <ArtifactInfo Include="$(TargetPath)">
         <ArtifactType>NuGetPackage</ArtifactType>
         <PackageId>$(PackageId)</PackageId>
-        <Version Condition="'$(IsPackable)' == 'true'">$(PackageVersion)</Version>
-        <Version Condition="'$(IsPackable)' != 'true'">$(BaselinePackageVersion)</Version>
+        <Version Condition="'$(IsPackageInThisPatch)' == 'true'">$(PackageVersion)</Version>
+        <Version Condition="'$(IsPackageInThisPatch)' != 'true'">$(BaselinePackageVersion)</Version>
         <Certificate>$(PackageSigningCertName)</Certificate>        
-        <ShouldBeSigned>$(IsPackable)</ShouldBeSigned>
+        <ShouldBeSigned>$(IsPackageInThisPatch)</ShouldBeSigned>
         <IsContainer>true</IsContainer>
+        <IsShipped Condition="'$(IsPackageInThisPatch)' != 'true'">true</IsShipped>
       </ArtifactInfo>
     </ItemGroup>
   </Target>
