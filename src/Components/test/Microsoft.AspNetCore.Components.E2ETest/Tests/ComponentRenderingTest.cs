@@ -552,6 +552,19 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             WaitAssert.Equal(expectedOutput, () => outputElement.Text);
         }
 
+        [Fact]
+        public void CanAcceptRenderRequestsFromOutsideRendererSyncContext()
+        {
+            var appElement = MountTestComponent<TimerComponent>();
+            var timerDisplay = appElement.FindElement(By.Id("timerDisplay"));
+
+            // Observe the timer display changing
+            WaitAssert.True(() => int.Parse(timerDisplay.Text) > 5);
+
+            appElement.FindElement(By.TagName("button")).Click();
+            WaitAssert.Equal("STOPPED", () => timerDisplay.Text);
+        }
+
         static IAlert SwitchToAlert(IWebDriver driver)
         {
             try

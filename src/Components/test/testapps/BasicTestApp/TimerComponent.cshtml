@@ -1,0 +1,49 @@
+@using System.Timers
+@implements IDisposable
+
+<h1>Timer</h1>
+
+<p>
+    Sometimes, renders need to be triggered in response to non-lifecyle events.
+    The current thread will not be associated with the renderer's sync context,
+    so the render request has to be marshalled onto that sync context.
+</p>
+
+<p>
+    Timer: <span id="timerDisplay">@(isStopped ? "STOPPED" : tickCount.ToString())</span>
+</p>
+
+<button onclick=@Stop>Stop</button>
+
+@functions {
+    int tickCount = 0;
+    Timer timer;
+    bool isStopped;
+
+    protected override void OnInit()
+    {
+        timer = new Timer(50) { AutoReset = true };
+        timer.Elapsed += (s, e) =>
+        {
+            if (!isStopped)
+            {
+                tickCount++;
+                StateHasChanged();
+            }
+        };
+
+        timer.Enabled = true;
+    }
+
+    public void Dispose()
+    {
+        Stop();
+    }
+
+    void Stop()
+    {
+        timer.Stop();
+        timer.Dispose();
+        isStopped = true;
+    }
+}
