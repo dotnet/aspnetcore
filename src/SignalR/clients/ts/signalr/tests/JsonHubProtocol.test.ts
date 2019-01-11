@@ -47,6 +47,7 @@ describe("JsonHubProtocol", () => {
                 headers: {
                     foo: "bar",
                 },
+                streamIds: [],
                 target: "myMethod",
                 type: MessageType.Invocation,
             } as InvocationMessage;

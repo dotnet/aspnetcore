@@ -252,6 +252,12 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             return false;
         }
+
+        public Task UploadIgnoreItems(ChannelReader<string> source)
+        {
+            // Wait for an item to appear first then return from the hub method to end the invocation
+            return source.WaitToReadAsync().AsTask();
+        }
     }
 
     public abstract class TestHub : Hub

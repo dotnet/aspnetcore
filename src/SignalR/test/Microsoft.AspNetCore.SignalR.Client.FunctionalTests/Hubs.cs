@@ -179,14 +179,20 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         {
             var output = Channel.CreateUnbounded<string>();
             _ = Task.Run(async () => {
-                while (await source.WaitToReadAsync())
+                try
                 {
-                    while (source.TryRead(out var item))
+                    while (await source.WaitToReadAsync())
                     {
-                        await output.Writer.WriteAsync(item);
+                        while (source.TryRead(out var item))
+                        {
+                            await output.Writer.WriteAsync(item);
+                        }
                     }
                 }
-                output.Writer.TryComplete();
+                finally
+                {
+                    output.Writer.TryComplete();
+                }
             });
 
             return output.Reader;

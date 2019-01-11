@@ -27,8 +27,8 @@ In the SignalR protocol, the following types of messages can be sent:
 | `Close`               | Callee, Caller | Sent by the server when a connection is closed. Contains an error if the connection was closed because of an error.            |
 | `Invocation`          | Caller         | Indicates a request to invoke a particular method (the Target) with provided Arguments on the remote endpoint.                 |
 | `StreamInvocation`    | Caller         | Indicates a request to invoke a streaming method (the Target) with provided Arguments on the remote endpoint.                  |
-| `StreamItem`          | Callee         | Indicates individual items of streamed response data from a previous `StreamInvocation` message.                               |
-| `Completion`          | Callee         | Indicates a previous `Invocation` or `StreamInvocation` has completed. Contains an error if the invocation concluded with an error or the result of a non-streaming method invocation. The result will be absent for `void` methods. In case of streaming invocations no further `StreamItem` messages will be received. |
+| `StreamItem`          | Callee, Caller | Indicates individual items of streamed response data from a previous `StreamInvocation` message or streamed uploads from an invocation with streamIds.                               |
+| `Completion`          | Callee, Caller | Indicates a previous `Invocation` or `StreamInvocation` has completed or a stream in an `Invocation` or `StreamInvocation` has completed. Contains an error if the invocation concluded with an error or the result of a non-streaming method invocation. The result will be absent for `void` methods. In case of streaming invocations no further `StreamItem` messages will be received. |
 | `CancelInvocation`    | Caller         | Sent by the client to cancel a streaming invocation on the server.                                                             |
 | `Ping`                | Caller, Callee | Sent by either party to check if the connection is active.                                                                     |
 
@@ -100,6 +100,10 @@ The SignalR protocol allows for multiple `StreamItem` messages to be transmitted
 On the Callee side, it is up to the Callee's Binder to determine if a method call will yield multiple results. For example, in .NET certain return types may indicate multiple results, while others may indicate a single result. Even then, applications may wish for multiple results to be buffered and returned in a single `Completion` frame. It is up to the Binder to decide how to map this. The Callee's Binder must encode each result in separate `StreamItem` messages, indicating the end of results by sending a `Completion` message.
 
 On the Caller side, the user code which performs the invocation indicates how it would like to receive the results and it is up the Caller's Binder to handle the result. If the Caller expects only a single result, but multiple results are returned, or if the caller expects multiple results but only one result is returned, the Caller's Binder should yield an error. If the Caller wants to stop receiving `StreamItem` messages before the Callee sends a `Completion` message, the Caller can send a `CancelInvocation` message with the same `Invocation ID` used for the `StreamInvocation` message that started the stream. When the Callee receives a `CancelInvocation` message it will stop sending `StreamItem` messages and will send a `Completion` message. The Caller is free to ignore any `StreamItem` messages as well as the `Completion` message after sending `CancelInvocation`.
+
+## Upload streaming
+
+The Caller can send streaming data to the Callee, they can begin such a process by making an `Invocation` or `StreamInvocation` and adding a "StreamIds" property with an array of IDs that will represent the stream(s) associated with the invocation. The IDs must be unique from any other stream IDs used by the same Caller. The Caller then sends `StreamItem` messages with the "InvocationId" property set to the ID for the stream they are sending over. The Caller can end the stream by sending a `Completion` message with the ID of the stream they are completing. If the Callee sends a `Completion` the Caller should stop sending `StreamItem` and `Completion` messages, and the Callee is free to ignore any `StreamItem` and `Completion` messages that are sent after the invocation has completed.
 
 ## Completion and results
 
@@ -179,6 +183,20 @@ private List<string> _callers = new List<string>();
 public void NonBlocking(string caller)
 {
     _callers.Add(caller);
+}
+
+public async Task<int> AddStream(ChannelReader<int> stream)
+{
+    int sum = 0;
+    while (await stream.WaitToReadAsync())
+    {
+        while (stream.TryRead(out var item))
+        {
+            sum += item;
+        }
+    }
+
+    return sum;
 }
 ```
 
@@ -269,6 +287,17 @@ S->C: Completion { Id = 42 } // This can be ignored
 C->S: Invocation { Target = "NonBlocking", Arguments = [ "foo" ] }
 ```
 
+### Stream from Client to Server (`AddStream` example above)
+
+```
+C->S: Invocation { Id = 42, Target = "AddStream", Arguments = [ ], StreamIds = [ 1 ] }
+C->S: StreamItem { Id = 1, Item = 1 }
+C->S: StreamItem { Id = 1, Item = 2 }
+C->S: StreamItem { Id = 1, Item = 3 }
+C->S: Completion { Id = 1 }
+S->C: Completion { Id = 42, Result = 6 }
+```
+
 ### Ping
 
 ```
@@ -289,6 +318,7 @@ An `Invocation` message is a JSON object with the following properties:
 * `invocationId` - An optional `String` encoding the `Invocation ID` for a message.
 * `target` - A `String` encoding the `Target` name, as expected by the Callee's Binder
 * `arguments` - An `Array` containing arguments to apply to the method referred to in Target. This is a sequence of JSON `Token`s, encoded as indicated below in the "JSON Payload Encoding" section
+* `streamIds` - An optional `Array` of strings representing unique ids for streams coming from the Caller to the Callee and being consumed by the method referred to in Target.
 
 Example:
 
@@ -316,6 +346,22 @@ Example (Non-Blocking):
 }
 ```
 
+Example (Invocation with stream from Caller):
+
+```json
+{
+    "type": 1,
+    "invocationId": "123",
+    "target": "Send",
+    "arguments": [
+        42
+    ],
+    "streamIds": [
+        "1"
+    ]
+}
+```
+
 ### StreamInvocation Message Encoding
 
 A `StreamInvocation` message is a JSON object with the following properties:
@@ -324,6 +370,7 @@ A `StreamInvocation` message is a JSON object with the following properties:
 * `invocationId` - A `String` encoding the `Invocation ID` for a message.
 * `target` - A `String` encoding the `Target` name, as expected by the Callee's Binder.
 * `arguments` - An `Array` containing arguments to apply to the method referred to in Target. This is a sequence of JSON `Token`s, encoded as indicated below in the "JSON Payload Encoding" section.
+* `streamIds` - An optional `Array` of strings representing unique ids for streams coming from the Caller to the Callee and being consumed by the method referred to in Target.
 
 Example:
 
@@ -490,7 +537,7 @@ MessagePack uses different formats to encode values. Refer to the [MsgPack forma
 `Invocation` messages have the following structure:
 
 ```
-[1, Headers, InvocationId, NonBlocking, Target, [Arguments]]
+[1, Headers, InvocationId, NonBlocking, Target, [Arguments], [StreamIds]]
 ```
 
 * `1` - Message Type - `1` indicates this is an `Invocation` message.
@@ -500,18 +547,19 @@ MessagePack uses different formats to encode values. Refer to the [MsgPack forma
   * A `String` encoding the Invocation ID for the message.
 * Target - A `String` encoding the Target name, as expected by the Callee's Binder.
 * Arguments - An Array containing arguments to apply to the method referred to in Target.
+* StreamIds - An `Array` of strings representing unique ids for streams coming from the Caller to the Callee and being consumed by the method referred to in Target.
 
 #### Example:
 
 The following payload
 
 ```
-0x94 0x01 0x80 0xa3 0x78 0x79 0x7a 0xa6 0x6d 0x65 0x74 0x68 0x6f 0x64 0x91 0x2a
+0x96 0x01 0x80 0xa3 0x78 0x79 0x7a 0xa6 0x6d 0x65 0x74 0x68 0x6f 0x64 0x91 0x2a 0x90
 ```
 
 is decoded as follows:
 
-* `0x95` - 5-element array
+* `0x96` - 6-element array
 * `0x01` - `1` (Message Type - `Invocation` message)
 * `0x80` - Map of length 0 (Headers)
 * `0xa3` - string of length 3 (InvocationId)
@@ -527,17 +575,18 @@ is decoded as follows:
 * `0x64` - `d`
 * `0x91` - 1-element array (Arguments)
 * `0x2a` - `42` (Argument value)
+* `0x90` - 0-element array (StreamIds)
 
 #### Non-Blocking Example:
 
 The following payload
 ```
-0x95 0x01 0x80 0xc0 0xa6 0x6d 0x65 0x74 0x68 0x6f 0x64 0x91 0x2a
+0x96 0x01 0x80 0xc0 0xa6 0x6d 0x65 0x74 0x68 0x6f 0x64 0x91 0x2a 0x90
 ```
 
 is decoded as follows:
 
-* `0x95` - 5-element array
+* `0x96` - 6-element array
 * `0x01` - `1` (Message Type - `Invocation` message)
 * `0x80` - Map of length 0 (Headers)
 * `0xc0` - `nil` (Invocation ID)
@@ -550,13 +599,14 @@ is decoded as follows:
 * `0x64` - `d`
 * `0x91` - 1-element array (Arguments)
 * `0x2a` - `42` (Argument value)
+* `0x90` - 0-element array (StreamIds)
 
 ### StreamInvocation Message Encoding
 
 `StreamInvocation` messages have the following structure:
 
 ```
-[4, Headers, InvocationId, Target, [Arguments]]
+[4, Headers, InvocationId, Target, [Arguments], [StreamIds]]
 ```
 
 * `4` - Message Type - `4` indicates this is a `StreamInvocation` message.
@@ -564,18 +614,19 @@ is decoded as follows:
 * InvocationId - A `String` encoding the Invocation ID for the message.
 * Target - A `String` encoding the Target name, as expected by the Callee's Binder.
 * Arguments - An Array containing arguments to apply to the method referred to in Target.
+* StreamIds - An `Array` of strings representing unique ids for streams coming from the Caller to the Callee and being consumed by the method referred to in Target.
 
 Example:
 
 The following payload
 
 ```
-0x95 0x04 0x80 0xa3 0x78 0x79 0x7a 0xa6 0x6d 0x65 0x74 0x68 0x6f 0x64 0x91 0x2a
+0x96 0x04 0x80 0xa3 0x78 0x79 0x7a 0xa6 0x6d 0x65 0x74 0x68 0x6f 0x64 0x91 0x2a 0x90
 ```
 
 is decoded as follows:
 
-* `0x95` - 5-element array
+* `0x96` - 6-element array
 * `0x04` - `4` (Message Type - `StreamInvocation` message)
 * `0x80` - Map of length 0 (Headers)
 * `0xa3` - string of length 3 (InvocationId)
@@ -591,6 +642,7 @@ is decoded as follows:
 * `0x64` - `d`
 * `0x91` - 1-element array (Arguments)
 * `0x2a` - `42` (Argument value)
+* `0x90` - 0-element array (StreamIds)
 
 ### StreamItem Message Encoding
 
@@ -795,12 +847,12 @@ Headers are not valid in a Ping message. The Ping message is **always exactly en
 Below shows an example encoding of a message containing headers:
 
 ```
-0x95 0x01 0x82 0xa1 0x78 0xa1 0x79 0xa1 0x7a 0xa1 0x7a 0xa3 0x78 0x79 0x7a 0xa6 0x6d 0x65 0x74 0x68 0x6f 0x64 0x91 0x2a
+0x96 0x01 0x82 0xa1 0x78 0xa1 0x79 0xa1 0x7a 0xa1 0x7a 0xa3 0x78 0x79 0x7a 0xa6 0x6d 0x65 0x74 0x68 0x6f 0x64 0x91 0x2a 0x90
 ```
 
 and is decoded as follows:
 
-* `0x95` - 5-element array
+* `0x96` - 6-element array
 * `0x01` - `1` (Message Type - `Invocation` message)
 * `0x82` - Map of length 2
 * `0xa1` - string of length 1 (Key)
@@ -824,6 +876,7 @@ and is decoded as follows:
 * `0x64` - `d`
 * `0x91` - 1-element array (Arguments)
 * `0x2a` - `42` (Argument value)
+* `0x90` - 0-element array (StreamIds)
 
 and interpreted as an Invocation message with headers: `'x' = 'y'` and `'z' = 'z'`.
 
