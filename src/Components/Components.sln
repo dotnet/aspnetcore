@@ -98,6 +98,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Compon
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.Build", "src\Microsoft.AspNetCore.Components.Build\Microsoft.AspNetCore.Components.Build.csproj", "{ABDBB486-6F40-4EA0-8ED1-BF995F534F13}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Blazor.Server", "blazor\src\Microsoft.AspNetCore.Blazor.Server\Microsoft.AspNetCore.Blazor.Server.csproj", "{EA44F350-F410-41B4-BA21-00CD31D17384}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -344,6 +346,14 @@ Global
 		{ABDBB486-6F40-4EA0-8ED1-BF995F534F13}.Release|Any CPU.Build.0 = Release|Any CPU
 		{ABDBB486-6F40-4EA0-8ED1-BF995F534F13}.ReleaseNoVSIX|Any CPU.ActiveCfg = Release|Any CPU
 		{ABDBB486-6F40-4EA0-8ED1-BF995F534F13}.ReleaseNoVSIX|Any CPU.Build.0 = Release|Any CPU
+		{EA44F350-F410-41B4-BA21-00CD31D17384}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA44F350-F410-41B4-BA21-00CD31D17384}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA44F350-F410-41B4-BA21-00CD31D17384}.DebugNoVSIX|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA44F350-F410-41B4-BA21-00CD31D17384}.DebugNoVSIX|Any CPU.Build.0 = Debug|Any CPU
+		{EA44F350-F410-41B4-BA21-00CD31D17384}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA44F350-F410-41B4-BA21-00CD31D17384}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EA44F350-F410-41B4-BA21-00CD31D17384}.ReleaseNoVSIX|Any CPU.ActiveCfg = Release|Any CPU
+		{EA44F350-F410-41B4-BA21-00CD31D17384}.ReleaseNoVSIX|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -389,6 +399,7 @@ Global
 		{85813607-297F-4D39-92F7-89379FD80D70} = {32B33872-B599-4913-9F90-EDB5F9E24B18}
 		{E52F5005-26EA-4764-8ECF-41D324AAA6D9} = {B867E038-B3CE-43E3-9292-61568C46CDEB}
 		{ABDBB486-6F40-4EA0-8ED1-BF995F534F13} = {B867E038-B3CE-43E3-9292-61568C46CDEB}
+		{EA44F350-F410-41B4-BA21-00CD31D17384} = {AD41FFD8-2C0C-4F0C-9537-25C2A3A7A1F4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {504DA352-6788-4DC0-8705-82167E72A4D3}

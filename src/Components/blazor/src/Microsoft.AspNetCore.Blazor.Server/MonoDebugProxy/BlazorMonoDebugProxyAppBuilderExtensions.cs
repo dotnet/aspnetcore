@@ -14,9 +14,16 @@ using WsProxy;
 
 namespace Microsoft.AspNetCore.Builder
 {
-    internal static class MonoDebugProxyAppBuilderExtensions
+    /// <summary>
+    /// Provides infrastructure for debugging Blazor applications.
+    /// </summary>
+    public static class BlazorMonoDebugProxyAppBuilderExtensions
     {
-        public static void UseMonoDebugProxy(this IApplicationBuilder app)
+        /// <summary>
+        /// Adds middleware for needed for debugging Blazor applications
+        /// inside Chromium dev tools.
+        /// </summary>
+        public static void UseBlazorDebugging(this IApplicationBuilder app)
         {
             app.UseWebSockets();
 
