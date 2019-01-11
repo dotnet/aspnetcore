@@ -172,6 +172,7 @@ function Get-RemoteFile([string]$RemotePath, [string]$LocalPath) {
     while ($retries -gt 0) {
         $retries -= 1
         try {
+            $ProgressPreference = 'SilentlyContinue' # Workaround PowerShell/PowerShell#2138
             Invoke-WebRequest -UseBasicParsing -Uri $RemotePath -OutFile $LocalPath
             return
         }

@@ -141,6 +141,7 @@ function Ensure-Hub() {
 
         mkdir -Path $tmpDir -ErrorAction Ignore | Out-Null
 
+        $ProgressPreference = 'SilentlyContinue' # Workaround PowerShell/PowerShell#2138
         Invoke-WebRequest -OutFile $zipLocation -Uri $source
 
         Expand-Archive -Path $zipLocation -DestinationPath $zipDir -Force
