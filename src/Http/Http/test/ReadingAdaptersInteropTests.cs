@@ -43,6 +43,8 @@ namespace System.IO.Pipelines.Tests
         {
             var stream = new MemoryStream();
             await stream.WriteAsync(new byte[10]);
+            stream.Position = 0;
+
             var pipeReader = new StreamPipeReader(stream);
             var readOnlyStream = new ReadOnlyPipeStream(pipeReader);
 
@@ -56,6 +58,7 @@ namespace System.IO.Pipelines.Tests
         {
             var stream = new MemoryStream();
             await stream.WriteAsync(new byte[10]);
+            stream.Position = 0;
 
             Stream readOnlyStream = stream;
             for (var i = 0; i < 3; i++)
@@ -63,8 +66,6 @@ namespace System.IO.Pipelines.Tests
                 var pipeReader = new StreamPipeReader(readOnlyStream);
                 readOnlyStream = new ReadOnlyPipeStream(pipeReader);
             }
-
-            await readOnlyStream.WriteAsync(new byte[10]);
 
             var resSize = await readOnlyStream.ReadAsync(new byte[10]);
 

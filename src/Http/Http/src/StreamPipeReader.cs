@@ -248,6 +248,13 @@ namespace System.IO.Pipelines
 
                     _readTail.End += length;
                     _bufferedBytes += length;
+
+                    if (length == 0)
+                    {
+                        // If Stream.ReadAsync returns empty, it means reading is done.
+                        // Complete the PipeReader
+                        Complete();
+                    }
                 }
                 catch (OperationCanceledException)
                 {

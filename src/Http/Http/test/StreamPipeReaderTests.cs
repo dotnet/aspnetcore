@@ -198,6 +198,8 @@ namespace System.IO.Pipelines.Tests
         [Fact]
         public async Task ReadAsyncReturnsCanceledInterleaved()
         {
+            Write(new byte[10000]);
+
             // Cancel and Read interleaved to confirm cancellations are independent
             for (var i = 0; i < 3; i++)
             {
@@ -502,22 +504,6 @@ namespace System.IO.Pipelines.Tests
         }
 
         [Fact]
-        public async Task SetMinimumReadThresholdToMiminumSegmentSizeOnlyGetNewBlockWhenDataIsWritten()
-        {
-            CreateReader(minimumReadThreshold: 16);
-            WriteByteArray(0);
-
-            var readResult = await Reader.ReadAsync();
-            Reader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
-
-            WriteByteArray(16);
-            readResult = await Reader.ReadAsync();
-
-            Assert.Equal(16, readResult.Buffer.Length);
-            Assert.True(readResult.Buffer.IsSingleSegment);
-        }
-
-        [Fact]
         public void SetMinimumReadThresholdOfZeroThrows()
         {
             Assert.Throws<ArgumentOutOfRangeException>(() => new StreamPipeReader(MemoryStream,
@@ -593,6 +579,24 @@ namespace System.IO.Pipelines.Tests
             // No Advance
             // Next call to Stream.Read will get the next 4 bytes rather than the bytes already read by the pipe
             Assert.Equal("c", ReadFromStreamAsString(buffer));
+        }
+
+        [Fact]
+        public async Task ReadAsyncWithNoDataCompletesStream()
+        {
+            var readResult = await Reader.ReadAsync();
+
+            Assert.True(readResult.IsCompleted);
+        }
+
+        [Fact]
+        public async Task ReadAsyncWithEmptyDataCompletesStream()
+        {
+            WriteByteArray(0);
+            
+            var readResult = await Reader.ReadAsync();
+
+            Assert.True(readResult.IsCompleted);
         }
 
         private async Task<string> ReadFromPipeAsString()
