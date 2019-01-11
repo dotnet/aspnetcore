@@ -286,7 +286,7 @@
             <AppSearch Before="LaunchConditions" />
             <LaunchConditions After="FindRelatedProducts" />
             <MigrateFeatureStates />
-            <Custom Action="CheckForSharedConfiguration" After="InstallInitialize">OPT_NO_SHARED_CONFIG_CHECK=1</Custom>
+            <Custom Action="CheckForSharedConfiguration" After="InstallInitialize">OPT_NO_SHARED_CONFIG_CHECK=0 AND NOT Installed AND NOT REMOVE</Custom>
             <Custom Action="CA_UNLOCk_HANDLER_PROPERTY" After="InstallFiles"><![CDATA[(NOT PATCH)]]></Custom>
             <Custom Action="CA_UNLOCk_HANDLER" After="CA_UNLOCk_HANDLER_PROPERTY"><![CDATA[(NOT PATCH)]]></Custom>
             <Custom Action="UpdateDynamicCompression" After="InstallFiles"><![CDATA[(NOT PATCH)]]></Custom>
