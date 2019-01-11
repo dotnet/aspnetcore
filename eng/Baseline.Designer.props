@@ -909,7 +909,7 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Server.IISIntegration-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.IISIntegration' ">
-    <BaselinePackageVersion>2.1.2</BaselinePackageVersion>
+    <BaselinePackageVersion>2.1.7</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.IISIntegration' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.Core" Version="[2.1.1, )" />
@@ -920,41 +920,41 @@
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.1.1, )" />
     <BaselinePackageReference Include="System.Buffers" Version="[4.5.0, )" />
-    <BaselinePackageReference Include="System.IO.Pipelines" Version="[4.5.2, )" />
-    <BaselinePackageReference Include="System.Memory" Version="[4.5.1, )" />
+    <BaselinePackageReference Include="System.IO.Pipelines" Version="[4.5.3, )" />
+    <BaselinePackageReference Include="System.Memory" Version="[4.5.2, )" />
     <BaselinePackageReference Include="System.Numerics.Vectors" Version="[4.5.0, )" />
     <BaselinePackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="[4.5.2, )" />
     <BaselinePackageReference Include="System.Security.Principal.Windows" Version="[4.5.1, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Server.Kestrel.Core-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.Kestrel.Core' ">
-    <BaselinePackageVersion>2.1.3</BaselinePackageVersion>
+    <BaselinePackageVersion>2.1.7</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.Kestrel.Core' AND '$(TargetFramework)' == 'netcoreapp2.1' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions" Version="[2.1.3, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions" Version="[2.1.3, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.Net.Http.Headers" Version="[2.1.1, )" />
-    <BaselinePackageReference Include="System.Memory" Version="[4.5.1, )" />
+    <BaselinePackageReference Include="System.Memory" Version="[4.5.2, )" />
     <BaselinePackageReference Include="System.Numerics.Vectors" Version="[4.5.0, )" />
-    <BaselinePackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="[4.5.1, )" />
+    <BaselinePackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="[4.5.2, )" />
     <BaselinePackageReference Include="System.Security.Cryptography.Cng" Version="[4.5.0, )" />
     <BaselinePackageReference Include="System.Threading.Tasks.Extensions" Version="[4.5.1, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.Kestrel.Core' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions" Version="[2.1.3, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions" Version="[2.1.3, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.Net.Http.Headers" Version="[2.1.1, )" />
-    <BaselinePackageReference Include="System.Memory" Version="[4.5.1, )" />
+    <BaselinePackageReference Include="System.Memory" Version="[4.5.2, )" />
     <BaselinePackageReference Include="System.Numerics.Vectors" Version="[4.5.0, )" />
-    <BaselinePackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="[4.5.1, )" />
+    <BaselinePackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="[4.5.2, )" />
     <BaselinePackageReference Include="System.Security.Cryptography.Cng" Version="[4.5.0, )" />
     <BaselinePackageReference Include="System.Threading.Tasks.Extensions" Version="[4.5.1, )" />
   </ItemGroup>
@@ -1145,12 +1145,12 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.WebSockets-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.WebSockets' ">
-    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+    <BaselinePackageVersion>2.1.7</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.WebSockets' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="[2.1.1, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.1.1, )" />
-    <BaselinePackageReference Include="System.Net.WebSockets.WebSocketProtocol" Version="[4.5.1, )" />
+    <BaselinePackageReference Include="System.Net.WebSockets.WebSocketProtocol" Version="[4.5.3, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.WebUtilities-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.WebUtilities' ">
