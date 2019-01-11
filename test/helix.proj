@@ -24,7 +24,6 @@
       <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Hosting\Hosting\test\Microsoft.AspNetCore.Hosting.Tests.csproj" />
       <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
       <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Hosting\TestHost\test\Microsoft.AspNetCore.TestHost.Tests.csproj" />
-      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Hosting\test\FunctionalTests\Microsoft.AspNetCore.Hosting.FunctionalTests.csproj" />
       <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Hosting\test\WebHostBuilderFactory.Tests\Microsoft.AspNetCore.Hosting.WebHostBuilderFactory.Tests.csproj" />
       <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Http\Authentication.Core\test\Microsoft.AspNetCore.Authentication.Core.Test.csproj" />
       <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Http\Headers\test\Microsoft.Net.Http.Headers.Tests.csproj" />
@@ -100,7 +99,8 @@
 
     <!-- skipped
       <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Azure\ApplicationInsights.HostingStartup\test\UnitTests\Microsoft.AspNetCore.ApplicationInsights.HostingStartup.Tests.csproj" />
-          <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Razor\Razor.Design\test\IntegrationTests\Microsoft.AspNetCore.Razor.Design.Test.csproj" />
+      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Hosting\test\FunctionalTests\Microsoft.AspNetCore.Hosting.FunctionalTests.csproj" />
+      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Razor\Razor.Design\test\IntegrationTests\Microsoft.AspNetCore.Razor.Design.Test.csproj" />
     -->
     <MSBuild Projects="@(ProjectsToTest)"
               Targets="CreateTestPayload"
