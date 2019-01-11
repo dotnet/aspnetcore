@@ -64,10 +64,6 @@
     <Move SourceFiles="$(_BackupPackageJson)" DestinationFiles="$(PackageJson)" />
   </Target>
 
-  <PropertyGroup>
-    <TestDependsOn>$(TestDependsOn);RunBrowserTests<TestDependsOn>
-  </PropertyGroup>
-
   <Target Name="Test" Condition="'$(IsTestProject)' == 'true'">
     <Message Importance="High" Text="Running npm tests for $(MSBuildProjectName)" />
     <Exec Command="npm $(NpmTestArgs)" IgnoreStandardErrorWarningFormat="true" />
@@ -87,8 +83,6 @@
 
 
   <Target Name="RunBrowserTests">
-    <Message Text="Running JavaScript client Browser tests" Importance="high" />
-    <Exec Command="npm run test:inner -- --no-color --configuration $(Configuration)" WorkingDirectory="$(RepositoryRoot)clients/ts/FunctionalTests" IgnoreStandardErrorWarningFormat="true" />
     <Message Text="Running JavaScript tests" Importance="high" />
 
     <!-- Skip the "inner" test run when we're running DailyTests -->
