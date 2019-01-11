@@ -3,47 +3,27 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26124.0
 MinimumVisualStudioVersion = 15.0.26124.0
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ApiAuthorization.IdentityServer", "ApiAuthorization.IdentityServer", "{25ACABEB-F8FA-4BD8-A39B-836924D40223}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{325EA45D-56C9-468E-B24C-6B57F85E90AF}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApiAuthSample", "ApiAuthorization.IdentityServer\samples\ApiAuthSample\ApiAuthSample.csproj", "{AADD8652-321B-4C7E-B345-C789776667D4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.ApiAuthorization.IdentityServer", "ApiAuthorization.IdentityServer\src\Microsoft.AspNetCore.ApiAuthorization.IdentityServer.csproj", "{4650E92F-C492-4B44-84FD-83C88972071D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Tests", "ApiAuthorization.IdentityServer\test\Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Tests.csproj", "{219C7185-7963-452C-BDD6-85057E3612D0}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{ACA35118-4AB2-45CE-99A2-F3E71DC04D49}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity", "Core\src\Microsoft.AspNetCore.Identity.csproj", "{B6AC3237-41CC-4799-9E4E-2A0D3283C834}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EntityFrameworkCore", "EntityFrameworkCore", "{80E3D631-B45D-4A6A-A957-454EFF6E41F2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.EntityFrameworkCore", "EntityFrameworkCore\src\Microsoft.AspNetCore.Identity.EntityFrameworkCore.csproj", "{470D3752-4253-4BE6-8EEC-647556FD6889}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{833B8FE4-68F4-4751-9483-53F541F26E1B}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.Specification.Tests", "src\Specification.Tests\Microsoft.AspNetCore.Identity.Specification.Tests.csproj", "{5608E828-DD54-4E2A-B73C-FC22268BE797}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Extensions.Core", "Extensions.Core", "{AE1BD7A4-44B1-4A78-A25B-5D2FEBF52977}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.Specification.Tests", "Specification.Tests\src\Microsoft.AspNetCore.Identity.Specification.Tests.csproj", "{5608E828-DD54-4E2A-B73C-FC22268BE797}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Identity.Core", "Extensions.Core\src\Microsoft.Extensions.Identity.Core.csproj", "{937F5280-EE8C-4C0F-8DCE-BABA9DD29E8F}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Extensions.Stores", "Extensions.Stores", "{35483108-9E53-4FE5-A0E2-729D5448AE37}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Identity.Stores", "Extensions.Stores\src\Microsoft.Extensions.Identity.Stores.csproj", "{2ED964ED-DD61-4E0C-A40F-9E706C5DED9E}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{7F5A4F96-E847-486E-8278-FE72E68C5810}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentitySample.DefaultUI", "samples\IdentitySample.DefaultUI\IdentitySample.DefaultUI.csproj", "{B9A44F66-42AF-450D-9E34-7DD79869F225}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentitySample.Mvc", "samples\IdentitySample.Mvc\IdentitySample.Mvc.csproj", "{D67C2ED8-55FD-4D57-8A4F-C6983265A745}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Specification.Tests", "Specification.Tests", "{F767B361-F0A3-451A-A659-1DB5F08AED6E}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.Specification.Tests", "Specification.Tests\src\Microsoft.AspNetCore.Identity.Specification.Tests.csproj", "{7AE1CE81-F93B-4E49-A481-1B0EE2EFDE0B}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{7CABB49A-742B-4402-82EB-CD2A5514CF54}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.FunctionalTests", "test\Identity.FunctionalTests\Microsoft.AspNetCore.Identity.FunctionalTests.csproj", "{FE4C359B-0155-4C07-8797-A33291B7A5EA}"
 EndProject
@@ -51,15 +31,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.InMemory.Test", "test\InMemory.Test\Microsoft.AspNetCore.Identity.InMemory.Test.csproj", "{83B37863-5C94-48E4-AAD6-1DF7E1D2FBFA}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "testassets", "testassets", "{E96F9610-F26B-4FB2-869C-3DDFA011FFA7}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Identity.DefaultUI.WebSite", "testassets\Identity.DefaultUI.WebSite\Identity.DefaultUI.WebSite.csproj", "{35C96499-4B59-44A2-B09B-83D3BEA9E45F}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UI", "UI", "{77BD6E4E-FA78-4FB7-8D57-F3C337790962}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.UI", "UI\src\Microsoft.AspNetCore.Identity.UI.csproj", "{29890CAC-D5AC-4644-9337-CF853683423F}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dependencies", "dependencies", "{EEF25A64-AE4E-4B15-8045-F26EC6DD2996}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Http", "..\Http\Http\src\Microsoft.AspNetCore.Http.csproj", "{913C4E0B-64A2-4655-A2FD-EF72A3471AD4}"
 EndProject
@@ -106,8 +80,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.HttpsPolicy", "..\Middleware\HttpsPolicy\src\Microsoft.AspNetCore.HttpsPolicy.csproj", "{0B75D2E0-7B18-4DAF-848B-EE2C836F1B1A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.IISIntegration", "..\Servers\IIS\IISIntegration\src\Microsoft.AspNetCore.Server.IISIntegration.csproj", "{BEFAC4AC-70FB-403C-AE5D-2E2CE3508095}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Https", "..\Servers\Kestrel\Https\src\Microsoft.AspNetCore.Server.Kestrel.Https.csproj", "{A34551AD-DBC3-4BA0-B116-AEBA8C40E39B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

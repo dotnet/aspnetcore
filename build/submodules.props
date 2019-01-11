@@ -37,7 +37,6 @@
 
   <ItemGroup>
     <Repository Include="Components" />
-    <Repository Include="SignalR" />
     <Repository Include="Templating" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
 
     <!-- Test-only repos -->

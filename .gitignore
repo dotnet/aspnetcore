@@ -30,3 +30,4 @@ launchSettings.json
 BenchmarkDotNet.Artifacts/
 korebuild-lock.txt
 .gradle/
+src/SignalR/clients/**/dist/

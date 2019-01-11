@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Tests for users to verify their own implementations of SignalR types</Description>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <IsProductPackage>true</IsProductPackage>
+    <IsTestProject>false</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SignalRSharedSourceRoot)DuplexPipe.cs" Link="DuplexPipe.cs" />
+    <Compile Include="$(SignalRSharedSourceRoot)MemoryBufferWriter.cs" Link="Internal\MemoryBufferWriter.cs" />
+    <Compile Include="..\..\..\common\testassets\Tests.Utils\HubConnectionContextUtils.cs" Link="HubConnectionContextUtils.cs" />
+    <Compile Include="..\..\..\common\testassets\Tests.Utils\TaskExtensions.cs" Link="TaskExtensions.cs" />
+    <Compile Include="..\..\..\common\testassets\Tests.Utils\TestClient.cs" Link="TestClient.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- This reference needs to be moved. https://github.com/aspnet/AspNetCore/issues/6581 -->
+    <Reference Include="Microsoft.AspNetCore.Testing" />
+
+    <Reference Include="Microsoft.AspNetCore.SignalR.Common" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.Core" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" />
+    <Reference Include="xunit.assert" />
+    <Reference Include="xunit.extensibility.core" />
+  </ItemGroup>
+
+</Project>
