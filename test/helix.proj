@@ -69,7 +69,6 @@
       <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Razor\CodeAnalysis.Razor\test\Microsoft.CodeAnalysis.Razor.Test.csproj" />
       <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Razor\Mvc.Razor.Extensions.Version1_X\test\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.Test.csproj" />
       <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Razor\Mvc.Razor.Extensions\test\Microsoft.AspNetCore.Mvc.Razor.Extensions.Test.csproj" />
-      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Razor\Razor.Design\test\IntegrationTests\Microsoft.AspNetCore.Razor.Design.Test.csproj" />
       <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Razor\Razor.Language\test\Microsoft.AspNetCore.Razor.Language.Test.csproj" />
       <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Razor\Razor.Runtime\test\Microsoft.AspNetCore.Razor.Runtime.Test.csproj" />
       <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Razor\Razor.Tools\test\Microsoft.AspNetCore.Razor.Tools.Test.csproj" />
@@ -94,12 +93,15 @@
       <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Mvc\test\Microsoft.AspNetCore.Mvc.Test\Microsoft.AspNetCore.Mvc.Test.csproj" />
       <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Mvc\test\Microsoft.AspNetCore.Mvc.ViewFeatures.Test\Microsoft.AspNetCore.Mvc.ViewFeatures.Test.csproj" />
       <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Mvc\test\Microsoft.AspNetCore.Mvc.WebApiCompatShimTest\Microsoft.AspNetCore.Mvc.WebApiCompatShimTest.csproj" />
-      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Azure\ApplicationInsights.HostingStartup\test\UnitTests\Microsoft.AspNetCore.ApplicationInsights.HostingStartup.Tests.csproj" />
       <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Azure\AzureAD\Authentication.AzureAD.UI\test\Microsoft.AspNetCore.Authentication.AzureAD.UI.Test.csproj" />
       <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Azure\AzureAD\Authentication.AzureADB2C.UI\test\Microsoft.AspNetCore.Authentication.AzureADB2C.UI.Test.csproj" />
       <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Azure\AzureAppServicesIntegration\test\Microsoft.AspNetCore.AzureAppServicesIntegration.Tests.csproj" />
     </ItemGroup>
 
+    <!-- skipped
+      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Azure\ApplicationInsights.HostingStartup\test\UnitTests\Microsoft.AspNetCore.ApplicationInsights.HostingStartup.Tests.csproj" />
+          <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Razor\Razor.Design\test\IntegrationTests\Microsoft.AspNetCore.Razor.Design.Test.csproj" />
+    -->
     <MSBuild Projects="@(ProjectsToTest)"
               Targets="CreateTestPayload"
               BuildInParallel="true">
