@@ -283,13 +283,11 @@
   <!-- <Target Name="Helix" DependsOnTargets="GetTestAssemblies;Restore"> -->
   <Target Name="Helix" DependsOnTargets="Restore">
     <ItemGroup>
-      <!-- <CsProjects Include="@(ProjectToBuild)" Condition="'%(Extension)' == '.csproj'" /> -->
-      <CsProjects Include="$(MSBuildThisFileDirectory)..\src\Security\Authentication\test\Microsoft.AspNetCore.Authentication.Test.csproj" />
+      <CsProjects Include="@(ProjectToBuild)" Condition="'%(Extension)' == '.csproj'" />
     </ItemGroup>
     <PropertyGroup>
       <HelixTestProjects>@(CsProjects)</HelixTestProjects>
     </PropertyGroup>
-    <Message Text="Projects=$(HelixTestProjects)" />
     <Exec Command="dotnet msbuild $(MSBuildThisFileDirectory)..\test\helix.proj" />
     <!-- <MSBuild Projects="$(MSBuildThisFileDirectory)..\test\helix.proj"
              Targets="Test"
