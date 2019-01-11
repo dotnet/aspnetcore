@@ -4,7 +4,7 @@
       "AdxVerificationCompositeRule"
     ],
     "packages": {
-      "Microsoft.AspNetCore.Components.Build": {
+      "Microsoft.AspNetCore.Blazor.Build": {
         "Exclusions": {
           "ASSEMBLY_COMPANY": {
             "tools/Mono.Cecil.dll": "External package",

@@ -78,24 +78,25 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             StopServer();
             if (variant.HostingModel == HostingModel.InProcess)
             {
-                EventLogHelpers.VerifyEventLogEvent(deploymentResult, "Could not start stdout redirection in (.*)aspnetcorev2.dll. Exception message: HRESULT 0x80070003");
-                EventLogHelpers.VerifyEventLogEvent(deploymentResult, "Could not stop stdout redirection in (.*)aspnetcorev2.dll. Exception message: HRESULT 0x80070002");
+                // Error is getting logged twice, from shim and handler
+                EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.CouldNotStartStdoutFileRedirection("Q:\\std", deploymentResult), allowMultiple: true);
             }
         }
 
         [ConditionalTheory]
         [MemberData(nameof(TestVariants))]
+        [RequiresNewShim]
         public async Task StartupMessagesAreLoggedIntoDebugLogFile(TestVariant variant)
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant, publish: true);
             deploymentParameters.HandlerSettings["debugLevel"] = "file";
-            deploymentParameters.HandlerSettings["debugFile"] = "debug.txt";
+            deploymentParameters.HandlerSettings["debugFile"] = "subdirectory\\debug.txt";
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
             await deploymentResult.HttpClient.GetAsync("/");
 
-            AssertLogs(Path.Combine(deploymentResult.ContentRoot, "debug.txt"));
+            AssertLogs(Path.Combine(deploymentResult.ContentRoot, "subdirectory", "debug.txt"));
         }
 
         [ConditionalTheory]

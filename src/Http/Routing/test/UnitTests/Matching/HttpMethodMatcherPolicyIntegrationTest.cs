@@ -356,6 +356,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             return (httpContext, context);
         }
+
         internal static RouteEndpoint CreateEndpoint(
             string template,
             object defaults = null,

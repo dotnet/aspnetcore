@@ -3,29 +3,47 @@
 
 using System;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Http
 {
+    [Obsolete("This is obsolete and will be removed in a future version. Use DefaultHttpContextFactory instead.")]
     public class HttpContextFactory : IHttpContextFactory
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly FormOptions _formOptions;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
 
         public HttpContextFactory(IOptions<FormOptions> formOptions)
-            : this(formOptions, httpContextAccessor: null)
+            : this(formOptions, serviceScopeFactory: null)
+        {
+        }
+
+        public HttpContextFactory(IOptions<FormOptions> formOptions, IServiceScopeFactory serviceScopeFactory)
+            : this(formOptions, serviceScopeFactory, httpContextAccessor: null)
         {
         }
 
         public HttpContextFactory(IOptions<FormOptions> formOptions, IHttpContextAccessor httpContextAccessor)
+            : this(formOptions, serviceScopeFactory: null, httpContextAccessor: httpContextAccessor)
+        {
+        }
+
+        public HttpContextFactory(IOptions<FormOptions> formOptions, IServiceScopeFactory serviceScopeFactory, IHttpContextAccessor httpContextAccessor)
         {
             if (formOptions == null)
             {
                 throw new ArgumentNullException(nameof(formOptions));
             }
 
+            if (serviceScopeFactory == null)
+            {
+                throw new ArgumentNullException(nameof(serviceScopeFactory));
+            }
+
             _formOptions = formOptions.Value;
+            _serviceScopeFactory = serviceScopeFactory;
             _httpContextAccessor = httpContextAccessor;
         }
 
@@ -43,6 +61,7 @@ namespace Microsoft.AspNetCore.Http
             }
 
             httpContext.FormOptions = _formOptions;
+            httpContext.ServiceScopeFactory = _serviceScopeFactory;
 
             return httpContext;
         }

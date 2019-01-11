@@ -15,12 +15,12 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
     public class EventLogHelpers
     {
-        public static void VerifyEventLogEvent(IISDeploymentResult deploymentResult, string expectedRegexMatchString)
+        public static void VerifyEventLogEvent(IISDeploymentResult deploymentResult, string expectedRegexMatchString, bool allowMultiple = false)
         {
             Assert.True(deploymentResult.HostProcess.HasExited);
 
             var entries = GetEntries(deploymentResult);
-            AssertSingleEntry(expectedRegexMatchString, entries);
+            AssertEntry(expectedRegexMatchString, entries, allowMultiple);
         }
 
         public static void VerifyEventLogEvent(IISDeploymentResult deploymentResult, string expectedRegexMatchString, ILogger logger)
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var entries = GetEntries(deploymentResult);
             try
             {
-                AssertSingleEntry(expectedRegexMatchString, entries);
+                AssertEntry(expectedRegexMatchString, entries);
             }
             catch (Exception ex)
             {
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var entries = GetEntries(deploymentResult).ToList();
             foreach (var regexString in expectedRegexMatchString)
             {
-                var matchedEntries = AssertSingleEntry(regexString, entries);
+                var matchedEntries = AssertEntry(regexString, entries);
 
                 foreach (var matchedEntry in matchedEntries)
                 {
@@ -60,12 +60,12 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.True(0 == entries.Count, $"Some entries were not matched by any regex {FormatEntries(entries)}");
         }
 
-        private static EventLogEntry[] AssertSingleEntry(string regexString, IEnumerable<EventLogEntry> entries)
+        private static EventLogEntry[] AssertEntry(string regexString, IEnumerable<EventLogEntry> entries, bool allowMultiple = false)
         {
             var expectedRegex = new Regex(regexString, RegexOptions.Singleline);
             var matchedEntries = entries.Where(entry => expectedRegex.IsMatch(entry.Message)).ToArray();
             Assert.True(matchedEntries.Length > 0, $"No entries matched by '{regexString}'");
-            Assert.True(matchedEntries.Length < 2, $"Multiple entries matched by '{regexString}': {FormatEntries(matchedEntries)}");
+            Assert.True(allowMultiple || matchedEntries.Length < 2, $"Multiple entries matched by '{regexString}': {FormatEntries(matchedEntries)}");
             return matchedEntries;
         }
 
@@ -195,6 +195,12 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public static string InProcessFailedToFindRequestHandler(IISDeploymentResult deploymentResult)
         {
             return "Could not find the assembly '(.*)' referenced for the in-process application. Please confirm the Microsoft.AspNetCore.Server.IIS package is referenced in your application.";
+        }
+
+        public static string CouldNotStartStdoutFileRedirection(string file, IISDeploymentResult deploymentResult)
+        {
+            return
+                $"Could not start stdout file redirection to '{Regex.Escape(file)}' with application base '{EscapedContentRoot(deploymentResult)}'.";
         }
 
         private static string EscapedContentRoot(IISDeploymentResult deploymentResult)

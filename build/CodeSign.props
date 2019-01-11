@@ -73,7 +73,6 @@
       <FilesToSign Include="Microsoft.DotNet.PlatformAbstractions.dll"                      Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Microsoft.Extensions.DependencyModel.dll"                       Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="System.IO.Pipelines.dll"                                        Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="System.Net.Http.Formatting.dll"                                 Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="System.Net.WebSockets.WebSocketProtocol.dll"                    Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="System.Runtime.CompilerServices.Unsafe.dll"                     Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="System.Security.Cryptography.Pkcs.dll"                          Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />

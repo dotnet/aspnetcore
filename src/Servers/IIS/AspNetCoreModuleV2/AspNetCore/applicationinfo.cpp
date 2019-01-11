@@ -4,7 +4,7 @@
 #include "applicationinfo.h"
 
 #include "proxymodule.h"
-#include "hostfxr_utility.h"
+#include "HostFxrResolver.h"
 #include "debugutil.h"
 #include "resources.h"
 #include "SRWExclusiveLock.h"

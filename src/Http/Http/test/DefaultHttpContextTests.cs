@@ -3,17 +3,19 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.WebSockets;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace System.IO.Pipelines.Tests
+namespace Microsoft.AspNetCore.Http
 {
     public class DefaultHttpContextTests
     {
@@ -188,6 +190,48 @@ namespace System.IO.Pipelines.Tests
             Assert.NotEqual(3, newFeatures.Count());
         }
 
+        [Fact]
+        public void RequestServicesAreNotOverwrittenIfAlreadySet()
+        {
+            var serviceProvider = new ServiceCollection()
+                        .BuildServiceProvider();
+
+            var scopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
+            
+            var context = new DefaultHttpContext();
+            context.ServiceScopeFactory = scopeFactory;
+            context.RequestServices = serviceProvider;
+
+            Assert.Same(serviceProvider, context.RequestServices);
+        }
+
+        [Fact]
+        public async Task RequestServicesAreDisposedOnCompleted()
+        {
+            var serviceProvider = new ServiceCollection()
+                        .AddTransient<DisposableThing>()
+                        .BuildServiceProvider();
+
+            var scopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
+            DisposableThing instance = null;
+
+            var context = new DefaultHttpContext();
+            context.ServiceScopeFactory = scopeFactory;
+            var responseFeature = new TestHttpResponseFeature();
+            context.Features.Set<IHttpResponseFeature>(responseFeature);
+
+            Assert.NotNull(context.RequestServices);
+            Assert.Single(responseFeature.CompletedCallbacks);
+
+            instance = context.RequestServices.GetRequiredService<DisposableThing>();
+
+            var callback = responseFeature.CompletedCallbacks[0];
+            await callback.callback(callback.state);
+
+            Assert.Null(context.RequestServices);
+            Assert.True(instance.Disposed);
+        }
+
         void TestAllCachedFeaturesAreNull(HttpContext context, IFeatureCollection features)
         {
             TestCachedFeaturesAreNull(context, features);
@@ -237,7 +281,7 @@ namespace System.IO.Pipelines.Tests
 
             var fields = type
                 .GetFields(BindingFlags.NonPublic | BindingFlags.Instance)
-                .Where(f => f.FieldType.GetTypeInfo().IsInterface);
+                .Where(f => f.FieldType.GetTypeInfo().IsInterface && f.GetCustomAttribute<CompilerGeneratedAttribute>() == null);
 
             foreach (var field in fields)
             {
@@ -279,6 +323,36 @@ namespace System.IO.Pipelines.Tests
         {
             var context = new DefaultHttpContext();
             return context;
+        }
+
+        private class DisposableThing : IDisposable
+        {
+            public bool Disposed { get; set; }
+            public void Dispose()
+            {
+                Disposed = true;
+            }
+        }
+
+        private class TestHttpResponseFeature : IHttpResponseFeature
+        {
+            public List<(Func<object, Task> callback, object state)> CompletedCallbacks = new List<(Func<object, Task> callback, object state)>();
+
+            public int StatusCode { get; set; }
+            public string ReasonPhrase { get; set; }
+            public IHeaderDictionary Headers { get; set; } = new HeaderDictionary();
+            public Stream Body { get; set; }
+
+            public bool HasStarted => false;
+
+            public void OnCompleted(Func<object, Task> callback, object state)
+            {
+                CompletedCallbacks.Add((callback, state));
+            }
+
+            public void OnStarting(Func<object, Task> callback, object state)
+            {
+            }
         }
 
         private class TestSession : ISession

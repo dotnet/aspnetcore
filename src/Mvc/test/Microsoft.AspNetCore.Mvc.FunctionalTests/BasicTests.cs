@@ -265,7 +265,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task JsonHelperWithSettings_RendersJson_WithNamesUnchanged()
         {
             // Arrange
-            var json = "{\"id\":9000,\"FullName\":\"John <b>Smith</b>\"}";
+            var json = "{\"id\":9000,\"FullName\":\"John \\u003cb\\u003eSmith\\u003c/b\\u003e\"}";
             var expectedBody = string.Format(
                 @"<script type=""text/javascript"">
     var json = {0};
@@ -287,7 +287,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task JsonHelperWithSettings_RendersJson_WithSnakeCaseNames()
         {
             // Arrange
-            var json = "{\"id\":9000,\"full_name\":\"John <b>Smith</b>\"}";
+            var json = "{\"id\":9000,\"full_name\":\"John \\u003cb\\u003eSmith\\u003c/b\\u003e\"}";
             var expectedBody = string.Format(
                 @"<script type=""text/javascript"">
     var json = {0};

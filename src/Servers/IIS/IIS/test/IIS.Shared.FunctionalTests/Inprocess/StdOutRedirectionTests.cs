@@ -25,7 +25,6 @@ namespace IIS.FunctionalTests.Inprocess
         }
 
         [ConditionalFact]
-        [SkipIfDebug]
         public async Task FrameworkNotFoundExceptionLogged_Pipe()
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite, publish: true);
@@ -44,7 +43,6 @@ namespace IIS.FunctionalTests.Inprocess
         }
 
         [ConditionalFact]
-        [SkipIfDebug]
         public async Task FrameworkNotFoundExceptionLogged_File()
         {
             var deploymentParameters =

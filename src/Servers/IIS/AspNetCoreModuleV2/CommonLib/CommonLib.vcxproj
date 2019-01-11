@@ -199,7 +199,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="application.h" />
-    <ClInclude Include="baseoutputmanager.h" />
     <ClInclude Include="BindingInformation.h" />
     <ClInclude Include="ConfigurationSection.h" />
     <ClInclude Include="ConfigurationSource.h" />
@@ -209,22 +208,21 @@
     <ClInclude Include="EventTracing.h" />
     <ClInclude Include="exceptions.h" />
     <ClInclude Include="file_utility.h" />
-    <ClInclude Include="FileOutputManager.h" />
     <ClInclude Include="GlobalVersionUtility.h" />
     <ClInclude Include="fx_ver.h" />
     <ClInclude Include="HandleWrapper.h" />
-    <ClInclude Include="hostfxroptions.h" />
-    <ClInclude Include="hostfxr_utility.h" />
+    <ClInclude Include="HostFxr.h" />
+    <ClInclude Include="HostFxrResolutionResult.h" />
+    <ClInclude Include="HostFxrResolver.h" />
     <ClInclude Include="iapplication.h" />
     <ClInclude Include="debugutil.h" />
     <ClInclude Include="InvalidOperationException.h" />
-    <ClInclude Include="IOutputManager.h" />
+    <ClInclude Include="RedirectionOutput.h" />
     <ClInclude Include="irequesthandler.h" />
     <ClInclude Include="LoggingHelpers.h" />
     <ClInclude Include="ModuleHelpers.h" />
     <ClInclude Include="NonCopyable.h" />
-    <ClInclude Include="NullOutputManager.h" />
-    <ClInclude Include="PipeOutputManager.h" />
+    <ClInclude Include="StandardStreamRedirection.h" />
     <ClInclude Include="RegistryKey.h" />
     <ClInclude Include="requesthandler.h" />
     <ClInclude Include="resources.h" />
@@ -246,14 +244,15 @@
     <ClCompile Include="Environment.cpp" />
     <ClCompile Include="EventLog.cpp" />
     <ClCompile Include="file_utility.cpp" />
-    <ClCompile Include="FileOutputManager.cpp" />
     <ClCompile Include="fx_ver.cpp" />
     <ClCompile Include="GlobalVersionUtility.cpp" />
     <ClCompile Include="HandleWrapper.cpp" />
-    <ClCompile Include="hostfxr_utility.cpp" />
-    <ClCompile Include="hostfxroptions.cpp" />
+    <ClCompile Include="HostFxr.cpp" />
+    <ClCompile Include="HostFxrResolver.cpp" />
+    <ClCompile Include="HostFxrResolutionResult.cpp" />
     <ClCompile Include="LoggingHelpers.cpp" />
-    <ClCompile Include="PipeOutputManager.cpp" />
+    <ClCompile Include="StandardStreamRedirection.cpp" />
+    <ClCompile Include="RedirectionOutput.cpp" />
     <ClCompile Include="RegistryKey.cpp" />
     <ClCompile Include="StdWrapper.cpp" />
     <ClCompile Include="SRWExclusiveLock.cpp" />

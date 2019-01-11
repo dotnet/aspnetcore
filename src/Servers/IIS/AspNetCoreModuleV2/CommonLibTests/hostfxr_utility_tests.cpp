@@ -5,14 +5,14 @@
 #include <filesystem>
 #include <vector>
 #include <string>
-#include "hostfxr_utility.h"
+#include "HostFxrResolver.h"
 #include "Environment.h"
 
 TEST(ParseHostFxrArguments, BasicHostFxrArguments)
 {
     std::vector<std::wstring> bstrArray;
 
-    HOSTFXR_UTILITY::AppendArguments(
+    HostFxrResolver::AppendArguments(
         L"exec \"test.dll\"", // args
         L"invalid",  // physical path to application
         bstrArray); // args array.
@@ -26,7 +26,7 @@ TEST(ParseHostFxrArguments, NoExecProvided)
 {
     std::vector<std::wstring> bstrArray;
 
-    HOSTFXR_UTILITY::AppendArguments(
+    HostFxrResolver::AppendArguments(
         L"test.dll", // args
         L"ignored",  // physical path to application
         bstrArray); // args array.
@@ -40,7 +40,7 @@ TEST(ParseHostFxrArguments, ConvertDllToAbsolutePath)
     std::vector<std::wstring> bstrArray;
     // we need to use existing dll so let's use ntdll that we know exists everywhere
     auto system32 = Environment::ExpandEnvironmentVariables(L"%WINDIR%\\System32");
-    HOSTFXR_UTILITY::AppendArguments(
+    HostFxrResolver::AppendArguments(
         L"exec \"ntdll.dll\"", // args
         system32,  // physical path to application
         bstrArray, // args array.
@@ -57,7 +57,7 @@ TEST(ParseHostFxrArguments, ProvideNoArgs_InvalidArgs)
     std::filesystem::path struHostFxrDllLocation;
     std::filesystem::path struExeLocation;
 
-    EXPECT_THROW(HOSTFXR_UTILITY::GetHostFxrParameters(
+    EXPECT_THROW(HostFxrResolver::GetHostFxrParameters(
         L"dotnet", // processPath
         L"some\\path",  // application physical path, ignored.
         L"",  //arguments
@@ -94,7 +94,7 @@ TEST(GetAbsolutePathToDotnetFromProgramFiles, BackupWorks)
         fDotnetInProgramFiles = std::filesystem::is_regular_file(L"C:/Program Files (x86)/dotnet/dotnet.exe");
     }
 
-    auto dotnetPath = HOSTFXR_UTILITY::GetAbsolutePathToDotnetFromProgramFiles();
+    auto dotnetPath = HostFxrResolver::GetAbsolutePathToDotnetFromProgramFiles();
     if (fDotnetInProgramFiles)
     {
         EXPECT_TRUE(dotnetPath.has_value());
@@ -111,7 +111,7 @@ TEST(GetHostFxrArguments, InvalidParams)
     std::filesystem::path struHostFxrDllLocation;
     std::filesystem::path struExeLocation;
 
-    EXPECT_THROW(HOSTFXR_UTILITY::GetHostFxrParameters(
+    EXPECT_THROW(HostFxrResolver::GetHostFxrParameters(
         L"bogus", // processPath
         L"",  // application physical path, ignored.
         L"ignored",  //arguments
