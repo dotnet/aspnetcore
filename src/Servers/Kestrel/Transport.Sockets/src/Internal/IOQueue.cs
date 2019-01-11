@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -10,9 +10,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
     public class IOQueue : PipeScheduler, IThreadPoolWorkItem
     {
-        private readonly object _workSync = new object();
         private readonly ConcurrentQueue<Work> _workItems = new ConcurrentQueue<Work>();
-        private bool _doingWork;
+        private volatile int _doingWork;
 
         public override void Schedule(Action<object> action, object state)
         {
@@ -22,14 +21,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                 State = state
             };
 
+            // Enqueue prior to checking _doingWork.
             _workItems.Enqueue(work);
 
-            lock (_workSync)
+            // Fast check if already doing work.
+            if (_doingWork == 0)
             {
-                if (!_doingWork)
+                // Not working, set as working, and check if it was already working (via atomic Interlocked).
+                if (Interlocked.Exchange(ref _doingWork, 1) == 0)
                 {
+                    // Wasn't working, schedule.
                     System.Threading.ThreadPool.UnsafeQueueUserWorkItem(this, preferLocal: false);
-                    _doingWork = true;
                 }
             }
         }
@@ -43,14 +45,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                     item.Callback(item.State);
                 }
 
-                lock (_workSync)
+                // All work done.
+                // Set _doingWork (0 == false) prior to checking IsEmpty to catch any missed work in interim.
+                _doingWork = 0;
+
+                // Check if there is work to do
+                if (_workItems.IsEmpty)
                 {
-                    if (_workItems.IsEmpty)
-                    {
-                        _doingWork = false;
-                        return;
-                    }
+                    // Nothing to do, exit.
+                    break;
                 }
+
+                // Is work, can we set it as active again (via atomic Interlocked), prior to scheduling?
+                if (Interlocked.Exchange(ref _doingWork, 1) == 1)
+                {
+                    // Execute has been rescheduled already, exit.
+                    break;
+                }
+
+                // Is work, wasn't already scheduled so continue loop.
             }
         }
 
