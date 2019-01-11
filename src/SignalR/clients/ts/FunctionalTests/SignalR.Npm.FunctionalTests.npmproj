@@ -1,0 +1,17 @@
+<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.props))\Directory.Build.props" />
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <NpmTestArgs>run test:local -- --no-color --configuration $(Configuration)</NpmTestArgs>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="FunctionalTests.csproj" Condition="'$(BuildManaged)' != 'false'" />
+    <ProjectReference Include="..\signalr\signalr.npmproj" />
+    <ProjectReference Include="..\signalr-protocol-msgpack\signalr-protocol-msgpack.npmproj" />
+  </ItemGroup>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
+</Project>

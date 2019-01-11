@@ -7,7 +7,6 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
-    <RepositoryBuildOrder Include="SignalR" Order="16" />
     <RepositoryBuildOrder Include="AuthSamples" Order="16" />
     <RepositoryBuildOrder Include="Components" Order="17" />
     <RepositoryBuildOrder Include="Templating" Order="18" />
