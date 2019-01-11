@@ -290,7 +290,7 @@
       <HelixTestProjects>@(CsProjects)</HelixTestProjects>
     </PropertyGroup>
     <Message Text="Projects=$(HelixTestProjects)" />
-    <Exec Command="dotnet msbuild $(MSBuildThisFileDirectory)..\test\helix.proj">
+    <Exec Command="dotnet msbuild $(MSBuildThisFileDirectory)..\test\helix.proj" />
     <!-- <MSBuild Projects="$(MSBuildThisFileDirectory)..\test\helix.proj"
              Targets="Test"
              Properties="ProjectsToTest=$(HelixTestProjects)"
