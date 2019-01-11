@@ -259,18 +259,17 @@ HostFxrResolver::GetAbsolutePathToDotnet(
     }
 
     auto isWow64Process = Environment::IsRunning64BitProcess();
-    const auto platform = isWow64Process ? L"x64" : L"x86";
 
     DWORD flags = 0;
     std::wstring regKeySubSection;
 
     if (isWow64Process)
     {
-        regKeySubSection = std::wstring(L"SOFTWARE\\WOW6432Node\\dotnet\\Setup\\InstalledVersions\\") + platform + L"\\sdk";
+        regKeySubSection = L"SOFTWARE\\WOW6432Node\\dotnet\\Setup\\InstalledVersions\\x64\\sdk";
     }
     else
     {
-        regKeySubSection = std::wstring(L"SOFTWARE\\dotnet\\Setup\\InstalledVersions\\") + platform + L"\\sdk";
+        regKeySubSection = L"SOFTWARE\\dotnet\\Setup\\InstalledVersions\\x86\\sdk";
         flags = RRF_SUBKEY_WOW6432KEY;
     }
 
