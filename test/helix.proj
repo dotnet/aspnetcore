@@ -9,37 +9,6 @@
     </ReadLinesFromFile> -->
 
     <ItemGroup>
-      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\DefaultBuilder\test\Microsoft.AspNetCore.FunctionalTests\Microsoft.AspNetCore.FunctionalTests.csproj" />
-      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\DefaultBuilder\test\Microsoft.AspNetCore.Tests\Microsoft.AspNetCore.Tests.csproj" />
-      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\DataProtection\Extensions\test\Microsoft.AspNetCore.DataProtection.Extensions.Tests.csproj" />
-      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Hosting\Hosting\test\Microsoft.AspNetCore.Hosting.Tests.csproj" />
-      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
-      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Hosting\TestHost\test\Microsoft.AspNetCore.TestHost.Tests.csproj" />
-      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Hosting\test\WebHostBuilderFactory.Tests\Microsoft.AspNetCore.Hosting.WebHostBuilderFactory.Tests.csproj" />
-      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Identity\EntityFrameworkCore\test\EF.Test\Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test.csproj" />
-      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Identity\test\Identity.Test\Microsoft.AspNetCore.Identity.Test.csproj" />
-      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Security\Interop\test\Microsoft.Owin.Security.Interop.Test.csproj" />
-      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Shared\test\Shared.Tests\Microsoft.AspNetCore.Shared.Tests.csproj" />
-      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Tools\dotnet-watch\test\dotnet-watch.Tests.csproj" />
-      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Tools\FirstRunCertGenerator\test\Microsoft.AspNetCore.DeveloperCertificates.XPlat.Tests.csproj" />
-      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Middleware\Diagnostics.EntityFrameworkCore\test\FunctionalTests\Diagnostics.EFCore.FunctionalTests.csproj" />
-      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Middleware\WebSockets\test\ConformanceTests\AutobahnTestApp\AutobahnTestApp.csproj" />
-      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Middleware\WebSockets\test\ConformanceTests\Microsoft.AspNetCore.WebSockets.ConformanceTests.csproj" />
-      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Middleware\WebSockets\test\UnitTests\Microsoft.AspNetCore.WebSockets.Tests.csproj" />
-      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Razor\CodeAnalysis.Razor\test\Microsoft.CodeAnalysis.Razor.Test.csproj" />
-      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Razor\Mvc.Razor.Extensions.Version1_X\test\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.Test.csproj" />
-      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Razor\Mvc.Razor.Extensions\test\Microsoft.AspNetCore.Mvc.Razor.Extensions.Test.csproj" />
-      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Razor\Razor.Language\test\Microsoft.AspNetCore.Razor.Language.Test.csproj" />
-      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Razor\Razor.Runtime\test\Microsoft.AspNetCore.Razor.Runtime.Test.csproj" />
-      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Razor\Razor.Tools\test\Microsoft.AspNetCore.Razor.Tools.Test.csproj" />
-      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Razor\RazorPageGenerator\test\RazorPageGenerator.Test.csproj" />
-      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Razor\Razor\test\Microsoft.AspNetCore.Razor.Test.csproj" />
-      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Mvc\test\Microsoft.AspNetCore.Mvc.Formatters.Xml.Test\Microsoft.AspNetCore.Mvc.Formatters.Xml.Test.csproj" />
-      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Mvc\test\Microsoft.AspNetCore.Mvc.Razor.Test\Microsoft.AspNetCore.Mvc.Razor.Test.csproj" />
-      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Mvc\test\Microsoft.AspNetCore.Mvc.RazorPages.Test\Microsoft.AspNetCore.Mvc.RazorPages.Test.csproj" />
-    </ItemGroup>
-
-    <!-- passing
       <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Antiforgery\test\Microsoft.AspNetCore.Antiforgery.Test.csproj" />
       <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\DataProtection\Abstractions\test\Microsoft.AspNetCore.DataProtection.Abstractions.Tests.csproj" />
       <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\DataProtection\AzureKeyVault\test\Microsoft.AspNetCore.DataProtection.AzureKeyVault.Tests.csproj" />
@@ -82,6 +51,8 @@
       <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Mvc\test\Microsoft.AspNetCore.Mvc.Formatters.Json.Test\Microsoft.AspNetCore.Mvc.Formatters.Json.Test.csproj" />
       <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Mvc\test\Microsoft.AspNetCore.Mvc.IntegrationTests\Microsoft.AspNetCore.Mvc.IntegrationTests.csproj" />
       <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Mvc\test\Microsoft.AspNetCore.Mvc.Localization.Test\Microsoft.AspNetCore.Mvc.Localization.Test.csproj" />
+      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Mvc\test\Microsoft.AspNetCore.Mvc.RazorPages.Test\Microsoft.AspNetCore.Mvc.RazorPages.Test.csproj" />
+      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Mvc\test\Microsoft.AspNetCore.Mvc.Razor.Test\Microsoft.AspNetCore.Mvc.Razor.Test.csproj" />
       <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Mvc\test\Microsoft.AspNetCore.Mvc.TagHelpers.Test\Microsoft.AspNetCore.Mvc.TagHelpers.Test.csproj" />
       <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Mvc\test\Microsoft.AspNetCore.Mvc.TestCommon\Microsoft.AspNetCore.Mvc.TestCommon.csproj" />
       <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Mvc\test\Microsoft.AspNetCore.Mvc.TestDiagnosticListener\Microsoft.AspNetCore.Mvc.TestDiagnosticListener.csproj" />
@@ -97,10 +68,40 @@
       <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Middleware\Rewrite\test\Microsoft.AspNetCore.Rewrite.Tests.csproj" />
       <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Middleware\Session\test\Microsoft.AspNetCore.Session.Tests.csproj" />
       <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Middleware\StaticFiles\test\UnitTests\Microsoft.AspNetCore.StaticFiles.Tests.csproj" />
+      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Razor\Mvc.Razor.Extensions.Version1_X\test\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.Test.csproj" />
+      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Razor\Razor.Runtime\test\Microsoft.AspNetCore.Razor.Runtime.Test.csproj" />
+      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Razor\Razor.Tools\test\Microsoft.AspNetCore.Razor.Tools.Test.csproj" />
+      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Razor\Razor\test\Microsoft.AspNetCore.Razor.Test.csproj" />
       <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Azure\AzureAppServicesIntegration\test\Microsoft.AspNetCore.AzureAppServicesIntegration.Tests.csproj" />
+      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Hosting\TestHost\test\Microsoft.AspNetCore.TestHost.Tests.csproj" />
+      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Hosting\test\WebHostBuilderFactory.Tests\Microsoft.AspNetCore.Hosting.WebHostBuilderFactory.Tests.csproj" />
+      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Shared\test\Shared.Tests\Microsoft.AspNetCore.Shared.Tests.csproj" />
+      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Middleware\WebSockets\test\ConformanceTests\AutobahnTestApp\AutobahnTestApp.csproj" />
+      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Middleware\WebSockets\test\ConformanceTests\Microsoft.AspNetCore.WebSockets.ConformanceTests.csproj" />
+      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Hosting\Hosting\test\Microsoft.AspNetCore.Hosting.Tests.csproj" />
+    </ItemGroup>
+
+    <!-- passing
     -->    
     
-    <!-- skipped
+    <!-- skipped (needs investigation)
+      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\DefaultBuilder\test\Microsoft.AspNetCore.FunctionalTests\Microsoft.AspNetCore.FunctionalTests.csproj" />
+      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\DefaultBuilder\test\Microsoft.AspNetCore.Tests\Microsoft.AspNetCore.Tests.csproj" />
+      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\DataProtection\Extensions\test\Microsoft.AspNetCore.DataProtection.Extensions.Tests.csproj" />
+      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
+      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Identity\EntityFrameworkCore\test\EF.Test\Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test.csproj" />
+      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Identity\test\Identity.Test\Microsoft.AspNetCore.Identity.Test.csproj" />
+      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Security\Interop\test\Microsoft.Owin.Security.Interop.Test.csproj" />
+      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Tools\dotnet-watch\test\dotnet-watch.Tests.csproj" />
+      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Tools\FirstRunCertGenerator\test\Microsoft.AspNetCore.DeveloperCertificates.XPlat.Tests.csproj" />
+      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Middleware\Diagnostics.EntityFrameworkCore\test\FunctionalTests\Diagnostics.EFCore.FunctionalTests.csproj" />
+      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Middleware\WebSockets\test\UnitTests\Microsoft.AspNetCore.WebSockets.Tests.csproj" />
+      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Razor\CodeAnalysis.Razor\test\Microsoft.CodeAnalysis.Razor.Test.csproj" />
+      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Razor\Mvc.Razor.Extensions\test\Microsoft.AspNetCore.Mvc.Razor.Extensions.Test.csproj" />
+      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Razor\Razor.Language\test\Microsoft.AspNetCore.Razor.Language.Test.csproj" />
+      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Razor\RazorPageGenerator\test\RazorPageGenerator.Test.csproj" />
+      <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Mvc\test\Microsoft.AspNetCore.Mvc.Formatters.Xml.Test\Microsoft.AspNetCore.Mvc.Formatters.Xml.Test.csproj" />
+
       <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Azure\ApplicationInsights.HostingStartup\test\UnitTests\Microsoft.AspNetCore.ApplicationInsights.HostingStartup.Tests.csproj" />
       <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Hosting\test\FunctionalTests\Microsoft.AspNetCore.Hosting.FunctionalTests.csproj" />
       <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Razor\Razor.Design\test\IntegrationTests\Microsoft.AspNetCore.Razor.Design.Test.csproj" />
