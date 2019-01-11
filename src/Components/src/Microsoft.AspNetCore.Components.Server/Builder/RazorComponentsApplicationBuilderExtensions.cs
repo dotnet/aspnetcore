@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Builder
         {
             builder.UseStaticFiles(new StaticFileOptions
             {
-                FileProvider = new EmbeddedFileProvider(
+                FileProvider = new ManifestEmbeddedFileProvider(
                     typeof(RazorComponentsApplicationBuilderExtensions).Assembly,
                     "frameworkFiles"),
                 OnPrepareResponse = BlazorApplicationBuilderExtensions.SetCacheHeaders
