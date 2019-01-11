@@ -5,6 +5,8 @@ param(
     )
 
 $ErrorActionPreference = 'Stop'
+$ProgressPreference = 'SilentlyContinue' # Workaround PowerShell/PowerShell#2138
+
 Set-StrictMode -Version 1
 
 if (-not $env:JAVA_HOME) {
@@ -15,7 +17,6 @@ $repoRoot = Resolve-Path "$PSScriptRoot/../.."
 $tempDir = "$repoRoot/obj"
 mkdir $tempDir -ea Ignore | out-null
 Write-Host "Starting download of JDK ${JdkVersion}"
-$ProgressPreference = 'SilentlyContinue'
 Invoke-WebRequest -UseBasicParsing -Uri "https://netcorenativeassets.blob.core.windows.net/resource-packages/external/windows/java/jdk-${JdkVersion}_windows-x64_bin.zip" -Out "$tempDir/jdk.zip"
 Write-Host "Done downloading JDK ${JdkVersion}"
 Expand-Archive "$tempDir/jdk.zip" -d "$tempDir/jdk/"
