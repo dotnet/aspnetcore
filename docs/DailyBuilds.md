@@ -26,7 +26,7 @@ These are available in the [Visual Studio Preview](https://www.visualstudio.com/
 
 ## NuGet packages
 
-Daily builds of ackages can be found on <https://dotnet.myget.org/gallery/dotnet-core>. This feed may include
+Daily builds of packages can be found on <https://dotnet.myget.org/gallery/dotnet-core>. This feed may include
 packages that will not be supported in a officially released build.
 
 Commonly referenced packages:
