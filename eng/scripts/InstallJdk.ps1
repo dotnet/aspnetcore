@@ -14,7 +14,11 @@ if (-not $env:JAVA_HOME) {
 $repoRoot = Resolve-Path "$PSScriptRoot/../.."
 $tempDir = "$repoRoot/obj"
 mkdir $tempDir -ea Ignore | out-null
+Write-Host "Starting download of JDK ${JdkVersion}"
 Invoke-WebRequest -UseBasicParsing -Uri "https://netcorenativeassets.blob.core.windows.net/resource-packages/external/windows/java/jdk-${JdkVersion}_windows-x64_bin.zip" -Out "$tempDir/jdk.zip"
+Write-Host "Done downloading JDK ${JdkVersion}"
 Expand-Archive "$tempDir/jdk.zip" -d "$tempDir/jdk/"
+Write-Host "Expanded JDK to $tempDir"
 mkdir (split-path -parent $env:JAVA_HOME) -ea ignore | out-null
 Move-Item "$tempDir/jdk/jdk-${jdkVersion}" $env:JAVA_HOME
+Write-Host "Done installing JDK to $env:JAVA_HOME"
