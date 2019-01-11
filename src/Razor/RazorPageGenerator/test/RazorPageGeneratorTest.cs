@@ -30,7 +30,7 @@ namespace RazorPageGenerator.Test
             Assert.NotEqual(0, exitCode);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549")]
         public void Generator_GeneratesCodeForFilesIntheViewsDirectory()
         {
             // Arrange
