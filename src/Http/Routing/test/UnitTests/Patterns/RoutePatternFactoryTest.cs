@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -215,6 +215,67 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                     Assert.Collection(
                         kvp.Value,
                         c => Assert.IsType<RegexRouteConstraint>(c.ParameterPolicy));
+                });
+        }
+
+        [Fact]
+        public void Pattern_ExtraConstraints_MultipleConstraintsForKey()
+        {
+            // Arrange
+            var template = "{a}/{b}/{c}";
+            var defaults = new { };
+            var constraints = new { d = new[] { new RegexRouteConstraint("foo"), new RegexRouteConstraint("bar") } };
+
+            var original = RoutePatternFactory.Parse(template);
+
+            // Act
+            var actual = RoutePatternFactory.Pattern(
+                original.RawText,
+                defaults,
+                constraints,
+                original.PathSegments);
+
+            // Assert
+            Assert.Collection(
+                actual.ParameterPolicies.OrderBy(kvp => kvp.Key),
+                kvp =>
+                {
+                    Assert.Equal("d", kvp.Key);
+                    Assert.Collection(
+                        kvp.Value,
+                        c => Assert.Equal("foo", Assert.IsType<RegexRouteConstraint>(c.ParameterPolicy).Constraint.ToString()),
+                        c => Assert.Equal("bar", Assert.IsType<RegexRouteConstraint>(c.ParameterPolicy).Constraint.ToString()));
+                });
+        }
+
+        [Fact]
+        public void Pattern_ExtraConstraints_MergeMultipleConstraintsForKey()
+        {
+            // Arrange
+            var template = "{a}/{b}/{c:int}";
+            var defaults = new { };
+            var constraints = new { c = new[] { new RegexRouteConstraint("foo"), new RegexRouteConstraint("bar") } };
+
+            var original = RoutePatternFactory.Parse(template);
+
+            // Act
+            var actual = RoutePatternFactory.Pattern(
+                original.RawText,
+                defaults,
+                constraints,
+                original.PathSegments);
+
+            // Assert
+            Assert.Collection(
+                actual.ParameterPolicies.OrderBy(kvp => kvp.Key),
+                kvp =>
+                {
+                    Assert.Equal("c", kvp.Key);
+                    Assert.Collection(
+                        kvp.Value,
+                        c => Assert.Equal("foo", Assert.IsType<RegexRouteConstraint>(c.ParameterPolicy).Constraint.ToString()),
+                        c => Assert.Equal("bar", Assert.IsType<RegexRouteConstraint>(c.ParameterPolicy).Constraint.ToString()),
+                        c => Assert.Equal("int", c.Content));
                 });
         }
 

@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -312,12 +313,33 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
                 foreach (var kvp in parameterPolicies)
                 {
-                    updatedParameterPolicies.Add(kvp.Key, new List<RoutePatternParameterPolicyReference>()
+                    var policyReferences = new List<RoutePatternParameterPolicyReference>();
+
+                    if (kvp.Value is IParameterPolicy parameterPolicy)
                     {
-                        kvp.Value is IParameterPolicy parameterPolicy
-                            ? ParameterPolicy(parameterPolicy)
-                            : Constraint(kvp.Value), // Constraint will convert string values into regex constraints
-                    });
+                        policyReferences.Add(ParameterPolicy(parameterPolicy));
+                    }
+                    else if (kvp.Value is string)
+                    {
+                        // Constraint will convert string values into regex constraints
+                        policyReferences.Add(Constraint(kvp.Value));
+                    }
+                    else if (kvp.Value is IEnumerable multiplePolicies)
+                    {
+                        foreach (var item in multiplePolicies)
+                        {
+                            // Constraint will convert string values into regex constraints
+                            policyReferences.Add(item is IParameterPolicy p ? ParameterPolicy(p) : Constraint(item));
+                        }
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException(Resources.FormatRoutePattern_InvalidConstraintReference(
+                            kvp.Value ?? "null",
+                            typeof(IRouteConstraint)));
+                    }
+
+                    updatedParameterPolicies.Add(kvp.Key, policyReferences);
                 }
             }
 
