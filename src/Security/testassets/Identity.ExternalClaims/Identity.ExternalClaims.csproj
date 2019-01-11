@@ -25,6 +25,5 @@
     <Reference Include="Microsoft.Extensions.Configuration.UserSecrets" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
     <Reference Include="Microsoft.Extensions.Logging.Debug" />
-    <Reference Include="Microsoft.NET.Sdk.Razor" PrivateAssets="All" />
   </ItemGroup>
 </Project>
