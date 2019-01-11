@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
             _rendererRegistry = rendererRegistry;
             _jsRuntime = jsRuntime;
             _client = client;
-            _syncContext = syncContext;
+            _syncContext = syncContext ?? throw new ArgumentNullException(nameof(syncContext));
 
             _id = _rendererRegistry.Add(this);
         }
@@ -101,14 +101,17 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
         protected override void AddToRenderQueue(int componentId, RenderFragment renderFragment)
         {
             // Render operations are not thread-safe, so they need to be serialized.
-            // This also ensures that when the renderer invokes component lifecycle
-            // methods, it does so on the expected sync context.
-            // We have to use "Post" (for async execution) because if it blocked, it
-            // could deadlock when a child triggers a parent re-render.
-            _syncContext.Post(_ =>
+            if (SynchronizationContext.Current != _syncContext)
+            {
+                _syncContext.Post(_ =>
+                {
+                    base.AddToRenderQueue(componentId, renderFragment);
+                }, null);
+            }
+            else
             {
                 base.AddToRenderQueue(componentId, renderFragment);
-            }, null);
+            }
         }
 
         /// <inheritdoc />
