@@ -90,6 +90,16 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
             RenderRootComponent(componentId);
         }
 
+        /// <inheritdoc />
+        public override void DispatchToSyncContext(Action workItem)
+        {
+            // TODO: Consider not blocking, and instead returning the Task
+            //       given by CircuitSynchronizationContext.Invoke
+            // TODO: Consider accepting a Func<Task> asyncWorkItem
+            //       and returning another Task as above
+            _syncContext.Send(_ => workItem(), null);
+        }
+
         /// <summary>
         /// Disposes the instance.
         /// </summary>

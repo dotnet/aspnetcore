@@ -41,5 +41,13 @@ namespace Microsoft.AspNetCore.Components
 
             _renderer.AddToRenderQueue(_componentId, renderFragment);
         }
+
+        /// <summary>
+        /// Executes the supplied work item on the renderer's
+        /// synchronization context.
+        /// </summary>
+        /// <param name="workItem">The work item to execute.</param>
+        public void Dispatch(Action workItem)
+            => _renderer.DispatchToSyncContext(workItem);
     }
 }

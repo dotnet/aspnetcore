@@ -1,11 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.RenderTree;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Components.Rendering
@@ -130,6 +128,14 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 throw new ArgumentException($"There is no event handler with ID {eventHandlerId}");
             }
         }
+
+        /// <summary>
+        /// Executes the supplied work item on the renderer's
+        /// synchronization context.
+        /// </summary>
+        /// <param name="workItem">The work item to execute.</param>
+        public virtual void DispatchToSyncContext(Action workItem)
+            => workItem(); // Base renderer has no sync context
 
         internal void InstantiateChildComponentOnFrame(ref RenderTreeFrame frame, int parentComponentId)
         {

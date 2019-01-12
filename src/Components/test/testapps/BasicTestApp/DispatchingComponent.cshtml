@@ -26,9 +26,16 @@
         AttemptToRender();
     }
 
-    void RunWithDispatch()
+    async Task RunWithDispatch()
     {
-        result = "TODO: Implement";
+        await Task.Delay(1).ConfigureAwait(false);
+        Dispatch(AttemptToRender);
+
+        // So we can observe that the dispatched work item ran synchronously
+        if (result == "Success")
+        {
+            result += " (completed synchronously)";
+        }
     }
 
     void RunWithDoubleDispatch()

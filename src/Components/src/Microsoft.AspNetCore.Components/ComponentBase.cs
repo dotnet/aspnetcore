@@ -141,6 +141,14 @@ namespace Microsoft.AspNetCore.Components
         protected virtual Task OnAfterRenderAsync()
             => Task.CompletedTask;
 
+        /// <summary>
+        /// Executes the supplied work item on the associated renderer's
+        /// synchronization context.
+        /// </summary>
+        /// <param name="workItem">The work item to execute.</param>
+        protected void Dispatch(Action workItem)
+            => _renderHandle.Dispatch(workItem);
+
         void IComponent.Init(RenderHandle renderHandle)
         {
             // This implicitly means a ComponentBase can only be associated with a single

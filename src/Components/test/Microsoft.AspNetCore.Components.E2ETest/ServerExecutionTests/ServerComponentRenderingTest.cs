@@ -40,5 +40,16 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
                 $"{typeof(RemoteRendererException).FullName}: The current thread is not associated with the renderer's synchronization context",
                 () => result.Text);
         }
+
+        [Fact]
+        public void CanDispatchRenderToSyncContext()
+        {
+            var appElement = MountTestComponent<DispatchingComponent>();
+            var result = appElement.FindElement(By.Id("result"));
+
+            appElement.FindElement(By.Id("run-with-dispatch")).Click();
+
+            WaitAssert.Equal("Success (completed synchronously)", () => result.Text);
+        }
     }
 }
