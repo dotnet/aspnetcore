@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
             }
             else
             {
-                _syncContext.Send(_ => workItem(), null);
+                _syncContext.Send(action => ((Action)action)(), workItem);
             }
         }
 
