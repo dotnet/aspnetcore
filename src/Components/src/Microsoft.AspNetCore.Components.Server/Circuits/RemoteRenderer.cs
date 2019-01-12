@@ -97,7 +97,15 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
             //       given by CircuitSynchronizationContext.Invoke
             // TODO: Consider accepting a Func<Task> asyncWorkItem
             //       and returning another Task as above
-            _syncContext.Send(_ => workItem(), null);
+
+            if (SynchronizationContext.Current == _syncContext)
+            {
+                workItem(); // Avoid deadlock
+            }
+            else
+            {
+                _syncContext.Send(_ => workItem(), null);
+            }
         }
 
         /// <summary>
