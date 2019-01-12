@@ -26,7 +26,6 @@
     <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.AspNetCore.Server.IntegrationTesting" />
     <Reference Include="Microsoft.AspNetCore.TestHost" />
-    <Reference Include="Microsoft.AspNetCore.Testing" />
     <Reference Include="Microsoft.AspNetCore.Mvc.Testing" />
   </ItemGroup>
 </Project>
