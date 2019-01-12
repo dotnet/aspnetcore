@@ -28,9 +28,9 @@
     async Task RunWithDispatch()
     {
         await Task.Delay(1).ConfigureAwait(false);
-        Dispatch(AttemptToRender);
+        await Invoke(AttemptToRender);
 
-        // So we can observe that the dispatched work item ran synchronously
+        // So we can observe that the dispatched work item completed by now
         if (result == "Success")
         {
             result += " (completed synchronously)";
@@ -40,9 +40,9 @@
     async Task RunWithDoubleDispatch()
     {
         await Task.Delay(1).ConfigureAwait(false);
-        Dispatch(() => Dispatch(AttemptToRender));
+        await InvokeAsync(() => Invoke(AttemptToRender));
 
-        // So we can observe that the dispatched work item ran synchronously
+        // So we can observe that the dispatched work item completed by now
         if (result == "Success")
         {
             result += " (completed synchronously)";

@@ -146,8 +146,16 @@ namespace Microsoft.AspNetCore.Components
         /// synchronization context.
         /// </summary>
         /// <param name="workItem">The work item to execute.</param>
-        protected void Dispatch(Action workItem)
-            => _renderHandle.Dispatch(workItem);
+        protected Task Invoke(Action workItem)
+            => _renderHandle.Invoke(workItem);
+
+        /// <summary>
+        /// Executes the supplied work item on the associated renderer's
+        /// synchronization context.
+        /// </summary>
+        /// <param name="workItem">The work item to execute.</param>
+        protected Task InvokeAsync(Func<Task> workItem)
+            => _renderHandle.InvokeAsync(workItem);
 
         void IComponent.Init(RenderHandle renderHandle)
         {

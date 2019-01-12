@@ -91,20 +91,32 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
         }
 
         /// <inheritdoc />
-        public override void DispatchToSyncContext(Action workItem)
+        public override Task Invoke(Action workItem)
         {
-            // TODO: Consider not blocking, and instead returning the Task
-            //       given by CircuitSynchronizationContext.Invoke
-            // TODO: Consider accepting a Func<Task> asyncWorkItem
-            //       and returning another Task as above
-
             if (SynchronizationContext.Current == _syncContext)
             {
-                workItem(); // Avoid deadlock
+                // No need to dispatch. Avoid deadlock by invoking directly.
+                return base.Invoke(workItem);
             }
             else
             {
-                _syncContext.Send(action => ((Action)action)(), workItem);
+                var syncContext = (CircuitSynchronizationContext)_syncContext;
+                return syncContext.Invoke(workItem);
+            }
+        }
+
+        /// <inheritdoc />
+        public override Task InvokeAsync(Func<Task> workItem)
+        {
+            if (SynchronizationContext.Current == _syncContext)
+            {
+                // No need to dispatch. Avoid deadlock by invoking directly.
+                return base.InvokeAsync(workItem);
+            }
+            else
+            {
+                var syncContext = (CircuitSynchronizationContext)_syncContext;
+                return syncContext.InvokeAsync(workItem);
             }
         }
 
@@ -126,8 +138,8 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
             {
                 throw new RemoteRendererException(
                     "The current thread is not associated with the renderer's synchronization context. " +
-                    "Use Dispatch() to switch execution to the renderer's synchronization context when " +
-                    "triggering rendering or modifying any state accessed during rendering.");
+                    "Use Invoke() or InvokeAsync() to switch execution to the renderer's synchronization " +
+                    "context when triggering rendering or modifying any state accessed during rendering.");
             }
 
             base.AddToRenderQueue(componentId, renderFragment);

@@ -134,8 +134,23 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// synchronization context.
         /// </summary>
         /// <param name="workItem">The work item to execute.</param>
-        public virtual void DispatchToSyncContext(Action workItem)
-            => workItem(); // Base renderer has no sync context
+        public virtual Task Invoke(Action workItem)
+        {
+            // Base renderer has nothing to dispatch to, so execute directly
+            workItem();
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Executes the supplied work item on the renderer's
+        /// synchronization context.
+        /// </summary>
+        /// <param name="workItem">The work item to execute.</param>
+        public virtual Task InvokeAsync(Func<Task> workItem)
+        {
+            // Base renderer has nothing to dispatch to, so execute directly
+            return workItem();
+        }
 
         internal void InstantiateChildComponentOnFrame(ref RenderTreeFrame frame, int parentComponentId)
         {
