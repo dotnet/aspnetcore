@@ -15,6 +15,7 @@ Later on, this will be checked using this condition:
 
   <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.8' ">
     <PackagesInPatch>
+      Microsoft.AspNetCore.Authentication.Google;
     </PackagesInPatch>
   </PropertyGroup>
 
