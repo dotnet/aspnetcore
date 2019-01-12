@@ -15,6 +15,7 @@
 <button id="run-without-dispatch" onclick=@RunWithoutDispatch>Run without dispatch</button>
 <button id="run-with-dispatch" onclick=@RunWithDispatch>Run with dispatch</button>
 <button id="run-with-double-dispatch" onclick=@RunWithDoubleDispatch>Run with double dispatch</button>
+<button id="run-async-with-dispatch" onclick=@RunAsyncWorkWithDispatch>Run async work with dispatch</button>
 
 @functions {
     string result;
@@ -47,6 +48,25 @@
         {
             result += " (completed synchronously)";
         }
+    }
+
+    async Task RunAsyncWorkWithDispatch()
+    {
+        await Task.Delay(1).ConfigureAwait(false);
+
+        result = "First";
+
+        var invokeTask = InvokeAsync(async () =>
+        {
+            // When the sync context is idle, queued work items start synchronously
+            result += " Second";
+            await Task.Delay(250);
+            result += " Fourth";
+        });
+
+        result += " Third";
+        await invokeTask;
+        result += " Fifth";
     }
 
     void AttemptToRender()
