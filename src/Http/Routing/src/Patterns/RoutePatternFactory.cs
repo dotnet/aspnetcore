@@ -52,6 +52,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         /// Additional parameter policies to associated with the route pattern. May be null.
         /// The provided object will be converted to key-value pairs using <see cref="RouteValueDictionary"/>
         /// and then merged into the parsed route pattern.
+        /// Multiple policies can be specified for a key by providing a collection as the value.
         /// </param>
         /// <returns>The <see cref="RoutePattern"/>.</returns>
         public static RoutePattern Parse(string pattern, object defaults, object parameterPolicies)
@@ -79,6 +80,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         /// Additional parameter policies to associated with the route pattern. May be null.
         /// The provided object will be converted to key-value pairs using <see cref="RouteValueDictionary"/>
         /// and then merged into the parsed route pattern.
+        /// Multiple policies can be specified for a key by providing a collection as the value.
         /// </param>
         /// <param name="requiredValues">
         /// Route values that can be substituted for parameters in the route pattern. See remarks on <see cref="RoutePattern.RequiredValues"/>.
@@ -139,6 +141,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         /// Additional parameter policies to associated with the route pattern. May be null.
         /// The provided object will be converted to key-value pairs using <see cref="RouteValueDictionary"/>
         /// and then merged into the route pattern.
+        /// Multiple policies can be specified for a key by providing a collection as the value.
         /// </param>
         /// <param name="segments">The collection of segments.</param>
         /// <returns>The <see cref="RoutePattern"/>.</returns>
@@ -169,6 +172,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         /// Additional parameter policies to associated with the route pattern. May be null.
         /// The provided object will be converted to key-value pairs using <see cref="RouteValueDictionary"/>
         /// and then merged into the route pattern.
+        /// Multiple policies can be specified for a key by providing a collection as the value.
         /// </param>
         /// <param name="segments">The collection of segments.</param>
         /// <returns>The <see cref="RoutePattern"/>.</returns>
@@ -230,6 +234,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         /// Additional parameter policies to associated with the route pattern. May be null.
         /// The provided object will be converted to key-value pairs using <see cref="RouteValueDictionary"/>
         /// and then merged into the route pattern.
+        /// Multiple policies can be specified for a key by providing a collection as the value.
         /// </param>
         /// <param name="segments">The collection of segments.</param>
         /// <returns>The <see cref="RoutePattern"/>.</returns>
@@ -260,6 +265,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         /// Additional parameter policies to associated with the route pattern. May be null.
         /// The provided object will be converted to key-value pairs using <see cref="RouteValueDictionary"/>
         /// and then merged into the route pattern.
+        /// Multiple policies can be specified for a key by providing a collection as the value.
         /// </param>
         /// <param name="segments">The collection of segments.</param>
         /// <returns>The <see cref="RoutePattern"/>.</returns>
