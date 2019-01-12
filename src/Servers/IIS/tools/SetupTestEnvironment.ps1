@@ -94,6 +94,7 @@ function Shutdown-Dumps()
     {
         $downloadedFile = [System.IO.Path]::GetTempFileName();
         $downloadedFile = "$downloadedFile.exe";
+        $ProgressPreference = 'SilentlyContinue' # Workaround PowerShell/PowerShell#2138
         Invoke-WebRequest -Uri "https://go.microsoft.com/fwlink/p/?linkid=870807" -OutFile $downloadedFile;
         & $downloadedFile /features OptionId.WindowsDesktopDebuggers /norestart /q;
     }

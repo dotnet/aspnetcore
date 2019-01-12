@@ -139,6 +139,7 @@ try {
         $cliUrl = "$AssetRootUrl/Sdk/$sdkVersion/dotnet-sdk-$sdkVersion-$HostRid$archiveExt"
         $cliArchiveFile = "$PSScriptRoot/obj/dotnet$archiveExt"
         Write-Host "Downloading $cliUrl"
+        $ProgressPreference = 'SilentlyContinue' # Workaround PowerShell/PowerShell#2138
         Invoke-WebRequest -UseBasicParsing "${cliUrl}${AccessTokenSuffix}" -OutFile $cliArchiveFile
         if ($archiveExt -eq '.zip') {
             Expand-Archive $cliArchiveFile -DestinationPath $dotnetRoot
