@@ -16,9 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- This reference needs to be moved. https://github.com/aspnet/AspNetCore/issues/6581 -->
-    <Reference Include="Microsoft.AspNetCore.Testing" />
-
     <Reference Include="Microsoft.AspNetCore.SignalR.Common" />
     <Reference Include="Microsoft.AspNetCore.SignalR.Core" />
     <Reference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" />
