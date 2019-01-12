@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 dispatchPipe.Init(Thread.Loop, Thread.QueueCloseHandle, true);
                 pipe.Accept(dispatchPipe);
 
-                // Ensure client sends "Kestrel" before adding pipe to _dispatchPipes.
+                // Ensure client sends _pipeMessage before adding pipe to _dispatchPipes.
                 var readContext = new PipeReadContext(this);
                 dispatchPipe.ReadStart(
                     (handle, status2, state) => ((PipeReadContext)state).AllocCallback(handle, status2),
@@ -228,6 +228,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
             public void ReadCallback(UvStreamHandle dispatchPipe, int status)
             {
+                if (status == LibuvConstants.EOF && _bytesRead == 0)
+                {
+                    // This is an unexpected immediate termination of the dispatch pipe most likely caused by an
+                    // external process scanning the pipe, so don't we don't log it too severely.
+                    // https://github.com/aspnet/AspNetCore/issues/4741
+
+                    dispatchPipe.Dispose();
+                    _bufHandle.Free();
+                    _listener.Log.LogDebug("An internal pipe was opened unexpectedly.");
+                    return;
+                }
+
                 try
                 {
                     dispatchPipe.Libuv.ThrowIfErrored(status);
@@ -254,7 +266,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                         }
                         else
                         {
-                            throw new IOException("Bad data sent over Kestrel pipe.");
+                            throw new IOException("Bad data sent over an internal pipe.");
                         }
                     }
                 }

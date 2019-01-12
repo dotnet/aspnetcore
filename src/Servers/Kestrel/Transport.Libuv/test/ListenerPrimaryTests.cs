@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -196,9 +196,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             await listenerPrimary.DisposeAsync();
             await libuvThreadPrimary.StopAsync(TimeSpan.FromSeconds(5));
 
-            Assert.Equal(1, logger.TotalErrorsLogged);
-            var errorMessage = logger.Messages.First(m => m.LogLevel == LogLevel.Error);
-            Assert.Equal(TestConstants.EOF, Assert.IsType<UvException>(errorMessage.Exception).StatusCode);
+            Assert.Equal(0, logger.TotalErrorsLogged);
+
+            var logMessage = logger.Messages.Single(m => m.Message == "An internal pipe was opened unexpectedly.");
+            Assert.Equal(LogLevel.Debug, logMessage.LogLevel);
         }
 
 
