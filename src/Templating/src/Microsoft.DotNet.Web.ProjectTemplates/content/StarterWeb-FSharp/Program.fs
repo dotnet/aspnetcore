@@ -1,4 +1,4 @@
-﻿namespace Company.WebApplication1
+namespace Company.WebApplication1
 
 open System
 open System.Collections.Generic
@@ -8,18 +8,20 @@ open System.Threading.Tasks
 open Microsoft.AspNetCore
 open Microsoft.AspNetCore.Hosting
 open Microsoft.Extensions.Configuration
+open Microsoft.Extensions.Hosting
 open Microsoft.Extensions.Logging
 
 module Program =
     let exitCode = 0
 
-    let CreateWebHostBuilder args =
-        WebHost
-            .CreateDefaultBuilder(args)
-            .UseStartup<Startup>();
+    let CreateHostBuilder args =
+        Host.CreateDefaultBuilder(args)
+            .ConfigureWebHostDefaults(fun webBuilder ->
+                webBuilder.UseStartup<Startup>() |> ignore
+            )
 
     [<EntryPoint>]
     let main args =
-        CreateWebHostBuilder(args).Build().Run()
+        CreateHostBuilder(args).Build().Run()
 
         exitCode
