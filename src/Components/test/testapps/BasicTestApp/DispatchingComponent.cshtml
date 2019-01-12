@@ -1,0 +1,59 @@
+@using System.Timers
+
+<h1>Dispatching</h1>
+
+<p>
+    Sometimes, renders need to be triggered in response to non-lifecyle events.
+    The current thread will not be associated with the renderer's sync context,
+    so the render request has to be marshalled onto that sync context.
+</p>
+
+<p>
+    Result: <strong id="result">@result</strong>
+</p>
+
+<button id="run-without-dispatch" onclick=@RunWithoutDispatch>Run without dispatch</button>
+<button id="run-with-dispatch" onclick=@RunWithDispatch>Run with dispatch</button>
+<button id="run-with-double-dispatch" onclick=@RunWithDoubleDispatch>Run with double dispatch</button>
+<button id="show-result" onclick=@ShowResult>Show result</button>
+
+@functions {
+    string result = "Nothing was executed yet";
+
+    async Task RunWithoutDispatch()
+    {
+        await Task.Delay(1).ConfigureAwait(false);
+        AttemptToRender();
+    }
+
+    void RunWithDispatch()
+    {
+        result = "TODO: Implement";
+    }
+
+    void RunWithDoubleDispatch()
+    {
+        result = "TODO: Implement";
+    }
+
+    void AttemptToRender()
+    {
+        try
+        {
+            result = "Success";
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            result = ex.ToString();
+        }
+    }
+
+    void ShowResult()
+    {
+        // In the case where there's an error, we can't show it directly because the
+        // code isn't on the correct sync context (and dispatching to it somewhat
+        // undermines the idea of the test). So there's an extra step to collect
+        // the result.
+    }
+}

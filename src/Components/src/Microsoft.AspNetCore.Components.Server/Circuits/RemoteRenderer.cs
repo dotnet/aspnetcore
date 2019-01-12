@@ -101,17 +101,18 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
         protected override void AddToRenderQueue(int componentId, RenderFragment renderFragment)
         {
             // Render operations are not thread-safe, so they need to be serialized.
+            // Plus, any other logic that mutates state accessed during rendering also
+            // needs not to run concurrently with rendering so should be dispatched to
+            // the renderer's sync context.
             if (SynchronizationContext.Current != _syncContext)
             {
-                _syncContext.Post(_ =>
-                {
-                    base.AddToRenderQueue(componentId, renderFragment);
-                }, null);
+                throw new RemoteRendererException(
+                    "The current thread is not associated with the renderer's synchronization context. " +
+                    "Use Dispatch() to switch execution to the renderer's synchronization context when " +
+                    "triggering rendering or modifying any state accessed during rendering.");
             }
-            else
-            {
-                base.AddToRenderQueue(componentId, renderFragment);
-            }
+
+            base.AddToRenderQueue(componentId, renderFragment);
         }
 
         /// <inheritdoc />

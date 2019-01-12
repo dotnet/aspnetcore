@@ -105,7 +105,16 @@ namespace Microsoft.AspNetCore.Components
             if (_hasNeverRendered || ShouldRender())
             {
                 _hasPendingQueuedRender = true;
-                _renderHandle.Render(_renderFragment);
+
+                try
+                {
+                    _renderHandle.Render(_renderFragment);
+                }
+                catch
+                {
+                    _hasPendingQueuedRender = false;
+                    throw;
+                }
             }
         }
 
