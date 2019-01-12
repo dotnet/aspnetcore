@@ -66,7 +66,8 @@
 
   <Target Name="Test" Condition="'$(IsTestProject)' == 'true'">
     <Message Importance="High" Text="Running npm tests for $(MSBuildProjectName)" />
-    <Exec Command="npm $(NpmTestArgs)" IgnoreStandardErrorWarningFormat="true" />
+    <Exec  Condition="'$(DailyTests)' != 'true'" Command="npm $(NpmTestArgs)" IgnoreStandardErrorWarningFormat="true" />
+    <CallTarget Condition="'$(DailyTests)' == 'true'" Targets="RunBrowserTests" />
   </Target>
 
   <Target Name="GetArtifactInfo" Condition="'$(IsPackable)' == 'true'" Returns="@(ArtifactInfo)">
