@@ -96,14 +96,6 @@
       <Output TaskParameter="TargetOutputs" ItemName="ArtifactInfo" />
     </MSBuild>
 
-    <MSBuild Projects="@(ProjectToBuild)"
-             Targets="GetArtifactInfo"
-             Properties="$(DesignTimeBuildProps);Configuration=$(Configuration);BuildNumber=$(BuildNumber);DesignTimeBuild=true"
-             SkipNonexistentTargets="true"
-             BuildInParallel="true">
-      <Output TaskParameter="TargetOutputs" ItemName="ArtifactInfo" />
-    </MSBuild>
-
     <MSBuild Projects="@(_RepositoryProject)"
              Targets="ResolveSolutions"
              Properties="$(DesignTimeBuildProps);Configuration=$(Configuration);BuildNumber=$(BuildNumber)"

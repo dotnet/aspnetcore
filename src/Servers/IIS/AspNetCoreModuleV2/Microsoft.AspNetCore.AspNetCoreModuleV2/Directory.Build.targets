@@ -28,7 +28,7 @@
         <PackageId>$(PackageId)</PackageId>
         <Version Condition="'$(IsPackageInThisPatch)' == 'true'">$(PackageVersion)</Version>
         <Version Condition="'$(IsPackageInThisPatch)' != 'true'">$(BaselinePackageVersion)</Version>
-        <Certificate>$(PackageSigningCertName)</Certificate>        
+        <Certificate>$(PackageSigningCertName)</Certificate>
         <ShouldBeSigned>$(IsPackageInThisPatch)</ShouldBeSigned>
         <IsContainer>true</IsContainer>
         <IsShipped Condition="'$(IsPackageInThisPatch)' != 'true'">true</IsShipped>
