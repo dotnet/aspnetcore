@@ -96,9 +96,6 @@ This can be done once #4246 is complete, and done in conjunction with converting
       <PackageArtifact Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" Category="noship" />
       <PackageArtifact Include="Microsoft.AspNetCore.Server.IntegrationTesting" Category="noship" />
 
-    <!-- This package is produced for use in aspnet/EntityFrameworkCore to ensure EF tools can load a service collection from and app using ASP.NET's Program/Startup patterns/ -->
-      <PackageArtifact Include="Internal.WebHostBuilderFactory.Sources" Category="noship"/>
-
     <!-- These packages are produced temporarily while we finish refactoring the way this repo builds. See https://github.com/aspnet/AspNetCore/issues/4246 -->
       <PackageArtifact Include="Microsoft.AspNetCore.Antiforgery" Category="noship" />
       <PackageArtifact Include="Microsoft.AspNetCore.Authentication.Abstractions" Category="noship" />
