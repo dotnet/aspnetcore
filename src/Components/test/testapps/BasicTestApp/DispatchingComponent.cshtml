@@ -15,10 +15,9 @@
 <button id="run-without-dispatch" onclick=@RunWithoutDispatch>Run without dispatch</button>
 <button id="run-with-dispatch" onclick=@RunWithDispatch>Run with dispatch</button>
 <button id="run-with-double-dispatch" onclick=@RunWithDoubleDispatch>Run with double dispatch</button>
-<button id="show-result" onclick=@ShowResult>Show result</button>
 
 @functions {
-    string result = "Nothing was executed yet";
+    string result;
 
     async Task RunWithoutDispatch()
     {
@@ -61,13 +60,5 @@
         {
             result = ex.ToString();
         }
-    }
-
-    void ShowResult()
-    {
-        // In the case where there's an error, we can't show it directly because the
-        // code isn't on the correct sync context (and dispatching to it somewhat
-        // undermines the idea of the test). So there's an extra step to collect
-        // the result.
     }
 }

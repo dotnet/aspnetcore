@@ -24,17 +24,12 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         }
 
         [Fact]
-        public async Task ThrowsIfRenderIsRequestedOutsideSyncContext()
+        public void ThrowsIfRenderIsRequestedOutsideSyncContext()
         {
             var appElement = MountTestComponent<DispatchingComponent>();
             var result = appElement.FindElement(By.Id("result"));
 
             appElement.FindElement(By.Id("run-without-dispatch")).Click();
-
-            // Because the preceding operation triggers an error, there's no way
-            // to get UI output from it, so we have to just wait a moment
-            await Task.Delay(500);
-            appElement.FindElement(By.Id("show-result")).Click();
 
             WaitAssert.Contains(
                 $"{typeof(RemoteRendererException).FullName}: The current thread is not associated with the renderer's synchronization context",
