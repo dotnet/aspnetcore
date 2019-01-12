@@ -13,12 +13,8 @@ Later on, this will be checked using this condition:
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.7' ">
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.8' ">
     <PackagesInPatch>
-      Microsoft.AspNetCore;
-      Microsoft.AspNetCore.Server.IISIntegration;
-      Microsoft.AspNetCore.Server.Kestrel.Core;
-      Microsoft.AspNetCore.WebSockets;
     </PackagesInPatch>
   </PropertyGroup>
 
