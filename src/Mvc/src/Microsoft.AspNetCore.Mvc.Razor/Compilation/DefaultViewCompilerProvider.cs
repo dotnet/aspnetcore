@@ -6,18 +6,18 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
 {
-    internal class RazorViewCompilerProvider : IViewCompilerProvider
+    internal class DefaultViewCompilerProvider : IViewCompilerProvider
     {
-        private readonly RazorViewCompiler _compiler;
+        private readonly DefaultViewCompiler _compiler;
 
-        public RazorViewCompilerProvider(
+        public DefaultViewCompilerProvider(
             ApplicationPartManager applicationPartManager,
             ILoggerFactory loggerFactory)
         {
             var feature = new ViewsFeature();
             applicationPartManager.PopulateFeature(feature);
 
-            _compiler = new RazorViewCompiler(feature.ViewDescriptors, loggerFactory.CreateLogger<RazorViewCompiler>());
+            _compiler = new DefaultViewCompiler(feature.ViewDescriptors, loggerFactory.CreateLogger<DefaultViewCompiler>());
         }
 
         public IViewCompiler GetCompiler() => _compiler;

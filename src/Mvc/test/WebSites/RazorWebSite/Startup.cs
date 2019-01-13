@@ -3,14 +3,12 @@
 
 using System.Collections.Generic;
 using System.Globalization;
-using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileProviders;
 
 namespace RazorWebSite
 {
@@ -18,8 +16,6 @@ namespace RazorWebSite
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            var updateableFileProvider = new UpdateableFileProvider();
-            services.AddSingleton(updateableFileProvider);
             services.AddSingleton<ITagHelperComponent, TestHeadTagHelperComponent>();
             services.AddSingleton<ITagHelperComponent, TestBodyTagHelperComponent>();
 
