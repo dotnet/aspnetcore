@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.Routing
 {
@@ -120,13 +121,23 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
             // If after we're done there isn't any endpoint that accepts */*, then we'll synthesize an
             // endpoint that always returns a 415.
-            if (!edges.ContainsKey(AnyContentType))
+            if (!edges.TryGetValue(AnyContentType, out var anyEndpoints))
             {
                 edges.Add(AnyContentType, new List<Endpoint>()
                 {
                     CreateRejectionEndpoint(),
                 });
+
+                // Add a node to use when there is no request content type.
+                // When there is no content type we want the policy to no-op
+                edges.Add(string.Empty, endpoints.ToList());
             }
+            else
+            {
+                // If there is an endpoint that accepts */* then it is also used when there is no content type
+                edges.Add(string.Empty, anyEndpoints.ToList());
+            }
+
 
             return edges
                 .Select(kvp => new PolicyNodeEdge(kvp.Key, kvp.Value))
@@ -155,7 +166,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             // Since our 'edges' can have wildcards, we do a sort based on how wildcard-ey they
             // are then then execute them in linear order.
             var ordered = edges
-                .Select(e => (mediaType: new MediaType((string)e.State), destination: e.Destination))
+                .Select(e => (mediaType: CreateEdgeMediaType(ref e), destination: e.Destination))
                 .OrderBy(e => GetScore(e.mediaType))
                 .ToArray();
 
@@ -170,7 +181,28 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 }
             }
 
-            return new ConsumesPolicyJumpTable(exitDestination, ordered);
+            var noContentTypeDestination = GetNoContentTypeDestination(ordered);
+
+            return new ConsumesPolicyJumpTable(exitDestination, noContentTypeDestination, ordered);
+        }
+
+        private static int GetNoContentTypeDestination((MediaType mediaType, int destination)[] destinations)
+        {
+            for (var i = 0; i < destinations.Length; i++)
+            {
+                if (!destinations[i].mediaType.Type.HasValue)
+                {
+                    return destinations[i].destination;
+                }
+            }
+
+            throw new InvalidOperationException("Could not find destination for no content type.");
+        }
+
+        private static MediaType CreateEdgeMediaType(ref PolicyJumpTableEdge e)
+        {
+            var mediaType = (string)e.State;
+            return !string.IsNullOrEmpty(mediaType) ? new MediaType(mediaType) : default;
         }
 
         private int GetScore(in MediaType mediaType)
@@ -207,21 +239,24 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
         private class ConsumesPolicyJumpTable : PolicyJumpTable
         {
-            private (MediaType mediaType, int destination)[] _destinations;
-            private int _exitDestination;
+            private readonly (MediaType mediaType, int destination)[] _destinations;
+            private readonly int _exitDestination;
+            private readonly int _noContentTypeDestination;
 
-            public ConsumesPolicyJumpTable(int exitDestination, (MediaType mediaType, int destination)[] destinations)
+            public ConsumesPolicyJumpTable(int exitDestination, int noContentTypeDestination, (MediaType mediaType, int destination)[] destinations)
             {
                 _exitDestination = exitDestination;
+                _noContentTypeDestination = noContentTypeDestination;
                 _destinations = destinations;
             }
 
             public override int GetDestination(HttpContext httpContext)
             {
                 var contentType = httpContext.Request.ContentType;
+
                 if (string.IsNullOrEmpty(contentType))
                 {
-                    return _exitDestination;
+                    return _noContentTypeDestination;
                 }
 
                 var requestMediaType = new MediaType(contentType);

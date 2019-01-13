@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Arrange
             var request = new HttpRequestMessage(
                 HttpMethod.Post,
-                "http://localhost/ConsumesAttribute_Company/CreateProduct");
+                "http://localhost/ConsumesAttribute_WithFallbackActionController/CreateProduct");
 
             // Act
             var response = await Client.SendAsync(request);
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task NoRequestContentType_Selects_IfASingleActionWithConstraintIsPresent_ReturnsUnsupported()
+        public async Task NoRequestContentType_Selects_IfASingleActionWithConstraintIsPresent()
         {
             // Arrange
             var request = new HttpRequestMessage(
@@ -58,7 +58,26 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Act
             var response = await Client.SendAsync(request);
-            await response.AssertStatusCodeAsync(HttpStatusCode.UnsupportedMediaType);
+            var body = await response.Content.ReadAsStringAsync();
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("ConsumesAttribute_PassThrough_Product_Json", body);
+        }
+
+        [Fact]
+        public async Task NoRequestContentType_MultipleMatches_IfAMultipleActionWithConstraintIsPresent()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(
+                HttpMethod.Post,
+                "http://localhost/ConsumesAttribute_PassThrough/CreateProductMultiple");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
         }
 
         [Theory]

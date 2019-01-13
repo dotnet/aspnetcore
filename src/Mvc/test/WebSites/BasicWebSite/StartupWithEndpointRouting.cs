@@ -29,6 +29,8 @@ namespace BasicWebSite
 
         public void Configure(IApplicationBuilder app)
         {
+            app.UseDeveloperExceptionPage();
+
             // Initializes the RequestId service for each request
             app.UseMiddleware<RequestIdMiddleware>();
 

@@ -92,6 +92,11 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 edges.OrderBy(e => e.State),
                 e =>
                 {
+                    Assert.Equal(string.Empty, e.State);
+                    Assert.Equal(new[] { endpoints[1], endpoints[4], }, e.Endpoints.ToArray());
+                },
+                e =>
+                {
                     Assert.Equal("*/*", e.State);
                     Assert.Equal(new[] { endpoints[1], endpoints[4], }, e.Endpoints.ToArray());
                 },
@@ -123,7 +128,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         [Fact] // See explanation in GetEdges for how this case is different
-        public void GetEdges_GroupsByContentType_CreatesHttp405Endpoint()
+        public void GetEdges_GroupsByContentType_CreatesHttp415Endpoint()
         {
             // Arrange
             var endpoints = new[]
@@ -143,6 +148,11 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             // Assert
             Assert.Collection(
                 edges.OrderBy(e => e.State),
+                e =>
+                {
+                    Assert.Equal(string.Empty, e.State);
+                    Assert.Equal(new[] { endpoints[0], endpoints[1], endpoints[2], }, e.Endpoints.ToArray());
+                },
                 e =>
                 {
                     Assert.Equal("*/*", e.State);
@@ -190,6 +200,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var edges = new PolicyJumpTableEdge[]
             {
                 // In reverse order of how they should be processed
+                new PolicyJumpTableEdge(string.Empty, 0),
                 new PolicyJumpTableEdge("*/*", 1),
                 new PolicyJumpTableEdge("application/*", 2),
                 new PolicyJumpTableEdge("text/*", 3),
