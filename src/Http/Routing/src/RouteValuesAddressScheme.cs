@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Routing.Tree;
 
 namespace Microsoft.AspNetCore.Routing
 {
-    internal class RouteValuesAddressScheme : IEndpointAddressScheme<RouteValuesAddress>
+    internal class RouteValuesAddressScheme : IEndpointAddressScheme<RouteValuesAddress>, IDisposable
     {
         private readonly DataSourceDependentCache<StateEntry> _cache;
    
@@ -157,6 +157,11 @@ namespace Microsoft.AspNetCore.Routing
             };
             entry.Defaults = new RouteValueDictionary(endpoint.RoutePattern.Defaults);
             return entry;
+        }
+
+        public void Dispose()
+        {
+            _cache.Dispose();
         }
 
         internal class StateEntry

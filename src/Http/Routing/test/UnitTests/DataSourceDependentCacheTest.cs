@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -75,6 +75,51 @@ namespace Microsoft.AspNetCore.Routing
             // Assert
             Assert.Equal(2, count);
             Assert.Equal("hello, 2!", cache.Value);
+        }
+
+        [Fact]
+        public void Cache_CanDispose_WhenUninitialized()
+        {
+            // Arrange
+            var count = 0;
+
+            var dataSource = new DynamicEndpointDataSource();
+            var cache = new DataSourceDependentCache<string>(dataSource, (endpoints) =>
+            {
+                count++;
+                return $"hello, {count}!";
+            });
+
+            // Act
+            cache.Dispose();
+
+            // Assert
+            dataSource.AddEndpoint(null);
+            Assert.Null(cache.Value);
+        }
+
+        [Fact]
+        public void Cache_CanDispose_WhenInitialized()
+        {
+            // Arrange
+            var count = 0;
+
+            var dataSource = new DynamicEndpointDataSource();
+            var cache = new DataSourceDependentCache<string>(dataSource, (endpoints) =>
+            {
+                count++;
+                return $"hello, {count}!";
+            });
+
+            cache.EnsureInitialized();
+            Assert.Equal("hello, 1!", cache.Value);
+
+            // Act
+            cache.Dispose();
+
+            // Assert
+            dataSource.AddEndpoint(null);
+            Assert.Equal("hello, 1!", cache.Value); // Ignores update
         }
     }
 }
