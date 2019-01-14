@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
     internal class CircuitHost : IDisposable
     {
-        private static AsyncLocal<CircuitHost> _current = new AsyncLocal<CircuitHost>();
+        private static readonly AsyncLocal<CircuitHost> _current = new AsyncLocal<CircuitHost>();
 
         /// <summary>
         /// Gets the current <see cref="Circuit"/>, if any.
@@ -24,23 +24,18 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         public static CircuitHost Current => _current.Value;
 
         /// <summary>
-        /// Sets the current <see cref="Circuit"/>.
+        /// Sets the current <see cref="Circuits.Circuit"/>.
         /// </summary>
-        /// <param name="circuitHost">The <see cref="Circuit"/>.</param>
+        /// <param name="circuitHost">The <see cref="Circuits.Circuit"/>.</param>
         /// <remarks>
         /// Calling <see cref="SetCurrentCircuitHost(CircuitHost)"/> will store the circuit
         /// and other related values such as the <see cref="IJSRuntime"/> and <see cref="Renderer"/>
         /// in the local execution context. Application code should not need to call this method,
-        /// it is primarily used by the Server-Side Blazor infrastructure.
+        /// it is primarily used by the Server-Side Components infrastructure.
         /// </remarks>
         public static void SetCurrentCircuitHost(CircuitHost circuitHost)
         {
-            if (circuitHost == null)
-            {
-                throw new ArgumentNullException(nameof(circuitHost));
-            }
-
-            _current.Value = circuitHost;
+            _current.Value = circuitHost ?? throw new ArgumentNullException(nameof(circuitHost));
 
             Microsoft.JSInterop.JSRuntime.SetCurrentJSRuntime(circuitHost.JSRuntime);
             RendererRegistry.SetCurrentRendererRegistry(circuitHost.RendererRegistry);
@@ -134,6 +129,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         public void Dispose()
         {
             Scope.Dispose();
+            Renderer.Dispose();
         }
 
         private void AssertInitialized()

@@ -12,18 +12,16 @@ namespace Microsoft.AspNetCore.Components.Rendering
     /// Provides mechanisms for rendering hierarchies of <see cref="IComponent"/> instances,
     /// dispatching events to them, and notifying when the user interface is being updated.
     /// </summary>
-    public abstract class Renderer
+    public abstract class Renderer : IDisposable
     {
         private readonly ComponentFactory _componentFactory;
-        private int _nextComponentId = 0; // TODO: change to 'long' when Mono .NET->JS interop supports it
-        private readonly Dictionary<int, ComponentState> _componentStateById
-            = new Dictionary<int, ComponentState>();
-
+        private readonly Dictionary<int, ComponentState> _componentStateById = new Dictionary<int, ComponentState>();
         private readonly RenderBatchBuilder _batchBuilder = new RenderBatchBuilder();
-        private bool _isBatchInProgress;
-
-        private int _lastEventHandlerId = 0;
         private readonly Dictionary<int, EventHandlerInvoker> _eventBindings = new Dictionary<int, EventHandlerInvoker>();
+
+        private int _nextComponentId = 0; // TODO: change to 'long' when Mono .NET->JS interop supports it
+        private bool _isBatchInProgress;
+        private int _lastEventHandlerId = 0;
 
         /// <summary>
         /// Constructs an instance of <see cref="Renderer"/>.
@@ -175,7 +173,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
             if (frame.AttributeValue is MulticastDelegate @delegate)
             {
-               _eventBindings.Add(id, new EventHandlerInvoker(@delegate));
+                _eventBindings.Add(id, new EventHandlerInvoker(@delegate));
             }
 
             frame = frame.WithAttributeEventHandlerId(id);
@@ -294,6 +292,36 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 afterTask.ContinueWith(_ =>
                     RemoveEventHandlerIds(eventHandlerIdsClone, Task.CompletedTask));
             }
+        }
+
+        /// <summary>
+        /// Releases all resources currently used by this <see cref="Renderer"/> instance.
+        /// </summary>
+        /// <param name="disposing"><see langword="true"/> if this method is being invoked by <see cref="IDisposable.Dispose"/>, otherwise <see langword="false"/>.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            foreach (var componentState in _componentStateById.Values)
+            {
+                if (componentState.Component is IDisposable disposable)
+                {
+                    try
+                    {
+                        disposable.Dispose();
+                    }
+                    catch
+                    {
+                        // Ignore failures in components throwing
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Releases all resources currently used by this <see cref="Renderer"/> instance.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(disposing: true);
         }
     }
 }

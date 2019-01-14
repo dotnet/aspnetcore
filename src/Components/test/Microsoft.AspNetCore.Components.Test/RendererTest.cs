@@ -1,14 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Test.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.AspNetCore.Components.RenderTree;
-using Microsoft.AspNetCore.Components.Test.Helpers;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Test
@@ -1139,6 +1138,21 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.Equal(2, numEventsFired);
         }
 
+        [Fact]
+        public void DisposingRenderer_DisposesComponents()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var component = new DisposableComponent();
+            renderer.AssignRootComponentId(component);
+
+            // Act
+            renderer.Dispose();
+
+            // Assert
+            Assert.True(component.Disposed);
+        }
+
         private class NoOpRenderer : Renderer
         {
             public NoOpRenderer() : base(new TestServiceProvider())
@@ -1395,6 +1409,21 @@ namespace Microsoft.AspNetCore.Components.Test
 
             protected override void BuildRenderTree(RenderTreeBuilder builder)
             {
+            }
+        }
+
+        private class DisposableComponent : AutoRenderComponent, IDisposable
+        {
+            public bool Disposed { get; private set; }
+
+            public void Dispose()
+            {
+                Disposed = true;
+            }
+
+            protected override void BuildRenderTree(RenderTreeBuilder builder)
+            {
+                throw new NotImplementedException();
             }
         }
 
