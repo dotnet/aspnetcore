@@ -19,7 +19,6 @@
     <Reference Include="Microsoft.AspNetCore.ResponseCompression" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
-    <Reference Include="System.Net.WebSockets.WebSocketProtocol" />
   </ItemGroup>
 
 </Project>

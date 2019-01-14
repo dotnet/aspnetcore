@@ -96,7 +96,7 @@ namespace TestSite
             Stream opaqueTransport = await upgradeFeature.UpgradeAsync();
 
             // Get the WebSocket object
-            var ws = WebSocketProtocol.CreateFromStream(opaqueTransport, isServer: true, subProtocol: null, keepAliveInterval: TimeSpan.FromMinutes(2));
+            var ws = WebSocket.CreateFromStream(opaqueTransport, isServer: true, subProtocol: null, keepAliveInterval: TimeSpan.FromMinutes(2));
             return ws;
         }
 
