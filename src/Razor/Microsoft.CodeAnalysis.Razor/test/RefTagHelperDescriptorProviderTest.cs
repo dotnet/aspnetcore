@@ -15,6 +15,8 @@ namespace Microsoft.CodeAnalysis.Razor
         {
             // Arrange
             var context = TagHelperDescriptorProviderContext.Create();
+            context.SetCompilation(BaseCompilation);
+
             var provider = new RefTagHelperDescriptorProvider();
 
             // Act
@@ -29,6 +31,7 @@ namespace Microsoft.CodeAnalysis.Razor
             Assert.Empty(item.Diagnostics);
             Assert.False(item.HasErrors);
             Assert.Equal(BlazorMetadata.Ref.TagHelperKind, item.Kind);
+            Assert.Equal(bool.TrueString, item.Metadata[TagHelperMetadata.Common.ClassifyAttributesOnly]);
             Assert.Equal(BlazorMetadata.Ref.RuntimeName, item.Metadata[TagHelperMetadata.Runtime.Name]);
             Assert.False(item.IsDefaultKind());
             Assert.False(item.KindUsesDefaultTagHelperRuntime());

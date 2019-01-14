@@ -4,10 +4,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.CodeAnalysis.Razor;
+using Microsoft.AspNetCore.Razor.Language.Components;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.Language.Components
+namespace Microsoft.CodeAnalysis.Razor
 {
     public class EventHandlerTagHelperDescriptorProviderTest : BaseTagHelperDescriptorProviderTest
     {
@@ -52,6 +52,7 @@ namespace Test
             Assert.Empty(item.Diagnostics);
             Assert.False(item.HasErrors);
             Assert.Equal(BlazorMetadata.EventHandler.TagHelperKind, item.Kind);
+            Assert.Equal(bool.TrueString, item.Metadata[TagHelperMetadata.Common.ClassifyAttributesOnly]);
             Assert.Equal(BlazorMetadata.EventHandler.RuntimeName, item.Metadata[TagHelperMetadata.Runtime.Name]);
             Assert.False(item.IsDefaultKind());
             Assert.False(item.KindUsesDefaultTagHelperRuntime());

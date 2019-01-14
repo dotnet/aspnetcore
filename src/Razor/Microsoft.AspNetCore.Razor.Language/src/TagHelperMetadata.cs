@@ -10,6 +10,8 @@ namespace Microsoft.AspNetCore.Razor.Language
             public static readonly string PropertyName = "Common.PropertyName";
 
             public static readonly string TypeName = "Common.TypeName";
+
+            public static readonly string ClassifyAttributesOnly = "Common.ClassifyAttributesOnly";
         }
 
         public static class Runtime

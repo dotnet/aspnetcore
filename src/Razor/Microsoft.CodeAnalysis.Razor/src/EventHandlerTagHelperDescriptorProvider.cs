@@ -35,7 +35,6 @@ namespace Microsoft.CodeAnalysis.Razor
                 return;
             }
 
-
             var eventHandlerData = GetEventHandlerData(compilation);
 
             foreach (var tagHelper in CreateEventHandlerTagHelpers(eventHandlerData))
@@ -112,6 +111,7 @@ namespace Microsoft.CodeAnalysis.Razor
 
                 builder.Metadata.Add(BlazorMetadata.SpecialKindKey, BlazorMetadata.EventHandler.TagHelperKind);
                 builder.Metadata.Add(BlazorMetadata.EventHandler.EventArgsType, entry.EventArgsType.ToDisplayString());
+                builder.Metadata.Add(TagHelperMetadata.Common.ClassifyAttributesOnly, bool.TrueString);
                 builder.Metadata[TagHelperMetadata.Runtime.Name] = BlazorMetadata.EventHandler.RuntimeName;
 
                 // WTE has a bug in 15.7p1 where a Tag Helper without a display-name that looks like

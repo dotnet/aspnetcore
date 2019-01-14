@@ -21,6 +21,20 @@ namespace Microsoft.CodeAnalysis.Razor
                 throw new ArgumentNullException(nameof(context));
             }
 
+            var compilation = context.GetCompilation();
+            if (compilation == null)
+            {
+                return;
+            }
+
+            var elementRef = compilation.GetTypeByMetadataName(ComponentsApi.ElementRef.FullTypeName);
+            if (elementRef == null)
+            {
+                // If we can't find ElementRef, then just bail. We won't be able to compile the
+                // generated code anyway.
+                return;
+            }
+
             context.Results.Add(CreateRefTagHelper());
         }
 
@@ -30,6 +44,7 @@ namespace Microsoft.CodeAnalysis.Razor
             builder.Documentation = ComponentResources.RefTagHelper_Documentation;
 
             builder.Metadata.Add(BlazorMetadata.SpecialKindKey, BlazorMetadata.Ref.TagHelperKind);
+            builder.Metadata.Add(TagHelperMetadata.Common.ClassifyAttributesOnly, bool.TrueString);
             builder.Metadata[TagHelperMetadata.Runtime.Name] = BlazorMetadata.Ref.RuntimeName;
 
             // WTE has a bug in 15.7p1 where a Tag Helper without a display-name that looks like

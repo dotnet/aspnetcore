@@ -336,7 +336,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                     foreach (var descriptor in tagHelperBinding.Descriptors)
                     {
-                        var boundRules = tagHelperBinding.GetBoundRules(descriptor);
+                        var boundRules = tagHelperBinding.Mappings[descriptor];
                         var invalidRule = boundRules.FirstOrDefault(rule => rule.TagStructure == TagStructure.WithoutEndTag);
 
                         if (invalidRule != null)
@@ -456,7 +456,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 TagStructure? baseStructure = null;
                 foreach (var descriptor in bindingResult.Descriptors)
                 {
-                    var boundRules = bindingResult.GetBoundRules(descriptor);
+                    var boundRules = bindingResult.Mappings[descriptor];
                     foreach (var rule in boundRules)
                     {
                         if (rule.TagStructure != TagStructure.Unspecified)

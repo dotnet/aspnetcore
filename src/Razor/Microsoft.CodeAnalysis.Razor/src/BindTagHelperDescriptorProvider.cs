@@ -121,6 +121,7 @@ namespace Microsoft.CodeAnalysis.Razor
             builder.Documentation = ComponentResources.BindTagHelper_Fallback_Documentation;
 
             builder.Metadata.Add(BlazorMetadata.SpecialKindKey, BlazorMetadata.Bind.TagHelperKind);
+            builder.Metadata.Add(TagHelperMetadata.Common.ClassifyAttributesOnly, bool.TrueString);
             builder.Metadata[TagHelperMetadata.Runtime.Name] = BlazorMetadata.Bind.RuntimeName;
             builder.Metadata[BlazorMetadata.Bind.FallbackKey] = bool.TrueString;
 
@@ -257,6 +258,7 @@ namespace Microsoft.CodeAnalysis.Razor
                     entry.ChangeAttribute);
 
                 builder.Metadata.Add(BlazorMetadata.SpecialKindKey, BlazorMetadata.Bind.TagHelperKind);
+                builder.Metadata.Add(TagHelperMetadata.Common.ClassifyAttributesOnly, bool.TrueString);
                 builder.Metadata[TagHelperMetadata.Runtime.Name] = BlazorMetadata.Bind.RuntimeName;
                 builder.Metadata[BlazorMetadata.Bind.ValueAttribute] = entry.ValueAttribute;
                 builder.Metadata[BlazorMetadata.Bind.ChangeAttribute] = entry.ChangeAttribute;

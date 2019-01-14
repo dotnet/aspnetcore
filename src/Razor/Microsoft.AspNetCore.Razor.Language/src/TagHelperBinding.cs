@@ -1,14 +1,13 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
     public sealed class TagHelperBinding
     {
-        private IReadOnlyDictionary<TagHelperDescriptor, IReadOnlyList<TagMatchingRuleDescriptor>> _mappings;
-
         internal TagHelperBinding(
             string tagName,
             IReadOnlyList<KeyValuePair<string, string>> attributes,
@@ -19,12 +18,42 @@ namespace Microsoft.AspNetCore.Razor.Language
             TagName = tagName;
             Attributes = attributes;
             ParentTagName = parentTagName;
+            Mappings = mappings;
             TagHelperPrefix = tagHelperPrefix;
 
-            _mappings = mappings;
         }
 
-        public IEnumerable<TagHelperDescriptor> Descriptors => _mappings.Keys;
+        public IEnumerable<TagHelperDescriptor> Descriptors => Mappings.Keys;
+
+        /// <summary>
+        /// Gets a value that indicates whether the the binding matched on attributes only.
+        /// </summary>
+        /// <returns><c>false</c> if the entire element should be classified as a tag helper.</returns>
+        /// <remarks>
+        /// If this returns <c>true</c>, use <c>TagHelperFactsService.GetBoundTagHelperAttributes</c> to find the 
+        /// set of attributes that should be considered part of the match.
+        /// </remarks>
+        public bool IsAttributeMatch
+        {
+            get
+            {
+                foreach (var descriptor in Mappings.Keys)
+                {
+                    if (!descriptor.Metadata.TryGetValue(TagHelperMetadata.Common.ClassifyAttributesOnly, out var value) ||
+                        !string.Equals(value, bool.TrueString, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return false;
+                    }
+                }
+
+                // All the matching tag helpers want to be classified with **attributes only**.
+                //
+                // Ex: (components)
+                //
+                //      <button onclick="..." />
+                return true;
+            }
+        }
 
         public string TagName { get; }
 
@@ -32,11 +61,18 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public IReadOnlyList<KeyValuePair<string, string>> Attributes { get; }
 
+        public IReadOnlyDictionary<TagHelperDescriptor, IReadOnlyList<TagMatchingRuleDescriptor>> Mappings { get; }
+
         public string TagHelperPrefix { get; }
 
         public IReadOnlyList<TagMatchingRuleDescriptor> GetBoundRules(TagHelperDescriptor descriptor)
         {
-            return _mappings[descriptor];
+            if (descriptor == null)
+            {
+                throw new ArgumentNullException(nameof(descriptor));
+            }
+
+            return Mappings[descriptor];
         }
     }
 }

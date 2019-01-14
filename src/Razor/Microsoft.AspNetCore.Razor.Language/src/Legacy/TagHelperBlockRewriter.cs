@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             foreach (var descriptor in bindingResult.Descriptors)
             {
-                var boundRules = bindingResult.GetBoundRules(descriptor);
+                var boundRules = bindingResult.Mappings[descriptor];
                 var nonDefaultRule = boundRules.FirstOrDefault(rule => rule.TagStructure != TagStructure.Unspecified);
 
                 if (nonDefaultRule?.TagStructure == TagStructure.WithoutEndTag)

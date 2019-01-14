@@ -207,6 +207,7 @@ namespace Test
             Assert.Empty(bind.Diagnostics);
             Assert.False(bind.HasErrors);
             Assert.Equal(BlazorMetadata.Bind.TagHelperKind, bind.Kind);
+            Assert.Equal(bool.TrueString, bind.Metadata[TagHelperMetadata.Common.ClassifyAttributesOnly]);
             Assert.Equal(BlazorMetadata.Bind.RuntimeName, bind.Metadata[TagHelperMetadata.Runtime.Name]);
             Assert.False(bind.IsDefaultKind());
             Assert.False(bind.KindUsesDefaultTagHelperRuntime());
@@ -571,6 +572,7 @@ namespace Test
             Assert.Empty(bind.Diagnostics);
             Assert.False(bind.HasErrors);
             Assert.Equal(BlazorMetadata.Bind.TagHelperKind, bind.Kind);
+            Assert.Equal(bool.TrueString, bind.Metadata[TagHelperMetadata.Common.ClassifyAttributesOnly]);
             Assert.Equal(BlazorMetadata.Bind.RuntimeName, bind.Metadata[TagHelperMetadata.Runtime.Name]);
             Assert.False(bind.IsDefaultKind());
             Assert.False(bind.KindUsesDefaultTagHelperRuntime());
