@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading;
-using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Http

@@ -14,14 +14,11 @@
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <dependencies>
       <dependency id="Microsoft.AspNetCore.Components.Analyzers" version="$version$" include="all" />
-      <dependency id="Microsoft.AspNetCore.Blazor.Mono" version="$blazormonoversion$" include="all" />
     </dependencies>
   </metadata>
   <files>
     <file src="..\..\THIRD-PARTY-NOTICES.txt" />
     <file src="build\**" target="build" />
     <file src="targets\**" target="targets" />
-    <file src="$publishdir$netcoreapp3.0\**\*" target="tools/" />
-    <file src="..\Microsoft.AspNetCore.Components.Browser.JS\dist\blazor.*.js" target="tools\blazor" />
   </files>
 </package>

@@ -18,12 +18,12 @@
     }
 
     (function () {
-      // Load either blazor.webassembly.js or blazor.server.js depending
+      // Load either components.webassembly.js or components.server.js depending
       // on the hash part of the URL. This is just to give a way for the
       // test runner to make the selection.
       var src = location.hash === '#server'
-        ? 'blazor.server.js'
-        : 'blazor.webassembly.js';
+        ? 'components.server.js'
+        : 'components.webassembly.js';
       document.write('<script src="_framework/' + src + '"><' + '/script>');
     })();
   </script>

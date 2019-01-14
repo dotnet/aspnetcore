@@ -12,6 +12,7 @@
     <MicrosoftAspNetCoreHtmlAbstractionsPackageVersion>3.0.0-alpha1-10605</MicrosoftAspNetCoreHtmlAbstractionsPackageVersion>
     <MicrosoftAspNetCoreRazorDesignPackageVersion>3.0.0-alpha1-10605</MicrosoftAspNetCoreRazorDesignPackageVersion>
     <MicrosoftExtensionsDependencyInjectionPackageVersion>3.0.0-alpha1-10605</MicrosoftExtensionsDependencyInjectionPackageVersion>
+    <MonoCecilPackageVersion>0.10.1</MonoCecilPackageVersion>
     <SignalRPackageVersion>3.0.0-alpha1-10605</SignalRPackageVersion>
     <TemplateBlazorPackageVersion>0.8.0-preview1-20181122.3</TemplateBlazorPackageVersion>
     <TemplateRazorDesignPackageVersion>2.1.2</TemplateRazorDesignPackageVersion>

@@ -1,6 +1,11 @@
 ﻿<Project>
-  <PropertyGroup>
-    <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == 'netcoreapp3.0' ">$(MicrosoftNETCoreAppPackageVersion)</RuntimeFrameworkVersion>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.targets))\Directory.Build.targets" />
+
+  <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
+    <!-- Don't run SignalR tests in parallel with others. This causes OutOfMemoryException on hosted Azure Pipelines agents. -->
+    <TestGroupName>SignalR</TestGroupName>
+
+    <RuntimeIdentifier Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">win7-x86</RuntimeIdentifier>
   </PropertyGroup>
 
   <PropertyGroup>

@@ -3,7 +3,5 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <OutputType>Exe</OutputType>
-    <!-- Don't create a NuGet package -->
-    <IsPackable>false</IsPackable>
   </PropertyGroup>
 </Project>

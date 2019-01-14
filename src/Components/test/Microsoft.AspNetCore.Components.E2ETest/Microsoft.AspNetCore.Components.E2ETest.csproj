@@ -8,7 +8,7 @@
     <SignAssembly>false</SignAssembly>
   </PropertyGroup>
 
-  <Target Name="EnsureNpmRestored" BeforeTargets="Build" Condition="!Exists('node_modules')">
+  <Target Name="EnsureNpmRestored" BeforeTargets="Build" Condition="!Exists('node_modules') AND '$(BlazorAllTests)'=='true'">
     <Message Importance="high" Text="Restoring dependencies using 'npm'. This may take several minutes..." />
     <Exec Command="npm ci" />
   </Target>

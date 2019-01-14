@@ -85,17 +85,18 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         [ConditionalTheory]
         [MemberData(nameof(TestVariants))]
+        [RequiresNewShim]
         public async Task StartupMessagesAreLoggedIntoDebugLogFile(TestVariant variant)
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant, publish: true);
             deploymentParameters.HandlerSettings["debugLevel"] = "file";
-            deploymentParameters.HandlerSettings["debugFile"] = "debug.txt";
+            deploymentParameters.HandlerSettings["debugFile"] = "subdirectory\\debug.txt";
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
             await deploymentResult.HttpClient.GetAsync("/");
 
-            AssertLogs(Path.Combine(deploymentResult.ContentRoot, "debug.txt"));
+            AssertLogs(Path.Combine(deploymentResult.ContentRoot, "subdirectory", "debug.txt"));
         }
 
         [ConditionalTheory]

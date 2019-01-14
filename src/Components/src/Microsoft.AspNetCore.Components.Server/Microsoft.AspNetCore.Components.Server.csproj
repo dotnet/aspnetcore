@@ -1,9 +1,10 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <Description>Runtime server features for ASP.NET Core Components.</Description>
     <IsProductPackage>true</IsProductPackage>
+    <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,14 +17,17 @@
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="$(SignalRPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="$(AspNetCorePackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="$(AspNetCorePackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="$(AspNetCorePackageVersion)" />
-
-    <!-- Used by ws-proxy sources only. Remove this once we're able to consume ws-proxy as a NuGet package. -->
-    <PackageReference Include="Mono.Cecil" Version="0.10.0-beta7" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="$(AspNetCorePackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNetCore.Components.Browser\Microsoft.AspNetCore.Components.Browser.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- We need .Browser.JS to build first so we can embed its .js output -->
+    <ProjectReference Include="..\Microsoft.AspNetCore.Components.Browser.JS\Microsoft.AspNetCore.Components.Browser.JS.csproj" ReferenceOutputAssembly="false" />
+    <EmbeddedResource Include="..\Microsoft.AspNetCore.Components.Browser.JS\dist\components.server.js" LogicalName="frameworkFiles\%(Filename)%(Extension)" />
   </ItemGroup>
 
 </Project>

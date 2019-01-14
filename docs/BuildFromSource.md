@@ -3,8 +3,6 @@ Build ASP.NET Core from Source
 
 Building ASP.NET Core from source allows you tweak and customize ASP.NET Core, and to contribute your improvements back to the project.
 
-:warning: We are currently in the middle of restructing our source code. These instructions will likely change rapidly during November and December 2018.
-
 See https://github.com/aspnet/AspNetCore/labels/area-infrastructure for known issues and to track ongoing work.
 
 ## Install pre-requistes

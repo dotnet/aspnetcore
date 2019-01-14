@@ -1,31 +1,25 @@
 ﻿<Project>
-  <Import
-    Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), AspNetCoreSettings.props))\AspNetCoreSettings.props"
-    Condition=" '$(CI)' != 'true' AND '$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), AspNetCoreSettings.props))' != '' " />
-
-  <Import Project="version.props" />
-  <Import Project="build\dependencies.props" />
-  <Import Project="build\sources.props" />
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
 
   <PropertyGroup>
-    <Product>Microsoft ASP.NET Core</Product>
-    <RepositoryUrl>https://github.com/aspnet/AspNetCore</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
-    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)build\Key.snk</AssemblyOriginatorKeyFile>
-    <SignAssembly>true</SignAssembly>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-	  <LangVersion>latest</LangVersion>
-    <SharedSourceRoot>$(MSBuildThisFileDirectory)..\Shared\</SharedSourceRoot>
+    <SignalRSharedSourceRoot>$(MSBuildThisFileDirectory)common\Shared\</SignalRSharedSourceRoot>
+    <SignalRTestUtilsProject>$(MSBuildThisFileDirectory)common\testassets\Tests.Utils\Microsoft.AspNetCore.SignalR.Tests.Utils.csproj</SignalRTestUtilsProject>
   </PropertyGroup>
 
-  <!-- Artifacts layout -->
-  <PropertyGroup>
-    <ArtifactsDir>$(MSBuildThisFileDirectory)..\..\artifacts\</ArtifactsDir>
-    <ArtifactsConfigurationDir>$(ArtifactsDir)$(Configuration)\</ArtifactsConfigurationDir>
-    <BasePackageOutputPath>$(ArtifactsConfigurationDir)packages\</BasePackageOutputPath>
-    <ProductPackageOutputPath>$(BasePackageOutputPath)product\</ProductPackageOutputPath>
-    <InternalPackageOutputPath>$(BasePackageOutputPath)internal\</InternalPackageOutputPath>
+  <PropertyGroup Condition="'$(IsTestProject)' != 'true'">
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore;signalr</PackageTags>
   </PropertyGroup>
 
+  <ItemGroup Condition="'$(IsTestProject)' == 'true'">
+    <Content Include="$(MSBuildThisFileDirectory)xunit.runner.json" Link="xunit.runner.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Reference Include="Microsoft.Extensions.Logging.Testing" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Internal.AspNetCore.Analyzers" PrivateAssets="All" Version="$(InternalAspNetCoreAnalyzersPackageVersion)" />
+  </ItemGroup>
 </Project>

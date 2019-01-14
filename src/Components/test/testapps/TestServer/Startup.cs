@@ -23,7 +23,7 @@ namespace TestServer
             {
                 options.AddPolicy("AllowAll", _ => { /* Controlled below */ });
             });
-            services.AddServerSideBlazor<BasicTestApp.Startup>();
+            services.AddRazorComponents<BasicTestApp.Startup>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Identity
         /// the identity.
         /// </summary>
         /// <param name="context">The context containing the <see cref="System.Security.Claims.ClaimsPrincipal"/>
-        /// and <see cref="Http.Authentication.AuthenticationProperties"/> to validate.</param>
+        /// and <see cref="AuthenticationProperties"/> to validate.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous validation operation.</returns>
         public virtual async Task ValidateAsync(CookieValidatePrincipalContext context)
         {

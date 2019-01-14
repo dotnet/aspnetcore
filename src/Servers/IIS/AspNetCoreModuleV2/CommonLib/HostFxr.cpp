@@ -99,3 +99,27 @@ HostFxrErrorRedirector HostFxr::RedirectOutput(RedirectionOutput* writer) const 
 {
     return HostFxrErrorRedirector(m_corehost_set_error_writer_fn, writer);
 }
+
+HostFxr HostFxr::CreateFromLoadedModule()
+{
+    HMODULE hModule;
+    THROW_LAST_ERROR_IF_NULL(hModule = GetModuleHandle(L"hostfxr.dll"));
+
+    try
+    {
+        return HostFxr(
+            ModuleHelpers::GetKnownProcAddress<hostfxr_main_fn>(hModule, "hostfxr_main"),
+            ModuleHelpers::GetKnownProcAddress<hostfxr_get_native_search_directories_fn>(hModule, "hostfxr_get_native_search_directories"),
+            ModuleHelpers::GetKnownProcAddress<corehost_set_error_writer_fn>(hModule, "hostfxr_set_error_writer", /* optional */ true));
+    }
+    catch (...)
+    {
+        EventLog::Error(
+            ASPNETCORE_EVENT_GENERAL_ERROR,
+            ASPNETCORE_EVENT_HOSTFXR_DLL_INVALID_VERSION_MSG,
+            ModuleHelpers::GetModuleFileNameValue(hModule).c_str()
+        );
+
+        throw;
+    }
+}

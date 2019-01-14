@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
@@ -51,6 +51,8 @@
   </Target>
 
   <ItemGroup>
+    <ProjectReference Include="$(RepositoryRoot)src\Servers\IIS\IIS\test\testassets\TestTasks\TestTasks.csproj" ReferenceOutputAssembly="false" />
+
     <Reference Include="Microsoft.AspNetCore.Server.IntegrationTesting" />
     <Reference Include="Microsoft.NETCore.Windows.ApiSets" />
     <Reference Include="Microsoft.Web.Administration" />

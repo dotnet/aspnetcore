@@ -20,5 +20,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.Components.Server\Microsoft.AspNetCore.Components.Server.csproj" />
+    <ProjectReference Include="..\Microsoft.AspNetCore.Blazor.Server\Microsoft.AspNetCore.Blazor.Server.csproj" />
   </ItemGroup>
 </Project>

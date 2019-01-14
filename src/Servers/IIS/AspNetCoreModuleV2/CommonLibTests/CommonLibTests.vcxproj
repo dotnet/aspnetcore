@@ -50,13 +50,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ConfigUtilityTests.cpp" />
-    <ClCompile Include="FileOutputManagerTests.cpp" />
     <ClCompile Include="GlobalVersionTests.cpp" />
     <ClCompile Include="Helpers.cpp" />
     <ClCompile Include="hostfxr_utility_tests.cpp" />
     <ClCompile Include="inprocess_application_tests.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="PipeOutputManagerTests.cpp" />
+    <ClCompile Include="StandardOutputRedirectionTest.cpp" />
     <ClCompile Include="BindingInformationTest.cpp" />
     <ClCompile Include="utility_tests.cpp" />
   </ItemGroup>

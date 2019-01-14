@@ -8,7 +8,7 @@
     <PackageTags>aspnetcore;components</PackageTags>
 
     <!-- So we can use the tool from source within the repo without having to pack -->
-    <BlazorToolsDir>$(MSBuildThisFileDirectory)src\Microsoft.AspNetCore.Components.Build\bin\$(Configuration)\netcoreapp3.0\</BlazorToolsDir>
+    <BlazorToolsDir>$(MSBuildThisFileDirectory)blazor\src\Microsoft.AspNetCore.Blazor.Build\bin\$(Configuration)\netcoreapp3.0\</BlazorToolsDir>
   </PropertyGroup>
 
   <PropertyGroup>

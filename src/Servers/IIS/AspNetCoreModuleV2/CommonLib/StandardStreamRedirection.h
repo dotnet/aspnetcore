@@ -18,6 +18,8 @@ public:
 
     ~StandardStreamRedirection() noexcept(false);
 
+private:
+
     void Start();
     void Stop();
 

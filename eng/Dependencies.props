@@ -112,22 +112,26 @@ and are generated based on the last package release.
     <LatestPackageReference Include="System.Security.Cryptography.Xml" Version="$(SystemSecurityCryptographyXmlPackageVersion)" />
     <LatestPackageReference Include="System.Security.Principal.Windows" Version="$(SystemSecurityPrincipalWindowsPackageVersion)" />
     <LatestPackageReference Include="System.ServiceProcess.ServiceController" Version="$(SystemServiceProcessServiceControllerPackageVersion)" />
+    <LatestPackageReference Include="System.Threading.Channels" Version="$(SystemThreadingChannelsPackageVersion)" />
+    <LatestPackageReference Include="System.Threading.Tasks.Extensions" Version="$(SystemThreadingTasksExtensionsPackageVersion)" />
     <LatestPackageReference Include="System.Text.Encodings.Web" Version="$(SystemTextEncodingsWebPackageVersion)" />
     <LatestPackageReference Include="System.Threading.Tasks.Extensions" Version="$(SystemThreadingTasksExtensionsPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup Label="External dependencies">
     <LatestPackageReference Include="AngleSharp" Version="$(AngleSharpPackageVersion)" />
-    <LatestPackageReference Include="BenchmarkDotNet" Version="0.10.13" />
-    <LatestPackageReference Include="FSharp.Core" Version="4.2.1" />
-    <LatestPackageReference Include="Libuv" Version="1.10.0" />
+    <LatestPackageReference Include="BenchmarkDotNet" Version="$(BenchmarkDotNetPackageVersion)" />
+    <LatestPackageReference Include="FSharp.Core" Version="$(FSharpCorePackageVersion)" />
+    <LatestPackageReference Include="Google.ProtoBuf" Version="$(GoogleProtoBufPackageVersion)" />
+    <LatestPackageReference Include="Libuv" Version="$(LibuvPackageVersion)" />
+    <LatestPackageReference Include="MessagePack" Version="$(MessagePackPackageVersion)" />
     <LatestPackageReference Include="Microsoft.AspNet.WebApi.Client" Version="$(MicrosoftAspNetWebApiClientPackageVersion)" />
-    <LatestPackageReference Include="Microsoft.Azure.KeyVault" Version="2.3.2" />
-    <LatestPackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
-    <LatestPackageReference Include="IdentityServer4" Version="$(IdentityServer4PackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Azure.KeyVault" Version="$(MicrosoftAzureKeyVaultPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNETTestSdkPackageVersion)" />
     <LatestPackageReference Include="IdentityServer4.AspNetIdentity" Version="$(IdentityServer4AspNetIdentityPackageVersion)" />
     <LatestPackageReference Include="IdentityServer4.EntityFramework" Version="$(IdentityServer4EntityFrameworkPackageVersion)" />
-    <LatestPackageReference Include="Moq" Version="4.10.0" />
+    <LatestPackageReference Include="IdentityServer4" Version="$(IdentityServer4PackageVersion)" />
+    <LatestPackageReference Include="Moq" Version="$(MoqPackageVersion)" />
     <LatestPackageReference Include="Newtonsoft.Json.Bson" Version="$(NewtonsoftJsonBsonPackageVersion)" />
     <!-- This version is required by MSBuild tasks or Visual Studio extensions. -->
     <LatestPackageReference Include="Newtonsoft.Json" Version="9.0.1" Condition="'$(UseMSBuildJsonNet)' == 'true'" />
@@ -139,14 +143,16 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Selenium.WebDriver" Version="3.12.1" />
     <LatestPackageReference Include="Serilog.Extensions.Logging" Version="$(SerilogExtensionsLoggingPackageVersion)" />
     <LatestPackageReference Include="Serilog.Sinks.File" Version="$(SerilogSinksFilePackageVersion)" />
-    <LatestPackageReference Include="Utf8Json" Version="1.3.7" />
-    <LatestPackageReference Include="xunit.abstractions" Version="2.0.1" />
-    <LatestPackageReference Include="xunit.analyzers" Version="0.10.0" />
-    <LatestPackageReference Include="xunit.assert" Version="2.3.1" />
-    <LatestPackageReference Include="xunit.extensibility.core" Version="2.3.1" />
-    <LatestPackageReference Include="xunit.extensibility.execution" Version="2.3.1" />
-    <LatestPackageReference Include="xunit.runner.visualstudio" Version="2.4.0" />
-    <LatestPackageReference Include="xunit" Version="2.4.0" />
+    <LatestPackageReference Include="StackExchange.Redis" Version="$(StackExchangeRedisPackageVersion)" />
+    <LatestPackageReference Include="System.Reactive.Linq" Version="$(SystemReactiveLinqPackageVersion)" />
+    <LatestPackageReference Include="Utf8Json" Version="$(Utf8JsonPackageVersion)" />
+    <LatestPackageReference Include="xunit.abstractions" Version="$(XunitAbstractionsPackageVersion)" />
+    <LatestPackageReference Include="xunit.analyzers" Version="$(XunitAnalyzersPackageVersion)" />
+    <LatestPackageReference Include="xunit.assert" Version="$(XunitAssertPackageVersion)" />
+    <LatestPackageReference Include="xunit.extensibility.core" Version="$(XunitExtensibilityCorePackageVersion)" />
+    <LatestPackageReference Include="xunit.extensibility.execution" Version="$(XunitExtensibilityExecutionPackageVersion)" />
+    <LatestPackageReference Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualStudioPackageVersion)" />
+    <LatestPackageReference Include="xunit" Version="$(XunitPackageVersion)" />
   </ItemGroup>
 
 </Project>

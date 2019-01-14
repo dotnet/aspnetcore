@@ -65,8 +65,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NonDISample", "samples\NonD
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Redis", "samples\Redis\Redis.csproj", "{E578D5C2-76AD-4A9B-A4F0-3A74D7ACD98E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.DataProtection.SystemWeb", "SystemWeb\src\Microsoft.AspNetCore.DataProtection.SystemWeb.csproj", "{A65DAFB6-E03F-4140-892F-D7CA3B8D81D7}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EntityFrameworkCore", "EntityFrameworkCore", "{64FD02D7-B6F4-4C77-A3F8-E6BD6404168E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.DataProtection.EntityFrameworkCore", "EntityFrameworkCore\src\Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.csproj", "{8A7D0D2D-A5F1-4DF7-BBAA-9A0EFDBB5224}"

@@ -29,7 +29,6 @@
     <CleanDependsOn>$(CleanDependsOn);CleanArtifacts;CleanRepoArtifacts</CleanDependsOn>
 
     <RestoreDependsOn>$(RestoreDependsOn);InstallDotNet;RestoreProjects</RestoreDependsOn>
-    <RestoreDependsOn Condition=" '$(BuildNodeJS)' == 'true' ">$(RestoreDependsOn);RestoreNpm</RestoreDependsOn>
 
     <CompileDependsOn />
     <CompileDependsOn Condition=" '$(_RunRestore)' == 'true' ">Restore</CompileDependsOn>
@@ -51,13 +50,6 @@
     <!-- Package modification must happen before code signing. -->
     <CodeSignDependsOn>$(CodeSignDependsOn);RemoveSharedFrameworkOnlyRefsFromNuspec</CodeSignDependsOn>
   </PropertyGroup>
-
-  <Target Name="RestoreNpm" Condition="@(NpmProjectDirectory->Count()) != 0">
-    <Message Text="Restoring NPM modules" Importance="high" />
-
-    <!-- Always run `npm ci` because `npm install` has a tendancy to churn package-lock.json for no apparent reason. -->
-    <Exec Command="npm ci" WorkingDirectory="%(NpmProjectDirectory.Identity)" Condition=" '%(NpmProjectDirectory.Identity)' != '' " />
-  </Target>
 
   <Target Name="PrepareOutputPaths">
     <MakeDir Directories="$(ArtifactsDir);$(ProductPackageOutputPath);$(InternalPackageOutputPath)" />
