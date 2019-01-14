@@ -76,6 +76,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<MatcherFactory, DfaMatcherFactory>();
             services.TryAddTransient<DfaMatcherBuilder>();
             services.TryAddSingleton<DfaGraphWriter>();
+            services.TryAddTransient<DataSourceDependentMatcher.Lifetime>();
 
             // Link generation related services
             services.TryAddSingleton<LinkGenerator, DefaultLinkGenerator>();
@@ -93,7 +94,7 @@ namespace Microsoft.Extensions.DependencyInjection
             // Misc infrastructure
             // 
             services.TryAddSingleton<RoutePatternTransformer, DefaultRoutePatternTransformer>();
-
+           
             return services;
         }
 
