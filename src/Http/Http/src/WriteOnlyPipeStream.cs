@@ -16,8 +16,18 @@ namespace System.IO.Pipelines
         /// <summary>
         /// Creates a new WriteOnlyStream
         /// </summary>
-        /// <param name="pipeWriter"></param>
+        /// <param name="pipeWriter">The PipeWriter to write to.</param>
         public WriteOnlyPipeStream(PipeWriter pipeWriter)
+        {
+            _pipeWriter = pipeWriter;
+        }
+
+        /// <summary>
+        /// Creates a new WriteOnlyStream
+        /// </summary>
+        /// <param name="pipeWriter">The PipeWriter to write to.</param>
+        /// <param name="allowSynchronousIO">Whether synchronous IO is allowed.</param>
+        public WriteOnlyPipeStream(PipeWriter pipeWriter, bool allowSynchronousIO)
         {
             _pipeWriter = pipeWriter;
         }
@@ -59,7 +69,7 @@ namespace System.IO.Pipelines
         /// <inheritdoc />
         public override void Flush()
         {
-            FlushAsync(default(CancellationToken)).GetAwaiter().GetResult();
+            FlushAsync(default).GetAwaiter().GetResult();
         }
 
         /// <inheritdoc />
@@ -83,13 +93,13 @@ namespace System.IO.Pipelines
         /// <inheritdoc />
         public override void Write(byte[] buffer, int offset, int count)
         {
-            WriteAsync(buffer, offset, count, default(CancellationToken)).GetAwaiter().GetResult();
+            WriteAsync(buffer, offset, count, default).GetAwaiter().GetResult();
         }
 
         /// <inheritdoc />
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
-            var task = WriteAsync(buffer, offset, count, default(CancellationToken), state);
+            var task = WriteAsync(buffer, offset, count, default, state);
             if (callback != null)
             {
                 task.ContinueWith(t => callback.Invoke(t));
@@ -101,18 +111,6 @@ namespace System.IO.Pipelines
         public override void EndWrite(IAsyncResult asyncResult)
         {
             ((Task<object>)asyncResult).GetAwaiter().GetResult();
-        }
-
-        /// <inheritdoc />
-        public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-        {
-            return WriteAsync(new ReadOnlyMemory<byte>(buffer, offset, count), cancellationToken).AsTask();
-        }
-
-        /// <inheritdoc />
-        public override async ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
-        {
-            await _pipeWriter.WriteAsync(source, cancellationToken);
         }
 
         private Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken, object state)
@@ -138,5 +136,16 @@ namespace System.IO.Pipelines
             return tcs.Task;
         }
 
+        /// <inheritdoc />
+        public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        {
+            return WriteAsync(new ReadOnlyMemory<byte>(buffer, offset, count), cancellationToken).AsTask();
+        }
+
+        /// <inheritdoc />
+        public override async ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
+        {
+            await _pipeWriter.WriteAsync(source, cancellationToken);
+        }
     }
 }

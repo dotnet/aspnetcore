@@ -9,18 +9,30 @@ using System.Threading.Tasks;
 namespace System.IO.Pipelines
 {
     /// <summary>
-    /// Represents a ReadOnlyStream backed by a PipeReader
+    /// Represents a read-only Stream backed by a PipeReader
     /// </summary>
     public class ReadOnlyPipeStream : Stream
     {
         private readonly PipeReader _pipeReader;
+        private bool _allowSynchronousIO = true;
 
         /// <summary>
         /// Creates a new ReadOnlyPipeStream
         /// </summary>
-        /// <param name="pipeReader"></param>
+        /// <param name="pipeReader">The PipeReader to read from.</param>
         public ReadOnlyPipeStream(PipeReader pipeReader)
         {
+            _pipeReader = pipeReader;
+        }
+
+        /// <summary>
+        /// Creates a new ReadOnlyPipeStream
+        /// </summary>
+        /// <param name="pipeReader">The PipeReader to read from.</param>
+        /// <param name="allowSynchronousIO">Whether synchronous IO is allowed.</param>
+        public ReadOnlyPipeStream(PipeReader pipeReader, bool allowSynchronousIO)
+        {
+            _allowSynchronousIO = allowSynchronousIO;
             _pipeReader = pipeReader;
         }
 
@@ -61,12 +73,13 @@ namespace System.IO.Pipelines
         /// <inheritdoc />
         public override void Flush()
         {
+            throw new NotSupportedException();
         }
 
         /// <inheritdoc />
         public override Task FlushAsync(CancellationToken cancellationToken)
         {
-            return Task.CompletedTask;
+            throw new NotSupportedException();
         }
 
         /// <inheritdoc />
@@ -84,13 +97,17 @@ namespace System.IO.Pipelines
         /// <inheritdoc />
         public override int Read(byte[] buffer, int offset, int count)
         {
+            if (!_allowSynchronousIO)
+            {
+                ThrowHelper.ThrowInvalidOperationException_SynchronousReadsDisallowed();
+            }
             return ReadAsync(buffer, offset, count).GetAwaiter().GetResult();
         }
 
         /// <inheritdoc />
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
-            var task = ReadAsync(buffer, offset, count, default(CancellationToken), state);
+            var task = ReadAsync(buffer, offset, count, default, state);
             if (callback != null)
             {
                 task.ContinueWith(t => callback.Invoke(t));
@@ -151,12 +168,12 @@ namespace System.IO.Pipelines
                 var actual = 0;
                 try
                 {
-                    if (!readableBuffer.IsEmpty)
+                    if (readableBufferLength != 0)
                     {
                         actual = (int)Math.Min(readableBufferLength, buffer.Length);
 
-                        var slice = readableBuffer.Slice(0, actual);
-                        consumed = readableBuffer.GetPosition(actual);
+                        var slice = actual == readableBufferLength ? readableBuffer : readableBuffer.Slice(0, actual);
+                        consumed = slice.End;
                         slice.CopyTo(buffer.Span);
 
                         return actual;
@@ -200,7 +217,7 @@ namespace System.IO.Pipelines
 
                 try
                 {
-                    if (!readableBuffer.IsEmpty)
+                    if (readableBufferLength != 0)
                     {
                         foreach (var memory in readableBuffer)
                         {

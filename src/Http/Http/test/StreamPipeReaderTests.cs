@@ -582,7 +582,7 @@ namespace System.IO.Pipelines.Tests
         }
 
         [Fact]
-        public async Task ReadAsyncWithNoDataCompletesStream()
+        public async Task ReadAsyncWithNoDataCompletesReader()
         {
             var readResult = await Reader.ReadAsync();
 
