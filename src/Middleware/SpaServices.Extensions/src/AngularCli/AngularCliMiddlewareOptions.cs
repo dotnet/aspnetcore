@@ -4,16 +4,16 @@
 namespace Microsoft.AspNetCore.SpaServices.AngularCli
 {
     /// <summary>
-    /// Describes options for starting the create-react-app server
+    /// Describes options for starting the Angular CLI process
     /// </summary>
     public class AngularCliMiddlewareOptions
     {
         /// <summary>
-        /// The name of the script in your package.json file that launches the create-react-app server.
+        /// The name of the script in your package.json file that launches the Angular CLI process.
         /// </summary>
         public string npmScript;
         /// <summary>
-        /// Port the create-react-app server should use, if it is not already running.
+        /// Port the Angular CLI process should use, if it is not already running.
         /// </summary>
         public int? spaPort;
     }

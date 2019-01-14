@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer
                 throw new ArgumentNullException(nameof(spaBuilder));
             }
 
-            ReactDevelopmentServerMiddlewareOptions devServerOptions;
+            var devServerOptions = new ReactDevelopmentServerMiddlewareOptions();
             configure(devServerOptions);
 
             var spaOptions = spaBuilder.Options;

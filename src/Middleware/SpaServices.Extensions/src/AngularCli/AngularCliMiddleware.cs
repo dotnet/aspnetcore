@@ -41,17 +41,20 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
             // or the specified port is still free (unused).
             var shouldStartServer = !spaPort.HasValue || TcpPortFinder.TestPortAvailability(spaPort.Value);
 
-            Task<int> portTask;
+            Task<AngularCliServerInfo> angularCliServerInfoTask;
             if (shouldStartServer)
             {
                 // Start Angular CLI and attach to middleware pipeline
                 var appBuilder = spaBuilder.ApplicationBuilder;
                 var logger = LoggerFinder.GetOrCreateLogger(appBuilder, LogCategoryName);
-                var angularCliServerInfoTask = StartAngularCliServerAsync(sourcePath, npmScriptName, logger);
+                angularCliServerInfoTask = StartAngularCliServerAsync(sourcePath, npmScriptName, logger);
             }
             else
             {
-                portTask = Task.FromResult(spaPort.Value);
+                angularCliServerInfoTask = Task.FromResult(new AngularCliServerInfo
+                {
+                    Port = spaPort.Value
+                });
             }
 
             // Everything we proxy is hardcoded to target http://localhost because:

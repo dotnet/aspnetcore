@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
                 throw new ArgumentNullException(nameof(spaBuilder));
             }
 
-            ReactDevelopmentServerMiddlewareOptions devServerOptions;
+            var devServerOptions = new AngularCliMiddlewareOptions();
             configure(devServerOptions);
 
             var spaOptions = spaBuilder.Options;

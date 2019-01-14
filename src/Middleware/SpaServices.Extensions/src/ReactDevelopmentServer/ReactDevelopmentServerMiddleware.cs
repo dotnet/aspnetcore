@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer
                 // Start create-react-app and attach to middleware pipeline
                 var appBuilder = spaBuilder.ApplicationBuilder;
                 var logger = LoggerFinder.GetOrCreateLogger(appBuilder, LogCategoryName);
-                var portTask = StartCreateReactAppServerAsync(sourcePath, npmScriptName, logger);
+                portTask = StartCreateReactAppServerAsync(sourcePath, npmScriptName, logger);
             }
             else
             {
