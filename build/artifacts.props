@@ -48,6 +48,7 @@ This can be done once #4246 is complete, and done in conjunction with converting
     <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Hosting.WindowsServices" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Http.Connections.Client" Category="ship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Http.Connections.Common" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Http.Features" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Identity.Specification.Tests" Category="ship" />
@@ -124,7 +125,6 @@ This can be done once #4246 is complete, and done in conjunction with converting
       <PackageArtifact Include="Microsoft.AspNetCore.Hosting" Category="noship" />
       <PackageArtifact Include="Microsoft.AspNetCore.Html.Abstractions" Category="noship" />
       <PackageArtifact Include="Microsoft.AspNetCore.Http.Abstractions" Category="noship" />
-      <PackageArtifact Include="Microsoft.AspNetCore.Http.Connections.Common" Category="noship" />
       <PackageArtifact Include="Microsoft.AspNetCore.Http.Connections" Category="noship" />
       <PackageArtifact Include="Microsoft.AspNetCore.Http.Extensions" Category="noship" />
       <PackageArtifact Include="Microsoft.AspNetCore.Http" Category="noship" />
