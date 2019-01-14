@@ -369,7 +369,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup Condition="'$(EnableDefaultRazorGenerateItems)'=='true'">
       <RazorGenerate
         Include="@(Content)"
-        Exclude="@(RazorComponent)"
+        Exclude="$(_RazorComponentInclude)"
         Condition="'%(Content.Extension)'=='.cshtml'" />
     </ItemGroup>
 
@@ -406,6 +406,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ItemGroup Condition="'$(EnableDefaultRazorComponentItems)'=='true'">
       <RazorComponent Include="@(Content)" Condition="'%(Content.Extension)'=='.razor'" />
+      <RazorComponent Include="$(_RazorComponentInclude)" />
     </ItemGroup>
   </Target>
 

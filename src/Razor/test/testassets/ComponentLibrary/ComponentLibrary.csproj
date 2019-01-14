@@ -2,6 +2,7 @@
   
   <PropertyGroup>
     <RazorSdkDirectoryRoot>$(RazorSdkArtifactsDirectory)$(Configuration)\sdk-output\</RazorSdkDirectoryRoot>
+    <_RazorComponentInclude>**\*.cshtml</_RazorComponentInclude>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -25,10 +26,6 @@
 
   <ItemGroup Condition="'$(BinariesRoot)'!=''">
     <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.Test.ComponentShim.dll"/>
-  </ItemGroup>
-
-  <ItemGroup>
-    <RazorComponent Include="**/*.cshtml" />
   </ItemGroup>
 
   <ItemGroup>

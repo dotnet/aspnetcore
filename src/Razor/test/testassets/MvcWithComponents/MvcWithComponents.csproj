@@ -3,6 +3,7 @@
   <PropertyGroup>
     <RazorSdkDirectoryRoot>$(RazorSdkArtifactsDirectory)$(Configuration)\sdk-output\</RazorSdkDirectoryRoot>
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+    <_RazorComponentInclude>Components\**\*.cshtml</_RazorComponentInclude>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -27,10 +28,6 @@
     <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Html.Abstractions.dll"/>
     <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.Test.ComponentShim.dll"/>
     <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib.dll"/>
-  </ItemGroup>
-
-  <ItemGroup>
-    <RazorComponent Include="Components/**/*.cshtml" />
   </ItemGroup>
 
   <!-- Test Placeholder -->
