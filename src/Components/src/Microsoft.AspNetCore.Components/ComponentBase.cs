@@ -105,7 +105,16 @@ namespace Microsoft.AspNetCore.Components
             if (_hasNeverRendered || ShouldRender())
             {
                 _hasPendingQueuedRender = true;
-                _renderHandle.Render(_renderFragment);
+
+                try
+                {
+                    _renderHandle.Render(_renderFragment);
+                }
+                catch
+                {
+                    _hasPendingQueuedRender = false;
+                    throw;
+                }
             }
         }
 
@@ -131,6 +140,22 @@ namespace Microsoft.AspNetCore.Components
         /// <returns>A <see cref="Task"/> representing any asynchronous operation.</returns>
         protected virtual Task OnAfterRenderAsync()
             => Task.CompletedTask;
+
+        /// <summary>
+        /// Executes the supplied work item on the associated renderer's
+        /// synchronization context.
+        /// </summary>
+        /// <param name="workItem">The work item to execute.</param>
+        protected Task Invoke(Action workItem)
+            => _renderHandle.Invoke(workItem);
+
+        /// <summary>
+        /// Executes the supplied work item on the associated renderer's
+        /// synchronization context.
+        /// </summary>
+        /// <param name="workItem">The work item to execute.</param>
+        protected Task InvokeAsync(Func<Task> workItem)
+            => _renderHandle.InvokeAsync(workItem);
 
         void IComponent.Init(RenderHandle renderHandle)
         {

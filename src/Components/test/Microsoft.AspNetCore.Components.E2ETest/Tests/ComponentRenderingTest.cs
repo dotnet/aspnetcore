@@ -552,6 +552,39 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             WaitAssert.Equal(expectedOutput, () => outputElement.Text);
         }
 
+        [Fact]
+        public void CanDispatchRenderToSyncContext()
+        {
+            var appElement = MountTestComponent<DispatchingComponent>();
+            var result = appElement.FindElement(By.Id("result"));
+
+            appElement.FindElement(By.Id("run-with-dispatch")).Click();
+
+            WaitAssert.Equal("Success (completed synchronously)", () => result.Text);
+        }
+
+        [Fact]
+        public void CanDoubleDispatchRenderToSyncContext()
+        {
+            var appElement = MountTestComponent<DispatchingComponent>();
+            var result = appElement.FindElement(By.Id("result"));
+
+            appElement.FindElement(By.Id("run-with-double-dispatch")).Click();
+
+            WaitAssert.Equal("Success (completed synchronously)", () => result.Text);
+        }
+
+        [Fact]
+        public void CanDispatchAsyncWorkToSyncContext()
+        {
+            var appElement = MountTestComponent<DispatchingComponent>();
+            var result = appElement.FindElement(By.Id("result"));
+
+            appElement.FindElement(By.Id("run-async-with-dispatch")).Click();
+
+            WaitAssert.Equal("First Second Third Fourth Fifth", () => result.Text);
+        }
+
         static IAlert SwitchToAlert(IWebDriver driver)
         {
             try
