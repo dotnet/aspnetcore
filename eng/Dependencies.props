@@ -103,7 +103,6 @@ and are generated based on the last package release.
     <LatestPackageReference Include="System.IO.Pipelines" Version="$(SystemIOPipelinesPackageVersion)" />
     <LatestPackageReference Include="System.Memory" Version="$(SystemMemoryPackageVersion)" />
     <LatestPackageReference Include="System.Net.Http.WinHttpHandler" Version="$(SystemNetHttpWinHttpHandlerPackageVersion)" />
-    <LatestPackageReference Include="System.Net.Http.WinHttpHandler" Version="$(SystemNetHttpWinHttpHandlerPackageVersion)" />
     <LatestPackageReference Include="System.Net.WebSockets.WebSocketProtocol" Version="$(SystemNetWebSocketsWebSocketProtocolPackageVersion)" />
     <LatestPackageReference Include="System.Numerics.Vectors" Version="$(SystemNumericsVectorsPackageVersion)" />
     <LatestPackageReference Include="System.Reflection.Metadata" Version="$(SystemReflectionMetadataPackageVersion)" />
@@ -115,7 +114,6 @@ and are generated based on the last package release.
     <LatestPackageReference Include="System.Threading.Channels" Version="$(SystemThreadingChannelsPackageVersion)" />
     <LatestPackageReference Include="System.Threading.Tasks.Extensions" Version="$(SystemThreadingTasksExtensionsPackageVersion)" />
     <LatestPackageReference Include="System.Text.Encodings.Web" Version="$(SystemTextEncodingsWebPackageVersion)" />
-    <LatestPackageReference Include="System.Threading.Tasks.Extensions" Version="$(SystemThreadingTasksExtensionsPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup Label="External dependencies">
@@ -123,29 +121,25 @@ and are generated based on the last package release.
     <LatestPackageReference Include="BenchmarkDotNet" Version="$(BenchmarkDotNetPackageVersion)" />
     <LatestPackageReference Include="FSharp.Core" Version="$(FSharpCorePackageVersion)" />
     <LatestPackageReference Include="Google.ProtoBuf" Version="$(GoogleProtoBufPackageVersion)" />
+    <LatestPackageReference Include="IdentityServer4.AspNetIdentity" Version="$(IdentityServer4AspNetIdentityPackageVersion)" />
+    <LatestPackageReference Include="IdentityServer4.EntityFramework" Version="$(IdentityServer4EntityFrameworkPackageVersion)" />
+    <LatestPackageReference Include="IdentityServer4" Version="$(IdentityServer4PackageVersion)" />
     <LatestPackageReference Include="Libuv" Version="$(LibuvPackageVersion)" />
     <LatestPackageReference Include="MessagePack" Version="$(MessagePackPackageVersion)" />
     <LatestPackageReference Include="Microsoft.AspNet.WebApi.Client" Version="$(MicrosoftAspNetWebApiClientPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Azure.KeyVault" Version="$(MicrosoftAzureKeyVaultPackageVersion)" />
     <LatestPackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNETTestSdkPackageVersion)" />
-    <LatestPackageReference Include="IdentityServer4.AspNetIdentity" Version="$(IdentityServer4AspNetIdentityPackageVersion)" />
-    <LatestPackageReference Include="IdentityServer4.EntityFramework" Version="$(IdentityServer4EntityFrameworkPackageVersion)" />
-    <LatestPackageReference Include="IdentityServer4" Version="$(IdentityServer4PackageVersion)" />
     <LatestPackageReference Include="Moq" Version="$(MoqPackageVersion)" />
     <LatestPackageReference Include="Newtonsoft.Json.Bson" Version="$(NewtonsoftJsonBsonPackageVersion)" />
-    <!-- This version is required by MSBuild tasks or Visual Studio extensions. -->
-    <LatestPackageReference Include="Newtonsoft.Json" Version="9.0.1" Condition="'$(UseMSBuildJsonNet)' == 'true'" />
-    <!-- This version should be used by runtime packages -->
-    <LatestPackageReference Include="Newtonsoft.Json" Version="12.0.1" Condition="'$(UseMSBuildJsonNet)' != 'true'" />
-    <LatestPackageReference Include="StackExchange.Redis" Version="2.0.513" />
-    <LatestPackageReference Include="WindowsAzure.Storage" Version="8.1.4" />
-    <LatestPackageReference Include="Selenium.WebDriver.ChromeDriver" Version="2.43.0" />
-    <LatestPackageReference Include="Selenium.WebDriver" Version="3.12.1" />
+    <LatestPackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
+    <LatestPackageReference Include="Selenium.WebDriver.ChromeDriver" Version="$(SeleniumWebDriverChromeDriverPackageVersion)" />
+    <LatestPackageReference Include="Selenium.WebDriver" Version="$(SeleniumWebDriverPackageVersion)" />
     <LatestPackageReference Include="Serilog.Extensions.Logging" Version="$(SerilogExtensionsLoggingPackageVersion)" />
     <LatestPackageReference Include="Serilog.Sinks.File" Version="$(SerilogSinksFilePackageVersion)" />
     <LatestPackageReference Include="StackExchange.Redis" Version="$(StackExchangeRedisPackageVersion)" />
     <LatestPackageReference Include="System.Reactive.Linq" Version="$(SystemReactiveLinqPackageVersion)" />
     <LatestPackageReference Include="Utf8Json" Version="$(Utf8JsonPackageVersion)" />
+    <LatestPackageReference Include="WindowsAzure.Storage" Version="$(WindowsAzureStoragePackageVersion)" />
     <LatestPackageReference Include="xunit.abstractions" Version="$(XunitAbstractionsPackageVersion)" />
     <LatestPackageReference Include="xunit.analyzers" Version="$(XunitAnalyzersPackageVersion)" />
     <LatestPackageReference Include="xunit.assert" Version="$(XunitAssertPackageVersion)" />
