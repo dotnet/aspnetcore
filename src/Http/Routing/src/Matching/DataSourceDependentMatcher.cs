@@ -15,12 +15,17 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
         public DataSourceDependentMatcher(
             EndpointDataSource dataSource,
+            Lifetime lifetime,
             Func<MatcherBuilder> matcherBuilderFactory)
         {
             _matcherBuilderFactory = matcherBuilderFactory;
 
             _cache = new DataSourceDependentCache<Matcher>(dataSource, CreateMatcher);
             _cache.EnsureInitialized();
+
+            // This will Dispose the cache when the lifetime is disposed, this allows
+            // the service provider to manage the lifetime of the cache.
+            lifetime.Cache = _cache;
         }
 
         // Used in tests
@@ -46,6 +51,42 @@ namespace Microsoft.AspNetCore.Routing.Matching
             }
 
             return builder.Build();
+        }
+
+        // Used to tie the lifetime of a DataSourceDependentCache to the service provider
+        public class Lifetime : IDisposable
+        {
+            private readonly object _lock = new object();
+            private DataSourceDependentCache<Matcher> _cache;
+            private bool _disposed;
+
+            public DataSourceDependentCache<Matcher> Cache
+            {
+                get => _cache;
+                set
+                {
+                    lock (_lock)
+                    {
+                        if (_disposed)
+                        {
+                            value?.Dispose();
+                        }
+
+                        _cache = value;
+                    }
+                }
+            }
+
+            public void Dispose()
+            {
+                lock (_lock)
+                {
+                    _cache?.Dispose();
+                    _cache = null;
+
+                    _disposed = true;
+                }
+            }
         }
     }
 }
