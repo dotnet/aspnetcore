@@ -97,7 +97,6 @@
     <!-- We need to pass the NETCoreApp package versions to msbuild so that it doesn't complain about us using a different one than it was restored against.  -->
     <PropertyGroup>
       <DesignTimeBuildProps>$(BuildProperties);MicrosoftNETCoreAppPackageVersion=$(MicrosoftNETCoreAppPackageVersion);</DesignTimeBuildProps>
-      <DesignTimeBuildProps>$(DesignTimeBuildProps);MicrosoftNETCoreApp30PackageVersion=$(MicrosoftNETCoreApp30PackageVersion);</DesignTimeBuildProps>
     </PropertyGroup>
 
     <ItemGroup>
@@ -210,13 +209,9 @@
       Packages="@(_LineupPackages)"
       OutputPath="$(GeneratedPackageVersionPropsPath)" />
 
-    <Copy SourceFiles="$(GeneratedPackageVersionPropsPath)" DestinationFolder="$(ArtifactsDir)" />
-
     <RepoTasks.GenerateRestoreSourcesPropsFile
       Sources="@(_RestoreSources)"
       OutputPath="$(GeneratedRestoreSourcesPropsPath)" />
-
-    <Copy SourceFiles="$(GeneratedPackageVersionPropsPath);$(GeneratedBrandingPropsPath)" DestinationFolder="$(ArtifactsDir)" />
   </Target>
 
   <Target Name="CleanRepoArtifacts">

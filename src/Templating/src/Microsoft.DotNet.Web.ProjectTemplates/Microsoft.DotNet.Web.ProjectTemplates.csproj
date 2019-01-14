@@ -39,7 +39,7 @@
       MicrosoftEntityFrameworkCoreSqlServerPackageVersion=$(MicrosoftEntityFrameworkCoreSqlServerPackageVersion);
       MicrosoftEntityFrameworkCoreToolsDotNetPackageVersion=$(MicrosoftEntityFrameworkCoreToolsDotNetPackageVersion);
       MicrosoftEntityFrameworkCoreToolsPackageVersion=$(MicrosoftEntityFrameworkCoreToolsPackageVersion);
-      MicrosoftNETCoreApp30PackageVersion=$(MicrosoftNETCoreApp30PackageVersion);
+      MicrosoftNETCoreAppPackageVersion=$(MicrosoftNETCoreAppPackageVersion);
     </GeneratedContentProperties>
   </PropertyGroup>
 

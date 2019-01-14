@@ -10,8 +10,8 @@
   <ItemGroup>
     <PackageReference Remove="Internal.AspNetCore.Sdk" />
     <PackageReference Include="NuGet.Build.Tasks" Version="4.9.1" />
-    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="$(DevDependency_MicrosoftExtensionsDependencyModelPackageVersion)" />
-    <PackageReference Include="WindowsAzure.Storage" Version="$(DevDependency_WindowsAzureStoragePackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="2.1.0" />
+    <PackageReference Include="WindowsAzure.Storage" Version="8.7.0" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(BuildWindowsInstallers)' == 'true'">

@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp30PackageVersion)" />
+    <DotNetCoreRuntime Include="$(MicrosoftNETCoreAppPackageVersion)" />
 
     <!-- SkipAspNetCoreRuntimeInstall must be set when building templates before the shared framework is available -->
     <AspNetCoreRuntime Include="$(MicrosoftAspNetCoreAppPackageVersion)"

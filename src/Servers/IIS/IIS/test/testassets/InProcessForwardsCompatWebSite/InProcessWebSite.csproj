@@ -18,7 +18,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Server.IIS" Version="$(MicrosoftAspNetCoreServerIISStablePackageVersion)" />
+    <!-- This package is hard-coded to 2.2.0 as a part of ensuring ANCM stays forward compatible.  -->
+    <PackageReference Include="Microsoft.AspNetCore.Server.IIS" Version="2.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.ResponseCompression" />
     <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
