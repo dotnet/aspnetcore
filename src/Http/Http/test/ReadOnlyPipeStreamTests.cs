@@ -143,6 +143,13 @@ namespace System.IO.Pipelines.Tests
             Assert.Equal(expectedSize, destStream.Length);
         }
 
+        [Fact]
+        public void BlockSyncIOThrows()
+        {
+            var readOnlyPipeStream = new ReadOnlyPipeStream(Reader, allowSynchronousIO: false);
+            Assert.Throws<InvalidOperationException>(() => readOnlyPipeStream.Read(new byte[0], 0, 0));
+        }
+
         private async Task<Mock<PipeReader>> SetupMockPipeReader()
         {
             await WriteByteArrayToPipeAsync(new byte[1]);

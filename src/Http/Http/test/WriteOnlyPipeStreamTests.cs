@@ -187,5 +187,13 @@ namespace System.IO.Pipelines.Tests
             WritingStream.EndWrite(asyncResult);
             Assert.Equal(expected, await ReadFromPipeAsByteArrayAsync());
         }
+
+        [Fact]
+        public void BlockSyncIOThrows()
+        {
+            var writeOnlyPipeStream = new WriteOnlyPipeStream(Writer, allowSynchronousIO: false);
+            Assert.Throws<InvalidOperationException>(() => writeOnlyPipeStream.Write(new byte[0], 0, 0));
+            Assert.Throws<InvalidOperationException>(() => writeOnlyPipeStream.Flush());
+        }
     }
 }

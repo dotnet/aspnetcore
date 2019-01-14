@@ -12,14 +12,15 @@ namespace System.IO.Pipelines
     public class WriteOnlyPipeStream : Stream
     {
         private PipeWriter _pipeWriter;
+        private bool _allowSynchronousIO = true;
 
         /// <summary>
         /// Creates a new WriteOnlyStream
         /// </summary>
         /// <param name="pipeWriter">The PipeWriter to write to.</param>
-        public WriteOnlyPipeStream(PipeWriter pipeWriter)
+        public WriteOnlyPipeStream(PipeWriter pipeWriter) :
+            this(pipeWriter, allowSynchronousIO: true)
         {
-            _pipeWriter = pipeWriter;
         }
 
         /// <summary>
@@ -30,6 +31,7 @@ namespace System.IO.Pipelines
         public WriteOnlyPipeStream(PipeWriter pipeWriter, bool allowSynchronousIO)
         {
             _pipeWriter = pipeWriter;
+            _allowSynchronousIO = allowSynchronousIO;
         }
 
         /// <inheritdoc />
@@ -69,6 +71,11 @@ namespace System.IO.Pipelines
         /// <inheritdoc />
         public override void Flush()
         {
+            if (!_allowSynchronousIO)
+            {
+                ThrowHelper.ThrowInvalidOperationException_SynchronousFlushesDisallowed();
+            }
+            
             FlushAsync(default).GetAwaiter().GetResult();
         }
 
@@ -93,6 +100,10 @@ namespace System.IO.Pipelines
         /// <inheritdoc />
         public override void Write(byte[] buffer, int offset, int count)
         {
+            if (!_allowSynchronousIO)
+            {
+                ThrowHelper.ThrowInvalidOperationException_SynchronousWritesDisallowed();
+            }
             WriteAsync(buffer, offset, count, default).GetAwaiter().GetResult();
         }
 

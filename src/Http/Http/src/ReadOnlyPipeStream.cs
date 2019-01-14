@@ -20,9 +20,9 @@ namespace System.IO.Pipelines
         /// Creates a new ReadOnlyPipeStream
         /// </summary>
         /// <param name="pipeReader">The PipeReader to read from.</param>
-        public ReadOnlyPipeStream(PipeReader pipeReader)
+        public ReadOnlyPipeStream(PipeReader pipeReader) :
+            this(pipeReader, allowSynchronousIO: true)
         {
-            _pipeReader = pipeReader;
         }
 
         /// <summary>
