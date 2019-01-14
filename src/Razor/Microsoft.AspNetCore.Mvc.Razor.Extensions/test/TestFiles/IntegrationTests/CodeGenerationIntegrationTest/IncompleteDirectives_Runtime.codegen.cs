@@ -18,7 +18,7 @@ namespace AspNetCore
         #pragma warning disable 1998
         public async override global::System.Threading.Tasks.Task ExecuteAsync()
         {
-            WriteLiteral("\r\n\r\n");
+            WriteLiteral("\r\n");
             WriteLiteral("\"\r\n\r\n");
             WriteLiteral("\r\n");
             WriteLiteral("\r\n\r\n");

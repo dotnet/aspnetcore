@@ -14,9 +14,9 @@ Document -
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_IncompleteDirectives - global::Microsoft.AspNetCore.Mvc.RazorPages.Page - 
             MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
                 CSharpCode - 
-                    IntermediateToken -  - CSharp - BeginContext(83, 4, true);
-                HtmlContent - (83:0,83 [4] IncompleteDirectives.cshtml)
-                    IntermediateToken - (83:0,83 [4] IncompleteDirectives.cshtml) - Html - \n\n
+                    IntermediateToken -  - CSharp - BeginContext(85, 2, true);
+                HtmlContent - (85:1,0 [2] IncompleteDirectives.cshtml)
+                    IntermediateToken - (85:1,0 [2] IncompleteDirectives.cshtml) - Html - \n
                 CSharpCode - 
                     IntermediateToken -  - CSharp - EndContext();
                 MalformedDirective - (94:3,0 [8] IncompleteDirectives.cshtml) - page
