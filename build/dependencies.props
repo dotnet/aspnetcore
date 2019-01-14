@@ -2,13 +2,13 @@
   <!-- These package versions may be overridden or updated by automation. -->
   <PropertyGroup Label="Package Versions: Auto" Condition=" '$(DotNetPackageVersionPropsPath)' == '' ">
     <!-- MicrosoftNETCoreApp21PackageVersion is assigned at the bottom so it can automatically pick up MicrosoftNETCoreAppPackageVersion in an orchestrated build. -->
-    <MicrosoftNETCoreAppPackageVersion>2.1.6</MicrosoftNETCoreAppPackageVersion>
-    <MicrosoftNETCoreDotNetAppHostPackageVersion>2.1.6</MicrosoftNETCoreDotNetAppHostPackageVersion>
-    <SystemIOPipelinesPackageVersion>4.5.3-servicing-27114-05</SystemIOPipelinesPackageVersion>
-    <SystemMemoryPackageVersion>4.5.2-servicing-27114-05</SystemMemoryPackageVersion>
-    <SystemNetHttpWinHttpHandlerPackageVersion>4.5.2-servicing-27114-05</SystemNetHttpWinHttpHandlerPackageVersion>
-    <SystemNetWebSocketsWebSocketProtocolPackageVersion>4.5.2</SystemNetWebSocketsWebSocketProtocolPackageVersion>
-    <SystemThreadingTasksExtensionsPackageVersion>4.5.2-servicing-27114-05</SystemThreadingTasksExtensionsPackageVersion>
+    <MicrosoftNETCoreAppPackageVersion>2.1.7</MicrosoftNETCoreAppPackageVersion>
+    <MicrosoftNETCoreDotNetAppHostPackageVersion>2.1.7</MicrosoftNETCoreDotNetAppHostPackageVersion>
+    <SystemIOPipelinesPackageVersion>4.5.3</SystemIOPipelinesPackageVersion>
+    <SystemMemoryPackageVersion>4.5.2</SystemMemoryPackageVersion>
+    <SystemNetHttpWinHttpHandlerPackageVersion>4.5.2</SystemNetHttpWinHttpHandlerPackageVersion>
+    <SystemNetWebSocketsWebSocketProtocolPackageVersion>4.5.3</SystemNetWebSocketsWebSocketProtocolPackageVersion>
+    <SystemThreadingTasksExtensionsPackageVersion>4.5.2</SystemThreadingTasksExtensionsPackageVersion>
  </PropertyGroup>
 
   <Import Project="$(DotNetPackageVersionPropsPath)" Condition="'$(DotNetPackageVersionPropsPath)' != ''" />
