@@ -19,7 +19,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Routing
 {
-    internal sealed class DefaultLinkGenerator : LinkGenerator
+    internal sealed class DefaultLinkGenerator : LinkGenerator, IDisposable
     {
         private readonly ParameterPolicyFactory _parameterPolicyFactory;
         private readonly ObjectPool<UriBuildingContext> _uriBuildingContextPool;
@@ -362,6 +362,11 @@ namespace Microsoft.AspNetCore.Routing
         public static RouteValueDictionary GetAmbientValues(HttpContext httpContext)
         {
             return httpContext?.Features.Get<IRouteValuesFeature>()?.RouteValues;
+        }
+
+        public void Dispose()
+        {
+            _cache.Dispose();
         }
 
         private static class Log
