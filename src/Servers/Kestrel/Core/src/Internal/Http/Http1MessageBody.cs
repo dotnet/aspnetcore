@@ -348,13 +348,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                     try
                     {
-                        if (!readableBuffer.IsEmpty)
+                        if (readableBufferLength != 0)
                         {
                             // buffer.Length is int
                             actual = (int)Math.Min(readableBufferLength, buffer.Length);
 
-                            var slice = readableBuffer.Slice(0, actual);
-                            consumed = readableBuffer.GetPosition(actual);
+                            var slice = actual == readableBufferLength ? readableBuffer : readableBuffer.Slice(0, actual);
+                            consumed = slice.End;
                             slice.CopyTo(buffer.Span);
 
                             return actual;
