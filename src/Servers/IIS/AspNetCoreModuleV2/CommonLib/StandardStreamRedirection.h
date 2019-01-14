@@ -48,7 +48,6 @@ private:
             OBSERVE_CAUGHT_EXCEPTION();
         }
     }
-private:
 
     // Thread functions
     void ReadStdErrHandleInternal();
