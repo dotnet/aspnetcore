@@ -203,9 +203,14 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
         public IWebHostBuilder UseStartup(Type startupType)
         {
+            // UseStartup can be called multiple times. Only run the last one.
+            _builder.Properties["UseStartup.StartupType"] = startupType;
             _builder.ConfigureServices((context, services) =>
             {
-                UseStartup(startupType, context, services);
+                if (_builder.Properties.TryGetValue("UseStartup.StartupType", out var cachedType) && (Type)cachedType == startupType)
+                {
+                    UseStartup(startupType, context, services);
+                }
             });
 
             return this;
