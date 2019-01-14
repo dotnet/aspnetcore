@@ -201,6 +201,11 @@ namespace Microsoft.AspNetCore.Builder
 
             if (path == null)
             {
+                throw new ArgumentNullException(nameof(path));
+            }
+
+            if (port == null)
+            {
                 throw new ArgumentNullException(nameof(port));
             }
 
