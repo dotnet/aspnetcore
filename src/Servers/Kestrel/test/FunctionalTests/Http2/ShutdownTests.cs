@@ -134,6 +134,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
                 Assert.False(requestTask.IsCompleted);
                 await requestStarted.Task.DefaultTimeout();
 
+                // Wait for the graceful shutdown log before canceling the token passed to StopAsync and triggering an ungraceful shutdown.
+                // Otherwise, graceful shutdown might be skipped causing there to be no corresponding log. https://github.com/aspnet/AspNetCore/issues/6556
                 var closingMessageTask = TestApplicationErrorLogger.WaitForMessage(m => m.Message.Contains("is closing.")).DefaultTimeout();
 
                 var cts = new CancellationTokenSource();
