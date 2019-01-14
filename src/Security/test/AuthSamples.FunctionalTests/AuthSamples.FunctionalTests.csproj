@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
+    <IsSampleProject>false</IsSampleProject>
   </PropertyGroup>
 
     <!-- Workaround for https://github.com/dotnet/sdk/issues/1729 -->
