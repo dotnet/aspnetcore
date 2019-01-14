@@ -22,7 +22,8 @@ namespace Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer
 
         public static void Attach(
             ISpaBuilder spaBuilder,
-            string npmScriptName)
+            string npmScriptName,
+            int? spaPort)
         {
             var sourcePath = spaBuilder.Options.SourcePath;
             if (string.IsNullOrEmpty(sourcePath))
@@ -35,10 +36,22 @@ namespace Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer
                 throw new ArgumentException("Cannot be null or empty", nameof(npmScriptName));
             }
 
-            // Start create-react-app and attach to middleware pipeline
-            var appBuilder = spaBuilder.ApplicationBuilder;
-            var logger = LoggerFinder.GetOrCreateLogger(appBuilder, LogCategoryName);
-            var portTask = StartCreateReactAppServerAsync(sourcePath, npmScriptName, logger);
+            // We have to start the server by ourself if there wasn't any port specified
+            // or the specified port is still free (unused).
+            var shouldStartServer = !spaPort.HasValue || TcpPortFinder.TestPortAvailability(spaPort.Value);
+
+            Task<int> portTask;
+            if (shouldStartServer)
+            {
+                // Start create-react-app and attach to middleware pipeline
+                var appBuilder = spaBuilder.ApplicationBuilder;
+                var logger = LoggerFinder.GetOrCreateLogger(appBuilder, LogCategoryName);
+                var portTask = StartCreateReactAppServerAsync(sourcePath, npmScriptName, logger);
+            }
+            else
+            {
+                portTask = Task.FromResult(spaPort.Value);
+            }
 
             // Everything we proxy is hardcoded to target http://localhost because:
             // - the requests are always from the local machine (we're not accepting remote

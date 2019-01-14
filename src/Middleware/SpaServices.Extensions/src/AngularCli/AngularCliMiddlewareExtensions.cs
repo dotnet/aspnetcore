@@ -25,10 +25,29 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
             this ISpaBuilder spaBuilder,
             string npmScript)
         {
+            UseAngularCliServer(spaBuilder, (options) => options.npmScript = npmScript);
+        }
+        /// <summary>
+        /// Handles requests by passing them through to an instance of the Angular CLI server.
+        /// This means you can always serve up-to-date CLI-built resources without having
+        /// to run the Angular CLI server manually.
+        ///
+        /// This feature should only be used in development. For production deployments, be
+        /// sure not to enable the Angular CLI server.
+        /// </summary>
+        /// <param name="spaBuilder">The <see cref="ISpaBuilder"/>.</param>
+        /// <param name="configure">A callback used to configure the <see cref="AngularCliMiddlewareOptions"/>.</param>
+        public static void UseAngularCliServer(
+            this ISpaBuilder spaBuilder,
+            Action<AngularCliMiddlewareOptions> configure)
+        {
             if (spaBuilder == null)
             {
                 throw new ArgumentNullException(nameof(spaBuilder));
             }
+
+            ReactDevelopmentServerMiddlewareOptions devServerOptions;
+            configure(devServerOptions);
 
             var spaOptions = spaBuilder.Options;
 
@@ -37,7 +56,12 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
                 throw new InvalidOperationException($"To use {nameof(UseAngularCliServer)}, you must supply a non-empty value for the {nameof(SpaOptions.SourcePath)} property of {nameof(SpaOptions)} when calling {nameof(SpaApplicationBuilderExtensions.UseSpa)}.");
             }
 
-            AngularCliMiddleware.Attach(spaBuilder, npmScript);
+            if(string.IsNullOrEmpty(devServerOptions.npmScript))
+            {
+                throw new ArgumentException($"{nameof(devServerOptions.npmScript)} has to be set in {nameof(configure)}.");
+            }
+
+            AngularCliMiddleware.Attach(spaBuilder, devServerOptions.npmScript, devServerOptions.spaPort);
         }
     }
 }
