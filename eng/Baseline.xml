@@ -4,7 +4,7 @@ This file contains a list of all the packages and their versions which were rele
 build of ASP.NET Core 2.2.x. Update this list when preparing for a new patch.
 
 -->
-<Baseline Version="2.2.0">
+<Baseline Version="2.2.1">
   <Package Id="dotnet-dev-certs" Version="2.2.0" />
   <Package Id="dotnet-sql-cache" Version="2.2.0" />
   <Package Id="dotnet-user-secrets" Version="2.2.0" />
@@ -12,8 +12,8 @@ build of ASP.NET Core 2.2.x. Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.Antiforgery" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" Version="2.2.0-preview-35687" />
   <Package Id="Microsoft.AspNetCore.ApplicationInsights.HostingStartup" Version="2.2.0" />
-  <Package Id="Microsoft.AspNetCore.AspNetCoreModule" Version="2.2.0" />
-  <Package Id="Microsoft.AspNetCore.AspNetCoreModuleV2" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.AspNetCoreModule" Version="2.2.1" />
+  <Package Id="Microsoft.AspNetCore.AspNetCoreModuleV2" Version="2.2.1" />
   <Package Id="Microsoft.AspNetCore.Authentication.Abstractions" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Authentication.AzureAD.UI" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Authentication.AzureADB2C.UI" Version="2.2.0" />
@@ -46,7 +46,7 @@ build of ASP.NET Core 2.2.x. Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.DataProtection.SystemWeb" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.DataProtection" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Diagnostics.Abstractions" Version="2.2.0" />
-  <Package Id="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="2.2.1" />
   <Package Id="Microsoft.AspNetCore.Diagnostics.HealthChecks" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Diagnostics" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.HostFiltering" Version="2.2.0" />
@@ -102,13 +102,13 @@ build of ASP.NET Core 2.2.x. Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.Routing.Abstractions" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Routing" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Server.HttpSys" Version="2.2.0" />
-  <Package Id="Microsoft.AspNetCore.Server.IIS" Version="2.2.0" />
-  <Package Id="Microsoft.AspNetCore.Server.IISIntegration" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.Server.IIS" Version="2.2.1" />
+  <Package Id="Microsoft.AspNetCore.Server.IISIntegration" Version="2.2.1" />
   <Package Id="Microsoft.AspNetCore.Server.Kestrel.Core" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Server.Kestrel.Https" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" Version="2.2.0" />
-  <Package Id="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" Version="2.2.1" />
   <Package Id="Microsoft.AspNetCore.Server.Kestrel" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Session" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.SignalR.Client.Core" Version="1.1.0" />
@@ -125,7 +125,7 @@ build of ASP.NET Core 2.2.x. Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.SpaServices" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.StaticFiles" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.TestHost" Version="2.2.0" />
-  <Package Id="Microsoft.AspNetCore.WebSockets" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.WebSockets" Version="2.2.1" />
   <Package Id="Microsoft.AspNetCore.WebUtilities" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore" Version="2.2.0" />
   <Package Id="Microsoft.CodeAnalysis.Razor" Version="2.2.0" />

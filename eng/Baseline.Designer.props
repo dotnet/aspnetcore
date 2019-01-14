@@ -2,7 +2,7 @@
 <Project>
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-    <AspNetCoreBaselineVersion>2.2.0</AspNetCoreBaselineVersion>
+    <AspNetCoreBaselineVersion>2.2.1</AspNetCoreBaselineVersion>
   </PropertyGroup>
   <!-- Package: dotnet-dev-certs-->
   <PropertyGroup Condition=" '$(PackageId)' == 'dotnet-dev-certs' ">
@@ -77,11 +77,11 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.AspNetCoreModule-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AspNetCoreModule' ">
-    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.1</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.AspNetCoreModuleV2-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AspNetCoreModuleV2' ">
-    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.1</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.Authentication.Abstractions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Abstractions' ">
@@ -361,7 +361,7 @@
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Diagnostics.Abstractions' AND '$(TargetFramework)' == 'netstandard2.0' " />
   <!-- Package: Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore' ">
-    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.1</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="[2.2.0, )" />
@@ -951,7 +951,7 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Server.IIS-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.IIS' ">
-    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.1</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.IIS' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.Core" Version="[2.2.0, )" />
@@ -962,7 +962,7 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Server.IISIntegration-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.IISIntegration' ">
-    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.1</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.IISIntegration' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.Core" Version="[2.2.0, )" />
@@ -1045,16 +1045,16 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets' ">
-    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.1</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets' AND '$(TargetFramework)' == 'netcoreapp2.1' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.2.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.2.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Server.Kestrel-->
@@ -1228,13 +1228,13 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.WebSockets-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.WebSockets' ">
-    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.1</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.WebSockets' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.2.0, )" />
-    <BaselinePackageReference Include="System.Net.WebSockets.WebSocketProtocol" Version="[4.5.1, )" />
+    <BaselinePackageReference Include="System.Net.WebSockets.WebSocketProtocol" Version="[4.5.3, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.WebUtilities-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.WebUtilities' ">

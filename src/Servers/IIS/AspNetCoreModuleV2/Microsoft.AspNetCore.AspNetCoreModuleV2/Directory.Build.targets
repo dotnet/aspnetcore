@@ -21,15 +21,17 @@
     <TargetPath>$(PackageOutputPath)$(PackageId).$(PackageVersion).nupkg</TargetPath>
   </PropertyGroup>
 
-  <Target Name="GetArtifactInfo" Returns="@(ArtifactInfo)" Condition=" '$(IsPackable)' != 'false' ">
+  <Target Name="GetArtifactInfo" Returns="@(ArtifactInfo)">
     <ItemGroup>
       <ArtifactInfo Include="$(TargetPath)">
         <ArtifactType>NuGetPackage</ArtifactType>
         <PackageId>$(PackageId)</PackageId>
-        <Version>$(PackageVersion)</Version>
+        <Version Condition="'$(IsPackageInThisPatch)' == 'true'">$(PackageVersion)</Version>
+        <Version Condition="'$(IsPackageInThisPatch)' != 'true'">$(BaselinePackageVersion)</Version>
         <Certificate>$(PackageSigningCertName)</Certificate>
-        <ShouldBeSigned>true</ShouldBeSigned>
+        <ShouldBeSigned>$(IsPackageInThisPatch)</ShouldBeSigned>
         <IsContainer>true</IsContainer>
+        <IsShipped Condition="'$(IsPackageInThisPatch)' != 'true'">true</IsShipped>
       </ArtifactInfo>
     </ItemGroup>
   </Target>
