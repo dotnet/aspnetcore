@@ -3,11 +3,11 @@
   <Target Name="Publish">
     <MSBuild Projects="$(MSBuildThisFileDirectory)publish\Publish.csproj"
              Targets="Restore"
-             Properties="$(BuildProperties);__DummyTarget=Restore" />
+             Properties="$(BuildProperties);KoreBuildTasksDll=$(KoreBuildTasksDll);__DummyTarget=Restore" />
 
     <MSBuild Projects="$(MSBuildThisFileDirectory)publish\Publish.csproj"
              Targets="Publish"
-             Properties="$(BuildProperties);__DummyTarget=Publish" />
+             Properties="$(BuildProperties);KoreBuildTasksDll=$(KoreBuildTasksDll);__DummyTarget=Publish" />
   </Target>
 
 </Project>

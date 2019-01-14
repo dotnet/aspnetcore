@@ -54,6 +54,12 @@
         <BlobBasePath>aspnetcore/jar/$(PackageVersion)/</BlobBasePath>
       </_FilesToPublish>
 
+      <!-- NPM packages -->
+      <NpmPackageToPublish Include="$(ProductPackageOutputPath)*.tgz">
+        <BlobBasePath>aspnetcore/npm/$(PackageVersion)/</BlobBasePath>
+      </NpmPackageToPublish>
+      <_FilesToPublish Include="@(NpmPackageToPublish)" />
+
       <!--
         Transform the intermediate item group into the final group.
         You can't use globbing _and_ set metadata using FileName and Extension at the same time. MSBuild quirks are fun.
@@ -63,9 +69,6 @@
         <RelativeBlobPath Condition="'%(_FilesToPublish.BlobBasePath)' == ''">aspnetcore/Runtime/$(PackageVersion)/%(_FilesToPublish.FileName)%(_FilesToPublish.Extension)</RelativeBlobPath>
       </FilesToPublish>
       <_FilesToPublish Remove="@(_FilesToPublish)" />
-
-      <!-- NPM packages -->
-      <NpmPackageToPublish Include="$(ProductPackageOutputPath)*.tgz" />
 
       <PackageToPublish Include="$(ProductPackageOutputPath)*.symbols.nupkg" IsSymbolsPackage="true" />
       <PackageToPublish Include="$(ProductPackageOutputPath)*.nupkg" Exclude="@(PackageToPublish)" />
@@ -83,7 +86,11 @@
         <ManifestArtifactData>NonShipping=true</ManifestArtifactData>
       </PackageToPublish>
     </ItemGroup>
+
+    <Error Text="Missing required metadata 'RelativeBlobPath' for FilesToPublish: @(FilesToPublish)" Condition="'%(RelativeBlobPath)' == ''" />
   </Target>
+
+  <UsingTask TaskName="KoreBuild.Tasks.PushNuGetPackages" AssemblyFile="$(KoreBuildTasksDll)" />
 
   <Target Name="PublishToMyGet"
           DependsOnTargets="GetFilesToPublish"
@@ -96,11 +103,17 @@
 
     <Error Text="No packages found to publish" Condition="@(PackageToPublish->Count()) == 0" />
 
-    <Exec Condition="'%(PackageToPublish.IsSymbolsPackage)' != 'true' AND @(PackageToPublish->Count()) != 0"
-      Command="dotnet nuget push '%(PackageToPublish.Identity)' --source '$(PublishMyGetFeedUrl)' --api-key '$(PublishMyGetFeedKey)' " />
+    <PushNuGetPackages Condition="'%(PackageToPublish.IsSymbolsPackage)' != 'true' AND @(PackageToPublish->Count()) != 0"
+      Packages="@(PackageToPublish)"
+      TimeoutSeconds="300"
+      Feed="$(PublishMyGetFeedUrl)"
+      ApiKey="$(PublishMyGetFeedKey)" />
 
-    <Exec Condition="'%(PackageToPublish.IsSymbolsPackage)' == 'true' AND @(PackageToPublish->Count()) != 0"
-      Command="dotnet nuget push '%(PackageToPublish.Identity)' --source '$(PublishMyGetSymbolsFeedUrl)' --api-key '$(PublishMyGetFeedKey)' " />
+    <PushNuGetPackages Condition="'%(PackageToPublish.IsSymbolsPackage)' == 'true' AND @(PackageToPublish->Count()) != 0"
+      Packages="@(PackageToPublish)"
+      TimeoutSeconds="300"
+      Feed="$(PublishMyGetSymbolsFeedUrl)"
+      ApiKey="$(PublishMyGetFeedKey)" />
 
     <PropertyGroup>
       <AuthTokenSetting>$(PublishMyGetNpmRegistryUrl.Replace("https:", "")):_authToken</AuthTokenSetting>
@@ -144,14 +157,17 @@
 
   <Target Name="GenerateBuildAssetManifest"
           DependsOnTargets="GetFilesToPublish;ResolveRepositoryBranch;ResolveCommitHash">
+
     <GenerateBuildManifest
-      Artifacts="@(PackageToPublish);@(FilesToPublish);@(NpmPackageToPublish)"
+      Artifacts="@(PackageToPublish);@(FilesToPublish)"
       OutputPath="$(ManifestsPath)aspnetcore.xml"
-      BuildId="$(BuildNumberSuffix)"
+      BuildId="$(PackageVersion)"
       RepoUri="$(RepositoryUrl)"
       RepoBranch="$(RepositoryBranch)"
       RepoCommit="$(RepositoryCommit)" />
   </Target>
+
+  <UsingTask TaskName="PushMetadataToBuildAssetRegistry" AssemblyFile="$(PkgMicrosoft_DotNet_Maestro_Tasks)\tools\netcoreapp2.1\Microsoft.DotNet.Maestro.Tasks.dll"/>
 
   <Target Name="PublishToBuildAssetRegistry"
           DependsOnTargets="GenerateBuildAssetManifest"
