@@ -4,6 +4,7 @@
     <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <DefaultItemExcludes>$(DefaultItemExcludes);TestFiles\**</DefaultItemExcludes>
+    <BuildHelixPayload>false</BuildHelixPayload>
   </PropertyGroup>
 
   <ItemGroup>

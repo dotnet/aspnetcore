@@ -4,6 +4,7 @@
     <TargetFrameworks>netcoreapp2.1;net46</TargetFrameworks>
     <DefaultItemExcludes>$(DefaultItemExcludes);TestFiles\**\*</DefaultItemExcludes>
     <DefineConstants Condition="'$(GenerateBaselines)'=='true'">$(DefineConstants);GENERATE_BASELINES</DefineConstants>
+    <BuildHelixPayload>false</BuildHelixPayload>
   </PropertyGroup>
 
   <ItemGroup>

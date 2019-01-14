@@ -26,6 +26,7 @@
     <IsBenchmarkProject Condition="$(MSBuildProjectName.EndsWith('.Performance')) OR $(RepoRelativeProjectDir.Contains('perf'))">true</IsBenchmarkProject>
     <IsTestProject Condition="$(MSBuildProjectName.EndsWith('Tests')) OR $(MSBuildProjectName.EndsWith('.Test'))">true</IsTestProject>
     <IsTestAssetProject Condition="$(RepoRelativeProjectDir.Contains('testassets'))">true</IsTestAssetProject>
+    <BuildHelixPayload Condition="$(IsTestProject)">true</BuildHelixPayload>
     <IsSampleProject Condition="$(RepoRelativeProjectDir.Contains('sample'))">true</IsSampleProject>
 
     <IncludeSource>false</IncludeSource>

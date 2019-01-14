@@ -64,7 +64,7 @@
     <PackageReference Include="xunit.runner.console" Version="2.4.1" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'" />
   </ItemGroup>
 
-  <Target Name="CreateTestPayload" Returns="@(TestPayload)">
+  <Target Name="CreateHelixPayload" Returns="@(HelixPayload)">
 
     <ItemGroup>
       <_TargetFrameworks Remove="@(_TargetFrameworks)" />
@@ -72,9 +72,9 @@
     </ItemGroup>
 
     <MSBuild Projects="$(MSBuildProjectFullPath)"
-             Targets="_CreateTestPayloadInner"
+             Targets="_CreateHelixPayloadInner"
              Properties="TargetFramework=%(_TargetFrameworks.Identity)">
-      <Output TaskParameter="TargetOutputs" ItemName="TestPayload" />
+      <Output TaskParameter="TargetOutputs" ItemName="HelixPayload" />
     </MSBuild>
   </Target>
 
@@ -90,10 +90,10 @@
     <Copy SourceFiles="@(XunitConsoleRunnerFiles)" DestinationFolder="$(PublishDir)" />
   </Target>
 
-  <Target Name="_CreateTestPayloadInner" 
+  <Target Name="_CreateHelixPayloadInner" 
     DependsOnTargets="Publish;CollectXunitConsoleRunner" 
-    Condition="'$(IsTestProject)' == 'true' AND ('$(HelixTargetQueue)' == 'Windows.10.Amd64.Open' OR '$(TargetFrameworkIdentifier)' != '.NETFramework')" 
-    Returns="@(TestPayload)">
+    Condition="'$(BuildHelixPayload)' == 'true' AND ('$(HelixTargetQueue)' == 'Windows.10.Amd64.Open' OR '$(TargetFrameworkIdentifier)' != '.NETFramework')" 
+    Returns="@(HelixPayload)">
 
     <ConvertToAbsolutePath Paths="$(PublishDir)">
       <Output TaskParameter="AbsolutePaths" PropertyName="PublishAbsoluteDir" />
@@ -117,14 +117,14 @@
     <Copy SourceFiles="@(_CopyItems)" DestinationFolder="$(PublishAbsoluteDir)" />
 
     <ItemGroup>
-      <TestPayload Include="$(PublishAbsoluteDir)">
+      <HelixPayload Include="$(PublishAbsoluteDir)">
         <TestAssembly>$(TargetFileName)</TestAssembly>
         <TestName>$(MSBuildProjectName)-$(TargetFramework)</TestName>
         <!-- Look into how to be able to use $(NETCoreSdkVersion) -->
         <Command Condition="'$(HelixTargetQueue)' == 'Windows.10.Amd64.Open'">runtests.cmd $(TargetFileName) $(NETCoreSdkVersion) $(RuntimeFrameworkVersion)</Command>
         <Command Condition="'$(HelixTargetQueue)' != 'Windows.10.Amd64.Open'">./runtests.sh $(TargetFileName) $(NETCoreSdkVersion) $(RuntimeFrameworkVersion)</Command>
         <TestTimeout>$(DistributedTestTimeout)</TestTimeout>
-      </TestPayload>
+      </HelixPayload>
     </ItemGroup>
   </Target>
 </Project>
