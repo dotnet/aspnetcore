@@ -108,7 +108,9 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             var factory = new DelegatedWebApplicationFactory(
                 ClientOptions,
                 CreateServer,
+                CreateHost,
                 CreateWebHostBuilder,
+                CreateHostBuilder,
                 GetTestAssemblies,
                 ConfigureClient,
                 builder =>
@@ -140,8 +142,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
                     _configuration(webHostBuilder);
                     webHostBuilder.UseTestServer();
                 });
-                _host = hostBuilder.Build();
-                _host.Start();
+                _host = CreateHost(hostBuilder);
                 _server = (TestServer)_host.Services.GetRequiredService<IServer>();
                 return;
             }
@@ -341,11 +342,27 @@ namespace Microsoft.AspNetCore.Mvc.Testing
 
         /// <summary>
         /// Creates the <see cref="TestServer"/> with the bootstrapped application in <paramref name="builder"/>.
+        /// This is only called for applications using <see cref="IWebHostBuilder"/>. Applications based on
+        /// <see cref="IHostBuilder"/> will use <see cref="CreateHost"/> instead.
         /// </summary>
         /// <param name="builder">The <see cref="IWebHostBuilder"/> used to
         /// create the server.</param>
         /// <returns>The <see cref="TestServer"/> with the bootstrapped application.</returns>
         protected virtual TestServer CreateServer(IWebHostBuilder builder) => new TestServer(builder);
+
+        /// <summary>
+        /// Creates the <see cref="IHost"/> with the bootstrapped application in <paramref name="builder"/>.
+        /// This is only called for applications using <see cref="IHostBuilder"/>. Applications based on
+        /// <see cref="IWebHostBuilder"/> will use <see cref="CreateServer"/> instead.
+        /// </summary>
+        /// <param name="builder">The <see cref="IHostBuilder"/> used to create the host.</param>
+        /// <returns>The <see cref="IHost"/> with the bootstrapped application.</returns>
+        protected virtual IHost CreateHost(IHostBuilder builder)
+        {
+            var host = builder.Build();
+            host.Start();
+            return host;
+        }
 
         /// <summary>
         /// Gives a fixture an opportunity to configure the application before it gets built.
@@ -481,21 +498,27 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         private class DelegatedWebApplicationFactory : WebApplicationFactory<TEntryPoint>
         {
             private readonly Func<IWebHostBuilder, TestServer> _createServer;
+            private readonly Func<IHostBuilder, IHost> _createHost;
             private readonly Func<IWebHostBuilder> _createWebHostBuilder;
+            private readonly Func<IHostBuilder> _createHostBuilder;
             private readonly Func<IEnumerable<Assembly>> _getTestAssemblies;
             private readonly Action<HttpClient> _configureClient;
 
             public DelegatedWebApplicationFactory(
                 WebApplicationFactoryClientOptions options,
                 Func<IWebHostBuilder, TestServer> createServer,
+                Func<IHostBuilder, IHost> createHost,
                 Func<IWebHostBuilder> createWebHostBuilder,
+                Func<IHostBuilder> createHostBuilder,
                 Func<IEnumerable<Assembly>> getTestAssemblies,
                 Action<HttpClient> configureClient,
                 Action<IWebHostBuilder> configureWebHost)
             {
                 ClientOptions = new WebApplicationFactoryClientOptions(options);
                 _createServer = createServer;
+                _createHost = createHost;
                 _createWebHostBuilder = createWebHostBuilder;
+                _createHostBuilder = createHostBuilder;
                 _getTestAssemblies = getTestAssemblies;
                 _configureClient = configureClient;
                 _configuration = configureWebHost;
@@ -503,7 +526,11 @@ namespace Microsoft.AspNetCore.Mvc.Testing
 
             protected override TestServer CreateServer(IWebHostBuilder builder) => _createServer(builder);
 
+            protected override IHost CreateHost(IHostBuilder builder) => _createHost(builder);
+
             protected override IWebHostBuilder CreateWebHostBuilder() => _createWebHostBuilder();
+
+            protected override IHostBuilder CreateHostBuilder() => _createHostBuilder();
 
             protected override IEnumerable<Assembly> GetTestAssemblies() => _getTestAssemblies();
 
@@ -516,7 +543,9 @@ namespace Microsoft.AspNetCore.Mvc.Testing
                 return new DelegatedWebApplicationFactory(
                     ClientOptions,
                     _createServer,
+                    _createHost,
                     _createWebHostBuilder,
+                    _createHostBuilder,
                     _getTestAssemblies,
                     _configureClient,
                     builder =>
