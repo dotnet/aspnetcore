@@ -356,7 +356,7 @@
   </ProductDependencies>
   <ToolsetDependencies>
     <Dependency Name="Internal.AspNetCore.Analyzers" Version="3.0.0-preview.19059.4">
-      <Uri>https://github.com/aspnet/Extentions</Uri>
+      <Uri>https://github.com/aspnet/Extensions</Uri>
       <Sha>000000</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Testing" Version="3.0.0-preview.19059.4">
