@@ -49,7 +49,7 @@ mkdir $intermedateDir -ErrorAction Ignore | Out-Null
 
 $bootstrapper = "$intermedateDir\vsinstaller.exe"
 $ProgressPreference = 'SilentlyContinue' # Workaround PowerShell/PowerShell#2138
-Get-RemoteFile "https://aka.ms/vs/15/release/vs_$($Edition.ToLowerInvariant()).exe" -OutFile $bootstrapper
+Invoke-WebRequest -Uri "https://aka.ms/vs/15/release/vs_$($Edition.ToLowerInvariant()).exe" -OutFile $bootstrapper
 
 if (-not $InstallPath) {
     $InstallPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2017\$Edition"
