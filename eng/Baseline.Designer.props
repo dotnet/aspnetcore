@@ -754,15 +754,15 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Mvc.Razor.ViewCompilation-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Razor.ViewCompilation' ">
-    <BaselinePackageVersion>2.1.1</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Razor.ViewCompilation' AND '$(TargetFramework)' == 'net461' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting" Version="[2.1.1, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Mvc.RazorPages" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Mvc.RazorPages" Version="[2.2.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Razor.ViewCompilation' AND '$(TargetFramework)' == 'netcoreapp2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting" Version="[2.1.1, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Mvc.RazorPages" Version="[2.1.1, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Mvc.RazorPages" Version="[2.2.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Mvc.RazorPages-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.RazorPages' ">

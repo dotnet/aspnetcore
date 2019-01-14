@@ -21,7 +21,7 @@ namespace FunctionalTests
 
         public ApplicationTestFixture Fixture { get; }
 
-        [Fact]
+        [Fact(Skip = "Needs to be rewritten")]
         public async Task Precompilation_WorksForSimpleApps()
         {
             using (StartLog(out var loggerFactory))

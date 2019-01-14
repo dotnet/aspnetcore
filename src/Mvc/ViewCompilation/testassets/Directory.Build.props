@@ -3,9 +3,6 @@
 
   <PropertyGroup>
     <!-- Bug in SelfHostDeployer prevents desktop applications from being published without a rid. -->
-    <RuntimeIdentifier Condit
-  <PropertyGroup>
-    <!-- Bug in SelfHostDeployer prevents desktop applications from being published without a rid. -->
     <RuntimeIdentifier Condition="'$(TargetFramework)' == 'net461'">win7-x64</RuntimeIdentifier>
   </PropertyGroup>
 

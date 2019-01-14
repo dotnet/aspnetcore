@@ -23,7 +23,7 @@ namespace FunctionalTests
 
         static ApplicationTestFixture()
         {
-            SolutionDirectory = TestPathUtilities.GetSolutionRootDirectory("RazorViewCompilation");
+            SolutionDirectory = TestPathUtilities.GetSolutionRootDirectory("Mvc");
             if (!SolutionDirectory.EndsWith(Path.DirectorySeparatorChar.ToString()))
             {
                 SolutionDirectory += Path.DirectorySeparatorChar;
