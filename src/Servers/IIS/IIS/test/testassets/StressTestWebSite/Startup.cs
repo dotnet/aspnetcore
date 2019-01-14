@@ -36,7 +36,7 @@ namespace ANCMStressTestApp
             app.Map("/ResponseHeaders", ResponseHeaders);
             app.Map("/EnvironmentVariables", EnvironmentVariables);
             app.Map("/RequestInformation", RequestInformation);
-            app.Map("/WebSocket", WebSocket);
+            app.Map("/WebSocket", WebSockets);
 
             app.Run(async context =>
             {
@@ -152,7 +152,7 @@ namespace ANCMStressTestApp
             });
         }
 
-        private void WebSocket(IApplicationBuilder app)
+        private void WebSockets(IApplicationBuilder app)
         {
             app.Run(async context =>
             {
@@ -170,7 +170,7 @@ namespace ANCMStressTestApp
                 Stream opaqueTransport = await upgradeFeature.UpgradeAsync();
 
                 // Get the WebSocket object
-                var ws = WebSocketProtocol.CreateFromStream(opaqueTransport, isServer: true, subProtocol: null, keepAliveInterval: TimeSpan.FromMinutes(2));
+                var ws = WebSocket.CreateFromStream(opaqueTransport, isServer: true, subProtocol: null, keepAliveInterval: TimeSpan.FromMinutes(2));
 
                 var appLifetime = app.ApplicationServices.GetRequiredService<IApplicationLifetime>();
 
