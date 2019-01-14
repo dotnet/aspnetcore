@@ -85,7 +85,6 @@ finally {
     Write-Host ""
 
     foreach ($err in $errors) {
-
         Write-Host -f Red "error : $err"
     }
 
