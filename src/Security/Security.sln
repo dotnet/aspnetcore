@@ -96,11 +96,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Diagno
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.StaticFiles", "..\Middleware\StaticFiles\src\Microsoft.AspNetCore.StaticFiles.csproj", "{6FFBD7CD-2B7D-4EC9-8D18-54E53F852B04}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.IISIntegration", "..\Servers\IIS\IISIntegration\src\Microsoft.AspNetCore.Server.IISIntegration.csproj", "{43AF597A-FCB8-41A5-8279-345FEE9A61AD}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel", "..\Servers\Kestrel\Kestrel\src\Microsoft.AspNetCore.Server.Kestrel.csproj", "{707CBFB4-4D35-479E-9BAF-39B4DA9782DE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Https", "..\Servers\Kestrel\Https\src\Microsoft.AspNetCore.Server.Kestrel.Https.csproj", "{AFE880E8-2E9E-46FD-BE87-DFC8192E7B2D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.IISIntegration", "..\Servers\IIS\IISIntegration\src\Microsoft.AspNetCore.Server.IISIntegration.csproj", "{81D0E81F-4711-4C7B-BBD4-E168102D0D7D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -236,10 +236,6 @@ Global
 		{6FFBD7CD-2B7D-4EC9-8D18-54E53F852B04}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6FFBD7CD-2B7D-4EC9-8D18-54E53F852B04}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6FFBD7CD-2B7D-4EC9-8D18-54E53F852B04}.Release|Any CPU.Build.0 = Release|Any CPU
-		{43AF597A-FCB8-41A5-8279-345FEE9A61AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{43AF597A-FCB8-41A5-8279-345FEE9A61AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{43AF597A-FCB8-41A5-8279-345FEE9A61AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{43AF597A-FCB8-41A5-8279-345FEE9A61AD}.Release|Any CPU.Build.0 = Release|Any CPU
 		{707CBFB4-4D35-479E-9BAF-39B4DA9782DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{707CBFB4-4D35-479E-9BAF-39B4DA9782DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{707CBFB4-4D35-479E-9BAF-39B4DA9782DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -248,6 +244,10 @@ Global
 		{AFE880E8-2E9E-46FD-BE87-DFC8192E7B2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AFE880E8-2E9E-46FD-BE87-DFC8192E7B2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AFE880E8-2E9E-46FD-BE87-DFC8192E7B2D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{81D0E81F-4711-4C7B-BBD4-E168102D0D7D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{81D0E81F-4711-4C7B-BBD4-E168102D0D7D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{81D0E81F-4711-4C7B-BBD4-E168102D0D7D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{81D0E81F-4711-4C7B-BBD4-E168102D0D7D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -295,9 +295,9 @@ Global
 		{B6CA96E4-674A-4616-9A38-DED07BE458E1} = {A3766414-EB5C-40F7-B031-121804ED5D0A}
 		{54CBBAED-36D5-4855-BB4E-D1AE3523AA23} = {A3766414-EB5C-40F7-B031-121804ED5D0A}
 		{6FFBD7CD-2B7D-4EC9-8D18-54E53F852B04} = {A3766414-EB5C-40F7-B031-121804ED5D0A}
-		{43AF597A-FCB8-41A5-8279-345FEE9A61AD} = {A3766414-EB5C-40F7-B031-121804ED5D0A}
 		{707CBFB4-4D35-479E-9BAF-39B4DA9782DE} = {A3766414-EB5C-40F7-B031-121804ED5D0A}
 		{AFE880E8-2E9E-46FD-BE87-DFC8192E7B2D} = {A3766414-EB5C-40F7-B031-121804ED5D0A}
+		{81D0E81F-4711-4C7B-BBD4-E168102D0D7D} = {A3766414-EB5C-40F7-B031-121804ED5D0A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {ABF8089E-43D0-4010-84A7-7A9DCFE49357}
