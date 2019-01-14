@@ -256,7 +256,9 @@ namespace Microsoft.AspNetCore.Razor.Language
                         v => LiteralAttributeValue(" ", "World", v))));
         }
 
-        [Fact]
+        [ConditionalFact(Skip = "https://github.com/aspnet/AspNetCore/issues/6675")]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public void Lower_TagHelper_InSection()
         {
             // Arrange
