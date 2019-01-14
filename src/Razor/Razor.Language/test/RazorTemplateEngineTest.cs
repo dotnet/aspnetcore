@@ -311,7 +311,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             Assert.Equal(expected, paths);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6549")]
         public void CreateCodeDocument_WithFileSystemProject_ReturnsCorrectItems()
         {
             // Arrange
