@@ -124,9 +124,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 {
                     NextToken();
 
-                    // Unless changed, the block is a statement block
-                    AcceptWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
-                    builder.Add(OutputTokensAsStatementLiteral());
+                    var precedingWhitespace = ReadWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
 
                     // We are usually called when the other parser sees a transition '@'. Look for it.
                     SyntaxToken transitionToken = null;
@@ -157,20 +155,33 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                     if (At(SyntaxKind.LeftBrace))
                     {
+                        // This is a statement. We want to preserve preceding whitespace in the output.
+                        Accept(precedingWhitespace);
+                        builder.Add(OutputTokensAsStatementLiteral());
+
                         var statementBody = ParseStatementBody();
                         var statement = SyntaxFactory.CSharpStatement(transition, statementBody);
                         builder.Add(statement);
                     }
                     else if (At(SyntaxKind.LeftParenthesis))
                     {
+                        // This is an explicit expression. We want to preserve preceding whitespace in the output.
+                        Accept(precedingWhitespace);
+                        builder.Add(OutputTokensAsStatementLiteral());
+
                         var expressionBody = ParseExplicitExpressionBody();
                         var expression = SyntaxFactory.CSharpExplicitExpression(transition, expressionBody);
                         builder.Add(expression);
                     }
                     else if (At(SyntaxKind.Identifier))
                     {
-                        if (!TryParseDirective(builder, transition, CurrentToken.Content))
+                        if (!TryParseDirective(builder, precedingWhitespace, transition, CurrentToken.Content))
                         {
+                            // Not a directive.
+                            // This is an implicit expression. We want to preserve preceding whitespace in the output.
+                            Accept(precedingWhitespace);
+                            builder.Add(OutputTokensAsStatementLiteral());
+
                             if (string.Equals(
                                 CurrentToken.Content,
                                 SyntaxConstants.CSharp.HelperKeyword,
@@ -189,9 +200,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     }
                     else if (At(SyntaxKind.Keyword))
                     {
-                        if (!TryParseDirective(builder, transition, CurrentToken.Content) &&
-                            !TryParseKeyword(builder, transition))
+                        if (!TryParseDirective(builder, precedingWhitespace, transition, CurrentToken.Content) &&
+                            !TryParseKeyword(builder, precedingWhitespace, transition))
                         {
+                            // Not a directive or keyword.
+                            // This is an implicit expression. We want to preserve preceding whitespace in the output.
+                            Accept(precedingWhitespace);
+                            builder.Add(OutputTokensAsStatementLiteral());
+
                             // Not a directive or a special keyword. Just parse as an implicit expression.
                             var implicitExpressionBody = ParseImplicitExpressionBody();
                             var implicitExpression = SyntaxFactory.CSharpImplicitExpression(transition, implicitExpressionBody);
@@ -202,7 +218,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     }
                     else
                     {
-                        // Invalid character
+                        // Invalid character after transition.
+                        // Preserve the preceding whitespace in the output
+                        Accept(precedingWhitespace);
+                        builder.Add(OutputTokensAsStatementLiteral());
+
                         SpanContext.ChunkGenerator = new ExpressionChunkGenerator();
                         SpanContext.EditHandler = new ImplicitExpressionEditHandler(
                             Language.TokenizeString,
@@ -616,7 +636,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         ParseCodeBlock(builder, block);
                         break;
                     case SyntaxKind.Keyword:
-                        if (!TryParseKeyword(builder, transition: null))
+                        if (!TryParseKeyword(builder, whitespace: null, transition: null))
                         {
                             ParseStandardStatement(builder);
                         }
@@ -797,10 +817,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
         }
 
-        protected bool TryParseDirective(in SyntaxListBuilder<RazorSyntaxNode> builder, CSharpTransitionSyntax transition, string directive)
+        protected bool TryParseDirective(in SyntaxListBuilder<RazorSyntaxNode> builder, IEnumerable<SyntaxToken> whitespace, CSharpTransitionSyntax transition, string directive)
         {
             if (_directiveParserMap.TryGetValue(directive, out var handler))
             {
+                // This is a directive. We don't want to generate the preceding whitespace in the output.
+                Accept(whitespace);
+                builder.Add(OutputTokensAsEphemeralLiteral());
+
                 SpanContext.ChunkGenerator = SpanChunkGenerator.Null;
                 handler(builder, transition);
                 return true;
@@ -1544,12 +1568,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
         }
 
-        private bool TryParseKeyword(in SyntaxListBuilder<RazorSyntaxNode> builder, CSharpTransitionSyntax transition)
+        private bool TryParseKeyword(in SyntaxListBuilder<RazorSyntaxNode> builder, IEnumerable<SyntaxToken> whitespace, CSharpTransitionSyntax transition)
         {
             var result = CSharpTokenizer.GetTokenKeyword(CurrentToken);
             Debug.Assert(CurrentToken.Kind == SyntaxKind.Keyword && result.HasValue);
             if (_keywordParserMap.TryGetValue(result.Value, out var handler))
             {
+                if (whitespace != null)
+                {
+                    // This is a keyword. We want to preserve preceding whitespace in the output.
+                    Accept(whitespace);
+                    builder.Add(OutputTokensAsStatementLiteral());
+                }
+
                 handler(builder, transition);
                 return true;
             }

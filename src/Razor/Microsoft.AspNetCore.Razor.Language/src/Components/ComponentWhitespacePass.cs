@@ -77,11 +77,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                         break;
 
                     case CSharpCodeIntermediateNode codeIntermediateNode:
-                        // A C# code node could be empty. We can't remove them, but we can skip them. 
                         shouldRemoveNode = false;
-                        shouldContinueIteration = 
-                            IsEmpty(codeIntermediateNode) || 
-                            ComponentDocumentClassifierPass.IsBuildRenderTreeBaseCall(codeIntermediateNode);
+                        shouldContinueIteration = ComponentDocumentClassifierPass.IsBuildRenderTreeBaseCall(codeIntermediateNode);
                         break;
 
                     default:
@@ -112,19 +109,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         {
             Forwards,
             Backwards
-        }
-
-        private static bool IsEmpty(CSharpCodeIntermediateNode node)
-        {
-            for (var i = 0; i < node.Children.Count; i++)
-            {
-                if (!(node.Children[i] is IntermediateToken token && string.IsNullOrWhiteSpace(token.Content)))
-                {
-                    return false;
-                }
-            }
-
-            return true;
         }
     }
 }
