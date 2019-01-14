@@ -162,6 +162,7 @@
       Artifacts="@(PackageToPublish);@(FilesToPublish)"
       OutputPath="$(ManifestsPath)aspnetcore.xml"
       BuildId="$(PackageVersion)"
+      BuildData="Location=https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json"
       RepoUri="$(RepositoryUrl)"
       RepoBranch="$(RepositoryBranch)"
       RepoCommit="$(RepositoryCommit)" />
