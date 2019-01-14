@@ -46,15 +46,15 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
                 throw new ArgumentNullException(nameof(spaBuilder));
             }
 
-            var devServerOptions = new AngularCliMiddlewareOptions();
-            configure(devServerOptions);
-
             var spaOptions = spaBuilder.Options;
 
             if (string.IsNullOrEmpty(spaOptions.SourcePath))
             {
                 throw new InvalidOperationException($"To use {nameof(UseAngularCliServer)}, you must supply a non-empty value for the {nameof(SpaOptions.SourcePath)} property of {nameof(SpaOptions)} when calling {nameof(SpaApplicationBuilderExtensions.UseSpa)}.");
             }
+
+            var devServerOptions = new AngularCliMiddlewareOptions();
+            configure(devServerOptions);
 
             if(string.IsNullOrEmpty(devServerOptions.npmScript))
             {
