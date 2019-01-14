@@ -67,7 +67,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             services.TryAddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
             services.TryAddEnumerable(
-                ServiceDescriptor.Transient<IConfigureOptions<MvcOptions>, NewtonosftJsonMvcOptionsSetup>());
+                ServiceDescriptor.Transient<IConfigureOptions<MvcOptions>, NewtonsoftJsonMvcOptionsSetup>());
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IApiDescriptionProvider, JsonPatchOperationsArrayProvider>());
             services.TryAddSingleton<IActionResultExecutor<JsonResult>, JsonResultExecutor>();
