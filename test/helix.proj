@@ -107,15 +107,15 @@
       <ProjectsToTest Include="$(MSBuildThisFileDirectory)..\src\Razor\Razor.Design\test\IntegrationTests\Microsoft.AspNetCore.Razor.Design.Test.csproj" />
     -->
     <MSBuild Projects="@(ProjectsToTest)"
-              Targets="CreateTestPayload"
+              Targets="CreateHelixPayload"
               BuildInParallel="true">
       <Output TaskParameter="TargetOutputs" ItemName="TestPayload" />
     </MSBuild>
     <ItemGroup>
-      <HelixWorkItem Include="%(TestPayload.TestName)">
-        <Command>%(TestPayload.Command)</Command>
-        <PayloadDirectory>%(TestPayload.Identity)</PayloadDirectory>
-        <Timeout>%(TestPayload.TestTimeout)</Timeout>
+      <HelixWorkItem Include="%(HelixPayload.TestName)">
+        <Command>%(HelixPayload.Command)</Command>
+        <PayloadDirectory>%(HelixPayload.Identity)</PayloadDirectory>
+        <Timeout>%(HelixPayload.TestTimeout)</Timeout>
       </HelixWorkItem>
     </ItemGroup>
   </Target>
