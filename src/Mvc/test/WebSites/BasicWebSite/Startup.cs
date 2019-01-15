@@ -16,6 +16,8 @@ namespace BasicWebSite
         // Set up application services
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSingleton(new TestService { Message = "true" });
+
             services.AddAuthentication()
                 .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("Api", _ => { });
             services.AddTransient<IAuthorizationHandler, ManagerHandler>();

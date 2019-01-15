@@ -1,14 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.IO;
-using System.IO.Pipelines;
 using System.Text;
 
 namespace System.IO.Pipelines.Tests
 {
-    public abstract class PipeTest : IDisposable
+    public abstract class StreamPipeTest : IDisposable
     {
         protected const int MaximumSizeHigh = 65;
 
@@ -20,7 +17,7 @@ namespace System.IO.Pipelines.Tests
 
         public PipeReader Reader { get; set; }
 
-        protected PipeTest()
+        protected StreamPipeTest()
         {
             MemoryStream = new MemoryStream();
             Writer = new StreamPipeWriter(MemoryStream, MinimumSegmentSize, new TestMemoryPool());

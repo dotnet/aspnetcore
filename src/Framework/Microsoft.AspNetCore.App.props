@@ -130,7 +130,6 @@
     <Dependency Include="Microsoft.Net.Http.Headers"                                   Version="$(MicrosoftNetHttpHeadersPackageVersion)" />
     <Dependency Include="Newtonsoft.Json"                                              Version="$(NewtonsoftJsonPackageVersion)" />
     <Dependency Include="System.IO.Pipelines"                                          Version="$(SystemIOPipelinesPackageVersion)" />
-    <Dependency Include="System.Net.WebSockets.WebSocketProtocol"                      Version="$(SystemNetWebSocketsWebSocketProtocolPackageVersion)" />
     <Dependency Include="System.Runtime.CompilerServices.Unsafe"                       Version="$(SystemRuntimeCompilerServicesUnsafePackageVersion)" />
     <Dependency Include="System.Security.Cryptography.Pkcs"                            Version="$(SystemSecurityCryptographyPkcsPackageVersion)" />
     <Dependency Include="System.Security.Cryptography.Xml"                             Version="$(SystemSecurityCryptographyXmlPackageVersion)" />

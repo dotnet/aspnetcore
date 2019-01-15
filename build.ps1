@@ -102,6 +102,11 @@ param(
     [Parameter(ParameterSetName = 'Groups')]
     [switch]$Installers,
 
+    # By default, Windows builds will use MSBuild.exe. Passing this will force the build to run on
+    # dotnet.exe instead, which may cause issues if you invoke build on a project unsupported by
+    # MSBuild for .NET Core
+    [switch]$ForceCoreMsbuild,
+
     # Other lifecycle targets
     [switch]$Help, # Show help
 
@@ -269,6 +274,9 @@ Import-Module -Force -Scope Local (Join-Path $korebuildPath 'KoreBuild.psd1')
 
 try {
     Set-KoreBuildSettings -ToolsSource $ToolsSource -DotNetHome $DotNetHome -RepoPath $RepoRoot -ConfigFile $ConfigFile -CI:$CI
+    if ($ForceCoreMsbuild) {
+        $global:KoreBuildSettings.MSBuildType = 'core'
+    }
     Invoke-KoreBuildCommand 'default-build' @MSBuildArguments
 }
 finally {

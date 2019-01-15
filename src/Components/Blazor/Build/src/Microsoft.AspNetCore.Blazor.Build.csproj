@@ -22,6 +22,9 @@
     <SignedPackageFile Include="Microsoft.AspNetCore.Components.Browser.JS.dll" Certificate="$(AssemblySigningCertName)" />
     <SignedPackageFile Include="Microsoft.AspNetCore.Blazor.Build.exe" Certificate="$(AssemblySigningCertName)" />
 
+    <!-- 1st party assembly we redistribute (part of the CLI tool) -->
+    <SignedPackageFile Include="Microsoft.JSInterop.dll" Certificate="$(AssemblySigningCertName)" />
+
     <!-- 3rd party assemblies we redistribute. -->
     <SignedPackageFile Include="AngleSharp.dll" Certificate="$(AssemblySigning3rdPartyCertName)" />
     <SignedPackageFile Include="Mono.Cecil.dll" Certificate="$(AssemblySigning3rdPartyCertName)" />
@@ -37,7 +40,6 @@
     <ExcludePackageFileFromSigning Include="Microsoft.Extensions.FileProviders.Physical.dll" />
     <ExcludePackageFileFromSigning Include="Microsoft.Extensions.FileSystemGlobbing.dll" />
     <ExcludePackageFileFromSigning Include="Microsoft.Extensions.Primitives.dll" />
-    <ExcludePackageFileFromSigning Include="Microsoft.JSInterop.dll" />
     <ExcludePackageFileFromSigning Include="System.CodeDom.dll" />
     <ExcludePackageFileFromSigning Include="System.Runtime.CompilerServices.Unsafe.dll" />
     <ExcludePackageFileFromSigning Include="System.Text.Encoding.CodePages.dll" />

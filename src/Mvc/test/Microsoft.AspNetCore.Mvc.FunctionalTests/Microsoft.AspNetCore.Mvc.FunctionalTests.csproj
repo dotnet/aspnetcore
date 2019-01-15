@@ -38,6 +38,7 @@
     <ProjectReference Include="..\WebSites\ErrorPageMiddlewareWebSite\ErrorPageMiddlewareWebSite.csproj" />
     <ProjectReference Include="..\WebSites\FilesWebSite\FilesWebSite.csproj" />
     <ProjectReference Include="..\WebSites\FormatterWebSite\FormatterWebSite.csproj" />
+    <ProjectReference Include="..\WebSites\GenericHostWebSite\GenericHostWebSite.csproj" />
     <ProjectReference Include="..\WebSites\HtmlGenerationWebSite\HtmlGenerationWebSite.csproj" />
     <ProjectReference Include="..\WebSites\RazorBuildWebSite\RazorBuildWebSite.csproj" />
     <ProjectReference Include="..\WebSites\RazorPagesWebSite\RazorPagesWebSite.csproj" />
