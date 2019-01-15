@@ -191,6 +191,7 @@ public:
         _In_ BOOL                           fWindowsAuthEnabled,
         _In_ BOOL                           fBasicAuthEnabled,
         _In_ BOOL                           fAnonymousAuthEnabled,
+        _In_ PCWSTR                         pApplicationPhysicalPath,
         _Out_ ENVIRONMENT_VAR_HASH**        ppEnvironmentVarTable
     )
     {
@@ -201,6 +202,7 @@ public:
         STACK_STRU(strStartupAssemblyEnv, 1024);
         ENVIRONMENT_VAR_ENTRY* pHostingEntry = NULL;
         ENVIRONMENT_VAR_ENTRY* pIISAuthEntry = NULL;
+        ENVIRONMENT_VAR_ENTRY* pIISPathEntry = NULL;
         ENVIRONMENT_VAR_HASH* pEnvironmentVarTable = NULL;
 
         pEnvironmentVarTable = new ENVIRONMENT_VAR_HASH();
@@ -213,12 +215,28 @@ public:
             goto Finished;
         }
 
-        // copy the envirable hash table (from configuration) to a temp one as we may need to remove elements 
+        // copy the envirable hash table (from configuration) to a temp one as we may need to remove elements
         pInEnvironmentVarTable->Apply(ENVIRONMENT_VAR_HELPERS::CopyToTable, pEnvironmentVarTable);
         if (pEnvironmentVarTable->Count() != pInEnvironmentVarTable->Count())
         {
             // hash table copy failed
             hr = E_UNEXPECTED;
+            goto Finished;
+        }
+
+        pEnvironmentVarTable->FindKey((PWSTR)ASPNETCORE_IIS_PHYSICAL_PATH_ENV_STR, &pIISPathEntry);
+        if (pIISPathEntry != NULL)
+        {
+            // user defined ASPNETCORE_IIS_PHYSICAL_PATH in configuration, wipe it off
+            pIISPathEntry->Dereference();
+            pEnvironmentVarTable->DeleteKey((PWSTR)ASPNETCORE_IIS_PHYSICAL_PATH_ENV_STR);
+        }
+
+        pIISPathEntry = new ENVIRONMENT_VAR_ENTRY();
+
+        if (FAILED(hr = pIISPathEntry->Initialize(ASPNETCORE_IIS_PHYSICAL_PATH_ENV_STR, pApplicationPhysicalPath)) ||
+            FAILED(hr = pEnvironmentVarTable->InsertRecord(pIISPathEntry)))
+        {
             goto Finished;
         }
 
@@ -259,7 +277,7 @@ public:
         }
 
         // Compiler is complaining about conversion between PCWSTR and PWSTR here.
-        // Explictly casting. 
+        // Explictly casting.
         pEnvironmentVarTable->FindKey((PWSTR)HOSTING_STARTUP_ASSEMBLIES_NAME, &pHostingEntry);
         if (pHostingEntry != NULL)
         {

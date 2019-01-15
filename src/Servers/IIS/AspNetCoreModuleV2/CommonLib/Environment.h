@@ -16,5 +16,9 @@ public:
     std::wstring ExpandEnvironmentVariables(const std::wstring & str);
     static
     std::optional<std::wstring> GetEnvironmentVariableValue(const std::wstring & str);
+    static
+    std::wstring GetCurrentDirectoryValue();
+    static
+    std::wstring GetDllDirectoryValue();
 };
 

@@ -23,6 +23,7 @@
 #define CS_ASPNETCORE_HOSTING_MODEL_INPROCESS            L"inprocess"
 #define CS_ASPNETCORE_HOSTING_MODEL                      L"hostingModel"
 #define CS_ASPNETCORE_HANDLER_SETTINGS                   L"handlerSettings"
+#define CS_ASPNETCORE_HANDLER_SET_CURRENT_DIRECTORY      L"setCurrentDirectory"
 #define CS_ASPNETCORE_DISABLE_START_UP_ERROR_PAGE        L"disableStartUpErrorPage"
 #define CS_ENABLED                                       L"enabled"
 

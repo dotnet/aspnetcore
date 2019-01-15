@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         private static void VerifyNoExtraTrailingBytes(string responseString)
         {
-            if (!DeployerSelector.IsBackwardsCompatiblityTest)
+            if (DeployerSelector.HasNewShim)
             {
                 Assert.EndsWith("</html>\r\n", responseString);
             }

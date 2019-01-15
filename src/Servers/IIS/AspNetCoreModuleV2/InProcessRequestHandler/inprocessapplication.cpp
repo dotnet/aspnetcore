@@ -11,6 +11,7 @@
 #include "resources.h"
 #include "EventLog.h"
 #include "ModuleHelpers.h"
+#include "Environment.h"
 
 IN_PROCESS_APPLICATION*  IN_PROCESS_APPLICATION::s_Application = NULL;
 
@@ -218,6 +219,25 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
         // set the callbacks
         s_Application = this;
 
+        if (m_pConfig->QuerySetCurrentDirectory())
+        {
+            auto dllDirectory = Environment::GetDllDirectoryValue();
+            auto currentDirectory = Environment::GetCurrentDirectoryValue();
+
+            LOG_INFOF(L"Initial Dll directory: '%s', current directory: '%s'", dllDirectory.c_str(), currentDirectory.c_str());
+
+            // If DllDirectory wasn't set change it to previous current directory value
+            if (dllDirectory.empty())
+            {
+                LOG_LAST_ERROR_IF(!SetDllDirectory(currentDirectory.c_str()));
+                LOG_INFOF(L"Setting dll directory to %s", currentDirectory.c_str());
+            }
+
+            LOG_LAST_ERROR_IF(!SetCurrentDirectory(this->QueryApplicationPhysicalPath().c_str()));
+
+            LOG_INFOF(L"Setting current directory to %s", this->QueryApplicationPhysicalPath().c_str());
+        }
+
         //Start CLR thread
         m_clrThread = std::thread(ClrThreadEntryPoint, context);
 
@@ -405,6 +425,7 @@ HRESULT
 IN_PROCESS_APPLICATION::SetEnvironmentVariablesOnWorkerProcess()
 {
     auto variables = m_pConfig->QueryEnvironmentVariables();
+
     auto inputTable = std::unique_ptr<ENVIRONMENT_VAR_HASH, ENVIRONMENT_VAR_HASH_DELETER>(new ENVIRONMENT_VAR_HASH());
     RETURN_IF_FAILED(inputTable->Initialize(37 /*prime*/));
     // Copy environment variables to old style hash table
@@ -422,6 +443,7 @@ IN_PROCESS_APPLICATION::SetEnvironmentVariablesOnWorkerProcess()
         m_pConfig->QueryWindowsAuthEnabled(),
         m_pConfig->QueryBasicAuthEnabled(),
         m_pConfig->QueryAnonymousAuthEnabled(),
+        QueryApplicationPhysicalPath().c_str(),
         &pHashTable));
 
     table.reset(pHashTable);

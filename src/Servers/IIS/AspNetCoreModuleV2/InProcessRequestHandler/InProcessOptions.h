@@ -41,6 +41,12 @@ public:
     }
 
     bool
+    QuerySetCurrentDirectory() const
+    {
+        return m_fSetCurrentDirectory;
+    }
+
+    bool
     QueryWindowsAuthEnabled() const
     {
         return m_fWindowsAuthEnabled;
@@ -87,7 +93,7 @@ public:
     }
 
     InProcessOptions(const ConfigurationSource &configurationSource);
-    
+
     static
     HRESULT InProcessOptions::Create(
         IHttpServer& pServer,
@@ -100,6 +106,7 @@ private:
     std::wstring                   m_struStdoutLogFile;
     bool                           m_fStdoutLogEnabled;
     bool                           m_fDisableStartUpErrorPage;
+    bool                           m_fSetCurrentDirectory;
     bool                           m_fWindowsAuthEnabled;
     bool                           m_fBasicAuthEnabled;
     bool                           m_fAnonymousAuthEnabled;

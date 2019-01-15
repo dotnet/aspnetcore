@@ -60,3 +60,63 @@ Environment::GetEnvironmentVariableValue(const std::wstring & str)
 
     return expandedStr;
 }
+
+std::wstring Environment::GetCurrentDirectoryValue()
+{
+    DWORD requestedSize = GetCurrentDirectory(0, nullptr);
+    if (requestedSize == 0)
+    {
+        throw std::system_error(GetLastError(), std::system_category(), "GetCurrentDirectory");
+    }
+
+    std::wstring expandedStr;
+    do
+    {
+        expandedStr.resize(requestedSize);
+        requestedSize = GetCurrentDirectory(requestedSize, expandedStr.data());
+        if (requestedSize == 0)
+        {
+            throw std::system_error(GetLastError(), std::system_category(), "GetCurrentDirectory");
+        }
+    } while (expandedStr.size() != requestedSize + 1);
+
+    expandedStr.resize(requestedSize);
+
+    return expandedStr;
+}
+
+std::wstring Environment::GetDllDirectoryValue()
+{
+    // GetDllDirectory can return 0 in both the success case and the failure case, and it only sets last error when it fails.
+    // This requires you to set the last error to ERROR_SUCCESS before calling it in order to detect failure.
+    SetLastError(ERROR_SUCCESS);
+
+    DWORD requestedSize = GetDllDirectory(0, nullptr);
+    if (requestedSize == 0)
+    {
+        if (GetLastError() != ERROR_SUCCESS)
+        {
+            throw std::system_error(GetLastError(), std::system_category(), "GetDllDirectory");
+        }
+        else
+        {
+            return L"";
+        }
+    }
+
+    std::wstring expandedStr;
+    do
+    {
+        expandedStr.resize(requestedSize);
+        requestedSize = GetDllDirectory(requestedSize, expandedStr.data());
+        // 0 might be returned if GetDllDirectory is empty
+        if (requestedSize == 0 && GetLastError() != ERROR_SUCCESS)
+        {
+            throw std::system_error(GetLastError(), std::system_category(), "GetDllDirectory");
+        }
+    } while (expandedStr.size() != requestedSize + 1);
+
+    expandedStr.resize(requestedSize);
+
+    return expandedStr;
+}
