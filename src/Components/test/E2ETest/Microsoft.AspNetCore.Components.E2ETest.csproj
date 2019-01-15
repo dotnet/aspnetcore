@@ -1,0 +1,46 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <DefaultItemExcludes>${DefaultItemExcludes};node_modules\**</DefaultItemExcludes>
+    <!-- WebDriver is not strong-named signed -->
+    <SignAssembly>false</SignAssembly>
+
+    <!--
+      Temporarily disabled until this runs on macOS
+    -->
+    <SkipTests Condition="'$(BlazorAllTests)' != 'true'">true</SkipTests>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)Process\**\*.cs" LinkBase="Shared" />
+  </ItemGroup>
+
+  <Target Name="EnsureNpmRestored" BeforeTargets="Build" Condition="!Exists('node_modules') AND '$(BlazorAllTests)'=='true'">
+    <Message Importance="high" Text="Restoring dependencies using 'npm'. This may take several minutes..." />
+    <Exec Command="npm ci" />
+  </Target>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Hosting" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <Reference Include="Microsoft.AspNetCore.StaticFiles" />
+    <Reference Include="Selenium.Support" />
+    <Reference Include="Selenium.WebDriver" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Blazor\perf\Microsoft.AspNetCore.Blazor.E2EPerformance.csproj" />
+    <ProjectReference Include="..\..\Blazor\testassets\HostedInAspNet.Client\HostedInAspNet.Client.csproj" />
+    <ProjectReference Include="..\..\Blazor\testassets\HostedInAspNet.Server\HostedInAspNet.Server.csproj" />
+    <ProjectReference Include="..\..\Blazor\testassets\MonoSanityClient\MonoSanityClient.csproj" />
+    <ProjectReference Include="..\..\Blazor\testassets\MonoSanity\MonoSanity.csproj" />
+    <ProjectReference Include="..\..\Blazor\testassets\StandaloneApp\StandaloneApp.csproj" />
+    <ProjectReference Include="..\..\Blazor\Cli\src\Microsoft.AspNetCore.Blazor.Cli.csproj" />
+    <ProjectReference Include="..\testassets\ComponentsApp.App\ComponentsApp.App.csproj" />
+    <ProjectReference Include="..\testassets\ComponentsApp.Server\ComponentsApp.Server.csproj" />
+    <ProjectReference Include="..\testassets\BasicTestApp\BasicTestApp.csproj" />
+    <ProjectReference Include="..\testassets\TestServer\TestServer.csproj" />
+  </ItemGroup>
+
+</Project>

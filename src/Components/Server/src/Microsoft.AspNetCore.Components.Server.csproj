@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Description>Runtime server features for ASP.NET Core Components.</Description>
+    <IsProductPackage>true</IsProductPackage>
+    <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(ComponentsSharedSourceRoot)\src\ConventionBasedStartup.cs" Link="Hosting\ConventionBasedStartup.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)\src\IBlazorStartup.cs" Link="Hosting\IBlazorStartup.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Components.Browser" />
+    <Reference Include="Microsoft.AspNetCore.SignalR" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" />
+    <Reference Include="Microsoft.AspNetCore.StaticFiles" />
+    <Reference Include="Microsoft.AspNetCore.SpaServices.Extensions" />
+    <Reference Include="Microsoft.Extensions.FileProviders.Embedded" />
+  </ItemGroup>
+
+
+
+  <ItemGroup>
+    <!-- We need .Browser.JS to build first so we can embed its .js output -->
+    <ProjectReference Include="..\Browser.JS\src\Microsoft.AspNetCore.Components.Browser.JS.csproj" ReferenceOutputAssembly="false" />
+    <EmbeddedResource Include="..\Browser.JS\src\dist\components.server.js" LogicalName="frameworkFiles\%(Filename)%(Extension)" />
+  </ItemGroup>
+
+</Project>

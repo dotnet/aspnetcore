@@ -125,5 +125,17 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR" ProjectPath="$(RepositoryRoot)src\SignalR\server\SignalR\src\Microsoft.AspNetCore.SignalR.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR.Specification.Tests" ProjectPath="$(RepositoryRoot)src\SignalR\server\Specification.Tests\src\Microsoft.AspNetCore.SignalR.Specification.Tests.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" ProjectPath="$(RepositoryRoot)src\SignalR\server\StackExchangeRedis\src\Microsoft.AspNetCore.SignalR.StackExchangeRedis.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.VisualStudio.BlazorExtension" ProjectPath="$(RepositoryRoot)src\Components\Blazor\BlazorExtension\src\Microsoft.VisualStudio.BlazorExtension.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.VisualStudio.LanguageServices.Blazor" ProjectPath="$(RepositoryRoot)src\Components\Blazor\BlazorLanguageServices\src\Microsoft.VisualStudio.LanguageServices.Blazor.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Blazor" ProjectPath="$(RepositoryRoot)src\Components\Blazor\Blazor\src\Microsoft.AspNetCore.Blazor.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Blazor.Build" ProjectPath="$(RepositoryRoot)src\Components\Blazor\Build\src\Microsoft.AspNetCore.Blazor.Build.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Blazor.Server" ProjectPath="$(RepositoryRoot)src\Components\Blazor\Server\src\Microsoft.AspNetCore.Blazor.Server.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Blazor.Templates" ProjectPath="$(RepositoryRoot)src\Components\Blazor\Templates\src\Microsoft.AspNetCore.Blazor.Templates.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Browser.JS" ProjectPath="$(RepositoryRoot)src\Components\Browser.JS\src\Microsoft.AspNetCore.Components.Browser.JS.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Browser" ProjectPath="$(RepositoryRoot)src\Components\Browser\src\Microsoft.AspNetCore.Components.Browser.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Build" ProjectPath="$(RepositoryRoot)src\Components\Build\src\Microsoft.AspNetCore.Components.Build.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components" ProjectPath="$(RepositoryRoot)src\Components\Components\src\Microsoft.AspNetCore.Components.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Server" ProjectPath="$(RepositoryRoot)src\Components\Server\src\Microsoft.AspNetCore.Components.Server.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.E2ETest" ProjectPath="$(RepositoryRoot)src\Components\test\E2ETest\Microsoft.AspNetCore.Components.E2ETest.csproj" />
   </ItemGroup>
 </Project>
