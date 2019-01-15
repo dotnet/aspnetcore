@@ -68,4 +68,71 @@
   <Import Project="eng\targets\FSharp.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.fsproj'" />
   <Import Project="eng\targets\Wix.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.wixproj'" />
   <Import Project="eng\targets\Npm.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.npmproj'" />
+
+  <ItemGroup>
+    <PackageReference Include="xunit.runner.console" Version="2.4.1" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'" />
+  </ItemGroup>
+
+   <Target Name="CreateHelixPayload" Returns="@(HelixPayload)">
+    <ItemGroup>
+      <_TargetFrameworks Remove="@(_TargetFrameworks)" />
+      <_TargetFrameworks Include="$(TargetFrameworks);$(TargetFramework)" />
+    </ItemGroup>
+
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="_CreateHelixPayloadInner"
+             Properties="TargetFramework=%(_TargetFrameworks.Identity)">
+      <Output TaskParameter="TargetOutputs" ItemName="HelixPayload" />
+    </MSBuild>
+  </Target>
+
+  <Target Name="CollectXunitConsoleRunner" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+    <PropertyGroup>
+      <XunitConsoleRunnerDir>$([System.IO.Path]::GetDirectoryName($(XunitConsole472Path)))</XunitConsoleRunnerDir>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <XunitConsoleRunnerFiles Include="$(XunitConsoleRunnerDir)/**/*" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(XunitConsoleRunnerFiles)" DestinationFolder="$(PublishDir)" />
+  </Target>
+
+  <Target Name="_CreateHelixPayloadInner" 
+    DependsOnTargets="Publish;CollectXunitConsoleRunner" 
+    Condition="'$(BuildHelixPayload)' == 'true' AND ($(HelixTargetQueue.StartsWith('Windows')) OR '$(TargetFrameworkIdentifier)' != '.NETFramework')" 
+    Returns="@(HelixPayload)">
+
+    <ConvertToAbsolutePath Paths="$(PublishDir)">
+      <Output TaskParameter="AbsolutePaths" PropertyName="PublishAbsoluteDir" />
+    </ConvertToAbsolutePath>
+
+    <!-- Windows NetCore -->
+    <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework' AND $(HelixTargetQueue.StartsWith('Windows'))" >
+        <_CopyItems Include="$(MSBuildThisFileDirectory)test\vstest\runtests.cmd" />
+    </ItemGroup>
+
+    <!-- Windows NetFramework -->
+    <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' AND $(HelixTargetQueue.StartsWith('Windows'))" >
+        <_CopyItems Include="$(MSBuildThisFileDirectory)test\xunit\runtests.cmd" />
+    </ItemGroup>
+
+    <!-- NonWindows -->
+    <ItemGroup Condition="$(HelixTargetQueue.StartsWith('Windows'))"  >
+        <_CopyItems Include="$(MSBuildThisFileDirectory)test\vstest\runtests.sh" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(_CopyItems)" DestinationFolder="$(PublishAbsoluteDir)" />
+
+    <ItemGroup>
+      <HelixPayload Include="$(PublishAbsoluteDir)">
+        <TestAssembly>$(TargetFileName)</TestAssembly>
+        <TestName>$(MSBuildProjectName)-$(TargetFramework)</TestName>
+        <!-- Look into how to be able to use $(NETCoreSdkVersion) -->
+        <Command Condition="$(HelixTargetQueue.StartsWith('Windows'))">runtests.cmd $(TargetFileName) $(NETCoreSdkVersion) $(RuntimeFrameworkVersion)</Command>
+        <Command Condition="!$(HelixTargetQueue.StartsWith('Windows'))">./runtests.sh $(TargetFileName) $(NETCoreSdkVersion) $(RuntimeFrameworkVersion)</Command>
+        <TestTimeout>$(DistributedTestTimeout)</TestTimeout>
+      </HelixPayload>
+    </ItemGroup>
+  </Target>
 </Project>

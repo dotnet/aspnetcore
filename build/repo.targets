@@ -101,4 +101,23 @@
       FrameworkOnlyPackages="@(SharedFrameworkOnlyPackage)" />
   </Target>
 
+  <!-- will move into korebuild -->
+  <PropertyGroup>
+    <DefaultHelixTestTimeout>00:30:00</DefaultHelixTestTimeout>
+  </PropertyGroup>
+
+  <Target Name="Helix" DependsOnTargets="Restore">
+    <ItemGroup>
+      <CsProjects Include="@(ProjectToBuild)" Condition="'%(Extension)' == '.csproj'" />
+    </ItemGroup>
+    <PropertyGroup>
+      <HelixTestProjects>@(CsProjects)</HelixTestProjects>
+    </PropertyGroup>
+    <Exec Command="dotnet msbuild $(MSBuildThisFileDirectory)..\test\helix.proj" />
+    <!-- <MSBuild Projects="$(MSBuildThisFileDirectory)..\test\helix.proj"
+             Targets="Test"
+             Properties="ProjectsToTest=$(HelixTestProjects)"
+             ContinueOnError="ErrorAndStop"
+             BuildInParallel="false" /> -->
+  </Target>
 </Project>

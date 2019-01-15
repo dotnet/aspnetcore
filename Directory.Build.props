@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
   <Import Project="version.props" />
 
   <PropertyGroup>
@@ -127,6 +127,7 @@
     <IsTestAssetProject Condition="$(RepoRelativeProjectDir.Contains('testassets'))">true</IsTestAssetProject>
     <IsSampleProject Condition="$(RepoRelativeProjectDir.Contains('sample'))">true</IsSampleProject>
     <DisableDeterministicSourceRoot Condition="'$(IsSampleProject)' == 'true' OR '$(IsTestAssetProject)' == 'true'">true</DisableDeterministicSourceRoot>
+    <BuildHelixPayload Condition="'$(IsTestProject)' == 'true'">true</BuildHelixPayload>
   </PropertyGroup>
 
   <Import Project="build\tasks\RepoTasks.tasks" Condition="'$(MSBuildProjectName)' != 'RepoTasks' AND '$(DesignTimeBuild)' != 'true'" />
