@@ -10,6 +10,7 @@ using Common;
 using Octokit;
 using TriageBuildFailures.Abstractions;
 using TriageBuildFailures.GitHub;
+using TriageBuildFailures.VSTS.Models;
 
 namespace TriageBuildFailures.Handlers
 {
@@ -114,6 +115,10 @@ CC {GetOwnerMentions(failureArea)}";
                         new KeyValuePair<string, object>("Failure:BuildId", failure.BuildId),
                         new KeyValuePair<string, object>("Failure:TestId", failure.TestId),
                     };
+                    if (failure is VSTSTestOccurrence vstsFailure)
+                    {
+                        hiddenData.Add(new KeyValuePair<string, object>("Failure:VSTS:TestCaseResult", vstsFailure.TestCaseResult));
+                    }
 
                     Reporter.Output($"Creating new issue for test failure {failure.Name}...");
                     var issue = await GHClient.CreateIssue(owner, repo, subject, body, issueLabels, assignees, hiddenData: hiddenData);

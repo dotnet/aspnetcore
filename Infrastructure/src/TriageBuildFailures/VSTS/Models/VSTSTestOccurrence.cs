@@ -8,28 +8,28 @@ namespace TriageBuildFailures.VSTS.Models
 {
     internal class VSTSTestOccurrence : ICITestOccurrence
     {
-        public VSTSTestCaseResult TestCaseResult;
-
         public VSTSTestOccurrence(VSTSTestCaseResult result)
         {
             TestCaseResult = result;
         }
 
-        public Abstractions.BuildStatus Status {
+        public BuildStatus Status {
             get {
                 switch (TestCaseResult.Outcome)
                 {
                     case "Passed":
-                        return Abstractions.BuildStatus.SUCCESS;
+                        return BuildStatus.SUCCESS;
                     case "NotExecuted":
-                        return Abstractions.BuildStatus.UNKNOWN;
+                        return BuildStatus.UNKNOWN;
                     case "Failed":
-                        return Abstractions.BuildStatus.FAILURE;
+                        return BuildStatus.FAILURE;
                     default:
                         throw new NotImplementedException(TestCaseResult.Outcome);
                 }
             }
         }
+
+        public VSTSTestCaseResult TestCaseResult { get; }
 
         public string Name => TestCaseResult.AutomatedTestName;
 
