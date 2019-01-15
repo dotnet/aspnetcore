@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
-
+    <BuildHelixPayload>false</BuildHelixPayload>
     <!--
       Workaround for "Use executable flags in Microsoft.NET.Test.Sdk" (https://github.com/Microsoft/vstest/issues/792).
       Remove when fixed.
