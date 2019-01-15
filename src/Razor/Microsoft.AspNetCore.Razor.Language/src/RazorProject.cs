@@ -123,16 +123,5 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             return path;
         }
-
-        /// <summary>
-        /// Create a Razor project based on a physical file system.
-        /// </summary>
-        /// <param name="rootDirectoryPath">The directory to root the file system at.</param>
-        /// <returns>A <see cref="RazorProject"/></returns>
-        [Obsolete("This method is obsolete and will be removed in a future version. Please use " + nameof(RazorProjectFileSystem) + "." + nameof(RazorProjectFileSystem.Create) + " instead.")]
-        public static RazorProject Create(string rootDirectoryPath)
-        {
-            return new DefaultRazorProjectFileSystem(rootDirectoryPath);
-        }
     }
 }

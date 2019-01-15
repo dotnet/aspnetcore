@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// </summary>
         /// <param name="rootDirectoryPath">The directory to root the file system at.</param>
         /// <returns>A <see cref="RazorProjectFileSystem"/></returns>
-        public new static RazorProjectFileSystem Create(string rootDirectoryPath)
+        public static RazorProjectFileSystem Create(string rootDirectoryPath)
         {
             if (string.IsNullOrEmpty(rootDirectoryPath))
             {
