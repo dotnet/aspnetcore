@@ -4,6 +4,7 @@
     <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
     <!-- Mitigation for long path issues -->
     <AssemblyName>Diagnostics.EFCore.FunctionalTests</AssemblyName>
+    <BuildHelixPayload>false</BuildHelixPayload>
   </PropertyGroup>
 
   <ItemGroup>
