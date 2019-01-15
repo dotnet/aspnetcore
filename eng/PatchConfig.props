@@ -27,6 +27,7 @@ Later on, this will be checked using this condition:
   </PropertyGroup>
   <PropertyGroup Condition=" '$(VersionPrefix)' == '2.2.2' ">
     <PackagesInPatch>
+      @aspnet/signalr;
       Microsoft.AspNetCore.AspNetCoreModuleV2;
       Microsoft.AspNetCore.Authentication.Google;
       Microsoft.AspNetCore.Http;
