@@ -11,7 +11,7 @@
     <SharedFrameworkAndPackage Include="Microsoft.AspNetCore.JsonPatch" />
     <SharedFrameworkAndPackage Include="Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson" />
 
-    <!-- Assemblies required by components -->
+    <!-- Assemblies required by components and WebAssembly -->
     <SharedFrameworkAndPackage Include="Microsoft.AspNetCore.Components" />
     <SharedFrameworkAndPackage Include="Microsoft.AspNetCore.Components.Browser" />
 

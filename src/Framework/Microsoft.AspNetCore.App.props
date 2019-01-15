@@ -139,7 +139,6 @@
     <Dependency Include="System.Security.Permissions"                                  Version="$(SystemSecurityPermissionsPackageVersion)" />
     <Dependency Include="System.Text.Encodings.Web"                                    Version="$(SystemTextEncodingsWebPackageVersion)" />
     <Dependency Include="System.Threading.Channels"                                    Version="$(SystemThreadingChannelsPackageVersion)" />
-    <Dependency Include="System.Net.WebSockets.WebSocketProtocol"                      Version="$(SystemNetWebSocketsWebSocketProtocolPackageVersion)" />
   </ItemGroup>
 
 </Project>
