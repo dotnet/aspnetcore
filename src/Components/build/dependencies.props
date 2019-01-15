@@ -20,7 +20,8 @@
     <TemplateRazorDesignPackageVersion>2.1.2</TemplateRazorDesignPackageVersion>
     <MicrosoftAspNetCoreBlazorMonoPackageVersion>0.8.0-preview1-20181126.1</MicrosoftAspNetCoreBlazorMonoPackageVersion>
 
-    <!-- When updating this, ensure you also update Browser.JS/package.json to reference the corresponding version of @dotnet/jsinterop -->
-    <JSInteropPackageVersion>0.8.0-preview1-20181126.4</JSInteropPackageVersion>
+    <MicrosoftJSInteropPackageVersion>3.0.0-preview.19059.5</MicrosoftJSInteropPackageVersion>
+
+    <MonoWebAssemblyInteropPackageVersion>0.8.0-preview1-20181126.4</MonoWebAssemblyInteropPackageVersion>
   </PropertyGroup>
 </Project>

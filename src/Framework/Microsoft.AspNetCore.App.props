@@ -19,6 +19,8 @@
     <Dependency Include="Microsoft.AspNetCore.Authentication"                          Version="$(MicrosoftAspNetCoreAuthenticationPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Authorization.Policy"                    Version="$(MicrosoftAspNetCoreAuthorizationPolicyPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Authorization"                           Version="$(MicrosoftAspNetCoreAuthorizationPackageVersion)" />
+    <Dependency Include="Microsoft.AspNetCore.Components"                              Version="$(MicrosoftAspNetCoreComponentsPackageVersion)" />
+    <Dependency Include="Microsoft.AspNetCore.Components.Browser"                      Version="$(MicrosoftAspNetCoreComponentsBrowserPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Connections.Abstractions"                Version="$(MicrosoftAspNetCoreConnectionsAbstractionsPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.CookiePolicy"                            Version="$(MicrosoftAspNetCoreCookiePolicyPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Cors"                                    Version="$(MicrosoftAspNetCoreCorsPackageVersion)" />
@@ -127,6 +129,7 @@
     <Dependency Include="Microsoft.Extensions.Options"                                 Version="$(MicrosoftExtensionsOptionsPackageVersion)" />
     <Dependency Include="Microsoft.Extensions.Primitives"                              Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" />
     <Dependency Include="Microsoft.Extensions.WebEncoders"                             Version="$(MicrosoftExtensionsWebEncodersPackageVersion)" />
+    <Dependency Include="Microsoft.JSInterop"                                          Version="$(MicrosoftJSInteropPackageVersion)" />
     <Dependency Include="Microsoft.Net.Http.Headers"                                   Version="$(MicrosoftNetHttpHeadersPackageVersion)" />
     <Dependency Include="Newtonsoft.Json"                                              Version="$(NewtonsoftJsonPackageVersion)" />
     <Dependency Include="System.IO.Pipelines"                                          Version="$(SystemIOPipelinesPackageVersion)" />
@@ -136,6 +139,7 @@
     <Dependency Include="System.Security.Permissions"                                  Version="$(SystemSecurityPermissionsPackageVersion)" />
     <Dependency Include="System.Text.Encodings.Web"                                    Version="$(SystemTextEncodingsWebPackageVersion)" />
     <Dependency Include="System.Threading.Channels"                                    Version="$(SystemThreadingChannelsPackageVersion)" />
+    <Dependency Include="System.Net.WebSockets.WebSocketProtocol"                      Version="$(SystemNetWebSocketsWebSocketProtocolPackageVersion)" />
   </ItemGroup>
 
 </Project>

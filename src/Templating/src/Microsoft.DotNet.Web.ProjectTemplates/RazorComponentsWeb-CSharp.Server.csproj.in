@@ -12,7 +12,6 @@
     <ProjectReference Include="..\RazorComponentsWeb-CSharp.App\RazorComponentsWeb-CSharp.App.csproj" />
   </ItemGroup>
 
-  <!-- TODO: Remove this block once it's included in the shared framework -->
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.Server" Version="${MicrosoftAspNetCoreComponentsPackageVersion}" />
   </ItemGroup>
