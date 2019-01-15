@@ -1933,6 +1933,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await InitializeConnectionAsync(async context =>
             {
+                var bodyControlFeature = context.Features.Get<IHttpBodyControlFeature>();
+                bodyControlFeature.AllowSynchronousIO = true;
                 // Fill the flow control window to create async back pressure.
                 await context.Response.Body.WriteAsync(new byte[windowSize + 1], 0, windowSize + 1);
                 context.Response.Body.Write(new byte[1], 0, 1);

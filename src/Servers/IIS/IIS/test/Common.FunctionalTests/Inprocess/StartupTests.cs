@@ -110,6 +110,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalTheory]
         [InlineData(RuntimeArchitecture.x64)]
         [InlineData(RuntimeArchitecture.x86)]
+        [SkipIfNotAdmin]
         [RequiresNewShim]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         public async Task StartsWithDotnetInstallLocation(RuntimeArchitecture runtimeArchitecture)
