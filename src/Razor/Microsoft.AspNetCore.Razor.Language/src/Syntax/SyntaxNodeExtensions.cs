@@ -216,7 +216,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
                 throw new ArgumentNullException(nameof(node));
             }
 
-            var tokens = node.DescendantNodes().Where(n => n.IsToken).Cast<SyntaxToken>();
+            var tokens = node.DescendantNodesAndSelf().Where(n => n.IsToken).Cast<SyntaxToken>();
             var content = string.Concat(tokens.Select(t => t.Content));
             return content;
         }
