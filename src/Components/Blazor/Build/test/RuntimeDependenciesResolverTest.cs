@@ -2,14 +2,23 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Blazor.Build.Test
 {
     public class RuntimeDependenciesResolverTest
     {
+        private readonly ITestOutputHelper _output;
+
+        public RuntimeDependenciesResolverTest(ITestOutputHelper output)
+        {
+            _output = output;
+        }
+
         [Fact]
         public void FindsReferenceAssemblyGraph_ForStandaloneApp()
         {
@@ -111,6 +120,14 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 .Select(p => Path.GetFileName(p))
                 .OrderBy(i => i, StringComparer.Ordinal)
                 .ToArray();
+
+            var expected = new HashSet<string>(expectedContents);
+            var actual = new HashSet<string>(contents);
+            _output.WriteLine("Expected contents to have:");
+            _output.WriteLine(string.Join(",", expected.Except(actual)));
+
+            _output.WriteLine("Unexpected contents:");
+            _output.WriteLine(string.Join(",", actual.Except(expected)));
 
             // Assert
             Assert.Equal(expectedContents, contents);
