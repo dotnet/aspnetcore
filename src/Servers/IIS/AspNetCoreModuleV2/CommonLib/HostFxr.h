@@ -26,9 +26,13 @@ private:
     static inline thread_local RedirectionOutput* m_writeFunction;
 };
 
-class HostFxr
+class HostFxr: NonCopyable
 {
 public:
+    HostFxr() : HostFxr(nullptr, nullptr, nullptr)
+    {
+    }
+
     HostFxr(
         hostfxr_main_fn hostfxr_main_fn,
         hostfxr_get_native_search_directories_fn hostfxr_get_native_search_directories_fn,
@@ -39,7 +43,13 @@ public:
     {
     }
 
+    void Load();
+    void Load(HMODULE moduleHandle);
+    void Load(const std::wstring& location);
+
     ~HostFxr() = default;
+
+    void SetMain(hostfxr_main_fn hostfxr_main_fn);
 
     int Main(DWORD argc, CONST PCWSTR* argv) const noexcept(false);
 
@@ -47,10 +57,8 @@ public:
 
     HostFxrErrorRedirector RedirectOutput(RedirectionOutput* writer) const noexcept;
 
-    static
-    HostFxr CreateFromLoadedModule();
-
 private:
+    HandleWrapper<ModuleHandleTraits> m_hHostFxrDll;
     hostfxr_main_fn m_hostfxr_main_fn;
     hostfxr_get_native_search_directories_fn m_hostfxr_get_native_search_directories_fn;
     corehost_set_error_writer_fn m_corehost_set_error_writer_fn;

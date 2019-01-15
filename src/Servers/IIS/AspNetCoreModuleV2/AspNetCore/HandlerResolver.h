@@ -10,6 +10,7 @@
 #include "HandleWrapper.h"
 #include "ApplicationFactory.h"
 #include "RedirectionOutput.h"
+#include "HostFxr.h"
 
 class HandlerResolver
 {
@@ -35,7 +36,7 @@ private:
     SRWLOCK      m_requestHandlerLoadLock {};
     std::wstring m_loadedApplicationId;
     APP_HOSTING_MODEL m_loadedApplicationHostingModel;
-    HandleWrapper<ModuleHandleTraits> m_hHostFxrDll;
+    HostFxr m_hHostFxrDll;
 
     static const PCWSTR          s_pwzAspnetcoreInProcessRequestHandlerName;
     static const PCWSTR          s_pwzAspnetcoreOutOfProcessRequestHandlerName;
