@@ -21,6 +21,7 @@ Microsoft.AspNetCore.Mvc.ViewComponent</Description>
     <Reference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Html.Abstractions" />
     <Reference Include="Microsoft.Extensions.WebEncoders" />
+    <Reference Include="Microsoft.AspNetCore.Components" />
   </ItemGroup>
 
 </Project>
