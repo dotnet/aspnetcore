@@ -77,6 +77,14 @@ namespace Microsoft.AspNetCore.TestHost
 
         public IFeatureCollection Features { get; }
 
+        /// <summary>
+        /// Gets or sets a value that controls whether synchronous IO is allowed for the <see cref="HttpContext.Request"/> and <see cref="HttpContext.Response"/>
+        /// </summary>
+        /// <remarks>
+        /// Defaults to true.
+        /// </remarks>
+        public bool AllowSynchronousIO { get; set; } = true;
+
         private IHttpApplication<Context> Application
         {
             get => _application ?? throw new InvalidOperationException("The server has not been started or no web application was configured.");
@@ -85,7 +93,7 @@ namespace Microsoft.AspNetCore.TestHost
         public HttpMessageHandler CreateHandler()
         {
             var pathBase = BaseAddress == null ? PathString.Empty : PathString.FromUriComponent(BaseAddress);
-            return new ClientHandler(pathBase, Application);
+            return new ClientHandler(pathBase, Application) { AllowSynchronousIO = AllowSynchronousIO };
         }
 
         public HttpClient CreateClient()
@@ -96,7 +104,7 @@ namespace Microsoft.AspNetCore.TestHost
         public WebSocketClient CreateWebSocketClient()
         {
             var pathBase = BaseAddress == null ? PathString.Empty : PathString.FromUriComponent(BaseAddress);
-            return new WebSocketClient(pathBase, Application);
+            return new WebSocketClient(pathBase, Application) { AllowSynchronousIO = AllowSynchronousIO };
         }
 
         /// <summary>
@@ -120,7 +128,7 @@ namespace Microsoft.AspNetCore.TestHost
                 throw new ArgumentNullException(nameof(configureContext));
             }
 
-            var builder = new HttpContextBuilder(Application);
+            var builder = new HttpContextBuilder(Application, AllowSynchronousIO);
             builder.Configure(context =>
             {
                 var request = context.Request;
@@ -138,6 +146,7 @@ namespace Microsoft.AspNetCore.TestHost
                 request.PathBase = pathBase;
             });
             builder.Configure(configureContext);
+            // TODO: Wrap the request body if any?
             return await builder.SendAsync(cancellationToken).ConfigureAwait(false);
         }
 
