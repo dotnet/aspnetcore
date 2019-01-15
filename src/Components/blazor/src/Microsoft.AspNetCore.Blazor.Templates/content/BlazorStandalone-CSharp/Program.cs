@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Components.Hosting;
+﻿using Microsoft.AspNetCore.Blazor.Hosting;
 
 namespace BlazorStandalone_CSharp
 {

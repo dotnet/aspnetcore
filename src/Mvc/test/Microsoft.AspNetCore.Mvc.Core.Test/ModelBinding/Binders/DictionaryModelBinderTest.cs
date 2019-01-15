@@ -349,11 +349,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         [InlineData(false, false)]
         [InlineData(false, true)]
         [InlineData(true, false)]
+        [InlineData(true, true)]
         public async Task DictionaryModelBinder_CreatesEmptyCollection_IfIsTopLevelObject(
             bool allowValidatingTopLevelNodes,
             bool isBindingRequired)
         {
             // Arrange
+            var expectedErrorCount = isBindingRequired ? 1 : 0;
             var binder = new DictionaryModelBinder<string, string>(
                 new SimpleTypeModelBinder(typeof(string), NullLoggerFactory.Instance),
                 new SimpleTypeModelBinder(typeof(string), NullLoggerFactory.Instance),
@@ -383,7 +385,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // Assert
             Assert.Empty(Assert.IsType<Dictionary<string, string>>(bindingContext.Result.Model));
             Assert.True(bindingContext.Result.IsModelSet);
-            Assert.Equal(0, bindingContext.ModelState.ErrorCount);
+            Assert.Equal(expectedErrorCount, bindingContext.ModelState.ErrorCount);
         }
 
         [Fact]

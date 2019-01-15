@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Description>Runtime server features for ASP.NET Core Blazor applications.</Description>
+    <IsProductPackage>true</IsProductPackage>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="$(AspNetCorePackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.WebSockets" Version="$(AspNetCorePackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="$(AspNetCorePackageVersion)" />
+    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
+
+    <!-- Used by ws-proxy sources only. Remove this once we're able to consume ws-proxy as a NuGet package. -->
+    <PackageReference Include="Mono.Cecil" Version="$(MonoCecilPackageVersion)" />
+  </ItemGroup>
+
+</Project>

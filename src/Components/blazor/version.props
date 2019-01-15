@@ -1,5 +1,7 @@
 <Project>
   <PropertyGroup>
+    <ComponentsPackageVersion>$(PackageVersion)</ComponentsPackageVersion>
+
     <!-- When editing any version prefix here, remember also to update
          tooling\Microsoft.VisualStudio.BlazorExtension\Properties\AssemblyInfo.cs
          to include the new version in its upper bounds -->

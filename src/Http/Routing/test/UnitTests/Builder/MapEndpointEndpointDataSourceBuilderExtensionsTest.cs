@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -19,9 +19,9 @@ namespace Microsoft.AspNetCore.Builder
             return Assert.IsType<ModelEndpointDataSource>(Assert.Single(endpointRouteBuilder.DataSources));
         }
 
-        private RouteEndpointModel GetRouteEndpointBuilder(IEndpointRouteBuilder endpointRouteBuilder)
+        private RouteEndpointBuilder GetRouteEndpointBuilder(IEndpointRouteBuilder endpointRouteBuilder)
         {
-            return Assert.IsType<RouteEndpointModel>(Assert.Single(GetBuilderEndpointDataSource(endpointRouteBuilder).EndpointModels));
+            return Assert.IsType<RouteEndpointBuilder>(Assert.Single(GetBuilderEndpointDataSource(endpointRouteBuilder).EndpointBuilders));
         }
 
         [Fact]

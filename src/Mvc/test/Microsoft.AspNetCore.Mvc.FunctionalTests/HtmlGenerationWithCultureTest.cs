@@ -10,18 +10,27 @@ using AngleSharp.Extensions;
 using AngleSharp.Html;
 using HtmlGenerationWebSite;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
+using Xunit.Abstractions;
 using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class HtmlGenerationWithCultureTest : IClassFixture<MvcTestFixture<StartupWithCultureReplace>>
+    public class HtmlGenerationWithCultureTest : LoggedTest, IClassFixture<MvcTestFixture<StartupWithCultureReplace>>
     {
-        public HtmlGenerationWithCultureTest(MvcTestFixture<StartupWithCultureReplace> fixture)
+        public HtmlGenerationWithCultureTest(
+            ITestOutputHelper testOutputHelper,
+            MvcTestFixture<StartupWithCultureReplace> fixture) : base(testOutputHelper)
         {
-            var factory = fixture.WithWebHostBuilder(builder => builder.UseStartup<StartupWithCultureReplace>());
-            Client = factory.CreateDefaultClient();
+            Factory = fixture.WithWebHostBuilder(builder => builder.UseStartup<StartupWithCultureReplace>());
+            Client = Factory.CreateDefaultClient();
         }
+
+        public WebApplicationFactory<StartupWithCultureReplace> Factory { get; }
 
         public HttpClient Client { get; }
 
@@ -122,12 +131,17 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task CacheTagHelper_VaryByCultureComposesWithOtherVaryByOptions()
         {
             // Arrange
+            var client = Factory
+                .WithWebHostBuilder(builder => builder
+                    .UseStartup<StartupWithCultureReplace>()
+                    .ConfigureTestServices(services => services.AddSingleton(LoggerFactory)))
+                .CreateDefaultClient();
             string culture;
             string correlationId;
             string cachedCorrelationId;
 
             // Act - 1
-            var document = await Client.GetHtmlDocumentAsync("/CacheTagHelper_VaryByCulture?culture=fr-Fr&correlationId=10");
+            var document = await client.GetHtmlDocumentAsync("/CacheTagHelper_VaryByCulture?culture=fr-Fr&correlationId=10");
             ReadValuesFromDocument();
 
             // Assert - 1
@@ -136,7 +150,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("10", cachedCorrelationId);
 
             // Act - 2
-            document = await Client.GetHtmlDocumentAsync("/CacheTagHelper_VaryByCulture?culture=fr-Fr&correlationId=11&varyByQueryKey=new-key");
+            document = await client.GetHtmlDocumentAsync("/CacheTagHelper_VaryByCulture?culture=fr-Fr&correlationId=11&varyByQueryKey=new-key");
             ReadValuesFromDocument();
 
             // Assert - 2
@@ -146,7 +160,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("11", cachedCorrelationId);
 
             // Act - 3
-            document = await Client.GetHtmlDocumentAsync("/CacheTagHelper_VaryByCulture?culture=fr-Fr&correlationId=14");
+            document = await client.GetHtmlDocumentAsync("/CacheTagHelper_VaryByCulture?culture=fr-Fr&correlationId=14");
             ReadValuesFromDocument();
 
             // Assert - 3

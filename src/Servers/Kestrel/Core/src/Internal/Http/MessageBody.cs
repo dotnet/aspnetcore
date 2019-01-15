@@ -113,15 +113,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             // REVIEW: This *could* be slower if 2 things are true
                             // - The WriteAsync(ReadOnlyMemory<byte>) isn't overridden on the destination
                             // - We change the Kestrel Memory Pool to not use pinned arrays but instead use native memory
-
-#if NETCOREAPP2_1
                             await destination.WriteAsync(memory, cancellationToken);
-#elif NETSTANDARD2_0
-                            var array = memory.GetArray();
-                            await destination.WriteAsync(array.Array, array.Offset, array.Count, cancellationToken);
-#else
-#error TFMs need to be updated
-#endif
                         }
                     }
 

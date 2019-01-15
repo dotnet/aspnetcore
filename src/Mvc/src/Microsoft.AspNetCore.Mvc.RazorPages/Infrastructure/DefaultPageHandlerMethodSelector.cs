@@ -5,27 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
     internal class DefaultPageHandlerMethodSelector : IPageHandlerMethodSelector
     {
         private const string Handler = "handler";
-
-        private readonly IOptions<RazorPagesOptions> _options;
-
-        public DefaultPageHandlerMethodSelector(IOptions<RazorPagesOptions> options)
-        {
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
-
-            _options = options;
-        }
-
-        private bool AllowFuzzyHttpMethodMatching => _options?.Value.AllowMappingHeadRequestsToGetHandler ?? false;
 
         public HandlerMethodDescriptor Select(PageContext context)
         {
@@ -113,7 +98,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             }
 
             // Step 1a: do fuzzy HTTP method matching if needed.
-            if (candidates.Count == 0 && AllowFuzzyHttpMethodMatching)
+            if (candidates.Count == 0)
             {
                 var fuzzyHttpMethod = GetFuzzyMatchHttpMethod(context);
                 if (fuzzyHttpMethod != null)

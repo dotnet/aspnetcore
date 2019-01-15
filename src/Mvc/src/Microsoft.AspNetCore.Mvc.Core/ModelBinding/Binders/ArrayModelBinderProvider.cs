@@ -4,7 +4,6 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
@@ -28,12 +27,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
                 var binderType = typeof(ArrayModelBinder<>).MakeGenericType(elementType);
                 var loggerFactory = context.Services.GetRequiredService<ILoggerFactory>();
-                var mvcOptions = context.Services.GetRequiredService<IOptions<MvcOptions>>().Value;
                 return (IModelBinder)Activator.CreateInstance(
                     binderType,
                     elementBinder,
                     loggerFactory,
-                    mvcOptions.AllowValidatingTopLevelNodes);
+                    true /* allowValidatingTopLevelNodes */);
             }
 
             return null;

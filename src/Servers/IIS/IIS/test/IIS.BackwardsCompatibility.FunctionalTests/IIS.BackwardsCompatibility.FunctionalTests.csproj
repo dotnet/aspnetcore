@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TestGroupName>IISBackwardsCompatibility.FunctionalTests</TestGroupName>
+    <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
+    <SkipTests Condition=" '$(SkipIISBackwardsCompatibilityTests)' == 'true' ">true</SkipTests>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="..\Common.FunctionalTests\AppHostConfig\*.config" CopyToOutputDirectory="PreserveNewest" />
+    <Compile Include="..\Common.FunctionalTests\**\*.cs" />
+    <Compile Include="..\IIS.Shared.FunctionalTests\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Common.Tests\Common.Tests.csproj" />
+    <ProjectReference Include="..\WebSites\**\*.csproj">
+      <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The versions on these references are hard-coded because we want to ensure we maintain backwards compatibility with ANCM 2.2.0 -->
+    <PackageReference Include="Microsoft.AspNetCore.AspNetCoreModule" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.AspNetCoreModuleV2" Version="2.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Hosting" />
+    <Reference Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" />
+    <Reference Include="Microsoft.AspNetCore.Server.IntegrationTesting" />
+    <Reference Include="Microsoft.Extensions.Logging.Testing" />
+    <Reference Include="Microsoft.Extensions.Logging" />
+    <Reference Include="System.Diagnostics.EventLog" />
+    <Reference Include="System.Net.WebSockets.WebSocketProtocol" />
+  </ItemGroup>
+
+</Project>

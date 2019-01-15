@@ -1,4 +1,4 @@
-﻿<Project Sdk="Internal.AspNetCore.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core MVC cross-origin resource sharing (CORS) features.</Description>
@@ -9,9 +9,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.Core\Microsoft.AspNetCore.Mvc.Core.csproj" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
 
-    <PackageReference Include="Microsoft.AspNetCore.Cors" Version="$(MicrosoftAspNetCoreCorsPackageVersion)" />
+    <Reference Include="Microsoft.AspNetCore.Cors" />
   </ItemGroup>
 
 </Project>

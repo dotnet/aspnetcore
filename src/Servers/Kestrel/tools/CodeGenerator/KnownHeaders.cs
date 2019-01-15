@@ -582,7 +582,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             if (value != null)
                             {{
                                 output.Write(new ReadOnlySpan<byte>(_headerBytes, {header.BytesOffset}, {header.BytesCount}));
-                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
+                                output.WriteAsciiNoValidation(value);
                             }}
                         }}
                     }}
@@ -596,7 +596,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 if ((tempBits & {1L << 63}L) != 0)
                 {{
                     output.Write(new ReadOnlySpan<byte>(_headerBytes, {loop.Headers.First(x => x.Identifier == "ContentLength").BytesOffset}, {loop.Headers.First(x => x.Identifier == "ContentLength").BytesCount}));
-                    PipelineExtensions.WriteNumeric(ref output, (ulong)ContentLength.Value);
+                    output.WriteNumeric((ulong)ContentLength.Value);
 
                     if((tempBits & ~{1L << 63}L) == 0)
                     {{

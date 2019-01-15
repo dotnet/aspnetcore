@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Authorization
 {
@@ -23,7 +22,9 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
     /// </summary>
     public class AuthorizeFilter : IAsyncAuthorizationFilter, IFilterFactory
     {
-        private MvcOptions _mvcOptions;
+        // Property key set by authorization middleware when it is run
+        private const string AuthorizationMiddlewareInvokedKey = "__AuthorizationMiddlewareInvoked";
+
         private AuthorizationPolicy _effectivePolicy;
 
         /// <summary>
@@ -136,37 +137,24 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
             var effectivePolicy = await ComputePolicyAsync();
             var canCache = PolicyProvider == null;
 
-            if (_mvcOptions == null) 
+            // Combine all authorize filters into single effective policy that's only run on the closest filter
+            var builder = new AuthorizationPolicyBuilder(effectivePolicy);
+            for (var i = 0; i < context.Filters.Count; i++)
             {
-                _mvcOptions = context.HttpContext.RequestServices.GetRequiredService<IOptions<MvcOptions>>().Value;
-            }
-
-            if (_mvcOptions.AllowCombiningAuthorizeFilters)
-            {
-                if (!context.IsEffectivePolicy(this))
+                if (ReferenceEquals(this, context.Filters[i]))
                 {
-                    return null;
+                    continue;
                 }
 
-                // Combine all authorize filters into single effective policy that's only run on the closest filter
-                var builder = new AuthorizationPolicyBuilder(effectivePolicy);
-                for (var i = 0; i < context.Filters.Count; i++)
+                if (context.Filters[i] is AuthorizeFilter authorizeFilter)
                 {
-                    if (ReferenceEquals(this, context.Filters[i]))
-                    {
-                        continue;
-                    }
-                    
-                    if (context.Filters[i] is AuthorizeFilter authorizeFilter)
-                    {
-                        // Combine using the explicit policy, or the dynamic policy provider
-                        builder.Combine(await authorizeFilter.ComputePolicyAsync());
-                        canCache = canCache && authorizeFilter.PolicyProvider == null;
-                    }
+                    // Combine using the explicit policy, or the dynamic policy provider
+                    builder.Combine(await authorizeFilter.ComputePolicyAsync());
+                    canCache = canCache && authorizeFilter.PolicyProvider == null;
                 }
-
-                effectivePolicy = builder?.Build() ?? effectivePolicy;
             }
+
+            effectivePolicy = builder?.Build() ?? effectivePolicy;
 
             // We can cache the effective policy when there is no custom policy provider
             if (canCache)
@@ -185,6 +173,18 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
                 throw new ArgumentNullException(nameof(context));
             }
 
+            if (context.HttpContext.Items.ContainsKey(AuthorizationMiddlewareInvokedKey))
+            {
+                // Authorization has already run in middleware. Don't re-run for performance
+                return;
+            }
+
+            if (!context.IsEffectivePolicy(this))
+            {
+                return;
+            }
+
+            // IMPORTANT: Changes to authorization logic should be mirrored in security's AuthorizationMiddleware
             var effectivePolicy = await GetEffectivePolicyAsync(context);
             if (effectivePolicy == null)
             {

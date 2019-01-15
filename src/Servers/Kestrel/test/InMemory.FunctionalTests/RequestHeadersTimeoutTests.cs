@@ -29,17 +29,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager);
 
             using (var server = CreateServer(testContext))
-            using (var connection = server.CreateConnection())
             {
-                await connection.Send(
-                    "GET / HTTP/1.1",
-                    headers);
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        headers);
 
-                // Min amount of time between requests that triggers a request headers timeout.
-                testContext.MockSystemClock.UtcNow += RequestHeadersTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1);
-                heartbeatManager.OnHeartbeat(testContext.SystemClock.UtcNow);
+                    // Min amount of time between requests that triggers a request headers timeout.
+                    testContext.MockSystemClock.UtcNow += RequestHeadersTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1);
+                    heartbeatManager.OnHeartbeat(testContext.SystemClock.UtcNow);
 
-                await ReceiveTimeoutResponse(connection, testContext);
+                    await ReceiveTimeoutResponse(connection, testContext);
+                }
+                await server.StopAsync();
             }
         }
 
@@ -50,23 +53,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager);
 
             using (var server = CreateServer(testContext))
-            using (var connection = server.CreateConnection())
             {
-                await connection.Send(
-                    "POST / HTTP/1.1",
-                    "Host:",
-                    "Content-Length: 1",
-                    "",
-                    "");
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "POST / HTTP/1.1",
+                        "Host:",
+                        "Content-Length: 1",
+                        "",
+                        "");
 
-                // Min amount of time between requests that triggers a request headers timeout.
-                testContext.MockSystemClock.UtcNow += RequestHeadersTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1);
-                heartbeatManager.OnHeartbeat(testContext.SystemClock.UtcNow);
+                    // Min amount of time between requests that triggers a request headers timeout.
+                    testContext.MockSystemClock.UtcNow += RequestHeadersTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1);
+                    heartbeatManager.OnHeartbeat(testContext.SystemClock.UtcNow);
 
-                await connection.Send(
-                    "a");
+                    await connection.Send(
+                        "a");
 
-                await ReceiveResponse(connection, testContext);
+                    await ReceiveResponse(connection, testContext);
+                }
+                await server.StopAsync();
             }
         }
 
@@ -79,15 +85,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager);
 
             using (var server = CreateServer(testContext))
-            using (var connection = server.CreateConnection())
             {
-                await connection.Send(requestLine);
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(requestLine);
 
-                // Min amount of time between requests that triggers a request headers timeout.
-                testContext.MockSystemClock.UtcNow += RequestHeadersTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1);
-                heartbeatManager.OnHeartbeat(testContext.SystemClock.UtcNow);
+                    // Min amount of time between requests that triggers a request headers timeout.
+                    testContext.MockSystemClock.UtcNow += RequestHeadersTimeout + Heartbeat.Interval + TimeSpan.FromTicks(1);
+                    heartbeatManager.OnHeartbeat(testContext.SystemClock.UtcNow);
 
-                await ReceiveTimeoutResponse(connection, testContext);
+                    await ReceiveTimeoutResponse(connection, testContext);
+                }
+                await server.StopAsync();
             }
         }
 
@@ -101,19 +110,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             testContext.ServerOptions.Limits.MinResponseDataRate = null;
 
             using (var server = CreateServer(testContext))
-            using (var connection = server.CreateConnection())
             {
-                foreach (var ch in "POST / HTTP/1.1\r\nHost:\r\n\r\n")
+                using (var connection = server.CreateConnection())
                 {
-                    await connection.Send(ch.ToString());
+                    foreach (var ch in "POST / HTTP/1.1\r\nHost:\r\n\r\n")
+                    {
+                        await connection.Send(ch.ToString());
 
-                    testContext.MockSystemClock.UtcNow += ShortDelay;
-                    heartbeatManager.OnHeartbeat(testContext.SystemClock.UtcNow);
+                        testContext.MockSystemClock.UtcNow += ShortDelay;
+                        heartbeatManager.OnHeartbeat(testContext.SystemClock.UtcNow);
+                    }
+
+                    await ReceiveTimeoutResponse(connection, testContext);
+
+                    await connection.WaitForConnectionClose();
                 }
-
-                await ReceiveTimeoutResponse(connection, testContext);
-
-                await connection.WaitForConnectionClose();
+                await server.StopAsync();
             }
         }
 

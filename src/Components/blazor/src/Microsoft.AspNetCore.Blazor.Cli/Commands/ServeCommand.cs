@@ -3,19 +3,30 @@
 
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.CommandLineUtils;
-using System;
-using System.Diagnostics;
-using System.Text.RegularExpressions;
 
 namespace Microsoft.AspNetCore.Blazor.Cli.Commands
 {
-    class ServeCommand
+    internal class ServeCommand : CommandLineApplication
     {
-        public static void Command(CommandLineApplication command)
-        {
-            var remainingArgs = command.RemainingArguments.ToArray();
+        public ServeCommand(CommandLineApplication parent)
 
-            Server.Program.BuildWebHost(remainingArgs).Run();
+            // We pass arbitrary arguments through to the ASP.NET Core configuration
+            : base(throwOnUnexpectedArg: false) 
+        {
+            Parent = parent;
+            
+            Name = "serve";
+            Description = "Serve requests to a Blazor application";
+
+            HelpOption("-?|-h|--help");
+
+            OnExecute(Execute);
+        }
+
+        private int Execute()
+        {
+            Server.Program.BuildWebHost(RemainingArguments.ToArray()).Run();
+            return 0;
         }
     }
 }

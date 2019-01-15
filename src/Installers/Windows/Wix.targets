@@ -10,8 +10,6 @@
     <GuidInputs Condition="'$(IsFinalBuild)' != 'true'">$(GuidInputs);$(BuildNumberSuffix)</GuidInputs>
   </PropertyGroup>
 
-  <UsingTask AssemblyFile="$(OutputPath)..\InstallerTasks\InstallerTasks.dll" TaskName="RepoTasks.GenerateGuid" />
-
   <Target Name="GenerateGUIDs" BeforeTargets="BeforeBuild" DependsOnTargets="_GeneratePackageGuids;_GenerateBundleGuids" Condition=" '$(DisableGuidGeneration)' != 'true' " />
 
   <Target Name="_GeneratePackageGuids" Condition="'$(OutputType)' == 'package'">
@@ -38,6 +36,12 @@
     <PropertyGroup>
       <DefineConstants>$(DefineConstants);BundleProviderKey=$(BundleProviderKey);BundleUpgradeCode=$(BundleUpgradeCode)</DefineConstants>
     </PropertyGroup>
+  </Target>
+
+  <Target Name="CopyToArtifactsDirectory"
+          Condition=" '$(IsProductInstaller)' == 'true' "
+          AfterTargets="Build">
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(InstallersOutputPath)" />
   </Target>
 
 </Project>

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Internal;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Filters;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -30,11 +30,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         public CookieTempDataProvider(
             IDataProtectionProvider dataProtectionProvider,
             ILoggerFactory loggerFactory,
-            IOptions<CookieTempDataProviderOptions> options)
+            IOptions<CookieTempDataProviderOptions> options,
+            TempDataSerializer tempDataSerializer)
         {
             _dataProtector = dataProtectionProvider.CreateProtector(Purpose);
             _logger = loggerFactory.CreateLogger<CookieTempDataProvider>();
-            _tempDataSerializer = new TempDataSerializer();
+            _tempDataSerializer = tempDataSerializer;
             _chunkingCookieManager = new ChunkingCookieManager();
             _options = options.Value;
         }

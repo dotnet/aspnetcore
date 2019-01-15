@@ -66,17 +66,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             Assert.IsType<CollectionModelBinder<int>>(result);
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void Create_ForSupportedType_ReturnsBinder_WithExpectedAllowValidatingTopLevelNodes(
-            bool allowValidatingTopLevelNodes)
+        [Fact]
+        public void Create_ForSupportedType_ReturnsBinder()
         {
             // Arrange
             var provider = new CollectionModelBinderProvider();
 
             var context = new TestModelBinderProviderContext(typeof(List<int>));
-            context.MvcOptions.AllowValidatingTopLevelNodes = allowValidatingTopLevelNodes;
             context.OnCreatingBinder(m =>
             {
                 Assert.Equal(typeof(int), m.ModelType);
@@ -88,7 +84,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             // Assert
             var binder = Assert.IsType<CollectionModelBinder<int>>(result);
-            Assert.Equal(allowValidatingTopLevelNodes, binder.AllowValidatingTopLevelNodes);
+            Assert.True(binder.AllowValidatingTopLevelNodes);
         }
 
         private class Person

@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.TestHost
             if (!_disposed)
             {
                 _disposed = true;
-                _hostInstance.Dispose();
+                _hostInstance?.Dispose();
             }
         }
 

@@ -1,6 +1,6 @@
-﻿@using System.Net
+@using System.Net
 @using System.Net.Http
-@using Microsoft.AspNetCore.Components.Browser.Http
+@using Microsoft.AspNetCore.Blazor.Http
 @inject HttpClient Http
 
 <h1>HTTP request tester</h1>
@@ -105,7 +105,7 @@
 
             if (!string.IsNullOrEmpty(requestReferrer))
             {
-                requestMessage.Properties[BrowserHttpMessageHandler.FetchArgs] = new
+                requestMessage.Properties[WebAssemblyHttpMessageHandler.FetchArgs] = new
                 {
                     referrer = requestReferrer
                 };

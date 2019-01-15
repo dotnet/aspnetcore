@@ -82,10 +82,6 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                 {
                     return viewDescriptor.Item.Kind == RazorPageDocumentKind;
                 }
-                else if (viewDescriptor.ViewAttribute != null)
-                {
-                    return viewDescriptor.ViewAttribute is RazorPageAttribute;
-                }
 
                 return false;
             }
@@ -115,7 +111,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
                 // When RootDirectory and AreaRootDirectory overlap (e.g. RootDirectory = '/', AreaRootDirectory = '/Areas'), we
                 // only want to allow a page to be associated with the area route.
-                if (_pagesOptions.AllowAreas && relativePath.StartsWith(areaRootDirectory, StringComparison.OrdinalIgnoreCase))
+                if (relativePath.StartsWith(areaRootDirectory, StringComparison.OrdinalIgnoreCase))
                 {
                     routeModel = _routeModelFactory.CreateAreaRouteModel(relativePath, routeTemplate);
                 }
@@ -133,11 +129,6 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
         internal static string GetRouteTemplate(CompiledViewDescriptor viewDescriptor)
         {
-            if (viewDescriptor.ViewAttribute != null)
-            {
-                return ((RazorPageAttribute)viewDescriptor.ViewAttribute).RouteTemplate;
-            }
-
             if (viewDescriptor.Item != null)
             {
                 return viewDescriptor.Item.Metadata

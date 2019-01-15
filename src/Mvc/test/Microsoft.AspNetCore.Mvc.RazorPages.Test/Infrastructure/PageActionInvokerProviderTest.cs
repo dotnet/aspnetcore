@@ -5,7 +5,6 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -461,10 +460,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
             var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             var modelBinderFactory = TestModelBinderFactory.CreateDefault();
-            var mvcOptions = new MvcOptions
-            {
-                AllowValidatingTopLevelNodes = true,
-            };
+            var mvcOptions = new MvcOptions();
 
             var parameterBinder = new ParameterBinder(
                 modelMetadataProvider,

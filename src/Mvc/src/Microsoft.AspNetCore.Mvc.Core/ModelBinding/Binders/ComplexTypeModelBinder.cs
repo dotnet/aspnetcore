@@ -44,14 +44,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         /// The <see cref="IDictionary{TKey, TValue}"/> of binders to use for binding properties.
         /// </param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
-        /// <remarks>
-        /// The binder will not add an error for an unbound top-level model even if
-        /// <see cref="ModelMetadata.IsBindingRequired"/> is <see langword="true"/>.
-        /// </remarks>
         public ComplexTypeModelBinder(
             IDictionary<ModelMetadata, IModelBinder> propertyBinders,
             ILoggerFactory loggerFactory)
-            : this(propertyBinders, loggerFactory, allowValidatingTopLevelNodes: false)
+            : this(propertyBinders, loggerFactory, allowValidatingTopLevelNodes: true)
         {
         }
 
@@ -67,6 +63,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         /// <see cref="ModelMetadata.IsBindingRequired"/> is <see langword="true"/> for a top-level model, the binder
         /// adds a <see cref="ModelStateDictionary"/> error when the model is not bound.
         /// </param>
+        /// <remarks>The <paramref name="allowValidatingTopLevelNodes"/> parameter is currently ignored.</remarks>
         public ComplexTypeModelBinder(
             IDictionary<ModelMetadata, IModelBinder> propertyBinders,
             ILoggerFactory loggerFactory,
@@ -84,13 +81,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             _propertyBinders = propertyBinders;
             _logger = loggerFactory.CreateLogger<ComplexTypeModelBinder>();
-            AllowValidatingTopLevelNodes = allowValidatingTopLevelNodes;
         }
 
-        // Internal for testing.
-        internal bool AllowValidatingTopLevelNodes { get; }
-
-        /// <inheritdoc />
         public Task BindModelAsync(ModelBindingContext bindingContext)
         {
             if (bindingContext == null)
@@ -172,8 +164,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // 1. The top-level model has no public settable properties.
             // 2. All properties in a [BindRequired] model have [BindNever] or are otherwise excluded from binding.
             // 3. No data exists for any property.
-            if (AllowValidatingTopLevelNodes &&
-                !attemptedPropertyBinding &&
+            if (!attemptedPropertyBinding &&
                 bindingContext.IsTopLevelObject &&
                 modelMetadata.IsBindingRequired)
             {

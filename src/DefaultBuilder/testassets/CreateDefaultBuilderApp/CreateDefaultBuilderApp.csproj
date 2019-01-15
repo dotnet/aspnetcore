@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="$(RepositoryRoot)src\Servers\IIS\build\testsite.props" />
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <UserSecretsId>aspnetcore-CreateDefaultBuilder-20170424224131</UserSecretsId>
+    <InProcessTestSite>true</InProcessTestSite>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore" />
+  </ItemGroup>
+
+</Project>

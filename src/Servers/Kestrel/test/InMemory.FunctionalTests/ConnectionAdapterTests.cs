@@ -43,6 +43,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "Hello World!");
                 }
+                await server.StopAsync();
             }
 
             Assert.Equal(sendString.Length, adapter.BytesRead);
@@ -74,6 +75,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "Hello World!");
                 }
+                await server.StopAsync();
             }
         }
 
@@ -95,6 +97,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     connection.ShutdownSend();
                     await connection.WaitForConnectionClose();
                 }
+                await server.StopAsync();
             }
         }
 
@@ -116,6 +119,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     connection.ShutdownSend();
                     await connection.WaitForConnectionClose();
                 }
+                await server.StopAsync();
             }
         }
 
@@ -162,6 +166,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     await connection.WaitForConnectionClose();
                 }
+                await server.StopAsync();
             }
 
             Assert.Contains(TestApplicationErrorLogger.Messages, m => m.Message.Contains($"Uncaught exception from the {nameof(IConnectionAdapter.OnConnectionAsync)} method of an {nameof(IConnectionAdapter)}."));
@@ -197,6 +202,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "Hello World!");
                 }
+                await server.StopAsync();
             }
         }
 

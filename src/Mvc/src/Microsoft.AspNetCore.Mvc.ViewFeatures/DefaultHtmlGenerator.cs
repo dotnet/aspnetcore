@@ -95,17 +95,24 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             // Underscores are fine characters in id's.
             IdAttributeDotReplacement = optionsAccessor.Value.HtmlHelperOptions.IdAttributeDotReplacement;
-
-            AllowRenderingMaxLengthAttribute = optionsAccessor.Value.AllowRenderingMaxLengthAttribute;
         }
 
-        /// <summary> 
-        /// Gets or sets a value that indicates whether the maxlength attribute should be rendered for compatible HTML input elements, 
-        /// when they're bound to models marked with either 
-        /// <see cref="StringLengthAttribute"/> or <see cref="MaxLengthAttribute"/> attributes. 
+        /// <summary>
+        /// Gets or sets a value that indicates whether the <c>maxlength</c> attribute should be rendered for
+        /// compatible HTML input elements, when they're bound to models marked with either
+        /// <see cref="StringLengthAttribute"/> or <see cref="MaxLengthAttribute"/> attributes.
         /// </summary>
-        /// <remarks>If both attributes are specified, the one with the smaller value will be used for the rendered `maxlength` attribute.</remarks>
-        protected bool AllowRenderingMaxLengthAttribute { get; }
+        /// <value>The default value is <see langword="true"/>.</value>
+        /// <remarks>
+        /// <para>
+        /// If both attributes are specified, the one with the smaller value will be used for the rendered
+        /// <c>maxlength</c> attribute.
+        /// </para>
+        /// <para>
+        /// This property is currently ignored.
+        /// </para>
+        /// </remarks>
+        protected bool AllowRenderingMaxLengthAttribute { get; } = true;
 
         /// <inheritdoc />
         public string IdAttributeDotReplacement { get; }
@@ -737,11 +744,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             }
 
             AddPlaceholderAttribute(viewContext.ViewData, tagBuilder, modelExplorer, expression);
-            if (AllowRenderingMaxLengthAttribute)
-            {
-                AddMaxLengthAttribute(viewContext.ViewData, tagBuilder, modelExplorer, expression);
-            }
-
+            AddMaxLengthAttribute(viewContext.ViewData, tagBuilder, modelExplorer, expression);
             AddValidationAttributes(viewContext, tagBuilder, modelExplorer, expression);
 
             // If there are any errors for a named field, we add this CSS attribute.
@@ -1257,7 +1260,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 AddPlaceholderAttribute(viewContext.ViewData, tagBuilder, modelExplorer, expression);
             }
 
-            if (AllowRenderingMaxLengthAttribute && _maxLengthInputTypes.Contains(suppliedTypeString))
+            if (_maxLengthInputTypes.Contains(suppliedTypeString))
             {
                 AddMaxLengthAttribute(viewContext.ViewData, tagBuilder, modelExplorer, expression);
             }
@@ -1397,7 +1400,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         }
 
         /// <summary>
-        /// Adds a maxlength attribute to the <paramref name="tagBuilder" />.
+        /// Adds a <c>maxlength</c> attribute to the <paramref name="tagBuilder" />.
         /// </summary>
         /// <param name="viewData">A <see cref="ViewDataDictionary"/> instance for the current scope.</param>
         /// <param name="tagBuilder">A <see cref="TagBuilder"/> instance.</param>
@@ -1552,8 +1555,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             }
 
             // Second check the Eval() call returned a collection of SelectListItems.
-            var selectList = value as IEnumerable<SelectListItem>;
-            if (selectList == null)
+            if (!(value is IEnumerable<SelectListItem> selectList))
             {
                 throw new InvalidOperationException(Resources.FormatHtmlHelper_WrongSelectDataType(
                     expression,
@@ -1606,8 +1608,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             IEnumerable<SelectListItem> selectList,
             ICollection<string> currentValues)
         {
-            var itemsList = selectList as IList<SelectListItem>;
-            if (itemsList == null)
+            if (!(selectList is IList<SelectListItem> itemsList))
             {
                 itemsList = selectList.ToList();
             }

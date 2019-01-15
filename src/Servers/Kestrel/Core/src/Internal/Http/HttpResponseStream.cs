@@ -112,17 +112,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return _httpResponseControl.WriteAsync(new ReadOnlyMemory<byte>(buffer, offset, count), cancellationToken);
         }
 
-#if NETCOREAPP2_1
         public override ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
         {
             ValidateState(cancellationToken);
 
             return new ValueTask(_httpResponseControl.WriteAsync(source, cancellationToken));
         }
-#elif NETSTANDARD2_0
-#else
-#error TFMs need to be updated
-#endif
 
         public void StartAcceptingWrites()
         {

@@ -902,6 +902,57 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             Assert.False(fakeSendFile.Invoked);
         }
 
+        [Theory]
+        [MemberData(nameof(SupportedEncodings))]
+        public async Task Dispose_SyncWriteOrFlushNotCalled(string encoding)
+        {
+            var responseReceived = new ManualResetEvent(false);
+
+            var builder = new WebHostBuilder()
+                .ConfigureServices(services =>
+                {
+                    services.AddResponseCompression();
+                })
+                .Configure(app =>
+                {
+                    app.Use((context, next) =>
+                    {
+                        context.Response.Body = new NoSyncWrapperStream(context.Response.Body);
+                        return next();
+                    });
+                    app.UseResponseCompression();
+                    app.Run(async context =>
+                    {
+                        context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
+                        context.Response.ContentType = TextPlain;
+                        await context.Response.WriteAsync(new string('a', 10));
+                        await context.Response.Body.FlushAsync();
+                        Assert.True(responseReceived.WaitOne(TimeSpan.FromSeconds(3)));
+                        await context.Response.WriteAsync(new string('a', 90));
+                    });
+                });
+
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "");
+            request.Headers.AcceptEncoding.ParseAdd(encoding);
+
+            var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+
+            Assert.False(response.Content.Headers.TryGetValues(HeaderNames.ContentMD5, out _));
+            Assert.Single(response.Content.Headers.ContentEncoding, encoding);
+
+            var body = await response.Content.ReadAsStreamAsync();
+            var read = await body.ReadAsync(new byte[100], 0, 100);
+            Assert.True(read > 0);
+
+            responseReceived.Set();
+
+            read = await body.ReadAsync(new byte[100], 0, 100);
+            Assert.True(read > 0);
+        }
+
         private async Task<(HttpResponseMessage, List<WriteContext>)> InvokeMiddleware(
             int uncompressedBodyLength,
             string[] requestAcceptEncodings,
@@ -1038,6 +1089,100 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             public string EncodingName { get; }
 
             public int ExpectedBodyLength { get; }
+        }
+
+        private class NoSyncWrapperStream : Stream
+        {
+            private Stream _body;
+
+            public NoSyncWrapperStream(Stream body)
+            {
+                _body = body;
+            }
+
+            public override bool CanRead => _body.CanRead;
+
+            public override bool CanSeek => _body.CanSeek;
+
+            public override bool CanWrite => _body.CanWrite;
+
+            public override long Length => _body.Length;
+
+            public override long Position
+            {
+                get => throw new InvalidOperationException("This shouldn't be called");
+                set => throw new InvalidOperationException("This shouldn't be called");
+            }
+
+            public override void Flush()
+            {
+                throw new InvalidOperationException("This shouldn't be called");
+            }
+
+            public override int Read(byte[] buffer, int offset, int count)
+            {
+                throw new InvalidOperationException("This shouldn't be called");
+            }
+
+            public override long Seek(long offset, SeekOrigin origin)
+            {
+                throw new InvalidOperationException("This shouldn't be called");
+            }
+
+            public override void SetLength(long value)
+            {
+                throw new InvalidOperationException("This shouldn't be called");
+            }
+
+            public override void Write(byte[] buffer, int offset, int count)
+            {
+                throw new InvalidOperationException("This shouldn't be called");
+            }
+
+            public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+            {
+                return _body.WriteAsync(buffer, offset, count, cancellationToken);
+            }
+
+            public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
+            {
+                return _body.WriteAsync(buffer, cancellationToken);
+            }
+
+            public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
+            {
+                return _body.BeginWrite(buffer, offset, count, callback, state);
+            }
+
+            public override void EndWrite(IAsyncResult asyncResult)
+            {
+                _body.EndWrite(asyncResult);
+            }
+
+            public override void Close()
+            {
+                throw new InvalidOperationException("This shouldn't be called");
+            }
+
+            protected override void Dispose(bool disposing)
+            {
+                throw new InvalidOperationException("This shouldn't be called");
+            }
+
+            public override ValueTask DisposeAsync()
+            {
+                return _body.DisposeAsync();
+            }
+
+            public override void CopyTo(Stream destination, int bufferSize)
+            {
+                throw new InvalidOperationException("This shouldn't be called");
+            }
+
+            public override Task FlushAsync(CancellationToken cancellationToken)
+            {
+                return _body.FlushAsync(cancellationToken);
+            }
         }
     }
 }

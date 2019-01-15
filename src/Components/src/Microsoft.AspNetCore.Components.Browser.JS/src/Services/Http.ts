@@ -1,9 +1,8 @@
 import { platform } from '../Environment';
 import { MethodHandle, System_String, System_Array } from '../Platform/Platform';
-const httpClientAssembly = 'Microsoft.AspNetCore.Components.Browser';
+const httpClientAssembly = 'Microsoft.AspNetCore.Blazor';
 const httpClientNamespace = `${httpClientAssembly}.Http`;
-const httpClientTypeName = 'BrowserHttpMessageHandler';
-const httpClientFullTypeName = `${httpClientNamespace}.${httpClientTypeName}`;
+const httpClientTypeName = 'WebAssemblyHttpMessageHandler';
 let receiveResponseMethod: MethodHandle;
 let allocateArrayMethod: MethodHandle;
 
@@ -97,7 +96,7 @@ function dispatchResponse(id: number, responseDescriptor: System_String | null, 
   ]);
 }
 
-// Keep these in sync with the .NET equivalent in BrowserHttpMessageHandler.cs
+// Keep these in sync with the .NET equivalent in WebAssemblyHttpMessageHandler.cs
 interface FetchOptions {
   requestUri: string;
   requestInit: RequestInit;

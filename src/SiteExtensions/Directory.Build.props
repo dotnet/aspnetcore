@@ -1,13 +1,7 @@
-﻿<Project>
-
-  <!-- Not including parent is intentional, this build should be isolated -->
-  <Import Project="build\sources.props" />
-  <Import Project="build\dependencies.props" />
-  <Import Project="version.props" />
-
+<Project>
   <PropertyGroup>
-    <EnableApiCheck>false</EnableApiCheck>
-    <GenerateSourceLinkFile>false</GenerateSourceLinkFile>
+    <OutputInRepoRoot>true</OutputInRepoRoot>
   </PropertyGroup>
 
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
 </Project>

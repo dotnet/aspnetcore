@@ -286,6 +286,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             bool isBindingRequired)
         {
             // Arrange
+            var expectedErrorCount = isBindingRequired ? 1 : 0;
             var mockValueProvider = new Mock<IValueProvider>();
             mockValueProvider
                 .Setup(o => o.ContainsPrefix(It.IsAny<string>()))
@@ -305,7 +306,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var bindingContext = new DefaultModelBindingContext
             {
                 IsTopLevelObject = true,
-                ModelMetadata = GetMetadataForType(typeof(Person)),
+                ModelMetadata = metadata,
                 ModelName = string.Empty,
                 ValueProvider = mockValueProvider.Object,
                 ModelState = new ModelStateDictionary(),
@@ -330,7 +331,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             // Assert
             Assert.True(bindingContext.Result.IsModelSet);
-            Assert.Equal(0, bindingContext.ModelState.ErrorCount);
+            Assert.Equal(expectedErrorCount, bindingContext.ModelState.ErrorCount);
 
             var returnedPerson = Assert.IsType<Person>(bindingContext.Result.Model);
             Assert.Same(model, returnedPerson);
@@ -1115,8 +1116,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var type = model.GetType();
             var bindingContext = CreateContext(GetMetadataForType(type), model);
             var modelState = bindingContext.ModelState;
-            var metadata = GetMetadataForType(type);
-
             var propertyMetadata = bindingContext.ModelMetadata.Properties[propertyName];
             var result = ModelBindingResult.Success(new Simple { Name = "Hanna" });
 
@@ -1160,8 +1159,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // Arrange
             var model = new Person();
             var bindingContext = CreateContext(GetMetadataForType(model.GetType()), model);
-
-            var metadata = GetMetadataForType(typeof(Person));
             var propertyMetadata = bindingContext.ModelMetadata.Properties[nameof(model.DateOfBirth)];
 
             var result = ModelBindingResult.Success(new DateTime(2001, 1, 1));
@@ -1186,8 +1183,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             };
 
             var bindingContext = CreateContext(GetMetadataForType(model.GetType()), model);
-
-            var metadata = GetMetadataForType(typeof(Person));
             var propertyMetadata = bindingContext.ModelMetadata.Properties[nameof(model.DateOfDeath)];
 
             var result = ModelBindingResult.Success(new DateTime(1800, 1, 1));
@@ -1210,8 +1205,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var model = new ModelWhosePropertySetterThrows();
             var bindingContext = CreateContext(GetMetadataForType(model.GetType()), model);
             bindingContext.ModelName = "foo";
-
-            var metadata = GetMetadataForType(typeof(ModelWhosePropertySetterThrows));
             var propertyMetadata = bindingContext.ModelMetadata.Properties[nameof(model.NameNoAttribute)];
 
             var result = ModelBindingResult.Success(model: null);

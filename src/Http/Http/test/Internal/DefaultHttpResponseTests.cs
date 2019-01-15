@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
+using System.IO.Pipelines;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Primitives;
 using Xunit;
@@ -57,6 +59,44 @@ namespace Microsoft.AspNetCore.Http.Internal
 
             // Act and Assert
             Assert.Null(response.ContentType);
+        }
+
+        [Fact]
+        public void BodyPipe_CanGet()
+        {
+            var response = new DefaultHttpContext();
+            var bodyPipe = response.Response.BodyPipe;
+
+            Assert.NotNull(bodyPipe);
+        }
+
+        [Fact]
+        public void BodyPipe_CanSet()
+        {
+            var response = new DefaultHttpContext();
+            var pipeWriter = new Pipe().Writer;
+            response.Response.BodyPipe = pipeWriter;
+
+            Assert.Equal(pipeWriter, response.Response.BodyPipe);
+        }
+
+        [Fact]
+        public void BodyPipe_WrapsStream()
+        {
+            var context = new DefaultHttpContext();
+            var expectedStream = new MemoryStream();
+            context.Response.Body = expectedStream;
+
+            var bodyPipe = context.Response.BodyPipe as StreamPipeWriter;
+
+            Assert.Equal(expectedStream, bodyPipe.InnerStream);
+        }
+
+        [Fact]
+        public void BodyPipe_ThrowsWhenSettingNull()
+        {
+            var context = new DefaultHttpContext();
+            Assert.Throws<ArgumentNullException>(() => context.Response.BodyPipe = null);
         }
 
         private static HttpResponse CreateResponse(IHeaderDictionary headers)

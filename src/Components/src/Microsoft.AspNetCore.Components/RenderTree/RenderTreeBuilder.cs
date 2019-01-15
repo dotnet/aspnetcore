@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
     // IMPORTANT
     //
     // Many of these names are used in code generation. Keep these in sync with the code generation code
-    // See: src/Microsoft.AspNetCore.Components.Razor.Extensions/BlazorApi.cs
+    // See: aspnet/AspNetCore-Tooling
 
     /// <summary>
     /// Provides methods for building a collection of <see cref="RenderTreeFrame"/> entries.
@@ -264,7 +264,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// This method is provided for infrastructure purposes, and is used to be
         /// <see cref="UIEventArgsRenderTreeBuilderExtensions"/> to provide support for delegates of specific
         /// types. For a good programming experience when using a custom delegate type, define an
-        /// extension method similar to 
+        /// extension method similar to
         /// <see cref="UIEventArgsRenderTreeBuilderExtensions.AddAttribute(RenderTreeBuilder, int, string, Action{UIChangeEventArgs})"/>
         /// that calls this method.
         /// </remarks>
@@ -280,7 +280,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <summary>
         /// Appends a frame representing a string-valued attribute.
         /// The attribute is associated with the most recently added element. If the value is <c>null</c>, or
-        /// the <see cref="System.Boolean" /> value <c>false</c> and the current element is not a component, the 
+        /// the <see cref="System.Boolean" /> value <c>false</c> and the current element is not a component, the
         /// frame will be omitted.
         /// </summary>
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>

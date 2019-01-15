@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using System;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Components
 {
@@ -41,5 +42,21 @@ namespace Microsoft.AspNetCore.Components
 
             _renderer.AddToRenderQueue(_componentId, renderFragment);
         }
+
+        /// <summary>
+        /// Executes the supplied work item on the renderer's
+        /// synchronization context.
+        /// </summary>
+        /// <param name="workItem">The work item to execute.</param>
+        public Task Invoke(Action workItem)
+            => _renderer.Invoke(workItem);
+
+        /// <summary>
+        /// Executes the supplied work item on the renderer's
+        /// synchronization context.
+        /// </summary>
+        /// <param name="workItem">The work item to execute.</param>
+        public Task InvokeAsync(Func<Task> workItem)
+            => _renderer.InvokeAsync(workItem);
     }
 }

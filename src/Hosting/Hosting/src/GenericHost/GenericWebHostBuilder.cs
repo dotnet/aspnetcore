@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -89,15 +89,9 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 services.TryAddSingleton<DiagnosticListener>(listener);
                 services.TryAddSingleton<DiagnosticSource>(listener);
 
-                services.TryAddSingleton<IHttpContextFactory, HttpContextFactory>();
+                services.TryAddSingleton<IHttpContextFactory, DefaultHttpContextFactory>();
                 services.TryAddScoped<IMiddlewareFactory, MiddlewareFactory>();
                 services.TryAddSingleton<IApplicationBuilderFactory, ApplicationBuilderFactory>();
-
-                // Conjure up a RequestServices
-                services.TryAddTransient<IStartupFilter, AutoRequestServicesStartupFilter>();
-
-                // Ensure object pooling is available everywhere.
-                services.TryAddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
 
                 // Support UseStartup(assemblyName)
                 if (!string.IsNullOrEmpty(webHostOptions.StartupAssembly))
@@ -196,16 +190,12 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
         public IWebHostBuilder UseDefaultServiceProvider(Action<WebHostBuilderContext, ServiceProviderOptions> configure)
         {
-            // REVIEW: This is a hack to change the builder with the HostBuilderContext in scope,
-            // we're not actually using configuration here
-            _builder.ConfigureAppConfiguration((context, _) =>
+            _builder.UseServiceProviderFactory(context =>
             {
                 var webHostBuilderContext = GetWebHostBuilderContext(context);
                 var options = new ServiceProviderOptions();
                 configure(webHostBuilderContext, options);
-
-                // This is only fine because this runs last
-                _builder.UseServiceProviderFactory(new DefaultServiceProviderFactory(options));
+                return new DefaultServiceProviderFactory(options);
             });
 
             return this;
@@ -213,9 +203,14 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
         public IWebHostBuilder UseStartup(Type startupType)
         {
+            // UseStartup can be called multiple times. Only run the last one.
+            _builder.Properties["UseStartup.StartupType"] = startupType;
             _builder.ConfigureServices((context, services) =>
             {
-                UseStartup(startupType, context, services);
+                if (_builder.Properties.TryGetValue("UseStartup.StartupType", out var cachedType) && (Type)cachedType == startupType)
+                {
+                    UseStartup(startupType, context, services);
+                }
             });
 
             return this;

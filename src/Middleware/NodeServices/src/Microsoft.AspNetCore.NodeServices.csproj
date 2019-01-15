@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Invoke Node.js modules at runtime in ASP.NET Core applications.</Description>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <IsProductPackage>true</IsProductPackage>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="node_modules\**\*" />
+    <EmbeddedResource Include="Content\**\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
+    <Reference Include="Microsoft.Extensions.Logging.Console" />
+    <Reference Include="Newtonsoft.Json" />
+  </ItemGroup>
+
+  <Target Name="PrepublishScript" BeforeTargets="PrepareForPublish" Condition=" '$(IsCrossTargetingBuild)' != 'true' ">
+    <Exec Command="npm install" />
+    <Exec Command="node node_modules/webpack/bin/webpack.js" />
+  </Target>
+
+</Project>

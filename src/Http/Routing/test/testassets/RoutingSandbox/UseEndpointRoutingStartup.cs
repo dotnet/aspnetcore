@@ -35,9 +35,6 @@ namespace RoutingSandbox
             {
                 builder.MapHello("/helloworld", "World");
 
-                builder.MapHello("/helloworld-secret", "Secret World")
-                    .RequireAuthorization("swordfish");
-
                 builder.MapGet(
                     "/",
                     (httpContext) =>
@@ -94,10 +91,6 @@ namespace RoutingSandbox
             });
 
             app.UseStaticFiles();
-			
-			app.UseAuthorization();
-
-            app.UseEndpoint();
         }
     }
 }

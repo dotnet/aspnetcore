@@ -16,6 +16,12 @@
     <DotNetRuntimeArchiveFileName>dotnet-runtime-$(MicrosoftNETCoreAppPackageVersion)-$(SharedFxRid)$(ArchiveExtension)</DotNetRuntimeArchiveFileName>
     <DotNetRuntimeDownloadUrl>$(DotNetAssetRootUrl)Runtime/$(MicrosoftNETCoreAppPackageVersion)/$(DotNetRuntimeArchiveFileName)</DotNetRuntimeDownloadUrl>
     <DotNetRuntimeArchive>$(BaseIntermediateOutputPath)$(DotNetRuntimeArchiveFileName)</DotNetRuntimeArchive>
+    <!-- This file is used by the dotnet/core-sdk to determine if our shared framework aligns with the version they pull. -->
+    <BaseRuntimeVersionFileName>aspnetcore_base_runtime.version</BaseRuntimeVersionFileName>
+    <BaseRuntimeVersionFileOutputPath>$(OutputPath)$(BaseRuntimeVersionFileName)</BaseRuntimeVersionFileOutputPath>
+    <!-- This file can be used in READMEs or other webpages -->
+    <SvgBadgeFileName>aspnetcore-runtime-$(SharedFxRid)-version-badge.svg</SvgBadgeFileName>
+    <SvgBadgeOutputPath>$(OutputPath)$(SvgBadgeFileName)</SvgBadgeOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -29,9 +35,43 @@
 
   <Target Name="GetTargetPath" Returns="$(TargetPath)" />
 
-  <Target Name="Build" DependsOnTargets="ResolveProjectReferences;GetTargetPath">
+  <Target Name="PrepareForBuild">
     <MakeDir Directories="$(OutputPath);$(IntermediateOutputPath)" />
+  </Target>
 
+  <Target Name="GenerateMetadataFiles" DependsOnTargets="PrepareForBuild">
+    <!--
+      Used by the dotnet/core-sdk build to determine which version of Microsoft.NETCore.App is used.
+    -->
+    <WriteLinesToFile File="$(BaseRuntimeVersionFileOutputPath)" Lines="$(MicrosoftNETCoreAppPackageVersion)" Overwrite="true" />
+
+    <PropertyGroup>
+      <SvgBadgeLabel>version</SvgBadgeLabel>
+      <SvgBadgeValue>$(PackageVersion)</SvgBadgeValue>
+      <SvgBadgeColor>#007EC6</SvgBadgeColor>
+      <SvgBadgeWidth>$([MSBuild]::Add(56, $([MSBuild]::Multiply($(PackageVersion.Length), 6.67))))</SvgBadgeWidth>
+      <SvgBadgeContent>
+<![CDATA[
+<svg xmlns="http://www.w3.org/2000/svg" width="$(SvgBadgeWidth)" height="20">
+    <g>
+        <rect width="$(SvgBadgeWidth)" height="20" rx="0" fill="#007EC6" />
+        <rect width="52" height="20" rx="0" fill="#555"  />
+    </g>
+    <g fill="#fff" text-anchor="left" font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="11">
+        <text x="6" y="15" fill="#010101" fill-opacity=".3">$(SvgBadgeLabel)</text>
+        <text x="6" y="14">$(SvgBadgeLabel)</text>
+        <text x="60" y="15" fill="#010101" fill-opacity=".3">$(SvgBadgeValue)</text>
+        <text x="60" y="14">$(SvgBadgeValue)</text>
+    </g>
+</svg>
+]]>
+      </SvgBadgeContent>
+    </PropertyGroup>
+
+    <WriteLinesToFile File="$(SvgBadgeOutputPath)" Lines="$(SvgBadgeContent)" Overwrite="true" />
+  </Target>
+
+  <Target Name="Build" DependsOnTargets="PrepareForBuild;ResolveProjectReferences;GetTargetPath;GenerateMetadataFiles">
     <DownloadFile Condition=" ! Exists('$(DotNetRuntimeArchive)')"
       SourceUrl="$(DotNetRuntimeDownloadUrl)$(DotNetAssetRootAccessTokenSuffix)"
       DestinationFolder="$(BaseIntermediateOutputPath)"

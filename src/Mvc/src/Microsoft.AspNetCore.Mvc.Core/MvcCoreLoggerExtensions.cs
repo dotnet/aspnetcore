@@ -652,7 +652,7 @@ namespace Microsoft.AspNetCore.Mvc
 
             _transformingClientError = LoggerMessage.Define<Type, int?, Type>(
                 LogLevel.Trace,
-                new EventId(49, nameof(Infrastructure.ClientErrorResultFilter)),
+                new EventId(49, "ClientErrorResultFilter"),
                 "Replacing {InitialActionResultType} with status code {StatusCode} with {ReplacedActionResultType}.");
         }
 

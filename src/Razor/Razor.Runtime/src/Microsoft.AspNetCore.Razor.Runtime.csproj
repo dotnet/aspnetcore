@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Runtime infrastructure for rendering Razor pages and tag helpers.</Description>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <PackageTags>$(PackageTags);taghelper;taghelpers</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)CopyOnWriteDictionary\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Razor" />
+    <Reference Include="Microsoft.AspNetCore.Html.Abstractions" />
+  </ItemGroup>
+
+</Project>

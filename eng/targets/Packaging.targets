@@ -27,4 +27,16 @@
       </ArtifactInfo>
     </ItemGroup>
   </Target>
+
+  <!-- This target is used to get the package versions of projects -->
+  <Target Name="_GetPackageVersionInfo" DependsOnTargets="$(GetPackageVersionDependsOn)"
+          Returns="@(_ProjectPathWithVersion)">
+    <ItemGroup>
+      <_ProjectPathWithVersion Include="$(MSBuildProjectFullPath)">
+        <PackageId>$(MSBuildProjectName)</PackageId>
+        <PackageVersion Condition="'$(PackageVersion)' != ''">$(PackageVersion)</PackageVersion>
+      </_ProjectPathWithVersion>
+    </ItemGroup>
+  </Target>
+
 </Project>

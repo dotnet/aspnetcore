@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if NETCOREAPP2_2
-
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
@@ -58,13 +56,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
                 .Setup(m => m.Http2ConnectionClosing(It.IsAny<string>()))
                 .Callback(() => requestStopping.SetResult(null));
 
+            var testContext = new TestServiceContext(LoggerFactory, mockKestrelTrace.Object);
+
+            testContext.InitializeHeartbeat();
+
             using (var server = new TestServer(async context =>
             {
                 requestStarted.SetResult(null);
                 await requestUnblocked.Task.DefaultTimeout();
                 await context.Response.WriteAsync("hello world " + context.Request.Protocol);
             },
-            new TestServiceContext(LoggerFactory, mockKestrelTrace.Object),
+            testContext,
             kestrelOptions =>
             {
                 kestrelOptions.Listen(IPAddress.Loopback, 0, listenOptions =>
@@ -146,7 +148,3 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
         }
     }
 }
-#elif NET461 // No ALPN support
-#else
-#error TFMs need updating
-#endif

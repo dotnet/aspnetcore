@@ -1,4 +1,4 @@
-<Project Sdk="Internal.AspNetCore.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <AssemblyName>dotnet-getdocument</AssemblyName>
     <Description>GetDocument Command-line Tool outside man</Description>
@@ -11,6 +11,7 @@
     <VerifyVersion>false</VerifyVersion>
     <VersionPrefix>$(ExperimentalVersionPrefix)</VersionPrefix>
     <VersionSuffix>$(ExperimentalVersionSuffix)</VersionSuffix>
+    <IsImplementationProject>false</IsImplementationProject>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,6 +25,6 @@
 
     <EmbeddedResource Include="ServiceProjectReferenceMetadata.targets" />
 
-    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
+    <Reference Include="Newtonsoft.Json" />
   </ItemGroup>
 </Project>

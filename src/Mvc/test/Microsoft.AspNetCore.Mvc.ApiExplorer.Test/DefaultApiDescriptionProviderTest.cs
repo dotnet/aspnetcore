@@ -1181,25 +1181,6 @@ namespace Microsoft.AspNetCore.Mvc.Description
         }
 
         [Fact]
-        public void GetApiDescription_ParameterDescription_IsRequiredNotSet_IfNotValidatingTopLevelNodes()
-        {
-            // Arrange
-            var action = CreateActionDescriptor(nameof(RequiredParameter));
-
-            // Act
-            var descriptions = GetApiDescriptions(action, allowValidatingTopLevelNodes: false);
-
-            // Assert
-            var description = Assert.Single(descriptions);
-            var parameter = Assert.Single(description.ParameterDescriptions);
-            Assert.Equal("name", parameter.Name);
-            Assert.Same(BindingSource.ModelBinding, parameter.Source);
-            Assert.Equal(typeof(string), parameter.Type);
-            Assert.False(parameter.ModelMetadata.IsRequired);
-            Assert.False(parameter.ModelMetadata.IsBindingRequired);
-        }
-
-        [Fact]
         public void GetApiDescription_ParameterDescription_SourceFromRouteData()
         {
             // Arrange
@@ -1816,15 +1797,11 @@ namespace Microsoft.AspNetCore.Mvc.Description
             ActionDescriptor action,
             List<MockInputFormatter> inputFormatters = null,
             List<MockOutputFormatter> outputFormatters = null,
-            bool allowValidatingTopLevelNodes = true,
             RouteOptions routeOptions = null)
         {
             var context = new ApiDescriptionProviderContext(new ActionDescriptor[] { action });
 
-            var options = new MvcOptions
-            {
-                AllowValidatingTopLevelNodes = allowValidatingTopLevelNodes,
-            };
+            var options = new MvcOptions();
             foreach (var formatter in inputFormatters ?? CreateInputFormatters())
             {
                 options.InputFormatters.Add(formatter);

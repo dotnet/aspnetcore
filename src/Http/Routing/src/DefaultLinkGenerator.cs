@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -19,7 +19,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Routing
 {
-    internal sealed class DefaultLinkGenerator : LinkGenerator
+    internal sealed class DefaultLinkGenerator : LinkGenerator, IDisposable
     {
         private readonly ParameterPolicyFactory _parameterPolicyFactory;
         private readonly ObjectPool<UriBuildingContext> _uriBuildingContextPool;
@@ -90,6 +90,7 @@ namespace Microsoft.AspNetCore.Routing
             }
 
             return GetPathByEndpoints(
+                httpContext,
                 endpoints,
                 values,
                 ambientValues,
@@ -112,6 +113,7 @@ namespace Microsoft.AspNetCore.Routing
             }
 
             return GetPathByEndpoints(
+                httpContext: null,
                 endpoints,
                 values,
                 ambientValues: null,
@@ -206,7 +208,8 @@ namespace Microsoft.AspNetCore.Routing
             return endpoints;
         }
 
-        public string GetPathByEndpoints(
+        private string GetPathByEndpoints(
+            HttpContext httpContext,
             List<RouteEndpoint> endpoints,
             RouteValueDictionary values,
             RouteValueDictionary ambientValues,
@@ -218,7 +221,7 @@ namespace Microsoft.AspNetCore.Routing
             {
                 var endpoint = endpoints[i];
                 if (TryProcessTemplate(
-                    httpContext: null,
+                    httpContext: httpContext,
                     endpoint: endpoint,
                     values: values,
                     ambientValues: ambientValues,
@@ -359,6 +362,11 @@ namespace Microsoft.AspNetCore.Routing
         public static RouteValueDictionary GetAmbientValues(HttpContext httpContext)
         {
             return httpContext?.Features.Get<IRouteValuesFeature>()?.RouteValues;
+        }
+
+        public void Dispose()
+        {
+            _cache.Dispose();
         }
 
         private static class Log

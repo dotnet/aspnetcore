@@ -1,0 +1,46 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net461</TargetFramework>
+    <PackageType>AzureSiteExtension</PackageType>
+    <ContentTargetFolders>content</ContentTargetFolders>
+
+    <TrimmedVersion>$(VersionPrefix.Substring(0, $(VersionPrefix.LastIndexOf('.'))))</TrimmedVersion>
+    <Title>ASP.NET Core $(TrimmedVersion) ($(SharedFxArchitecture)) Runtime </Title>
+    <Description>This site extension installs Microsoft.AspNetCore.All, Microsoft.AspNetCore.App and Microsoft.NetCore.App shared runtimes.</Description>
+    <PackageTags>aspnetcore;AzureSiteExtension</PackageTags>
+    <PackageId>AspNetCoreRuntime.$(TrimmedVersion).$(SharedFxArchitecture)</PackageId>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <DotNetUnpackFolder>$(RepositoryRoot)obj\ar\$(SharedFxRid)\</DotNetUnpackFolder>
+    <IsProductPackage>true</IsProductPackage>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="applicationHost.xdt" />
+    <Content Include="scmApplicationHost.xdt" />
+    <Content Include="install.cmd" />
+    <Content Include="$(RepositoryRoot)bin\$(Configuration)\Microsoft.Web.Xdt.Extensions\net461\Microsoft.Web.Xdt.Extensions.dll" PackagePath="content" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Web.Xdt.Extensions\src\Microsoft.Web.Xdt.Extensions.csproj" PrivateAssets="All" ReferenceOutputAssembly="False"/>
+    <!-- Make sure redist folder is built and ready -->
+    <ProjectReference Include="..\..\Installers\Archive\Archive.Redist.zipproj" PrivateAssets="All" ReferenceOutputAssembly="False" />
+
+    <NativeProjectReference Include="$(RepositoryRoot)src\Servers\IIS\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj" Platform="$(SharedFxArchitecture)" />
+    <NativeProjectReference Include="$(RepositoryRoot)src\Servers\IIS\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" HandlerPath="2.0.0" Platform="$(SharedFxArchitecture)" />
+
+  </ItemGroup>
+
+  <Target Name="ResolveReferenceItemsForPackage" DependsOnTargets="ResolveReferences" BeforeTargets="_GetPackageFiles">
+    <ItemGroup>
+      <Content Include="$(DotNetUnpackFolder)\**\*.*" Condition="$(DotNetAssetRootUrl) != ''" PackagePath="content\%(RecursiveDir)" />
+      <Content Include="%(NativeContent.Identity)" PackagePath="content\ancm\%(NativeContent.HandlerPath)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="CopyFilesToOutputDirectory" />
+  <Target Name="CoreCompile" />
+  <Target Name="CreateManifestResourceNames" />
+
+</Project>

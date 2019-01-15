@@ -22,11 +22,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         {
             get
             {
-                var data = new TheoryData<HeaderModelBinder>();
+                var data = new TheoryData<HeaderModelBinder>
+                {
 #pragma warning disable CS0618
-                data.Add(new HeaderModelBinder());
+                    new HeaderModelBinder(),
 #pragma warning restore CS0618
-                data.Add(new HeaderModelBinder(NullLoggerFactory.Instance));
+                    new HeaderModelBinder(NullLoggerFactory.Instance),
+                };
+
                 return data;
             }
         }
@@ -175,11 +178,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         }
 
         [Theory]
-        [InlineData(typeof(CarType?), null)]
-        [InlineData(typeof(int?), null)]
-        public async Task HeaderBinder_DoesNotSetModel_ForHeaderNotPresentOnRequest(
-            Type modelType,
-            object expectedModel)
+        [InlineData(typeof(CarType?))]
+        [InlineData(typeof(int?))]
+        public async Task HeaderBinder_DoesNotSetModel_ForHeaderNotPresentOnRequest(Type modelType)
         {
             // Arrange
             var bindingContext = CreateContext(modelType);
@@ -194,11 +195,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         }
 
         [Theory]
-        [InlineData(typeof(string[]), null)]
-        [InlineData(typeof(IEnumerable<string>), null)]
-        public async Task HeaderBinder_DoesNotCreateEmptyCollection_ForNonTopLevelObjects(
-            Type modelType,
-            object expectedModel)
+        [InlineData(typeof(string[]))]
+        [InlineData(typeof(IEnumerable<string>))]
+        public async Task HeaderBinder_DoesNotCreateEmptyCollection_ForNonTopLevelObjects(Type modelType)
         {
             // Arrange
             var bindingContext = CreateContext(modelType);
@@ -344,30 +343,21 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             Assert.Equal($"The value '{headerValues[1]}' is not valid.", entry.Errors[1].ErrorMessage);
         }
 
-        private static DefaultModelBindingContext CreateContext(
-            Type modelType,
-            bool allowBindingHeaderValuesToNonStringModelTypes = true)
+        private static DefaultModelBindingContext CreateContext(Type modelType)
         {
-            return CreateContext(
-                metadata: GetMetadataForType(modelType),
-                valueProvider: null,
-                allowBindingHeaderValuesToNonStringModelTypes: allowBindingHeaderValuesToNonStringModelTypes);
+            return CreateContext(metadata: GetMetadataForType(modelType), valueProvider: null);
         }
 
         private static DefaultModelBindingContext CreateContext(
             ModelMetadata metadata,
-            IValueProvider valueProvider = null,
-            bool allowBindingHeaderValuesToNonStringModelTypes = true)
+            IValueProvider valueProvider = null)
         {
             if (valueProvider == null)
             {
                 valueProvider = Mock.Of<IValueProvider>();
             }
 
-            var options = new MvcOptions()
-            {
-                AllowBindingHeaderValuesToNonStringModelTypes = allowBindingHeaderValuesToNonStringModelTypes
-            };
+            var options = new MvcOptions();
             var setup = new MvcCoreMvcOptionsSetup(new TestHttpRequestStreamReaderFactory());
             setup.Configure(options);
 

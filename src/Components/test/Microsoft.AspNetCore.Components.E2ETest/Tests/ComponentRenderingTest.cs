@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -550,6 +550,39 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             var outputElement = appElement.FindElement(By.Id("concurrent-render-output"));
             WaitAssert.Equal(expectedOutput, () => outputElement.Text);
+        }
+
+        [Fact]
+        public void CanDispatchRenderToSyncContext()
+        {
+            var appElement = MountTestComponent<DispatchingComponent>();
+            var result = appElement.FindElement(By.Id("result"));
+
+            appElement.FindElement(By.Id("run-with-dispatch")).Click();
+
+            WaitAssert.Equal("Success (completed synchronously)", () => result.Text);
+        }
+
+        [Fact]
+        public void CanDoubleDispatchRenderToSyncContext()
+        {
+            var appElement = MountTestComponent<DispatchingComponent>();
+            var result = appElement.FindElement(By.Id("result"));
+
+            appElement.FindElement(By.Id("run-with-double-dispatch")).Click();
+
+            WaitAssert.Equal("Success (completed synchronously)", () => result.Text);
+        }
+
+        [Fact]
+        public void CanDispatchAsyncWorkToSyncContext()
+        {
+            var appElement = MountTestComponent<DispatchingComponent>();
+            var result = appElement.FindElement(By.Id("result"));
+
+            appElement.FindElement(By.Id("run-async-with-dispatch")).Click();
+
+            WaitAssert.Equal("First Second Third Fourth Fifth", () => result.Text);
         }
 
         static IAlert SwitchToAlert(IWebDriver driver)

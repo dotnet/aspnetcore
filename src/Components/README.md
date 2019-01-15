@@ -10,7 +10,7 @@ Features of the components programming model include:
 - [Routing](https://blazor.net/docs/routing.html)
 - [Layouts](https://blazor.net/docs/layouts.html)
 - Forms and validation
-- Dependency injection
+- [Dependency injection](https://blazor.net/docs/dependency-injection.html)
 - [JavaScript interop](https://blazor.net/docs/javascript-interop.html)
 - Live reloading in the browser during development
 - Server-side rendering
@@ -144,8 +144,8 @@ You can browse https://dotnet.myget.org/gallery/blazor-dev to find the current v
 
 ```xml
 <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.Browser" Version="0.3.0-preview1-10220" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.Build" Version="0.3.0-preview1-10220" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.AspNetCore.Blazor" Version="0.3.0-preview1-10220" />
+    <PackageReference Include="Microsoft.AspNetCore.Blazor.Build" Version="0.3.0-preview1-10220" PrivateAssets="all" />
     <DotNetCliToolReference Include="Microsoft.AspNetCore.Blazor.Cli" Version="0.3.0-preview1-10220" />
 </ItemGroup>
 ```

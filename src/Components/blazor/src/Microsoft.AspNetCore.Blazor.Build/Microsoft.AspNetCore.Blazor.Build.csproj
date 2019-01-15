@@ -1,0 +1,78 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <Description>Build mechanism for ASP.NET Core Blazor applications.</Description>
+    <OutputType>Exe</OutputType>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <IsProductPackage>true</IsProductPackage>
+  </PropertyGroup>
+
+  <!-- Pack settings -->
+  <PropertyGroup>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <NuspecFile>Microsoft.AspNetCore.Blazor.Build.nuspec</NuspecFile>
+    <IntermediatePackDir>obj\publish\</IntermediatePackDir>
+    <PublishDir>$(IntermediatePackDir)$(TargetFramework)/</PublishDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Assemblies built by this project -->
+    <SignedPackageFile Include="$(TargetFileName)" Certificate="$(AssemblySigningCertName)" />
+    <SignedPackageFile Include="Microsoft.AspNetCore.Components.Browser.JS.dll" Certificate="$(AssemblySigningCertName)" />
+    <SignedPackageFile Include="Microsoft.AspNetCore.Blazor.Build.exe" Certificate="$(AssemblySigningCertName)" />
+
+    <!-- 3rd party assemblies we redistribute. -->
+    <SignedPackageFile Include="AngleSharp.dll" Certificate="$(AssemblySigning3rdPartyCertName)" />
+    <SignedPackageFile Include="Mono.Cecil.dll" Certificate="$(AssemblySigning3rdPartyCertName)" />
+    <SignedPackageFile Include="Mono.Cecil.Mdb.dll" Certificate="$(AssemblySigning3rdPartyCertName)" />
+    <SignedPackageFile Include="Mono.Cecil.Pdb.dll" Certificate="$(AssemblySigning3rdPartyCertName)" />
+    <SignedPackageFile Include="Mono.Cecil.Rocks.dll" Certificate="$(AssemblySigning3rdPartyCertName)" />
+
+    <!-- Assemblies which should be signed by other build. -->
+    <ExcludePackageFileFromSigning Include="Microsoft.Extensions.CommandLineUtils.dll" />
+    <ExcludePackageFileFromSigning Include="Microsoft.Extensions.FileProviders.Abstractions.dll" />
+    <ExcludePackageFileFromSigning Include="Microsoft.Extensions.FileProviders.Composite.dll" />
+    <ExcludePackageFileFromSigning Include="Microsoft.Extensions.FileProviders.Embedded.dll" />
+    <ExcludePackageFileFromSigning Include="Microsoft.Extensions.FileProviders.Physical.dll" />
+    <ExcludePackageFileFromSigning Include="Microsoft.Extensions.FileSystemGlobbing.dll" />
+    <ExcludePackageFileFromSigning Include="Microsoft.Extensions.Primitives.dll" />
+    <ExcludePackageFileFromSigning Include="Microsoft.JSInterop.dll" />
+    <ExcludePackageFileFromSigning Include="System.CodeDom.dll" />
+    <ExcludePackageFileFromSigning Include="System.Runtime.CompilerServices.Unsafe.dll" />
+    <ExcludePackageFileFromSigning Include="System.Text.Encoding.CodePages.dll" />
+
+    <!-- JS files -->
+    <ExcludePackageFileFromSigning Include="components.server.js" />
+    <ExcludePackageFileFromSigning Include="components.webassembly.js" />
+  </ItemGroup>
+
+  <!-- Executes /t:Publish for all target frameworks before packing-->
+  <Target Name="PublishAll" BeforeTargets="_IntermediatePack">
+    <PropertyGroup>
+      <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+      <NuspecProperties>
+      version=$(PackageVersion);
+      publishDir=$([MSBuild]::NormalizeDirectory($(IntermediatePackDir)));
+      componentsversion=$(ComponentsPackageVersion);
+      razorversion=$(MicrosoftAspNetCoreRazorDesignPackageVersion);
+      blazormonoversion=$(MicrosoftAspNetCoreBlazorMonoPackageVersion);
+      repositorycommit=$(RepositoryCommit);</NuspecProperties>
+    </PropertyGroup>
+    <ItemGroup>
+      <_TargetFramework Include="$(TargetFramework)" />
+    </ItemGroup>
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" Properties="TargetFramework=%(_TargetFramework.Identity)" />
+  </Target>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.Components.Browser.JS\Microsoft.AspNetCore.Components.Browser.JS.csproj" />
+    <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.Components\Microsoft.AspNetCore.Components.csproj" />
+
+    <PackageReference Include="Microsoft.Extensions.CommandLineUtils" Version="1.1.1" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Composite" Version="$(AspNetCorePackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="$(AspNetCorePackageVersion)" />
+    <PackageReference Include="Mono.Cecil" Version="$(MonoCecilPackageVersion)" />
+    <PackageReference Include="System.CodeDom" Version="4.4.0" />
+  </ItemGroup>
+</Project>

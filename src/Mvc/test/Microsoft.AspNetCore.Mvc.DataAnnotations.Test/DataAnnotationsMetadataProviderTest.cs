@@ -276,53 +276,6 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
         }
 
         [Fact]
-        public void CreateDisplayMetadata_DisplayNameAttribute_OnEnum_CompatSwitchWorks()
-        {
-            // Arrange
-            var unsharedLocalizer = new Mock<IStringLocalizer>(MockBehavior.Strict);
-            unsharedLocalizer
-                .Setup(s => s["DisplayNameValue"])
-                .Returns(new LocalizedString("DisplaynameValue", "didn't use shared"));
-
-            var sharedLocalizer = new Mock<IStringLocalizer>(MockBehavior.Strict);
-            sharedLocalizer
-                .Setup(s => s["DisplayNameValue"])
-                .Returns(() => new LocalizedString("DisplayNameValue", "used shared"));
-
-            var stringLocalizerFactoryMock = new Mock<IStringLocalizerFactory>(MockBehavior.Strict);
-            stringLocalizerFactoryMock
-                .Setup(s => s.Create(typeof(TestEnum)))
-                .Returns(() => unsharedLocalizer.Object);
-            stringLocalizerFactoryMock
-                .Setup(s => s.Create(typeof(EmptyClass)))
-                .Returns(() => sharedLocalizer.Object);
-
-            var localizationOptions = Options.Create(new MvcDataAnnotationsLocalizationOptions());
-            localizationOptions.Value.AllowDataAnnotationsLocalizationForEnumDisplayAttributes = false;
-            localizationOptions.Value.DataAnnotationLocalizerProvider = (type, stringLocalizerFactory) =>
-            {
-                return stringLocalizerFactory.Create(typeof(EmptyClass));
-            };
-
-            var provider = new DataAnnotationsMetadataProvider(
-                localizationOptions,
-                stringLocalizerFactory: stringLocalizerFactoryMock.Object);
-
-            var displayName = new DisplayNameAttribute("DisplayNameValue");
-
-            var attributes = new Attribute[] { displayName };
-            var key = ModelMetadataIdentity.ForType(typeof(TestEnum));
-            var context = new DisplayMetadataProviderContext(key, GetModelAttributes(attributes));
-
-            // Act
-            provider.CreateDisplayMetadata(context);
-
-            // Assert
-            Assert.Collection(context.DisplayMetadata.EnumGroupedDisplayNamesAndValues, 
-                (e) => Assert.Equal("didn't use shared", e.Key.Name));
-        }
-
-        [Fact]
         public void CreateDisplayMetadata_DisplayNameAttribute_OnEnum_CompatShimOn()
         {
             // Arrange
@@ -337,7 +290,6 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
                 .Returns(() => sharedLocalizer.Object);
 
             var localizationOptions = Options.Create(new MvcDataAnnotationsLocalizationOptions());
-            localizationOptions.Value.AllowDataAnnotationsLocalizationForEnumDisplayAttributes = true;
             localizationOptions.Value.DataAnnotationLocalizerProvider = (type, stringLocalizerFactory) =>
             {
                 return stringLocalizerFactory.Create(typeof(EmptyClass));
@@ -1269,7 +1221,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
                 new RequiredAttribute(),
                 new StringLengthAttribute(5)
             };
-            
+
             Assert.Equal(expected, actual: context.ValidationMetadata.ValidatorMetadata);
         }
 
@@ -1580,7 +1532,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
 
         private class FooCompositeValidationAttribute : ValidationProviderAttribute
         {
-            private IEnumerable<ValidationAttribute> _attributes;
+            private readonly IEnumerable<ValidationAttribute> _attributes;
 
             public FooCompositeValidationAttribute(IEnumerable<ValidationAttribute> attributes)
             {

@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             var actionContext = new ActionContext(GetHttpContext(), new RouteData(), new ControllerActionDescriptor());
 
-            var authorizationFilterContext = new AuthorizationFilterContext(actionContext, action.Filters);
+            var authorizationFilterContext = new AuthorizationFilterContext(actionContext, new[] { authorizeFilter });
 
             // Act
             await authorizeFilter.OnAuthorizationAsync(authorizationFilterContext);
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var authorizeData = action.Attributes.OfType<AuthorizeAttribute>();
             var authorizeFilter = new AuthorizeFilter(policyProvider, authorizeData);
 
-            var actionContext = new ActionContext(GetHttpContext(combineAuthorize: true), new RouteData(), new ControllerActionDescriptor());
+            var actionContext = new ActionContext(GetHttpContext(), new RouteData(), new ControllerActionDescriptor());
 
             var authorizationFilterContext = new AuthorizationFilterContext(actionContext, action.Filters);
 
@@ -89,11 +89,13 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal(4, policyProvider.GetPolicyCount);
         }
 
-        private HttpContext GetHttpContext(bool combineAuthorize = false)
+        private HttpContext GetHttpContext()
         {
-            var httpContext = new DefaultHttpContext();
+            var httpContext = new DefaultHttpContext
+            {
+                RequestServices = GetServices()
+            };
 
-            httpContext.RequestServices = GetServices(combineAuthorize);
             return httpContext;
         }
 
@@ -108,15 +110,14 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             return context;
         }
 
-        private static IServiceProvider GetServices(bool combineAuthorize)
+        private static IServiceProvider GetServices()
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddAuthorization();
-            serviceCollection.AddMvc(o => o.AllowCombiningAuthorizeFilters = combineAuthorize);
+            serviceCollection.AddMvc();
             serviceCollection
                 .AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance)
-                .AddTransient<ILogger<DefaultAuthorizationService>, Logger<DefaultAuthorizationService>>()
-                .AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
+                .AddTransient<ILogger<DefaultAuthorizationService>, Logger<DefaultAuthorizationService>>();
             return serviceCollection.BuildServiceProvider();
         }
 

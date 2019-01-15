@@ -18,6 +18,7 @@ namespace RoutingWebSite
 
             services
                 .AddMvc()
+                .AddNewtonsoftJson()
                 .AddRazorPagesOptions(options =>
                 {
                     options.Conventions.AddFolderRouteModelConvention("/PageRouteTransformer", model =>

@@ -291,6 +291,50 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         }
 
         [Fact]
+        public async Task GetDeclaredResponseMetadata_ApiConventionTypeAttributeOnType_Works()
+        {
+            // Arrange
+            var type = typeof(GetDeclaredResponseMetadata_ApiConventionTypeAttributeOnType);
+            var compilation = await GetResponseMetadataCompilation();
+            var controller = compilation.GetTypeByMetadataName(type.FullName);
+            var method = (IMethodSymbol)controller.GetMembers().First();
+            var symbolCache = new ApiControllerSymbolCache(compilation);
+
+            // Act
+            var result = SymbolApiResponseMetadataProvider.GetDeclaredResponseMetadata(symbolCache, method);
+
+            // Assert
+            // We should expect 3 entries specified by DefaultApiConventions.Post
+            Assert.Collection(
+                result.OrderBy(r => r.StatusCode),
+                metadata => Assert.True(metadata.IsDefault),
+                metadata => Assert.Equal(201, metadata.StatusCode),
+                metadata => Assert.Equal(400, metadata.StatusCode));
+        }
+
+        [Fact]
+        public async Task GetDeclaredResponseMetadata_ApiConventionTypeAttributeOnBaseType_Works()
+        {
+            // Arrange
+            var type = typeof(GetDeclaredResponseMetadata_ApiConventionTypeAttributeOnBaseType);
+            var compilation = await GetResponseMetadataCompilation();
+            var controller = compilation.GetTypeByMetadataName(type.FullName);
+            var method = (IMethodSymbol)controller.GetMembers().First();
+            var symbolCache = new ApiControllerSymbolCache(compilation);
+
+            // Act
+            var result = SymbolApiResponseMetadataProvider.GetDeclaredResponseMetadata(symbolCache, method);
+
+            // Assert
+            // We should expect 3 entries specified by DefaultApiConventions.Post
+            Assert.Collection(
+                result.OrderBy(r => r.StatusCode),
+                metadata => Assert.True(metadata.IsDefault),
+                metadata => Assert.Equal(201, metadata.StatusCode),
+                metadata => Assert.Equal(400, metadata.StatusCode));
+        }
+
+        [Fact]
         public Task GetStatusCode_ReturnsValueFromConstructor()
         {
             //  Arrange

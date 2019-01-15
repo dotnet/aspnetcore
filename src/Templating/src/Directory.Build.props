@@ -15,7 +15,6 @@
   <PropertyGroup Condition="'$(BuildingInsideVisualStudio)' == 'true'">
     <!-- So you can make changes and re-run tests within VS without command-line builds -->
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageOutputPath>$(MSBuildThisFileDirectory)..\artifacts\build\</PackageOutputPath>
   </PropertyGroup>
 
   <ItemGroup>

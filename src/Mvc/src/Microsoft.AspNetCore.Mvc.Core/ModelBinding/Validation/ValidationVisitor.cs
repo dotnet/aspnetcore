@@ -107,7 +107,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         ///  Gets or sets a value that determines if <see cref="ValidationVisitor"/> can short circuit validation when a model
         ///  does not have any associated validators.
         /// </summary>
-        public bool AllowShortCircuitingValidationWhenNoValidatorsArePresent { get; set; }
+        /// <value>The default value is <see langword="true"/>.</value>
+        /// <remarks>This property is currently ignored.</remarks>
+        public bool AllowShortCircuitingValidationWhenNoValidatorsArePresent { get; set; } = true;
 
         /// <summary>
         /// Validates a object.
@@ -266,9 +268,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             }
             // If the metadata indicates that no validators exist AND the aggregate state for the key says that the model graph
             // is not invalid (i.e. is one of Unvalidated, Valid, or Skipped) we can safely mark the graph as valid.
-            else if (
-                AllowShortCircuitingValidationWhenNoValidatorsArePresent &&
-                metadata.HasValidators == false &&
+            else if (metadata.HasValidators == false &&
                 ModelState.GetFieldValidationState(key) != ModelValidationState.Invalid)
             {
                 // No validators will be created for this graph of objects. Mark it as valid if it wasn't previously validated.

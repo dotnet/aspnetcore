@@ -74,19 +74,19 @@ namespace Microsoft.AspNetCore.StaticFiles
 
             if (!fileContext.ValidateMethod())
             {
-                _logger.LogRequestMethodNotSupported(context.Request.Method);
+                _logger.RequestMethodNotSupported(context.Request.Method);
             }
             else if (!fileContext.ValidatePath())
             {
-                _logger.LogPathMismatch(fileContext.SubPath);
+                _logger.PathMismatch(fileContext.SubPath);
             }
             else if (!fileContext.LookupContentType())
             {
-                _logger.LogFileTypeNotSupported(fileContext.SubPath);
+                _logger.FileTypeNotSupported(fileContext.SubPath);
             }
             else if (!fileContext.LookupFileInfo())
             {
-                _logger.LogFileNotFound(fileContext.SubPath);
+                _logger.FileNotFound(fileContext.SubPath);
             }
             else
             {
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                             }
 
                             await fileContext.SendAsync();
-                            _logger.LogFileServed(fileContext.SubPath, fileContext.PhysicalPath);
+                            _logger.FileServed(fileContext.SubPath, fileContext.PhysicalPath);
                             return;
                         }
                         catch (FileNotFoundException)
@@ -120,12 +120,12 @@ namespace Microsoft.AspNetCore.StaticFiles
                         }
                         break;
                     case StaticFileContext.PreconditionState.NotModified:
-                        _logger.LogPathNotModified(fileContext.SubPath);
+                        _logger.FileNotModified(fileContext.SubPath);
                         await fileContext.SendStatusAsync(Constants.Status304NotModified);
                         return;
 
                     case StaticFileContext.PreconditionState.PreconditionFailed:
-                        _logger.LogPreconditionFailed(fileContext.SubPath);
+                        _logger.PreconditionFailed(fileContext.SubPath);
                         await fileContext.SendStatusAsync(Constants.Status412PreconditionFailed);
                         return;
 

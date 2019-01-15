@@ -1,0 +1,45 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TrimmedVersion>$(VersionPrefix.Substring(0, $(VersionPrefix.LastIndexOf('.'))))</TrimmedVersion>
+    <title>ASP.NET Core Extensions</title>
+    <Description>This extension enables additional functionality for ASP.NET Core on Azure WebSites, such as enabling Azure logging.</Description>
+    <TargetFramework>net461</TargetFramework>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <PackageTags>aspnet;logging;aspnetcore;AzureSiteExtension;keyvault;configuration;dataprotection</PackageTags>
+    <ContentTargetFolders>content</ContentTargetFolders>
+    <PackageId>Microsoft.AspNetCore.AzureAppServices.SiteExtension.$(TrimmedVersion).$(SharedFxArchitecture)</PackageId>
+    <MicrosoftAspNetCoreAppPackageVersion>$(PackageVersion)</MicrosoftAspNetCoreAppPackageVersion>
+    <HostingStartupRuntimeFrameworkVersion>$(MicrosoftNETCoreAppPackageVersion)</HostingStartupRuntimeFrameworkVersion>
+
+    <TargetFramework>net461</TargetFramework>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <PackageType>AzureSiteExtension</PackageType>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <IncludeSymbols>false</IncludeSymbols>
+    <IncludeSource>false</IncludeSource>
+    <ContentTargetFolders>content</ContentTargetFolders>
+  </PropertyGroup>
+
+  <ItemGroup>
+
+    <HostingStartupRuntimeStoreTargets Include="netcoreapp3.0" Runtime="$(SharedFxRid)" />
+    <HostingStartupPackageReference Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" Version="$(PackageVersion)" />
+
+    <PackageReference Include="Internal.AspNetCore.Sdk" PrivateAssets="All" Version="$(InternalAspNetCoreSdkPackageVersion)" />
+
+    <ProjectReference Include="..\..\Framework\pkg\Microsoft.AspNetCore.App.pkgproj">
+      <Targets>Pack</Targets>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+    </ProjectReference>
+
+    <ProjectReference Include="..\..\Framework\src\Microsoft.AspNetCore.App.shfxproj">
+      <Targets>Pack</Targets>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+    </ProjectReference>
+  </ItemGroup>
+
+</Project>

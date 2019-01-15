@@ -1,85 +1,58 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27130.2036
-MinimumVisualStudioVersion = 15.0.26730.03
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{3C0D6505-79B3-49D0-B4C3-176F0F1836ED}"
-	ProjectSection(SolutionItems) = preProject
-		src\Directory.Build.props = src\Directory.Build.props
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{92463391-81BE-462B-AC3C-78C6C760741F}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor", "src\Microsoft.AspNetCore.Razor\Microsoft.AspNetCore.Razor.csproj", "{EDA30434-C567-44DC-B8B6-2566A7F77163}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Runtime", "src\Microsoft.AspNetCore.Razor.Runtime\Microsoft.AspNetCore.Razor.Runtime.csproj", "{D0196096-1B01-4133-AACE-1A10A0F7247C}"
-EndProject
+VisualStudioVersion = 15.0.26124.0
+MinimumVisualStudioVersion = 15.0.26124.0
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F8C12DD6-659D-405A-AA27-FB22AD92A010}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
-		build\dependencies.props = build\dependencies.props
-		Directory.Build.props = Directory.Build.props
-		Directory.Build.targets = Directory.Build.targets
-		build\repo.props = build\repo.props
-		build\repo.targets = build\repo.targets
-		build\sources.props = build\sources.props
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Runtime.Test", "test\Microsoft.AspNetCore.Razor.Runtime.Test\Microsoft.AspNetCore.Razor.Runtime.Test.csproj", "{277AB67E-9C8D-4799-A18C-C628E70A8664}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Razor", "Razor", "{FD09AA4B-FD90-4B88-8E74-77FBF96AFF07}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Test", "test\Microsoft.AspNetCore.Razor.Test\Microsoft.AspNetCore.Razor.Test.csproj", "{323553F0-14AB-4FBD-9CF0-1CC0BE8056F8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor", "Razor\src\Microsoft.AspNetCore.Razor.csproj", "{50B155AF-6778-4FBF-AF97-0AD3DFF11564}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Test", "Razor\test\Microsoft.AspNetCore.Razor.Test.csproj", "{6F476A56-25E8-4BDC-82D5-4EBA01D93765}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Razor.Runtime", "Razor.Runtime", "{CD0A594B-445E-41A0-8C91-1DE90923E66F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Runtime", "Razor.Runtime\src\Microsoft.AspNetCore.Razor.Runtime.csproj", "{CF24C860-423A-4336-8D17-2276249BC945}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Runtime.Test", "Razor.Runtime\test\Microsoft.AspNetCore.Razor.Runtime.Test.csproj", "{B98E84E5-1E26-4722-9F6B-039CED7711C2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
-		DebugNoVSIX|Any CPU = DebugNoVSIX|Any CPU
 		Release|Any CPU = Release|Any CPU
-		ReleaseNoVSIX|Any CPU = ReleaseNoVSIX|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{EDA30434-C567-44DC-B8B6-2566A7F77163}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EDA30434-C567-44DC-B8B6-2566A7F77163}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{EDA30434-C567-44DC-B8B6-2566A7F77163}.DebugNoVSIX|Any CPU.ActiveCfg = Debug|Any CPU
-		{EDA30434-C567-44DC-B8B6-2566A7F77163}.DebugNoVSIX|Any CPU.Build.0 = Debug|Any CPU
-		{EDA30434-C567-44DC-B8B6-2566A7F77163}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EDA30434-C567-44DC-B8B6-2566A7F77163}.Release|Any CPU.Build.0 = Release|Any CPU
-		{EDA30434-C567-44DC-B8B6-2566A7F77163}.ReleaseNoVSIX|Any CPU.ActiveCfg = Release|Any CPU
-		{EDA30434-C567-44DC-B8B6-2566A7F77163}.ReleaseNoVSIX|Any CPU.Build.0 = Release|Any CPU
-		{D0196096-1B01-4133-AACE-1A10A0F7247C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D0196096-1B01-4133-AACE-1A10A0F7247C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D0196096-1B01-4133-AACE-1A10A0F7247C}.DebugNoVSIX|Any CPU.ActiveCfg = Debug|Any CPU
-		{D0196096-1B01-4133-AACE-1A10A0F7247C}.DebugNoVSIX|Any CPU.Build.0 = Debug|Any CPU
-		{D0196096-1B01-4133-AACE-1A10A0F7247C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D0196096-1B01-4133-AACE-1A10A0F7247C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D0196096-1B01-4133-AACE-1A10A0F7247C}.ReleaseNoVSIX|Any CPU.ActiveCfg = Release|Any CPU
-		{D0196096-1B01-4133-AACE-1A10A0F7247C}.ReleaseNoVSIX|Any CPU.Build.0 = Release|Any CPU
-		{277AB67E-9C8D-4799-A18C-C628E70A8664}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{277AB67E-9C8D-4799-A18C-C628E70A8664}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{277AB67E-9C8D-4799-A18C-C628E70A8664}.DebugNoVSIX|Any CPU.ActiveCfg = Debug|Any CPU
-		{277AB67E-9C8D-4799-A18C-C628E70A8664}.DebugNoVSIX|Any CPU.Build.0 = Debug|Any CPU
-		{277AB67E-9C8D-4799-A18C-C628E70A8664}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{277AB67E-9C8D-4799-A18C-C628E70A8664}.Release|Any CPU.Build.0 = Release|Any CPU
-		{277AB67E-9C8D-4799-A18C-C628E70A8664}.ReleaseNoVSIX|Any CPU.ActiveCfg = Release|Any CPU
-		{277AB67E-9C8D-4799-A18C-C628E70A8664}.ReleaseNoVSIX|Any CPU.Build.0 = Release|Any CPU
-		{323553F0-14AB-4FBD-9CF0-1CC0BE8056F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{323553F0-14AB-4FBD-9CF0-1CC0BE8056F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{323553F0-14AB-4FBD-9CF0-1CC0BE8056F8}.DebugNoVSIX|Any CPU.ActiveCfg = Debug|Any CPU
-		{323553F0-14AB-4FBD-9CF0-1CC0BE8056F8}.DebugNoVSIX|Any CPU.Build.0 = Debug|Any CPU
-		{323553F0-14AB-4FBD-9CF0-1CC0BE8056F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{323553F0-14AB-4FBD-9CF0-1CC0BE8056F8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{323553F0-14AB-4FBD-9CF0-1CC0BE8056F8}.ReleaseNoVSIX|Any CPU.ActiveCfg = Release|Any CPU
-		{323553F0-14AB-4FBD-9CF0-1CC0BE8056F8}.ReleaseNoVSIX|Any CPU.Build.0 = Release|Any CPU
+		{50B155AF-6778-4FBF-AF97-0AD3DFF11564}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{50B155AF-6778-4FBF-AF97-0AD3DFF11564}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{50B155AF-6778-4FBF-AF97-0AD3DFF11564}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{50B155AF-6778-4FBF-AF97-0AD3DFF11564}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6F476A56-25E8-4BDC-82D5-4EBA01D93765}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6F476A56-25E8-4BDC-82D5-4EBA01D93765}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6F476A56-25E8-4BDC-82D5-4EBA01D93765}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6F476A56-25E8-4BDC-82D5-4EBA01D93765}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CF24C860-423A-4336-8D17-2276249BC945}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CF24C860-423A-4336-8D17-2276249BC945}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CF24C860-423A-4336-8D17-2276249BC945}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CF24C860-423A-4336-8D17-2276249BC945}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B98E84E5-1E26-4722-9F6B-039CED7711C2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B98E84E5-1E26-4722-9F6B-039CED7711C2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B98E84E5-1E26-4722-9F6B-039CED7711C2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B98E84E5-1E26-4722-9F6B-039CED7711C2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{EDA30434-C567-44DC-B8B6-2566A7F77163} = {3C0D6505-79B3-49D0-B4C3-176F0F1836ED}
-		{D0196096-1B01-4133-AACE-1A10A0F7247C} = {3C0D6505-79B3-49D0-B4C3-176F0F1836ED}
-		{277AB67E-9C8D-4799-A18C-C628E70A8664} = {92463391-81BE-462B-AC3C-78C6C760741F}
-		{323553F0-14AB-4FBD-9CF0-1CC0BE8056F8} = {92463391-81BE-462B-AC3C-78C6C760741F}
+		{50B155AF-6778-4FBF-AF97-0AD3DFF11564} = {FD09AA4B-FD90-4B88-8E74-77FBF96AFF07}
+		{6F476A56-25E8-4BDC-82D5-4EBA01D93765} = {FD09AA4B-FD90-4B88-8E74-77FBF96AFF07}
+		{CF24C860-423A-4336-8D17-2276249BC945} = {CD0A594B-445E-41A0-8C91-1DE90923E66F}
+		{B98E84E5-1E26-4722-9F6B-039CED7711C2} = {CD0A594B-445E-41A0-8C91-1DE90923E66F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {0035341D-175A-4D05-95E6-F1C2785A1E26}
+		SolutionGuid = {779069AC-1F9F-407F-92C7-28507D91D64E}
 	EndGlobalSection
 EndGlobal

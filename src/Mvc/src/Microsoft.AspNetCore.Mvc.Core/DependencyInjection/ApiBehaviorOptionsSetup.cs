@@ -2,37 +2,21 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
     internal class ApiBehaviorOptionsSetup :
-        ConfigureCompatibilityOptions<ApiBehaviorOptions>,
-        IConfigureOptions<ApiBehaviorOptions>
+        IConfigureOptions<ApiBehaviorOptions>,
+        IPostConfigureOptions<ApiBehaviorOptions>
     {
         internal static readonly Func<ActionContext, IActionResult> DefaultFactory = DefaultInvalidModelStateResponse;
-        internal static readonly Func<ActionContext, IActionResult> ProblemDetailsFactory = ProblemDetailsInvalidModelStateResponse;
-
-        public ApiBehaviorOptionsSetup(
-            ILoggerFactory loggerFactory,
-            IOptions<MvcCompatibilityOptions> compatibilityOptions)
-            : base(loggerFactory, compatibilityOptions)
-        {
-        }
-
-        protected override IReadOnlyDictionary<string, object> DefaultValues
-        {
-            get
-            {
-                return new Dictionary<string, object>();
-            }
-        }
+        internal static readonly Func<ActionContext, IActionResult> ProblemDetailsFactory =
+            ProblemDetailsInvalidModelStateResponse;
 
         public void Configure(ApiBehaviorOptions options)
         {
@@ -45,11 +29,8 @@ namespace Microsoft.Extensions.DependencyInjection
             ConfigureClientErrorMapping(options);
         }
 
-        public override void PostConfigure(string name, ApiBehaviorOptions options)
+        public void PostConfigure(string name, ApiBehaviorOptions options)
         {
-            // Let compatibility switches do their thing.
-            base.PostConfigure(name, options);
-
             // We want to use problem details factory only if
             // (a) it has not been opted out of (SuppressMapClientErrors = true)
             // (b) a different factory was configured

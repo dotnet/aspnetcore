@@ -87,12 +87,6 @@ namespace Microsoft.AspNetCore.Builder
                 });
             }
 
-            // Accept debugger connections
-            if (config.EnableDebugging)
-            {
-                app.UseMonoDebugProxy();
-            }
-
             // Finally, use SPA fallback routing (serve default page for anything else,
             // excluding /_framework/*)
             app.MapWhen(IsNotFrameworkDir, childAppBuilder =>
@@ -141,7 +135,7 @@ namespace Microsoft.AspNetCore.Builder
             return null;
         }
 
-        private static void SetCacheHeaders(StaticFileResponseContext ctx)
+        internal static void SetCacheHeaders(StaticFileResponseContext ctx)
         {
             // By setting "Cache-Control: no-cache", we're allowing the browser to store
             // a cached copy of the response, but telling it that it must check with the

@@ -52,16 +52,8 @@ namespace Microsoft.AspNetCore.Mvc
         /// ASP.NET Core MVC 2.1.
         /// </summary>
         /// <remarks>
-        /// ASP.NET Core MVC 2.1 introduced compatibility switches for the following:
-        /// <list type="bullet">
-        ///     <item><description><see cref="MvcOptions.AllowBindingHeaderValuesToNonStringModelTypes"/></description></item>
-        ///     <item><description><see cref="MvcOptions.InputFormatterExceptionPolicy"/></description></item>
-        ///     <item><description><see cref="MvcOptions.InputFormatterExceptionPolicy"/></description></item>
-        ///     <item><description><see cref="MvcOptions.SuppressBindingUndefinedValueToEnumType"/></description></item>
-        ///     <item><description><c>MvcJsonOptions.AllowInputFormatterExceptionMessages</c></description></item>
-        ///     <item><description><c>RazorPagesOptions.AllowAreas</c></description></item>
-        ///     <item><description><c>RazorPagesOptions.AllowMappingHeadRequestsToGetHandler</c></description></item>
-        /// </list>
+        /// ASP.NET Core MVC 2.1 introduced a compatibility switch for
+        /// <c>MvcJsonOptions.AllowInputFormatterExceptionMessages</c>. This is now a regular property.
         /// </remarks>
         [Obsolete("This " + nameof(CompatibilityVersion) + " value is obsolete. The recommended alternatives are " +
             nameof(Version_3_0) + " or later.")]
@@ -75,16 +67,10 @@ namespace Microsoft.AspNetCore.Mvc
         /// ASP.NET Core MVC 2.2 introduced compatibility switches for the following:
         /// <list type="bullet">
         ///     <item><description><c>ApiBehaviorOptions.SuppressMapClientErrors</c></description></item>
-        ///     <item><description><c>ApiBehaviorOptions.SuppressUseValidationProblemDetailsForInvalidModelStateResponses</c></description></item>
-        ///     <item><description><c>MvcDataAnnotationsLocalizationOptions.AllowDataAnnotationsLocalizationForEnumDisplayAttributes</c></description></item>
         ///     <item><description><see cref="MvcOptions.EnableEndpointRouting" /></description></item>
-        ///     <item><description><see cref="MvcOptions.AllowShortCircuitingValidationWhenNoValidatorsArePresent"/></description></item>
         ///     <item><description><see cref="MvcOptions.MaxValidationDepth" /></description></item>
-        ///     <item><description><c>RazorPagesOptions.AllowDefaultHandlingForOptionsRequests</c></description></item>
-        ///     <item><description><c>RazorViewEngineOptions.AllowRecompilingViewsOnFileChange</c></description></item>
-        ///     <item><description><c>MvcViewOptions.AllowRenderingMaxLengthAttribute</c></description></item>
-        ///     <item><description><c>MvcXmlOptions.AllowRfc7807CompliantProblemDetailsFormat</c></description></item>
         /// </list>
+        /// All of the above are now regular properties.
         /// </remarks>
         [Obsolete("This " + nameof(CompatibilityVersion) + " value is obsolete. The recommended alternatives are " +
             nameof(Version_3_0) + " or later.")]

@@ -16,18 +16,16 @@ namespace Microsoft.AspNetCore.Components
     {
         private const BindingFlags _bindablePropertyFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.IgnoreCase;
 
-        private delegate void WriteParameterAction(object target, object parameterValue);
-
-        private readonly static IDictionary<Type, IDictionary<string, WriteParameterAction>> _cachedParameterWriters
-            = new ConcurrentDictionary<Type, IDictionary<string, WriteParameterAction>>();
+        private readonly static ConcurrentDictionary<Type, WritersForType> _cachedWritersByType
+            = new ConcurrentDictionary<Type, WritersForType>();
 
         /// <summary>
-        /// Iterates through the <see cref="ParameterCollection"/>, assigning each parameter
-        /// to a property of the same name on <paramref name="target"/>.
+        /// For each parameter property on <paramref name="target"/>, updates its value to
+        /// match the corresponding entry in the <see cref="ParameterCollection"/>.
         /// </summary>
         /// <param name="parameterCollection">The <see cref="ParameterCollection"/>.</param>
         /// <param name="target">An object that has a public writable property matching each parameter's name and type.</param>
-        public static void AssignToProperties(
+        public unsafe static void SetParameterProperties(
             in this ParameterCollection parameterCollection,
             object target)
         {
@@ -37,23 +35,36 @@ namespace Microsoft.AspNetCore.Components
             }
 
             var targetType = target.GetType();
-            if (!_cachedParameterWriters.TryGetValue(targetType, out var parameterWriters))
+            if (!_cachedWritersByType.TryGetValue(targetType, out var writers))
             {
-                parameterWriters = CreateParameterWriters(targetType);
-                _cachedParameterWriters[targetType] = parameterWriters;
+                writers = new WritersForType(targetType);
+                _cachedWritersByType[targetType] = writers;
             }
+
+            // We only want to iterate through the parameterCollection once, and by the end of it,
+            // need to have tracked which of the parameter properties haven't yet been written.
+            // To avoid allocating any list/dictionary to track that, here we stackalloc an array
+            // of flags and set them based on the indices of the writers we use.
+            var numWriters = writers.WritersByIndex.Count;
+            var numUsedWriters = 0;
+
+            // TODO: Once we're able to move to netstandard2.1, this can be changed to be
+            // a Span<bool> and then the enclosing method no longer needs to be 'unsafe'
+            bool* usageFlags = stackalloc bool[numWriters];
 
             foreach (var parameter in parameterCollection)
             {
                 var parameterName = parameter.Name;
-                if (!parameterWriters.TryGetValue(parameterName, out var parameterWriter))
+                if (!writers.WritersByName.TryGetValue(parameterName, out var writerWithIndex))
                 {
                     ThrowForUnknownIncomingParameterName(targetType, parameterName);
                 }
 
                 try
                 {
-                    parameterWriter(target, parameter.Value);
+                    writerWithIndex.Writer.SetValue(target, parameter.Value);
+                    usageFlags[writerWithIndex.Index] = true;
+                    numUsedWriters++;
                 }
                 catch (Exception ex)
                 {
@@ -62,42 +73,27 @@ namespace Microsoft.AspNetCore.Components
                         $"type '{target.GetType().FullName}'. The error was: {ex.Message}", ex);
                 }
             }
+
+            // Now we can determine whether any writers have not been used, and if there are
+            // some unused ones, find them.
+            for (var index = 0; numUsedWriters < numWriters; index++)
+            {
+                if (index >= numWriters)
+                {
+                    // This should not be possible
+                    throw new InvalidOperationException("Ran out of writers before marking them all as used.");
+                }
+
+                if (!usageFlags[index])
+                {
+                    writers.WritersByIndex[index].SetDefaultValue(target);
+                    numUsedWriters++;
+                }
+            }
         }
 
         internal static IEnumerable<PropertyInfo> GetCandidateBindableProperties(Type targetType)
             => MemberAssignment.GetPropertiesIncludingInherited(targetType, _bindablePropertyFlags);
-
-        private static IDictionary<string, WriteParameterAction> CreateParameterWriters(Type targetType)
-        {
-            var result = new Dictionary<string, WriteParameterAction>(StringComparer.OrdinalIgnoreCase);
-
-            foreach (var propertyInfo in GetCandidateBindableProperties(targetType))
-            {
-                var shouldCreateWriter = propertyInfo.IsDefined(typeof(ParameterAttribute))
-                    || propertyInfo.IsDefined(typeof(CascadingParameterAttribute));
-                if (!shouldCreateWriter)
-                {
-                    continue;
-                }
-
-                var propertySetter = MemberAssignment.CreatePropertySetter(targetType, propertyInfo);
-
-                var propertyName = propertyInfo.Name;
-                if (result.ContainsKey(propertyName))
-                {
-                    throw new InvalidOperationException(
-                        $"The type '{targetType.FullName}' declares more than one parameter matching the " +
-                        $"name '{propertyName.ToLowerInvariant()}'. Parameter names are case-insensitive and must be unique.");
-                }
-
-                result.Add(propertyName, (object target, object parameterValue) =>
-                {
-                    propertySetter.SetValue(target, parameterValue);
-                });
-            }
-
-            return result;
-        }
 
         private static void ThrowForUnknownIncomingParameterName(Type targetType, string parameterName)
         {
@@ -124,6 +120,48 @@ namespace Microsoft.AspNetCore.Components
                 throw new InvalidOperationException(
                     $"Object of type '{targetType.FullName}' does not have a property " +
                     $"matching the name '{parameterName}'.");
+            }
+        }
+
+        class WritersForType
+        {
+            public Dictionary<string, (int Index, IPropertySetter Writer)> WritersByName { get; }
+            public List<IPropertySetter> WritersByIndex { get; }
+
+            public WritersForType(Type targetType)
+            {
+                var propertySettersByName = new Dictionary<string, IPropertySetter>(StringComparer.OrdinalIgnoreCase);
+                foreach (var propertyInfo in GetCandidateBindableProperties(targetType))
+                {
+                    var shouldCreateWriter = propertyInfo.IsDefined(typeof(ParameterAttribute))
+                        || propertyInfo.IsDefined(typeof(CascadingParameterAttribute));
+                    if (!shouldCreateWriter)
+                    {
+                        continue;
+                    }
+
+                    var propertySetter = MemberAssignment.CreatePropertySetter(targetType, propertyInfo);
+
+                    var propertyName = propertyInfo.Name;
+                    if (propertySettersByName.ContainsKey(propertyName))
+                    {
+                        throw new InvalidOperationException(
+                            $"The type '{targetType.FullName}' declares more than one parameter matching the " +
+                            $"name '{propertyName.ToLowerInvariant()}'. Parameter names are case-insensitive and must be unique.");
+                    }
+
+                    propertySettersByName.Add(propertyName, propertySetter);
+                }
+
+                // Now we know all the entries, construct the resulting list/dictionary
+                // with well-defined indices
+                WritersByIndex = new List<IPropertySetter>();
+                WritersByName = new Dictionary<string, (int, IPropertySetter)>(StringComparer.OrdinalIgnoreCase);
+                foreach (var pair in propertySettersByName)
+                {
+                    WritersByName.Add(pair.Key, (WritersByIndex.Count, pair.Value));
+                    WritersByIndex.Add(pair.Value);
+                }
             }
         }
     }

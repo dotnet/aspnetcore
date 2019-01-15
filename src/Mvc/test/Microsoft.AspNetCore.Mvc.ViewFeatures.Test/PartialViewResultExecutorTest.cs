@@ -366,7 +366,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 options,
                 new TestHttpResponseStreamWriterFactory(),
                 new CompositeViewEngine(options),
-                new TempDataDictionaryFactory(new SessionStateTempDataProvider()),
+                Mock.Of<ITempDataDictionaryFactory>(),
                 diagnosticListener,
                 NullLoggerFactory.Instance,
                 new EmptyModelMetadataProvider());

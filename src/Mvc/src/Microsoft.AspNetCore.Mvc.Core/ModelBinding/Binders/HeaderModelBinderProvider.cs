@@ -4,7 +4,6 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
@@ -31,23 +30,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var modelMetadata = context.Metadata;
             var loggerFactory = context.Services.GetRequiredService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger<HeaderModelBinderProvider>();
-
-            var options = context.Services.GetRequiredService<IOptions<MvcOptions>>().Value;
-            if (!options.AllowBindingHeaderValuesToNonStringModelTypes)
-            {
-                if (modelMetadata.ModelType == typeof(string) ||
-                    modelMetadata.ElementType == typeof(string))
-                {
-                    return new HeaderModelBinder(loggerFactory);
-                }
-                else
-                {
-                    logger.CannotCreateHeaderModelBinderCompatVersion_2_0(modelMetadata.ModelType);
-                }
-
-                return null;
-            }
-
 
             if (!IsSimpleType(modelMetadata))
             {

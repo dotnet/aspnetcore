@@ -1,0 +1,50 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <title>ASP.NET Core Logging Extensions</title>
+    <Description>This extension enables additional functionality for ASP.NET Core on Azure WebSites, such as enabling Azure logging.</Description>
+    <TargetFramework>net461</TargetFramework>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <PackageTags>aspnet;logging;aspnetcore;AzureSiteExtension;keyvault;configuration;dataprotection</PackageTags>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <PackageType>AzureSiteExtension</PackageType>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <IncludeSymbols>false</IncludeSymbols>
+    <IncludeSource>false</IncludeSource>
+    <ContentTargetFolders>content</ContentTargetFolders>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.2.1" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension21PackageVersion)" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.2.2" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension22PackageVersion)" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="applicationHost.xdt" />
+    <Content Include="scmApplicationHost.xdt" />
+    <Content Include="$(RepositoryRoot)bin\Microsoft.Web.Xdt.Extensions\$(Configuration)\$(TargetFramework)\Microsoft.Web.Xdt.Extensions.dll" PackagePath="content" />
+    <SignedPackageFile
+      Include="bin\$(Configuration)\$(TargetFramework)\Microsoft.Web.Xdt.Extensions.dll"
+      PackagePath="content/Microsoft.Web.Xdt.Extensions.dll"
+      Certificate="$(AssemblySigningCertName)" Visible="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Microsoft.Web.Xdt.Extensions\src\Microsoft.Web.Xdt.Extensions.csproj" PrivateAssets="All" />
+  </ItemGroup>
+
+  <Target Name="AddContent" BeforeTargets="_GetPackageFiles;GetSignedPackageFiles">
+
+    <ItemGroup>
+        <ContentFilesToPack Include="$(NugetPackageRoot)\%(PackageReference.Identity)\%(PackageReference.Version)\content\**\*.*" />
+        <!-- Temporarily skip the common files -->
+        <FilteredContentFilesToPack Include="@(ContentFilesToPack)" Condition="'%(RecursiveDir)' != ''" />
+
+        <None Include="@(FilteredContentFilesToPack)" PackagePath="content\%(RecursiveDir)%(Filename)%(Extension)" Pack="true" />
+        <ExcludePackageFileFromSigning Include="@(FilteredContentFilesToPack)" PackagePath="content\%(RecursiveDir)%(Filename)%(Extension)" />
+    </ItemGroup>
+
+  </Target>
+
+</Project>

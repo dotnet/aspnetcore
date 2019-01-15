@@ -15,12 +15,10 @@ using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Cors;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Mvc.Formatters.Json;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Mvc.Razor.TagHelpers;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.AspNetCore.Mvc.TagHelpers;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
@@ -234,30 +232,12 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         [Fact]
-        public void AddMvcCore_AddsMvcJsonOption()
-        {
-            // Arrange
-            var services = new ServiceCollection();
-
-            // Act
-            services.AddMvcCore()
-                .AddJsonOptions((options) =>
-                {
-                    options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
-                });
-
-            // Assert
-            Assert.Single(services, d => d.ServiceType == typeof(IConfigureOptions<MvcJsonOptions>));
-        }
-
-        [Fact]
         public void AddMvc_NoScopedServiceIsReferredToByASingleton()
         {
             // Arrange
             var services = new ServiceCollection();
 
             services.AddSingleton<IHostingEnvironment>(GetHostingEnvironment());
-            services.AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
 
             var diagnosticListener = new DiagnosticListener("Microsoft.AspNet");
             services.AddSingleton<DiagnosticSource>(diagnosticListener);
@@ -339,7 +319,6 @@ namespace Microsoft.AspNetCore.Mvc
                         {
                             typeof(MvcCoreMvcOptionsSetup),
                             typeof(MvcDataAnnotationsMvcOptionsSetup),
-                            typeof(MvcJsonMvcOptionsSetup),
                             typeof(TempDataMvcOptionsSetup),
                         }
                     },
@@ -380,20 +359,6 @@ namespace Microsoft.AspNetCore.Mvc
                         {
                             typeof(MvcOptionsConfigureCompatibilityOptions),
                             typeof(MvcCoreMvcOptionsSetup),
-                        }
-                    },
-                    {
-                        typeof(IPostConfigureOptions<RazorPagesOptions>),
-                        new[]
-                        {
-                            typeof(RazorPagesOptionsConfigureCompatibilityOptions),
-                        }
-                    },
-                    {
-                        typeof(IPostConfigureOptions<MvcJsonOptions>),
-                        new[]
-                        {
-                            typeof(MvcJsonOptionsConfigureCompatibilityOptions),
                         }
                     },
                     {
@@ -451,7 +416,6 @@ namespace Microsoft.AspNetCore.Mvc
                         new Type[]
                         {
                             typeof(DefaultApiDescriptionProvider),
-                            typeof(JsonPatchOperationsArrayProvider),
                         }
                     },
                     {

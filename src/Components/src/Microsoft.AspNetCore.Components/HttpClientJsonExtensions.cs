@@ -101,6 +101,10 @@ namespace Microsoft.AspNetCore.Components
                 Content = new StringContent(requestJson, Encoding.UTF8, "application/json")
             });
 
+            // Make sure the call was successful before we
+            // attempt to process the response content
+            response.EnsureSuccessStatusCode();
+
             if (typeof(T) == typeof(IgnoreResponse))
             {
                 return default;

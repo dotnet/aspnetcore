@@ -33,6 +33,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             services.TryAddTransient<IInlineConstraintResolver, DefaultInlineConstraintResolver>();
+            services.TryAddTransient<ObjectPoolProvider, DefaultObjectPoolProvider>();
             services.TryAddSingleton<ObjectPool<UriBuildingContext>>(s =>
             {
                 var provider = s.GetRequiredService<ObjectPoolProvider>();
@@ -75,6 +76,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<MatcherFactory, DfaMatcherFactory>();
             services.TryAddTransient<DfaMatcherBuilder>();
             services.TryAddSingleton<DfaGraphWriter>();
+            services.TryAddTransient<DataSourceDependentMatcher.Lifetime>();
 
             // Link generation related services
             services.TryAddSingleton<LinkGenerator, DefaultLinkGenerator>();
@@ -86,12 +88,13 @@ namespace Microsoft.Extensions.DependencyInjection
             //
             services.TryAddSingleton<EndpointSelector, DefaultEndpointSelector>();
             services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, HttpMethodMatcherPolicy>());
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, HostMatcherPolicy>());
 
             //
             // Misc infrastructure
             // 
             services.TryAddSingleton<RoutePatternTransformer, DefaultRoutePatternTransformer>();
-
+           
             return services;
         }
 

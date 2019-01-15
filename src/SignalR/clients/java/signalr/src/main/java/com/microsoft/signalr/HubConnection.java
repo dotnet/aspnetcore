@@ -436,8 +436,11 @@ public class HubConnection {
                 exception = new RuntimeException(errorMessage);
                 logger.error("HubConnection disconnected with an error {}.", errorMessage);
             }
-            connectionState.cancelOutstandingInvocations(exception);
-            connectionState = null;
+            if (connectionState != null) {
+                connectionState.cancelOutstandingInvocations(exception);
+                connectionState = null;
+            }
+
             logger.info("HubConnection stopped.");
             hubConnectionState = HubConnectionState.DISCONNECTED;
             handshakeResponseSubject.onComplete();

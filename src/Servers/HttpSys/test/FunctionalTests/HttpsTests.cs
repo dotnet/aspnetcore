@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        private async Task<string> SendRequestAsync(string uri, 
+        private async Task<string> SendRequestAsync(string uri,
             X509Certificate cert = null)
         {
             var handler = new WinHttpHandler();

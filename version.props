@@ -6,8 +6,11 @@
     <PreReleaseLabel>preview</PreReleaseLabel>
     <PreReleaseBrandingLabel>Preview</PreReleaseBrandingLabel>
     <ExperimentalVersionPrefix>0.3.$(AspNetCorePatchVersion)</ExperimentalVersionPrefix>
+
     <!-- ANCM versioning is intentionally 10 + AspNetCoreMajorVersion because earlier versions of ANCM shipped as 8.x. -->
     <AspNetCoreModuleVersionMajor>1$(AspNetCoreMajorVersion)</AspNetCoreModuleVersionMajor>
+    <AspNetCoreModuleVersionMinor>$(AspNetCoreMinorVersion)</AspNetCoreModuleVersionMinor>
+    <AspNetCoreModuleVersionRevision>$(AspNetCorePatchVersion)</AspNetCoreModuleVersionRevision>
 
     <OfficialBuildId Condition="'$(OfficialBuildId)' == ''">$(BUILD_BUILDNUMBER)</OfficialBuildId>
     <OfficialBuildId Condition="'$(OfficialBuildId)' == '' AND '$(TEAMCITY_VERSION)' != ''">$([System.DateTime]::Now.ToString('yyyyMMdd')).$(BUILD_NUMBER)</OfficialBuildId>
@@ -37,7 +40,7 @@
   </PropertyGroup>
 
    <PropertyGroup>
-    <BuildNumberSuffix Condition=" '$(BuildNumberSuffix)' == '' ">0</BuildNumberSuffix>
+    <BuildNumberSuffix Condition=" '$(BuildNumberSuffix)' == '' ">t000</BuildNumberSuffix>
     <VersionPrefix>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion)</VersionPrefix>
     <VersionSuffix>$(PreReleaseLabel)-$(BuildNumberSuffix)</VersionSuffix>
     <BrandingVersionSuffix>$(PreReleaseBrandingLabel) Build $(BuildNumberSuffix)</BrandingVersionSuffix>

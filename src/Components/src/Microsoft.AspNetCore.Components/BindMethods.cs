@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -88,9 +88,27 @@ namespace Microsoft.AspNetCore.Components
         /// <summary>
         /// Not intended to be used directly.
         /// </summary>
+        public static Action<UIEventArgs> SetValueHandler(Action<bool?> setter, bool? existingValue)
+        {
+            return _ => setter((bool?)((UIChangeEventArgs)_).Value);
+        }
+
+        /// <summary>
+        /// Not intended to be used directly.
+        /// </summary>
         public static Action<UIEventArgs> SetValueHandler(Action<int> setter, int existingValue)
         {
             return _ => setter(int.Parse((string)((UIChangeEventArgs)_).Value));
+        }
+
+        /// <summary>
+        /// Not intended to be used directly.
+        /// </summary>
+        public static Action<UIEventArgs> SetValueHandler(Action<int?> setter, int? existingValue)
+        {
+            return _ => setter(int.TryParse((string)((UIChangeEventArgs)_).Value, out var tmpvalue)
+                ? tmpvalue
+                : (int?)null);
         }
 
         /// <summary>
@@ -104,9 +122,29 @@ namespace Microsoft.AspNetCore.Components
         /// <summary>
         /// Not intended to be used directly.
         /// </summary>
+        public static Action<UIEventArgs> SetValueHandler(Action<long?> setter, long? existingValue)
+        {
+            return _ => setter(long.TryParse((string)((UIChangeEventArgs)_).Value, out var tmpvalue)
+                ? tmpvalue
+                : (long?)null);
+        }
+
+        /// <summary>
+        /// Not intended to be used directly.
+        /// </summary>
         public static Action<UIEventArgs> SetValueHandler(Action<float> setter, float existingValue)
         {
             return _ => setter(float.Parse((string)((UIChangeEventArgs)_).Value));
+        }
+
+        /// <summary>
+        /// Not intended to be used directly.
+        /// </summary>
+        public static Action<UIEventArgs> SetValueHandler(Action<float?> setter, float? existingValue)
+        {
+            return _ => setter(float.TryParse((string)((UIChangeEventArgs)_).Value, out var tmpvalue)
+                ? tmpvalue
+                : (float?)null);
         }
 
         /// <summary>
@@ -120,9 +158,29 @@ namespace Microsoft.AspNetCore.Components
         /// <summary>
         /// Not intended to be used directly.
         /// </summary>
+        public static Action<UIEventArgs> SetValueHandler(Action<double?> setter, double? existingValue)
+        {
+            return _ => setter(double.TryParse((string)((UIChangeEventArgs)_).Value, out var tmpvalue)
+                ? tmpvalue
+                : (double?)null);
+        }
+
+        /// <summary>
+        /// Not intended to be used directly.
+        /// </summary>
         public static Action<UIEventArgs> SetValueHandler(Action<decimal> setter, decimal existingValue)
         {
             return _ => setter(decimal.Parse((string)((UIChangeEventArgs)_).Value));
+        }
+
+        /// <summary>
+        /// Not intended to be used directly.
+        /// </summary>
+        public static Action<UIEventArgs> SetValueHandler(Action<decimal?> setter, decimal? existingValue)
+        {
+            return _ => setter(decimal.TryParse((string)((UIChangeEventArgs)_).Value, out var tmpvalue)
+                ? tmpvalue
+                : (decimal?)null);
         }
 
         /// <summary>

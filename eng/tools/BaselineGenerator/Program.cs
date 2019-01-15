@@ -96,20 +96,15 @@ namespace PackageBaselineGenerator
 
                 using (var reader = new PackageArchiveReader(nupkgPath))
                 {
-                    var first = true;
+                    doc.Root.Add(new XComment($" Package: {id}"));
+
+                    var propertyGroup = new XElement("PropertyGroup",
+                        new XAttribute("Condition", $" '$(PackageId)' == '{id}' "),
+                        new XElement("BaselinePackageVersion", version));
+                    doc.Root.Add(propertyGroup);
+
                     foreach (var group in reader.NuspecReader.GetDependencyGroups())
                     {
-                        if (first)
-                        {
-                            first = false;
-                            doc.Root.Add(new XComment($" Package: {id}"));
-
-                            var propertyGroup = new XElement("PropertyGroup",
-                                new XAttribute("Condition", $" '$(PackageId)' == '{id}' "),
-                                new XElement("BaselinePackageVersion", version));
-                            doc.Root.Add(propertyGroup);
-                        }
-
                         var itemGroup = new XElement("ItemGroup", new XAttribute("Condition", $" '$(PackageId)' == '{id}' AND '$(TargetFramework)' == '{group.TargetFramework.GetShortFolderName()}' "));
                         doc.Root.Add(itemGroup);
 
@@ -131,7 +126,7 @@ namespace PackageBaselineGenerator
             {
                 doc.Save(writer);
             }
-
+            Console.WriteLine($"Generated file in {output}");
             return 0;
         }
     }

@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <PackageTags>aspnetcore</PackageTags>
+    <Description>Microsoft.AspNetCore</Description>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <EnableApiCheck>false</EnableApiCheck>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Diagnostics" PrivateAssets="None" />
+    <Reference Include="Microsoft.AspNetCore.HostFiltering" PrivateAssets="None" />
+    <Reference Include="Microsoft.AspNetCore.Hosting" PrivateAssets="None" />
+    <Reference Include="Microsoft.AspNetCore.Routing" PrivateAssets="None" />
+    <Reference Include="Microsoft.AspNetCore.Server.IIS" PrivateAssets="None" />
+    <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" PrivateAssets="None" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel" PrivateAssets="None" />
+    <Reference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" PrivateAssets="None" />
+    <Reference Include="Microsoft.Extensions.Configuration.FileExtensions" PrivateAssets="None" />
+    <Reference Include="Microsoft.Extensions.Configuration.Json" PrivateAssets="None" />
+    <Reference Include="Microsoft.Extensions.Configuration.CommandLine" PrivateAssets="None" />
+    <Reference Include="Microsoft.Extensions.Configuration.UserSecrets" PrivateAssets="None" />
+    <Reference Include="Microsoft.Extensions.Logging" PrivateAssets="None" />
+    <Reference Include="Microsoft.Extensions.Logging.Configuration" PrivateAssets="None" />
+    <Reference Include="Microsoft.Extensions.Logging.Console" PrivateAssets="None" />
+    <Reference Include="Microsoft.Extensions.Logging.Debug" PrivateAssets="None" />
+    <Reference Include="Microsoft.Extensions.Logging.EventSource" PrivateAssets="None" />
+  </ItemGroup>
+
+</Project>

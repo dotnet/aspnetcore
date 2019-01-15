@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -31,6 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
         {
             // Arrange
             var authorizationContext = GetAuthorizationContext(anonymous: true);
+
             // The type 'AuthorizeFilter' is both a filter by itself and also a filter factory.
             // The default filter provider first checks if a type is a filter factory and creates an instance of
             // this filter.
@@ -38,6 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
             var filterFactory = authorizeFilterFactory as IFilterFactory;
             var authorizeFilter = (AuthorizeFilter)filterFactory.CreateInstance(
                 authorizationContext.HttpContext.RequestServices);
+            authorizationContext.Filters.Add(authorizeFilter);
 
             // Act
             await authorizeFilter.OnAuthorizationAsync(authorizationContext);
@@ -47,11 +50,32 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
         }
 
         [Fact]
+        public async Task OnAuthorizationAsync_AuthorizationMiddlewareHasRun_NoOp()
+        {
+            // Arrange
+            var authorizationContext = GetAuthorizationContext(anonymous: true);
+            authorizationContext.HttpContext.Items["__AuthorizationMiddlewareInvoked"] = new object();
+
+            var authorizeFilterFactory = new AuthorizeFilter();
+            var filterFactory = authorizeFilterFactory as IFilterFactory;
+            var authorizeFilter = (AuthorizeFilter)filterFactory.CreateInstance(
+                authorizationContext.HttpContext.RequestServices);
+            authorizationContext.Filters.Add(authorizeFilter);
+
+            // Act
+            await authorizeFilter.OnAuthorizationAsync(authorizationContext);
+
+            // Assert
+            Assert.Null(authorizationContext.Result);
+        }
+
+        [Fact]
         public async Task AuthorizeFilter_CreatedWithAuthorizeData_ThrowsWhenOnAuthorizationAsyncIsCalled()
         {
             // Arrange
             var authorizeFilter = new AuthorizeFilter(new[] { new AuthorizeAttribute() });
             var authorizationContext = GetAuthorizationContext();
+            authorizationContext.Filters.Add(authorizeFilter);
             var expected = "An AuthorizationPolicy cannot be created without a valid instance of " +
                 "IAuthorizationPolicyProvider.";
 
@@ -67,6 +91,7 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
             // Arrange
             var authorizeFilter = new AuthorizeFilter(new[] { new AuthorizeAttribute() });
             var authorizationContext = GetAuthorizationContext();
+            authorizationContext.Filters.Add(authorizeFilter);
             var expected = "An AuthorizationPolicy cannot be created without a valid instance of " +
                 "IAuthorizationPolicyProvider.";
 
@@ -101,6 +126,7 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
                 .Callback(() => getPolicyCount++);
             var authorizeFilter = new AuthorizeFilter(policyProvider.Object, new AuthorizeAttribute[] { new AuthorizeAttribute("whatever") });
             var authorizationContext = GetAuthorizationContext();
+            authorizationContext.Filters.Add(authorizeFilter);
 
             // Act & Assert
             await authorizeFilter.OnAuthorizationAsync(authorizationContext);
@@ -153,6 +179,7 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
             // Arrange
             var authorizeFilter = new AuthorizeFilter(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
             var authorizationContext = GetAuthorizationContext(anonymous: true);
+            authorizationContext.Filters.Add(authorizeFilter);
 
             // Act
             await authorizeFilter.OnAuthorizationAsync(authorizationContext);
@@ -223,8 +250,10 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
 
         private class TestPolicyProvider : IAuthorizationPolicyProvider
         {
-            private AuthorizationPolicy _true = new AuthorizationPolicyBuilder().RequireAssertion(_ => true).Build();
-            private AuthorizationPolicy _false = new AuthorizationPolicyBuilder().RequireAssertion(_ => false).Build();
+            private readonly AuthorizationPolicy _true =
+                new AuthorizationPolicyBuilder().RequireAssertion(_ => true).Build();
+            private readonly AuthorizationPolicy _false =
+                new AuthorizationPolicyBuilder().RequireAssertion(_ => false).Build();
 
             public int GetPolicyCalls = 0;
 
@@ -250,7 +279,7 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
                 new AuthorizeAttribute { Policy = "true"},
                 new AuthorizeAttribute { Policy = "false"}
             });
-            var authorizationContext = GetAuthorizationContext(anonymous: false, registerServices: s => s.Configure<MvcOptions>(o => o.AllowCombiningAuthorizeFilters = true));
+            var authorizationContext = GetAuthorizationContext(anonymous: false);
             // Effective policy should fail, if both are combined
             authorizationContext.Filters.Add(authorizeFilter);
             var secondFilter = new AuthorizeFilter(new AuthorizationPolicyBuilder().RequireAssertion(a => true).Build());
@@ -269,12 +298,12 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
             // Arrange
             var testProvider1 = new TestPolicyProvider();
             var testProvider2 = new TestPolicyProvider();
-            var authorizeFilter = new AuthorizeFilter(testProvider1, new IAuthorizeData[] 
+            var authorizeFilter = new AuthorizeFilter(testProvider1, new IAuthorizeData[]
             {
                 new AuthorizeAttribute { Policy = "true"},
                 new AuthorizeAttribute { Policy = "false"}
             });
-            var authorizationContext = GetAuthorizationContext(anonymous: false, registerServices: s => s.Configure<MvcOptions>(o => o.AllowCombiningAuthorizeFilters = true));
+            var authorizationContext = GetAuthorizationContext(anonymous: false);
             // Effective policy should fail, if both are combined
             authorizationContext.Filters.Add(authorizeFilter);
             var secondFilter = new AuthorizeFilter(new AuthorizationPolicyBuilder().RequireAssertion(a => true).Build());
@@ -304,7 +333,7 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
         {
             // Arrange
             var authorizeFilter = new AuthorizeFilter(new AuthorizationPolicyBuilder().RequireAssertion(a => true).Build());
-            var authorizationContext = GetAuthorizationContext(anonymous: false, registerServices: s => s.Configure<MvcOptions>(o => o.AllowCombiningAuthorizeFilters = true));
+            var authorizationContext = GetAuthorizationContext(anonymous: false);
             // Effective policy should fail, if both are combined
             authorizationContext.Filters.Add(authorizeFilter);
             var secondFilter = new AuthorizeFilter(new AuthorizationPolicyBuilder().RequireAssertion(a => false).Build());
@@ -322,7 +351,7 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
         {
             // Arrange
             var authorizeFilter = new AuthorizeFilter(new AuthorizationPolicyBuilder().RequireAssertion(a => false).Build());
-            var authorizationContext = GetAuthorizationContext(anonymous: false, registerServices: s => s.Configure<MvcOptions>(o => o.AllowCombiningAuthorizeFilters = true));
+            var authorizationContext = GetAuthorizationContext(anonymous: false);
             // Effective policy should fail, if both are combined
             authorizationContext.Filters.Add(authorizeFilter);
             var secondFilter = new AuthorizeFilter(new AuthorizationPolicyBuilder().RequireAssertion(a => false).Build());
@@ -340,7 +369,7 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
         {
             // Arrange
             var authorizeFilter = new AuthorizeFilter(new AuthorizationPolicyBuilder().RequireAssertion(a => true).Build());
-            var authorizationContext = GetAuthorizationContext(anonymous: false, registerServices: s => s.Configure<MvcOptions>(o => o.AllowCombiningAuthorizeFilters = true));
+            var authorizationContext = GetAuthorizationContext(anonymous: false);
             // Effective policy should fail, if both are combined
             authorizationContext.Filters.Add(authorizeFilter);
             authorizationContext.Filters.Add(new DerivedAuthorizeFilter());
@@ -354,8 +383,8 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
             // Assert
             Assert.IsType<ForbidResult>(authorizationContext.Result);
         }
-    
-        public class DerivedAuthorizeFilter : AuthorizeFilter 
+
+        public class DerivedAuthorizeFilter : AuthorizeFilter
         {
             public DerivedAuthorizeFilter() : base(new AuthorizationPolicyBuilder().RequireAssertion(a => false).Build())
             { }
@@ -381,6 +410,7 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
             // Arrange
             var authorizeFilter = new AuthorizeFilter(new AuthorizationPolicyBuilder().RequireRole("Wut").Build());
             var authorizationContext = GetAuthorizationContext();
+            authorizationContext.Filters.Add(authorizeFilter);
 
             // Act
             await authorizeFilter.OnAuthorizationAsync(authorizationContext);
@@ -397,6 +427,7 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
                 .RequireClaim("Permission", "CanViewComment")
                 .Build());
             var authorizationContext = GetAuthorizationContext();
+            authorizationContext.Filters.Add(authorizeFilter);
 
             // Act
             await authorizeFilter.OnAuthorizationAsync(authorizationContext);
@@ -532,10 +563,7 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
             serviceCollection.AddSingleton(auth.Object);
             serviceCollection.AddAuthorization();
             serviceCollection.AddAuthorizationPolicyEvaluator();
-            if (registerServices != null)
-            {
-                registerServices(serviceCollection);
-            }
+            registerServices?.Invoke(serviceCollection);
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
 
@@ -550,6 +578,8 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
                 httpContext.Object.User = validUser;
             }
             httpContext.SetupGet(c => c.RequestServices).Returns(serviceProvider);
+            var contextItems = new Dictionary<object, object>();
+            httpContext.SetupGet(c => c.Items).Returns(contextItems);
 
             // AuthorizationFilterContext
             var actionContext = new ActionContext(
@@ -557,7 +587,7 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
                 routeData: new RouteData(),
                 actionDescriptor: new ActionDescriptor());
 
-            var authorizationContext = new Filters.AuthorizationFilterContext(
+            var authorizationContext = new AuthorizationFilterContext(
                 actionContext,
                 Enumerable.Empty<IFilterMetadata>().ToList()
             );

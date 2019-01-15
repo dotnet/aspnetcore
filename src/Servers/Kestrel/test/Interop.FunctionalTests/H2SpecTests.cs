@@ -46,7 +46,9 @@ namespace Interop.FunctionalTests
             {
                 await host.StartAsync();
 
-                H2SpecCommands.RunTest(testCase.Id, host.GetPort(), testCase.Https, Logger);
+                await H2SpecCommands.RunTest(testCase.Id, host.GetPort(), testCase.Https, Logger);
+
+                await host.StopAsync();
             }
         }
 

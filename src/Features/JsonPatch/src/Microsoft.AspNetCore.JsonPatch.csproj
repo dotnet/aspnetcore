@@ -2,16 +2,20 @@
 
   <PropertyGroup>
     <Description>ASP.NET Core support for JSON PATCH.</Description>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;json;jsonpatch</PackageTags>
+    <IsProductPackage>true</IsProductPackage>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)ClosedGenericMatcher\*.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Newtonsoft.Json" />
-    <Reference Include="Microsoft.Extensions.ClosedGenericMatcher.Sources" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>

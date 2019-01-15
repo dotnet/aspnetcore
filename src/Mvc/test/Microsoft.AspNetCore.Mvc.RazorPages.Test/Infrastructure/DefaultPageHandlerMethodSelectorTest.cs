@@ -6,55 +6,12 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
     public class DefaultPageHandlerMethodSelectorTest
     {
-        [Fact]
-        public void LegacyBehavior_Select_ReturnsNull_WhenNoHandlerMatchesHttpMethod()
-        {
-            // Arrange
-            var descriptor1 = new HandlerMethodDescriptor
-            {
-                HttpMethod = "GET"
-            };
-
-            var descriptor2 = new HandlerMethodDescriptor
-            {
-                HttpMethod = "POST"
-            };
-
-            var pageContext = new PageContext
-            {
-                ActionDescriptor = new CompiledPageActionDescriptor
-                {
-                    HandlerMethods = new List<HandlerMethodDescriptor>()
-                    {
-                        descriptor1,
-                        descriptor2,
-                    },
-                },
-                RouteData = new RouteData(),
-                HttpContext = new DefaultHttpContext
-                {
-                    Request =
-                    {
-                        Method = "PUT"
-                    },
-                },
-            };
-            var selector = CreateSelector(legacyBehavior: true);
-
-            // Act
-            var actual = selector.Select(pageContext);
-
-            // Assert
-            Assert.Null(actual);
-        }
-
         [Fact]
         public void NewBehavior_Select_ReturnsFuzzyMatchForHead_WhenNoHeadHandlerDefined()
         {
@@ -780,13 +737,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         {
         }
 
-        private static DefaultPageHandlerMethodSelector CreateSelector(bool legacyBehavior = false)
+        private static DefaultPageHandlerMethodSelector CreateSelector()
         {
-            var options = Options.Create(new RazorPagesOptions()
-            {
-                AllowMappingHeadRequestsToGetHandler = !legacyBehavior
-            });
-            return new DefaultPageHandlerMethodSelector(options);
+            return new DefaultPageHandlerMethodSelector();
         }
     }
 }

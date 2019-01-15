@@ -1,11 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Hosting;
-using System;
-using System.Linq;
-using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.AspNetCore.Blazor.Cli.Commands;
+using Microsoft.Extensions.CommandLineUtils;
 
 namespace Microsoft.AspNetCore.Blazor.Cli
 {
@@ -13,22 +10,30 @@ namespace Microsoft.AspNetCore.Blazor.Cli
     {
         static int Main(string[] args)
         {
-            var app = new CommandLineApplication
+            var app = new CommandLineApplication(throwOnUnexpectedArg: false)
             {
                 Name = "blazor-cli"
             };
             app.HelpOption("-?|-h|--help");
 
-            app.Command("serve", ServeCommand.Command);
+            app.Commands.Add(new ServeCommand(app));
 
-            if (args.Length > 0)
-            {
-                return app.Execute(args);
-            }
-            else
+            // A command is always required
+            app.OnExecute(() =>
             {
                 app.ShowHelp();
                 return 0;
+            });
+
+            try
+            {
+                return app.Execute(args);
+            }
+            catch (CommandParsingException cex)
+            {
+                app.Error.WriteLine(cex.Message);
+                app.ShowHelp();
+                return 1;
             }
         }
     }

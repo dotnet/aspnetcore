@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc
     public class ViewViewComponentResultTest
     {
         private readonly ITempDataDictionary _tempDataDictionary =
-            new TempDataDictionary(new DefaultHttpContext(), new SessionStateTempDataProvider());
+            new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
 
         [Fact]
         public void Execute_RendersPartialViews()
@@ -529,7 +529,7 @@ namespace Microsoft.AspNetCore.Mvc
                 actionContext,
                 view,
                 viewData,
-                new TempDataDictionary(httpContext, new SessionStateTempDataProvider()),
+                new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>()),
                 TextWriter.Null,
                 new HtmlHelperOptions());
 

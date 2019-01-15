@@ -89,6 +89,15 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        public void CanArriveAtFallbackPageFromBadURI()
+        {
+            SetUrlViaPushState("/Oopsie_Daisies%20%This_Aint_A_Real_Page"); 
+
+            var app = MountTestComponent<TestRouter>();
+            Assert.Equal("Oops, that component wasn't found!", app.FindElement(By.Id("test-info")).Text);
+        }
+
+        [Fact]
         public void CanFollowLinkToOtherPage()
         {
             SetUrlViaPushState("/");
@@ -203,7 +212,17 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             var app = MountTestComponent<TestRouter>();
             app.FindElement(By.LinkText("With parameters")).Click();
+            WaitAssert.Equal("Your full name is Abc .", () => app.FindElement(By.Id("test-info")).Text);
+            AssertHighlightedLinks("With parameters");
+
+            // Can add more parameters while remaining on same page
+            app.FindElement(By.LinkText("With more parameters")).Click();
             WaitAssert.Equal("Your full name is Abc McDef.", () => app.FindElement(By.Id("test-info")).Text);
+            AssertHighlightedLinks("With parameters", "With more parameters");
+
+            // Can remove parameters while remaining on same page
+            app.FindElement(By.LinkText("With parameters")).Click();
+            WaitAssert.Equal("Your full name is Abc .", () => app.FindElement(By.Id("test-info")).Text);
             AssertHighlightedLinks("With parameters");
         }
 
@@ -268,9 +287,33 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             SetUrlViaPushState("/");
 
             var app = MountTestComponent<TestRouter>();
-            app.FindElement(By.TagName("button")).Click();
+            var testSelector = WaitUntilTestSelectorReady();
+
+            app.FindElement(By.Id("do-navigation")).Click();
+            WaitAssert.True(() => Browser.Url.EndsWith("/Other"));
             WaitAssert.Equal("This is another page.", () => app.FindElement(By.Id("test-info")).Text);
             AssertHighlightedLinks("Other", "Other with base-relative URL (matches all)");
+
+            // Because this was client-side navigation, we didn't lose the state in the test selector
+            Assert.Equal(typeof(TestRouter).FullName, testSelector.SelectedOption.GetAttribute("value"));
+        }
+
+        [Fact]
+        public void CanNavigateProgrammaticallyWithForceLoad()
+        {
+            SetUrlViaPushState("/");
+
+            var app = MountTestComponent<TestRouter>();
+            var testSelector = WaitUntilTestSelectorReady();
+
+            app.FindElement(By.Id("do-navigation-forced")).Click();
+            WaitAssert.True(() => Browser.Url.EndsWith("/Other"));
+
+            // Because this was a full-page load, our element references should no longer be valid
+            Assert.Throws<StaleElementReferenceException>(() =>
+            {
+                testSelector.SelectedOption.GetAttribute("value");
+            });
         }
 
         [Fact]

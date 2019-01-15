@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -186,8 +186,8 @@ namespace Microsoft.AspNetCore.Hosting
             }
             catch
             {
-                // Dispose the host if there's a failure to initialize, this should clean up
-                // will dispose services that were constructed until the exception was thrown
+                // Dispose the host if there's a failure to initialize, this should dispose
+                // services that were constructed until the exception was thrown
                 host.Dispose();
                 throw;
             }
@@ -272,17 +272,12 @@ namespace Microsoft.AspNetCore.Hosting
             services.AddSingleton<DiagnosticSource>(listener);
 
             services.AddTransient<IApplicationBuilderFactory, ApplicationBuilderFactory>();
-            services.AddTransient<IHttpContextFactory, HttpContextFactory>();
+            services.AddTransient<IHttpContextFactory, DefaultHttpContextFactory>();
             services.AddScoped<IMiddlewareFactory, MiddlewareFactory>();
             services.AddOptions();
             services.AddLogging();
 
-            // Conjure up a RequestServices
-            services.AddTransient<IStartupFilter, AutoRequestServicesStartupFilter>();
             services.AddTransient<IServiceProviderFactory<IServiceCollection>, DefaultServiceProviderFactory>();
-
-            // Ensure object pooling is available everywhere.
-            services.AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
 
             if (!string.IsNullOrEmpty(_options.StartupAssembly))
             {

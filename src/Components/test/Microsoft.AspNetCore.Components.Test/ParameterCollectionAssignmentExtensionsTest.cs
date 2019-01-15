@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Components.Test
             var target = new HasInstanceProperties();
 
             // Act
-            parameterCollection.AssignToProperties(target);
+            parameterCollection.SetParameterProperties(target);
 
             // Assert
             Assert.Equal(123, target.IntProp);
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Components.Test
             var target = new HasInstanceProperties();
 
             // Act
-            parameterCollection.AssignToProperties(target);
+            parameterCollection.SetParameterProperties(target);
 
             // Assert
             Assert.Equal(123, target.IntProp);
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Components.Test
             var target = new HasInheritedProperties();
 
             // Act
-            parameterCollection.AssignToProperties(target);
+            parameterCollection.SetParameterProperties(target);
 
             // Assert
             Assert.Equal(123, target.IntProp);
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public void NoIncomingParameterMatchesDeclaredParameter_LeavesValueUnchanged()
+        public void NoIncomingParameterMatchesDeclaredParameter_SetValuesDefault()
         {
             // Arrange
             var existingObjectValue = new object();
@@ -86,12 +86,12 @@ namespace Microsoft.AspNetCore.Components.Test
             var parameterCollection = new ParameterCollectionBuilder().Build();
 
             // Act
-            parameterCollection.AssignToProperties(target);
+            parameterCollection.SetParameterProperties(target);
 
             // Assert
-            Assert.Equal(456, target.IntProp);
-            Assert.Equal("Existing value", target.StringProp);
-            Assert.Same(existingObjectValue, target.ObjectPropCurrentValue);
+            Assert.Equal(0, target.IntProp);
+            Assert.Null(target.StringProp);
+            Assert.Null(target.ObjectPropCurrentValue);
         }
 
         [Fact]
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act
             var ex = Assert.Throws<InvalidOperationException>(
-                () => parameterCollection.AssignToProperties(target));
+                () => parameterCollection.SetParameterProperties(target));
 
             // Assert
             Assert.Equal(
@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act
             var ex = Assert.Throws<InvalidOperationException>(
-                () => parameterCollection.AssignToProperties(target));
+                () => parameterCollection.SetParameterProperties(target));
 
             // Assert
             Assert.Equal(default, target.IntProp);
@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act
             var ex = Assert.Throws<InvalidOperationException>(
-                () => parameterCollection.AssignToProperties(target));
+                () => parameterCollection.SetParameterProperties(target));
 
             // Assert
             Assert.Equal(
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act
             var ex = Assert.Throws<InvalidOperationException>(
-                () => parameterCollection.AssignToProperties(target));
+                () => parameterCollection.SetParameterProperties(target));
 
             // Assert
             Assert.Equal(
@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act
             var ex = Assert.Throws<InvalidOperationException>(() =>
-                parameterCollection.AssignToProperties(target));
+                parameterCollection.SetParameterProperties(target));
 
             // Assert
             Assert.Equal(
@@ -205,14 +205,14 @@ namespace Microsoft.AspNetCore.Components.Test
             // an allowed scenario because there would be no way for the consumer to specify
             // both property values, and it's no good leaving the shadowed one unset because the
             // base class can legitimately depend on it for correct functioning.
-            
+
             // Arrange
             var parameterCollection = new ParameterCollectionBuilder().Build();
             var target = new HasParameterClashingWithInherited();
 
             // Act
             var ex = Assert.Throws<InvalidOperationException>(() =>
-                parameterCollection.AssignToProperties(target));
+                parameterCollection.SetParameterProperties(target));
 
             // Assert
             Assert.Equal(
@@ -226,7 +226,7 @@ namespace Microsoft.AspNetCore.Components.Test
         {
             // "internal" to show we're not requiring public accessors, but also
             // to keep the assertions simple in the tests
-            
+
             [Parameter] internal int IntProp { get; set; }
             [Parameter] internal string StringProp { get; set; }
 

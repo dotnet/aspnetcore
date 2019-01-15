@@ -454,7 +454,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             var attributes = parameterInfo.GetCustomAttributes(inherit: true);
 
             BindingInfo bindingInfo;
-            if (_mvcOptions.AllowValidatingTopLevelNodes && _modelMetadataProvider is ModelMetadataProvider modelMetadataProviderBase)
+            if (_modelMetadataProvider is ModelMetadataProvider modelMetadataProviderBase)
             {
                 var modelMetadata = modelMetadataProviderBase.GetMetadataForParameter(parameterInfo);
                 bindingInfo = BindingInfo.GetBindingInfo(attributes, modelMetadata);

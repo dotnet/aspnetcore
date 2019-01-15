@@ -1,8 +1,6 @@
 <Project>
 
   <PropertyGroup>
-    <!-- _ProjectsOnly is for local builds and shouldn't be used on CI. -->
-    <DisableCodeSigning Condition=" '$(_ProjectsOnly)' == 'true' ">true</DisableCodeSigning>
     <CodeSignDependsOn>$(CodeSignDependsOn);CollectFileSignInfo</CodeSignDependsOn>
   </PropertyGroup>
 
@@ -28,8 +26,7 @@
         PackageSigningCertName=$(PackageSigningCertName);
         VsixSigningCertName=$(VsixSigningCertName);
         JarSigningCertName=$(JarSigningCertName);
-        ArtifactsDir=$(ArtifactsDir);
-        BuildDir=$(BuildDir)
+        ArtifactsDir=$(ArtifactsDir)
       </GetFileSignInfoProps>
     </PropertyGroup>
 

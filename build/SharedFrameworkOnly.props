@@ -15,6 +15,7 @@
     <SharedFrameworkAndPackage Include="Microsoft.AspNetCore.Http.Features" />
     <SharedFrameworkAndPackage Include="Microsoft.AspNetCore.SignalR.Common" />
     <SharedFrameworkAndPackage Include="Microsoft.AspNetCore.Connections.Abstractions" />
+    <SharedFrameworkAndPackage Include="Microsoft.AspNetCore.Http.Connections.Common" />
 
     <SharedFrameworkOnlyPackage Include="@(Dependency)" Exclude="@(SharedFrameworkAndPackage)" />
   </ItemGroup>

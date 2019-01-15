@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading;
-using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Http
@@ -39,14 +38,6 @@ namespace Microsoft.AspNetCore.Http
         /// Gets an object that manages the establishment of WebSocket connections for this request.
         /// </summary>
         public abstract WebSocketManager WebSockets { get; }
-
-        /// <summary>
-        /// This is obsolete and will be removed in a future version. 
-        /// The recommended alternative is to use Microsoft.AspNetCore.Authentication.AuthenticationHttpContextExtensions.
-        /// See https://go.microsoft.com/fwlink/?linkid=845470.
-        /// </summary>
-        [Obsolete("This is obsolete and will be removed in a future version. The recommended alternative is to use Microsoft.AspNetCore.Authentication.AuthenticationHttpContextExtensions. See https://go.microsoft.com/fwlink/?linkid=845470.")]
-        public abstract AuthenticationManager Authentication { get; }
 
         /// <summary>
         /// Gets or sets the user for this request.

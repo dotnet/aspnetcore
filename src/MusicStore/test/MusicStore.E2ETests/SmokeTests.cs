@@ -22,18 +22,8 @@ namespace E2ETests
                 .WithAllAncmVersions()
                 .WithAllHostingModels();
 
-        // ANCM In-process cannot run on netcoreapp2.1 and below
-        public static TestMatrix TestVariantsWithoutInproc
-            => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Kestrel, ServerType.HttpSys)
-                .WithTfms(Tfm.NetCoreApp30)
-                .WithAllApplicationTypes()
-                .WithAllAncmVersions()
-                .WithHostingModels(HostingModel.OutOfProcess)
-                .WithAllArchitectures();
-
         [ConditionalTheory]
         [MemberData(nameof(TestVariants))]
-        [MemberData(nameof(TestVariantsWithoutInproc))]
         public async Task Smoke_Tests(TestVariant variant)
         {
             var testName = $"SmokeTestSuite_{variant}";

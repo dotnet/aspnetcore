@@ -634,16 +634,16 @@ describe("hubConnection", () => {
             });
 
             if (transportType !== HttpTransportType.LongPolling) {
-                it("terminates if no messages received within timeout interval", (done) => {
+                it("terminates if no messages received within timeout interval", async (done) => {
                     const hubConnection = getConnectionBuilder(transportType).build();
                     hubConnection.serverTimeoutInMilliseconds = 100;
 
-                    hubConnection.start().then(() => {
-                        hubConnection.onclose((error) => {
-                            expect(error).toEqual(new Error("Server timeout elapsed without receiving a message from the server."));
-                            done();
-                        });
+                    hubConnection.onclose((error) => {
+                        expect(error).toEqual(new Error("Server timeout elapsed without receiving a message from the server."));
+                        done();
                     });
+
+                    await hubConnection.start();
                 });
             }
 

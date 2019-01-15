@@ -1,0 +1,13 @@
+﻿<Project>
+
+  <!-- Not including parent is intentional, this build should be isolated -->
+  <Import Project="build\sources.props" />
+  <Import Project="build\dependencies.props" />
+  <Import Project="version.props" />
+
+  <PropertyGroup>
+    <EnableApiCheck>false</EnableApiCheck>
+    <GenerateSourceLinkFile>false</GenerateSourceLinkFile>
+  </PropertyGroup>
+
+</Project>

@@ -210,7 +210,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         private async Task WriteAsyncAwaited(char[] values, int index, int count)
         {
             Debug.Assert(count > 0);
-            Debug.Assert(_charBufferSize - _charBufferCount > count);
+            Debug.Assert(_charBufferSize - _charBufferCount < count);
 
             while (count > 0)
             {
@@ -220,7 +220,6 @@ namespace Microsoft.AspNetCore.WebUtilities
                 }
 
                 CopyToCharBuffer(values, ref index, ref count);
-                Debug.Assert(count == 0);
             }
         }
 

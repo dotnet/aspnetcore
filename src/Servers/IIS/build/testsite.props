@@ -1,0 +1,81 @@
+<Project>
+
+  <PropertyGroup>
+    <RuntimeIdentifiers>$(RuntimeIdentifiers);win7-x64;win7-x86</RuntimeIdentifiers>
+    <Platforms>x64;x86</Platforms>
+    <IISExpressAppHostConfig>$(MSBuildThisFileDirectory)applicationhost.config</IISExpressAppHostConfig>
+    <IISAppHostConfig>$(MSBuildThisFileDirectory)applicationhost.iis.config</IISAppHostConfig>
+    <PreserveCompilationContext>false</PreserveCompilationContext>
+    <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
+    <!-- Work around until we get a new WebSdk -->
+    <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
+  </PropertyGroup>
+
+  <Import Project="assets.props" />
+
+  <PropertyGroup Condition="'$(NativePlatform)' == 'x86'">
+    <IISExpressPath>$(MSBuildProgramFiles32)\IIS Express\iisexpress.exe</IISExpressPath>
+    <IISPath>$(SystemRoot)\SysWOW64\inetsrv\w3wp.exe</IISPath>
+    <NativeFolder>Win32</NativeFolder>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(NativePlatform)' == 'x64'">
+    <IISExpressPath>$(ProgramW6432)\IIS Express\iisexpress.exe</IISExpressPath>
+    <IISPath>$(SystemRoot)\System32\inetsrv\w3wp.exe</IISPath>
+    <NativeFolder>x64</NativeFolder>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- For standalone publish, all dlls are flattened to the same folder.
+         Set the base path to the request handler
+    -->
+    <BasePathForRequestHandler Condition="'$(RuntimeIdentifier)' == ''">$(NativePlatform)\</BasePathForRequestHandler>
+
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <IISExpressArguments>/config:"$(IISExpressAppHostConfig)" /systray:false</IISExpressArguments>
+    <IISArguments>-h "$(IISAppHostConfig)"</IISArguments>
+
+    <AncmInProcessRHPath>aspnetcorev2_inprocess.dll</AncmInProcessRHPath>
+    <DotNetPath>$(userprofile)\.dotnet\$(NativePlatform)\dotnet.exe</DotNetPath>
+  </PropertyGroup>
+
+  <Target Name="CopyLaunchSettings" AfterTargets="CoreBuild">
+    <!-- This would always override launch settings files in test projects by the default one -->
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)launchSettings.json" DestinationFolder="$(MSBuildProjectDirectory)\Properties" SkipUnchangedFiles="true" />
+  </Target>
+
+  <!-- Deps file injection-->
+  <ItemGroup Condition="('$(InProcessTestSite)' == 'true') AND ('$(ReferenceTestTasks)' != 'false')">
+    <ProjectReference Include="$(MSBuildThisFileDirectory)..\IIS\test\testassets\TestTasks\TestTasks.csproj">
+      <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+
+  <Target Name="PrepareInjectionApp" Condition="'$(InProcessTestSite)' == 'true'">
+    <PropertyGroup>
+      <InjectDepsAssembly>$(MSBuildThisFileDirectory)..\IIS\test\testassets\TestTasks\bin\$(Configuration)\$(TargetFramework)\TestTasks</InjectDepsAssembly>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(TargetFrameworkIdentifier)' != '.NETFramework' ">
+      <InjectDepsApp>dotnet $(InjectDepsAssembly).dll</InjectDepsApp>
+    </PropertyGroup>
+  </Target>
+
+
+  <Target Name="InjectRequestHandler"
+          Condition=" '$(InProcessTestSite)' == 'true' AND '$(OS)' == 'Windows_NT' AND '$(TargetFrameworkIdentifier)' != '.NETFramework'"
+          AfterTargets="GenerateBuildDependencyFile"
+          DependsOnTargets="PrepareInjectionApp">
+    <Exec Command="$(InjectDepsApp) &quot;$(ProjectDepsFilePath)&quot; $(RuntimeIdentifier) " />
+  </Target>
+
+  <Target Name="InjectRequestHandlerOnPublish"
+          Condition=" '$(InProcessTestSite)' == 'true' AND '$(OS)' == 'Windows_NT' AND '$(TargetFrameworkIdentifier)' != '.NETFramework'"
+          AfterTargets="GeneratePublishDependencyFile"
+          DependsOnTargets="PrepareInjectionApp">
+    <Exec Command="$(InjectDepsApp) &quot;$(PublishDepsFilePath)&quot; $(RuntimeIdentifier) " />
+  </Target>
+
+</Project>

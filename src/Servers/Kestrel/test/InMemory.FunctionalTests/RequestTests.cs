@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -53,6 +53,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                 Assert.False(requestBodyPersisted);
                 Assert.False(responseBodyPersisted);
+
+                await server.StopAsync();
             }
         }
 
@@ -60,6 +62,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         public async Task RequestBodyReadAsyncCanBeCancelled()
         {
             var helloTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var readTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             var cts = new CancellationTokenSource();
 
             using (var server = new TestServer(async context =>
@@ -81,7 +84,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                 try
                 {
-                    await context.Request.Body.ReadAsync(buffer, 0, 1, cts.Token).DefaultTimeout();
+                    var task = context.Request.Body.ReadAsync(buffer, 0, buffer.Length, cts.Token);
+                    readTcs.TrySetResult(null);
+                    await task;
 
                     context.Response.ContentLength = 12;
                     await context.Response.WriteAsync("Read success");
@@ -107,11 +112,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await connection.Send("Hello ");
 
                     await helloTcs.Task;
+                    await readTcs.Task;
 
                     // Cancel the body after hello is read
                     cts.Cancel();
-
-                    await connection.Send("World");
 
                     await connection.Receive($"HTTP/1.1 200 OK",
                            $"Date: {server.Context.DateHeaderValue}",
@@ -119,6 +123,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                            "",
                            "Read cancelled");
                 }
+                await server.StopAsync();
             }
         }
 
@@ -153,6 +158,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+                await server.StopAsync();
             }
 
             Assert.True(dataRead);
@@ -224,6 +230,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         Assert.Equal(queryValue, queryTcs.Task.Result["q"]);
                     }
                 }
+                await server.StopAsync();
             }
         }
 
@@ -239,6 +246,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             {
                 var requestId = await server.HttpClientSlim.GetStringAsync($"http://localhost:{server.Port}/");
                 Assert.Equal(knownId, requestId);
+                await server.StopAsync();
             }
         }
 
@@ -295,6 +303,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         usedIds.Add(id);
                     }
                 }
+                await server.StopAsync();
             }
         }
 
@@ -329,6 +338,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "Goodbye");
                 }
+                await server.StopAsync();
             }
         }
 
@@ -369,6 +379,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "Hello World");
                 }
+                await server.StopAsync();
             }
         }
 
@@ -403,6 +414,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "Goodbye");
                 }
+                await server.StopAsync();
             }
         }
 
@@ -442,6 +454,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "Goodbye");
                 }
+                await server.StopAsync();
             }
         }
 
@@ -498,6 +511,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "Goodbye");
                 }
+                await server.StopAsync();
             }
         }
 
@@ -530,6 +544,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "Hello World");
                 }
+                await server.StopAsync();
             }
         }
 
@@ -579,6 +594,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+                await server.StopAsync();
             }
         }
 
@@ -608,6 +624,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     connection.ShutdownSend();
                     await connection.ReceiveEnd();
                 }
+                await server.StopAsync();
             }
         }
 
@@ -658,6 +675,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+                await server.StopAsync();
             }
         }
 
@@ -695,6 +713,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         message);
                 }
+                await server.StopAsync();
             }
         }
 
@@ -771,6 +790,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 Assert.Equal(1, streamCount);
                 Assert.Equal(1, requestHeadersCount);
                 Assert.Equal(1, responseHeadersCount);
+                await server.StopAsync();
             }
         }
 
@@ -789,6 +809,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     await connection.Receive("HTTP/1.1 200 OK");
                 }
+                await server.StopAsync();
             }
         }
 
@@ -830,6 +851,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+                await server.StopAsync();
             }
         }
 
@@ -878,6 +900,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+                await server.StopAsync();
             }
         }
 
@@ -904,6 +927,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+                await server.StopAsync();
             }
         }
 
@@ -936,6 +960,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "goodbye");
                 }
+                await server.StopAsync();
             }
         }
 
@@ -996,6 +1021,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "hello");
                 }
+                await server.StopAsync();
             }
         }
 
@@ -1071,6 +1097,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "Hello2");
                 }
+                await server.StopAsync();
             }
         }
 
@@ -1115,6 +1142,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
+                await server.StopAsync();
             }
         }
 

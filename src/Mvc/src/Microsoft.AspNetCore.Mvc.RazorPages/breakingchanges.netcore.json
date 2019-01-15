@@ -27,5 +27,25 @@
   {
     "TypeId": "public static class Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.PageDirectiveFeature",
     "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.RazorPages.RazorPagesOptions : System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Mvc.Infrastructure.ICompatibilitySwitch>",
+    "MemberId": "public System.Boolean get_AllowAreas()",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.RazorPages.RazorPagesOptions : System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Mvc.Infrastructure.ICompatibilitySwitch>",
+    "MemberId": "public System.Boolean get_AllowMappingHeadRequestsToGetHandler()",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.RazorPages.RazorPagesOptions : System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Mvc.Infrastructure.ICompatibilitySwitch>",
+    "MemberId": "public System.Void set_AllowAreas(System.Boolean value)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.RazorPages.RazorPagesOptions : System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Mvc.Infrastructure.ICompatibilitySwitch>",
+    "MemberId": "public System.Void set_AllowMappingHeadRequestsToGetHandler(System.Boolean value)",
+    "Kind": "Removal"
   }
 ]

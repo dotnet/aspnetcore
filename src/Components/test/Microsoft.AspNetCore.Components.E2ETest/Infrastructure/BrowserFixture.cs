@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using OpenQA.Selenium;
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
 
             try
             {
-                var driver = new RemoteWebDriver(opts);
+                var driver = new RemoteWebDriver(SeleniumStandaloneServer.Instance.Uri, opts);
                 driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(1);
                 Browser = driver;
                 Logs = new RemoteLogs(driver);

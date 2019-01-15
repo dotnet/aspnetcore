@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -48,10 +48,14 @@ namespace Microsoft.AspNetCore.Components.Reflection
             {
                 _setterDelegate = (Action<TTarget, TValue>)Delegate.CreateDelegate(
                     typeof(Action<TTarget, TValue>), setMethod);
+                var propertyType = typeof(TValue);
             }
 
             public void SetValue(object target, object value)
                 => _setterDelegate((TTarget)target, (TValue)value);
+
+            public void SetDefaultValue(object target)
+                => _setterDelegate((TTarget)target, default);
         }
     }
 }

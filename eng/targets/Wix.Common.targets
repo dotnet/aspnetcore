@@ -17,11 +17,6 @@
     </SignBundleEngine>
   </ItemDefinitionGroup>
 
-  <ItemGroup>
-    <Compile Include="**\*.wxs" Exclude="obj\**\*;bin\**\*" />
-    <EmbeddedResource Include="**\*.wxl" Exclude="obj\**\*;bin**\*;" />
-  </ItemGroup>
-
   <PropertyGroup Condition="'$(OutputType)' == 'package'">
     <EmbedCab Condition="'$(EmbedCab)' == ''">yes</EmbedCab>
     <Cabinet Condition="'$(Cabinet)' == ''">$(OutputName.Replace('-', '_')).cab</Cabinet>
@@ -46,5 +41,4 @@
   <Import Project="$(MSBuildProjectExtensionsPath)$(MSBuildProjectFile).*.targets" />
   <Import Project="$(WixTargetsPath)" Condition="'$(WixTargetsPath)' != '' " />
   <Import Project="$(MicroBuildPluginDirectory)\MicroBuild.Plugins.*\**\build\MicroBuild.Plugins.*.targets" Condition="'$(DisableMicroBuild)' != 'true' AND '$(MicroBuildPluginDirectory)' != ''" />
-
 </Project>

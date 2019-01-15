@@ -113,6 +113,7 @@ describe("HubConnection", () => {
                             "arg",
                             42,
                         ],
+                        streamIds: [],
                         target: "testMethod",
                         type: MessageType.Invocation,
                     });
@@ -144,6 +145,7 @@ describe("HubConnection", () => {
                             42,
                         ],
                         invocationId: connection.lastInvocationId,
+                        streamIds: [],
                         target: "testMethod",
                         type: MessageType.Invocation,
                     });
@@ -342,8 +344,9 @@ describe("HubConnection", () => {
                     const invokePromise = hubConnection.invoke("testMethod", "arg", subject);
 
                     expect(JSON.parse(connection.sentData[1])).toEqual({
-                        arguments: ["arg", {StreamId: "1"}],
-                        invocationId: "0",
+                        arguments: ["arg"],
+                        invocationId: "1",
+                        streamIds: ["0"],
                         target: "testMethod",
                         type: MessageType.Invocation,
                     });
@@ -353,12 +356,12 @@ describe("HubConnection", () => {
                         setTimeout(resolve, 50);
                     });
                     expect(JSON.parse(connection.sentData[2])).toEqual({
+                        invocationId: "0",
                         item: "item numero uno",
-                        streamId: "1",
-                        type: MessageType.StreamData,
+                        type: MessageType.StreamItem,
                     });
 
-                    connection.receive({ type: MessageType.Completion, invocationId: connection.lastInvocationId, result: "foo" });
+                    connection.receive({ type: MessageType.Completion, invocationId: "1", result: "foo" });
 
                     expect(await invokePromise).toBe("foo");
                 } finally {
@@ -378,7 +381,8 @@ describe("HubConnection", () => {
                     await hubConnection.send("testMethod", "arg", subject);
 
                     expect(JSON.parse(connection.sentData[1])).toEqual({
-                        arguments: ["arg", { StreamId: "1" }],
+                        arguments: ["arg"],
+                        streamIds: ["0"],
                         target: "testMethod",
                         type: MessageType.Invocation,
                     });
@@ -388,9 +392,9 @@ describe("HubConnection", () => {
                         setTimeout(resolve, 50);
                     });
                     expect(JSON.parse(connection.sentData[2])).toEqual({
+                        invocationId: "0",
                         item: "item numero uno",
-                        streamId: "1",
-                        type: MessageType.StreamData,
+                        type: MessageType.StreamItem,
                     });
                 } finally {
                     await hubConnection.stop();
@@ -420,8 +424,9 @@ describe("HubConnection", () => {
                     });
 
                     expect(JSON.parse(connection.sentData[1])).toEqual({
-                        arguments: ["arg", { StreamId: "1" }],
-                        invocationId: "0",
+                        arguments: ["arg"],
+                        invocationId: "1",
+                        streamIds: ["0"],
                         target: "testMethod",
                         type: MessageType.StreamInvocation,
                     });
@@ -431,12 +436,12 @@ describe("HubConnection", () => {
                         setTimeout(resolve, 50);
                     });
                     expect(JSON.parse(connection.sentData[2])).toEqual({
+                        invocationId: "0",
                         item: "item numero uno",
-                        streamId: "1",
-                        type: MessageType.StreamData,
+                        type: MessageType.StreamItem,
                     });
 
-                    connection.receive({ type: MessageType.StreamItem, invocationId: connection.lastInvocationId, item: "foo" });
+                    connection.receive({ type: MessageType.StreamItem, invocationId: "1", item: "foo" });
                     expect(streamItem).toEqual("foo");
 
                     expect(streamError).toBe(null);
@@ -891,6 +896,7 @@ describe("HubConnection", () => {
                             42,
                         ],
                         invocationId: connection.lastInvocationId,
+                        streamIds: [],
                         target: "testStream",
                         type: MessageType.StreamInvocation,
                     });

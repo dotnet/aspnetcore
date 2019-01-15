@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core middleware for exception handling, exception display pages, and diagnostics information. Includes developer exception page middleware, exception handler middleware, runtime info middleware, status code page middleware, and welcome page middleware</Description>
@@ -10,18 +10,19 @@
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)Diagnostics\*.cs" />
+    <Compile Include="$(SharedSourceRoot)RazorViews\*.cs" />
+    <Compile Include="$(SharedSourceRoot)StackTrace\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
+    <Reference Include="Microsoft.AspNetCore.Routing" />
     <Reference Include="Microsoft.AspNetCore.WebUtilities" />
     <Reference Include="Microsoft.Extensions.FileProviders.Physical" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="Microsoft.Extensions.Options" />
-    <Reference Include="Microsoft.Extensions.RazorViews.Sources" PrivateAssets="All" />
-    <Reference Include="Microsoft.Extensions.StackTrace.Sources" PrivateAssets="All" />
     <Reference Include="Microsoft.Extensions.TypeNameHelper.Sources" PrivateAssets="All" />
     <Reference Include="System.Diagnostics.DiagnosticSource" />
     <Reference Include="System.Reflection.Metadata" />

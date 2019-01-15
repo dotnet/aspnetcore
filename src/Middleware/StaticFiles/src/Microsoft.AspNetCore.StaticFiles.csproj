@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(RepositoryRoot)\src\Shared\RangeHelper\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)RangeHelper\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>

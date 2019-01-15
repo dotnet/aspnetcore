@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
@@ -7,6 +7,7 @@
     <LangVersion>latest</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <IsTestAssetProject>true</IsTestAssetProject>
+    <IsProjectReferenceProvider>true</IsProjectReferenceProvider>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,7 +25,7 @@
   <!-- These references are used when running on the Benchmarks Server -->
   <ItemGroup Condition="'$(BenchmarksTargetFramework)' != ''">
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" version="2.2.0" />
-    <KnownFrameworkReference 
+    <KnownFrameworkReference
       Update="Microsoft.AspNetCore.App"
       DefaultRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)"
       LatestRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)"

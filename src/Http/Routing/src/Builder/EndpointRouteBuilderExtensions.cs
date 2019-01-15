@@ -182,16 +182,16 @@ namespace Microsoft.AspNetCore.Builder
 
             const int defaultOrder = 0;
 
-            var routeEndpointModel = new RouteEndpointModel(
+            var routeEndpointBuilder = new RouteEndpointBuilder(
                 requestDelegate,
                 pattern,
                 defaultOrder);
-            routeEndpointModel.DisplayName = displayName;
+            routeEndpointBuilder.DisplayName = displayName;
             if (metadata != null)
             {
                 foreach (var item in metadata)
                 {
-                    routeEndpointModel.Metadata.Add(item);
+                    routeEndpointBuilder.Metadata.Add(item);
                 }
             }
 
@@ -203,7 +203,7 @@ namespace Microsoft.AspNetCore.Builder
                 builder.DataSources.Add(modelEndpointDataSource);
             }
 
-            return modelEndpointDataSource.AddEndpointModel(routeEndpointModel);
+            return modelEndpointDataSource.AddEndpointBuilder(routeEndpointBuilder);
         }
         #endregion
     }

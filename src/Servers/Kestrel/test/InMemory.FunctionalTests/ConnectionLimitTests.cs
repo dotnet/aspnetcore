@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -36,12 +36,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 await context.Response.WriteAsync("Hello");
                 await requestTcs.Task;
             }, counter))
-            using (var connection = server.CreateConnection())
             {
-                await connection.SendEmptyGetAsKeepAlive(); ;
-                await connection.Receive("HTTP/1.1 200 OK");
-                Assert.True(await lockedTcs.Task.DefaultTimeout());
-                requestTcs.TrySetResult(null);
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.SendEmptyGetAsKeepAlive(); ;
+                    await connection.Receive("HTTP/1.1 200 OK");
+                    Assert.True(await lockedTcs.Task.DefaultTimeout());
+                    requestTcs.TrySetResult(null);
+                }
+
+                await server.StopAsync();
             }
 
             await releasedTcs.Task.DefaultTimeout();
@@ -63,33 +67,36 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     }
                 }
             }, max: 1))
-            using (var disposables = new DisposableStack<InMemoryConnection>())
             {
-                var upgraded = server.CreateConnection();
-                disposables.Push(upgraded);
-
-                await upgraded.SendEmptyGetWithUpgrade();
-                await upgraded.Receive("HTTP/1.1 101");
-                // once upgraded, normal connection limit is decreased to allow room for more "normal" connections
-
-                var connection = server.CreateConnection();
-                disposables.Push(connection);
-
-                await connection.SendEmptyGetAsKeepAlive();
-                await connection.Receive("HTTP/1.1 200 OK");
-
-                using (var rejected = server.CreateConnection())
+                using (var disposables = new DisposableStack<InMemoryConnection>())
                 {
-                    try
-                    {
-                        // this may throw IOException, depending on how fast Kestrel closes the socket
-                        await rejected.SendEmptyGetAsKeepAlive();
-                    }
-                    catch { }
+                    var upgraded = server.CreateConnection();
+                    disposables.Push(upgraded);
 
-                    // connection should close without sending any data
-                    await rejected.WaitForConnectionClose();
+                    await upgraded.SendEmptyGetWithUpgrade();
+                    await upgraded.Receive("HTTP/1.1 101");
+                    // once upgraded, normal connection limit is decreased to allow room for more "normal" connections
+
+                    var connection = server.CreateConnection();
+                    disposables.Push(connection);
+
+                    await connection.SendEmptyGetAsKeepAlive();
+                    await connection.Receive("HTTP/1.1 200 OK");
+
+                    using (var rejected = server.CreateConnection())
+                    {
+                        try
+                        {
+                            // this may throw IOException, depending on how fast Kestrel closes the socket
+                            await rejected.SendEmptyGetAsKeepAlive();
+                        }
+                        catch { }
+
+                        // connection should close without sending any data
+                        await rejected.WaitForConnectionClose();
+                    }
                 }
+                await server.StopAsync();
             }
         }
 
@@ -104,35 +111,38 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 await context.Response.WriteAsync("Hello");
                 await requestTcs.Task;
             }, max))
-            using (var disposables = new DisposableStack<InMemoryConnection>())
             {
-                for (var i = 0; i < max; i++)
+                using (var disposables = new DisposableStack<InMemoryConnection>())
                 {
-                    var connection = server.CreateConnection();
-                    disposables.Push(connection);
-
-                    await connection.SendEmptyGetAsKeepAlive();
-                    await connection.Receive("HTTP/1.1 200 OK");
-                }
-
-                // limit has been reached
-                for (var i = 0; i < 10; i++)
-                {
-                    using (var connection = server.CreateConnection())
+                    for (var i = 0; i < max; i++)
                     {
-                        try
-                        {
-                            // this may throw IOException, depending on how fast Kestrel closes the socket
-                            await connection.SendEmptyGetAsKeepAlive();
-                        }
-                        catch { }
+                        var connection = server.CreateConnection();
+                        disposables.Push(connection);
 
-                        // connection should close without sending any data
-                        await connection.WaitForConnectionClose();
+                        await connection.SendEmptyGetAsKeepAlive();
+                        await connection.Receive("HTTP/1.1 200 OK");
                     }
-                }
 
-                requestTcs.TrySetResult(null);
+                    // limit has been reached
+                    for (var i = 0; i < 10; i++)
+                    {
+                        using (var connection = server.CreateConnection())
+                        {
+                            try
+                            {
+                                // this may throw IOException, depending on how fast Kestrel closes the socket
+                                await connection.SendEmptyGetAsKeepAlive();
+                            }
+                            catch { }
+
+                            // connection should close without sending any data
+                            await connection.WaitForConnectionClose();
+                        }
+                    }
+
+                    requestTcs.TrySetResult(null);
+                }
+                await server.StopAsync();
             }
         }
 
@@ -189,6 +199,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 await closedTcs.Task.TimeoutAfter(TimeSpan.FromSeconds(120));
                 Assert.Equal(count, opened);
                 Assert.Equal(count, closed);
+                await server.StopAsync();
             }
         }
 

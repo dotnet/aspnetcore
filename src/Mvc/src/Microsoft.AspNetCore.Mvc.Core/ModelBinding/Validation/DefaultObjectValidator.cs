@@ -39,10 +39,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
                 validatorProvider,
                 validatorCache,
                 metadataProvider,
-                validationState);
-
-            visitor.MaxValidationDepth = _mvcOptions.MaxValidationDepth;
-            visitor.AllowShortCircuitingValidationWhenNoValidatorsArePresent = _mvcOptions.AllowShortCircuitingValidationWhenNoValidatorsArePresent;
+                validationState)
+            {
+                MaxValidationDepth = _mvcOptions.MaxValidationDepth,
+            };
 
             return visitor;
         }

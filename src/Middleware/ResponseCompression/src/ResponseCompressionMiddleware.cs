@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -68,9 +68,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
             try
             {
                 await _next(context);
-                // This is not disposed via a using statement because we don't want to flush the compression buffer for unhandled exceptions,
-                // that may cause secondary exceptions.
-                bodyWrapperStream.Dispose();
+                await bodyWrapperStream.FinishCompressionAsync();
             }
             finally
             {

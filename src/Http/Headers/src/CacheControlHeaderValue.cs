@@ -652,7 +652,7 @@ namespace Microsoft.Net.Http.Headers
                     sb.Append(", ");
                 }
 
-                sb.Append(value);
+                sb.Append(value.AsSpan());
             }
         }
 

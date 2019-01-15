@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.WebEncoders.Testing;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ViewComponents
@@ -24,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             var httpContext = new DefaultHttpContext();
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
             var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider());
-            var tempData = new TempDataDictionary(httpContext, new SessionStateTempDataProvider());
+            var tempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>());
             var viewContext = new ViewContext(
                 actionContext,
                 NullView.Instance,
@@ -91,7 +92,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
                 actionContext,
                 NullView.Instance,
                 viewData,
-                new TempDataDictionary(httpContext, new SessionStateTempDataProvider()),
+                new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>()),
                 TextWriter.Null,
                 new HtmlHelperOptions());
 

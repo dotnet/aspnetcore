@@ -4,8 +4,9 @@
 using System;
 using System.IO;
 using System.IO.Pipelines;
+using System.Text;
 
-namespace Microsoft.AspNetCore.Http.Tests
+namespace System.IO.Pipelines.Tests
 {
     public abstract class PipeTest : IDisposable
     {
@@ -23,7 +24,7 @@ namespace Microsoft.AspNetCore.Http.Tests
         {
             MemoryStream = new MemoryStream();
             Writer = new StreamPipeWriter(MemoryStream, MinimumSegmentSize, new TestMemoryPool());
-            Reader = new StreamPipeReader(MemoryStream, MinimumSegmentSize, new TestMemoryPool());
+            Reader = new StreamPipeReader(MemoryStream, new StreamPipeReaderOptions(MinimumSegmentSize, minimumReadThreshold: 256, new TestMemoryPool()));
         }
 
         public void Dispose()
@@ -38,6 +39,12 @@ namespace Microsoft.AspNetCore.Http.Tests
             return ReadWithoutFlush();
         }
 
+        public string ReadAsString()
+        {
+            Writer.FlushAsync().GetAwaiter().GetResult();
+            return Encoding.ASCII.GetString(ReadWithoutFlush());
+        }
+
         public void Write(byte[] data)
         {
             MemoryStream.Write(data, 0, data.Length);
@@ -47,6 +54,13 @@ namespace Microsoft.AspNetCore.Http.Tests
         public void WriteWithoutPosition(byte[] data)
         {
             MemoryStream.Write(data, 0, data.Length);
+        }
+
+        public void Append(byte[] data)
+        {
+            var originalPosition = MemoryStream.Position;
+            MemoryStream.Write(data, 0, data.Length);
+            MemoryStream.Position = originalPosition;
         }
 
         public byte[] ReadWithoutFlush()

@@ -3,8 +3,6 @@
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
-using Microsoft.AspNetCore.Mvc.Formatters.Xml;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
@@ -16,7 +14,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public void AddsFormatterMapping()
         {
             // Arrange
-            var optionsSetup = new XmlSerializerMvcOptionsSetup(Options.Options.Create(new MvcXmlOptions()), NullLoggerFactory.Instance);
+            var optionsSetup = new XmlSerializerMvcOptionsSetup(NullLoggerFactory.Instance);
             var options = new MvcOptions();
 
             // Act
@@ -31,7 +29,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public void DoesNotOverrideExistingMapping()
         {
             // Arrange
-            var optionsSetup = new XmlSerializerMvcOptionsSetup(Options.Options.Create(new MvcXmlOptions()), NullLoggerFactory.Instance);
+            var optionsSetup = new XmlSerializerMvcOptionsSetup(NullLoggerFactory.Instance);
             var options = new MvcOptions();
             options.FormatterMappings.SetMediaTypeMappingForFormat("xml", "text/xml");
 
@@ -47,7 +45,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public void AddsInputFormatter()
         {
             // Arrange
-            var optionsSetup = new XmlSerializerMvcOptionsSetup(Options.Options.Create(new MvcXmlOptions()), NullLoggerFactory.Instance);
+            var optionsSetup = new XmlSerializerMvcOptionsSetup(NullLoggerFactory.Instance);
             var options = new MvcOptions();
 
             // Act
@@ -61,7 +59,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public void AddsOutputFormatter()
         {
             // Arrange
-            var optionsSetup = new XmlSerializerMvcOptionsSetup(Options.Options.Create(new MvcXmlOptions()), NullLoggerFactory.Instance);
+            var optionsSetup = new XmlSerializerMvcOptionsSetup(NullLoggerFactory.Instance);
             var options = new MvcOptions();
 
             // Act

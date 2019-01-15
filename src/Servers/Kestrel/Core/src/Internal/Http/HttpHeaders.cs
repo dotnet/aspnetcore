@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.Intrinsics.X86;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Primitives;
@@ -77,22 +78,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        protected void ThrowHeadersReadOnlyException()
+        protected static void ThrowHeadersReadOnlyException()
         {
             throw new InvalidOperationException(CoreStrings.HeadersAreReadOnly);
         }
 
-        protected void ThrowArgumentException()
+        protected static void ThrowArgumentException()
         {
             throw new ArgumentException();
         }
 
-        protected void ThrowKeyNotFoundException()
+        protected static void ThrowKeyNotFoundException()
         {
             throw new KeyNotFoundException();
         }
 
-        protected void ThrowDuplicateKeyException()
+        protected static void ThrowDuplicateKeyException()
         {
             throw new ArgumentException(CoreStrings.KeyAlreadyExists);
         }
@@ -110,6 +111,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _isReadOnly = true;
         }
 
+        // Inline to allow ClearFast to devirtualize in caller
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Reset()
         {
             _isReadOnly = false;
@@ -122,20 +125,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return StringValues.Concat(existing, append);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected static int BitCount(long value)
         {
-            // see https://github.com/dotnet/corefx/blob/5965fd3756bc9dd9c89a27621eb10c6931126de2/src/System.Reflection.Metadata/src/System/Reflection/Internal/Utilities/BitArithmetic.cs
+            int SoftwareFallback(ulong v)
+            {
+                // see https://github.com/dotnet/corefx/blob/5965fd3756bc9dd9c89a27621eb10c6931126de2/src/System.Reflection.Metadata/src/System/Reflection/Internal/Utilities/BitArithmetic.cs
 
-            const ulong Mask01010101 = 0x5555555555555555UL;
-            const ulong Mask00110011 = 0x3333333333333333UL;
-            const ulong Mask00001111 = 0x0F0F0F0F0F0F0F0FUL;
-            const ulong Mask00000001 = 0x0101010101010101UL;
+                const ulong Mask01010101 = 0x5555555555555555UL;
+                const ulong Mask00110011 = 0x3333333333333333UL;
+                const ulong Mask00001111 = 0x0F0F0F0F0F0F0F0FUL;
+                const ulong Mask00000001 = 0x0101010101010101UL;
 
-            var v = (ulong)value;
+                v = v - ((v >> 1) & Mask01010101);
+                v = (v & Mask00110011) + ((v >> 2) & Mask00110011);
+                return (int)(unchecked(((v + (v >> 4)) & Mask00001111) * Mask00000001) >> 56);
+            }
 
-            v = v - ((v >> 1) & Mask01010101);
-            v = (v & Mask00110011) + ((v >> 2) & Mask00110011);
-            return (int)(unchecked(((v + (v >> 4)) & Mask00001111) * Mask00000001) >> 56);
+            if (Popcnt.X64.IsSupported)
+            {
+                return (int)Popcnt.X64.PopCount((ulong)value);
+            }
+
+            return SoftwareFallback((ulong)value);
         }
 
         protected virtual int GetCountFast()

@@ -1,0 +1,7 @@
+<Project>
+  <PropertyGroup>
+    <NpmTestArgs>test</NpmTestArgs>
+    <Configuration Condition="'$(Configuration)' == '' AND '$(CI)' == 'true'">Release</Configuration>
+    <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
+  </PropertyGroup>
+</Project>

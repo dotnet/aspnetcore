@@ -14,9 +14,6 @@
 
   <!-- TODO: Remove this block once it's included in the shared framework -->
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore" Version="${MicrosoftAspNetCoreComponentsPackageVersion}" />
-    <PackageReference Include="Microsoft.AspNetCore.ResponseCompression" Version="${MicrosoftAspNetCoreComponentsPackageVersion}" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="${MicrosoftAspNetCoreComponentsPackageVersion}" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Server" Version="${MicrosoftAspNetCoreComponentsPackageVersion}" />
   </ItemGroup>
 
