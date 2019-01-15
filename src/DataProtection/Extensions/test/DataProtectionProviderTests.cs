@@ -115,7 +115,8 @@ namespace Microsoft.AspNetCore.DataProtection
             });
         }
 
-        [Fact]
+        [ConditionalFact] // https://github.com/aspnet/AspNetCore/issues/6720
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public void System_UsesProvidedDirectoryAndCertificate()
         {
             var filePath = Path.Combine(GetTestFilesPath(), "TestCert.pfx");
