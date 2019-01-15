@@ -28,6 +28,8 @@ Later on, this will be checked using this condition:
   <PropertyGroup Condition=" '$(VersionPrefix)' == '2.2.2' ">
     <PackagesInPatch>
       Microsoft.AspNetCore.AspNetCoreModuleV2;
+      Microsoft.AspNetCore.Authentication.Google;
+      Microsoft.AspNetCore.Http;
       Microsoft.AspNetCore.Server.IIS;
     </PackagesInPatch>
   </PropertyGroup>

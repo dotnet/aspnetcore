@@ -34,7 +34,6 @@ namespace Microsoft.AspNetCore.Http
 
             // Act
             var context = contextFactory.Create(new FeatureCollection());
-            var traceIdentifier = context.TraceIdentifier;
 
             // Assert
             Assert.Same(context, accessor.HttpContext);
@@ -42,7 +41,6 @@ namespace Microsoft.AspNetCore.Http
             contextFactory.Dispose(context);
 
             Assert.Null(accessor.HttpContext);
-            Assert.NotEqual(traceIdentifier, context.TraceIdentifier);
         }
 
         [Fact]

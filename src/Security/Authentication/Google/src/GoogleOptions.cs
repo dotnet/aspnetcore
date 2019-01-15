@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.AspNetCore.Http;
 
@@ -27,11 +26,22 @@ namespace Microsoft.AspNetCore.Authentication.Google
             Scope.Add("email");
 
             ClaimActions.MapJsonKey(ClaimTypes.NameIdentifier, "id");
-            ClaimActions.MapJsonKey(ClaimTypes.Name, "displayName");
-            ClaimActions.MapJsonSubKey(ClaimTypes.GivenName, "name", "givenName");
-            ClaimActions.MapJsonSubKey(ClaimTypes.Surname, "name", "familyName");
-            ClaimActions.MapJsonKey("urn:google:profile", "url");
-            ClaimActions.MapCustomJson(ClaimTypes.Email, GoogleHelper.GetEmail);
+            if (GoogleDefaults.UseGooglePlus)
+            {
+                ClaimActions.MapJsonKey(ClaimTypes.Name, "displayName");
+                ClaimActions.MapJsonSubKey(ClaimTypes.GivenName, "name", "givenName");
+                ClaimActions.MapJsonSubKey(ClaimTypes.Surname, "name", "familyName");
+                ClaimActions.MapJsonKey("urn:google:profile", "url");
+                ClaimActions.MapCustomJson(ClaimTypes.Email, GoogleHelper.GetEmail);
+            }
+            else
+            {
+                ClaimActions.MapJsonKey(ClaimTypes.Name, "name");
+                ClaimActions.MapJsonKey(ClaimTypes.GivenName, "given_name");
+                ClaimActions.MapJsonKey(ClaimTypes.Surname, "family_name");
+                ClaimActions.MapJsonKey("urn:google:profile", "link");
+                ClaimActions.MapJsonKey(ClaimTypes.Email, "email");
+            }
         }
 
         /// <summary>

@@ -44,7 +44,6 @@ namespace Microsoft.AspNetCore.Http
             var accessor = new HttpContextAccessor();
 
             var context = new DefaultHttpContext();
-            context.TraceIdentifier = "1";
             accessor.HttpContext = context;
 
             var checkAsyncFlowTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -76,7 +75,6 @@ namespace Microsoft.AspNetCore.Http
 
             // Null out the accessor
             accessor.HttpContext = null;
-            context.TraceIdentifier = null;
 
             waitForNullTcs.SetResult(null);
 
@@ -86,12 +84,11 @@ namespace Microsoft.AspNetCore.Http
         }
 
         [Fact]
-        public async Task HttpContextAccessor_GettingHttpContextReturnsNullHttpContextIfDifferentTraceIdentifier()
+        public async Task HttpContextAccessor_GettingHttpContextReturnsNullHttpContextIfChanged()
         {
             var accessor = new HttpContextAccessor();
 
             var context = new DefaultHttpContext();
-            context.TraceIdentifier = "1";
             accessor.HttpContext = context;
 
             var checkAsyncFlowTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -121,12 +118,8 @@ namespace Microsoft.AspNetCore.Http
 
             await checkAsyncFlowTcs.Task;
 
-            // Reset the trace identifier on the first request
-            context.TraceIdentifier = null;
-
             // Set a new http context
             var context2 = new DefaultHttpContext();
-            context2.TraceIdentifier = "2";
             accessor.HttpContext = context2;
 
             waitForNullTcs.SetResult(null);
@@ -142,7 +135,6 @@ namespace Microsoft.AspNetCore.Http
             var accessor = new HttpContextAccessor();
 
             var context = new DefaultHttpContext();
-            context.TraceIdentifier = "1";
             accessor.HttpContext = context;
 
             var checkAsyncFlowTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -172,7 +164,6 @@ namespace Microsoft.AspNetCore.Http
             var accessor = new HttpContextAccessor();
 
             var context = new DefaultHttpContext();
-            context.TraceIdentifier = "1";
             accessor.HttpContext = context;
 
             var checkAsyncFlowTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
