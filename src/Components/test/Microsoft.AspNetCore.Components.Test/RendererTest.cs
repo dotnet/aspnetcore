@@ -1475,17 +1475,16 @@ namespace Microsoft.AspNetCore.Components.Test
 
         private class DisposableComponent : AutoRenderComponent, IDisposable
         {
-            public DisposableComponent()
-            {
-                DisposeAction = () => Disposed = true;
-            }
-
             public bool Disposed { get; private set; }
 
             [Parameter]
             public Action DisposeAction { get; private set; }
 
-            public void Dispose() => DisposeAction();
+            public void Dispose()
+            {
+                Disposed = true;
+                DisposeAction?.Invoke();
+            }
 
             protected override void BuildRenderTree(RenderTreeBuilder builder)
             {
