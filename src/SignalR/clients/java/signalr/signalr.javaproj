@@ -2,7 +2,6 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.props))\Directory.Build.props" />
 
   <PropertyGroup>
-    <VersionPrefix>1.0.$(AspNetCorePatchVersion)</VersionPrefix>
     <PackageVersion>$(VersionPrefix)</PackageVersion>
     <PackageVersion Condition=" '$(IncludePreReleaseLabelInPackageVersion)' == 'true' ">$(VersionPrefix)-$(VersionSuffix)</PackageVersion>
 
