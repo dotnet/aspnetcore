@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -24,7 +25,8 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
 
         public ITestOutputHelper Output { get; }
 
-        [Fact]
+        [ConditionalFact] // https://github.com/aspnet/AspNetCore/issues/6721
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public void EnsureCreateHttpsCertificate_CreatesACertificate_WhenThereAreNoHttpsCertificates()
         {
             try
@@ -123,7 +125,8 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
             }
         }
 
-        [Fact]
+        [ConditionalFact] // https://github.com/aspnet/AspNetCore/issues/6721
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public void EnsureCreateHttpsCertificate_DoesNotCreateACertificate_WhenThereIsAnExistingHttpsCertificates()
         {
             // Arrange
@@ -262,7 +265,8 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
             Assert.Equal(identityCertificate.GetCertHashString(), exportedCertificate.GetCertHashString());
         }
 
-        [Fact]
+        [ConditionalFact] // https://github.com/aspnet/AspNetCore/issues/6721
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public void EnsureCreateIdentityTokenSigningCertificate_DoesNotCreateACertificate_WhenThereIsAnExistingHttpsCertificates()
         {
             // Arrange
