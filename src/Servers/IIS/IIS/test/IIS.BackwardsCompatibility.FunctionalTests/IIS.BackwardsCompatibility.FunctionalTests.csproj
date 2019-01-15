@@ -28,12 +28,20 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Hosting" />
-    <Reference Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" ReferenceOutputAssembly="false" />
+    <Reference Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" Private="false" />
     <Reference Include="Microsoft.AspNetCore.Server.IntegrationTesting" />
     <Reference Include="Microsoft.Extensions.Logging.Testing" />
     <Reference Include="Microsoft.Extensions.Logging" />
     <Reference Include="System.Diagnostics.EventLog" />
     <Reference Include="System.Net.WebSockets.WebSocketProtocol" />
   </ItemGroup>
+
+  <Target Name="RemoveSourceOverride" BeforeTargets="_CopyOutOfDateSourceItemsToOutputDirectory">
+    <ItemGroup>
+      <SourceItemsToRemove Include="@(_SourceItemsToCopyToOutputDirectory)" Condition="$([System.String]::Copy(%(_SourceItemsToCopyToOutputDirectory.FullPath)).Contains('IIS\AspNetCoreModule')) != 'true'" />
+      <_SourceItemsToCopyToOutputDirectory Remove="@(_SourceItemsToCopyToOutputDirectory)" />
+      <_SourceItemsToCopyToOutputDirectory Include="@(SourceItemsToRemove)" />
+   </ItemGroup>
+  </Target>
 
 </Project>
