@@ -109,7 +109,7 @@
     <MSBuild Projects="@(ProjectsToTest)"
               Targets="CreateHelixPayload"
               BuildInParallel="true">
-      <Output TaskParameter="TargetOutputs" ItemName="TestPayload" />
+      <Output TaskParameter="TargetOutputs" ItemName="HelixPayload" />
     </MSBuild>
     <ItemGroup>
       <HelixWorkItem Include="%(HelixPayload.TestName)">
