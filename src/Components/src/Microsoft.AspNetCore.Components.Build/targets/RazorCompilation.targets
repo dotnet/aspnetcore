@@ -12,6 +12,7 @@
     <GenerateRazorAssemblyInfo>false</GenerateRazorAssemblyInfo>
     <GenerateRazorHostingAssemblyInfo>false</GenerateRazorHostingAssemblyInfo>
     <GenerateProvideApplicationPartFactoryAttribute>false</GenerateProvideApplicationPartFactoryAttribute>
+    <_RazorComponentInclude>**\*.cshtml</_RazorComponentInclude>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,10 +23,6 @@
       <AssemblyName>Microsoft.AspNetCore.Mvc.Razor.Extensions</AssemblyName>
       <AssemblyFilePath>$(RazorSdkDirectoryRoot)extensions\mvc-3-0\Microsoft.AspNetCore.Mvc.Razor.Extensions.dll</AssemblyFilePath>
     </RazorExtension>
-  </ItemGroup>
-
-  <ItemGroup>
-    <RazorComponent Include="@(Content->WithMetadataValue('Extension', '.cshtml'))" />
   </ItemGroup>
 
 </Project>

@@ -105,7 +105,7 @@
     <MicrosoftEntityFrameworkCorePackageVersion>3.0.0-preview.19065.1</MicrosoftEntityFrameworkCorePackageVersion>
 
     <!-- Packages from aspnet/AspNetCore-Tooling -->
-    <MicrosoftNETSdkRazorPackageVersion>3.0.0-preview-19057-06</MicrosoftNETSdkRazorPackageVersion>
+    <MicrosoftNETSdkRazorPackageVersion>3.0.0-preview-19064-09</MicrosoftNETSdkRazorPackageVersion>
   </PropertyGroup>
 
   <PropertyGroup Label="Build tool dependencies">

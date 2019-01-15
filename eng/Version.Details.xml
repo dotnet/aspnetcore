@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.NET.Sdk.Razor" Version="3.0.0-preview-19057-06">
+    <Dependency Name="Microsoft.NET.Sdk.Razor" Version="3.0.0-preview-19064-09">
       <Uri>https://github.com/aspnet/AspNetCore-Tooling</Uri>
       <Sha>000000</Sha>
     </Dependency>
