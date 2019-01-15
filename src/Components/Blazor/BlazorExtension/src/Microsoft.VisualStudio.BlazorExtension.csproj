@@ -6,6 +6,10 @@
     <UseCodebase>true</UseCodebase>
     <ImportDirectoryBuildProps>true</ImportDirectoryBuildProps>
     <ImportDirectoryBuildTargets>true</ImportDirectoryBuildTargets>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
+    <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
+    <!-- Other projects should not reference this assembly. It is only mean to be used in Visual Studio. -->
+    <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <!--
@@ -19,7 +23,7 @@
   <PropertyGroup>
     <!-- VSIXes are always signed. This is the same key that ASP.NET uses for OSS signing -->
     <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>..\..\..\build\Key.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>..\..\..\eng\AspNetCore.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup>
     <!--
@@ -69,7 +73,7 @@
   </PropertyGroup>
   <Target Name="PreCreateVsixContainer" BeforeTargets="CreateVsixContainer">
     <ItemGroup>
-      <VSIXSourceItem Include="$(PackageOutputPath)Microsoft.AspNetCore.Blazor.Templates.*.nupkg">
+      <VSIXSourceItem Include="$(ProductPackageOutputPath)Microsoft.AspNetCore.Blazor.Templates.*.nupkg">
         <VSIXSubPath>ProjectTemplates\</VSIXSubPath>
       </VSIXSourceItem>
       <VSIXSourceItem Include="Templates.pkgdef" />
@@ -117,7 +121,7 @@
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
     <Content Include="Templates.pkgdef" />
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Blazor.Templates\Microsoft.AspNetCore.Blazor.Templates.csproj">
+    <ProjectReference Include="..\..\Templates\src\Microsoft.AspNetCore.Blazor.Templates.csproj">
       <Project>{edd21533-c6e6-4f85-be4f-10e06756e24c}</Project>
       <Name>Microsoft.AspNetCore.Blazor.Templates</Name>
       <Private>False</Private>
@@ -126,7 +130,7 @@
       <IncludeOutputGroupsInVSIXLocalOnly>
       </IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
-    <ProjectReference Include="..\Microsoft.VisualStudio.LanguageServices.Blazor\Microsoft.VisualStudio.LanguageServices.Blazor.csproj">
+    <ProjectReference Include="..\..\BlazorLanguageServices\src\Microsoft.VisualStudio.LanguageServices.Blazor.csproj">
       <Project>{b9f7f502-6dd2-4e77-8fd1-cbd76f695b26}</Project>
       <Name>Microsoft.VisualStudio.LanguageServices.Blazor</Name>
       <Private>False</Private>
@@ -135,7 +139,7 @@
       <IncludeOutputGroupsInVSIXLocalOnly>
       </IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
-    <Content Include="..\Microsoft.VisualStudio.LanguageServices.Blazor\bin\$(Configuration)\net461\Microsoft.VisualStudio.LanguageServices.Blazor.dll">
+    <Content Include="..\..\BlazorLanguageServices\src\bin\$(Configuration)\net461\Microsoft.VisualStudio.LanguageServices.Blazor.dll">
       <Link>Microsoft.VisualStudio.LanguageServices.Blazor.dll</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -248,7 +252,7 @@
       <IncludeInVSIX>true</IncludeInVSIX>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\..\..\LICENSE.txt">
+    <Content Include="$(RepositoryRoot)LICENSE.txt">
       <Link>Content\LICENSE.txt</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

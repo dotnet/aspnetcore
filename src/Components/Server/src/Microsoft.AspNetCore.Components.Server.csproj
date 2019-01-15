@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <Description>Runtime server features for ASP.NET Core Components.</Description>
     <IsProductPackage>true</IsProductPackage>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
@@ -21,12 +21,10 @@
     <Reference Include="Microsoft.Extensions.FileProviders.Embedded" />
   </ItemGroup>
 
-
-
   <ItemGroup>
     <!-- We need .Browser.JS to build first so we can embed its .js output -->
-    <ProjectReference Include="..\Browser.JS\src\Microsoft.AspNetCore.Components.Browser.JS.csproj" ReferenceOutputAssembly="false" />
-    <EmbeddedResource Include="..\Browser.JS\src\dist\components.server.js" LogicalName="frameworkFiles\%(Filename)%(Extension)" />
+    <ProjectReference Include="..\..\Browser.JS\src\Microsoft.AspNetCore.Components.Browser.JS.csproj" ReferenceOutputAssembly="false" />
+    <EmbeddedResource Include="..\..\Browser.JS\src\dist\components.server.js" LogicalName="frameworkFiles\%(Filename)%(Extension)" />
   </ItemGroup>
 
 </Project>

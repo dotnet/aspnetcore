@@ -4,7 +4,6 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
   </PropertyGroup>
 
-
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.Server" />
   </ItemGroup>

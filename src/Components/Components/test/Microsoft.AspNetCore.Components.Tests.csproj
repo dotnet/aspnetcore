@@ -11,8 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Shared sources -->
-    <Compile Include="$(ComponentsSharedSourceRoot)test\**\*.cs" Link="Helpers\%(Filename)%(Extension)" />
+    <Compile Include="$(ComponentsSharedSourceRoot)test\**\*.cs" LinkBase="Helpers" />
   </ItemGroup>
 
 </Project>

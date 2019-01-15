@@ -31,8 +31,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\testassets\StandaloneApp\StandaloneApp.csproj" />
 
-    <!-- Shared sources -->
-    <Compile Include="$(ComponentsSharedSourceRoot)test\**\*.cs" Link="Helpers\%(Filename)%(Extension)" />
+    <Compile Include="$(ComponentsSharedSourceRoot)test\**\*.cs" LinkBase="Helpers" />
   </ItemGroup>
 
   <!-- A bit of msbuild magic to support reference resolver tests -->
