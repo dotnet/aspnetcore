@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -309,6 +310,109 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             // Assert
             Assert.Empty(endpoints);
+        }
+
+        [Fact]
+        public void Endpoints_SingleAction_ConventionalRoute_ContainsNonParameterConstraint()
+        {
+            // Arrange
+            var actionDescriptorCollection = GetActionDescriptorCollection(
+                new { controller = "TestController", action = "TestAction", page = (string)null });
+            var dataSource = CreateMvcEndpointDataSource(actionDescriptorCollection);
+            dataSource.ConventionalEndpointInfos.Add(CreateEndpointInfo(
+                string.Empty,
+                "{controller}/{action}/{id:range(0, 100)}",
+                new RouteValueDictionary(new { action = "TestAction" }),
+                new RouteValueDictionary(new { controller = "TestController", nonParameter = new CustomConstraint(), id = new IntRouteConstraint() })));
+
+            // Act
+            var endpoints = dataSource.Endpoints;
+
+            // Assert
+            var endpoint = Assert.IsType<RouteEndpoint>(Assert.Single(endpoints));
+
+            var routePattern = endpoint.RoutePattern;
+
+            Assert.Equal("TestController/TestAction/{id::range(0, 100)}", routePattern.RawText);
+            Assert.Collection(routePattern.ParameterPolicies.OrderBy(p => p.Key),
+                p =>
+                {
+                    Assert.Equal("id", p.Key);
+                    Assert.Collection(p.Value,
+                        c => Assert.IsType<IntRouteConstraint>(c.ParameterPolicy),
+                        c => Assert.Equal("range(0, 100)", c.Content));
+                },
+                p =>
+                {
+                    Assert.Equal("nonParameter", p.Key);
+                    Assert.IsType<CustomConstraint>(p.Value.Single().ParameterPolicy);
+                });
+        }
+
+        [Fact]
+        public void Endpoints_SingleAction_ConventionalRouteWithOptional_ContainsNonParameterConstraint()
+        {
+            // Arrange
+            var actionDescriptorCollection = GetActionDescriptorCollection(
+                new { controller = "TestController", action = "TestAction", page = (string)null });
+            var dataSource = CreateMvcEndpointDataSource(actionDescriptorCollection);
+            dataSource.ConventionalEndpointInfos.Add(CreateEndpointInfo(
+                string.Empty,
+                "{controller}/{action}/{id?}",
+                new RouteValueDictionary(new { action = "TestAction" }),
+                new RouteValueDictionary(new { controller = "TestController", nonParameter = new CustomConstraint(), id = new IntRouteConstraint() })));
+
+            // Act
+            var endpoints = dataSource.Endpoints;
+
+            // Assert
+            var endpoint1 = Assert.IsType<RouteEndpoint>(endpoints[0]);
+            var routePattern1 = endpoint1.RoutePattern;
+            Assert.Equal("TestController/{action=TestAction}/{id:?}", routePattern1.RawText);
+            Assert.Collection(routePattern1.ParameterPolicies.OrderBy(p => p.Key),
+                p =>
+                {
+                    Assert.Equal("id", p.Key);
+                    Assert.IsType<IntRouteConstraint>(p.Value.Single().ParameterPolicy);
+                },
+                p =>
+                {
+                    Assert.Equal("nonParameter", p.Key);
+                    Assert.IsType<CustomConstraint>(p.Value.Single().ParameterPolicy);
+                });
+
+            var endpoint2 = Assert.IsType<RouteEndpoint>(endpoints[1]);
+            var routePattern2 = endpoint2.RoutePattern;
+            Assert.Equal("TestController", routePattern2.RawText);
+            Assert.Collection(routePattern2.ParameterPolicies.OrderBy(p => p.Key),
+                p =>
+                {
+                    Assert.Equal("nonParameter", p.Key);
+                    Assert.IsType<CustomConstraint>(p.Value.Single().ParameterPolicy);
+                });
+
+            var endpoint3 = Assert.IsType<RouteEndpoint>(endpoints[2]);
+            var routePattern3 = endpoint3.RoutePattern;
+            Assert.Equal("TestController/TestAction/{id:?}", routePattern3.RawText);
+            Assert.Collection(routePattern3.ParameterPolicies.OrderBy(p => p.Key),
+                p =>
+                {
+                    Assert.Equal("id", p.Key);
+                    Assert.IsType<IntRouteConstraint>(p.Value.Single().ParameterPolicy);
+                },
+                p =>
+                {
+                    Assert.Equal("nonParameter", p.Key);
+                    Assert.IsType<CustomConstraint>(p.Value.Single().ParameterPolicy);
+                });
+        }
+
+        private class CustomConstraint : IRouteConstraint
+        {
+            public bool Match(HttpContext httpContext, IRouter route, string routeKey, RouteValueDictionary values, RouteDirection routeDirection)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         [Fact]

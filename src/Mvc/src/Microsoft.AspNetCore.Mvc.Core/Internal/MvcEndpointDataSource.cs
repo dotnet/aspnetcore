@@ -224,6 +224,15 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var newPathSegments = routePattern.PathSegments.ToList();
             var hasLinkGenerationEndpoint = false;
 
+            // This is required because we create modified copies of the route pattern using its segments
+            // A segment with a parameter will automatically include its policies
+            // Non-parameter policies need to be manually included
+            var nonParameterPolicyValues = routePattern.ParameterPolicies
+                .Where(p => routePattern.GetParameter(p.Key ?? string.Empty) == null && p.Value.Count > 0 && p.Value.First().ParameterPolicy != null) // Only GetParameter is required. Extra is for safety
+                .Select(p => new KeyValuePair<string, object>(p.Key, p.Value.First().ParameterPolicy)) // Can only pass a single non-parameter to RouteParameter
+                .ToArray();
+            var nonParameterPolicies = RouteValueDictionary.FromArray(nonParameterPolicyValues);
+
             // Create a mutable copy
             var nonInlineDefaultsCopy = nonInlineDefaults != null
                 ? new RouteValueDictionary(nonInlineDefaults)
@@ -259,6 +268,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                             resolvedRouteValues,
                             name,
                             GetPattern(ref patternStringBuilder, newPathSegments),
+                            nonParameterPolicies,
                             newPathSegments,
                             nonInlineDefaultsCopy,
                             routeOrder++,
@@ -277,6 +287,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         resolvedRouteValues,
                         name,
                         GetPattern(ref patternStringBuilder, subPathSegments),
+                        nonParameterPolicies,
                         subPathSegments,
                         nonInlineDefaultsCopy,
                         routeOrder++,
@@ -294,6 +305,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 resolvedRouteValues,
                 name,
                 GetPattern(ref patternStringBuilder, newPathSegments),
+                nonParameterPolicies,
                 newPathSegments,
                 nonInlineDefaultsCopy,
                 routeOrder++,
@@ -531,6 +543,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             IDictionary<string, string> actionRouteValues,
             string routeName,
             string patternRawText,
+            object nonParameterPolicies,
             IEnumerable<RoutePatternPathSegment> segments,
             object nonInlineDefaults,
             int order,
@@ -561,7 +574,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var endpoint = new RouteEndpoint(
                 requestDelegate,
-                RoutePatternFactory.Pattern(patternRawText, defaults, parameterPolicies: null, segments),
+                RoutePatternFactory.Pattern(patternRawText, defaults, nonParameterPolicies, segments),
                 order,
                 metadataCollection,
                 action.DisplayName);
