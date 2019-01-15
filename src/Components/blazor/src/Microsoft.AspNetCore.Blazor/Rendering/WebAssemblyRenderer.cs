@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
     /// Provides mechanisms for rendering <see cref="IComponent"/> instances in a
     /// web browser, dispatching events to them, and refreshing the UI as required.
     /// </summary>
-    public class WebAssemblyRenderer : Renderer, IDisposable
+    public class WebAssemblyRenderer : Renderer
     {
         private readonly int _webAssemblyRendererId;
 
@@ -71,11 +71,10 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
             RenderRootComponent(componentId);
         }
 
-        /// <summary>
-        /// Disposes the instance.
-        /// </summary>
-        public void Dispose()
+        /// <inheritdoc />
+        protected override void Dispose(bool disposing)
         {
+            base.Dispose(disposing);
             RendererRegistry.Current.TryRemove(_webAssemblyRendererId);
         }
 
