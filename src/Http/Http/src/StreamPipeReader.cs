@@ -25,7 +25,8 @@ namespace System.IO.Pipelines
         private readonly MemoryPool<byte> _pool;
 
         private CancellationTokenSource _internalTokenSource;
-        private bool _isCompleted;
+        private bool _isReaderCompleted;
+        private bool _isWriterCompleted;
         private ExceptionDispatchInfo _exceptionInfo;
 
         private BufferSegment _readHead;
@@ -182,12 +183,12 @@ namespace System.IO.Pipelines
         /// <inheritdoc />
         public override void Complete(Exception exception = null)
         {
-            if (_isCompleted)
+            if (_isReaderCompleted)
             {
                 return;
             }
 
-            _isCompleted = true;
+            _isReaderCompleted = true;
             if (exception != null)
             {
                 _exceptionInfo = ExceptionDispatchInfo.Capture(exception);
@@ -248,6 +249,11 @@ namespace System.IO.Pipelines
 
                     _readTail.End += length;
                     _bufferedBytes += length;
+
+                    if (length == 0)
+                    {
+                        _isWriterCompleted = true;
+                    }
                 }
                 catch (OperationCanceledException)
                 {
@@ -275,7 +281,7 @@ namespace System.IO.Pipelines
 
         private void ThrowIfCompleted()
         {
-            if (_isCompleted)
+            if (_isReaderCompleted)
             {
                 ThrowHelper.ThrowInvalidOperationException_NoReadingAllowed();
             }
@@ -357,7 +363,7 @@ namespace System.IO.Pipelines
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool IsCompletedOrThrow()
         {
-            if (!_isCompleted)
+            if (!_isWriterCompleted)
             {
                 return false;
             }

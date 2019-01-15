@@ -12,7 +12,7 @@ using Xunit;
 
 namespace System.IO.Pipelines.Tests
 {
-    public class PipeWriterTests : PipeTest
+    public class PipeWriterTests : StreamPipeTest
     {
 
         [Theory]

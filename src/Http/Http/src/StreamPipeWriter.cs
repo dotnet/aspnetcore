@@ -65,7 +65,7 @@ namespace System.IO.Pipelines
         }
 
         /// <summary>
-        /// Gets the inner stream that is being read from.
+        /// Gets the inner stream that is being written to.
         /// </summary>
         public Stream InnerStream => _writingStream;
 
