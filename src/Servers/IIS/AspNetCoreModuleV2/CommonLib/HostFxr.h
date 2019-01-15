@@ -57,9 +57,6 @@ public:
 
     HostFxrErrorRedirector RedirectOutput(RedirectionOutput* writer) const noexcept;
 
-    static
-    HostFxr CreateFromLoadedModule();
-
 private:
     HandleWrapper<ModuleHandleTraits> m_hHostFxrDll;
     hostfxr_main_fn m_hostfxr_main_fn;

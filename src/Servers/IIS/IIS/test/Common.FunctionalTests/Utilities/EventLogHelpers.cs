@@ -187,7 +187,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         public static string InProcessHostfxrUnableToLoad(IISDeploymentResult deploymentResult)
         {
-            return $"Unable to load '(.*)'. This might be caused by the architecture mismatch between IIS application pool and published application.";
+            return $"Unable to load '(.*)'. This might be caused by a bitness mismatch between IIS application pool and published application.";
         }
 
         public static string InProcessFailedToFindNativeDependencies(IISDeploymentResult deploymentResult)
