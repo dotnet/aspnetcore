@@ -14,6 +14,7 @@
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <BuildVariablesGeneratedFile>$(MSBuildProjectDirectory)\obj\BuildVariables.generated.cs</BuildVariablesGeneratedFile>
     <CompileDependsOn>EnsureBuildVariablesGeneratedFile;$(CompileDependsOn)</CompileDependsOn>
+    <BuildHelixPayload>false</BuildHelixPayload>
   </PropertyGroup>
 
   <ItemGroup>
