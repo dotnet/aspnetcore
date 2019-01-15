@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Testing
 
         public Task<LogMessage> WaitForMessage(Func<LogMessage, bool> messageFilter)
         {
-            if (_messageFilterTcs?.Task?.IsCompleted == false)
+            if (_messageFilterTcs != null)
             {
                 throw new InvalidOperationException($"{nameof(WaitForMessage)} cannot be called concurrently.");
             }
@@ -107,6 +107,7 @@ namespace Microsoft.AspNetCore.Testing
             if (_messageFilter?.Invoke(logMessage) == true)
             {
                 _messageFilterTcs.TrySetResult(logMessage);
+                _messageFilterTcs = null;
             }
         }
 
