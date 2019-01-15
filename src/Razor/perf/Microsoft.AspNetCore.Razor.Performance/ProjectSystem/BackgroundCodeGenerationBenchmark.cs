@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Razor.Performance
         public void Setup()
         {
             SnapshotManager = CreateProjectSnapshotManager();
-            SnapshotManager.HostProjectAdded(HostProject);
+            SnapshotManager.ProjectAdded(HostProject);
             SnapshotManager.Changed += SnapshotManager_Changed;
         }
 
