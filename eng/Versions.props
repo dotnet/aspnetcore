@@ -95,7 +95,7 @@
     <MicrosoftExtensionsWebEncodersPackageVersion>3.0.0-preview.19065.1</MicrosoftExtensionsWebEncodersPackageVersion>
 
     <!-- Packages from aspnet/EntityFrameworkCore -->
-    <DotNetEfPackageVersion>3.0.0-preview.18604.3</DotNetEfPackageVersion>
+    <DotNetEfPackageVersion>3.0.0-preview.19065.1</DotNetEfPackageVersion>
     <MicrosoftEntityFrameworkCoreDesignPackageVersion>3.0.0-preview.19065.1</MicrosoftEntityFrameworkCoreDesignPackageVersion>
     <MicrosoftEntityFrameworkCoreInMemoryPackageVersion>3.0.0-preview.19065.1</MicrosoftEntityFrameworkCoreInMemoryPackageVersion>
     <MicrosoftEntityFrameworkCoreRelationalPackageVersion>3.0.0-preview.19065.1</MicrosoftEntityFrameworkCoreRelationalPackageVersion>
@@ -103,6 +103,7 @@
     <MicrosoftEntityFrameworkCoreSqlServerPackageVersion>3.0.0-preview.19065.1</MicrosoftEntityFrameworkCoreSqlServerPackageVersion>
     <MicrosoftEntityFrameworkCoreToolsPackageVersion>3.0.0-preview.19065.1</MicrosoftEntityFrameworkCoreToolsPackageVersion>
     <MicrosoftEntityFrameworkCorePackageVersion>3.0.0-preview.19065.1</MicrosoftEntityFrameworkCorePackageVersion>
+
     <!-- Packages from aspnet/AspNetCore-Tooling -->
     <MicrosoftNETSdkRazorPackageVersion>3.0.0-preview-19057-06</MicrosoftNETSdkRazorPackageVersion>
   </PropertyGroup>
