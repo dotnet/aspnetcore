@@ -1,13 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.AspNetCore.Components.RenderTree;
-using Microsoft.AspNetCore.Components.Test.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Test.Helpers;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Test
@@ -1139,7 +1139,7 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public void DisposingRenderer_DisposesComponents()
+        public void DisposingRenderer_DisposesTopLevelComponents()
         {
             // Arrange
             var renderer = new TestRenderer();
@@ -1151,6 +1151,63 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Assert
             Assert.True(component.Disposed);
+        }
+
+        [Fact]
+        public void DisposingRenderer_DisposesNestedComponents()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var component = new TestComponent(builder =>
+            {
+                builder.AddContent(0, "Hello");
+                builder.OpenComponent<DisposableComponent>(1);
+                builder.CloseComponent();
+            });
+            var componentId = renderer.AssignRootComponentId(component);
+            component.TriggerRender();
+            var batch = renderer.Batches.Single();
+            var componentFrame = batch.ReferenceFrames
+                .Single(frame => frame.FrameType == RenderTreeFrameType.Component);
+            var nestedComponent = Assert.IsType<DisposableComponent>(componentFrame.Component);
+
+            // Act
+            renderer.Dispose();
+
+            // Assert
+            Assert.True(component.Disposed);
+            Assert.True(nestedComponent.Disposed);
+        }
+
+        [Fact]
+        public void DisposingRenderer_CapturesExceptionsFromAllRegisteredComponents()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var exception1 = new Exception();
+            var exception2 = new Exception();
+            var component = new TestComponent(builder =>
+            {
+                builder.AddContent(0, "Hello");
+                builder.OpenComponent<DisposableComponent>(1);
+                builder.AddAttribute(1, nameof(DisposableComponent.DisposeAction), (Action)(() => throw exception1));
+                builder.CloseComponent();
+
+                builder.OpenComponent<DisposableComponent>(2);
+                builder.AddAttribute(1, nameof(DisposableComponent.DisposeAction), (Action)(() => throw exception2));
+                builder.CloseComponent();
+            });
+            var componentId = renderer.AssignRootComponentId(component);
+            component.TriggerRender();
+
+            // Act &A Assert
+            var aggregate = Assert.Throws<AggregateException>(renderer.Dispose);
+
+            // All components must be disposed even if some throw as part of being diposed.
+            Assert.True(component.Disposed);
+            Assert.Equal(2, aggregate.InnerExceptions.Count);
+            Assert.Contains(exception1, aggregate.InnerExceptions);
+            Assert.Contains(exception2, aggregate.InnerExceptions);
         }
 
         private class NoOpRenderer : Renderer
@@ -1166,7 +1223,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 => Task.CompletedTask;
         }
 
-        private class TestComponent : IComponent
+        private class TestComponent : IComponent, IDisposable
         {
             private RenderHandle _renderHandle;
             private RenderFragment _renderFragment;
@@ -1186,6 +1243,10 @@ namespace Microsoft.AspNetCore.Components.Test
 
             public void TriggerRender()
                 => _renderHandle.Render(_renderFragment);
+
+            public bool Disposed { get; private set; }
+
+            void IDisposable.Dispose() => Disposed = true;
         }
 
         private class MessageComponent : AutoRenderComponent
@@ -1414,16 +1475,20 @@ namespace Microsoft.AspNetCore.Components.Test
 
         private class DisposableComponent : AutoRenderComponent, IDisposable
         {
+            public DisposableComponent()
+            {
+                DisposeAction = () => Disposed = true;
+            }
+
             public bool Disposed { get; private set; }
 
-            public void Dispose()
-            {
-                Disposed = true;
-            }
+            [Parameter]
+            public Action DisposeAction { get; private set; }
+
+            public void Dispose() => DisposeAction();
 
             protected override void BuildRenderTree(RenderTreeBuilder builder)
             {
-                throw new NotImplementedException();
             }
         }
 

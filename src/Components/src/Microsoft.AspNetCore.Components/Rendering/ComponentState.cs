@@ -82,16 +82,10 @@ namespace Microsoft.AspNetCore.Components.Rendering
         {
             _componentWasDisposed = true;
  
+            // TODO: Handle components throwing during dispose. Shouldn't break the whole render batch.
             if (_component is IDisposable disposable)
             {
-                try
-                {
-                    disposable.Dispose();
-                }
-                catch
-                {
-                    // Ignore exceptions thrown by components when they're being disposed.
-                }
+                disposable.Dispose();
             }
 
             RenderTreeDiffBuilder.DisposeFrames(batchBuilder, _renderTreeBuilderCurrent.GetFrames());

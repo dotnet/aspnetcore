@@ -1,19 +1,19 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Threading;
 using Microsoft.AspNetCore.Components.Browser;
 using Microsoft.AspNetCore.Components.Browser.Rendering;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 using Moq;
-using System;
-using System.Threading;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
-    public class CircuirHostTest
+    public class CircuitHostTest
     {
         [Fact]
         public void Dispose_DisposesResources()

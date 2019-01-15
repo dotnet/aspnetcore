@@ -300,6 +300,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="disposing"><see langword="true"/> if this method is being invoked by <see cref="IDisposable.Dispose"/>, otherwise <see langword="false"/>.</param>
         protected virtual void Dispose(bool disposing)
         {
+            List<Exception> exceptions = null;
+
             foreach (var componentState in _componentStateById.Values)
             {
                 if (componentState.Component is IDisposable disposable)
@@ -308,11 +310,18 @@ namespace Microsoft.AspNetCore.Components.Rendering
                     {
                         disposable.Dispose();
                     }
-                    catch
+                    catch (Exception exception)
                     {
-                        // Ignore failures in components throwing
+                        // Capture exceptions thrown by individual components and rethrow as an aggregate.
+                        exceptions = exceptions ?? new List<Exception>();
+                        exceptions.Add(exception);
                     }
                 }
+            }
+
+            if (exceptions != null)
+            {
+                throw new AggregateException(exceptions);
             }
         }
 
