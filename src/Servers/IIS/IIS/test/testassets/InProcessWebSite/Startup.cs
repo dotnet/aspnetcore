@@ -306,6 +306,13 @@ namespace TestSite
             }
         }
 
+        private async Task ReadFullBody(HttpContext ctx)
+        {
+            await ReadRequestBody(ctx);
+            ctx.Response.ContentLength = 9;
+            await ctx.Response.WriteAsync("Completed");
+        }
+
         private async Task WriteManyTimesToResponseBody(HttpContext ctx)
         {
             for (var i = 0; i < 10000; i++)

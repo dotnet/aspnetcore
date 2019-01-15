@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
             if (hr != NativeMethods.ERROR_OPERATION_ABORTED)
             {
                 _result = bytes;
-                if (hr != NativeMethods.HR_OK)
+                if (hr != NativeMethods.HR_OK && !IsSuccessfulResult(hr))
                 {
                     // Treat all errors as the client disconnect
                     _exception = new ConnectionResetException("The client has disconnected", Marshal.GetExceptionForHR(hr));
@@ -125,6 +125,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core.IO
 
             return asyncContinuation;
         }
+
+        protected virtual bool IsSuccessfulResult(int hr) => false;
 
         public virtual void FreeOperationResources(int hr, int bytes) { }
 
