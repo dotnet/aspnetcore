@@ -87,7 +87,7 @@
       </PackageToPublish>
     </ItemGroup>
 
-    <Error Text="Missing required metadata 'RelativeBlobPath' for FilesToPublish: @(FilesToPublish)" Condition="'%(RelativeBlobPath)' == ''" />
+    <Error Text="Missing required metadata 'RelativeBlobPath' for FilesToPublish: @(FilesToPublish)" Condition="'@(FilesToPublish)' != '' AND '%(RelativeBlobPath)' == ''" />
   </Target>
 
   <UsingTask TaskName="KoreBuild.Tasks.PushNuGetPackages" AssemblyFile="$(KoreBuildTasksDll)" />
