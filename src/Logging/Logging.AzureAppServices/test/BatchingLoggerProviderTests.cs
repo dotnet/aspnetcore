@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -51,7 +51,6 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Test
             Assert.Single(provider.Batches);
             Assert.Single(provider.Batches[0]);
             Assert.Equal("2016-05-04 03:02:01.000 +00:00 [Information] Cat: Info message" + _nl, provider.Batches[0][0].Message);
-
             provider.IntervalControl.Resume();
             await provider.IntervalControl.Pause;
 
@@ -62,7 +61,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Test
         }
 
         [Fact]
-        public async Task BlocksWhenReachingMaxQueue()
+        public async Task DropsMessagesWhenReachingMaxQueue()
         {
             var provider = new TestBatchingLoggingProvider(maxQueueSize: 1);
             var logger = (BatchingLogger)provider.CreateLogger("Cat");
@@ -70,14 +69,14 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Test
             await provider.IntervalControl.Pause;
 
             logger.Log(_timestampOne, LogLevel.Information, 0, "Info message", null, (state, ex) => state);
-            var task = Task.Run(() => logger.Log(_timestampOne.AddHours(1), LogLevel.Error, 0, "Error message", null, (state, ex) => state));
-
-            Assert.False(task.Wait(1000));
+            logger.Log(_timestampOne.AddHours(1), LogLevel.Error, 0, "Error message", null, (state, ex) => state);
 
             provider.IntervalControl.Resume();
             await provider.IntervalControl.Pause;
 
-            Assert.True(task.Wait(1000));
+            Assert.Equal(2, provider.Batches[0].Length);
+            Assert.Equal("2016-05-04 03:02:01.000 +00:00 [Information] Cat: Info message" + _nl, provider.Batches[0][0].Message);
+            Assert.Equal("1 message(s) dropped because of queue size limit. Increase the queue size or decrease logging verbosity to avoid this." + _nl, provider.Batches[0][1].Message);
         }
 
         private class TestBatchingLoggingProvider: BatchingLoggerProvider
