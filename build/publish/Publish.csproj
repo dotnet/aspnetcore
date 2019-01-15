@@ -12,7 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.DotNet.Build.Tasks.Feed" Version="2.2.0-beta.19061.6" />
-    <PackageReference Include="Microsoft.DotNet.Maestro.Tasks" Version="1.1.0-beta.19064.1" />
+    <PackageReference Include="Microsoft.DotNet.Maestro.Tasks" Version="1.1.0-beta.19065.2" />
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
