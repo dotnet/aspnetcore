@@ -2,8 +2,6 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.props))\Directory.Build.props" />
 
   <PropertyGroup>
-    <PackageVersion>$(VersionPrefix)</PackageVersion>
-    <PackageVersion Condition=" '$(IncludePreReleaseLabelInPackageVersion)' == 'true' ">$(VersionPrefix)-$(VersionSuffix)</PackageVersion>
 
     <!-- This package ID is only ever used along with eng/PatchConfig.props to determine when to patch the Java client. -->
     <PackageId>java:signalr</PackageId>
