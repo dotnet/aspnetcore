@@ -120,11 +120,10 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
             }
         }
 
-        /// <summary>
-        /// Disposes the instance.
-        /// </summary>
-        public void Dispose()
+        /// <inheritdoc />
+        protected override void Dispose(bool disposing)
         {
+            base.Dispose(true);
             _rendererRegistry.TryRemove(_id);
         }
 
