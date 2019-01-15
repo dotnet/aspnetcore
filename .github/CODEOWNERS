@@ -3,6 +3,7 @@
 
 /build/ @natemcmaster
 /eng/ @natemcmaster
+/src/Components/ @SteveSandersonMS
 /src/DefaultBuilder/ @tratcher
 /src/Hosting/ @tratcher
 /src/Http/ @tratcher
