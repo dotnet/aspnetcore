@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -46,6 +47,26 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
 
             // Assert
             Assert.IsType<ChallengeResult>(authorizationContext.Result);
+        }
+
+        [Fact]
+        public async Task OnAuthorizationAsync_AuthorizationMiddlewareHasRun_NoOp()
+        {
+            // Arrange
+            var authorizationContext = GetAuthorizationContext(anonymous: true);
+            authorizationContext.HttpContext.Items["__AuthorizationMiddlewareInvoked"] = new object();
+
+            var authorizeFilterFactory = new AuthorizeFilter();
+            var filterFactory = authorizeFilterFactory as IFilterFactory;
+            var authorizeFilter = (AuthorizeFilter)filterFactory.CreateInstance(
+                authorizationContext.HttpContext.RequestServices);
+            authorizationContext.Filters.Add(authorizeFilter);
+
+            // Act
+            await authorizeFilter.OnAuthorizationAsync(authorizationContext);
+
+            // Assert
+            Assert.Null(authorizationContext.Result);
         }
 
         [Fact]
@@ -557,6 +578,8 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
                 httpContext.Object.User = validUser;
             }
             httpContext.SetupGet(c => c.RequestServices).Returns(serviceProvider);
+            var contextItems = new Dictionary<object, object>();
+            httpContext.SetupGet(c => c.Items).Returns(contextItems);
 
             // AuthorizationFilterContext
             var actionContext = new ActionContext(
