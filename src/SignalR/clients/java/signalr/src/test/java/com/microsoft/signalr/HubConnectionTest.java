@@ -900,7 +900,16 @@ class HubConnectionTest {
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
 
         Throwable exception = assertThrows(RuntimeException.class, () -> hubConnection.send("inc"));
-        assertEquals("The 'send' method cannot be called if the connection is not active", exception.getMessage());
+        assertEquals("The 'send' method cannot be called if the connection is not active.", exception.getMessage());
+    }
+
+    @Test
+    public void cannotInvokeBeforeStart()  {
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com");
+        assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+
+        Throwable exception = assertThrows(RuntimeException.class, () -> hubConnection.invoke(String.class, "inc", "arg1"));
+        assertEquals("The 'invoke' method cannot be called if the connection is not active.", exception.getMessage());
     }
 
     @Test

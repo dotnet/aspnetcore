@@ -454,7 +454,7 @@ public class HubConnection {
      */
     public void send(String method, Object... args) {
         if (hubConnectionState != HubConnectionState.CONNECTED) {
-            throw new RuntimeException("The 'send' method cannot be called if the connection is not active");
+            throw new RuntimeException("The 'send' method cannot be called if the connection is not active.");
         }
 
         InvocationMessage invocationMessage = new InvocationMessage(null, method, args);
@@ -472,6 +472,10 @@ public class HubConnection {
      */
     @SuppressWarnings("unchecked")
     public <T> Single<T> invoke(Class<T> returnType, String method, Object... args) {
+        if (hubConnectionState != HubConnectionState.CONNECTED) {
+            throw new RuntimeException("The 'invoke' method cannot be called if the connection is not active.");
+        }
+
         String id = connectionState.getNextInvocationId();
         InvocationMessage invocationMessage = new InvocationMessage(id, method, args);
 
