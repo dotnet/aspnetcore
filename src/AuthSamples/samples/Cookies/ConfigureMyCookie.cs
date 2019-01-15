@@ -19,7 +19,7 @@ namespace AuthSamples.Cookies
             }
         }
 
-        public void Configure(CookieAuthenticationOptions options)
-            => Configure(Options.DefaultName, options);
+        public void Configure(CookieAuthenticationOptions options) => 
+            Configure(Options.DefaultName, options);
     }
 }
