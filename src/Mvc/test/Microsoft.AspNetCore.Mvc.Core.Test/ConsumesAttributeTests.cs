@@ -326,7 +326,7 @@ namespace Microsoft.AspNetCore.Mvc
         [Theory]
         [InlineData("")]
         [InlineData(null)]
-        public void OnResourceExecuting_NullOrEmptyRequestContentType_SetsUnsupportedMediaTypeResult(string contentType)
+        public void OnResourceExecuting_NullOrEmptyRequestContentType_IsNoOp(string contentType)
         {
             // Arrange
             var httpContext = new DefaultHttpContext();
@@ -349,8 +349,7 @@ namespace Microsoft.AspNetCore.Mvc
             consumesFilter.OnResourceExecuting(resourceExecutingContext);
 
             // Assert
-            Assert.NotNull(resourceExecutingContext.Result);
-            Assert.IsType<UnsupportedMediaTypeResult>(resourceExecutingContext.Result);
+            Assert.Null(resourceExecutingContext.Result);
         }
 
         [Theory]
