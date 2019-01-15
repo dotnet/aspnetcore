@@ -33,6 +33,7 @@ Later on, this will be checked using this condition:
       Microsoft.AspNetCore.Http;
       Microsoft.AspNetCore.Mvc.Core;
       Microsoft.AspNetCore.Server.IIS;
+      Microsoft.AspNetCore.Server.Kestrel.Core;
       java:signalr;
     </PackagesInPatch>
   </PropertyGroup>
