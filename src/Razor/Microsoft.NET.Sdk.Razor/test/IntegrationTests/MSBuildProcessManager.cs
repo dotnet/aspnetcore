@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.CommandLineUtils;
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
@@ -38,7 +39,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             }
             else
             {
-                processStartInfo.FileName = "dotnet";
+                processStartInfo.FileName = DotNetMuxer.MuxerPathOrDefault();
                 processStartInfo.Arguments = $"msbuild {arguments}";
             }
 
