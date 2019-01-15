@@ -271,6 +271,9 @@ namespace Microsoft.AspNetCore.Identity.Test
         [InlineData(false)]
         public async Task CheckPasswordOnlyResetLockoutWhenTfaNotEnabled(bool tfaEnabled)
         {
+            // REMOVE: this shouldn't be needed
+            AppContext.SetSwitch("Microsoft.AspNetCore.Identity.CheckPasswordSignInAlwaysResetLockoutOnSuccess", false);
+            
             // Setup
             var user = new PocoUser { UserName = "Foo" };
             var manager = SetupUserManager(user);
