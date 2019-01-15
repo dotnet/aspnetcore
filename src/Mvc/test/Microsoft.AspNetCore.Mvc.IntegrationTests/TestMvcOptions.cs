@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var charPool = ArrayPool<char>.Shared;
             var objectPoolProvider = new DefaultObjectPoolProvider();
 
-            var mvcJsonMvcOptionsSetup = new NewtonosftJsonMvcOptionsSetup(
+            var mvcJsonMvcOptionsSetup = new NewtonsoftJsonMvcOptionsSetup(
                 loggerFactory,
                 jsonOptions,
                 charPool,
