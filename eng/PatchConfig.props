@@ -31,6 +31,7 @@ Later on, this will be checked using this condition:
       Microsoft.AspNetCore.AspNetCoreModuleV2;
       Microsoft.AspNetCore.Authentication.Google;
       Microsoft.AspNetCore.Http;
+      Microsoft.AspNetCore.Mvc.Core;
       Microsoft.AspNetCore.Server.IIS;
       java:signalr;
     </PackagesInPatch>
