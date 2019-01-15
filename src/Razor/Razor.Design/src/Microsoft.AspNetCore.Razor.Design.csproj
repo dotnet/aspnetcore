@@ -35,7 +35,6 @@
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <GenerateNuspecDependsOn>_BuildDependencyProjects;$(GenerateNuspecDependsOn)</GenerateNuspecDependsOn>
     <BuildDependsOn>_BuildDependencyProjects;$(BuildDependsOn)</BuildDependsOn>
   </PropertyGroup>
 
@@ -92,7 +91,7 @@
     <Error Text="_RazorTool is empty. This is a bug" Condition="'@(_RazorTool)'==''" />
   </Target>
 
-  <Target Name="PopulateNuspec" BeforeTargets="GenerateNuspec" DependsOnTargets="BuiltProjectOutputGroup;DebugSymbolsProjectOutputGroup;_BuildDependencyProjects">
+  <Target Name="PopulateNuspec" BeforeTargets="GenerateNuspec" DependsOnTargets="BuiltProjectOutputGroup;DebugSymbolsProjectOutputGroup">
 
     <PropertyGroup>
       <!-- Make sure we create a symbols.nupkg. -->
