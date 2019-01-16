@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             var identity = WindowsIdentity.GetCurrent();
             var principal = new WindowsPrincipal(identity);
-            if (!principal.IsInRole(WindowsBuiltInRole.Administrator))
+            if (!principal.IsInRole(WindowsBuiltInRole.Administrator) && !SkipInVSTSAttribute.RunningInVSTS)
             {
                 _skipReasonStatic += "The current console is not running as admin.";
                 return;
@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             foreach (var module in Modules)
             {
-                if (capabilities.HasFlag(module.Capability))
+                if (capabilities.HasFlag(module.Capability) && !SkipInVSTSAttribute.RunningInVSTS)
                 {
                     var available = _modulesAvailable.HasFlag(module.Capability);
                     IsMet &= available;
