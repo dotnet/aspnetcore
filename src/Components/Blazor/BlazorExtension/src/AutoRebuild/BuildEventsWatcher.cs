@@ -73,6 +73,8 @@ namespace Microsoft.VisualStudio.BlazorExtension
 
         public int UpdateProjectCfg_Begin(IVsHierarchy pHierProj, IVsCfg pCfgProj, IVsCfg pCfgSln, uint dwAction, ref int pfCancel)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             if (IsBlazorProject(pHierProj))
             {
                 // This method runs both for manually-invoked builds and for builds triggered automatically
@@ -98,6 +100,8 @@ namespace Microsoft.VisualStudio.BlazorExtension
 
         public int UpdateProjectCfg_Done(IVsHierarchy pHierProj, IVsCfg pCfgProj, IVsCfg pCfgSln, uint dwAction, int fSuccess, int fCancel)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             if (IsBlazorProject(pHierProj))
             {
                 var buildResult = fSuccess == 1;
