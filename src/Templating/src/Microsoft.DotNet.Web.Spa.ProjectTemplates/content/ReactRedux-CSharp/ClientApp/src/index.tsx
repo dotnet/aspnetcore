@@ -6,7 +6,6 @@ import { Provider } from 'react-redux';
 import { ConnectedRouter } from 'connected-react-router';
 import { createBrowserHistory } from 'history';
 import configureStore from './store/configureStore';
-import { ApplicationState } from './store';
 import App from './App';
 import registerServiceWorker from './registerServiceWorker';
 

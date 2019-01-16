@@ -1,7 +1,6 @@
 import { applyMiddleware, combineReducers, compose, createStore, Reducer } from 'redux';
 import thunk from 'redux-thunk';
-import { connectRouter } from 'connected-react-router';
-import { routerReducer, routerMiddleware } from 'react-router-redux';
+import { connectRouter, routerMiddleware } from 'connected-react-router';
 import { History } from 'history';
 import { ApplicationState, reducers } from './';
 
@@ -13,7 +12,7 @@ export default function configureStore(history: History, initialState?: Applicat
 
     const rootReducer = combineReducers({
         ...reducers,
-        routing: routerReducer
+        router: connectRouter(history)
     });
 
     const enhancers = [];
@@ -23,7 +22,7 @@ export default function configureStore(history: History, initialState?: Applicat
     }
 
     return createStore(
-        connectRouter(history)(rootReducer),
+        rootReducer,
         initialState,
         compose(applyMiddleware(...middleware), ...enhancers)
     );
