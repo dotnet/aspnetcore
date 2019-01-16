@@ -2,7 +2,7 @@
 
 **Build modern, interactive web-based UIs with C# and Razor.**
 
-This repo contains the underlying *components* programming model that powers both server-side [Razor Components](#razor-components) and client-side [Blazor](#blazor) applications.
+This folder contains the underlying *components* programming model that powers both server-side [Razor Components](#razor-components) and client-side [Blazor](#blazor) applications.
 
 Features of the components programming model include:
 
@@ -39,74 +39,7 @@ To get started and build your first web app check out our [getting started guide
 
 ## Building from source
 
-You only need to do this if you want to contribute to this repo. You do not need to build from source if you just want to [build your own application](https://go.microsoft.com/fwlink/?linkid=870449).
-
-For general guidance on building ASP.NET Core sources, see the [developer documentation](https://github.com/aspnet/Home/wiki/Building-from-source). **Please read this document and check your PATH setup if you have trouble building or using Visual Studio.**
-
-### 1. Prerequisites
-
-Ensure you have the following:
-
-- [Node.js](https://nodejs.org/) (>10.0)
-
-
-### 2. Clone
-
-Clone this repo, and switch to its directory:
-
-```
-git clone https://github.com/aspnet/AspNetCore.git
-cd AspNetCore
-```
-
-### 3. Build
-
-Run `build.cmd` or `build.sh` from `src/Components`.
-
-Windows users:
-
-```
-cd src\Components
-build.cmd
-```
-
-Linux/Mac users:
-
-```
-cd src/Components
-./build.sh
-```
-
-## Run unit tests
-
-While inside `src/Components`, run `build.cmd /t:Test` or `build.sh /t:Test`
-
-## Run end-to-end tests
-
-Prerequisites:
-- Install [selenium-standalone](https://www.npmjs.com/package/selenium-standalone) (requires Java 8 or 9)
-  - [Open JDK9](http://jdk.java.net/java-se-ri/9)
-  - `npm install -g selenium-standalone`
-  - `selenium-standalone install`
-- Chrome
-
-Run `selenium-standalone start`
-
-In a separate command prompt, run `build.cmd /t:Test /p:BlazorAllTests=true` or `build.sh /t:Test /p:BlazorAllTests=true`
-
-## Opening in Visual Studio
-
-Prerequisites:
-
-- Visual Studio 2017 15.9 - [download](https://www.visualstudio.com/thank-you-downloading-visual-studio/?ch=pre&sku=Enterprise&rel=15)
-
-When installing Visual Studio choose the following workloads:
-- ASP.NET and Web Development
-- Visual Studio extension development features
-
-Now open `src/Components/Component.sln` in Visual Studio.
-
-If you have problems using Visual Studio with `Components.sln` please refer to the [developer documentation](https://github.com/aspnet/Home/wiki/Building-from-source).
+See [these instructions](/docs/BuildFromSource.md) for more details on how to build this project on your own.
 
 ## Developing the Blazor VS Tooling
 

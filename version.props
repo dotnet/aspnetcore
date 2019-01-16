@@ -6,6 +6,7 @@
     <PreReleaseLabel>preview</PreReleaseLabel>
     <PreReleaseBrandingLabel>Preview</PreReleaseBrandingLabel>
     <ExperimentalVersionPrefix>0.3.$(AspNetCorePatchVersion)</ExperimentalVersionPrefix>
+    <BlazorComponentsVersionPrefix>0.8.$(AspNetCorePatchVersion)</BlazorComponentsVersionPrefix>
 
     <!-- ANCM versioning is intentionally 10 + AspNetCoreMajorVersion because earlier versions of ANCM shipped as 8.x. -->
     <AspNetCoreModuleVersionMajor>1$(AspNetCoreMajorVersion)</AspNetCoreModuleVersionMajor>

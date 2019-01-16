@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>dotnet-blazor</AssemblyName>
+    <PackageId>Microsoft.AspNetCore.Blazor.Cli</PackageId>
+    <IsProductPackage>true</IsProductPackage>
+    <StartupObject>Microsoft.AspNetCore.Blazor.Cli.Program</StartupObject>
+    <!-- Disabled because E2ETest.csproj needs to WebDriver which is not strong named signed, and InternalsVisibleTo must specify a strong-name token -->
+    <SignAssembly>false</SignAssembly>
+    <Description>Development server for use when building Blazor applications.</Description>
+    <!-- Set this to false because assemblies should not reference this assembly directly, (except for tests, of course). -->
+    <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Blazor.Server" />
+    <Reference Include="Microsoft.AspNetCore.Components.Server" />
+    <Reference Include="Microsoft.AspNetCore.ResponseCompression" />
+    <Reference Include="Microsoft.AspNetCore" />
+    <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" PrivateAssets="All" />
+  </ItemGroup>
+</Project>
