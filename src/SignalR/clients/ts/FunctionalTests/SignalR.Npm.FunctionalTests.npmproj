@@ -4,7 +4,15 @@
   <PropertyGroup>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
-    <NpmTestArgs>run test:local -- --no-color --configuration $(Configuration)</NpmTestArgs>
+    <BrowserTestHostName Condition="'$(CI)' == 'true'">sauce.local</BrowserTestHostName>
+    <_TestSauceArgs>--verbose --no-color --configuration $(Configuration) --sauce-user "$(SauceUser)" --sauce-key "$(SauceKey)"</_TestSauceArgs>
+    <_TestSauceArgs Condition="'$(BrowserTestHostName)' != ''">$(_TestSauceArgs) --use-hostname "$(BrowserTestHostName)"</_TestSauceArgs>
+    <NpmTestArgs Condition="'$(DailyTests)' != 'true'">run test:local -- --no-color --configuration $(Configuration)</NpmTestArgs>
+    <!-- Optionally run "daily test" run in Sauce Labs -->    
+    <NpmTestArgs Condition="'$(DailyTests)' == 'true'">npm run test:sauce -- $(_TestSauceArgs)</NpmTestArgs>
+    <Error Text="Required property 'SauceUser' is missing!" Condition="'$(DailyTests)' == 'true' And '$(SauceUser)' == ''" />
+    <Error Text="Required property 'SauceKey' is missing!" Condition="'$(DailyTests)' == 'true' And '$(SauceKey)' == ''" />
+
   </PropertyGroup>
 
   <ItemGroup>
