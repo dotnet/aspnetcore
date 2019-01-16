@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             foreach (var module in Modules)
             {
-                if (File.Exists(Path.Combine(Environment.SystemDirectory, "inetsrv", module.DllName) || SkipInVSTSAttribute.RunningInVSTS))
+                if (File.Exists(Path.Combine(Environment.SystemDirectory, "inetsrv", module.DllName)) || SkipInVSTSAttribute.RunningInVSTS)
                 {
                     _modulesAvailable |= module.Capability;
                 }
