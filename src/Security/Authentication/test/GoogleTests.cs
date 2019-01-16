@@ -472,45 +472,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
                 {
                     o.ClaimsIssuer = claimsIssuer;
                 }
-                o.BackchannelHttpHandler = new TestHttpMessageHandler
-                {
-                    Sender = req =>
-                    {
-                        if (req.RequestUri.AbsoluteUri == "https://www.googleapis.com/oauth2/v4/token")
-                        {
-                            return ReturnJsonResponse(new
-                            {
-                                access_token = "Test Access Token",
-                                expires_in = 3600,
-                                token_type = "Bearer"
-                            });
-                        }
-                        else if (req.RequestUri.GetComponents(UriComponents.SchemeAndServer | UriComponents.Path, UriFormat.UriEscaped) == "https://www.googleapis.com/plus/v1/people/me")
-                        {
-                            return ReturnJsonResponse(new
-                            {
-                                id = "Test User ID",
-                                displayName = "Test Name",
-                                name = new
-                                {
-                                    familyName = "Test Family Name",
-                                    givenName = "Test Given Name"
-                                },
-                                url = "Profile link",
-                                emails = new[]
-                                {
-                                    new
-                                    {
-                                        value = "Test email",
-                                        type = "account"
-                                    }
-                                }
-                            });
-                        }
-
-                        throw new NotImplementedException(req.RequestUri.AbsoluteUri);
-                    }
-                };
+                o.BackchannelHttpHandler = CreateBackchannel();
             });
 
             var properties = new AuthenticationProperties();
@@ -662,46 +624,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
                 o.ClientId = "Test Id";
                 o.ClientSecret = "Test Secret";
                 o.StateDataFormat = stateFormat;
-                o.BackchannelHttpHandler = new TestHttpMessageHandler
-                {
-                    Sender = req =>
-                    {
-                        if (req.RequestUri.AbsoluteUri == "https://www.googleapis.com/oauth2/v4/token")
-                        {
-                            return ReturnJsonResponse(new
-                            {
-                                access_token = "Test Access Token",
-                                expires_in = 3600,
-                                token_type = "Bearer",
-                                refresh_token = "Test Refresh Token"
-                            });
-                        }
-                        else if (req.RequestUri.GetComponents(UriComponents.SchemeAndServer | UriComponents.Path, UriFormat.UriEscaped) == "https://www.googleapis.com/plus/v1/people/me")
-                        {
-                            return ReturnJsonResponse(new
-                            {
-                                id = "Test User ID",
-                                displayName = "Test Name",
-                                name = new
-                                {
-                                    familyName = "Test Family Name",
-                                    givenName = "Test Given Name"
-                                },
-                                url = "Profile link",
-                                emails = new[]
-                                    {
-                                        new
-                                        {
-                                            value = "Test email",
-                                            type = "account"
-                                        }
-                                    }
-                            });
-                        }
-
-                        throw new NotImplementedException(req.RequestUri.AbsoluteUri);
-                    }
-                };
+                o.BackchannelHttpHandler = CreateBackchannel();
                 o.Events = new OAuthEvents
                 {
                     OnCreatingTicket = context =>
@@ -742,46 +665,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
                 o.ClientId = "Test Id";
                 o.ClientSecret = "Test Secret";
                 o.StateDataFormat = stateFormat;
-                o.BackchannelHttpHandler = new TestHttpMessageHandler
-                {
-                    Sender = req =>
-                    {
-                        if (req.RequestUri.AbsoluteUri == "https://www.googleapis.com/oauth2/v4/token")
-                        {
-                            return ReturnJsonResponse(new
-                            {
-                                access_token = "Test Access Token",
-                                expires_in = 3600,
-                                token_type = "Bearer",
-                                refresh_token = "Test Refresh Token"
-                            });
-                        }
-                        else if (req.RequestUri.GetComponents(UriComponents.SchemeAndServer | UriComponents.Path, UriFormat.UriEscaped) == "https://www.googleapis.com/plus/v1/people/me")
-                        {
-                            return ReturnJsonResponse(new
-                            {
-                                id = "Test User ID",
-                                displayName = "Test Name",
-                                name = new
-                                {
-                                    familyName = "Test Family Name",
-                                    givenName = "Test Given Name"
-                                },
-                                url = "Profile link",
-                                emails = new[]
-                                    {
-                                        new
-                                        {
-                                            value = "Test email",
-                                            type = "account"
-                                        }
-                                    }
-                            });
-                        }
-
-                        throw new NotImplementedException(req.RequestUri.AbsoluteUri);
-                    }
-                };
+                o.BackchannelHttpHandler = CreateBackchannel();
                 o.Events = new OAuthEvents
                 {
                     OnTicketReceived = context =>
@@ -832,46 +716,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
                         return Task.FromResult(0);
                     }
                 };
-                o.BackchannelHttpHandler = new TestHttpMessageHandler
-                {
-                    Sender = req =>
-                    {
-                        if (req.RequestUri.AbsoluteUri == "https://www.googleapis.com/oauth2/v4/token")
-                        {
-                            return ReturnJsonResponse(new
-                            {
-                                access_token = "Test Access Token",
-                                expires_in = 3600,
-                                token_type = "Bearer",
-                                refresh_token = "Test Refresh Token"
-                            });
-                        }
-                        else if (req.RequestUri.GetComponents(UriComponents.SchemeAndServer | UriComponents.Path, UriFormat.UriEscaped) == "https://www.googleapis.com/plus/v1/people/me")
-                        {
-                            return ReturnJsonResponse(new
-                            {
-                                id = "Test User ID",
-                                displayName = "Test Name",
-                                name = new
-                                {
-                                    familyName = "Test Family Name",
-                                    givenName = "Test Given Name"
-                                },
-                                url = "Profile link",
-                                emails = new[]
-                                    {
-                                        new
-                                        {
-                                            value = "Test email",
-                                            type = "account"
-                                        }
-                                    }
-                            });
-                        }
-
-                        throw new NotImplementedException(req.RequestUri.AbsoluteUri);
-                    }
-                };
+                o.BackchannelHttpHandler = CreateBackchannel();
             });
 
             var properties = new AuthenticationProperties();
@@ -1102,29 +947,20 @@ namespace Microsoft.AspNetCore.Authentication.Google
                         {
                             access_token = "Test Access Token",
                             expires_in = 3600,
-                            token_type = "Bearer"
+                            token_type = "Bearer",
+                            refresh_token = "Test Refresh Token"
                         });
                     }
-                    else if (req.RequestUri.GetComponents(UriComponents.SchemeAndServer | UriComponents.Path, UriFormat.UriEscaped) == "https://www.googleapis.com/plus/v1/people/me")
+                    else if (req.RequestUri.GetComponents(UriComponents.SchemeAndServer | UriComponents.Path, UriFormat.UriEscaped) == "https://www.googleapis.com/oauth2/v2/userinfo")
                     {
                         return ReturnJsonResponse(new
                         {
                             id = "Test User ID",
-                            displayName = "Test Name",
-                            name = new
-                            {
-                                familyName = "Test Family Name",
-                                givenName = "Test Given Name"
-                            },
-                            url = "Profile link",
-                            emails = new[]
-                            {
-                                new
-                                {
-                                    value = "Test email",
-                                    type = "account"
-                                }
-                            }
+                            name = "Test Name",
+                            given_name = "Test Given Name",
+                            family_name = "Test Family Name",
+                            link = "Profile link",
+                            email = "Test email",
                         });
                     }
 
