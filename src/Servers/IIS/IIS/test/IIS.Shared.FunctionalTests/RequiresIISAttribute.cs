@@ -47,13 +47,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             var identity = WindowsIdentity.GetCurrent();
             var principal = new WindowsPrincipal(identity);
-            if (!principal.IsInRole(WindowsBuiltInRole.Administrator))
+            if (!principal.IsInRole(WindowsBuiltInRole.Administrator) && !SkipInVSTSAttribute.RunningInVSTS)
             {
                 _skipReasonStatic += "The current console is not running as admin.";
                 return;
             }
 
-            if (!File.Exists(Path.Combine(Environment.SystemDirectory, "inetsrv", "w3wp.exe")))
+            if (!File.Exists(Path.Combine(Environment.SystemDirectory, "inetsrv", "w3wp.exe")) && !SkipInVSTSAttribute.RunningInVSTS)
             {
                 _skipReasonStatic += "The machine does not have IIS installed.";
                 return;
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             var ancmConfigPath = Path.Combine(Environment.SystemDirectory, "inetsrv", "config", "schema", "aspnetcore_schema_v2.xml");
 
-            if (!File.Exists(ancmConfigPath))
+            if (!File.Exists(ancmConfigPath) && !SkipInVSTSAttribute.RunningInVSTS)
             {
                 _skipReasonStatic = "IIS Schema is not installed.";
                 return;
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             foreach (var module in Modules)
             {
-                if (File.Exists(Path.Combine(Environment.SystemDirectory, "inetsrv", module.DllName)))
+                if (File.Exists(Path.Combine(Environment.SystemDirectory, "inetsrv", module.DllName)) || SkipInVSTSAttribute.RunningInVSTS)
                 {
                     _modulesAvailable |= module.Capability;
                 }
