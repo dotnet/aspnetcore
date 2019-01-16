@@ -44,28 +44,6 @@
 
   </Target>
 
-  <Target Name="BuildSiteExtension" DependsOnTargets="BuildMetapackages" Condition="'$(BuildSiteExtension)' == 'true'" >
-    <PropertyGroup>
-      <AzureIntegrationProjProperties>
-        AspNetUniverseBuildOffline=true;
-        DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath);
-        DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath);
-        BuildNumber=$(BuildNumber);
-        Configuration=$(Configuration);
-        IsFinalBuild=$(IsFinalBuild);
-      </AzureIntegrationProjProperties>
-    </PropertyGroup>
-
-    <!-- Pack logging site extension -->
-    <MSBuild Projects="$(RepositoryRoot)\src\SiteExtensions\LoggingBranch\LoggingBranch.csproj" Targets="Restore;Pack" Properties="$(AzureIntegrationProjProperties);PackageOutputPath=$(BuildDir)" />
-  </Target>
-
-  <Target Name="GetSiteExtensionArtifactInfo" Condition="'$(BuildSiteExtension)' == 'true'" >
-    <MSBuild Projects="$(RepositoryRoot)\src\SiteExtensions\LoggingBranch\LoggingBranch.csproj" Targets="GetArtifactInfo" Properties="PackageOutputPath=$(BuildDir);BuildNumber=$(BuildNumber);DesignTimeBuild=true;IsFinalBuild=$(IsFinalBuild)">
-      <Output TaskParameter="TargetOutputs" ItemName="ArtifactInfo" />
-    </MSBuild>
-  </Target>
-
   <Target Name="_BuildSharedFxProjects" DependsOnTargets="GeneratePropsFiles;ResolveCommitHash">
 
     <PropertyGroup>

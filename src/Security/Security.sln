@@ -131,11 +131,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Diagnostics.Abstractions", "..\Middleware\Diagnostics.Abstractions\src\Microsoft.AspNetCore.Diagnostics.Abstractions.csproj", "{73BCF909-4999-4663-BAE1-36B7734212B7}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Routing", "..\Http\Routing\src\Microsoft.AspNetCore.Routing.csproj", "{5B2F3890-198E-4BE8-8464-10B4D97F976A}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Routing.Abstractions", "..\Http\Routing.Abstractions\src\Microsoft.AspNetCore.Routing.Abstractions.csproj", "{71961A8D-B26F-46AE-A475-D00425D875A0}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.IISIntegration", "..\Servers\IIS\IISIntegration\src\Microsoft.AspNetCore.Server.IISIntegration.csproj", "{FD3AB895-2AF6-447D-82CF-DB002B491D23}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.IISIntegration", "..\Servers\IIS\IISIntegration\src\Microsoft.AspNetCore.Server.IISIntegration.csproj", "{81D0E81F-4711-4C7B-BBD4-E168102D0D7D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
