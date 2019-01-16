@@ -85,6 +85,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 "System.Core.dll",
                 "System.Data.dll",
                 "System.Diagnostics.Debug.dll",
+                "System.Diagnostics.Tracing.dll",
                 "System.Drawing.dll",
                 "System.IO.Compression.dll",
                 "System.IO.Compression.FileSystem.dll",
