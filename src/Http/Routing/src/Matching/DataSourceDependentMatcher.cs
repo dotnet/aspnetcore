@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Routing.Matching
 {
-    internal class DataSourceDependentMatcher : Matcher
+    internal sealed class DataSourceDependentMatcher : Matcher
     {
         private readonly Func<MatcherBuilder> _matcherBuilderFactory;
         private readonly DataSourceDependentCache<Matcher> _cache;
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         }
 
         // Used to tie the lifetime of a DataSourceDependentCache to the service provider
-        public class Lifetime : IDisposable
+        public sealed class Lifetime : IDisposable
         {
             private readonly object _lock = new object();
             private DataSourceDependentCache<Matcher> _cache;

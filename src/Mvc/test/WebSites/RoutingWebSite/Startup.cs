@@ -42,6 +42,12 @@ namespace RoutingWebSite
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
+                    "NonParameterConstraintRoute",
+                    "NonParameterConstraintRoute/{controller}/{action}",
+                    defaults: null,
+                    constraints: new { controller = "NonParameterConstraint", nonParameter = new QueryStringConstraint() });
+
+                routes.MapRoute(
                     "DataTokensRoute",
                     "DataTokensRoute/{controller}/{action}",
                     defaults: null,

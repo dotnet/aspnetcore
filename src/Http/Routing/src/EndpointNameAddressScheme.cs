@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Routing
 {
-    internal class EndpointNameAddressScheme : IEndpointAddressScheme<string>, IDisposable
+    internal sealed class EndpointNameAddressScheme : IEndpointAddressScheme<string>, IDisposable
     {
         private readonly DataSourceDependentCache<Dictionary<string, Endpoint[]>> _cache;
 

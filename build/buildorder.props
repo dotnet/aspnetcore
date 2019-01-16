@@ -7,7 +7,6 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
-    <RepositoryBuildOrder Include="AuthSamples" Order="16" />
     <RepositoryBuildOrder Include="Templating" Order="18" />
   </ItemGroup>
 </Project>
