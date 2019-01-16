@@ -41,7 +41,7 @@
 
   </Target>
 
-  <Target Name="BuildSiteExtension" DependsOnTargets="BuildMetapackages" Condition="'$(BuildSiteExtension)' == 'true'" >
+  <Target Name="BuildSiteExtension" DependsOnTargets="BuildSharedFx" Condition="'$(BuildSiteExtension)' == 'true'" >
     <PropertyGroup>
       <AzureIntegrationProjProperties>
         AspNetUniverseBuildOffline=true;
