@@ -23,6 +23,7 @@ Later on, this will be checked using this condition:
       Microsoft.AspNetCore.Authentication.Google;
       Microsoft.AspNetCore.Http;
       Microsoft.AspNetCore.Server.IIS;
+      java:signalr;
     </PackagesInPatch>
   </PropertyGroup>
 
