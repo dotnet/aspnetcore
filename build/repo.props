@@ -25,6 +25,9 @@
     <DisableSignCheckStrongName>true</DisableSignCheckStrongName>
 
     <SharedSourcesFolder>$(RepositoryRoot)src\Shared\</SharedSourcesFolder>
+    <SharedFxArchitecture Condition="'$(SharedFxArchitecture)' == ''">$(SharedFxRid.Substring($([MSBuild]::Add($(SharedFxRid.LastIndexOf('-')), 1))))</SharedFxArchitecture>
+    <BuildSiteExtension>false</BuildSiteExtension>
+    <BuildSiteExtension Condition="'$(BuildSiteExtension)' == 'true' AND '$(OS)' != 'Windows_NT'">false</BuildSiteExtension>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(BuildAllProjects)' == 'true' ">

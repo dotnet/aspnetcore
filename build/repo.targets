@@ -1,6 +1,5 @@
 <Project>
   <Import Project="RepositoryBuild.targets" />
-  <Import Project="AzureIntegration.targets" />
   <Import Project="SharedFx.targets" />
   <Import Project="CodeSign.targets" />
   <Import Project="Publish.targets" />
@@ -36,7 +35,7 @@
     <CompileDependsOn Condition=" '$(BuildAllProjects)' == 'true' ">$(CompileDependsOn);PackProjects;BuildRepositories;BuildSharedFx</CompileDependsOn>
 
     <PackageDependsOn>$(PackageDependsOn);PackProjects</PackageDependsOn>
-    <PackageDependsOn Condition=" '$(BuildAllProjects)' == 'true' ">$(PackageDependsOn);RemoveSharedFrameworkOnlyRefsFromNuspec</PackageDependsOn>
+    <PackageDependsOn Condition=" '$(BuildAllProjects)' == 'true' ">$(PackageDependsOn);BuildSiteExtension;RemoveSharedFrameworkOnlyRefsFromNuspec</PackageDependsOn>
 
     <TestDependsOn />
     <TestDependsOn Condition=" '$(_RunBuild)' == 'true' ">$(TestDependsOn);Compile</TestDependsOn>
@@ -93,7 +92,7 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="ResolveRepoInfo" DependsOnTargets="_ResolveProjectArtifactsInfoShipped;_PrepareRepositories">
+  <Target Name="ResolveRepoInfo" DependsOnTargets="_ResolveProjectArtifactsInfoShipped;_PrepareRepositories;GetSiteExtensionArtifactInfo">
     <!-- We need to pass the NETCoreApp package versions to msbuild so that it doesn't complain about us using a different one than it was restored against.  -->
     <PropertyGroup>
       <DesignTimeBuildProps>$(BuildProperties);MicrosoftNETCoreAppPackageVersion=$(MicrosoftNETCoreAppPackageVersion);</DesignTimeBuildProps>
