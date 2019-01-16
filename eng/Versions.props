@@ -95,6 +95,7 @@
     <MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>3.0.0-preview.19065.5</MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>
     <MicrosoftExtensionsValueStopwatchSourcesPackageVersion>3.0.0-preview.19065.5</MicrosoftExtensionsValueStopwatchSourcesPackageVersion>
     <MicrosoftExtensionsWebEncodersPackageVersion>3.0.0-preview.19065.5</MicrosoftExtensionsWebEncodersPackageVersion>
+    <MicrosoftJSInteropPackageVersion>3.0.0-preview.19065.5</MicrosoftJSInteropPackageVersion>
 
     <!-- Packages from aspnet/EntityFrameworkCore -->
     <DotNetEfPackageVersion>3.0.0-preview.19065.5</DotNetEfPackageVersion>
