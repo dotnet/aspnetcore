@@ -392,9 +392,6 @@ Instead, wrap the contents of the block in "{{}}":
   <data name="RazorProject_PathMustStartWithForwardSlash" xml:space="preserve">
     <value>Path must begin with a forward slash '/'.</value>
   </data>
-  <data name="RazorTemplateEngine_ItemCouldNotBeFound" xml:space="preserve">
-    <value>The item '{0}' could not be found.</value>
-  </data>
   <data name="RemoveTagHelperDirective_Description" xml:space="preserve">
     <value>Remove Tag Helpers for use in the current document.</value>
   </data>

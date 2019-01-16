@@ -1209,20 +1209,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             => GetString("RazorProject_PathMustStartWithForwardSlash");
 
         /// <summary>
-        /// The item '{0}' could not be found.
-        /// </summary>
-        internal static string RazorTemplateEngine_ItemCouldNotBeFound
-        {
-            get => GetString("RazorTemplateEngine_ItemCouldNotBeFound");
-        }
-
-        /// <summary>
-        /// The item '{0}' could not be found.
-        /// </summary>
-        internal static string FormatRazorTemplateEngine_ItemCouldNotBeFound(object p0)
-            => string.Format(CultureInfo.CurrentCulture, GetString("RazorTemplateEngine_ItemCouldNotBeFound"), p0);
-
-        /// <summary>
         /// Remove Tag Helpers for use in the current document.
         /// </summary>
         internal static string RemoveTagHelperDirective_Description
