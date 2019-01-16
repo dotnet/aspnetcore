@@ -3,7 +3,6 @@
 
 using Microsoft.AspNetCore.Components.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using perf;
 
 namespace Microsoft.AspNetCore.Blazor.E2EPerformance
 {

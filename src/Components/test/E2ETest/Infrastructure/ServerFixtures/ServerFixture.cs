@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -10,6 +11,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
 {
     public abstract class ServerFixture : IDisposable
     {
+        private static readonly Lazy<Dictionary<string, string>> _projects = new Lazy<Dictionary<string, string>>(FindProjects);
+
         public Uri RootUri => _rootUriInitializer.Value;
 
         private readonly Lazy<Uri> _rootUriInitializer;
@@ -31,20 +34,22 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
                 Path.GetDirectoryName(typeof(ServerFixture).Assembly.Location));
         }
 
-        protected static string FindSampleOrTestSitePath(string projectName)
+        private static Dictionary<string, string> FindProjects()
         {
             var solutionDir = FindSolutionDir();
-            var possibleLocations = new[]
-            {
-                Path.Combine(solutionDir, "benchmarks", projectName),
-                Path.Combine(solutionDir, "samples", projectName),
-                Path.Combine(solutionDir, "test", "testapps", projectName),
-                Path.Combine(solutionDir, "blazor", "benchmarks", projectName),
-                Path.Combine(solutionDir, "blazor", "samples", projectName),
-            };
+            return Directory.GetFiles(solutionDir, "*.csproj", SearchOption.AllDirectories)
+                .ToDictionary(Path.GetFileNameWithoutExtension, Path.GetDirectoryName);
+        }
 
-            return possibleLocations.FirstOrDefault(Directory.Exists)
-                ?? throw new ArgumentException($"Cannot find a sample or test site with name '{projectName}'.");
+        protected static string FindSampleOrTestSitePath(string projectName)
+        {
+            var projects = _projects.Value;
+            if (projects.TryGetValue(projectName, out var dir))
+            {
+                return dir;
+            }
+
+            throw new ArgumentException($"Cannot find a sample or test site with name '{projectName}'.");
         }
 
         private static string FindClosestDirectoryContaining(

@@ -30,7 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Blazor\perf\Microsoft.AspNetCore.Blazor.E2EPerformance.csproj" />
+    <ProjectReference Include="..\..\Blazor\Microsoft.AspNetCore.Blazor.E2EPerformance\Microsoft.AspNetCore.Blazor.E2EPerformance.csproj" />
     <ProjectReference Include="..\..\Blazor\testassets\HostedInAspNet.Client\HostedInAspNet.Client.csproj" />
     <ProjectReference Include="..\..\Blazor\testassets\HostedInAspNet.Server\HostedInAspNet.Server.csproj" />
     <ProjectReference Include="..\..\Blazor\testassets\MonoSanityClient\MonoSanityClient.csproj" />
