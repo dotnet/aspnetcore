@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.Equal(200, (int)result1.StatusCode);
             Assert.Equal(500, (int)result2.StatusCode);
             StopServer();
-            EventLogHelpers.VerifyEventLogEvent(result, "Only one inprocess application is allowed per IIS application pool");
+            EventLogHelpers.VerifyEventLogEvent(result, EventLogHelpers.OnlyOneAppPerAppPool());
         }
 
         [ConditionalTheory]

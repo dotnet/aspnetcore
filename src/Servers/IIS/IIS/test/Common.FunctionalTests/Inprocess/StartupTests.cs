@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             StopServer();
 
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult, $@"Application '{Regex.Escape(deploymentResult.ContentRoot)}\\' wasn't able to start. {subError}");
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.UnableToStart(deploymentResult, subError));
 
             Assert.Contains("HTTP Error 500.0 - ANCM In-Process Handler Load Failure", await response.Content.ReadAsStringAsync());
         }

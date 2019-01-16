@@ -60,6 +60,19 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.True(0 == entries.Count, $"Some entries were not matched by any regex {FormatEntries(entries)}");
         }
 
+        public static string OnlyOneAppPerAppPool()
+        {
+            if (DeployerSelector.HasNewShim)
+            {
+                return "Only one in-process application is allowed per IIS application pool. Please assign the application '(.*)' to a different IIS application pool.";
+
+            }
+            else
+            {
+                return "Only one inprocess application is allowed per IIS application pool";
+            }
+        }
+
         private static EventLogEntry[] AssertEntry(string regexString, IEnumerable<EventLogEntry> entries, bool allowMultiple = false)
         {
             var expectedRegex = new Regex(regexString, RegexOptions.Singleline);
@@ -73,6 +86,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             return string.Join(",", entries.Select(e => e.Message));
         }
+
+
 
         private static IEnumerable<EventLogEntry> GetEntries(IISDeploymentResult deploymentResult)
         {
@@ -131,7 +146,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         public static string InProcessStarted(IISDeploymentResult deploymentResult)
         {
-            return $"Application '{EscapedContentRoot(deploymentResult)}' started the coreclr in-process successfully";
+            if (DeployerSelector.HasNewHandler)
+            {
+                return $"Application '{EscapedContentRoot(deploymentResult)}' started successfully.";
+            }
+            else
+            {
+                return $"Application '{EscapedContentRoot(deploymentResult)}' started the coreclr in-process successfully";
+            }
         }
 
         public static string OutOfProcessStarted(IISDeploymentResult deploymentResult)
@@ -141,7 +163,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         public static string InProcessFailedToStart(IISDeploymentResult deploymentResult, string reason)
         {
-            return $"Application '/LM/W3SVC/1/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' failed to load clr and managed application. {reason}";
+            if (DeployerSelector.HasNewHandler)
+            {
+                return $"Application '/LM/W3SVC/1/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' failed to load coreclr. Exception Message:\r\n{reason}";
+            }
+            else
+            {
+                return $"Application '/LM/W3SVC/1/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' failed to load clr and managed application. {reason}";
+            }
         }
 
         public static string InProcessFailedToStop(IISDeploymentResult deploymentResult, string reason)
@@ -160,7 +189,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
         public static string InProcessThreadExitStdOut(IISDeploymentResult deploymentResult, string code, string output)
         {
-            return $"Application '/LM/W3SVC/1/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' hit unexpected managed background thread exit, exit code = '{code}'. Last 4KB characters of captured stdout and stderr logs:\r\n{output}";
+            if (DeployerSelector.HasNewHandler)
+            {
+                return $"Application '/LM/W3SVC/1/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' has exited from Program.Main with exit code = '{code}'. Last 30KB characters of captured stdout and stderr logs:\r\n{output}";
+            }
+            else
+            {
+                return $"Application '/LM/W3SVC/1/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' hit unexpected managed background thread exit, exit code = '{code}'. Last 4KB characters of captured stdout and stderr logs:\r\n{output}";
+            }
         }
 
         public static string FailedToStartApplication(IISDeploymentResult deploymentResult, string code)
@@ -170,14 +206,30 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         public static string ConfigurationLoadError(IISDeploymentResult deploymentResult, string reason)
         {
-            return $"Could not load configuration. Exception message: {reason}";
+            if (DeployerSelector.HasNewShim)
+            {
+                return $"Could not load configuration. Exception message:\r\n{reason}";
+            }
+            else
+            {
+                return $"Could not load configuration. Exception message: {reason}";
+            }
         }
 
         public static string OutOfProcessFailedToStart(IISDeploymentResult deploymentResult)
         {
-            return $"Application '/LM/W3SVC/1/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' failed to start process with " +
-                $"commandline '(.*)' with multiple retries. " +
-                $"The last try of listening port is '(.*)'. See previous warnings for details.";
+            if (DeployerSelector.HasNewShim)
+            {
+                return $"Application '/LM/W3SVC/1/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' failed to start process with " +
+                    $"commandline '(.*)' with multiple retries. " +
+                    $"Failed to bind to port '(.*)'. See previous warnings for details.";
+            }
+            else
+            {
+                return $"Application '/LM/W3SVC/1/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' failed to start process with " +
+                    $"commandline '(.*)' with multiple retries. " +
+                    $"The last try of listening port is '(.*)'. See previous warnings for details.";
+            }
         }
 
         public static string InProcessHostfxrInvalid(IISDeploymentResult deploymentResult)
@@ -192,9 +244,16 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         public static string InProcessFailedToFindNativeDependencies(IISDeploymentResult deploymentResult)
         {
-            return "Invoking hostfxr to find the inprocess request handler failed without finding any native dependencies. " +
-                "This most likely means the app is misconfigured, please check the versions of Microsoft.NetCore.App and Microsoft.AspNetCore.App that " +
-                "are targeted by the application and are installed on the machine.";
+            if (DeployerSelector.HasNewShim)
+            {
+                return "Unable to locate application dependencies. Ensure that the versions of Microsoft.NetCore.App and Microsoft.AspNetCore.App targeted by the application are installed.";
+            }
+            else
+            {
+                return "Invoking hostfxr to find the inprocess request handler failed without finding any native dependencies. " +
+                    "This most likely means the app is misconfigured, please check the versions of Microsoft.NetCore.App and Microsoft.AspNetCore.App that " +
+                    "are targeted by the application and are installed on the machine.";
+            }
         }
 
         public static string InProcessFailedToFindRequestHandler(IISDeploymentResult deploymentResult)
@@ -206,6 +265,30 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             return
                 $"Could not start stdout file redirection to '{Regex.Escape(file)}' with application base '{EscapedContentRoot(deploymentResult)}'.";
+        }
+
+        public static string CouldNotFindHandler()
+        {
+            if (DeployerSelector.HasNewShim)
+            {
+                return "Could not find 'aspnetcorev2_inprocess.dll'";
+            }
+            else
+            {
+                return "Could not find the assembly 'aspnetcorev2_inprocess.dll'";
+            }
+        }
+
+        public static string UnableToStart(IISDeploymentResult deploymentResult, string subError)
+        {
+            if (DeployerSelector.HasNewShim)
+            {
+                return $@"Application '{Regex.Escape(deploymentResult.ContentRoot)}\\' failed to start. Exception Message:\r\n{subError}'";
+            }
+            else
+            {
+                return $@"Application '{Regex.Escape(deploymentResult.ContentRoot)}\\' wasn't able to start. {subError}'";
+            }
         }
 
         private static string EscapedContentRoot(IISDeploymentResult deploymentResult)
