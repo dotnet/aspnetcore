@@ -28,7 +28,7 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Hosting" />
-    <Reference Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" Private="false" />
+    <Reference Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" />
     <Reference Include="Microsoft.AspNetCore.Server.IntegrationTesting" />
     <Reference Include="Microsoft.Extensions.Logging.Testing" />
     <Reference Include="Microsoft.Extensions.Logging" />
