@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             if (DeployerSelector.HasNewHandler)
             {
-                return $"Application '/LM/W3SVC/1/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' failed to load coreclr. Exception Message:\r\n{reason}";
+                return $"Application '/LM/W3SVC/1/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' failed to load coreclr. Exception message:\r\n{reason}";
             }
             else
             {
@@ -283,11 +283,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             if (DeployerSelector.HasNewShim)
             {
-                return $@"Application '{Regex.Escape(deploymentResult.ContentRoot)}\\' failed to start. Exception Message:\r\n{subError}'";
+                return $@"Application '{Regex.Escape(deploymentResult.ContentRoot)}\\' failed to start. Exception message:\r\n{subError}";
             }
             else
             {
-                return $@"Application '{Regex.Escape(deploymentResult.ContentRoot)}\\' wasn't able to start. {subError}'";
+                return $@"Application '{Regex.Escape(deploymentResult.ContentRoot)}\\' wasn't able to start. {subError}";
             }
         }
 

@@ -43,6 +43,7 @@
 #define ASPNETCORE_EVENT_INPROCESS_THREAD_EXCEPTION_MSG      L"Application '%s' with physical root '%s' hit unexpected managed exception, exception code = '0x%x'. Please check the stderr logs for more information."
 #define ASPNETCORE_EVENT_INPROCESS_THREAD_EXCEPTION_STDOUT_MSG L"Application '%s' with physical root '%s' hit unexpected managed exception, exception code = '0x%x'. Last 30KB characters of captured stdout and stderr logs:\r\n%s"
 #define ASPNETCORE_EVENT_INPROCESS_RH_ERROR_MSG              L"Could not find 'aspnetcorev2_inprocess.dll'. Exception message:\r\n%s"
+#define ASPNETCORE_EVENT_INPROCESS_RH_REFERENCE_MSG          L"Could not find the assembly '%s' referenced for the in-process application. Please confirm the Microsoft.AspNetCore.Server.IIS package is referenced in your application."
 #define ASPNETCORE_EVENT_OUT_OF_PROCESS_RH_MISSING_MSG       L"Could not find the assembly '%s' for out-of-process application. Please confirm the assembly is installed correctly for IIS or IISExpress."
 #define ASPNETCORE_EVENT_INPROCESS_START_SUCCESS_MSG         L"Application '%s' started successfully."
 #define ASPNETCORE_EVENT_INPROCESS_START_ERROR_MSG           L"Application '%s' failed to start. Exception message:\r\n%s"
