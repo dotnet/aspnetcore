@@ -66,10 +66,10 @@ namespace MusicStore.Controllers
                     var cart = ShoppingCart.GetCart(dbContext, HttpContext);
                     await cart.CreateOrder(order);
 
-                    _logger.LogInformation("User {userName} started checkout of {orderId}.", order.Username, order.OrderId);
-
                     // Save all changes
                     await dbContext.SaveChangesAsync(requestAborted);
+
+                    _logger.LogInformation("User {userName} started checkout of {orderId}.", order.Username, order.OrderId);
 
                     return RedirectToAction("Complete", new { id = order.OrderId });
                 }
