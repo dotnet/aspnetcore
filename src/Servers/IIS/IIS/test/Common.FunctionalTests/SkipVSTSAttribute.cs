@@ -10,8 +10,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
     [AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Class | AttributeTargets.Method)]
     public sealed class SkipInVSTSAttribute : Attribute, ITestCondition
     {
-        public static bool RunningInVSTS = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SYSTEM_TASKDEFINITIONSURI"))
-        public bool IsMet => RunningInVSTS;
+        public static bool RunningInVSTS = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SYSTEM_TASKDEFINITIONSURI"))
+        public bool IsMet => !RunningInVSTS;
 
         public string SkipReason => "Running in VSTS";
     }
