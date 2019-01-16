@@ -89,25 +89,7 @@
   <Target Name="CopySymbolsToOutput" AfterTargets="Build" Condition="'$(SymbolsPublishDir)' != ''">
     <Copy SourceFiles="$(OutDir)$(AssemblyName).pdb" DestinationFolder="$(SymbolsPublishDir)" />
   </Target>
-  <!--
-    We should be really careful about what goes into the VSIX and what doesn't. Since we're using
-    P2P references and packages, there are some things we need to exclude.
 
-    We want everything that *we* don't own to be excluded, those dependencies need to be satisfied
-    by other VS components (Razor, Roslyn).
-
-    Ideally we could use an allow-list here, but I don't know how to do that.
-  -->
-  <ItemDefinitionGroup>
-    <SuppressFromVsix>
-      <Visible>false</Visible>
-    </SuppressFromVsix>
-  </ItemDefinitionGroup>
-  <ItemGroup>
-    <SuppressFromVsix Include="Microsoft.AspNetCore.Razor.Language.dll" />
-    <SuppressFromVsix Include="Microsoft.CodeAnalysis.Razor.dll" />
-    <SuppressFromVsix Include="Microsoft.CodeAnalysis.Razor.Workspaces.dll" />
-  </ItemGroup>
   <ItemGroup>
     <!--
       Let's continue our parade of gross workarounds.
