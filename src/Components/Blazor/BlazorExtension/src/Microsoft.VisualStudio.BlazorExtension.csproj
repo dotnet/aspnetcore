@@ -8,8 +8,12 @@
     <ImportDirectoryBuildTargets>true</ImportDirectoryBuildTargets>
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
-    <!-- Other projects should not reference this assembly. It is only mean to be used in Visual Studio. -->
+    <!-- Other projects should not reference this assembly. It is only meaning to be used in Visual Studio. -->
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
+    <IsProductPackage>true</IsProductPackage>
+    <IsPackable>false</IsPackable>
+    <EnableSourceLink>false</EnableSourceLink>
+    <GenerateSourceLinkFile>false</GenerateSourceLinkFile>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <!--
@@ -20,11 +24,6 @@
 
     BEGIN INTERESTING STUFF
   -->
-  <PropertyGroup>
-    <!-- VSIXes are always signed. This is the same key that ASP.NET uses for OSS signing -->
-    <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>..\..\..\eng\AspNetCore.snk</AssemblyOriginatorKeyFile>
-  </PropertyGroup>
   <PropertyGroup>
     <!--
       Following VS convention of using the VS release # as a convention for the vsix version.
