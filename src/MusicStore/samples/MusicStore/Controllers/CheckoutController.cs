@@ -74,8 +74,9 @@ namespace MusicStore.Controllers
                     return RedirectToAction("Complete", new { id = order.OrderId });
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex, "Checkout failed");
                 //Invalid - redisplay with errors
                 return View(order);
             }
