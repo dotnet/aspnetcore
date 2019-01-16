@@ -128,7 +128,7 @@
           StandardOutputImportance="Normal" />
 
     <Exec Condition=" @(NpmPackageToPublish->Count()) != 0 "
-          Command="npm publish --registry '$(PublishMyGetNpmRegistryUrl)' '%(NpmPackageToPublish.Identity)'"
+          Command="npm publish --registry &quot;$(PublishMyGetNpmRegistryUrl)&quot; &quot;%(NpmPackageToPublish.Identity)&quot;"
           ContinueOnError="true">
       <Output TaskParameter="ExitCode" ItemName="_NpmExitCodes" />
     </Exec>
