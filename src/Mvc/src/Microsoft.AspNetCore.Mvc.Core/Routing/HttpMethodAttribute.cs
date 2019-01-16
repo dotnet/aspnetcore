@@ -7,7 +7,7 @@ using System.Collections.Generic;
 namespace Microsoft.AspNetCore.Mvc.Routing
 {
     /// <summary>
-    /// Identifies an action that only supports a given set of HTTP methods.
+    /// Identifies an action that supports a given set of HTTP methods.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
     public abstract class HttpMethodAttribute : Attribute, IActionHttpMethodProvider, IRouteTemplateProvider

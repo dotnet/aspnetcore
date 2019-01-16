@@ -10,6 +10,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
@@ -60,7 +61,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             }
 
             _options = options;
-            _logger = loggerFactory?.CreateLogger(nameof(HttpsConnectionAdapter));
+            _logger = loggerFactory?.CreateLogger<HttpsConnectionAdapter>();
         }
 
         public bool IsHttps => true;
@@ -77,6 +78,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             bool certificateRequired;
             var feature = new TlsConnectionFeature();
             context.Features.Set<ITlsConnectionFeature>(feature);
+            context.Features.Set<ITlsHandshakeFeature>(feature);
 
             if (_options.ClientCertificateMode == ClientCertificateMode.NoCertificate)
             {
@@ -125,6 +127,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             var timeoutFeature = context.Features.Get<IConnectionTimeoutFeature>();
             timeoutFeature.SetTimeout(_options.HandshakeTimeout);
 
+            _options.OnHandshakeStarted?.Invoke();
+
             try
             {
 #if NETCOREAPP2_1
@@ -144,7 +148,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                     };
                 }
 
-                var sslOptions = new SslServerAuthenticationOptions()
+                var sslOptions = new SslServerAuthenticationOptions
                 {
                     ServerCertificate = _serverCertificate,
                     ServerCertificateSelectionCallback = selector,
@@ -158,6 +162,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 if ((_options.HttpProtocols & HttpProtocols.Http2) != 0)
                 {
                     sslOptions.ApplicationProtocols.Add(SslApplicationProtocol.Http2);
+                    // https://tools.ietf.org/html/rfc7540#section-9.2.1
+                    sslOptions.AllowRenegotiation = false;
                 }
 
                 if ((_options.HttpProtocols & HttpProtocols.Http1) != 0)
@@ -166,7 +172,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 }
 
                 await sslStream.AuthenticateAsServerAsync(sslOptions, CancellationToken.None);
-#else
+#elif NETSTANDARD2_0 // No ALPN support
                 var serverCert = _serverCertificate;
                 if (_serverCertificateSelector != null)
                 {
@@ -179,6 +185,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 }
                 await sslStream.AuthenticateAsServerAsync(serverCert, certificateRequired,
                         _options.SslProtocols, _options.CheckCertificateRevocation);
+#else
+#error TFMs need to be updated
 #endif
             }
             catch (OperationCanceledException)
@@ -201,8 +209,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 #if NETCOREAPP2_1
             feature.ApplicationProtocol = sslStream.NegotiatedApplicationProtocol.Protocol;
             context.Features.Set<ITlsApplicationProtocolFeature>(feature);
+#elif NETSTANDARD2_0 // No ALPN support
+#else
+#error TFMs need to be updated
 #endif
             feature.ClientCertificate = ConvertToX509Certificate2(sslStream.RemoteCertificate);
+            feature.CipherAlgorithm = sslStream.CipherAlgorithm;
+            feature.CipherStrength = sslStream.CipherStrength;
+            feature.HashAlgorithm = sslStream.HashAlgorithm;
+            feature.HashStrength = sslStream.HashStrength;
+            feature.KeyExchangeAlgorithm = sslStream.KeyExchangeAlgorithm;
+            feature.KeyExchangeStrength = sslStream.KeyExchangeStrength;
+            feature.Protocol = sslStream.SslProtocol;
 
             return new HttpsAdaptedConnection(sslStream);
         }

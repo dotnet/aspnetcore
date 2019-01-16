@@ -1555,7 +1555,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             return new ParameterBinder(
                 metadataProvider,
                 factory,
-                new DefaultObjectValidator(metadataProvider, new[] { validator }),
+                new DefaultObjectValidator(metadataProvider, new[] { validator }, new MvcOptions()),
                 Options.Create(mvcOptions),
                 NullLoggerFactory.Instance);
         }

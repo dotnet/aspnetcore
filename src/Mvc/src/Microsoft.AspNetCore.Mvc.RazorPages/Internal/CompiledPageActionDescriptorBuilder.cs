@@ -49,6 +49,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 ActionConstraints = actionDescriptor.ActionConstraints,
                 AttributeRouteInfo = actionDescriptor.AttributeRouteInfo,
                 BoundProperties = boundProperties,
+                EndpointMetadata = actionDescriptor.EndpointMetadata,
                 FilterDescriptors = filters,
                 HandlerMethods = handlerMethods,
                 HandlerTypeInfo = applicationModel.HandlerType,

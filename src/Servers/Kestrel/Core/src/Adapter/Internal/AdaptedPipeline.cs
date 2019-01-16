@@ -76,9 +76,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
                         {
 #if NETCOREAPP2_1
                             await stream.WriteAsync(buffer.First);
-#else
+#elif NETSTANDARD2_0
                             var array = buffer.First.GetArray();
                             await stream.WriteAsync(array.Array, array.Offset, array.Count);
+#else
+#error TFMs need to be updated
 #endif
                         }
                         else
@@ -87,9 +89,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
                             {
 #if NETCOREAPP2_1
                                 await stream.WriteAsync(memory);
-#else
+#elif NETSTANDARD2_0
                                 var array = memory.GetArray();
                                 await stream.WriteAsync(array.Array, array.Offset, array.Count);
+#else
+#error TFMs need to be updated
 #endif
                             }
                         }
@@ -129,9 +133,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
                     var outputBuffer = Input.Writer.GetMemory(MinAllocBufferSize);
 #if NETCOREAPP2_1
                     var bytesRead = await stream.ReadAsync(outputBuffer);
-#else
+#elif NETSTANDARD2_0
                     var array = outputBuffer.GetArray();
                     var bytesRead = await stream.ReadAsync(array.Array, array.Offset, array.Count);
+#else
+#error TFMs need to be updated
 #endif
                     Input.Writer.Advance(bytesRead);
 
@@ -161,10 +167,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
                 // the transport pipe as well
                 _transport.Input.Complete();
             }
-        }
-
-        public void Dispose()
-        {
         }
     }
 }

@@ -1,5 +1,5 @@
 ZipManifestGenerator
----------
+--------------------
 
 This console app is used to generate the list of files in a zip archive.
 
@@ -29,3 +29,5 @@ $compatPatchUrl = "https://dotnetfeed.blob.core.windows.net/orchestrated-release
 
 dotnet run $compatPatchUrl "../Archive.CiServer.Patch.Compat/ArchiveBaseline.${Version}.txt"
 ```
+
+For convenience, this folder contains [./UpdateBaselines.ps1](./UpdateBaselines.ps1) to run these steps.

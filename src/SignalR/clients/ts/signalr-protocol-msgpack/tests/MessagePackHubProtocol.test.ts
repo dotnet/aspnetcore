@@ -4,7 +4,7 @@
 import { CompletionMessage, InvocationMessage, MessageType, NullLogger, StreamItemMessage } from "@aspnet/signalr";
 import { MessagePackHubProtocol } from "../src/MessagePackHubProtocol";
 
-describe("MessageHubProtocol", () => {
+describe("MessagePackHubProtocol", () => {
     it("can write/read non-blocking Invocation message", () => {
         const invocation = {
             arguments: [42, true, "test", ["x1", "y2"], null],
@@ -66,12 +66,10 @@ describe("MessageHubProtocol", () => {
             error: "Err",
             headers: {},
             invocationId: "abc",
-            result: null,
             type: MessageType.Completion,
         } as CompletionMessage],
         [[0x0b, 0x95, 0x03, 0x80, 0xa3, 0x61, 0x62, 0x63, 0x03, 0xa2, 0x4f, 0x4b],
         {
-            error: null,
             headers: {},
             invocationId: "abc",
             result: "OK",
@@ -79,15 +77,12 @@ describe("MessageHubProtocol", () => {
         } as CompletionMessage],
         [[0x08, 0x94, 0x03, 0x80, 0xa3, 0x61, 0x62, 0x63, 0x02],
         {
-            error: null,
             headers: {},
             invocationId: "abc",
-            result: null,
             type: MessageType.Completion,
         } as CompletionMessage],
         [[0x0E, 0x95, 0x03, 0x80, 0xa3, 0x61, 0x62, 0x63, 0x03, 0xD6, 0xFF, 0x5A, 0x4A, 0x1A, 0x50],
         {
-            error: null,
             headers: {},
             invocationId: "abc",
             result: new Date(Date.UTC(2018, 0, 1, 11, 24, 0)),
@@ -96,10 +91,8 @@ describe("MessageHubProtocol", () => {
         // extra property at the end should be ignored (testing older protocol client working with newer protocol server)
         [[0x09, 0x95, 0x03, 0x80, 0xa3, 0x61, 0x62, 0x63, 0x02, 0x00],
         {
-            error: null,
             headers: {},
             invocationId: "abc",
-            result: null,
             type: MessageType.Completion,
         } as CompletionMessage],
     ] as Array<[number[], CompletionMessage]>).forEach(([payload, expectedMessage]) =>
@@ -174,7 +167,6 @@ describe("MessageHubProtocol", () => {
                 type: MessageType.StreamItem,
             } as StreamItemMessage,
             {
-                error: null,
                 headers: {},
                 invocationId: "abc",
                 result: "OK",
@@ -195,5 +187,15 @@ describe("MessageHubProtocol", () => {
                 type: MessageType.Ping,
             },
         ]);
+    });
+
+    it("can write ping message", () => {
+        const payload = new Uint8Array([
+            0x02, // length prefix
+            0x91, // message array length = 1 (fixarray)
+            0x06, // type = 6 = Ping (fixnum)
+        ]);
+        const buffer = new MessagePackHubProtocol().writeMessage({ type: MessageType.Ping });
+        expect(new Uint8Array(buffer)).toEqual(payload);
     });
 });

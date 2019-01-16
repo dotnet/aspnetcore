@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Performance.Mocks;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
@@ -37,13 +37,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 HttpParser = NullParser<Http1ParsingHandler>.Instance
             };
 
-            var http1Connection = new Http1Connection(context: new Http1ConnectionContext
+            var http1Connection = new Http1Connection(context: new HttpConnectionContext
             {
                 ServiceContext = serviceContext,
                 ConnectionFeatures = new FeatureCollection(),
                 MemoryPool = memoryPool,
-                TimeoutControl = new MockTimeoutControl(),
-                Application = pair.Application,
+                TimeoutControl = new TimeoutControl(timeoutHandler: null),
                 Transport = pair.Transport
             });
 

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -115,10 +116,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                         "Microsoft.AspNetCore.Mvc.ViewFound",
                         new
                         {
-                            actionContext = actionContext,
+                            actionContext,
                             isMainPage = true,
                             result = viewResult,
-                            viewName = viewName,
+                            viewName,
                             view = result.View,
                         });
                 }
@@ -133,10 +134,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                         "Microsoft.AspNetCore.Mvc.ViewNotFound",
                         new
                         {
-                            actionContext = actionContext,
+                            actionContext,
                             isMainPage = true,
                             result = viewResult,
-                            viewName = viewName,
+                            viewName,
                             searchedLocations = result.SearchedLocations
                         });
                 }
@@ -199,7 +200,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 normalizedValue = value;
             }
 
-            var stringRouteValue = routeValue?.ToString();
+            var stringRouteValue = Convert.ToString(routeValue, CultureInfo.InvariantCulture);
             if (string.Equals(normalizedValue, stringRouteValue, StringComparison.OrdinalIgnoreCase))
             {
                 return normalizedValue;

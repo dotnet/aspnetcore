@@ -44,7 +44,29 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         /// </summary>
         /// <param name="elementBinder">The <see cref="IModelBinder"/> for binding elements.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+        /// <remarks>
+        /// The binder will not add an error for an unbound top-level model even if
+        /// <see cref="ModelMetadata.IsBindingRequired"/> is <see langword="true"/>.
+        /// </remarks>
         public CollectionModelBinder(IModelBinder elementBinder, ILoggerFactory loggerFactory)
+            : this(elementBinder, loggerFactory, allowValidatingTopLevelNodes: false)
+        {
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="CollectionModelBinder{TElement}"/>.
+        /// </summary>
+        /// <param name="elementBinder">The <see cref="IModelBinder"/> for binding elements.</param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+        /// <param name="allowValidatingTopLevelNodes">
+        /// Indication that validation of top-level models is enabled. If <see langword="true"/> and
+        /// <see cref="ModelMetadata.IsBindingRequired"/> is <see langword="true"/> for a top-level model, the binder
+        /// adds a <see cref="ModelStateDictionary"/> error when the model is not bound.
+        /// </param>
+        public CollectionModelBinder(
+            IModelBinder elementBinder,
+            ILoggerFactory loggerFactory,
+            bool allowValidatingTopLevelNodes)
         {
             if (elementBinder == null)
             {
@@ -58,7 +80,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             ElementBinder = elementBinder;
             Logger = loggerFactory.CreateLogger(GetType());
+            AllowValidatingTopLevelNodes = allowValidatingTopLevelNodes;
         }
+
+        // Internal for testing.
+        internal bool AllowValidatingTopLevelNodes { get; }
 
         /// <summary>
         /// Gets the <see cref="IModelBinder"/> instances for binding collection elements.
@@ -92,6 +118,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                     if (model == null)
                     {
                         model = CreateEmptyCollection(bindingContext.ModelType);
+                    }
+
+                    if (AllowValidatingTopLevelNodes)
+                    {
+                        AddErrorIfBindingRequired(bindingContext);
                     }
 
                     bindingContext.Result = ModelBindingResult.Success(model);
@@ -159,6 +190,34 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             return targetType.GetTypeInfo().IsClass &&
                 !targetType.GetTypeInfo().IsAbstract &&
                 typeof(ICollection<TElement>).IsAssignableFrom(targetType);
+        }
+
+        /// <summary>
+        /// Add a <see cref="ModelError" /> to <see cref="ModelBindingContext.ModelState" /> if
+        /// <see cref="ModelMetadata.IsBindingRequired" />.
+        /// </summary>
+        /// <param name="bindingContext">The <see cref="ModelBindingContext"/>.</param>
+        /// <remarks>
+        /// <para>
+        /// This method should be called only when <see cref="MvcOptions.AllowValidatingTopLevelNodes" /> is
+        /// <see langword="true" /> and a top-level model was not bound.
+        /// </para>
+        /// <para>
+        /// For back-compatibility reasons, <see cref="ModelBindingContext.Result" /> must have
+        /// <see cref="ModelBindingResult.IsModelSet" /> equal to <see langword="true" /> when a
+        /// top-level model is not bound. Therefore, ParameterBinder can not detect a
+        /// <see cref="ModelMetadata.IsBindingRequired" /> failure for collections. Add the error here.
+        /// </para>
+        /// </remarks>
+        protected void AddErrorIfBindingRequired(ModelBindingContext bindingContext)
+        {
+            var modelMetadata = bindingContext.ModelMetadata;
+            if (modelMetadata.IsBindingRequired)
+            {
+                var messageProvider = modelMetadata.ModelBindingMessageProvider;
+                var message = messageProvider.MissingBindRequiredValueAccessor(bindingContext.FieldName);
+                bindingContext.ModelState.TryAddModelError(bindingContext.ModelName, message);
+            }
         }
 
         /// <summary>

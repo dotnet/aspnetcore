@@ -87,6 +87,12 @@ if ! __machine_has docker; then
     exit 1
 fi
 
+commit_hash="$(git rev-parse HEAD || true)"
+
+if [ ! -z "$commit_hash" ]; then
+    build_args[${#build_args[*]}]="-p:RepositoryCommit=$commit_hash"
+fi
+
 dockerfile="$DIR/build/docker/$image.Dockerfile"
 tagname="aspnetcore-build-$image"
 

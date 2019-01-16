@@ -111,13 +111,12 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             // Read-only collection should not be updated.
             Assert.Empty(boundModel.Address);
 
-            // ModelState (data is can't be validated).
-            Assert.False(modelState.IsValid);
+            Assert.True(modelState.IsValid);
             var entry = Assert.Single(modelState);
             Assert.Equal("Address[0].Street", entry.Key);
             var state = entry.Value;
             Assert.NotNull(state);
-            Assert.Equal(ModelValidationState.Unvalidated, state.ValidationState);
+            Assert.Equal(ModelValidationState.Valid, state.ValidationState);
             Assert.Equal("SomeStreet", state.RawValue);
             Assert.Equal("SomeStreet", state.AttemptedValue);
         }
@@ -292,12 +291,12 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Empty(boundModel.Address);
 
             // ModelState (data cannot be validated).
-            Assert.False(modelState.IsValid);
+            Assert.True(modelState.IsValid);
             var entry = Assert.Single(modelState);
             Assert.Equal("prefix.Address[0].Street", entry.Key);
             var state = entry.Value;
             Assert.NotNull(state);
-            Assert.Equal(ModelValidationState.Unvalidated, state.ValidationState);
+            Assert.Equal(ModelValidationState.Valid, state.ValidationState);
             Assert.Equal("SomeStreet", state.AttemptedValue);
             Assert.Equal("SomeStreet", state.RawValue);
         }

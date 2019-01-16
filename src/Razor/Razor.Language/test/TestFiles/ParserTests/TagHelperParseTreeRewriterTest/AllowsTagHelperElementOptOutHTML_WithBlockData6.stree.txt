@@ -1,0 +1,12 @@
+Markup block - Gen<None> - 8 - (0:0,0)
+    Tag block - Gen<TagHelper> - 8 - (0:0,0) - p - ptaghelper
+        StartTagAndEndTag - <p>
+        Tag block - Gen<None> - 5 - (3:0,3)
+            Markup span - Gen<Markup> - [</] - SpanEditHandler;Accepts:Any - (3:0,3) - Tokens:2
+                HtmlTokenType.OpenAngle;[<];
+                HtmlTokenType.ForwardSlash;[/];
+            MetaCode span - Gen<None> - [!] - SpanEditHandler;Accepts:None - (5:0,5) - Tokens:1
+                HtmlTokenType.Bang;[!];
+            Markup span - Gen<Markup> - [p>] - SpanEditHandler;Accepts:Any - (6:0,6) - Tokens:2
+                HtmlTokenType.Text;[p];
+                HtmlTokenType.CloseAngle;[>];

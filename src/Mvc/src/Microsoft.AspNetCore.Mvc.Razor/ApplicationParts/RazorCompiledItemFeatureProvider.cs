@@ -25,12 +25,12 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
 
                 if (duplicates != null)
                 {
-                    var viewsDiffereningInCase = string.Join(Environment.NewLine, duplicates.Select(d => d.Identifier));
+                    var viewsDifferingInCase = string.Join(Environment.NewLine, duplicates.Select(d => d.Identifier));
 
                     var message = string.Join(
                         Environment.NewLine,
                         Resources.RazorViewCompiler_ViewPathsDifferOnlyInCase,
-                        viewsDiffereningInCase);
+                        viewsDifferingInCase);
                     throw new InvalidOperationException(message);
                 }
 

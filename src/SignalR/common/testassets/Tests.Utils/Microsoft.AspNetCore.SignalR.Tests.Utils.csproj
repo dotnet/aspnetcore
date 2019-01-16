@@ -1,8 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.2;net461</TargetFrameworks>
     <RootNamespace>Microsoft.AspNetCore.SignalR.Tests</RootNamespace>
+    <DefineConstants>$(DefineConstants);TESTUTILS</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,8 +19,6 @@
     <Reference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" />
     <Reference Include="Microsoft.Extensions.Logging.Testing" />
     <Reference Include="Microsoft.Extensions.ValueStopwatch.Sources" PrivateAssets="All" />
-    <Reference Include="Moq" />
-    <Reference Include="StackExchange.Redis.StrongName" />
   </ItemGroup>
 
 </Project>

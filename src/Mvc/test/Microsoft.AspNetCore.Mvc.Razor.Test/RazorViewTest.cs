@@ -1747,6 +1747,49 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             Assert.Equal(expected, viewContext.Writer.ToString());
         }
 
+        [Fact]
+        public async Task RenderAsync_InvokesOnAfterPageActivated()
+        {
+            // Arrange
+            var viewStart = new TestableRazorPage(_ => { });
+            var page = new TestableRazorPage(p => { p.Layout = LayoutPath; });
+            var layout = new TestableRazorPage(p => { p.RenderBodyPublic(); });
+            var expected = new HashSet<IRazorPage>();
+            var onAfterPageActivatedCalled = 0;
+
+            var activated = new HashSet<IRazorPage>();
+            var pageActivator = new Mock<IRazorPageActivator>();
+            pageActivator.Setup(p => p.Activate(It.IsAny<IRazorPage>(), It.IsAny<ViewContext>()))
+                .Callback((IRazorPage p, ViewContext v) => activated.Add(p));
+
+            var viewEngine = new Mock<IRazorViewEngine>();
+            viewEngine.Setup(v => v.FindPage(It.IsAny<ActionContext>(), LayoutPath))
+                .Returns(new RazorPageResult(LayoutPath, layout));
+
+            var view = new RazorView(
+                viewEngine.Object,
+                pageActivator.Object,
+                new[] { viewStart },
+                page,
+                new HtmlTestEncoder(),
+                new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor"))
+            {
+                OnAfterPageActivated = AssertActivated,
+            };
+            var viewContext = CreateViewContext(view);
+
+            // Act
+            await view.RenderAsync(viewContext);
+            Assert.Equal(3, onAfterPageActivatedCalled);
+
+            void AssertActivated(IRazorPage p, ViewContext v)
+            {
+                onAfterPageActivatedCalled++;
+                expected.Add(p);
+                Assert.Equal(expected, activated);
+            }
+        }
+
         private static ViewContext CreateViewContext(RazorView view)
         {
             var httpContext = new DefaultHttpContext();

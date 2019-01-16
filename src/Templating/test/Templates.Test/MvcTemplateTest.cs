@@ -75,8 +75,7 @@ namespace Templates.Test
                 using (var aspNetProcess = StartAspNetProcess(targetFrameworkOverride, publish))
                 {
                     aspNetProcess.AssertOk("/");
-                    aspNetProcess.AssertOk("/Home/About");
-                    aspNetProcess.AssertOk("/Home/Contact");
+                    aspNetProcess.AssertOk("/Home/Privacy");
                 }
             }
         }
@@ -112,7 +111,6 @@ namespace Templates.Test
             {
                 Assert.Contains(".db", projectFileContents);
             }
-            Assert.Contains("Microsoft.VisualStudio.Web.CodeGeneration.Design", projectFileContents);
 
             if (targetFrameworkOverride != null)
             {
@@ -128,8 +126,7 @@ namespace Templates.Test
                 using (var aspNetProcess = StartAspNetProcess(targetFrameworkOverride, publish))
                 {
                     aspNetProcess.AssertOk("/");
-                    aspNetProcess.AssertOk("/Home/About");
-                    aspNetProcess.AssertOk("/Home/Contact");
+                    aspNetProcess.AssertOk("/Home/Privacy");
                 }
             }
         }

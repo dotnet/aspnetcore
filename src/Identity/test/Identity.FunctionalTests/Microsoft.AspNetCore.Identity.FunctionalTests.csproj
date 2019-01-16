@@ -1,11 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
-    <PlatformTarget Condition=" '$(TargetFramework)' == 'netcoreapp2.1' "></PlatformTarget>
-
-    <!-- These tests are completely busted in Azure Pipelines due to OutOfMemoryExceptions caused by https://github.com/aspnet/Extensions/issues/844 -->
-    <SkipTests Condition=" '$(BUILD_REASON)' == 'PullRequest' ">true</SkipTests>
+    <TargetFrameworks>netcoreapp2.2;net461</TargetFrameworks>
+    <PlatformTarget Condition=" '$(TargetFramework)' == 'netcoreapp2.2' "></PlatformTarget>
   </PropertyGroup>
 
   <ItemGroup>

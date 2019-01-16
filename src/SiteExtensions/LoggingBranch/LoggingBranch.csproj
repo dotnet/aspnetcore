@@ -23,8 +23,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <HostingStartupRuntimeStoreTargets Include="netcoreapp2.1" Runtime="win7-x64" />
-    <HostingStartupRuntimeStoreTargets Include="netcoreapp2.1" Runtime="win7-x86" />
+    <HostingStartupRuntimeStoreTargets Include="netcoreapp2.2" Runtime="win7-x64" />
+    <HostingStartupRuntimeStoreTargets Include="netcoreapp2.2" Runtime="win7-x86" />
     <HostingStartupPackageReference Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" Version="$(PackageVersion)" />
 
     <PackageReference Include="Internal.AspNetCore.Sdk" PrivateAssets="All" Version="$(InternalAspNetCoreSdkPackageVersion)" />

@@ -97,8 +97,6 @@
                     var formBody = "context=@JavaScriptEncode(UrlEncode(Model.ContextType.AssemblyQualifiedName))";
                     req.open("POST", "@JavaScriptEncode(Model.Options.MigrationsEndPointPath.Value)", true);
                     req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-                    req.setRequestHeader("Content-length", formBody.length);
-                    req.setRequestHeader("Connection", "close");
                     req.send(formBody);
                 }
 

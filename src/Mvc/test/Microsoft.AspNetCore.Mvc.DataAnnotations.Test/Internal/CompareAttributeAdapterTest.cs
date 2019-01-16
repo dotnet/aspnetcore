@@ -1,10 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
-using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Localization;
@@ -26,16 +26,14 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var attribute = new CompareAttribute("OtherProperty");
             var adapter = new CompareAttributeAdapter(attribute, stringLocalizer: null);
 
-            // Mono issue - https://github.com/aspnet/External/issues/19
-            var expectedMessage = PlatformNormalizer.NormalizeContent(
-                    "'MyPropertyDisplayName' and 'OtherPropertyDisplayName' do not match.");
+            var expectedMessage = "'MyPropertyDisplayName' and 'OtherPropertyDisplayName' do not match.";
 
             var actionContext = new ActionContext();
             var context = new ClientModelValidationContext(
                 actionContext,
                 metadata,
                 metadataProvider,
-                new AttributeDictionary());
+                new Dictionary<string, string>());
 
             // Act
             adapter.AddValidation(context);
@@ -78,7 +76,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                 actionContext,
                 metadata,
                 metadataProvider,
-                new AttributeDictionary());
+                new Dictionary<string, string>());
 
             // Act
             adapter.AddValidation(context);
@@ -106,15 +104,14 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var attribute = new CompareAttribute("OtherProperty");
             var adapter = new CompareAttributeAdapter(attribute, stringLocalizer: null);
 
-            // Mono issue - https://github.com/aspnet/External/issues/19
-            var expectedMessage = PlatformNormalizer.NormalizeContent("'MyProperty' and 'OtherProperty' do not match.");
+            var expectedMessage = "'MyProperty' and 'OtherProperty' do not match.";
 
             var actionContext = new ActionContext();
             var context = new ClientModelValidationContext(
                 actionContext,
                 metadata,
                 metadataProvider,
-                new AttributeDictionary());
+                new Dictionary<string, string>());
 
             // Act
             adapter.AddValidation(context);
@@ -151,7 +148,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                 actionContext,
                 metadata,
                 metadataProvider,
-                new AttributeDictionary());
+                new Dictionary<string, string>());
 
             // Act
             adapter.AddValidation(context);
@@ -191,7 +188,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                 actionContext,
                 metadata,
                 metadataProvider,
-                new AttributeDictionary());
+                new Dictionary<string, string>());
 
             // Act
             adapter.AddValidation(context);
@@ -224,7 +221,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                 actionContext,
                 metadata,
                 metadataProvider,
-                new AttributeDictionary());
+                new Dictionary<string, string>());
 
             context.Attributes.Add("data-val", "original");
             context.Attributes.Add("data-val-equalto", "original");

@@ -42,14 +42,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         [InlineData(false, typeof(IntEnum))]
         [InlineData(false, typeof(FlagsEnum))]
         public async Task BindModel_AddsErrorToModelState_ForEmptyValue_AndNonNullableEnumTypes(
-            bool suprressBindingUndefinedValueToEnumType,
+            bool suppressBindingUndefinedValueToEnumType,
             Type modelType)
         {
             // Arrange
             var message = "The value '' is invalid.";
             var binderInfo = GetBinderAndContext(
                 modelType,
-                suprressBindingUndefinedValueToEnumType,
+                suppressBindingUndefinedValueToEnumType,
                 valueProviderValue: "");
             var bindingContext = binderInfo.Item1;
             var binder = binderInfo.Item2;

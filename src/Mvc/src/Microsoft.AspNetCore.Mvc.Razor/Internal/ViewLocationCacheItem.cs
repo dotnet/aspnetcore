@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
     /// <summary>
     /// An item in <see cref="ViewLocationCacheResult"/>.
     /// </summary>
-    public struct ViewLocationCacheItem
+    public readonly struct ViewLocationCacheItem
     {
         /// <summary>
         /// Initializes a new instance of <see cref="ViewLocationCacheItem"/>.
