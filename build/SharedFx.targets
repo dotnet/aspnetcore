@@ -2,7 +2,7 @@
   <PropertyGroup>
     <UnitTestFxProject>$(RepositoryRoot)src\Framework\Framework.UnitTests\Framework.UnitTests.csproj</UnitTestFxProject>
     <UnitTestFxProject>$([MSBuild]::NormalizePath($(UnitTestFxProject)))</UnitTestFxProject>
-    <CodeSignDependsOn Condition="'$(_ProjectsOnly)' != 'true'">$(CodeSignDependsOn);GetSharedFxFilesToSign</CodeSignDependsOn>
+    <CodeSignDependsOn Condition="'$(_ProjectsOnly)' != 'true'">$(CodeSignDependsOn);GetSharedFxFilesToSign;</CodeSignDependsOn>
     <BuildSharedFxDependsOn>_BuildSharedFxProjects;TestSharedFx</BuildSharedFxDependsOn>
     <BuildSharedFxDependsOn Condition="'$(TestOnly)' != 'true'">$(BuildSharedFxDependsOn);CodeSign</BuildSharedFxDependsOn>
     <RedistNetCorePath>$(IntermediateDir)ar\$(SharedFxRid)\</RedistNetCorePath>
@@ -16,6 +16,8 @@
     <FxProjectToBuild Condition=" '$(BuildRuntimeArchive)' != 'false' " Include="$(RepositoryRoot)src\Installers\Archive\*.*proj" />
     <FxProjectToBuild Condition=" '$(SharedFxRid)' == 'linux-x64' AND '$(LinuxInstallerType)' == 'deb' " Include="$(RepositoryRoot)src\Installers\Debian\*.*proj" />
     <FxProjectToBuild Condition=" '$(SharedFxRid)' == 'linux-x64' AND '$(LinuxInstallerType)' == 'rpm' " Include="$(RepositoryRoot)src\Installers\Rpm\*.*proj" />
+
+    <FxProjectToBuild Condition=" '$(BuildSiteExtensions)' == 'true' " Include="$(RepositoryRoot)src\SiteExtensions\LoggingBranch\LoggingBranch.csproj" />
   </ItemGroup>
 
   <Target Name="BuildSharedFx" DependsOnTargets="$(BuildSharedFxDependsOn)" />
@@ -30,6 +32,7 @@
       <FilesToSign Include="$(BuildDir)runtime.$(SharedFxRid).Microsoft.AspNetCore.All.$(PackageVersion).nupkg" Certificate="$(PackageSigningCertName)" />
       <FilesToSign Include="$(BuildDir)runtime.$(SharedFxRid).Microsoft.AspNetCore.App.$(PackageVersion).symbols.nupkg" Certificate="$(PackageSigningCertName)" />
       <FilesToSign Include="$(BuildDir)runtime.$(SharedFxRid).Microsoft.AspNetCore.All.$(PackageVersion).symbols.nupkg" Certificate="$(PackageSigningCertName)" />
+      <FilesToSign Include="$(BuildDir)Microsoft.AspNetCore.AzureAppServices.SiteExtension.$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(SharedFxArchitecture).$(PackageVersion).nupkg" Condition=" '$(BuildSiteExtensions)' == 'true' " Certificate="$(PackageSigningCertName)" />
     </ItemGroup>
 
     <!-- These files should already be signed by the .NET Core team. They have to be listed again here because we recreate a redistributable which includes the Microsoft.NETCore.App runtime. -->
@@ -39,28 +42,6 @@
       <FilesToExcludeFromSigning Include="$(RedistNetCorePath)dotnet.exe" />
     </ItemGroup>
 
-  </Target>
-
-  <Target Name="BuildSiteExtension" DependsOnTargets="BuildSharedFx" Condition="'$(BuildSiteExtension)' == 'true'" >
-    <PropertyGroup>
-      <AzureIntegrationProjProperties>
-        AspNetUniverseBuildOffline=true;
-        DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath);
-        DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath);
-        BuildNumber=$(BuildNumber);
-        Configuration=$(Configuration);
-        IsFinalBuild=$(IsFinalBuild);
-      </AzureIntegrationProjProperties>
-    </PropertyGroup>
-
-    <!-- Pack logging site extension -->
-    <MSBuild Projects="$(RepositoryRoot)\src\SiteExtensions\LoggingBranch\LoggingBranch.csproj" Targets="Restore;Pack" Properties="$(AzureIntegrationProjProperties);PackageOutputPath=$(BuildDir)" />
-  </Target>
-
-  <Target Name="GetSiteExtensionArtifactInfo" Condition="'$(BuildSiteExtension)' == 'true'" >
-    <MSBuild Projects="$(RepositoryRoot)\src\SiteExtensions\LoggingBranch\LoggingBranch.csproj" Targets="GetArtifactInfo" Properties="PackageOutputPath=$(BuildDir);BuildNumber=$(BuildNumber);DesignTimeBuild=true;IsFinalBuild=$(IsFinalBuild)">
-      <Output TaskParameter="TargetOutputs" ItemName="ArtifactInfo" />
-    </MSBuild>
   </Target>
 
   <Target Name="_BuildSharedFxProjects" DependsOnTargets="GeneratePropsFiles;ResolveCommitHash">
