@@ -196,7 +196,6 @@
     <PackageReference Include="Microsoft.VisualStudio.CoreUtility" Version="15.6.27413" />
     <PackageReference Include="Microsoft.VisualStudio.Imaging" Version="15.6.27413" />
     <PackageReference Include="Microsoft.VisualStudio.OLE.Interop" Version="7.10.6071" />
-    <PackageReference Include="Microsoft.VisualStudio.ProjectSystem" Version="15.3.224" />
     <PackageReference Include="Microsoft.VisualStudio.SDK.EmbedInteropTypes" Version="15.0.16" />
     <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="15.6.27413" />
     <PackageReference Include="Microsoft.VisualStudio.Shell.Framework" Version="15.6.27413" />

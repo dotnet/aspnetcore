@@ -1,10 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.ProjectSystem.Properties;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 
@@ -80,8 +79,8 @@ namespace Microsoft.VisualStudio.BlazorExtension
                 // by PerformNewBuildAsync(). In the case where it's a manually-invoked build, make sure
                 // there's an in-progress BuildInfo so that if there are further builds requests while the
                 // build is still in progress we can join them onto this existing build.
-                var ctx = (IVsBrowseObjectContext)pCfgProj;
-                var projectPath = ctx.UnconfiguredProject.FullPath;
+
+                var projectPath = GetProjectPath(pHierProj);
                 lock (mostRecentBuildInfosLock)
                 {
                     var hasBuildInProgress =
@@ -102,8 +101,7 @@ namespace Microsoft.VisualStudio.BlazorExtension
             if (IsBlazorProject(pHierProj))
             {
                 var buildResult = fSuccess == 1;
-                var ctx = (IVsBrowseObjectContext)pCfgProj;
-                var projectPath = ctx.UnconfiguredProject.FullPath;
+                var projectPath = GetProjectPath(pHierProj);
 
                 // Mark pending build info as completed
                 BuildInfo foundInfo = null;
@@ -159,6 +157,13 @@ namespace Microsoft.VisualStudio.BlazorExtension
 
         private static bool IsBlazorProject(IVsHierarchy pHierProj)
             => pHierProj.IsCapabilityMatch(BlazorProjectCapability);
+
+        private static string GetProjectPath(IVsHierarchy pHierProj)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            ErrorHandler.ThrowOnFailure(((IVsProject)pHierProj).GetMkDocument((uint)VSConstants.VSITEMID.Root, out var projectPath), VSConstants.E_NOTIMPL);
+            return projectPath;
+        }
 
         class BuildInfo
         {
