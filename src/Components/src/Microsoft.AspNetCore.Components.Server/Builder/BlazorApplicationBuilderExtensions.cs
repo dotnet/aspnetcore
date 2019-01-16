@@ -160,7 +160,6 @@ namespace Microsoft.AspNetCore.Builder
         {
             var result = new FileExtensionContentTypeProvider();
             AddMapping(result, ".dll", MediaTypeNames.Application.Octet);
-            AddMapping(result, ".wasm", WasmMediaTypeNames.Application.Wasm);
 
             if (enableDebugging)
             {
