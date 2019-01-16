@@ -125,7 +125,6 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR" ProjectPath="$(RepositoryRoot)src\SignalR\server\SignalR\src\Microsoft.AspNetCore.SignalR.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR.Specification.Tests" ProjectPath="$(RepositoryRoot)src\SignalR\server\Specification.Tests\src\Microsoft.AspNetCore.SignalR.Specification.Tests.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" ProjectPath="$(RepositoryRoot)src\SignalR\server\StackExchangeRedis\src\Microsoft.AspNetCore.SignalR.StackExchangeRedis.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.VisualStudio.LanguageServices.Blazor" ProjectPath="$(RepositoryRoot)src\Components\Blazor\BlazorLanguageServices\src\Microsoft.VisualStudio.LanguageServices.Blazor.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Blazor" ProjectPath="$(RepositoryRoot)src\Components\Blazor\Blazor\src\Microsoft.AspNetCore.Blazor.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Blazor.Build" ProjectPath="$(RepositoryRoot)src\Components\Blazor\Build\src\Microsoft.AspNetCore.Blazor.Build.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Blazor.Server" ProjectPath="$(RepositoryRoot)src\Components\Blazor\Server\src\Microsoft.AspNetCore.Blazor.Server.csproj" />

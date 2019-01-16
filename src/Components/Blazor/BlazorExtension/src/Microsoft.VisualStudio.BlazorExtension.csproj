@@ -130,21 +130,6 @@
       <IncludeOutputGroupsInVSIXLocalOnly>
       </IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
-    <ProjectReference Include="..\..\BlazorLanguageServices\src\Microsoft.VisualStudio.LanguageServices.Blazor.csproj">
-      <Project>{b9f7f502-6dd2-4e77-8fd1-cbd76f695b26}</Project>
-      <Name>Microsoft.VisualStudio.LanguageServices.Blazor</Name>
-      <Private>False</Private>
-      <IncludeOutputGroupsInVSIX>
-      </IncludeOutputGroupsInVSIX>
-      <IncludeOutputGroupsInVSIXLocalOnly>
-      </IncludeOutputGroupsInVSIXLocalOnly>
-    </ProjectReference>
-    <Content Include="..\..\BlazorLanguageServices\src\bin\$(Configuration)\net461\Microsoft.VisualStudio.LanguageServices.Blazor.dll">
-      <Link>Microsoft.VisualStudio.LanguageServices.Blazor.dll</Link>
-      <IncludeInVSIX>true</IncludeInVSIX>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Visible>false</Visible>
-    </Content>
   </ItemGroup>
   <!--
     We need to generate the assembly attributes for our assembly using the version from the build, so
@@ -234,7 +219,6 @@
     <Compile Include="AutoRebuild\BuildEventsWatcher.cs" />
     <Compile Include="AutoRebuild\StreamProtocolExtensions.cs" />
     <Compile Include="BlazorPackage.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="CodeSnippets\Blazor\para.snippet">
