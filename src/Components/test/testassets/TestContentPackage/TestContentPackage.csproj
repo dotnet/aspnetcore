@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <OutputType>library</OutputType>
+    <ReferenceBlazorBuildLocally>true</ReferenceBlazorBuildLocally>
   </PropertyGroup>
 
   <ItemGroup>

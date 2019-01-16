@@ -18,7 +18,7 @@ namespace TestServer
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc();
+            services.AddMvc().AddNewtonsoftJson();
             services.AddCors(options =>
             {
                 options.AddPolicy("AllowAll", _ => { /* Controlled below */ });
