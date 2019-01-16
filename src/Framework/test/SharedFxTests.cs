@@ -136,11 +136,11 @@ namespace Microsoft.AspNetCore
                     Assert.NotEmpty(fileVersion.Value<string>());
                 });
             });
+
             Assert.NotNull(depsFile["libraries"][$"Microsoft.AspNetCore.App/{TestData.GetPackageVersion()}"]);
             Assert.NotNull(depsFile["libraries"][$"runtime.{_expectedRid}.Microsoft.AspNetCore.App/{TestData.GetPackageVersion()}"]);
             Assert.Equal(2, depsFile["libraries"].Values().Count());
 
-            var targetLibraries = depsFile["targets"][target];
             Assert.Equal(2, targetLibraries.Values().Count());
             var metapackage = targetLibraries[$"Microsoft.AspNetCore.App/{TestData.GetPackageVersion()}"];
             Assert.Null(metapackage["runtime"]);
