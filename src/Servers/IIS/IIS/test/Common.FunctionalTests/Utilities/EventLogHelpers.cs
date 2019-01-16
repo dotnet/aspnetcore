@@ -185,7 +185,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         public static string InProcessThreadExit(IISDeploymentResult deploymentResult, string code)
         {
-            return $"Application '/LM/W3SVC/1/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' hit unexpected managed background thread exit, exit code = '{code}'.";
+            if (DeployerSelector.HasNewHandler)
+            {
+                return $"Application '/LM/W3SVC/1/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' has exited from Program.Main with exit code = '{code}'. Please check the stderr logs for more information.";
+            }
+            else
+            {
+                return $"Application '/LM/W3SVC/1/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' hit unexpected managed background thread exit, exit code = '{code}'.";
+            }
         }
         public static string InProcessThreadExitStdOut(IISDeploymentResult deploymentResult, string code, string output)
         {
@@ -288,6 +295,18 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             else
             {
                 return $@"Application '{Regex.Escape(deploymentResult.ContentRoot)}\\' wasn't able to start. {subError}";
+            }
+        }
+
+        public static string FrameworkNotFound()
+        {
+            if (DeployerSelector.HasNewShim)
+            {
+                return "Unable to locate application dependencies. Ensure that the versions of Microsoft.NetCore.App and Microsoft.AspNetCore.App targeted by the application are installed.";
+            }
+            else
+            {
+                return "The specified framework 'Microsoft.NETCore.App', version '2.9.9' was not found.";
             }
         }
 
