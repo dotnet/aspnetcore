@@ -353,6 +353,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
 
                     context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
                     // First write sends headers
+                    context.AllowSynchronousIO = true;
                     context.Response.Body.Write(new byte[10], 0, 10);
 
                     var response = await responseTask;

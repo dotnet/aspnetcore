@@ -10,7 +10,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.Browser" Version="${MicrosoftAspNetCoreComponentsPackageVersion}" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Build" Version="${MicrosoftAspNetCoreComponentsPackageVersion}" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="${MicrosoftNETSdkRazorPackageVersion}" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>

@@ -28,6 +28,7 @@
     <ExternalDependency Include="Microsoft.Extensions.Logging.Configuration" Version="$(MicrosoftExtensionsLoggingConfigurationPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.Logging.Console" Version="$(MicrosoftExtensionsLoggingConsolePackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.Logging.Debug" Version="$(MicrosoftExtensionsLoggingDebugPackageVersion)" />
+    <ExternalDependency Include="Microsoft.JSInterop" Version="$(MicrosoftJSInteropPackageVersion)" />
 
     <!-- Packages from aspnet/EntityFrameworkCore -->
     <ExternalDependency Include="dotnet-ef" Version="$(DotNetEfPackageVersion)" />

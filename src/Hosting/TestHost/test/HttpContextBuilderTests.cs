@@ -109,6 +109,7 @@ namespace Microsoft.AspNetCore.TestHost
                 {
                     c.Response.Headers["TestHeader"] = "TestValue";
                     var bytes = Encoding.UTF8.GetBytes("BodyStarted" + Environment.NewLine);
+                    c.Features.Get<IHttpBodyControlFeature>().AllowSynchronousIO = true;
                     c.Response.Body.Write(bytes, 0, bytes.Length);
                     await block.Task;
                     bytes = Encoding.UTF8.GetBytes("BodyFinished");

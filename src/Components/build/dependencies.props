@@ -12,7 +12,7 @@
     <MicrosoftAspNetCoreHtmlAbstractionsPackageVersion>3.0.0-alpha1-10605</MicrosoftAspNetCoreHtmlAbstractionsPackageVersion>
     <MicrosoftAspNetCoreRazorDesignPackageVersion>3.0.0-alpha1-10605</MicrosoftAspNetCoreRazorDesignPackageVersion>
     <MicrosoftExtensionsDependencyInjectionPackageVersion>3.0.0-alpha1-10605</MicrosoftExtensionsDependencyInjectionPackageVersion>
-    <MicrosoftNETSdkRazorPackageVersion>3.0.0-preview-19057-06</MicrosoftNETSdkRazorPackageVersion>
+    <MicrosoftNETSdkRazorPackageVersion>3.0.0-preview-19064-09</MicrosoftNETSdkRazorPackageVersion>
     <MonoCecilPackageVersion>0.10.1</MonoCecilPackageVersion>
     <SignalRPackageVersion>3.0.0-alpha1-10605</SignalRPackageVersion>
     <TemplateBlazorPackageVersion>0.8.0-preview-19064-0339</TemplateBlazorPackageVersion>
@@ -20,7 +20,8 @@
     <TemplateRazorDesignPackageVersion>2.1.2</TemplateRazorDesignPackageVersion>
     <MicrosoftAspNetCoreBlazorMonoPackageVersion>0.8.0-preview1-20181126.1</MicrosoftAspNetCoreBlazorMonoPackageVersion>
 
-    <!-- When updating this, ensure you also update Browser.JS/package.json to reference the corresponding version of @dotnet/jsinterop -->
-    <JSInteropPackageVersion>0.8.0-preview1-20181126.4</JSInteropPackageVersion>
+    <MicrosoftJSInteropPackageVersion>3.0.0-preview.19059.5</MicrosoftJSInteropPackageVersion>
+
+    <MonoWebAssemblyInteropPackageVersion>0.8.0-preview1-20181126.4</MonoWebAssemblyInteropPackageVersion>
   </PropertyGroup>
 </Project>

@@ -25,9 +25,7 @@ namespace SampleDestination
 
             context.Response.ContentType = "text/plain; charset=utf-8";
             context.Response.ContentLength = content.Length;
-            context.Response.Body.Write(content, 0, content.Length);
-
-            return Task.CompletedTask;
+            return context.Response.Body.WriteAsync(content, 0, content.Length);
         }
     }
 }
