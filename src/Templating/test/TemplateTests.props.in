@@ -4,7 +4,13 @@
     <RestoreSources>${RestoreSources}</RestoreSources>
     <RuntimeFrameworkVersion>${RuntimeFrameworkVersion}</RuntimeFrameworkVersion>
     <MicrosoftNETSdkRazorPackageVersion>${MicrosoftNETSdkRazorPackageVersion}</MicrosoftNETSdkRazorPackageVersion>
-    <BundledAspNetCoreAppTargetFrameworkVersion>${BundledAspNetCoreAppTargetFrameworkVersion}</BundledAspNetCoreAppTargetFrameworkVersion>
-    <BundledAspNetCoreAppPackageVersion>${BundledAspNetCoreAppPackageVersion}</BundledAspNetCoreAppPackageVersion>
   </PropertyGroup>
+
+  <ItemGroup>
+    <KnownFrameworkReference
+      Update="Microsoft.AspNetCore.App"
+      DefaultRuntimeFrameworkVersion="${MicrosoftAspNetCoreAppPackageVersion}"
+      LatestRuntimeFrameworkVersion="${MicrosoftAspNetCoreAppPackageVersion}"
+      TargetingPackVersion="${MicrosoftAspNetCoreAppPackageVersion}" />
+  </ItemGroup>
 </Project>
