@@ -43,12 +43,27 @@ namespace Microsoft.AspNetCore
             Assert.NotNull(depsFile["compilationOptions"]);
             Assert.Empty(depsFile["compilationOptions"]);
             Assert.NotEmpty(depsFile["runtimes"][config.RuntimeIdentifier]);
-            Assert.All(depsFile["libraries"], item =>
+
+            var targetLibraries = depsFile["targets"][target];
+            Assert.All(targetLibraries, libEntry =>
             {
-                var prop = Assert.IsType<JProperty>(item);
-                var lib = Assert.IsType<JObject>(prop.Value);
-                Assert.Equal("package", lib["type"].Value<string>());
-                Assert.StartsWith("sha512-", lib["sha512"].Value<string>());
+                var lib = Assert.IsType<JProperty>(libEntry);
+                if (lib.Value["runtime"] == null)
+                {
+                    return;
+                }
+
+                Assert.All(lib.Value["runtime"], item =>
+                {
+                    var obj = Assert.IsType<JProperty>(item);
+                    var assemblyVersion = obj.Value["assemblyVersion"];
+                    Assert.NotNull(assemblyVersion);
+                    Assert.NotEmpty(assemblyVersion.Value<string>());
+
+                    var fileVersion = obj.Value["fileVersion"];
+                    Assert.NotNull(fileVersion);
+                    Assert.NotEmpty(fileVersion.Value<string>());
+                });
             });
         }
 
