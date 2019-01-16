@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -41,7 +42,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             Assert.BuildPassed(result);
 
-            // Everything we do should noop - including building the app. 
+            // Everything we do should noop - including building the app.
             Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvc.dll");
             Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvc.pdb");
             Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvc.Views.dll");
@@ -49,7 +50,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
-        [InitializeTestProject("SimpleMvc")] 
+        [InitializeTestProject("SimpleMvc")]
         public async Task RazorCompile_EmbedRazorGenerateSources_EmbedsCshtmlFiles()
         {
             var result = await DotnetMSBuild("RazorCompile", "/p:EmbedRazorGenerateSources=true");
@@ -63,16 +64,16 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             Assert.Equal(new string[]
             {
-                "/Views/_ViewImports.cshtml",
-                "/Views/_ViewStart.cshtml",
                 "/Views/Home/About.cshtml",
                 "/Views/Home/Contact.cshtml",
                 "/Views/Home/Index.cshtml",
+                "/Views/Shared/Error.cshtml",
                 "/Views/Shared/_Layout.cshtml",
                 "/Views/Shared/_ValidationScriptsPartial.cshtml",
-                "/Views/Shared/Error.cshtml",
+                "/Views/_ViewImports.cshtml",
+                "/Views/_ViewStart.cshtml",
             },
-            resources.OrderBy(r => r));
+            resources.OrderBy(r => r, StringComparer.Ordinal));
         }
 
         [Fact]
@@ -90,16 +91,16 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             Assert.Equal(new string[]
             {
-                "/Views/_ViewImports.cshtml",
-                "/Views/_ViewStart.cshtml",
                 "/Views/Home/About.cshtml",
                 "/Views/Home/Contact.cshtml",
                 "/Views/Home/Index.cshtml",
+                "/Views/Shared/Error.cshtml",
                 "/Views/Shared/_Layout.cshtml",
                 "/Views/Shared/_ValidationScriptsPartial.cshtml",
-                "/Views/Shared/Error.cshtml",
+                "/Views/_ViewImports.cshtml",
+                "/Views/_ViewStart.cshtml",
             },
-            resources.OrderBy(r => r));
+            resources.OrderBy(r => r, StringComparer.Ordinal));
         }
 
         private Assembly LoadAssemblyFromBytes(params string[] paths)

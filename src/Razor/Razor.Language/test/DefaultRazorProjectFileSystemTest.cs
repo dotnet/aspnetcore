@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Linq;
 using Microsoft.AspNetCore.Testing;
@@ -77,29 +78,13 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Assert
             Assert.Collection(
-                items.OrderBy(f => f.FilePath),
-                item =>
-                {
-                    Assert.Equal("/_ViewImports.cshtml", item.FilePath);
-                    Assert.Equal("/", item.BasePath);
-                    Assert.Equal(Path.Combine(TestFolder, "_ViewImports.cshtml"), item.PhysicalPath);
-                    Assert.Equal("_ViewImports.cshtml", item.RelativePhysicalPath);
-
-                },
+                items.OrderBy(f => f.FilePath, StringComparer.Ordinal),
                 item =>
                 {
                     Assert.Equal("/Home.cshtml", item.FilePath);
                     Assert.Equal("/", item.BasePath);
                     Assert.Equal(Path.Combine(TestFolder, "Home.cshtml"), item.PhysicalPath);
                     Assert.Equal("Home.cshtml", item.RelativePhysicalPath);
-
-                },
-                item =>
-                {
-                    Assert.Equal("/Views/_ViewImports.cshtml", item.FilePath);
-                    Assert.Equal("/", item.BasePath);
-                    Assert.Equal(Path.Combine(TestFolder, "Views", "_ViewImports.cshtml"), item.PhysicalPath);
-                    Assert.Equal(Path.Combine("Views", "_ViewImports.cshtml"), item.RelativePhysicalPath);
 
                 },
                 item =>
@@ -111,18 +96,31 @@ namespace Microsoft.AspNetCore.Razor.Language
                 },
                 item =>
                 {
-                    Assert.Equal("/Views/Home/_ViewImports.cshtml", item.FilePath);
-                    Assert.Equal("/", item.BasePath);
-                    Assert.Equal(Path.Combine(TestFolder, "Views", "Home", "_ViewImports.cshtml"), item.PhysicalPath);
-                    Assert.Equal(Path.Combine("Views", "Home", "_ViewImports.cshtml"), item.RelativePhysicalPath);
-
-                },
-                item =>
-                {
                     Assert.Equal("/Views/Home/Index.cshtml", item.FilePath);
                     Assert.Equal("/", item.BasePath);
                     Assert.Equal(Path.Combine(TestFolder, "Views", "Home", "Index.cshtml"), item.PhysicalPath);
                     Assert.Equal(Path.Combine("Views", "Home", "Index.cshtml"), item.RelativePhysicalPath);
+                },
+                item =>
+                {
+                    Assert.Equal("/Views/Home/_ViewImports.cshtml", item.FilePath);
+                    Assert.Equal("/", item.BasePath);
+                    Assert.Equal(Path.Combine(TestFolder, "Views", "Home", "_ViewImports.cshtml"), item.PhysicalPath);
+                    Assert.Equal(Path.Combine("Views", "Home", "_ViewImports.cshtml"), item.RelativePhysicalPath);
+                },
+                item =>
+                {
+                    Assert.Equal("/Views/_ViewImports.cshtml", item.FilePath);
+                    Assert.Equal("/", item.BasePath);
+                    Assert.Equal(Path.Combine(TestFolder, "Views", "_ViewImports.cshtml"), item.PhysicalPath);
+                    Assert.Equal(Path.Combine("Views", "_ViewImports.cshtml"), item.RelativePhysicalPath);
+                },
+                 item =>
+                {
+                    Assert.Equal("/_ViewImports.cshtml", item.FilePath);
+                    Assert.Equal("/", item.BasePath);
+                    Assert.Equal(Path.Combine(TestFolder, "_ViewImports.cshtml"), item.PhysicalPath);
+                    Assert.Equal("_ViewImports.cshtml", item.RelativePhysicalPath);
                 });
         }
 
@@ -137,20 +135,20 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Assert
             Assert.Collection(
-                items.OrderBy(f => f.FilePath),
-                item =>
-                {
-                    Assert.Equal("/_ViewImports.cshtml", item.FilePath);
-                    Assert.Equal("/Views", item.BasePath);
-                    Assert.Equal(Path.Combine(TestFolder, "Views", "_ViewImports.cshtml"), item.PhysicalPath);
-                    Assert.Equal(Path.Combine("_ViewImports.cshtml"), item.RelativePhysicalPath);
-                },
+                items.OrderBy(f => f.FilePath, StringComparer.Ordinal),
                 item =>
                 {
                     Assert.Equal("/About/About.cshtml", item.FilePath);
                     Assert.Equal("/Views", item.BasePath);
                     Assert.Equal(Path.Combine(TestFolder, "Views", "About", "About.cshtml"), item.PhysicalPath);
                     Assert.Equal(Path.Combine("About", "About.cshtml"), item.RelativePhysicalPath);
+                },
+                item =>
+                {
+                    Assert.Equal("/Home/Index.cshtml", item.FilePath);
+                    Assert.Equal("/Views", item.BasePath);
+                    Assert.Equal(Path.Combine(TestFolder, "Views", "Home", "Index.cshtml"), item.PhysicalPath);
+                    Assert.Equal(Path.Combine("Home", "Index.cshtml"), item.RelativePhysicalPath);
                 },
                 item =>
                 {
@@ -161,10 +159,10 @@ namespace Microsoft.AspNetCore.Razor.Language
                 },
                 item =>
                 {
-                    Assert.Equal("/Home/Index.cshtml", item.FilePath);
+                    Assert.Equal("/_ViewImports.cshtml", item.FilePath);
                     Assert.Equal("/Views", item.BasePath);
-                    Assert.Equal(Path.Combine(TestFolder, "Views", "Home", "Index.cshtml"), item.PhysicalPath);
-                    Assert.Equal(Path.Combine("Home", "Index.cshtml"), item.RelativePhysicalPath);
+                    Assert.Equal(Path.Combine(TestFolder, "Views", "_ViewImports.cshtml"), item.PhysicalPath);
+                    Assert.Equal(Path.Combine("_ViewImports.cshtml"), item.RelativePhysicalPath);
                 });
         }
 
