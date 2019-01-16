@@ -273,6 +273,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalFact]
+        [RequiresNewShim]
         public async Task RemoveHostfxrFromApp_InProcessHostfxrLoadFailure()
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite, publish: true);
