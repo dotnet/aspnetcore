@@ -60,6 +60,8 @@
     <IsPackable Condition="'$(IsPackable)' == '' ">false</IsPackable>
 
     <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == 'netcoreapp3.0' ">$(MicrosoftNETCoreAppPackageVersion)</RuntimeFrameworkVersion>
+    
+    <BuildHelixPayload Condition="'$(BuildHelixPayload)' == '' AND '$(IsTestProject)' == 'true'">true</BuildHelixPayload> 
   </PropertyGroup>
 
   <Import Project="eng\targets\ResolveIisReferences.targets" Condition=" '$(MSBuildProjectExtension)' != '.vcxproj' " />
@@ -73,7 +75,7 @@
     <PackageReference Include="xunit.runner.console" Version="2.4.1" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'" />
   </ItemGroup>
 
-   <Target Name="CreateHelixPayload" Returns="@(HelixPayload)">
+  <Target Name="CreateHelixPayload" Returns="@(HelixPayload)">
     <ItemGroup>
       <_TargetFrameworks Remove="@(_TargetFrameworks)" />
       <_TargetFrameworks Include="$(TargetFrameworks);$(TargetFramework)" />
@@ -81,7 +83,7 @@
 
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="_CreateHelixPayloadInner"
-             Properties="TargetFramework=%(_TargetFrameworks.Identity)">
+             Properties="TargetFramework=%(_TargetFrameworks.Identity);IsWindowsHelixQueue=$(HelixTargetQueue.Contains('Windows'))">
       <Output TaskParameter="TargetOutputs" ItemName="HelixPayload" />
     </MSBuild>
   </Target>
@@ -100,7 +102,7 @@
 
   <Target Name="_CreateHelixPayloadInner" 
     DependsOnTargets="Publish;CollectXunitConsoleRunner" 
-    Condition="'$(BuildHelixPayload)' == 'true' AND ($(HelixTargetQueue.StartsWith('Windows')) OR '$(TargetFrameworkIdentifier)' != '.NETFramework')" 
+    Condition="'$(BuildHelixPayload)' == 'true' AND ($(IsWindowsHelixQueue) OR '$(TargetFrameworkIdentifier)' != '.NETFramework')" 
     Returns="@(HelixPayload)">
 
     <ConvertToAbsolutePath Paths="$(PublishDir)">
@@ -108,17 +110,17 @@
     </ConvertToAbsolutePath>
 
     <!-- Windows NetCore -->
-    <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework' AND $(HelixTargetQueue.StartsWith('Windows'))" >
+    <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework' AND $(IsWindowsHelixQueue)" >
         <_CopyItems Include="$(MSBuildThisFileDirectory)test\vstest\runtests.cmd" />
     </ItemGroup>
 
     <!-- Windows NetFramework -->
-    <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' AND $(HelixTargetQueue.StartsWith('Windows'))" >
+    <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' AND $(IsWindowsHelixQueue)" >
         <_CopyItems Include="$(MSBuildThisFileDirectory)test\xunit\runtests.cmd" />
     </ItemGroup>
 
     <!-- NonWindows -->
-    <ItemGroup Condition="$(HelixTargetQueue.StartsWith('Windows'))"  >
+    <ItemGroup Condition="!$(IsWindowsHelixQueue)"  >
         <_CopyItems Include="$(MSBuildThisFileDirectory)test\vstest\runtests.sh" />
     </ItemGroup>
 
@@ -128,10 +130,9 @@
       <HelixPayload Include="$(PublishAbsoluteDir)">
         <TestAssembly>$(TargetFileName)</TestAssembly>
         <TestName>$(MSBuildProjectName)-$(TargetFramework)</TestName>
-        <!-- Look into how to be able to use $(NETCoreSdkVersion) -->
-        <Command Condition="$(HelixTargetQueue.StartsWith('Windows'))">runtests.cmd $(TargetFileName) $(NETCoreSdkVersion) $(RuntimeFrameworkVersion)</Command>
-        <Command Condition="!$(HelixTargetQueue.StartsWith('Windows'))">./runtests.sh $(TargetFileName) $(NETCoreSdkVersion) $(RuntimeFrameworkVersion)</Command>
-        <TestTimeout>$(DistributedTestTimeout)</TestTimeout>
+        <Command Condition="$(IsWindowsHelixQueue)">runtests.cmd $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppPackageVersion)</Command>
+        <Command Condition="!$(IsWindowsHelixQueue)">./runtests.sh $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppPackageVersion)</Command>
+        <TestTimeout>00:30:00</TestTimeout>
       </HelixPayload>
     </ItemGroup>
   </Target>

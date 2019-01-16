@@ -7,6 +7,8 @@
 
     <!-- Workaround until https://github.com/aspnet/AspNetCore/issues/4321 is resolved. -->
     <SkipTests Condition="'$(RunTemplateTests)' != 'true'">true</SkipTests>
+    <!-- https://github.com/aspnet/AspNetCore/issues/6857 -->
+    <BuildHelixPayload>false</BuildHelixPayload>
   </PropertyGroup>
 
   <ItemGroup>

@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -107,7 +108,9 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/6721
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public void EnsureCreateHttpsCertificate2_CreatesACertificate_WhenThereAreNoHttpsCertificates()
         {
             try

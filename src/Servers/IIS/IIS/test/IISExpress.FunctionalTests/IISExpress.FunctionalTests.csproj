@@ -5,6 +5,8 @@
     <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
     <TestGroupName>IISExpress.FunctionalTests</TestGroupName>
     <SkipTests Condition=" '$(SkipIISExpressTests)' == 'true' ">true</SkipTests>
+    <!-- https://github.com/aspnet/AspNetCore/issues/6549 -->
+    <BuildHelixPayload>false</BuildHelixPayload>
   </PropertyGroup>
 
   <ItemGroup>

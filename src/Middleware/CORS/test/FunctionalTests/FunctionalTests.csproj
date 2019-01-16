@@ -4,6 +4,8 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <TestGroupName>Cors.FunctionalTests</TestGroupName>
     <DefaultItemExcludes>$(DefaultItemExcludes);node_modules\**\*</DefaultItemExcludes>
+    <!-- https://github.com/aspnet/AspNetCore/issues/6549 -->
+    <BuildHelixPayload>false</BuildHelixPayload>
   </PropertyGroup>
 
   <ItemGroup>
