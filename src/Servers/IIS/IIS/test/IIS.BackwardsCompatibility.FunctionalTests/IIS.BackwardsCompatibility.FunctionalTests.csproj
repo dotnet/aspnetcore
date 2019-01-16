@@ -36,4 +36,11 @@
     <Reference Include="System.Net.WebSockets.WebSocketProtocol" />
   </ItemGroup>
 
+  <Target Name="RemoveSourceOverride" BeforeTargets="_CopyOutOfDateSourceItemsToOutputDirectory">
+    <ItemGroup>
+      <SourceItemsToRemove Include="@(_SourceItemsToCopyToOutputDirectory)" Condition="$([System.String]::Copy(%(_SourceItemsToCopyToOutputDirectory.FullPath)).Contains('IIS\AspNetCoreModule')) == 'true'" />
+      <_SourceItemsToCopyToOutputDirectory Remove="@(SourceItemsToRemove)" />
+   </ItemGroup>
+  </Target>
+
 </Project>
