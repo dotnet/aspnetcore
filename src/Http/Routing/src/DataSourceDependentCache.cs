@@ -22,9 +22,6 @@ namespace Microsoft.AspNetCore.Routing
         private IDisposable _disposable;
         private bool _disposed;
 
-        private IDisposable _disposable;
-        private bool _disposed;
-
         public DataSourceDependentCache(EndpointDataSource dataSource, Func<IReadOnlyList<Endpoint>, T> initialize)
         {
             if (dataSource == null)
