@@ -947,6 +947,54 @@ namespace Microsoft.AspNetCore.Hosting
 
         [Theory]
         [MemberData(nameof(DefaultWebHostBuildersWithConfig))]
+        public void Build_AppConfigAvailableEverywhere(IWebHostBuilder builder)
+        {
+            builder = builder
+                .CaptureStartupErrors(false)
+                .ConfigureAppConfiguration((context, configurationBuilder) => {
+                    configurationBuilder.AddInMemoryCollection(
+                        new[]
+                        {
+                            new KeyValuePair<string,string>("appconfig", "appvalue")
+                        });
+                })
+                .ConfigureLogging((context, logging) =>
+                {
+                    Assert.Equal("appvalue", context.Configuration["appconfig"]);
+                })
+                .ConfigureServices((context, services) =>
+                {
+                    Assert.Equal("appvalue", context.Configuration["appconfig"]);
+                })
+                .UseDefaultServiceProvider((context, services) =>
+                {
+                    Assert.Equal("appvalue", context.Configuration["appconfig"]);
+                })
+                .UseStartup<StartupCheckConfig>()
+                .UseServer(new TestServer());
+
+            using (var host = builder.Build())
+            {
+                var configuration = host.Services.GetRequiredService<IConfiguration>();
+                Assert.Equal("appvalue", configuration["appconfig"]);
+            }
+        }
+
+        public class StartupCheckConfig
+        {
+            public StartupCheckConfig(IConfiguration config)
+            {
+                Assert.Equal("value", config["testhostingstartup:config"]);
+            }
+
+            public void Configure(IApplicationBuilder app)
+            {
+
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(DefaultWebHostBuildersWithConfig))]
         public void Build_DoesRunHostingStartupFromPrimaryAssemblyEvenIfNotSpecified(IWebHostBuilder builder)
         {
             builder = builder
