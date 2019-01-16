@@ -13,7 +13,6 @@
     <!-- Copy references locally so that we can use them in the test. -->
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <BuildVariablesGeneratedFile>$(MSBuildProjectDirectory)\obj\BuildVariables.generated.cs</BuildVariablesGeneratedFile>
-    <TestGroupName>RazorTests</TestGroupName>
   </PropertyGroup>
 
   <ItemGroup>
