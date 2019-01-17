@@ -26,7 +26,8 @@ IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(
     m_Initialized(false),
     m_blockManagedCallbacks(true),
     m_waitForShutdown(true),
-    m_pConfig(std::move(pConfig))
+    m_pConfig(std::move(pConfig)),
+    m_requestCount(0)
 {
     DBG_ASSERT(m_pConfig);
 
