@@ -51,6 +51,7 @@
 
         <Property Id="ARPCONTACT">Microsoft Corporation</Property>
         <Property Id="ARPPRODUCTICON" Value="AspNetCoreModule.ico" />
+        <Property Id="OPT_NO_SHARED_CONFIG_CHECK"  Value="0"/>
         <Icon Id="AspNetCoreModule.ico" SourceFile="..\Bitmaps\AspNetCoreModule.ico" />
         <!-- <Property Id="REINSTALLMODE" Value="emus"/> -->
 
@@ -242,7 +243,7 @@
             <AppSearch Before="LaunchConditions" />
             <LaunchConditions After="FindRelatedProducts" />
             <MigrateFeatureStates />
-            <Custom Action="CheckForSharedConfiguration" After="InstallInitialize"></Custom>
+            <Custom Action="CheckForSharedConfiguration" After="InstallInitialize">OPT_NO_SHARED_CONFIG_CHECK=0 AND NOT Installed AND NOT REMOVE="ALL"</Custom>
             <Custom Action="CA_UNLOCk_HANDLER_PROPERTY" After="InstallFiles"><![CDATA[(NOT PATCH)]]></Custom>
             <Custom Action="CA_UNLOCk_HANDLER" After="CA_UNLOCk_HANDLER_PROPERTY"><![CDATA[(NOT PATCH)]]></Custom>
             <Custom Action="UpdateDynamicCompression" After="InstallFiles"><![CDATA[(NOT PATCH)]]></Custom>

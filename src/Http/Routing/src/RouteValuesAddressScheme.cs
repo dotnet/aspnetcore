@@ -10,10 +10,10 @@ using Microsoft.AspNetCore.Routing.Tree;
 
 namespace Microsoft.AspNetCore.Routing
 {
-    internal class RouteValuesAddressScheme : IEndpointAddressScheme<RouteValuesAddress>, IDisposable
+    internal sealed class RouteValuesAddressScheme : IEndpointAddressScheme<RouteValuesAddress>, IDisposable
     {
         private readonly DataSourceDependentCache<StateEntry> _cache;
-   
+
         public RouteValuesAddressScheme(EndpointDataSource dataSource)
         {
             _cache = new DataSourceDependentCache<StateEntry>(dataSource, Initialize);
@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         private OutboundRouteEntry CreateOutboundRouteEntry(
-            RouteEndpoint endpoint, 
+            RouteEndpoint endpoint,
             IReadOnlyDictionary<string, object> requiredValues,
             string routeName)
         {
