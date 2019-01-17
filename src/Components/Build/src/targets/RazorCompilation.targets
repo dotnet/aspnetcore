@@ -23,6 +23,7 @@
       <AssemblyName>Microsoft.AspNetCore.Mvc.Razor.Extensions</AssemblyName>
       <AssemblyFilePath>$(RazorSdkDirectoryRoot)extensions\mvc-3-0\Microsoft.AspNetCore.Mvc.Razor.Extensions.dll</AssemblyFilePath>
     </RazorExtension>
+    <ProjectCapability Include="DotNetCoreRazorConfiguration" />
   </ItemGroup>
 
 </Project>
