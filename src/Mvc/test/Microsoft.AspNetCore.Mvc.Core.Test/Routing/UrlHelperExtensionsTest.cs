@@ -708,6 +708,151 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test.Routing
             Assert.Equal(expectedHost, actual.Host);
         }
 
+        [Fact]
+        public void PageLink_WithPageName_Works()
+        {
+            // Arrange
+            var expectedPage = "/TestPage";
+            var expectedProtocol = "testprotocol://";
+            var expectedHost = "www.example.com";
+            UrlRouteContext actual = null;
+
+            var actionContext = new ActionContext
+            {
+                HttpContext = new DefaultHttpContext
+                {
+                    Request =
+                    {
+                        Protocol = expectedProtocol,
+                        Host = new HostString(expectedHost),
+                    }
+                },
+                RouteData = new RouteData
+                {
+                    Values =
+                    {
+                        { "page", "ambient-page" },
+                    }
+                },
+            };
+            var urlHelper = CreateMockUrlHelper(actionContext);
+            urlHelper.Setup(h => h.RouteUrl(It.IsAny<UrlRouteContext>()))
+                .Callback((UrlRouteContext context) => actual = context);
+
+            // Act
+            urlHelper.Object.PageLink(expectedPage);
+
+            // Assert
+            urlHelper.Verify();
+            Assert.NotNull(actual);
+            Assert.Collection(Assert.IsType<RouteValueDictionary>(actual.Values),
+                value =>
+                {
+                    Assert.Equal("page", value.Key);
+                    Assert.Equal(expectedPage, value.Value);
+                });
+            Assert.Null(actual.RouteName);
+
+            Assert.Equal(expectedProtocol, actual.Protocol);
+            Assert.Equal(expectedHost, actual.Host);
+        }
+
+        [Fact]
+        public void PageLink_UsesSpecifiedProtocol()
+        {
+            // Arrange
+            var expectedProtocol = "testprotocol://";
+            var expectedHost = "www.example.com";
+            UrlRouteContext actual = null;
+
+            var actionContext = new ActionContext
+            {
+                HttpContext = new DefaultHttpContext
+                {
+                    Request =
+                    {
+                        Protocol = "http://",
+                        Host = new HostString(expectedHost),
+                    }
+                },
+                RouteData = new RouteData
+                {
+                    Values =
+                    {
+                        { "page", "ambient-page" },
+                    }
+                },
+            };
+            var urlHelper = CreateMockUrlHelper(actionContext);
+            urlHelper.Setup(h => h.RouteUrl(It.IsAny<UrlRouteContext>()))
+                .Callback((UrlRouteContext context) => actual = context);
+
+            // Act
+            urlHelper.Object.PageLink(protocol: expectedProtocol);
+
+            // Assert
+            urlHelper.Verify();
+            Assert.NotNull(actual);
+            Assert.Collection(Assert.IsType<RouteValueDictionary>(actual.Values),
+                value =>
+                {
+                    Assert.Equal("page", value.Key);
+                    Assert.Equal("ambient-page", value.Value);
+                });
+            Assert.Null(actual.RouteName);
+
+            Assert.Equal(expectedProtocol, actual.Protocol);
+            Assert.Equal(expectedHost, actual.Host);
+        }
+
+        [Fact]
+        public void PageLink_UsesSpecifiedHost()
+        {
+            // Arrange
+            var expectedProtocol = "testprotocol://";
+            var expectedHost = "www.example.com";
+            UrlRouteContext actual = null;
+
+            var actionContext = new ActionContext
+            {
+                HttpContext = new DefaultHttpContext
+                {
+                    Request =
+                    {
+                        Protocol = expectedProtocol,
+                        Host = new HostString("www.asp.net"),
+                    }
+                },
+                RouteData = new RouteData
+                {
+                    Values =
+                    {
+                        { "page", "ambient-page" },
+                    }
+                },
+            };
+            var urlHelper = CreateMockUrlHelper(actionContext);
+            urlHelper.Setup(h => h.RouteUrl(It.IsAny<UrlRouteContext>()))
+                .Callback((UrlRouteContext context) => actual = context);
+
+            // Act
+            urlHelper.Object.PageLink(host: expectedHost);
+
+            // Assert
+            urlHelper.Verify();
+            Assert.NotNull(actual);
+            Assert.Collection(Assert.IsType<RouteValueDictionary>(actual.Values),
+                value =>
+                {
+                    Assert.Equal("page", value.Key);
+                    Assert.Equal("ambient-page", value.Value);
+                });
+            Assert.Null(actual.RouteName);
+
+            Assert.Equal(expectedProtocol, actual.Protocol);
+            Assert.Equal(expectedHost, actual.Host);
+        }
+
         private static Mock<IUrlHelper> CreateMockUrlHelper(ActionContext context = null)
         {
             if (context == null)
