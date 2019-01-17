@@ -57,7 +57,6 @@ IN_PROCESS_HANDLER::ExecuteRequestHandlerInternal()
         return ServerShutdownMessage();
     }
 
-    Sleep(1000);
     auto status = m_pRequestHandler(this, m_pRequestHandlerContext);
     ::RaiseEvent<ANCMEvents::ANCM_INPROC_EXECUTE_REQUEST_COMPLETION>(m_pW3Context, nullptr, status);
     return status;
