@@ -94,8 +94,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                     var vector = Unsafe.AsRef<Vector<sbyte>>(input);
                     isValid &= CheckBytesInAsciiRange(vector);
                     Vector.Widen(
-                        vector, 
-                        out Unsafe.AsRef<Vector<short>>(output), 
+                        vector,
+                        out Unsafe.AsRef<Vector<short>>(output),
                         out Unsafe.AsRef<Vector<short>>(output + Vector<short>.Count));
 
                     input += Vector<sbyte>.Count;
@@ -126,31 +126,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 length += str.Length;
             }
 
-            // stackalloc to allocate array on stack rather than heap
-            Span<char> charBuffer = stackalloc char[length];
-
-            var i = 0;
-            if (str != null)
+            return string.Create(length, (str, separator, number), (charBuffer, tuple) =>
             {
-                for (i = 0; i < str.Length; i++)
+                var i = 0;
+                if (tuple.str != null)
                 {
-                    charBuffer[i] = str[i];
+                    for (i = 0; i < tuple.str.Length; i++)
+                    {
+                        charBuffer[i] = tuple.str[i];
+                    }
                 }
-            }
 
-            charBuffer[i] = separator;
+                charBuffer[i] = tuple.separator;
 
-            charBuffer[i + 1] = _encode16Chars[(int)(number >> 28) & 0xF];
-            charBuffer[i + 2] = _encode16Chars[(int)(number >> 24) & 0xF];
-            charBuffer[i + 3] = _encode16Chars[(int)(number >> 20) & 0xF];
-            charBuffer[i + 4] = _encode16Chars[(int)(number >> 16) & 0xF];
-            charBuffer[i + 5] = _encode16Chars[(int)(number >> 12) & 0xF];
-            charBuffer[i + 6] = _encode16Chars[(int)(number >> 8) & 0xF];
-            charBuffer[i + 7] = _encode16Chars[(int)(number >> 4) & 0xF];
-            charBuffer[i + 8] = _encode16Chars[(int)number & 0xF];
-
-            // string ctor overload that takes char*
-            return new string(charBuffer);
+                charBuffer[i + 1] = _encode16Chars[(int)(tuple.number >> 28) & 0xF];
+                charBuffer[i + 2] = _encode16Chars[(int)(tuple.number >> 24) & 0xF];
+                charBuffer[i + 3] = _encode16Chars[(int)(tuple.number >> 20) & 0xF];
+                charBuffer[i + 4] = _encode16Chars[(int)(tuple.number >> 16) & 0xF];
+                charBuffer[i + 5] = _encode16Chars[(int)(tuple.number >> 12) & 0xF];
+                charBuffer[i + 6] = _encode16Chars[(int)(tuple.number >> 8) & 0xF];
+                charBuffer[i + 7] = _encode16Chars[(int)(tuple.number >> 4) & 0xF];
+                charBuffer[i + 8] = _encode16Chars[(int)tuple.number & 0xF];
+            });
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)] // Needs a push
