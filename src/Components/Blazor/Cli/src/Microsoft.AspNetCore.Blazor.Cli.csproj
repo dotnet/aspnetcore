@@ -40,7 +40,7 @@
     </PropertyGroup>
     <ItemGroup>
       <!-- Also temporarily override RuntimeFramework manually until we can use <FrameworkReference> -->
-      <RuntimeFramework Include="Microsoft.AspNetCore.App" Version="$(ComponentsPackageVersion)" />
+      <RuntimeFramework Include="Microsoft.AspNetCore.App" Version="$(SharedFxVersion)" />
     </ItemGroup>
   </Target>
 </Project>
