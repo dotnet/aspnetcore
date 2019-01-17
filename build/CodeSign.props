@@ -125,6 +125,14 @@
 
     <!-- This files should already be signed already by a different leg of the build. They have to be listed again here because we recreate a redistributable which binaries built in other repos. -->
     <FilesToExcludeFromSigning Include="libuv.dll" />
+
+    <!-- EF powershell scripts -->
+    <FilesToExcludeFromSigning Include="EntityFrameworkCore.PowerShell2.psd1" />
+    <FilesToExcludeFromSigning Include="EntityFrameworkCore.PowerShell2.psm1" />
+    <FilesToExcludeFromSigning Include="EntityFrameworkCore.psd1" />
+    <FilesToExcludeFromSigning Include="EntityFrameworkCore.psm1" />
+    <FilesToExcludeFromSigning Include="init.ps1" />
+    <FilesToExcludeFromSigning Include="install.ps1" />
   </ItemGroup>
 
 </Project>
