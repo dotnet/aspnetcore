@@ -268,11 +268,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 ValidateBinding(tagHelperBinding, tagName, startTag);
 
                 // We're in a start TagHelper block.
-                var validTagStructure = ValidateStartTagSyntax(tagName, startTag);
+                ValidateStartTagSyntax(tagName, startTag);
 
                 var rewrittenStartTag = TagHelperBlockRewriter.Rewrite(
                     tagName,
-                    validTagStructure,
                     _featureFlags,
                     startTag,
                     tagHelperBinding,
@@ -354,7 +353,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     }
                 }
 
-                rewritten = SyntaxFactory.MarkupTagHelperEndTag(tagBlock.Children);
+                rewritten = SyntaxFactory.MarkupTagHelperEndTag(
+                    tagBlock.OpenAngle, tagBlock.ForwardSlash, tagBlock.Bang, tagBlock.Name, tagBlock.MiscAttributeContent, tagBlock.CloseAngle);
 
                 return true;
             }
@@ -362,11 +362,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Internal for testing
             internal IReadOnlyList<KeyValuePair<string, string>> GetAttributeNameValuePairs(MarkupStartTagSyntax tagBlock)
             {
-                // Need to calculate how many children we should take that represent the attributes.
-                var childrenOffset = IsPartialStartTag(tagBlock) ? 0 : 1;
-                var childCount = tagBlock.Children.Count - childrenOffset;
-
-                if (childCount <= 1)
+                if (tagBlock.Attributes.Count == 0)
                 {
                     return Array.Empty<KeyValuePair<string, string>>();
                 }
@@ -375,16 +371,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                 var attributes = _htmlAttributeTracker;
 
-                for (var i = 1; i < childCount; i++)
+                for (var i = 0; i < tagBlock.Attributes.Count; i++)
                 {
-                    if (tagBlock.Children[i] is CSharpCodeBlockSyntax)
+                    if (tagBlock.Attributes[i] is CSharpCodeBlockSyntax)
                     {
                         // Code blocks in the attribute area of tags mangles following attributes.
                         // It's also not supported by TagHelpers, bail early to avoid creating bad attribute value pairs.
                         break;
                     }
 
-                    if (tagBlock.Children[i] is MarkupMinimizedAttributeBlockSyntax minimizedAttributeBlock)
+                    if (tagBlock.Attributes[i] is MarkupMinimizedAttributeBlockSyntax minimizedAttributeBlock)
                     {
                         if (minimizedAttributeBlock.Name == null)
                         {
@@ -397,7 +393,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         continue;
                     }
 
-                    if (!(tagBlock.Children[i] is MarkupAttributeBlockSyntax attributeBlock))
+                    if (!(tagBlock.Attributes[i] is MarkupAttributeBlockSyntax attributeBlock))
                     {
                         // If the parser thought these aren't attributes, we don't care about them. Move on.
                         continue;
@@ -525,46 +521,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                        !endTag.IsMarkupTransition;
             }
 
-            private static bool IsPartialStartTag(MarkupStartTagSyntax tagBlock)
+            private static bool IsPartialStartTag(MarkupStartTagSyntax startTag)
             {
-                // No need to validate the tag end because in order to be a tag block it must start with '<'.
-                var tagEnd = tagBlock.Children[tagBlock.Children.Count - 1];
-
-                // If our tag end is not a markup span it means it's some sort of code SyntaxTreeNode (not a valid format)
-                if (tagEnd != null && tagEnd is MarkupTextLiteralSyntax tagEndLiteral)
-                {
-                    var endToken = tagEndLiteral.LiteralTokens.Count > 0 ?
-                        tagEndLiteral.LiteralTokens[tagEndLiteral.LiteralTokens.Count - 1] :
-                        null;
-
-                    if (endToken != null && endToken.Kind == SyntaxKind.CloseAngle)
-                    {
-                        return false;
-                    }
-                }
-
-                return true;
+                return startTag.CloseAngle.IsMissing;
             }
 
-            private static bool IsPartialEndTag(MarkupEndTagSyntax tagBlock)
+            private static bool IsPartialEndTag(MarkupEndTagSyntax endTag)
             {
-                // No need to validate the tag end because in order to be a tag block it must start with '<'.
-                var tagEnd = tagBlock.Children[tagBlock.Children.Count - 1];
-
-                // If our tag end is not a markup span it means it's some sort of code SyntaxTreeNode (not a valid format)
-                if (tagEnd != null && tagEnd is MarkupTextLiteralSyntax tagEndLiteral)
-                {
-                    var endToken = tagEndLiteral.LiteralTokens.Count > 0 ?
-                        tagEndLiteral.LiteralTokens[tagEndLiteral.LiteralTokens.Count - 1] :
-                        null;
-
-                    if (endToken != null && endToken.Kind == SyntaxKind.CloseAngle)
-                    {
-                        return false;
-                    }
-                }
-
-                return true;
+                return endTag.CloseAngle.IsMissing;
             }
 
             private void ValidateParentAllowsContent(SyntaxNode child)
@@ -608,9 +572,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 if (string.IsNullOrEmpty(tagName))
                 {
                     var firstChild = tagBlock.Children.First();
-                    Debug.Assert(firstChild is MarkupTextLiteralSyntax || firstChild is MarkupTransitionSyntax);
+                    Debug.Assert(firstChild is MarkupTextLiteralSyntax);
 
-                    ValidateParentAllowsContent(tagBlock.Children.First());
+                    ValidateParentAllowsContent(firstChild);
                     return;
                 }
 
@@ -641,9 +605,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 if (string.IsNullOrEmpty(tagName))
                 {
                     var firstChild = tagBlock.Children.First();
-                    Debug.Assert(firstChild is MarkupTextLiteralSyntax || firstChild is MarkupTransitionSyntax);
+                    Debug.Assert(firstChild is MarkupTextLiteralSyntax);
 
-                    ValidateParentAllowsContent(tagBlock.Children.First());
+                    ValidateParentAllowsContent(firstChild);
                     return;
                 }
 

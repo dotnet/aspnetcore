@@ -146,13 +146,43 @@
     <Field Name="Body" Type="SyntaxList&lt;RazorSyntaxNode&gt;" Optional="true" />
     <Field Name="EndTag" Type="MarkupTagHelperEndTagSyntax" Optional="true" />
   </Node>
-  <Node Name="MarkupTagHelperStartTagSyntax" Base="RazorBlockSyntax">
+  <Node Name="MarkupTagHelperStartTagSyntax" Base="MarkupSyntaxNode">
     <Kind Name="MarkupTagHelperStartTag" />
-    <Field Name="Children" Type="SyntaxList&lt;RazorSyntaxNode&gt;" Override="true" />
+    <Field Name="OpenAngle" Type="SyntaxToken">
+      <Kind Name="OpenAngle" />
+    </Field>
+    <Field Name="Bang" Type="SyntaxToken" Optional="true">
+      <Kind Name="Bang" />
+    </Field>
+    <Field Name="Name" Type="SyntaxToken">
+      <Kind Name="Text" />
+    </Field>
+    <Field Name="Attributes" Type="SyntaxList&lt;RazorSyntaxNode&gt;" />
+    <Field Name="ForwardSlash" Type="SyntaxToken" Optional="true">
+      <Kind Name="ForwardSlash" />
+    </Field>
+    <Field Name="CloseAngle" Type="SyntaxToken">
+      <Kind Name="CloseAngle" />
+    </Field>
   </Node>
-  <Node Name="MarkupTagHelperEndTagSyntax" Base="RazorBlockSyntax">
+  <Node Name="MarkupTagHelperEndTagSyntax" Base="MarkupSyntaxNode">
     <Kind Name="MarkupTagHelperEndTag" />
-    <Field Name="Children" Type="SyntaxList&lt;RazorSyntaxNode&gt;" Override="true" />
+    <Field Name="OpenAngle" Type="SyntaxToken">
+      <Kind Name="OpenAngle" />
+    </Field>
+    <Field Name="ForwardSlash" Type="SyntaxToken">
+      <Kind Name="ForwardSlash" />
+    </Field>
+    <Field Name="Bang" Type="SyntaxToken" Optional="true">
+      <Kind Name="Bang" />
+    </Field>
+    <Field Name="Name" Type="SyntaxToken">
+      <Kind Name="Text" />
+    </Field>
+    <Field Name="MiscAttributeContent" Type="MarkupMiscAttributeContentSyntax" Optional="true" />
+    <Field Name="CloseAngle" Type="SyntaxToken">
+      <Kind Name="CloseAngle" />
+    </Field>
   </Node>
   <Node Name="MarkupTagHelperAttributeSyntax" Base="MarkupSyntaxNode">
     <Kind Name="MarkupTagHelperAttribute" />
