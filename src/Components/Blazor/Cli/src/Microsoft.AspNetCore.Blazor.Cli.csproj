@@ -36,11 +36,14 @@
         componentsrootdir=..\..\..\;
         blazorversion=$(PackageVersion);
         aspnetcoreversion=$(ComponentsPackageVersion);
+        sharedfxversion=$(SharedFxVersion);
         repositorycommit=$(RepositoryCommit);</NuspecProperties>
     </PropertyGroup>
-    <ItemGroup>
-      <!-- Also temporarily override RuntimeFramework manually until we can use <FrameworkReference> -->
-      <RuntimeFramework Include="Microsoft.AspNetCore.App" Version="$(SharedFxVersion)" />
-    </ItemGroup>
+    <!-- Also temporarily generate the runtimeconfig.json manually until we can use <FrameworkReference> -->
+    <Sdk_GenerateFileFromTemplate
+      TemplateFile="temporaryruntimeconfig.json"
+      Properties="$(NuspecProperties)"
+      OutputPath="$(OutDir)temporaryruntimeconfig.out.json">
+    </Sdk_GenerateFileFromTemplate>
   </Target>
 </Project>

@@ -25,7 +25,7 @@ This package was built from the source code at https://github.com/aspnet/AspNetC
     </dependencies>
   </metadata>
   <files>
-    <file src="$outdir$dotnet-blazor.runtimeconfig.json" target="lib\netcoreapp3.0\dotnet-blazor.runtimeconfig.json" />
+    <file src="$outdir$temporaryruntimeconfig.out.json" target="lib\netcoreapp3.0\dotnet-blazor.runtimeconfig.json" />
     <file src="$outdir$dotnet-blazor.dll" target="lib\netcoreapp3.0\dotnet-blazor.dll" />
     <file src="$componentsrootdir$THIRD-PARTY-NOTICES.txt" target=".\THIRD-PARTY-NOTICES.txt" />
   </files>
