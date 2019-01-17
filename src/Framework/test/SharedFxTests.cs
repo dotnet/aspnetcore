@@ -114,33 +114,19 @@ namespace Microsoft.AspNetCore
             Assert.NotNull(depsFile["compilationOptions"]);
             Assert.Empty(depsFile["compilationOptions"]);
             Assert.NotEmpty(depsFile["runtimes"][_expectedRid]);
-
-            var targetLibraries = depsFile["targets"][target];
-            Assert.All(targetLibraries, libEntry =>
+            Assert.All(depsFile["libraries"], item =>
             {
-                var lib = Assert.IsType<JProperty>(libEntry);
-                if (lib.Value["runtime"] == null)
-                {
-                    return;
-                }
-
-                Assert.All(lib.Value["runtime"], item =>
-                {
-                    var obj = Assert.IsType<JProperty>(item);
-                    var assemblyVersion = obj.Value["assemblyVersion"];
-                    Assert.NotNull(assemblyVersion);
-                    Assert.NotEmpty(assemblyVersion.Value<string>());
-
-                    var fileVersion = obj.Value["fileVersion"];
-                    Assert.NotNull(fileVersion);
-                    Assert.NotEmpty(fileVersion.Value<string>());
-                });
+                var prop = Assert.IsType<JProperty>(item);
+                var lib = Assert.IsType<JObject>(prop.Value);
+                Assert.Equal("package", lib["type"].Value<string>());
+                Assert.Empty(lib["sha512"].Value<string>());
             });
 
             Assert.NotNull(depsFile["libraries"][$"Microsoft.AspNetCore.App/{TestData.GetPackageVersion()}"]);
             Assert.NotNull(depsFile["libraries"][$"runtime.{_expectedRid}.Microsoft.AspNetCore.App/{TestData.GetPackageVersion()}"]);
             Assert.Equal(2, depsFile["libraries"].Values().Count());
 
+            var targetLibraries = depsFile["targets"][target];
             Assert.Equal(2, targetLibraries.Values().Count());
             var metapackage = targetLibraries[$"Microsoft.AspNetCore.App/{TestData.GetPackageVersion()}"];
             Assert.Null(metapackage["runtime"]);
