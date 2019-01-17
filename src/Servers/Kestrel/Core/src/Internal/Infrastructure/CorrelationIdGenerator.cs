@@ -24,25 +24,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             // and ~600% faster than calling long.ToString() on x86 in tight loops of 1 million+ iterations
             // See: https://github.com/aspnet/Hosting/pull/385
 
-            // stackalloc to allocate array on stack rather than heap
-            Span<char> charBuffer = stackalloc char[13];
-
-            charBuffer[0] = _encode32Chars[(int)(id >> 60) & 31];
-            charBuffer[1] = _encode32Chars[(int)(id >> 55) & 31];
-            charBuffer[2] = _encode32Chars[(int)(id >> 50) & 31];
-            charBuffer[3] = _encode32Chars[(int)(id >> 45) & 31];
-            charBuffer[4] = _encode32Chars[(int)(id >> 40) & 31];
-            charBuffer[5] = _encode32Chars[(int)(id >> 35) & 31];
-            charBuffer[6] = _encode32Chars[(int)(id >> 30) & 31];
-            charBuffer[7] = _encode32Chars[(int)(id >> 25) & 31];
-            charBuffer[8] = _encode32Chars[(int)(id >> 20) & 31];
-            charBuffer[9] = _encode32Chars[(int)(id >> 15) & 31];
-            charBuffer[10] = _encode32Chars[(int)(id >> 10) & 31];
-            charBuffer[11] = _encode32Chars[(int)(id >> 5) & 31];
-            charBuffer[12] = _encode32Chars[(int)id & 31];
-
-            // string ctor overload that takes char*
-            return new string(charBuffer);
+            return string.Create(13, id, (span, value) =>
+            {
+                span[0] = _encode32Chars[(int)(value >> 60) & 31];
+                span[1] = _encode32Chars[(int)(value >> 55) & 31];
+                span[2] = _encode32Chars[(int)(value >> 50) & 31];
+                span[3] = _encode32Chars[(int)(value >> 45) & 31];
+                span[4] = _encode32Chars[(int)(value >> 40) & 31];
+                span[5] = _encode32Chars[(int)(value >> 35) & 31];
+                span[6] = _encode32Chars[(int)(value >> 30) & 31];
+                span[7] = _encode32Chars[(int)(value >> 25) & 31];
+                span[8] = _encode32Chars[(int)(value >> 20) & 31];
+                span[9] = _encode32Chars[(int)(value >> 15) & 31];
+                span[10] = _encode32Chars[(int)(value >> 10) & 31];
+                span[11] = _encode32Chars[(int)(value >> 5) & 31];
+                span[12] = _encode32Chars[(int)value & 31];
+            });
         }
     }
 }
