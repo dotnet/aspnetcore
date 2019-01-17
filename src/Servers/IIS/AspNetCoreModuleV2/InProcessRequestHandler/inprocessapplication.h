@@ -47,6 +47,8 @@ public:
         _Out_ IREQUEST_HANDLER   **pRequestHandler)
     override;
 
+    void HandleRequestCompletion();
+
     // Executes the .NET Core process
     void
     ExecuteApplication();
@@ -62,6 +64,19 @@ public:
     StopIncomingRequests()
     {
         QueueStop();
+
+        THROW_LAST_ERROR_IF_NULL(m_pDrainRequestEvent = CreateEvent(
+            nullptr,  // default security attributes
+            TRUE,     // manual reset event
+            FALSE,    // not set
+            nullptr)); // name
+        const auto waitResult = WaitForSingleObject(m_pDrainRequestEvent, m_pConfig->QueryShutdownTimeLimitInMS());
+
+        if (waitResult == WAIT_FAILED || waitResult == WAIT_TIMEOUT)
+        {
+            // This is a baddddd state (means we didn't shutdown in time)
+            // Maybe crash the process or something bad?
+        }
     }
 
     void
@@ -144,6 +159,8 @@ private:
     // The event that gets triggered when worker thread should exit
     HandleWrapper<NullHandleTraits> m_pShutdownEvent;
 
+    HandleWrapper<NullHandleTraits> m_pDrainRequestEvent;
+
     // The request handler callback from managed code
     PFN_REQUEST_HANDLER             m_RequestHandler;
     VOID*                           m_RequestHandlerContext;
@@ -160,6 +177,7 @@ private:
     std::atomic_bool                m_blockManagedCallbacks;
     bool                            m_Initialized;
     bool                            m_waitForShutdown;
+    std::atomic<int>                m_requestCount;
 
     std::unique_ptr<InProcessOptions> m_pConfig;
 

@@ -34,6 +34,17 @@ __override
 REQUEST_NOTIFICATION_STATUS
 IN_PROCESS_HANDLER::ExecuteRequestHandler()
 {
+    auto res = ExecuteRequestHandlerInternal();
+    if (res != RQ_NOTIFICATION_PENDING)
+    {
+        m_pApplication->HandleRequestCompletion();
+    }
+    return res;
+}
+
+REQUEST_NOTIFICATION_STATUS
+IN_PROCESS_HANDLER::ExecuteRequestHandlerInternal()
+{
     ::RaiseEvent<ANCMEvents::ANCM_INPROC_EXECUTE_REQUEST_START>(m_pW3Context, nullptr);
 
     if (m_pRequestHandler == NULL)
@@ -46,6 +57,7 @@ IN_PROCESS_HANDLER::ExecuteRequestHandler()
         return ServerShutdownMessage();
     }
 
+    Sleep(1000);
     auto status = m_pRequestHandler(this, m_pRequestHandlerContext);
     ::RaiseEvent<ANCMEvents::ANCM_INPROC_EXECUTE_REQUEST_COMPLETION>(m_pW3Context, nullptr, status);
     return status;
@@ -58,7 +70,20 @@ IN_PROCESS_HANDLER::AsyncCompletion(
     HRESULT     hrCompletionStatus
 )
 {
+    auto res = AsyncCompletionInternal(cbCompletion, hrCompletionStatus);
+    if (res != RQ_NOTIFICATION_PENDING)
+    {
+        m_pApplication->HandleRequestCompletion();
+    }
+    return res;
+}
 
+REQUEST_NOTIFICATION_STATUS
+IN_PROCESS_HANDLER::AsyncCompletionInternal(
+    DWORD       cbCompletion,
+    HRESULT     hrCompletionStatus
+)
+{
     ::RaiseEvent<ANCMEvents::ANCM_INPROC_ASYNC_COMPLETION_START>(m_pW3Context, nullptr);
 
     if (m_fManagedRequestComplete)

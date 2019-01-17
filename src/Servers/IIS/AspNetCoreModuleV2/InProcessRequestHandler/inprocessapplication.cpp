@@ -259,7 +259,7 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
             if (m_waitForShutdown)
             {
                 const auto clrWaitResult = WaitForSingleObject(m_clrThread.native_handle(), m_pConfig->QueryShutdownTimeLimitInMS());
-                THROW_LAST_ERROR_IF(waitResult == WAIT_FAILED);
+                THROW_LAST_ERROR_IF(clrWaitResult == WAIT_FAILED);
 
                 clrThreadExited = clrWaitResult != WAIT_TIMEOUT;
             }
@@ -517,9 +517,23 @@ IN_PROCESS_APPLICATION::CreateHandler(
 {
     try
     {
+        m_requestCount++;
         *pRequestHandler = new IN_PROCESS_HANDLER(::ReferenceApplication(this), pHttpContext, m_RequestHandler, m_RequestHandlerContext, m_DisconnectHandler, m_AsyncCompletionHandler);
     }
     CATCH_RETURN();
 
     return S_OK;
+}
+
+void
+IN_PROCESS_APPLICATION::HandleRequestCompletion()
+{
+    m_requestCount--;
+    if (m_fStopCalled && m_requestCount == 0)
+    {
+        if (m_pDrainRequestEvent != nullptr)
+        {
+            LOG_IF_FAILED(SetEvent(m_pDrainRequestEvent));
+        }
+    }
 }

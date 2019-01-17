@@ -28,7 +28,6 @@ public:
         {
             return S_FALSE;
         }
-
         return CreateHandler(pHttpContext, pRequestHandler);
     }
 

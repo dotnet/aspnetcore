@@ -1,6 +1,7 @@
 
 using System;
 using System.Buffers;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -35,7 +36,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         private volatile int _stopping;
         private bool Stopping => _stopping == 1;
-        private int _outstandingRequests;
         private readonly TaskCompletionSource<object> _shutdownSignal = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
         private bool? _websocketAvailable;
 
@@ -115,17 +115,9 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
             try
             {
-                // Wait for active requests to drain
-                if (_outstandingRequests > 0)
-                {
-                    RegisterCancelation();
-                }
-                else
-                {
-                    // We have drained all requests. Block any callbacks into managed at this point.
-                    _nativeApplication.StopCallsIntoManaged();
-                    _shutdownSignal.TrySetResult(null);
-                }
+                // We have drained all requests. Block any callbacks into managed at this point.
+                _nativeApplication.StopCallsIntoManaged();
+                _shutdownSignal.TrySetResult(null);
             }
             catch (Exception ex)
             {
@@ -152,21 +144,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             _nativeApplication.Dispose();
         }
 
-        private void IncrementRequests()
-        {
-            Interlocked.Increment(ref _outstandingRequests);
-        }
-
-        internal void DecrementRequests()
-        {
-            if (Interlocked.Decrement(ref _outstandingRequests) == 0 && Stopping)
-            {
-                // All requests have been drained.
-                _nativeApplication.StopCallsIntoManaged();
-                _shutdownSignal.TrySetResult(null);
-            }
-        }
-
         private static NativeMethods.REQUEST_NOTIFICATION_STATUS HandleRequest(IntPtr pInProcessHandler, IntPtr pvRequestContext)
         {
             IISHttpServer server = null;
@@ -174,7 +151,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             {
                 // Unwrap the server so we can create an http context and process the request
                 server = (IISHttpServer)GCHandle.FromIntPtr(pvRequestContext).Target;
-                server.IncrementRequests();
 
                 var context = server._iisContextFactory.CreateHttpContext(pInProcessHandler);
 
@@ -204,7 +180,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
             return true;
         }
-
 
         private static void OnDisconnect(IntPtr pvManagedHttpContext)
         {

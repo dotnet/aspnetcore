@@ -27,12 +27,22 @@ public:
     REQUEST_NOTIFICATION_STATUS
     ExecuteRequestHandler() override;
 
+    REQUEST_NOTIFICATION_STATUS
+    ExecuteRequestHandlerInternal();
+
     __override
     REQUEST_NOTIFICATION_STATUS
     AsyncCompletion(
         DWORD       cbCompletion,
         HRESULT     hrCompletionStatus
     ) override;
+
+    __override
+    REQUEST_NOTIFICATION_STATUS
+    AsyncCompletionInternal(
+        DWORD       cbCompletion,
+        HRESULT     hrCompletionStatus
+    );
 
     __override
     VOID
