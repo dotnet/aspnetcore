@@ -112,6 +112,7 @@
     <ProjectReference Include="..\..\Templates\src\Microsoft.AspNetCore.Blazor.Templates.csproj">
       <Project>{edd21533-c6e6-4f85-be4f-10e06756e24c}</Project>
       <Name>Microsoft.AspNetCore.Blazor.Templates</Name>
+      <Targets>Pack</Targets>
       <Private>False</Private>
       <IncludeOutputGroupsInVSIX>
       </IncludeOutputGroupsInVSIX>
