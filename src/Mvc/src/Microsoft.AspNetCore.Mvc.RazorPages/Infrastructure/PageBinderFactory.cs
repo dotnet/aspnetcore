@@ -88,8 +88,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             IModelMetadataProvider modelMetadataProvider,
             IModelBinderFactory modelBinderFactory,
             CompiledPageActionDescriptor actionDescriptor,
-            HandlerMethodDescriptor handler,
-            MvcOptions mvcOptions)
+            HandlerMethodDescriptor handler)
         {
             if (handler.Parameters == null || handler.Parameters.Count == 0)
             {

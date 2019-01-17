@@ -23,13 +23,12 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
-    public class PageActionInvokerTest : CommonResourceInvokerTest
+    public class DefaultPageActionInvokerTest : CommonResourceInvokerTest
     {
         #region Diagnostics
 
@@ -112,7 +111,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             await invoker.InvokeAsync();
 
             // Assert
-            var pageContext = Assert.IsType<PageActionInvoker>(invoker).PageContext;
+            var pageContext = Assert.IsType<DefaultPageActionInvoker>(invoker).PageContext;
             Assert.NotNull(pageContext);
             Assert.Equal(2, pageContext.ValueProviderFactories.Count);
             Assert.Same(valueProviderFactory1, pageContext.ValueProviderFactories[0]);
@@ -146,7 +145,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             await invoker.InvokeAsync();
 
             // Assert
-            var pageContext = Assert.IsType<PageActionInvoker>(invoker).PageContext;
+            var pageContext = Assert.IsType<DefaultPageActionInvoker>(invoker).PageContext;
             Assert.NotNull(pageContext);
             Assert.Equal(1, pageContext.ValueProviderFactories.Count);
             Assert.Same(valueProviderFactory2, pageContext.ValueProviderFactories[0]);
@@ -1432,7 +1431,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 valueProviderFactories: valueProviderFactories);
         }
 
-        private PageActionInvoker CreateInvoker(
+        private DefaultPageActionInvoker CreateInvoker(
             IFilterMetadata[] filters,
             CompiledPageActionDescriptor actionDescriptor,
             Func<PageContext, object> modelFactory = null,
@@ -1515,7 +1514,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 .Setup(s => s.Select(It.IsAny<PageContext>()))
                 .Returns<PageContext>(c => c.ActionDescriptor.HandlerMethods.FirstOrDefault());
 
-            var invoker = new PageActionInvoker(
+            var invoker = new DefaultPageActionInvoker(
                 selector.Object,
                 diagnosticListener ?? new DiagnosticListener("Microsoft.AspNetCore"),
                 logger ?? NullLogger.Instance,
@@ -1523,35 +1522,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 pageContext,
                 filters ?? Array.Empty<IFilterMetadata>(),
                 cacheEntry,
-                GetParameterBinder(),
                 tempDataFactory,
                 new HtmlHelperOptions());
             return invoker;
-        }
-
-        private static ParameterBinder GetParameterBinder(
-            IModelBinderFactory factory = null,
-            IModelValidatorProvider validator = null)
-        {
-            if (validator == null)
-            {
-                validator = CreateMockValidatorProvider();
-            }
-
-            if (factory == null)
-            {
-                factory = TestModelBinderFactory.CreateDefault();
-            }
-
-            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
-            var mvcOptions = new MvcOptions();
-
-            return new ParameterBinder(
-                metadataProvider,
-                factory,
-                new DefaultObjectValidator(metadataProvider, new[] { validator }, mvcOptions),
-                Options.Create(mvcOptions),
-                NullLoggerFactory.Instance);
         }
 
         private static IModelValidatorProvider CreateMockValidatorProvider()

@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
     public class DefaultPageLoaderTest
     {
         [Fact]
-        public void Load_InvokesApplicationModelProviders()
+        public void LoadAsync_InvokesApplicationModelProviders()
         {
             // Arrange
             var descriptor = new PageActionDescriptor();
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 mvcOptions);
 
             // Act
-            var result = loader.Load(new PageActionDescriptor());
+            var result = loader.LoadAsync(new PageActionDescriptor());
 
             // Assert
             provider1.Verify();
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         }
 
         [Fact]
-        public void Load_InvokesApplicationModelProviders_WithTheRightOrder()
+        public void LoadAsync_InvokesApplicationModelProviders_WithTheRightOrder()
         {
             // Arrange
             var descriptor = new PageActionDescriptor();
@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 mvcOptions);
 
             // Act
-            var result = loader.Load(new PageActionDescriptor());
+            var result = loader.LoadAsync(new PageActionDescriptor());
 
             // Assert
             provider1.Verify();

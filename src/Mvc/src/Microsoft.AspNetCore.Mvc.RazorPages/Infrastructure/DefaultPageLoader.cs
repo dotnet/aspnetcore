@@ -5,15 +5,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
-using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
-    internal class DefaultPageLoader : IPageLoader
+    internal class DefaultPageLoader : PageLoaderBase
     {
         private readonly IPageApplicationModelProvider[] _applicationModelProviders;
         private readonly IViewCompilerProvider _viewCompilerProvider;
@@ -36,15 +36,14 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
         private IViewCompiler Compiler => _viewCompilerProvider.GetCompiler();
 
-        public CompiledPageActionDescriptor Load(PageActionDescriptor actionDescriptor)
+        public async override ValueTask<CompiledPageActionDescriptor> LoadAsync(PageActionDescriptor actionDescriptor)
         {
             if (actionDescriptor == null)
             {
                 throw new ArgumentNullException(nameof(actionDescriptor));
             }
 
-            var compileTask = Compiler.CompileAsync(actionDescriptor.RelativePath);
-            var viewDescriptor = compileTask.GetAwaiter().GetResult();
+            var viewDescriptor = await Compiler.CompileAsync(actionDescriptor.RelativePath);
 
             var context = new PageApplicationModelProviderContext(actionDescriptor, viewDescriptor.Type.GetTypeInfo());
             for (var i = 0; i < _applicationModelProviders.Length; i++)

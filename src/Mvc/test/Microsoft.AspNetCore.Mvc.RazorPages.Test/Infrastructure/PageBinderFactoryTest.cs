@@ -596,8 +596,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 modelMetadataProvider,
                 modelBinderFactory,
                 actionDescriptor,
-                actionDescriptor.HandlerMethods[0],
-                _options);
+                actionDescriptor.HandlerMethods[0]);
 
             var page = new PageWithProperty
             {
@@ -640,8 +639,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 modelMetadataProvider,
                 modelBinderFactory,
                 actionDescriptor,
-                actionDescriptor.HandlerMethods[0],
-                _options);
+                actionDescriptor.HandlerMethods[0]);
 
             var page = new PageWithProperty
             {
@@ -684,8 +682,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 modelMetadataProvider,
                 modelBinderFactory,
                 actionDescriptor,
-                actionDescriptor.HandlerMethods[0],
-                _options);
+                actionDescriptor.HandlerMethods[0]);
 
             var page = new PageWithProperty
             {

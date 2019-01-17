@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Internal;
@@ -18,11 +17,10 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
-    internal class PageActionInvoker : ResourceInvoker, IActionInvoker
+    internal class DefaultPageActionInvoker : ResourceInvoker, IActionInvoker
     {
         private readonly IPageHandlerMethodSelector _selector;
         private readonly PageContext _pageContext;
-        private readonly ParameterBinder _parameterBinder;
         private readonly ITempDataDictionaryFactory _tempDataFactory;
         private readonly HtmlHelperOptions _htmlHelperOptions;
         private readonly CompiledPageActionDescriptor _actionDescriptor;
@@ -37,7 +35,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         private PageHandlerExecutingContext _handlerExecutingContext;
         private PageHandlerExecutedContext _handlerExecutedContext;
 
-        public PageActionInvoker(
+        public DefaultPageActionInvoker(
             IPageHandlerMethodSelector handlerMethodSelector,
             DiagnosticListener diagnosticListener,
             ILogger logger,
@@ -45,7 +43,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             PageContext pageContext,
             IFilterMetadata[] filterMetadata,
             PageActionInvokerCacheEntry cacheEntry,
-            ParameterBinder parameterBinder,
             ITempDataDictionaryFactory tempDataFactory,
             HtmlHelperOptions htmlHelperOptions)
             : base(
@@ -59,7 +56,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             _selector = handlerMethodSelector;
             _pageContext = pageContext;
             CacheEntry = cacheEntry;
-            _parameterBinder = parameterBinder;
             _tempDataFactory = tempDataFactory;
             _htmlHelperOptions = htmlHelperOptions;
 
