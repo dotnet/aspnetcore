@@ -24,7 +24,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <HostingStartupRuntimeStoreTargets Include="netcoreapp3.0" Runtime="$(SharedFxRid)" />
+    <HostingStartupRuntimeStoreTargets Include="netcoreapp2.2" Runtime="$(SharedFxRid)" />
 
     <HostingStartupPackageReference Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" Version="$(PackageVersion)" />
 
