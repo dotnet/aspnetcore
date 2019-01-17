@@ -131,6 +131,12 @@ IN_PROCESS_APPLICATION::LoadManagedApplication()
         FALSE,    // not set
         nullptr)); // name
 
+    THROW_LAST_ERROR_IF_NULL(m_pDrainRequestEvent = CreateEvent(
+        nullptr,  // default security attributes
+        TRUE,     // manual reset event
+        FALSE,    // not set
+        nullptr)); // name
+
     LOG_INFO(L"Waiting for initialization");
 
     m_workerThread = std::thread([](std::unique_ptr<IN_PROCESS_APPLICATION, IAPPLICATION_DELETER> application)

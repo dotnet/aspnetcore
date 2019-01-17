@@ -65,18 +65,17 @@ public:
     {
         QueueStop();
 
-        THROW_LAST_ERROR_IF_NULL(m_pDrainRequestEvent = CreateEvent(
-            nullptr,  // default security attributes
-            TRUE,     // manual reset event
-            FALSE,    // not set
-            nullptr)); // name
-        const auto waitResult = WaitForSingleObject(m_pDrainRequestEvent, m_pConfig->QueryShutdownTimeLimitInMS());
+        LOG_INFOF(L"Waiting for requests to drain");
 
-        if (waitResult == WAIT_FAILED || waitResult == WAIT_TIMEOUT)
-        {
-            // This is a baddddd state (means we didn't shutdown in time)
-            // Maybe crash the process or something bad?
-        }
+        // Wait infinitely for all requests to drain.
+        // This will not cause the process to be hung indefinitely because we will hit
+        // a shutdown timeout which is triggered by QueueStop
+        // If we hit that timeout and the In process app is disposed/destructed, undefined behavior
+        // will occur because m_pDrainRequestEvent will be closed. This is honestly fine behavior
+        // because if we hit timeout, the process is considered abandoned already. 
+        const auto waitResult = WaitForSingleObject(m_pDrainRequestEvent, INFINITE);
+
+        LOG_INFOF(L"Requests have been drained");
     }
 
     void
