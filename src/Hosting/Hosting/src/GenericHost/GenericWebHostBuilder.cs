@@ -327,7 +327,10 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 return webHostBuilderContext;
             }
 
-            return (WebHostBuilderContext)contextVal;
+            // Refresh config, it's periodically updated/replaced
+            var webHostContext = (WebHostBuilderContext)contextVal;
+            webHostContext.Configuration = context.Configuration;
+            return webHostContext;
         }
 
         public string GetSetting(string key)
