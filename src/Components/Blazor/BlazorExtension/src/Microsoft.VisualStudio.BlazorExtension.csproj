@@ -77,7 +77,7 @@
     <CopyBuildOutputToOutputDirectory>true</CopyBuildOutputToOutputDirectory>
     <CopyOutputSymbolsToOutputDirectory>true</CopyOutputSymbolsToOutputDirectory>
   </PropertyGroup>
-  <Target Name="PreCreateVsixContainer" BeforeTargets="CreateVsixContainer">
+  <Target Name="PreCreateVsixContainer" BeforeTargets="GetVsixSourceItems">
     <ItemGroup>
       <VSIXSourceItem Include="$(ArtifactsShippingPackagesDir)Microsoft.AspNetCore.Blazor.Templates.*.nupkg">
         <VSIXSubPath>ProjectTemplates\</VSIXSubPath>
