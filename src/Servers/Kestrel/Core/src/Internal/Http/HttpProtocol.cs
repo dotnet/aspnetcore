@@ -367,8 +367,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // Lock to prevent CancelRequestAbortedToken from attempting to cancel an disposed CTS.
             lock (_abortLock)
             {
-                _abortedCts?.Dispose();
-                _abortedCts = null;
+                if (!_requestAborted)
+                {
+                    _abortedCts?.Dispose();
+                    _abortedCts = null;
+                }
             }
 
             _requestHeadersParsed = 0;
@@ -412,16 +415,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private void CancelRequestAbortedToken()
         {
-            lock (_abortLock)
+            try
             {
-                try
-                {
-                    _abortedCts?.Cancel();
-                }
-                catch (Exception ex)
-                {
-                    Log.ApplicationError(ConnectionId, TraceIdentifier, ex);
-                }
+                _abortedCts.Cancel();
+                _abortedCts.Dispose();
+                _abortedCts = null;
+            }
+            catch (Exception ex)
+            {
+                Log.ApplicationError(ConnectionId, TraceIdentifier, ex);
             }
         }
 
@@ -435,12 +437,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
 
                 _requestAborted = true;
+            }
 
-                if (_abortedCts != null && !_preventRequestAbortedCancellation)
-                {
-                    // Potentially calling user code. CancelRequestAbortedToken logs any exceptions.
-                    ServiceContext.Scheduler.Schedule(state => ((HttpProtocol)state).CancelRequestAbortedToken(), this);
-                }
+            if (_abortedCts != null)
+            {
+                // Potentially calling user code. CancelRequestAbortedToken logs any exceptions.
+                ServiceContext.Scheduler.Schedule(state => ((HttpProtocol)state).CancelRequestAbortedToken(), this);
             }
         }
 
@@ -460,6 +462,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
 
                 _preventRequestAbortedCancellation = true;
+                _abortedCts?.Dispose();
+                _abortedCts = null;
             }
         }
 
