@@ -6,7 +6,9 @@
 /src/Components/ @SteveSandersonMS
 /src/DefaultBuilder/ @tratcher
 /src/Hosting/ @tratcher
-/src/Http/ @tratcher
+/src/Http/ @tratcher @jkotalik
 /src/Middleware/ @tratcher
 /src/Security/ @tratcher
-/src/Servers/ @tratcher
+/src/Servers/ @tratcher @jkotalik
+/src/Middleware/Rewrite @jkotalik
+/src/Middleware/HttpsPolicy @jkotalik
