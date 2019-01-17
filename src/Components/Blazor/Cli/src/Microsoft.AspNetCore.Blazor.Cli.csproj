@@ -21,4 +21,26 @@
     <Reference Include="Microsoft.AspNetCore" />
     <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" PrivateAssets="All" />
   </ItemGroup>
+
+  <!--
+    Temporarily use hand-authored .nuspec file until we can use <FrameworkReference>
+    The hand-authored .nuspec file is to ensure it *doesn't* reference the shared
+    framework packages that aren't actually shipping as packages. We can remove this
+    once the nuspec generation accounts for <FrameworkReference>.
+  -->
+  <Target Name="PrepareNuSpecProperties" BeforeTargets="_IntermediatePack">
+    <PropertyGroup>
+      <NuspecFile>Microsoft.AspNetCore.Blazor.Cli.nuspec</NuspecFile>
+      <NuspecProperties>
+        outdir=$(OutDir);
+        componentsrootdir=..\..\..\;
+        blazorversion=$(PackageVersion);
+        aspnetcoreversion=$(ComponentsPackageVersion);
+        repositorycommit=$(RepositoryCommit);</NuspecProperties>
+    </PropertyGroup>
+    <ItemGroup>
+      <!-- Also temporarily override RuntimeFramework manually with hardcoded version until we can use <FrameworkReference> -->
+      <RuntimeFramework Include="Microsoft.AspNetCore.App" Version="3.0.0-preview-19064-0344" />
+    </ItemGroup>
+  </Target>
 </Project>
