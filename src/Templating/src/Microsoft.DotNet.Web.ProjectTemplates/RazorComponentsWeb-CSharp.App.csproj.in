@@ -6,7 +6,6 @@
     <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">RazorComponentsWeb_CSharp.App</RootNamespace>
   </PropertyGroup>
 
-  <!-- TODO: Remove this once it's included in the shared framework -->
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.Browser" Version="${MicrosoftAspNetCoreComponentsPackageVersion}" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Build" Version="${MicrosoftAspNetCoreComponentsPackageVersion}" PrivateAssets="all" />
