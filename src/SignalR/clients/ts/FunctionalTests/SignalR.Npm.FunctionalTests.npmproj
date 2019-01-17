@@ -24,11 +24,6 @@
     <Message Importance="High" Text="Running npm tests for $(MSBuildProjectName)" />
     <Exec Condition="'$(DailyTests)' != 'true'" Command="npm $(NpmTestArgs)" IgnoreStandardErrorWarningFormat="true" />
     <CallTarget Condition="'$(DailyTests)' == 'true'" Targets="RunBrowserTests" />
-
-        <!-- Optionally run "daily test" run in Sauce Labs -->    
-    <NpmTestArgs Condition="'$(DailyTests)' == 'true'">npm run test:sauce -- $(_TestSauceArgs)</NpmTestArgs>
-    <Error Text="Required property 'SauceUser' is missing!" Condition="'$(DailyTests)' == 'true' And '$(SauceUser)' == ''" />
-    <Error Text="Required property 'SauceKey' is missing!" Condition="'$(DailyTests)' == 'true' And '$(SauceKey)' == ''" />
   </Target>
 
   <Target Name="RunBrowserTests">
@@ -41,10 +36,6 @@
           Condition="'$(DailyTests)' != 'true'"
           WorkingDirectory="$(RepositoryRoot)clients/ts/FunctionalTests"
           IgnoreStandardErrorWarningFormat="true" />
-
-    <!-- Optionally run "daily test" run in Sauce Labs -->
-    <!-- <Error Text="Required property 'SauceUser' is missing!" Condition="'$(DailyTests)' == 'true' And '$(SauceUser)' == ''" />
-    <Error Text="Required property 'SauceKey' is missing!" Condition="'$(DailyTests)' == 'true' And '$(SauceKey)' == ''" /> -->
 
     <PropertyGroup>
       <BrowserTestHostName Condition="'$(CI)' == 'true'">sauce.local</BrowserTestHostName>
