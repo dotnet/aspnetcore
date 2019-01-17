@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 ? MethodExecutor.AsyncResultType
                 : MethodExecutor.MethodReturnType;
 
-            foreach (var returnType in NonAsyncReturnType.AllBaseTypes().Concat(NonAsyncReturnType.GetInterfaces()))
+            foreach (var returnType in NonAsyncReturnType.GetInterfaces().Concat(NonAsyncReturnType.AllBaseTypes()))
             {
                 if (!returnType.IsGenericType)
                 {

@@ -606,9 +606,14 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return CounterAsyncEnumerable(count);
         }
 
-        public WrappedAsyncEnumerable<string> CounterWrappedAsyncEnumerable(int count)
+        public AsyncEnumerableImpl<string> CounterAsyncEnumerableImpl(int count)
         {
-            return new WrappedAsyncEnumerable<string>(CounterAsyncEnumerable(count));
+            return new AsyncEnumerableImpl<string>(CounterAsyncEnumerable(count));
+        }
+
+        public AsyncEnumerableImplChannelThrows<string> AsyncEnumerableIsPreferedOverChannelReader(int count)
+        {
+            return new AsyncEnumerableImplChannelThrows<string>(CounterChannel(count));
         }
 
         public ChannelReader<string> BlockingStream()
@@ -648,11 +653,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return output.Reader;
         }
 
-        public class WrappedAsyncEnumerable<T> : IAsyncEnumerable<T>
+        public class AsyncEnumerableImpl<T> : IAsyncEnumerable<T>
         {
             private readonly IAsyncEnumerable<T> _inner;
 
-            public WrappedAsyncEnumerable(IAsyncEnumerable<T> inner)
+            public AsyncEnumerableImpl(IAsyncEnumerable<T> inner)
             {
                 _inner = inner;
             }
@@ -660,6 +665,84 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
             {
                 return _inner.GetAsyncEnumerator(cancellationToken);
+            }
+        }
+
+        public class AsyncEnumerableImplChannelThrows<T> : ChannelReader<T>, IAsyncEnumerable<T>
+        {
+            private ChannelReader<T> _inner;
+
+            public AsyncEnumerableImplChannelThrows(ChannelReader<T> inner)
+            {
+                _inner = inner;
+            }
+
+            public override bool TryRead(out T item)
+            {
+                // Not implemented to verify this is consumed as an IAsyncEnumerable<T> instead of a ChannelReader<T>.
+                throw new NotImplementedException();
+            }
+
+            public override ValueTask<bool> WaitToReadAsync(CancellationToken cancellationToken = default)
+            {
+                // Not implemented to verify this is consumed as an IAsyncEnumerable<T> instead of a ChannelReader<T>.
+                throw new NotImplementedException();
+            }
+
+            public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+            {
+                return new ChannelAsyncEnumerator(_inner, cancellationToken);
+            }
+
+            // Copied from AsyncEnumeratorAdapters.ChannelAsyncEnumerator<T>. Implements IAsyncEnumerator<T> instead of IAsyncEnumerator<object>.
+            private class ChannelAsyncEnumerator : IAsyncEnumerator<T>
+            {
+                /// <summary>The channel being enumerated.</summary>
+                private readonly ChannelReader<T> _channel;
+                /// <summary>Cancellation token used to cancel the enumeration.</summary>
+                private readonly CancellationToken _cancellationToken;
+                /// <summary>The current element of the enumeration.</summary>
+                private T _current;
+
+                public ChannelAsyncEnumerator(ChannelReader<T> channel, CancellationToken cancellationToken)
+                {
+                    _channel = channel;
+                    _cancellationToken = cancellationToken;
+                }
+
+                public T Current => _current;
+
+                public ValueTask<bool> MoveNextAsync()
+                {
+                    var result = _channel.ReadAsync(_cancellationToken);
+
+                    if (result.IsCompletedSuccessfully)
+                    {
+                        _current = result.Result;
+                        return new ValueTask<bool>(true);
+                    }
+
+                    return new ValueTask<bool>(MoveNextAsyncAwaited(result));
+                }
+
+                private async Task<bool> MoveNextAsyncAwaited(ValueTask<T> channelReadTask)
+                {
+                    try
+                    {
+                        _current = await channelReadTask;
+                    }
+                    catch (ChannelClosedException ex) when (ex.InnerException == null)
+                    {
+                        return false;
+                    }
+
+                    return true;
+                }
+
+                public ValueTask DisposeAsync()
+                {
+                    return default;
+                }
             }
         }
     }

@@ -1763,10 +1763,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 var protocol = HubProtocolHelpers.GetHubProtocol(protocolName);
 
-            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(null, LoggerFactory);
-            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<StreamingHub>>();
-            var invocationBinder = new Mock<IInvocationBinder>();
-            invocationBinder.Setup(b => b.GetStreamItemType(It.IsAny<string>())).Returns(typeof(string));
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(null, LoggerFactory);
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<StreamingHub>>();
+                var invocationBinder = new Mock<IInvocationBinder>();
+                invocationBinder.Setup(b => b.GetStreamItemType(It.IsAny<string>())).Returns(typeof(string));
 
                 using (var client = new TestClient(protocol: protocol, invocationBinder: invocationBinder.Object))
                 {
@@ -1916,7 +1916,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     nameof(StreamingHub.CounterChannelValueTaskAsync),
                     nameof(StreamingHub.CounterAsyncEnumerable),
                     nameof(StreamingHub.CounterAsyncEnumerableAsync),
-                    nameof(StreamingHub.CounterWrappedAsyncEnumerable),
+                    nameof(StreamingHub.CounterAsyncEnumerableImpl),
+                    nameof(StreamingHub.AsyncEnumerableIsPreferedOverChannelReader),
                 };
 
                 foreach (var method in methods)
