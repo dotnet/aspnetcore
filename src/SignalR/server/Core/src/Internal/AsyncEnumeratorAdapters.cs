@@ -15,13 +15,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         public static IAsyncEnumerator<object> GetAsyncEnumeratorFromAsyncEnumerable<T>(IAsyncEnumerable<T> asyncEnumerable, CancellationToken cancellationToken = default(CancellationToken))
         {
             var enumerator = asyncEnumerable.GetAsyncEnumerator(cancellationToken);
-
-            if (typeof(T).IsValueType)
-            {
-                return new BoxedAsyncEnumerator<T>(enumerator);
-            }
-
-            return (IAsyncEnumerator<object>)enumerator;
+            return enumerator as IAsyncEnumerator<object> ?? new BoxedAsyncEnumerator<T>(enumerator);
         }
 
         public static IAsyncEnumerator<object> GetAsyncEnumeratorFromChannel<T>(ChannelReader<T> channel, CancellationToken cancellationToken = default(CancellationToken))
