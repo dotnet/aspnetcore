@@ -1,11 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.AspNetCore.Components.RenderTree;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.RenderTree;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Test
@@ -240,6 +240,37 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
+        public void FromDictionary_CanBeInitializedWithEmptyDictionary()
+        {
+            // Arrange
+            var dictionary = new Dictionary<string, object>();
+
+            // Act
+            var collection = ParameterCollection.FromDictionary(dictionary);
+
+            // Assert
+            Assert.Empty(collection.ToDictionary());
+        }
+
+        [Fact]
+        public void FromDictionary_RoundTrips()
+        {
+            // Arrange
+            var dictionary = new Dictionary<string, object>
+            {
+                ["IntValue"] = 1,
+                ["StringValue"] = "String"
+            };
+
+            // Act
+            var collection = ParameterCollection.FromDictionary(dictionary);
+
+            // Assert
+            Assert.Equal(dictionary, collection.ToDictionary());
+        }
+
+
+        [Fact]
         public void CanConvertToReadOnlyDictionary()
         {
             // Arrange
@@ -311,10 +342,10 @@ namespace Microsoft.AspNetCore.Components.Test
 
         private class FakeComponent : IComponent
         {
-            public void Init(RenderHandle renderHandle)
+            public void Configure(RenderHandle renderHandle)
                 => throw new NotImplementedException();
 
-            public void SetParameters(ParameterCollection parameters)
+            public Task SetParametersAsync(ParameterCollection parameters)
                 => throw new NotImplementedException();
         }
 

@@ -1554,35 +1554,35 @@ namespace Microsoft.AspNetCore.Components.Test
 
             public string NonParameterProperty { get; set; }
 
-            public void Init(RenderHandle renderHandle) { }
-            public void SetParameters(ParameterCollection parameters)
+            public void Configure(RenderHandle renderHandle) { }
+            public Task SetParametersAsync(ParameterCollection parameters)
             {
                 parameters.SetParameterProperties(this);
+                return Task.CompletedTask;
             }
         }
 
         private class FakeComponent2 : IComponent
         {
-            public void Init(RenderHandle renderHandle)
+            public void Configure(RenderHandle renderHandle)
             {
             }
 
-            public void SetParameters(ParameterCollection parameters)
-            {
-            }
+            public Task SetParametersAsync(ParameterCollection parameters) => Task.CompletedTask;
         }
 
         private class CaptureSetParametersComponent : IComponent
         {
             public int SetParametersCallCount { get; private set; }
 
-            public void Init(RenderHandle renderHandle)
+            public void Configure(RenderHandle renderHandle)
             {
             }
 
-            public void SetParameters(ParameterCollection parameters)
+            public Task SetParametersAsync(ParameterCollection parameters)
             {
                 SetParametersCallCount++;
+                return Task.CompletedTask;
             }
         }
 
@@ -1591,16 +1591,16 @@ namespace Microsoft.AspNetCore.Components.Test
             public int DisposalCount { get; private set; }
             public void Dispose() => DisposalCount++;
 
-            public void Init(RenderHandle renderHandle) { }
+            public void Configure(RenderHandle renderHandle) { }
 
-            public void SetParameters(ParameterCollection parameters) { }
+            public Task SetParametersAsync(ParameterCollection parameters) => Task.CompletedTask;
         }
 
         private class NonDisposableComponent : IComponent
         {
-            public void Init(RenderHandle renderHandle) { }
+            public void Configure(RenderHandle renderHandle) { }
 
-            public void SetParameters(ParameterCollection parameters) { }
+            public Task SetParametersAsync(ParameterCollection parameters) => Task.CompletedTask;
         }
 
         private static void AssertEdit(

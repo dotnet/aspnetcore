@@ -1,10 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.AspNetCore.Components.RenderTree;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.RenderTree;
 
 namespace Microsoft.AspNetCore.Components
 {
@@ -49,13 +50,13 @@ namespace Microsoft.AspNetCore.Components
         bool ICascadingValueComponent.CurrentValueIsFixed => IsFixed;
 
         /// <inheritdoc />
-        public void Init(RenderHandle renderHandle)
+        public void Configure(RenderHandle renderHandle)
         {
             _renderHandle = renderHandle;
         }
 
         /// <inheritdoc />
-        public void SetParameters(ParameterCollection parameters)
+        public Task SetParametersAsync(ParameterCollection parameters)
         {
             // Implementing the parameter binding manually, instead of just calling
             // parameters.SetParameterProperties(this), is just a very slight perf optimization
@@ -129,6 +130,8 @@ namespace Microsoft.AspNetCore.Components
             {
                 NotifySubscribers();
             }
+
+            return Task.CompletedTask;
         }
 
         bool ICascadingValueComponent.CanSupplyValue(Type requestedType, string requestedName)

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Test
@@ -76,7 +77,7 @@ namespace Microsoft.AspNetCore.Components.Test
             var firstBatch = renderer.Batches.Single();
             var nestedComponent = FindComponent<CascadingParameterConsumerComponent<string>>(firstBatch, out var nestedComponentId);
             Assert.Equal(1, nestedComponent.NumRenders);
-            
+
             // Act 2: Render again with updated regular parameter
             regularParameterValue = "Changed value";
             component.TriggerRender();
@@ -374,10 +375,10 @@ namespace Microsoft.AspNetCore.Components.Test
             [CascadingParameter] T CascadingParameter { get; set; }
             [Parameter] string RegularParameter { get; set; }
 
-            public override void SetParameters(ParameterCollection parameters)
+            public override async Task SetParametersAsync(ParameterCollection parameters)
             {
                 NumSetParametersCalls++;
-                base.SetParameters(parameters);
+                await base.SetParametersAsync(parameters);
             }
 
             protected override void BuildRenderTree(RenderTreeBuilder builder)

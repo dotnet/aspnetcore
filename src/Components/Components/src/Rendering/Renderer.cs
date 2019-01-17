@@ -1,10 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Components.RenderTree;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.RenderTree;
 
 namespace Microsoft.AspNetCore.Components.Rendering
 {
@@ -22,6 +24,14 @@ namespace Microsoft.AspNetCore.Components.Rendering
         private int _nextComponentId = 0; // TODO: change to 'long' when Mono .NET->JS interop supports it
         private bool _isBatchInProgress;
         private int _lastEventHandlerId = 0;
+        private List<Task> _pendingTasks;
+
+        // We need to introduce locking as we don't know if we are executing
+        // under a synchronization context that limits the ammount of concurrency
+        // that can happen when async callbacks are executed.
+        // As a result, we have to protect the _pendingTask list and the
+        // _batchBuilder render queue from concurrent modifications.
+        private object _asyncWorkLock = new object();
 
         /// <summary>
         /// Constructs an instance of <see cref="Renderer"/>.
@@ -64,8 +74,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="componentId">The ID returned by <see cref="AssignRootComponentId(IComponent)"/>.</param>
         protected void RenderRootComponent(int componentId)
         {
-            GetRequiredComponentState(componentId)
-                .SetDirectParameters(ParameterCollection.Empty);
+            RenderRootComponent(componentId, ParameterCollection.Empty);
         }
 
         /// <summary>
@@ -77,8 +86,131 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="initialParameters">The <see cref="ParameterCollection"/>with the initial parameters to use for rendering.</param>
         protected void RenderRootComponent(int componentId, ParameterCollection initialParameters)
         {
+            ReportAsyncExceptions(RenderRootComponentAsync(componentId, initialParameters));
+        }
+
+        private async void ReportAsyncExceptions(Task task)
+        {
+            switch (task.Status)
+            {
+                // If it's already completed synchronously, no need to await and no
+                // need to issue a further render (we already rerender synchronously).
+                // Just need to make sure we propagate any errors.
+                case TaskStatus.RanToCompletion:
+                case TaskStatus.Canceled:
+                    _pendingTasks = null;
+                    break;
+                case TaskStatus.Faulted:
+                    _pendingTasks = null;
+                    HandleException(task.Exception);
+                    break;
+
+                default:
+                    try
+                    {
+                        await task;
+                    }
+                    catch (Exception ex)
+                    {
+                        // Either the task failed, or it was cancelled.
+                        // We want to report task failure exceptions only.
+                        if (!task.IsCanceled)
+                        {
+                            HandleException(ex);
+                        }
+                    }
+                    finally
+                    {
+                        // Clear the list after we are done rendering the root component or an async exception has ocurred.
+                        _pendingTasks = null;
+                    }
+
+                    break;
+            }
+        }
+
+        private static void HandleException(Exception ex)
+        {
+            if (ex is AggregateException && ex.InnerException != null)
+            {
+                ex = ex.InnerException; // It's more useful
+            }
+
+            // TODO: Need better global exception handling
+            Console.Error.WriteLine($"[{ex.GetType().FullName}] {ex.Message}\n{ex.StackTrace}");
+        }
+
+        /// <summary>
+        /// Performs the first render for a root component, waiting for this component and all
+        /// children components to finish rendering in case there is any asynchronous work being
+        /// done by any of the components. After this, the root component
+        /// makes its own decisions about when to re-render, so there is no need to call
+        /// this more than once.
+        /// </summary>
+        /// <param name="componentId">The ID returned by <see cref="AssignRootComponentId(IComponent)"/>.</param>
+        protected Task RenderRootComponentAsync(int componentId)
+        {
+            return RenderRootComponentAsync(componentId, ParameterCollection.Empty);
+        }
+
+        /// <summary>
+        /// Performs the first render for a root component, waiting for this component and all
+        /// children components to finish rendering in case there is any asynchronous work being
+        /// done by any of the components. After this, the root component
+        /// makes its own decisions about when to re-render, so there is no need to call
+        /// this more than once.
+        /// </summary>
+        /// <param name="componentId">The ID returned by <see cref="AssignRootComponentId(IComponent)"/>.</param>
+        /// <param name="initialParameters">The <see cref="ParameterCollection"/>with the initial parameters to use for rendering.</param>
+        protected async Task RenderRootComponentAsync(int componentId, ParameterCollection initialParameters)
+        {
+            if (_pendingTasks != null)
+            {
+                throw new InvalidOperationException("There is an ongoing rendering in progress.");
+            }
+            _pendingTasks = new List<Task>();
+            // During the rendering process we keep a list of components performing work in _pendingTasks.
+            // _renderer.AddToPendingTasks will be called by ComponentState.SetDirectParameters to add the
+            // the Task produced by Component.SetParametersAsync to _pendingTasks in order to track the
+            // remaining work.
+            // During the synchronous rendering process we don't wait for the pending asynchronous
+            // work to finish as it will simply trigger new renders that will be handled afterwards.
+            // During the asynchronous rendering process we want to wait up untill al components have
+            // finished rendering so that we can produce the complete output.
             GetRequiredComponentState(componentId)
                 .SetDirectParameters(initialParameters);
+
+            try
+            {
+                await ProcessAsynchronousWork();
+                Debug.Assert(_pendingTasks.Count == 0);
+            }
+            finally
+            {
+                _pendingTasks = null;
+            }
+        }
+
+        private async Task ProcessAsynchronousWork()
+        {
+            // Child components SetParametersAsync are stored in the queue of pending tasks,
+            // which might trigger further renders.
+            while (_pendingTasks.Count > 0)
+            {
+                Task pendingWork;
+                lock (_asyncWorkLock)
+                {
+                    // Create a Task that represents the remaining ongoing work for the rendering process
+                    pendingWork = Task.WhenAll(_pendingTasks);
+
+                    // Clear all pending work.
+                    _pendingTasks.Clear();
+                }
+
+                // new work might be added before we check again as a result of waiting for all
+                // the child components to finish executing SetParametersAsync
+                await pendingWork;
+            };
         }
 
         private ComponentState AttachAndInitComponent(IComponent component, int parentComponentId)
@@ -87,7 +219,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             var parentComponentState = GetOptionalComponentState(parentComponentId);
             var componentState = new ComponentState(this, componentId, component, parentComponentState);
             _componentStateById.Add(componentId, componentState);
-            component.Init(new RenderHandle(this, componentId));
+            component.Configure(new RenderHandle(this, componentId));
             return componentState;
         }
 
@@ -167,6 +299,38 @@ namespace Microsoft.AspNetCore.Components.Rendering
             frame = frame.WithComponent(newComponentState);
         }
 
+        internal void AddToPendingTasks(Task task)
+        {
+            switch (task == null ? TaskStatus.RanToCompletion : task.Status)
+            {
+                // If it's already completed synchronously, no need to add it to the list of
+                // pending Tasks as no further render (we already rerender synchronously) will.
+                // happen.
+                case TaskStatus.RanToCompletion:
+                case TaskStatus.Canceled:
+                    break;
+                case TaskStatus.Faulted:
+                    // We want to throw immediately if the task failed synchronously instead of
+                    // waiting for it to throw later. This can happen if the task is produced by
+                    // an 'async' state machine (the ones generated using async/await) where even
+                    // the synchronous exceptions will get captured and converted into a faulted
+                    // task.
+                    ExceptionDispatchInfo.Capture(task.Exception.InnerException).Throw();
+                    break;
+                default:
+                    // We are not in rendering the root component.
+                    if (_pendingTasks == null)
+                    {
+                        return;
+                    }
+                    lock (_asyncWorkLock)
+                    {
+                        _pendingTasks.Add(task);
+                    }
+                    break;
+            }
+        }
+
         internal void AssignEventHandlerId(ref RenderTreeFrame frame)
         {
             var id = ++_lastEventHandlerId;
@@ -195,8 +359,11 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 return;
             }
 
-            _batchBuilder.ComponentRenderQueue.Enqueue(
-                new RenderQueueEntry(componentState, renderFragment));
+            lock (_asyncWorkLock)
+            {
+                _batchBuilder.ComponentRenderQueue.Enqueue(
+                    new RenderQueueEntry(componentState, renderFragment));
+            }
 
             if (!_isBatchInProgress)
             {
@@ -222,9 +389,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
             try
             {
                 // Process render queue until empty
-                while (_batchBuilder.ComponentRenderQueue.Count > 0)
+                while (TryDequeueRenderQueueEntry(out var nextToRender))
                 {
-                    var nextToRender = _batchBuilder.ComponentRenderQueue.Dequeue();
                     RenderInExistingBatch(nextToRender);
                 }
 
@@ -237,6 +403,23 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 RemoveEventHandlerIds(_batchBuilder.DisposedEventHandlerIds.ToRange(), updateDisplayTask);
                 _batchBuilder.Clear();
                 _isBatchInProgress = false;
+            }
+        }
+
+        private bool TryDequeueRenderQueueEntry(out RenderQueueEntry entry)
+        {
+            lock (_asyncWorkLock)
+            {
+                if (_batchBuilder.ComponentRenderQueue.Count > 0)
+                {
+                    entry = _batchBuilder.ComponentRenderQueue.Dequeue();
+                    return true;
+                }
+                else
+                {
+                    entry = default;
+                    return false;
+                }
             }
         }
 

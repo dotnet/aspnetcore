@@ -31,6 +31,12 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
         public new void RenderRootComponent(int componentId)
             => base.RenderRootComponent(componentId);
 
+        public new Task RenderRootComponentAsync(int componentId)
+            => base.RenderRootComponentAsync(componentId);
+
+        public new Task RenderRootComponentAsync(int componentId, ParameterCollection parameters)
+            => base.RenderRootComponentAsync(componentId, parameters);
+
         public new void DispatchEvent(int componentId, int eventHandlerId, UIEventArgs args)
             => base.DispatchEvent(componentId, eventHandlerId, args);
 

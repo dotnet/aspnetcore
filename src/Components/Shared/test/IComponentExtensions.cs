@@ -1,9 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.RenderTree;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Components.Test.Helpers
 {
@@ -13,7 +14,7 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
             this IComponent component,
             Dictionary<string, object> parameters)
         {
-            component.SetParameters(DictionaryToParameterCollection(parameters));
+            component.SetParametersAsync(DictionaryToParameterCollection(parameters));
         }
 
         private static ParameterCollection DictionaryToParameterCollection(
@@ -32,8 +33,8 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
 
         private abstract class AbstractComponent : IComponent
         {
-            public abstract void Init(RenderHandle renderHandle);
-            public abstract void SetParameters(ParameterCollection parameters);
+            public abstract void Configure(RenderHandle renderHandle);
+            public abstract Task SetParametersAsync(ParameterCollection parameters);
         }
     }
 }

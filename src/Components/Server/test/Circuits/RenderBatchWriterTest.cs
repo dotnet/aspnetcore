@@ -363,10 +363,10 @@ namespace Microsoft.AspNetCore.Components.Server
 
         class FakeComponent : IComponent
         {
-            public void Init(RenderHandle renderHandle)
+            public void Configure(RenderHandle renderHandle)
                 => throw new NotImplementedException();
 
-            public void SetParameters(ParameterCollection parameters)
+            public Task SetParametersAsync(ParameterCollection parameters)
                 => throw new NotImplementedException();
         }
 

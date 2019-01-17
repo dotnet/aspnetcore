@@ -73,6 +73,42 @@ namespace Microsoft.AspNetCore.Components.Rendering
             }
         }
 
+        /// <summary>
+        /// Renders a component into a sequence of <see cref="string"/> fragments that represent the textual representation
+        /// of the HTML produced by the component.
+        /// </summary>
+        /// <param name="componentType">The type of the <see cref="IComponent"/>.</param>
+        /// <param name="initialParameters">A <see cref="ParameterCollection"/> with the initial parameters to render the component.</param>
+        /// <returns>A sequence of <see cref="string"/> fragments that represent the HTML text of the component.</returns>
+        public async Task<IEnumerable<string>> RenderComponentAsync(Type componentType, ParameterCollection initialParameters)
+        {
+            var frames = await CreateInitialRenderAsync(componentType, initialParameters);
+
+            if (frames.Count == 0)
+            {
+                return Array.Empty<string>();
+            }
+            else
+            {
+                var result = new List<string>();
+                var newPosition = RenderFrames(result, frames, 0, frames.Count);
+                Debug.Assert(newPosition == frames.Count);
+                return result;
+            }
+        }
+
+        /// <summary>
+        /// Renders a component into a sequence of <see cref="string"/> fragments that represent the textual representation
+        /// of the HTML produced by the component.
+        /// </summary>
+        /// <typeparam name="T">The type of the <see cref="IComponent"/>.</typeparam>
+        /// <param name="initialParameters">A <see cref="ParameterCollection"/> with the initial parameters to render the component.</param>
+        /// <returns>A sequence of <see cref="string"/> fragments that represent the HTML text of the component.</returns>
+        public Task<IEnumerable<string>> RenderComponentAsync<T>(ParameterCollection initialParameters) where T : IComponent
+        {
+            return RenderComponentAsync(typeof(T), initialParameters);
+        }
+
         private int RenderFrames(List<string> result, ArrayRange<RenderTreeFrame> frames, int position, int maxElements)
         {
             var nextPosition = position;
@@ -226,6 +262,16 @@ namespace Microsoft.AspNetCore.Components.Rendering
             var componentId = AssignRootComponentId(component);
 
             RenderRootComponent(componentId, initialParameters);
+
+            return GetCurrentRenderTreeFrames(componentId);
+        }
+
+        private async Task<ArrayRange<RenderTreeFrame>> CreateInitialRenderAsync(Type componentType, ParameterCollection initialParameters)
+        {
+            var component = InstantiateComponent(componentType);
+            var componentId = AssignRootComponentId(component);
+
+            await RenderRootComponentAsync(componentId, initialParameters);
 
             return GetCurrentRenderTreeFrames(componentId);
         }
