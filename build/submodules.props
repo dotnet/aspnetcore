@@ -37,8 +37,5 @@
 
   <ItemGroup>
     <Repository Include="Templating" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
-
-    <!-- Test-only repos -->
-    <Repository Include="AuthSamples" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
   </ItemGroup>
 </Project>

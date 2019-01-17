@@ -49,6 +49,32 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
+        public async Task ConventionalRoutedAction_RouteHasNonParameterConstraint_RouteConstraintRun_Allowed()
+        {
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/NonParameterConstraintRoute/NonParameterConstraint/Index?allowed=true");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            Assert.Equal("NonParameterConstraint", result.Controller);
+            Assert.Equal("Index", result.Action);
+        }
+
+        [Fact]
+        public async Task ConventionalRoutedAction_RouteHasNonParameterConstraint_RouteConstraintRun_Denied()
+        {
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/NonParameterConstraintRoute/NonParameterConstraint/Index?allowed=false");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
         public async Task ConventionalRoutedAction_RouteContainsPage_RouteNotMatched()
         {
             // Arrange & Act
