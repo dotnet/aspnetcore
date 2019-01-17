@@ -22,7 +22,7 @@
 
   <Target Name="Test" Condition="'$(IsTestProject)' == 'true'">
     <Message Importance="High" Text="Running npm tests for $(MSBuildProjectName)" />
-    <Exec  Condition="'$(DailyTests)' != 'true'" Command="npm $(NpmTestArgs)" IgnoreStandardErrorWarningFormat="true" />
+    <Exec Condition="'$(DailyTests)' != 'true'" Command="npm $(NpmTestArgs)" IgnoreStandardErrorWarningFormat="true" />
     <CallTarget Condition="'$(DailyTests)' == 'true'" Targets="RunBrowserTests" />
 
         <!-- Optionally run "daily test" run in Sauce Labs -->    
