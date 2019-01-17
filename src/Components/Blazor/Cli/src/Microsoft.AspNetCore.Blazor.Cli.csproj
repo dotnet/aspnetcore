@@ -39,8 +39,8 @@
         repositorycommit=$(RepositoryCommit);</NuspecProperties>
     </PropertyGroup>
     <ItemGroup>
-      <!-- Also temporarily override RuntimeFramework manually with hardcoded version until we can use <FrameworkReference> -->
-      <RuntimeFramework Include="Microsoft.AspNetCore.App" Version="3.0.0-preview-19064-0344" />
+      <!-- Also temporarily override RuntimeFramework manually until we can use <FrameworkReference> -->
+      <RuntimeFramework Include="Microsoft.AspNetCore.App" Version="$(ComponentsPackageVersion)" />
     </ItemGroup>
   </Target>
 </Project>
