@@ -23,6 +23,7 @@
     <GeneratedContentProperties>
       MicrosoftAspNetCorePackageVersion=$(MicrosoftAspNetCorePackageVersion);
       MicrosoftAspNetCoreAppPackageVersion=$(MicrosoftAspNetCoreAppPackageVersion);
+      MicrosoftAspNetCoreMvcNewtonsoftJsonPackageVersion=$(MicrosoftAspNetCoreMvcNewtonsoftJsonPackageVersion);
       MicrosoftAspNetCoreSpaServicesExtensionsPackageVersion=$(MicrosoftAspNetCoreSpaServicesExtensionsPackageVersion);
     </GeneratedContentProperties>
   </PropertyGroup>
