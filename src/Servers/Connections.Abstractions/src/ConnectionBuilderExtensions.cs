@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Connections
             {
                 return context =>
                 {
-                    Func<Task> simpleNext = () => next(context);
+                    Task simpleNext() => next(context);
                     return middleware(context, simpleNext);
                 };
             });

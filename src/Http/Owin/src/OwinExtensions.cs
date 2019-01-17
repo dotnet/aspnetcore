@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            AddMiddleware add = middleware =>
+            void add(CreateMiddleware middleware)
             {
                 Func<RequestDelegate, RequestDelegate> middleware1 = next1 =>
                 {
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Builder
                     };
                 };
                 builder.Use(middleware1);
-            };
+            }
             // Adapt WebSockets by default.
             add(WebSocketAcceptAdapter.AdaptWebSockets);
             return add;

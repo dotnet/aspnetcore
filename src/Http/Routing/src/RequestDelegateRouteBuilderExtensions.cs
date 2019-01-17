@@ -232,10 +232,10 @@ namespace Microsoft.AspNetCore.Routing
             string template,
             Func<HttpRequest, HttpResponse, RouteData, Task> handler)
         {
-            RequestDelegate requestDelegate = (httpContext) =>
+            Task requestDelegate(HttpContext httpContext)
             {
                 return handler(httpContext.Request, httpContext.Response, httpContext.GetRouteData());
-            };
+            }
 
             return builder.MapVerb(verb, template, requestDelegate);
         }
