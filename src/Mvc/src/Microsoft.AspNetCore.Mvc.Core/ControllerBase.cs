@@ -221,8 +221,7 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Creates a <see cref="ContentResult"/> object with <see cref="StatusCodes.Status200OK"/> by specifying a
-        /// <paramref name="content"/> string.
+        /// Creates a <see cref="ContentResult"/> object by specifying a <paramref name="content"/> string.
         /// </summary>
         /// <param name="content">The content to write to the response.</param>
         /// <returns>The created <see cref="ContentResult"/> object for the response.</returns>
@@ -231,7 +230,7 @@ namespace Microsoft.AspNetCore.Mvc
             => Content(content, (MediaTypeHeaderValue)null);
 
         /// <summary>
-        /// Creates a <see cref="ContentResult"/> object with <see cref="StatusCodes.Status200OK"/> by specifying a 
+        /// Creates a <see cref="ContentResult"/> object by specifying a
         /// <paramref name="content"/> string and a content type.
         /// </summary>
         /// <param name="content">The content to write to the response.</param>
@@ -242,7 +241,7 @@ namespace Microsoft.AspNetCore.Mvc
             => Content(content, MediaTypeHeaderValue.Parse(contentType));
 
         /// <summary>
-        /// Creates a <see cref="ContentResult"/> object with <see cref="StatusCodes.Status200OK"/> by specifying a 
+        /// Creates a <see cref="ContentResult"/> object by specifying a
         /// <paramref name="content"/> string, a <paramref name="contentType"/>, and <paramref name="contentEncoding"/>.
         /// </summary>
         /// <param name="content">The content to write to the response.</param>
@@ -262,7 +261,7 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Creates a <see cref="ContentResult"/> object with <see cref="StatusCodes.Status200OK"/> by specifying a 
+        /// Creates a <see cref="ContentResult"/> object by specifying a
         /// <paramref name="content"/> string and a <paramref name="contentType"/>.
         /// </summary>
         /// <param name="content">The content to write to the response.</param>
@@ -282,7 +281,7 @@ namespace Microsoft.AspNetCore.Mvc
 
         /// <summary>
         /// Creates a <see cref="NoContentResult"/> object that produces an empty
-        /// <see cref="StatusCodes.Status204NoContent"/> response.   
+        /// <see cref="StatusCodes.Status204NoContent"/> response.
         /// </summary>
         /// <returns>The created <see cref="NoContentResult"/> object for the response.</returns>
         [NonAction]
