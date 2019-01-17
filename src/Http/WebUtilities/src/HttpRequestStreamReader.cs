@@ -13,11 +13,8 @@ namespace Microsoft.AspNetCore.WebUtilities
     public class HttpRequestStreamReader : TextReader
     {
         private const int DefaultBufferSize = 1024;
-        private const int MinBufferSize = 128;
-        private const int MaxSharedBuilderCapacity = 360; // also the max capacity used in StringBuilderCache
 
         private Stream _stream;
-        private readonly Encoding _encoding;
         private readonly Decoder _decoder;
 
         private readonly ArrayPool<byte> _bytePool;
@@ -52,7 +49,6 @@ namespace Microsoft.AspNetCore.WebUtilities
             ArrayPool<char> charPool)
         {
             _stream = stream ?? throw new ArgumentNullException(nameof(stream));
-            _encoding = encoding ?? throw new ArgumentNullException(nameof(encoding));
             _bytePool = bytePool ?? throw new ArgumentNullException(nameof(bytePool));
             _charPool = charPool ?? throw new ArgumentNullException(nameof(charPool));
 

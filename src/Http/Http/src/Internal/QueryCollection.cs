@@ -15,7 +15,6 @@ namespace Microsoft.AspNetCore.Http.Internal
     {
         public static readonly QueryCollection Empty = new QueryCollection();
         private static readonly string[] EmptyKeys = Array.Empty<string>();
-        private static readonly StringValues[] EmptyValues = Array.Empty<StringValues>();
         private static readonly Enumerator EmptyEnumerator = new Enumerator();
         // Pre-box
         private static readonly IEnumerator<KeyValuePair<string, StringValues>> EmptyIEnumeratorType = EmptyEnumerator;

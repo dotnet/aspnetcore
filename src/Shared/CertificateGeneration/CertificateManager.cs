@@ -30,7 +30,6 @@ namespace Microsoft.AspNetCore.Certificates.Generation
         private static readonly TimeSpan MaxRegexTimeout = TimeSpan.FromMinutes(1);
         private const string CertificateSubjectRegex = "CN=(.*[^,]+).*";
         private const string MacOSSystemKeyChain = "/Library/Keychains/System.keychain";
-        private static readonly string MacOSUserKeyChain = Environment.GetEnvironmentVariable("HOME") + "/Library/Keychains/login.keychain-db";
         private const string MacOSFindCertificateCommandLine = "security";
         private static readonly string MacOSFindCertificateCommandLineArgumentsFormat = "find-certificate -c {0} -a -Z -p " + MacOSSystemKeyChain;
         private const string MacOSFindCertificateOutputRegex = "SHA-1 hash: ([0-9A-Z]+)";

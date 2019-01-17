@@ -12,14 +12,9 @@ namespace Microsoft.AspNetCore.Routing
 {
     internal class RoutePatternMatcher
     {
-        private const string SeparatorString = "/";
-        private const char SeparatorChar = '/';
-
         // Perf: This is a cache to avoid looking things up in 'Defaults' each request.
         private readonly bool[] _hasDefaultValue;
         private readonly object[] _defaultValues;
-
-        private static readonly char[] Delimiters = new char[] { SeparatorChar };
 
         public RoutePatternMatcher(
             RoutePattern pattern,

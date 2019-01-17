@@ -16,7 +16,6 @@ namespace Microsoft.AspNetCore.Http
     {
         public static readonly FormCollection Empty = new FormCollection();
         private static readonly string[] EmptyKeys = Array.Empty<string>();
-        private static readonly StringValues[] EmptyValues = Array.Empty<StringValues>();
         private static readonly Enumerator EmptyEnumerator = new Enumerator();
         // Pre-box
         private static readonly IEnumerator<KeyValuePair<string, StringValues>> EmptyIEnumeratorType = EmptyEnumerator;

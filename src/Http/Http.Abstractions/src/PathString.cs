@@ -16,8 +16,6 @@ namespace Microsoft.AspNetCore.Http
     [TypeConverter(typeof(PathStringConverter))]
     public struct PathString : IEquatable<PathString>
     {
-        private static readonly char[] splitChar = { '/' };
-
         /// <summary>
         /// Represents the empty path. This field is read-only.
         /// </summary>
