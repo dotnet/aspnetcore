@@ -14,8 +14,9 @@ namespace Microsoft.AspNetCore.Routing
     public interface IEndpointRouteBuilder
     {
         /// <summary>
-        /// Gets the <see cref="IApplicationBuilder"/>.
+        /// Creates a new <see cref="IApplicationBuilder"/>.
         /// </summary>
+        /// <returns>The new <see cref="IApplicationBuilder"/>.</returns>
         IApplicationBuilder CreateApplicationBuilder();
 
         /// <summary>
