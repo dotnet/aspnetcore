@@ -56,11 +56,6 @@ $@"<Project>
             var directoryBuildTargetsContent =
 $@"<Project>
     <Import Project=""{templatesTestsPropsFilePath}"" />
-
-    <ItemGroup>
-       <FrameworkReference Remove=""Microsoft.AspNetCore.App"" />
-       <PackageReference Include=""Microsoft.AspNetCore.App"" Version=""$(BundledAspNetCoreAppPackageVersion)"" IsImplicitlyDefined=""true"" />
-    </ItemGroup>
 </Project>";
 
             File.WriteAllText(Path.Combine(TemplateOutputDir, "Directory.Build.targets"), directoryBuildTargetsContent);

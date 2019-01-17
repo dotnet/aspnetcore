@@ -4,6 +4,7 @@
     <RestoreSources>${RestoreSources}</RestoreSources>
     <RuntimeFrameworkVersion>${RuntimeFrameworkVersion}</RuntimeFrameworkVersion>
     <MicrosoftNETSdkRazorPackageVersion>${MicrosoftNETSdkRazorPackageVersion}</MicrosoftNETSdkRazorPackageVersion>
+    <AspNetCoreModuleName>AspNetCoreModuleV2</AspNetCoreModuleName>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,5 +13,9 @@
       DefaultRuntimeFrameworkVersion="${MicrosoftAspNetCoreAppPackageVersion}"
       LatestRuntimeFrameworkVersion="${MicrosoftAspNetCoreAppPackageVersion}"
       TargetingPackVersion="${MicrosoftAspNetCoreAppPackageVersion}" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' != 'netstandard2.0'" >
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 </Project>

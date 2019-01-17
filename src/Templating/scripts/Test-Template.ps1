@@ -1,6 +1,7 @@
 function Test-Template($templateName, $templateArgs, $templateNupkg, $isSPA) {
     $tmpDir = "$PSScriptRoot/$templateName"
     Remove-Item -Path $tmpDir -Recurse -ErrorAction Ignore
+    dotnet pack
 
     Run-DotnetNew "--install", "$PSScriptRoot/../../../artifacts/Debug/packages/product/$templateNupkg"
 
@@ -24,7 +25,7 @@ function Test-Template($templateName, $templateArgs, $templateNupkg, $isSPA) {
     <PackageReference Include=""Microsoft.NET.Sdk.Razor"" Version=""`$(MicrosoftNETSdkRazorPackageVersion)"" />
   </ItemGroup>")
         $projContent | Set-Content $proj
-
+        dotnet ef migrations add mvc
         dotnet publish --configuration Release
         dotnet bin\Release\netcoreapp3.0\publish\$templateName.dll
     }

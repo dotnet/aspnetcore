@@ -4,7 +4,7 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
-    <MicrosoftAspNetCoreAppPackageVersion>3.0.0-preview-19065-0365</MicrosoftAspNetCoreAppPackageVersion>
+    <MicrosoftAspNetCoreAppPackageVersion>3.0.0-preview-19066-0374</MicrosoftAspNetCoreAppPackageVersion>
     <MicrosoftAspNetCoreAuthenticationAzureADB2CUIPackageVersion>3.0.0-preview-19059-0307 </MicrosoftAspNetCoreAuthenticationAzureADB2CUIPackageVersion>
     <MicrosoftAspNetCoreAuthenticationAzureADUIPackageVersion>3.0.0-preview-19059-0307 </MicrosoftAspNetCoreAuthenticationAzureADUIPackageVersion>
     <MicrosoftAspNetCoreComponentsPackageVersion>3.0.0-preview-19064-0342</MicrosoftAspNetCoreComponentsPackageVersion>

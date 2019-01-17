@@ -15,6 +15,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="${MicrosoftAspNetCoreMvcNewtonsoftJsonPackageVersion}" />
     <PackageReference Include="Microsoft.AspNetCore.SpaServices.Extensions" Version="${MicrosoftAspNetCoreSpaServicesExtensionsPackageVersion}" />
   </ItemGroup>
 
