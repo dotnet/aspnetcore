@@ -21,14 +21,14 @@ public:
         _In_ PFN_DISCONNECT_HANDLER m_DisconnectHandler,
         _In_ PFN_ASYNC_COMPLETION_HANDLER pAsyncCompletion);
 
-    ~IN_PROCESS_HANDLER() override = default;
+    ~IN_PROCESS_HANDLER()
+    {
+        m_pApplication->HandleRequestCompletion();
+    }
 
     __override
     REQUEST_NOTIFICATION_STATUS
     ExecuteRequestHandler() override;
-
-    REQUEST_NOTIFICATION_STATUS
-    ExecuteRequestHandlerInternal();
 
     __override
     REQUEST_NOTIFICATION_STATUS
@@ -36,13 +36,6 @@ public:
         DWORD       cbCompletion,
         HRESULT     hrCompletionStatus
     ) override;
-
-    __override
-    REQUEST_NOTIFICATION_STATUS
-    AsyncCompletionInternal(
-        DWORD       cbCompletion,
-        HRESULT     hrCompletionStatus
-    );
 
     __override
     VOID

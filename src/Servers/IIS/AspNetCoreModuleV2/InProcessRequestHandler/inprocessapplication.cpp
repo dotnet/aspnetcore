@@ -91,6 +91,7 @@ IN_PROCESS_APPLICATION::SetCallbackHandles(
     _In_ PFN_SHUTDOWN_HANDLER shutdown_handler,
     _In_ PFN_DISCONNECT_HANDLER disconnect_callback,
     _In_ PFN_ASYNC_COMPLETION_HANDLER async_completion_handler,
+    _In_ PFN_DRAIN_HANDLER drainHandler,
     _In_ VOID* pvRequstHandlerContext,
     _In_ VOID* pvShutdownHandlerContext
 )
@@ -103,6 +104,7 @@ IN_PROCESS_APPLICATION::SetCallbackHandles(
     m_ShutdownHandler = shutdown_handler;
     m_ShutdownHandlerContext = pvShutdownHandlerContext;
     m_AsyncCompletionHandler = async_completion_handler;
+    m_DrainHandler = drainHandler;
 
     m_blockManagedCallbacks = false;
     m_Initialized = true;
@@ -524,6 +526,7 @@ IN_PROCESS_APPLICATION::CreateHandler(
 {
     try
     {
+        DBG_ASSERT(!m_fStopCalled);
         m_requestCount++;
         *pRequestHandler = new IN_PROCESS_HANDLER(::ReferenceApplication(this), pHttpContext, m_RequestHandler, m_RequestHandlerContext, m_DisconnectHandler, m_AsyncCompletionHandler);
     }
@@ -535,12 +538,9 @@ IN_PROCESS_APPLICATION::CreateHandler(
 void
 IN_PROCESS_APPLICATION::HandleRequestCompletion()
 {
-    m_requestCount--;
-    if (m_fStopCalled && m_requestCount == 0)
+    auto requestCount = m_requestCount--;
+    if (m_fStopCalled && requestCount == 0)
     {
-        if (m_pDrainRequestEvent != nullptr)
-        {
-            LOG_IF_FAILED(SetEvent(m_pDrainRequestEvent));
-        }
+        m_DrainHandler(m_ShutdownHandlerContext);
     }
 }

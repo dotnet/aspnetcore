@@ -13,6 +13,7 @@ typedef REQUEST_NOTIFICATION_STATUS(WINAPI * PFN_REQUEST_HANDLER) (IN_PROCESS_HA
 typedef VOID(WINAPI * PFN_DISCONNECT_HANDLER) (void *pvManagedHttpContext);
 typedef BOOL(WINAPI * PFN_SHUTDOWN_HANDLER) (void* pvShutdownHandlerContext);
 typedef REQUEST_NOTIFICATION_STATUS(WINAPI * PFN_ASYNC_COMPLETION_HANDLER)(void *pvManagedHttpContext, HRESULT hrCompletionStatus, DWORD cbCompletion);
+typedef void(WINAPI * PFN_DRAIN_HANDLER) (void* pvShutdownHandlerContext);
 
 class IN_PROCESS_APPLICATION : public InProcessApplicationBase
 {
@@ -36,6 +37,7 @@ public:
         _In_ PFN_SHUTDOWN_HANDLER shutdown_callback,
         _In_ PFN_DISCONNECT_HANDLER disconnect_callback,
         _In_ PFN_ASYNC_COMPLETION_HANDLER managed_context_callback,
+        _In_ PFN_DRAIN_HANDLER drainHandler,
         _In_ VOID* pvRequstHandlerContext,
         _In_ VOID* pvShutdownHandlerContext
     );
@@ -65,17 +67,14 @@ public:
     {
         QueueStop();
 
-        LOG_INFOF(L"Waiting for requests to drain");
+        LOG_INFOF(L"Waiting for %d requests to drain", m_requestCount.load());
 
         // Wait infinitely for all requests to drain.
         // This will not cause the process to be hung indefinitely because we will hit
         // a shutdown timeout which is triggered by QueueStop
         // If we hit that timeout and the In process app is disposed/destructed, undefined behavior
-        // will occur because m_pDrainRequestEvent will be closed. This is honestly fine behavior
-        // because if we hit timeout, the process is considered abandoned already. 
-        const auto waitResult = WaitForSingleObject(m_pDrainRequestEvent, INFINITE);
-
-        LOG_INFOF(L"Requests have been drained");
+        // will occur because m_pDrainRequestEvent will be closed, however through experiments, it looks
+        // like this will just wait forever.
     }
 
     void
@@ -170,6 +169,7 @@ private:
 
     PFN_ASYNC_COMPLETION_HANDLER    m_AsyncCompletionHandler;
     PFN_DISCONNECT_HANDLER          m_DisconnectHandler;
+    PFN_DRAIN_HANDLER               m_DrainHandler;
 
     std::wstring                    m_dotnetExeKnownLocation;
 

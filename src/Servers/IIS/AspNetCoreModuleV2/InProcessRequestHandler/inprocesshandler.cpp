@@ -34,17 +34,6 @@ __override
 REQUEST_NOTIFICATION_STATUS
 IN_PROCESS_HANDLER::ExecuteRequestHandler()
 {
-    auto res = ExecuteRequestHandlerInternal();
-    if (res != RQ_NOTIFICATION_PENDING)
-    {
-        m_pApplication->HandleRequestCompletion();
-    }
-    return res;
-}
-
-REQUEST_NOTIFICATION_STATUS
-IN_PROCESS_HANDLER::ExecuteRequestHandlerInternal()
-{
     ::RaiseEvent<ANCMEvents::ANCM_INPROC_EXECUTE_REQUEST_START>(m_pW3Context, nullptr);
 
     if (m_pRequestHandler == NULL)
@@ -65,20 +54,6 @@ IN_PROCESS_HANDLER::ExecuteRequestHandlerInternal()
 __override
 REQUEST_NOTIFICATION_STATUS
 IN_PROCESS_HANDLER::AsyncCompletion(
-    DWORD       cbCompletion,
-    HRESULT     hrCompletionStatus
-)
-{
-    auto res = AsyncCompletionInternal(cbCompletion, hrCompletionStatus);
-    if (res != RQ_NOTIFICATION_PENDING)
-    {
-        m_pApplication->HandleRequestCompletion();
-    }
-    return res;
-}
-
-REQUEST_NOTIFICATION_STATUS
-IN_PROCESS_HANDLER::AsyncCompletionInternal(
     DWORD       cbCompletion,
     HRESULT     hrCompletionStatus
 )

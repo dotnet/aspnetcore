@@ -1,7 +1,8 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Buffers;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,6 +25,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private static readonly NativeMethods.PFN_SHUTDOWN_HANDLER _shutdownHandler = HandleShutdown;
         private static readonly NativeMethods.PFN_DISCONNECT_HANDLER _onDisconnect = OnDisconnect;
         private static readonly NativeMethods.PFN_ASYNC_COMPLETION _onAsyncCompletion = OnAsyncCompletion;
+        private static readonly NativeMethods.PFN_DRAIN_HANDLER _drainHandler = OnDrainComplete;
 
         private IISContextFactory _iisContextFactory;
         private readonly MemoryPool<byte> _memoryPool = new SlabMemoryPool();
@@ -35,6 +37,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private readonly ServerAddressesFeature _serverAddressesFeature;
 
         private volatile int _stopping;
+
         private bool Stopping => _stopping == 1;
         private readonly TaskCompletionSource<object> _shutdownSignal = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
         private bool? _websocketAvailable;
@@ -86,7 +89,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             _httpServerHandle = GCHandle.Alloc(this);
 
             _iisContextFactory = new IISContextFactory<TContext>(_memoryPool, application, _options, this, _logger);
-            _nativeApplication.RegisterCallbacks(_requestHandler, _shutdownHandler, _onDisconnect, _onAsyncCompletion, (IntPtr)_httpServerHandle, (IntPtr)_httpServerHandle);
+            _nativeApplication.RegisterCallbacks(_requestHandler, _shutdownHandler, _onDisconnect, _onAsyncCompletion, _drainHandler, (IntPtr)_httpServerHandle, (IntPtr)_httpServerHandle);
 
             _serverAddressesFeature.Addresses = _options.ServerAddresses;
 
@@ -110,14 +113,11 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 return _shutdownSignal.Task;
             }
 
-            // First call back into native saying "DON'T SEND ME ANY MORE REQUESTS"
             _nativeApplication.StopIncomingRequests();
 
             try
             {
-                // We have drained all requests. Block any callbacks into managed at this point.
-                _nativeApplication.StopCallsIntoManaged();
-                _shutdownSignal.TrySetResult(null);
+                RegisterCancelation();
             }
             catch (Exception ex)
             {
@@ -212,6 +212,20 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
         }
 
+        private static void OnDrainComplete(IntPtr serverContext)
+        {
+            IISHttpServer server = null;
+            try
+            {
+                server = (IISHttpServer)GCHandle.FromIntPtr(serverContext).Target;
+                server._nativeApplication.StopCallsIntoManaged();
+                server._shutdownSignal.TrySetResult(null);
+            }
+            catch (Exception ex)
+            {
+                server?._logger.LogError(0, ex, $"Unexpected exception in {nameof(IISHttpServer)}.{nameof(OnDrainComplete)}.");
+            }
+        }
         private class IISContextFactory<T> : IISContextFactory
         {
             private readonly IHttpApplication<T> _application;

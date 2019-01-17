@@ -18,6 +18,7 @@ register_callbacks(
     _In_ PFN_SHUTDOWN_HANDLER shutdown_handler,
     _In_ PFN_DISCONNECT_HANDLER disconnect_handler,
     _In_ PFN_ASYNC_COMPLETION_HANDLER async_completion_handler,
+    _In_ PFN_DRAIN_HANDLER drainHandler,
     _In_ VOID* pvRequstHandlerContext,
     _In_ VOID* pvShutdownHandlerContext
 )
@@ -32,6 +33,7 @@ register_callbacks(
         shutdown_handler,
         disconnect_handler,
         async_completion_handler,
+        drainHandler,
         pvRequstHandlerContext,
         pvShutdownHandlerContext
     );

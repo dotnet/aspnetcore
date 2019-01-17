@@ -8,6 +8,7 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
@@ -85,6 +86,23 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var response = await result.HttpClient.GetAsync("/HelloWorld");
             StopServer(gracefulShutdown: false);
             Assert.True(result.HostProcess.ExitCode == 1);
+        }
+
+        [ConditionalFact]
+        public async Task CallStopAsyncOnRequestThread_DoesNotHangIndefinitely()
+        {
+            var parameters = _fixture.GetBaseDeploymentParameters(publish: true);
+            var deploymentResult = await DeployAsync(parameters);
+            try
+            {
+                await deploymentResult.HttpClient.GetAsync("/ShutdownStopAsync");
+            }
+            catch (HttpRequestException ex) when (ex.InnerException is IOException)
+            {
+                // Server might close a connection before request completes
+            }
+
+            deploymentResult.AssertWorkerProcessStop();
         }
     }
 }
