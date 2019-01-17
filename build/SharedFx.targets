@@ -32,7 +32,7 @@
       <FilesToSign Include="$(ProductPackageOutputPath)runtime.$(SharedFxRid).Microsoft.AspNetCore.App.$(PackageVersion).nupkg" Certificate="$(PackageSigningCertName)" />
       <FilesToSign Include="$(ProductPackageOutputPath)runtime.$(SharedFxRid).Microsoft.AspNetCore.App.$(PackageVersion).symbols.nupkg" Certificate="$(PackageSigningCertName)" />
       <FilesToSign Include="$(ProductPackageOutputPath)AspNetCoreRuntime.3.0.$(SharedFxArchitecture).$(PackageVersion).nupkg" Condition=" '$(BuildSiteExtensions)' == 'true' " Certificate="$(PackageSigningCertName)" />
-      <FilesToSign Include="$(InternalPackageOutputPath)Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.0.$(SharedFxArchitecture).$(PackageVersion).nupkg" Condition=" '$(BuildSiteExtensions)' == 'true' " Certificate="$(PackageSigningCertName)" />
+      <FilesToSign Include="$(InternalPackageOutputPath)Microsoft.AspNetCore.AzureAppServices.SiteExtension.$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(SharedFxArchitecture).$(PackageVersion).nupkg" Condition=" '$(BuildSiteExtensions)' == 'true' " Certificate="$(PackageSigningCertName)" />
     </ItemGroup>
 
     <!-- These files should already be signed by the .NET Core team. They have to be listed again here because we recreate a redistributable which includes the Microsoft.NETCore.App runtime. -->

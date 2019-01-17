@@ -81,7 +81,7 @@ This can be done once #4246 is complete, and done in conjunction with converting
 
     <!-- Experimental packages which are not ready for production yet -->
       <PackageArtifact Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" Category="noship" />
-      <PackageArtifact Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.0.$(SharedFxArchitecture)" Category="noship" Condition=" '$(BuildSiteExtensions)' == 'true' " />
+      <PackageArtifact Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(SharedFxArchitecture)" Category="noship" Condition=" '$(BuildSiteExtensions)' == 'true' " />
 
     <!-- Packages for internal use only. -->
       <!-- These packages contain CLI tools which are bundled in the .NET Core SDK. -->
