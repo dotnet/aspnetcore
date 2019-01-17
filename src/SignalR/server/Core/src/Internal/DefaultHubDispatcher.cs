@@ -422,7 +422,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             }
             finally
             {
-                (enumerator as IDisposable)?.Dispose();
+                await enumerator.DisposeAsync();
 
                 await CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, hub, scope);
 
@@ -534,14 +534,14 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         {
             if (result != null)
             {
-                if (hubMethodDescriptor.IsChannel)
+                if (hubMethodDescriptor.IsStreamable)
                 {
                     if (streamCts == null)
                     {
                         streamCts = CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAborted);
                     }
                     connection.ActiveRequestCancellationSources.TryAdd(invocationId, streamCts);
-                    enumerator = hubMethodDescriptor.FromChannel(result, streamCts.Token);
+                    enumerator = hubMethodDescriptor.FromReturnedStream(result, streamCts.Token);
                     return true;
                 }
             }

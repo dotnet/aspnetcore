@@ -15,9 +15,16 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 {
     internal class HubMethodDescriptor
     {
-        private static readonly MethodInfo GetAsyncEnumeratorMethod = typeof(AsyncEnumeratorAdapters)
+        private static readonly MethodInfo GetAsyncEnumeratorFromAsyncEnumerableMethod = typeof(AsyncEnumeratorAdapters)
             .GetRuntimeMethods()
-            .Single(m => m.Name.Equals(nameof(AsyncEnumeratorAdapters.GetAsyncEnumerator)) && m.IsGenericMethod);
+            .Single(m => m.Name.Equals(nameof(AsyncEnumeratorAdapters.GetAsyncEnumeratorFromAsyncEnumerable)) && m.IsGenericMethod);
+
+        private static readonly MethodInfo GetAsyncEnumeratorFromChannelMethod = typeof(AsyncEnumeratorAdapters)
+            .GetRuntimeMethods()
+            .Single(m => m.Name.Equals(nameof(AsyncEnumeratorAdapters.GetAsyncEnumeratorFromChannel)) && m.IsGenericMethod);
+
+        private MethodInfo _convertToEnumeratorMethodInfo;
+        private Func<object, CancellationToken, IAsyncEnumerator<object>> _convertToEnumerator;
 
         public HubMethodDescriptor(ObjectMethodExecutor methodExecutor, IEnumerable<IAuthorizeData> policies)
         {
@@ -27,10 +34,28 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 ? MethodExecutor.AsyncResultType
                 : MethodExecutor.MethodReturnType;
 
-            if (IsChannelType(NonAsyncReturnType, out var channelItemType))
+            foreach (var closedType in NonAsyncReturnType.AllBaseTypes())
             {
-                IsChannel = true;
-                StreamReturnType = channelItemType;
+                if (!closedType.IsGenericType)
+                {
+                    continue;
+                }
+
+                var openType = closedType.GetGenericTypeDefinition();
+
+                if (openType == typeof(IAsyncEnumerable<>))
+                {
+                    StreamReturnType = closedType.GetGenericArguments()[0];
+                    _convertToEnumeratorMethodInfo = GetAsyncEnumeratorFromAsyncEnumerableMethod;
+                    break;
+                }
+
+                if (openType == typeof(ChannelReader<>))
+                {
+                    StreamReturnType = closedType.GetGenericArguments()[0];
+                    _convertToEnumeratorMethodInfo = GetAsyncEnumeratorFromChannelMethod;
+                    break;
+                }
             }
 
             // Take out synthetic arguments that will be provided by the server, this list will be given to the protocol parsers
@@ -66,8 +91,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         public List<Type> StreamingParameters { get; private set; }
 
-        private Func<object, CancellationToken, IAsyncEnumerator<object>> _convertToEnumerator;
-
         public ObjectMethodExecutor MethodExecutor { get; }
 
         public IReadOnlyList<Type> ParameterTypes { get; }
@@ -76,9 +99,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         public Type NonAsyncReturnType { get; }
 
-        public bool IsChannel { get; }
-
-        public bool IsStreamable => IsChannel;
+        public bool IsStreamable => StreamReturnType != null;
 
         public Type StreamReturnType { get; }
 
@@ -86,57 +107,40 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         public bool HasSyntheticArguments { get; private set; }
 
-        private static bool IsChannelType(Type type, out Type payloadType)
-        {
-            var channelType = type.AllBaseTypes().FirstOrDefault(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(ChannelReader<>));
-            if (channelType == null)
-            {
-                payloadType = null;
-                return false;
-            }
-
-            payloadType = channelType.GetGenericArguments()[0];
-            return true;
-        }
-
-        public IAsyncEnumerator<object> FromChannel(object channel, CancellationToken cancellationToken)
+        public IAsyncEnumerator<object> FromReturnedStream(object stream, CancellationToken cancellationToken)
         {
             // there is the potential for compile to be called times but this has no harmful effect other than perf
             if (_convertToEnumerator == null)
             {
-                _convertToEnumerator = CompileConvertToEnumerator(GetAsyncEnumeratorMethod, StreamReturnType);
+                _convertToEnumerator = CompileConvertToEnumerator(_convertToEnumeratorMethodInfo, StreamReturnType);
             }
 
-            return _convertToEnumerator.Invoke(channel, cancellationToken);
+            return _convertToEnumerator.Invoke(stream, cancellationToken);
         }
 
         private static Func<object, CancellationToken, IAsyncEnumerator<object>> CompileConvertToEnumerator(MethodInfo adapterMethodInfo, Type streamReturnType)
         {
-            // This will call one of two adapter methods to wrap the passed in streamable value
-            // and cancellation token to an IAsyncEnumerator<object>
-            // ChannelReader<T>
-            // AsyncEnumeratorAdapters.GetAsyncEnumerator<T>(channelReader, cancellationToken);
+            // This will call one of two adapter methods to wrap the passed in streamable value and cancellation token
+            // into an IAsyncEnumerator<object>:
+            // - AsyncEnumeratorAdapters.GetAsyncEnumeratorFromAsyncEnumerable<T>(asyncEnumerable, cancellationToken);
+            // - AsyncEnumeratorAdapters.GetAsyncEnumeratorFromChannel<T>(channelReader, cancellationToken);
 
-            var genericMethodInfo = adapterMethodInfo.MakeGenericMethod(streamReturnType);
-
-            var methodParameters = genericMethodInfo.GetParameters();
-
-            // arg1 and arg2 are the parameter names on Func<T1, T2, TReturn>
-            // we reference these values and then use them to call adaptor method
-            var targetParameter = Expression.Parameter(typeof(object), "arg1");
-            var parametersParameter = Expression.Parameter(typeof(CancellationToken), "arg2");
-
-            var parameters = new List<Expression>
+            var parameters = new[]
             {
-                Expression.Convert(targetParameter, methodParameters[0].ParameterType),
-                parametersParameter
+                Expression.Parameter(typeof(object)),
+                Expression.Parameter(typeof(CancellationToken)),
             };
 
-            var methodCall = Expression.Call(null, genericMethodInfo, parameters);
+            var genericMethodInfo = adapterMethodInfo.MakeGenericMethod(streamReturnType);
+            var methodParameters = genericMethodInfo.GetParameters();
+            var methodArguements = new Expression[]
+            {
+                Expression.Convert(parameters[0], methodParameters[0].ParameterType),
+                parameters[1],
+            };
 
-            var castMethodCall = Expression.Convert(methodCall, typeof(IAsyncEnumerator<object>));
-
-            var lambda = Expression.Lambda<Func<object, CancellationToken, IAsyncEnumerator<object>>>(castMethodCall, targetParameter, parametersParameter);
+            var methodCall = Expression.Call(null, genericMethodInfo, methodArguements);
+            var lambda = Expression.Lambda<Func<object, CancellationToken, IAsyncEnumerator<object>>>(methodCall, parameters);
             return lambda.Compile();
         }
     }
