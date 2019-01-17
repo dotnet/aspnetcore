@@ -591,6 +591,26 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return CounterChannel(count);
         }
 
+        public async IAsyncEnumerable<string> CounterAsyncEnumerable(int count)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                await Task.Yield();
+                yield return i.ToString();
+            }
+        }
+
+        public async Task<IAsyncEnumerable<string>> CounterAsyncEnumerableAsync(int count)
+        {
+            await Task.Yield();
+            return CounterAsyncEnumerable(count);
+        }
+
+        public WrappedAsyncEnumerable<string> CounterWrappedAsyncEnumerable(int count)
+        {
+            return new WrappedAsyncEnumerable<string>(CounterAsyncEnumerable(count));
+        }
+
         public ChannelReader<string> BlockingStream()
         {
             return Channel.CreateUnbounded<string>().Reader;
@@ -626,6 +646,21 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             });
 
             return output.Reader;
+        }
+
+        public class WrappedAsyncEnumerable<T> : IAsyncEnumerable<T>
+        {
+            private readonly IAsyncEnumerable<T> _inner;
+
+            public WrappedAsyncEnumerable(IAsyncEnumerable<T> inner)
+            {
+                _inner = inner;
+            }
+
+            public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+            {
+                return _inner.GetAsyncEnumerator(cancellationToken);
+            }
         }
     }
 
@@ -696,6 +731,14 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return channel.Reader;
         }
 
+        public async IAsyncEnumerable<int> CancelableAsyncEnumerableStream(CancellationToken token)
+        {
+            _tcsService.StartedMethod.SetResult(null);
+            await token.WaitForCancellationAsync();
+            _tcsService.EndMethod.SetResult(null);
+            yield break;
+        }
+
         public ChannelReader<int> CancelableStream2(int ignore, int ignore2, CancellationToken token)
         {
             var channel = Channel.CreateBounded<int>(10);
@@ -734,8 +777,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
     public class TcsService
     {
-        public TaskCompletionSource<object> StartedMethod = new TaskCompletionSource<object>();
-        public TaskCompletionSource<object> EndMethod = new TaskCompletionSource<object>();
+        public TaskCompletionSource<object> StartedMethod = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource<object> EndMethod = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
     }
 
     public interface ITypedHubClient

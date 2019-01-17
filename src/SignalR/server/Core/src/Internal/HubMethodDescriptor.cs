@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             .GetRuntimeMethods()
             .Single(m => m.Name.Equals(nameof(AsyncEnumeratorAdapters.GetAsyncEnumeratorFromChannel)) && m.IsGenericMethod);
 
-        private MethodInfo _convertToEnumeratorMethodInfo;
+        private readonly MethodInfo _convertToEnumeratorMethodInfo;
         private Func<object, CancellationToken, IAsyncEnumerator<object>> _convertToEnumerator;
 
         public HubMethodDescriptor(ObjectMethodExecutor methodExecutor, IEnumerable<IAuthorizeData> policies)
@@ -34,25 +34,25 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 ? MethodExecutor.AsyncResultType
                 : MethodExecutor.MethodReturnType;
 
-            foreach (var closedType in NonAsyncReturnType.AllBaseTypes())
+            foreach (var returnType in NonAsyncReturnType.AllBaseTypes().Concat(NonAsyncReturnType.GetInterfaces()))
             {
-                if (!closedType.IsGenericType)
+                if (!returnType.IsGenericType)
                 {
                     continue;
                 }
 
-                var openType = closedType.GetGenericTypeDefinition();
+                var openReturnType = returnType.GetGenericTypeDefinition();
 
-                if (openType == typeof(IAsyncEnumerable<>))
+                if (openReturnType == typeof(IAsyncEnumerable<>))
                 {
-                    StreamReturnType = closedType.GetGenericArguments()[0];
+                    StreamReturnType = returnType.GetGenericArguments()[0];
                     _convertToEnumeratorMethodInfo = GetAsyncEnumeratorFromAsyncEnumerableMethod;
                     break;
                 }
 
-                if (openType == typeof(ChannelReader<>))
+                if (openReturnType == typeof(ChannelReader<>))
                 {
-                    StreamReturnType = closedType.GetGenericArguments()[0];
+                    StreamReturnType = returnType.GetGenericArguments()[0];
                     _convertToEnumeratorMethodInfo = GetAsyncEnumeratorFromChannelMethod;
                     break;
                 }

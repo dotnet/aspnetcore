@@ -1909,10 +1909,17 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             get
             {
-                foreach (var method in new[]
+                var methods = new[]
                 {
-                    nameof(StreamingHub.CounterChannel), nameof(StreamingHub.CounterChannelAsync), nameof(StreamingHub.CounterChannelValueTaskAsync)
-                })
+                    nameof(StreamingHub.CounterChannel),
+                    nameof(StreamingHub.CounterChannelAsync),
+                    nameof(StreamingHub.CounterChannelValueTaskAsync),
+                    nameof(StreamingHub.CounterAsyncEnumerable),
+                    nameof(StreamingHub.CounterAsyncEnumerableAsync),
+                    nameof(StreamingHub.CounterWrappedAsyncEnumerable),
+                };
+
+                foreach (var method in methods)
                 {
                     foreach (var protocolName in HubProtocolHelpers.AllProtocolNames)
                     {
@@ -3153,6 +3160,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [InlineData(nameof(LongRunningHub.CancelableStream))]
         [InlineData(nameof(LongRunningHub.CancelableStream2), 1, 2)]
         [InlineData(nameof(LongRunningHub.CancelableStreamMiddle), 1, 2)]
+        [InlineData(nameof(LongRunningHub.CancelableAsyncEnumerableStream))]
         public async Task StreamHubMethodCanAcceptCancellationTokenAsArgumentAndBeTriggeredOnCancellation(string methodName, params object[] args)
         {
             using (StartVerifiableLog())
