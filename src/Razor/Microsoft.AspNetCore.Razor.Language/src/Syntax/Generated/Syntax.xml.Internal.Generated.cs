@@ -1816,40 +1816,87 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
     }
   }
 
-  internal sealed partial class MarkupTagHelperStartTagSyntax : RazorBlockSyntax
+  internal sealed partial class MarkupTagHelperStartTagSyntax : MarkupSyntaxNode
   {
-    private readonly GreenNode _children;
+    private readonly SyntaxToken _openAngle;
+    private readonly SyntaxToken _bang;
+    private readonly SyntaxToken _name;
+    private readonly GreenNode _attributes;
+    private readonly SyntaxToken _forwardSlash;
+    private readonly SyntaxToken _closeAngle;
 
-    internal MarkupTagHelperStartTagSyntax(SyntaxKind kind, GreenNode children, RazorDiagnostic[] diagnostics, SyntaxAnnotation[] annotations)
+    internal MarkupTagHelperStartTagSyntax(SyntaxKind kind, SyntaxToken openAngle, SyntaxToken bang, SyntaxToken name, GreenNode attributes, SyntaxToken forwardSlash, SyntaxToken closeAngle, RazorDiagnostic[] diagnostics, SyntaxAnnotation[] annotations)
         : base(kind, diagnostics, annotations)
     {
-        SlotCount = 1;
-        if (children != null)
+        SlotCount = 6;
+        AdjustFlagsAndWidth(openAngle);
+        _openAngle = openAngle;
+        if (bang != null)
         {
-            AdjustFlagsAndWidth(children);
-            _children = children;
+            AdjustFlagsAndWidth(bang);
+            _bang = bang;
         }
+        AdjustFlagsAndWidth(name);
+        _name = name;
+        if (attributes != null)
+        {
+            AdjustFlagsAndWidth(attributes);
+            _attributes = attributes;
+        }
+        if (forwardSlash != null)
+        {
+            AdjustFlagsAndWidth(forwardSlash);
+            _forwardSlash = forwardSlash;
+        }
+        AdjustFlagsAndWidth(closeAngle);
+        _closeAngle = closeAngle;
     }
 
 
-    internal MarkupTagHelperStartTagSyntax(SyntaxKind kind, GreenNode children)
+    internal MarkupTagHelperStartTagSyntax(SyntaxKind kind, SyntaxToken openAngle, SyntaxToken bang, SyntaxToken name, GreenNode attributes, SyntaxToken forwardSlash, SyntaxToken closeAngle)
         : base(kind)
     {
-        SlotCount = 1;
-        if (children != null)
+        SlotCount = 6;
+        AdjustFlagsAndWidth(openAngle);
+        _openAngle = openAngle;
+        if (bang != null)
         {
-            AdjustFlagsAndWidth(children);
-            _children = children;
+            AdjustFlagsAndWidth(bang);
+            _bang = bang;
         }
+        AdjustFlagsAndWidth(name);
+        _name = name;
+        if (attributes != null)
+        {
+            AdjustFlagsAndWidth(attributes);
+            _attributes = attributes;
+        }
+        if (forwardSlash != null)
+        {
+            AdjustFlagsAndWidth(forwardSlash);
+            _forwardSlash = forwardSlash;
+        }
+        AdjustFlagsAndWidth(closeAngle);
+        _closeAngle = closeAngle;
     }
 
-    public override SyntaxList<RazorSyntaxNode> Children { get { return new SyntaxList<RazorSyntaxNode>(_children); } }
+    public SyntaxToken OpenAngle { get { return _openAngle; } }
+    public SyntaxToken Bang { get { return _bang; } }
+    public SyntaxToken Name { get { return _name; } }
+    public SyntaxList<RazorSyntaxNode> Attributes { get { return new SyntaxList<RazorSyntaxNode>(_attributes); } }
+    public SyntaxToken ForwardSlash { get { return _forwardSlash; } }
+    public SyntaxToken CloseAngle { get { return _closeAngle; } }
 
     internal override GreenNode GetSlot(int index)
     {
         switch (index)
         {
-            case 0: return _children;
+            case 0: return _openAngle;
+            case 1: return _bang;
+            case 2: return _name;
+            case 3: return _attributes;
+            case 4: return _forwardSlash;
+            case 5: return _closeAngle;
             default: return null;
         }
     }
@@ -1869,11 +1916,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
         visitor.VisitMarkupTagHelperStartTag(this);
     }
 
-    public MarkupTagHelperStartTagSyntax Update(Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax.SyntaxList<RazorSyntaxNode> children)
+    public MarkupTagHelperStartTagSyntax Update(SyntaxToken openAngle, SyntaxToken bang, SyntaxToken name, Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax.SyntaxList<RazorSyntaxNode> attributes, SyntaxToken forwardSlash, SyntaxToken closeAngle)
     {
-        if (children != Children)
+        if (openAngle != OpenAngle || bang != Bang || name != Name || attributes != Attributes || forwardSlash != ForwardSlash || closeAngle != CloseAngle)
         {
-            var newNode = SyntaxFactory.MarkupTagHelperStartTag(children);
+            var newNode = SyntaxFactory.MarkupTagHelperStartTag(openAngle, bang, name, attributes, forwardSlash, closeAngle);
             var diags = GetDiagnostics();
             if (diags != null && diags.Length > 0)
                newNode = newNode.WithDiagnosticsGreen(diags);
@@ -1888,49 +1935,90 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
 
     internal override GreenNode SetDiagnostics(RazorDiagnostic[] diagnostics)
     {
-         return new MarkupTagHelperStartTagSyntax(Kind, _children, diagnostics, GetAnnotations());
+         return new MarkupTagHelperStartTagSyntax(Kind, _openAngle, _bang, _name, _attributes, _forwardSlash, _closeAngle, diagnostics, GetAnnotations());
     }
 
     internal override GreenNode SetAnnotations(SyntaxAnnotation[] annotations)
     {
-         return new MarkupTagHelperStartTagSyntax(Kind, _children, GetDiagnostics(), annotations);
+         return new MarkupTagHelperStartTagSyntax(Kind, _openAngle, _bang, _name, _attributes, _forwardSlash, _closeAngle, GetDiagnostics(), annotations);
     }
   }
 
-  internal sealed partial class MarkupTagHelperEndTagSyntax : RazorBlockSyntax
+  internal sealed partial class MarkupTagHelperEndTagSyntax : MarkupSyntaxNode
   {
-    private readonly GreenNode _children;
+    private readonly SyntaxToken _openAngle;
+    private readonly SyntaxToken _forwardSlash;
+    private readonly SyntaxToken _bang;
+    private readonly SyntaxToken _name;
+    private readonly MarkupMiscAttributeContentSyntax _miscAttributeContent;
+    private readonly SyntaxToken _closeAngle;
 
-    internal MarkupTagHelperEndTagSyntax(SyntaxKind kind, GreenNode children, RazorDiagnostic[] diagnostics, SyntaxAnnotation[] annotations)
+    internal MarkupTagHelperEndTagSyntax(SyntaxKind kind, SyntaxToken openAngle, SyntaxToken forwardSlash, SyntaxToken bang, SyntaxToken name, MarkupMiscAttributeContentSyntax miscAttributeContent, SyntaxToken closeAngle, RazorDiagnostic[] diagnostics, SyntaxAnnotation[] annotations)
         : base(kind, diagnostics, annotations)
     {
-        SlotCount = 1;
-        if (children != null)
+        SlotCount = 6;
+        AdjustFlagsAndWidth(openAngle);
+        _openAngle = openAngle;
+        AdjustFlagsAndWidth(forwardSlash);
+        _forwardSlash = forwardSlash;
+        if (bang != null)
         {
-            AdjustFlagsAndWidth(children);
-            _children = children;
+            AdjustFlagsAndWidth(bang);
+            _bang = bang;
         }
+        AdjustFlagsAndWidth(name);
+        _name = name;
+        if (miscAttributeContent != null)
+        {
+            AdjustFlagsAndWidth(miscAttributeContent);
+            _miscAttributeContent = miscAttributeContent;
+        }
+        AdjustFlagsAndWidth(closeAngle);
+        _closeAngle = closeAngle;
     }
 
 
-    internal MarkupTagHelperEndTagSyntax(SyntaxKind kind, GreenNode children)
+    internal MarkupTagHelperEndTagSyntax(SyntaxKind kind, SyntaxToken openAngle, SyntaxToken forwardSlash, SyntaxToken bang, SyntaxToken name, MarkupMiscAttributeContentSyntax miscAttributeContent, SyntaxToken closeAngle)
         : base(kind)
     {
-        SlotCount = 1;
-        if (children != null)
+        SlotCount = 6;
+        AdjustFlagsAndWidth(openAngle);
+        _openAngle = openAngle;
+        AdjustFlagsAndWidth(forwardSlash);
+        _forwardSlash = forwardSlash;
+        if (bang != null)
         {
-            AdjustFlagsAndWidth(children);
-            _children = children;
+            AdjustFlagsAndWidth(bang);
+            _bang = bang;
         }
+        AdjustFlagsAndWidth(name);
+        _name = name;
+        if (miscAttributeContent != null)
+        {
+            AdjustFlagsAndWidth(miscAttributeContent);
+            _miscAttributeContent = miscAttributeContent;
+        }
+        AdjustFlagsAndWidth(closeAngle);
+        _closeAngle = closeAngle;
     }
 
-    public override SyntaxList<RazorSyntaxNode> Children { get { return new SyntaxList<RazorSyntaxNode>(_children); } }
+    public SyntaxToken OpenAngle { get { return _openAngle; } }
+    public SyntaxToken ForwardSlash { get { return _forwardSlash; } }
+    public SyntaxToken Bang { get { return _bang; } }
+    public SyntaxToken Name { get { return _name; } }
+    public MarkupMiscAttributeContentSyntax MiscAttributeContent { get { return _miscAttributeContent; } }
+    public SyntaxToken CloseAngle { get { return _closeAngle; } }
 
     internal override GreenNode GetSlot(int index)
     {
         switch (index)
         {
-            case 0: return _children;
+            case 0: return _openAngle;
+            case 1: return _forwardSlash;
+            case 2: return _bang;
+            case 3: return _name;
+            case 4: return _miscAttributeContent;
+            case 5: return _closeAngle;
             default: return null;
         }
     }
@@ -1950,11 +2038,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
         visitor.VisitMarkupTagHelperEndTag(this);
     }
 
-    public MarkupTagHelperEndTagSyntax Update(Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax.SyntaxList<RazorSyntaxNode> children)
+    public MarkupTagHelperEndTagSyntax Update(SyntaxToken openAngle, SyntaxToken forwardSlash, SyntaxToken bang, SyntaxToken name, MarkupMiscAttributeContentSyntax miscAttributeContent, SyntaxToken closeAngle)
     {
-        if (children != Children)
+        if (openAngle != OpenAngle || forwardSlash != ForwardSlash || bang != Bang || name != Name || miscAttributeContent != MiscAttributeContent || closeAngle != CloseAngle)
         {
-            var newNode = SyntaxFactory.MarkupTagHelperEndTag(children);
+            var newNode = SyntaxFactory.MarkupTagHelperEndTag(openAngle, forwardSlash, bang, name, miscAttributeContent, closeAngle);
             var diags = GetDiagnostics();
             if (diags != null && diags.Length > 0)
                newNode = newNode.WithDiagnosticsGreen(diags);
@@ -1969,12 +2057,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
 
     internal override GreenNode SetDiagnostics(RazorDiagnostic[] diagnostics)
     {
-         return new MarkupTagHelperEndTagSyntax(Kind, _children, diagnostics, GetAnnotations());
+         return new MarkupTagHelperEndTagSyntax(Kind, _openAngle, _forwardSlash, _bang, _name, _miscAttributeContent, _closeAngle, diagnostics, GetAnnotations());
     }
 
     internal override GreenNode SetAnnotations(SyntaxAnnotation[] annotations)
     {
-         return new MarkupTagHelperEndTagSyntax(Kind, _children, GetDiagnostics(), annotations);
+         return new MarkupTagHelperEndTagSyntax(Kind, _openAngle, _forwardSlash, _bang, _name, _miscAttributeContent, _closeAngle, GetDiagnostics(), annotations);
     }
   }
 
@@ -3997,14 +4085,24 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
 
     public override GreenNode VisitMarkupTagHelperStartTag(MarkupTagHelperStartTagSyntax node)
     {
-      var children = VisitList(node.Children);
-      return node.Update(children);
+      var openAngle = (SyntaxToken)Visit(node.OpenAngle);
+      var bang = (SyntaxToken)Visit(node.Bang);
+      var name = (SyntaxToken)Visit(node.Name);
+      var attributes = VisitList(node.Attributes);
+      var forwardSlash = (SyntaxToken)Visit(node.ForwardSlash);
+      var closeAngle = (SyntaxToken)Visit(node.CloseAngle);
+      return node.Update(openAngle, bang, name, attributes, forwardSlash, closeAngle);
     }
 
     public override GreenNode VisitMarkupTagHelperEndTag(MarkupTagHelperEndTagSyntax node)
     {
-      var children = VisitList(node.Children);
-      return node.Update(children);
+      var openAngle = (SyntaxToken)Visit(node.OpenAngle);
+      var forwardSlash = (SyntaxToken)Visit(node.ForwardSlash);
+      var bang = (SyntaxToken)Visit(node.Bang);
+      var name = (SyntaxToken)Visit(node.Name);
+      var miscAttributeContent = (MarkupMiscAttributeContentSyntax)Visit(node.MiscAttributeContent);
+      var closeAngle = (SyntaxToken)Visit(node.CloseAngle);
+      return node.Update(openAngle, forwardSlash, bang, name, miscAttributeContent, closeAngle);
     }
 
     public override GreenNode VisitMarkupTagHelperAttribute(MarkupTagHelperAttributeSyntax node)
@@ -4421,18 +4519,112 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
       return result;
     }
 
-    public static MarkupTagHelperStartTagSyntax MarkupTagHelperStartTag(Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax.SyntaxList<RazorSyntaxNode> children)
+    public static MarkupTagHelperStartTagSyntax MarkupTagHelperStartTag(SyntaxToken openAngle, SyntaxToken bang, SyntaxToken name, Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax.SyntaxList<RazorSyntaxNode> attributes, SyntaxToken forwardSlash, SyntaxToken closeAngle)
     {
-      var result = new MarkupTagHelperStartTagSyntax(SyntaxKind.MarkupTagHelperStartTag, children.Node);
+      if (openAngle == null)
+        throw new ArgumentNullException(nameof(openAngle));
+      switch (openAngle.Kind)
+      {
+        case SyntaxKind.OpenAngle:
+          break;
+        default:
+          throw new ArgumentException("openAngle");
+      }
+      if (bang != null)
+      {
+      switch (bang.Kind)
+      {
+        case SyntaxKind.Bang:
+        case SyntaxKind.None:
+          break;
+        default:
+          throw new ArgumentException("bang");
+      }
+      }
+      if (name == null)
+        throw new ArgumentNullException(nameof(name));
+      switch (name.Kind)
+      {
+        case SyntaxKind.Text:
+          break;
+        default:
+          throw new ArgumentException("name");
+      }
+      if (forwardSlash != null)
+      {
+      switch (forwardSlash.Kind)
+      {
+        case SyntaxKind.ForwardSlash:
+        case SyntaxKind.None:
+          break;
+        default:
+          throw new ArgumentException("forwardSlash");
+      }
+      }
+      if (closeAngle == null)
+        throw new ArgumentNullException(nameof(closeAngle));
+      switch (closeAngle.Kind)
+      {
+        case SyntaxKind.CloseAngle:
+          break;
+        default:
+          throw new ArgumentException("closeAngle");
+      }
 
-      return result;
+      return new MarkupTagHelperStartTagSyntax(SyntaxKind.MarkupTagHelperStartTag, openAngle, bang, name, attributes.Node, forwardSlash, closeAngle);
     }
 
-    public static MarkupTagHelperEndTagSyntax MarkupTagHelperEndTag(Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax.SyntaxList<RazorSyntaxNode> children)
+    public static MarkupTagHelperEndTagSyntax MarkupTagHelperEndTag(SyntaxToken openAngle, SyntaxToken forwardSlash, SyntaxToken bang, SyntaxToken name, MarkupMiscAttributeContentSyntax miscAttributeContent, SyntaxToken closeAngle)
     {
-      var result = new MarkupTagHelperEndTagSyntax(SyntaxKind.MarkupTagHelperEndTag, children.Node);
+      if (openAngle == null)
+        throw new ArgumentNullException(nameof(openAngle));
+      switch (openAngle.Kind)
+      {
+        case SyntaxKind.OpenAngle:
+          break;
+        default:
+          throw new ArgumentException("openAngle");
+      }
+      if (forwardSlash == null)
+        throw new ArgumentNullException(nameof(forwardSlash));
+      switch (forwardSlash.Kind)
+      {
+        case SyntaxKind.ForwardSlash:
+          break;
+        default:
+          throw new ArgumentException("forwardSlash");
+      }
+      if (bang != null)
+      {
+      switch (bang.Kind)
+      {
+        case SyntaxKind.Bang:
+        case SyntaxKind.None:
+          break;
+        default:
+          throw new ArgumentException("bang");
+      }
+      }
+      if (name == null)
+        throw new ArgumentNullException(nameof(name));
+      switch (name.Kind)
+      {
+        case SyntaxKind.Text:
+          break;
+        default:
+          throw new ArgumentException("name");
+      }
+      if (closeAngle == null)
+        throw new ArgumentNullException(nameof(closeAngle));
+      switch (closeAngle.Kind)
+      {
+        case SyntaxKind.CloseAngle:
+          break;
+        default:
+          throw new ArgumentException("closeAngle");
+      }
 
-      return result;
+      return new MarkupTagHelperEndTagSyntax(SyntaxKind.MarkupTagHelperEndTag, openAngle, forwardSlash, bang, name, miscAttributeContent, closeAngle);
     }
 
     public static MarkupTagHelperAttributeSyntax MarkupTagHelperAttribute(MarkupTextLiteralSyntax namePrefix, MarkupTextLiteralSyntax name, MarkupTextLiteralSyntax nameSuffix, SyntaxToken equalsToken, MarkupTextLiteralSyntax valuePrefix, MarkupTagHelperAttributeValueSyntax value, MarkupTextLiteralSyntax valueSuffix)

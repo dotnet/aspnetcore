@@ -10,21 +10,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     internal static class TagHelperBlockRewriter
     {
-        public static MarkupTagHelperStartTagSyntax Rewrite(
-            string tagName,
-            bool validStructure,
-            RazorParserFeatureFlags featureFlags,
-            MarkupStartTagSyntax tag,
-            TagHelperBinding bindingResult,
-            ErrorSink errorSink,
-            RazorSourceDocument source)
-        {
-            // There will always be at least one child for the '<'.
-            var rewrittenChildren = GetRewrittenChildren(tagName, validStructure, tag, bindingResult, featureFlags, errorSink, source);
-
-            return SyntaxFactory.MarkupTagHelperStartTag(rewrittenChildren);
-        }
-
         public static TagMode GetTagMode(
             MarkupStartTagSyntax tagBlock,
             TagHelperBinding bindingResult,
@@ -52,35 +37,23 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return TagMode.StartTagAndEndTag;
         }
 
-        private static SyntaxList<RazorSyntaxNode> GetRewrittenChildren(
+        public static MarkupTagHelperStartTagSyntax Rewrite(
             string tagName,
-            bool validStructure,
-            MarkupStartTagSyntax tagBlock,
-            TagHelperBinding bindingResult,
             RazorParserFeatureFlags featureFlags,
+            MarkupStartTagSyntax startTag,
+            TagHelperBinding bindingResult,
             ErrorSink errorSink,
             RazorSourceDocument source)
         {
-            var tagHelperBuilder = SyntaxListBuilder<RazorSyntaxNode>.Create();
             var processedBoundAttributeNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            if (tagBlock.Children.Count == 1)
-            {
-                // Tag with no attributes. We have nothing to rewrite here.
-                return tagBlock.Children;
-            }
-
-            // Add the tag start
-            tagHelperBuilder.Add(tagBlock.Children.First());
-
-            // We skip the first child "<tagname" and take everything up to the ending portion of the tag ">" or "/>".
-            // If the tag does not have a valid structure then there's no close angle to ignore.
-            var tokenOffset = validStructure ? 1 : 0;
-            for (var i = 1; i < tagBlock.Children.Count - tokenOffset; i++)
+            var attributes = startTag.Attributes;
+            var attributeBuilder = SyntaxListBuilder<RazorSyntaxNode>.Create();
+            for (var i = 0; i < startTag.Attributes.Count; i++)
             {
                 var isMinimized = false;
                 var attributeNameLocation = SourceLocation.Undefined;
-                var child = tagBlock.Children[i];
+                var child = startTag.Attributes[i];
                 TryParseResult result;
                 if (child is MarkupAttributeBlockSyntax attributeBlock)
                 {
@@ -91,7 +64,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         bindingResult.Descriptors,
                         errorSink,
                         processedBoundAttributeNames);
-                    tagHelperBuilder.Add(result.RewrittenAttribute);
+                    attributeBuilder.Add(result.RewrittenAttribute);
                 }
                 else if (child is MarkupMinimizedAttributeBlockSyntax minimizedAttributeBlock)
                 {
@@ -103,7 +76,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         bindingResult.Descriptors,
                         errorSink,
                         processedBoundAttributeNames);
-                    tagHelperBuilder.Add(result.RewrittenAttribute);
+                    attributeBuilder.Add(result.RewrittenAttribute);
                 }
                 else if (child is MarkupMiscAttributeContentSyntax miscContent)
                 {
@@ -146,12 +119,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 if (result == null)
                 {
                     // Error occurred while parsing the attribute. Don't try parsing the rest to avoid misleading errors.
-                    for (var j = i; j < tagBlock.Children.Count; j++)
+                    for (var j = i; j < startTag.Attributes.Count; j++)
                     {
-                        tagHelperBuilder.Add(tagBlock.Children[j]);
+                        attributeBuilder.Add(startTag.Attributes[j]);
                     }
 
-                    return tagHelperBuilder.ToList();
+                    break;
                 }
 
                 // Check if it's a non-boolean bound attribute that is minimized or if it's a bound
@@ -180,13 +153,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 }
             }
 
-            if (validStructure)
+            if (attributeBuilder.Count > 0)
             {
-                // Add the tag end.
-                tagHelperBuilder.Add(tagBlock.Children[tagBlock.Children.Count - 1]);
+                // This means we rewrote something. Use the new set of attributes.
+                attributes = attributeBuilder.ToList();
             }
 
-            return tagHelperBuilder.ToList();
+            var tagHelperStartTag = SyntaxFactory.MarkupTagHelperStartTag(
+                startTag.OpenAngle, startTag.Bang, startTag.Name, attributes, startTag.ForwardSlash, startTag.CloseAngle);
+
+            return tagHelperStartTag.WithSpanContext(startTag.GetSpanContext());
         }
 
         private static TryParseResult TryParseMinimizedAttribute(

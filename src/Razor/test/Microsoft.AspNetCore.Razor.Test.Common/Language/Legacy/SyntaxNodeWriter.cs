@@ -221,6 +221,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
                 node.Kind == SyntaxKind.MarkupEphemeralTextLiteral ||
                 node.Kind == SyntaxKind.MarkupStartTag ||
                 node.Kind == SyntaxKind.MarkupEndTag ||
+                node.Kind == SyntaxKind.MarkupTagHelperStartTag ||
+                node.Kind == SyntaxKind.MarkupTagHelperEndTag ||
                 node.Kind == SyntaxKind.MarkupAttributeBlock ||
                 node.Kind == SyntaxKind.MarkupMinimizedAttributeBlock ||
                 node.Kind == SyntaxKind.MarkupTagHelperAttribute ||

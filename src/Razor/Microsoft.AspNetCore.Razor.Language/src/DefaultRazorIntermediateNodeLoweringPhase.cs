@@ -886,7 +886,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             public override void VisitMarkupTagHelperStartTag(MarkupTagHelperStartTagSyntax node)
             {
-                foreach (var child in node.Children)
+                foreach (var child in node.Attributes)
                 {
                     if (child is MarkupTagHelperAttributeSyntax || child is MarkupMinimizedTagHelperAttributeSyntax)
                     {
@@ -1603,7 +1603,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             public override void VisitMarkupTagHelperStartTag(MarkupTagHelperStartTagSyntax node)
             {
-                foreach (var child in node.Children)
+                foreach (var child in node.Attributes)
                 {
                     if (child is MarkupTagHelperAttributeSyntax || child is MarkupMinimizedTagHelperAttributeSyntax)
                     {
