@@ -21,7 +21,7 @@
     <CompileDependsOn>$(CompileDependsOn);BuildProjects;PackSharedSources</CompileDependsOn>
     <CompileDependsOn Condition="'$(_ProjectsOnly)' != 'true'">$(CompileDependsOn);PackProjects;BuildRepositories;BuildSharedFx</CompileDependsOn>
     <PackageDependsOn Condition=" '$(_ProjectsOnly)' == 'true'">$(PackageDependsOn);PackProjects</PackageDependsOn>
-    <PackageDependsOn Condition="'$(TestOnly)' != 'true' AND '$(_ProjectsOnly)' != 'true'">$(PackageDependsOn);BuildSiteExtension;CheckExpectedPackagesExist</PackageDependsOn>
+    <PackageDependsOn Condition="'$(TestOnly)' != 'true' AND '$(_ProjectsOnly)' != 'true'">$(PackageDependsOn);CheckExpectedPackagesExist</PackageDependsOn>
     <PackageDependsOn Condition="'$(TestOnly)' != 'true'">$(PackageDependsOn);CodeSign</PackageDependsOn>
     <TestDependsOn>$(TestDependsOn);TestProjects</TestDependsOn>
     <TestDependsOn Condition="'$(_ProjectsOnly)' != 'true'">$(TestDependsOn);_TestRepositories</TestDependsOn>
@@ -72,7 +72,7 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="ResolveRepoInfo" DependsOnTargets="_ResolveProjectArtifactsInfoShipped;_PrepareRepositories;GetSiteExtensionArtifactInfo">
+  <Target Name="ResolveRepoInfo" DependsOnTargets="_ResolveProjectArtifactsInfoShipped;_PrepareRepositories">
     <!-- We need to pass the NETCoreApp package versions to msbuild so that it doesn't complain about us using a different one than it was restored against.  -->
     <PropertyGroup>
       <DesignTimeBuildProps>$(BuildProperties);MicrosoftNETCoreAppPackageVersion=$(MicrosoftNETCoreAppPackageVersion);</DesignTimeBuildProps>
