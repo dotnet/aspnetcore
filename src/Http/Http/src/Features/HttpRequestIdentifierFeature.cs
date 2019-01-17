@@ -34,14 +34,14 @@ namespace Microsoft.AspNetCore.Http.Features
             }
         }
 
-        private static unsafe string GenerateRequestId(long id)
+        private static string GenerateRequestId(long id)
         {
             // The following routine is ~310% faster than calling long.ToString() on x64
             // and ~600% faster than calling long.ToString() on x86 in tight loops of 1 million+ iterations
             // See: https://github.com/aspnet/Hosting/pull/385
 
             // stackalloc to allocate array on stack rather than heap
-            char* charBuffer = stackalloc char[13];
+            Span<char> charBuffer = stackalloc char[13];
 
             charBuffer[0] = _encode32Chars[(int)(id >> 60) & 31];
             charBuffer[1] = _encode32Chars[(int)(id >> 55) & 31];
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Http.Features
             charBuffer[12] = _encode32Chars[(int)id & 31];
 
             // string ctor overload that takes char*
-            return new string(charBuffer, 0, 13);
+            return new string(charBuffer);
         }
     }
 }

@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         /// <param name="separator"></param>
         /// <param name="number"></param>
         /// <returns></returns>
-        public static unsafe string ConcatAsHexSuffix(string str, char separator, uint number)
+        public static string ConcatAsHexSuffix(string str, char separator, uint number)
         {
             var length = 1 + 8;
             if (str != null)
@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
 
             // stackalloc to allocate array on stack rather than heap
-            char* charBuffer = stackalloc char[length];
+            Span<char> charBuffer = stackalloc char[length];
 
             var i = 0;
             if (str != null)
@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             charBuffer[i + 8] = _encode16Chars[(int)number & 0xF];
 
             // string ctor overload that takes char*
-            return new string(charBuffer, 0, length);
+            return new string(charBuffer);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)] // Needs a push

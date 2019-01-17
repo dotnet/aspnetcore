@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -53,10 +53,10 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
             return new FastGuid(Interlocked.Increment(ref NextId));
         }
 
-        private static unsafe string GenerateGuidString(FastGuid guid)
+        private static string GenerateGuidString(FastGuid guid)
         {
             // stackalloc to allocate array on stack rather than heap
-            char* charBuffer = stackalloc char[13];
+            Span<char> charBuffer = stackalloc char[13];
 
             // ID
             charBuffer[0] = _encode32Chars[(int)(guid.IdValue >> 60) & 31];
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
             charBuffer[12] = _encode32Chars[(int)guid.IdValue & 31];
 
             // string ctor overload that takes char*
-            return new string(charBuffer, 0, 13);
+            return new string(charBuffer);
         }
     }
 }
