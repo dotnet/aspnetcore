@@ -17,7 +17,7 @@
 
     <ArtifactsShippingPackagesDir>$(ArtifactsDir)\packages\$(Configuration)\Shipping\</ArtifactsShippingPackagesDir>
     <ArtifactsNonShippingPackagesDir>$(ArtifactsDir)\packages\$(Configuration)\NonShipping\</ArtifactsNonShippingPackagesDir>
-    <InstallersOutputPath>$(ArtifactsDir)$(Configuration)\installers\</InstallersOutputPath>
+    <InstallersOutputPath>$(ArtifactsDir)installers\$(Configuration)\</InstallersOutputPath>
 
     <SignCheckExclusionsFile>$(RepositoryRoot)eng\signcheck.exclusions.txt</SignCheckExclusionsFile>
 
