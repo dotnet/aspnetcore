@@ -103,9 +103,9 @@
     <MicrosoftEntityFrameworkCoreToolsPackageVersion>3.0.0-preview.19068.1</MicrosoftEntityFrameworkCoreToolsPackageVersion>
     <MicrosoftEntityFrameworkCorePackageVersion>3.0.0-preview.19068.1</MicrosoftEntityFrameworkCorePackageVersion>
     <!-- Packages from aspnet/AspNetCore-Tooling -->
-    <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>3.0.0-preview-19065-11</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
-    <MicrosoftAspNetCoreRazorLanguagePackageVersion>3.0.0-preview-19065-11</MicrosoftAspNetCoreRazorLanguagePackageVersion>
-    <MicrosoftCodeAnalysisRazorPackageVersion>3.0.0-preview-19065-11</MicrosoftCodeAnalysisRazorPackageVersion>
+    <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>3.0.0-preview-19068-05</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
+    <MicrosoftAspNetCoreRazorLanguagePackageVersion>3.0.0-preview-19068-05</MicrosoftAspNetCoreRazorLanguagePackageVersion>
+    <MicrosoftCodeAnalysisRazorPackageVersion>3.0.0-preview-19068-05</MicrosoftCodeAnalysisRazorPackageVersion>
     <MicrosoftNETSdkRazorPackageVersion>3.0.0-preview-19068-05</MicrosoftNETSdkRazorPackageVersion>
   </PropertyGroup>
   <PropertyGroup Label="Build tool dependencies">
