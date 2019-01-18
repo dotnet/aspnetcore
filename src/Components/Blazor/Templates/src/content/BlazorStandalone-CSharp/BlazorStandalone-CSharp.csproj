@@ -14,7 +14,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Blazor" Version="$(TemplateBlazorPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Blazor.Build" Version="$(TemplateBlazorPackageVersion)" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="$(MicrosoftNETSdkRazorPackageVersion)" PrivateAssets="All" />
 
     <DotNetCliToolReference Include="Microsoft.AspNetCore.Blazor.Cli" Version="$(TemplateBlazorPackageVersion)" />
   </ItemGroup>
