@@ -45,6 +45,7 @@ namespace Common
                 ("Microsoft.AspNetCore.Identity", "area-identity"),
                 ("Microsoft.VisualStudio.Editor.Razor", "area-mvc"),
                 ("Microsoft.AspNetCore.Razor", "area-mvc"),
+                ("Microsoft.AspNetCore.Components", "area-mvc"),
 
                 // Tools
                 ("Microsoft.VisualStudio.Web.CodeGeneration", "area-webtools"),
