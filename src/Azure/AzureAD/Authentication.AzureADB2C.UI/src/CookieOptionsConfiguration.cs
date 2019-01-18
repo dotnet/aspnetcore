@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.using Microsoft.AspNetCore.Authorization;
 
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Authentication.AzureADB2C.UI
         {
             foreach (var mapping in _schemeOptions.Value.OpenIDMappings)
             {
-                if (mapping.Value.OpenIdConnectScheme == name)
+                if (mapping.Value.CookieScheme == name)
                 {
                     return mapping.Key;
                 }
