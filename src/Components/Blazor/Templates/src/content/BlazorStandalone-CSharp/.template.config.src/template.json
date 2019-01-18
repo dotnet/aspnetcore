@@ -56,6 +56,13 @@
       "replaces": "$(TemplateBlazorPackageVersion)",
       "defaultValue": "${TemplateBlazorVersion}"
     },
+    "TemplateComponentsVersionSymbol": {
+      "type": "parameter",
+      "datatype": "string",
+      "description": "Specifies which version of Components packages to use.",
+      "replaces": "$(TemplateComponentsPackageVersion)",
+      "defaultValue": "${TemplateComponentsVersion}"
+    },
     "skipRestore": {
       "type": "parameter",
       "datatype": "bool",
