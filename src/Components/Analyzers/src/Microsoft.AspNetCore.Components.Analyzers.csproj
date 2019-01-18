@@ -6,7 +6,7 @@
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <Description>Roslyn analyzers for ASP.NET Core Components.</Description>
-    <IsProductPackage>true</IsProductPackage>
+    <IsShippingPackage>true</IsShippingPackage>
     <!-- Manually set to false because other projects should not reference this assembly as a project reference, except for the analyzer's unit tests. -->
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
   </PropertyGroup>

@@ -28,11 +28,11 @@
     <ItemGroup>
       <FilesToSign Include="$(InstallersOutputPath)aspnetcore-runtime-$(PackageVersion)-$(SharedFxRid).zip" Certificate="None" />
       <FilesToSign Include="$(InstallersOutputPath)aspnetcore-runtime-internal-$(PackageVersion)-$(SharedFxRid).zip" Certificate="None" />
-      <FilesToSign Include="$(ProductPackageOutputPath)Microsoft.AspNetCore.App.$(PackageVersion).nupkg" Certificate="$(PackageSigningCertName)" />
-      <FilesToSign Include="$(ProductPackageOutputPath)runtime.$(SharedFxRid).Microsoft.AspNetCore.App.$(PackageVersion).nupkg" Certificate="$(PackageSigningCertName)" />
-      <FilesToSign Include="$(ProductPackageOutputPath)runtime.$(SharedFxRid).Microsoft.AspNetCore.App.$(PackageVersion).symbols.nupkg" Certificate="$(PackageSigningCertName)" />
-      <FilesToSign Include="$(ProductPackageOutputPath)AspNetCoreRuntime.3.0.$(SharedFxArchitecture).$(PackageVersion).nupkg" Condition=" '$(BuildSiteExtensions)' == 'true' " Certificate="$(PackageSigningCertName)" />
-      <FilesToSign Include="$(InternalPackageOutputPath)Microsoft.AspNetCore.AzureAppServices.SiteExtension.$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(SharedFxArchitecture).$(PackageVersion).nupkg" Condition=" '$(BuildSiteExtensions)' == 'true' " Certificate="$(PackageSigningCertName)" />
+      <FilesToSign Include="$(ArtifactsShippingPackagesDir)Microsoft.AspNetCore.App.$(PackageVersion).nupkg" Certificate="$(PackageSigningCertName)" />
+      <FilesToSign Include="$(ArtifactsShippingPackagesDir)runtime.$(SharedFxRid).Microsoft.AspNetCore.App.$(PackageVersion).nupkg" Certificate="$(PackageSigningCertName)" />
+      <FilesToSign Include="$(ArtifactsShippingPackagesDir)runtime.$(SharedFxRid).Microsoft.AspNetCore.App.$(PackageVersion).symbols.nupkg" Certificate="$(PackageSigningCertName)" />
+      <FilesToSign Include="$(ArtifactsShippingPackagesDir)AspNetCoreRuntime.3.0.$(SharedFxArchitecture).$(PackageVersion).nupkg" Condition=" '$(BuildSiteExtensions)' == 'true' " Certificate="$(PackageSigningCertName)" />
+      <FilesToSign Include="$(ArtifactsNonShippingPackagesDir)Microsoft.AspNetCore.AzureAppServices.SiteExtension.$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(SharedFxArchitecture).$(PackageVersion).nupkg" Condition=" '$(BuildSiteExtensions)' == 'true' " Certificate="$(PackageSigningCertName)" />
     </ItemGroup>
 
     <!-- These files should already be signed by the .NET Core team. They have to be listed again here because we recreate a redistributable which includes the Microsoft.NETCore.App runtime. -->

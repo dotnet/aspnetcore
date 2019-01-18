@@ -50,12 +50,12 @@
       <_FilesToPublish Include="$(InstallersOutputPath)*" Exclude="@(_FilesToPublish)" />
 
       <!-- Java packages -->
-      <_FilesToPublish Include="$(ProductPackageOutputPath)*.jar;$(ProductPackageOutputPath)*.pom">
+      <_FilesToPublish Include="$(ArtifactsShippingPackagesDir)*.jar;$(ArtifactsShippingPackagesDir)*.pom">
         <BlobBasePath>aspnetcore/jar/$(PackageVersion)/</BlobBasePath>
       </_FilesToPublish>
 
       <!-- NPM packages -->
-      <NpmPackageToPublish Include="$(ProductPackageOutputPath)*.tgz">
+      <NpmPackageToPublish Include="$(ArtifactsShippingPackagesDir)*.tgz">
         <BlobBasePath>aspnetcore/npm/$(PackageVersion)/</BlobBasePath>
       </NpmPackageToPublish>
       <_FilesToPublish Include="@(NpmPackageToPublish)" />
@@ -70,8 +70,8 @@
       </FilesToPublish>
       <_FilesToPublish Remove="@(_FilesToPublish)" />
 
-      <PackageToPublish Include="$(ProductPackageOutputPath)*.symbols.nupkg" IsSymbolsPackage="true" />
-      <PackageToPublish Include="$(ProductPackageOutputPath)*.nupkg" Exclude="@(PackageToPublish)" />
+      <PackageToPublish Include="$(ArtifactsShippingPackagesDir)*.symbols.nupkg" IsSymbolsPackage="true" />
+      <PackageToPublish Include="$(ArtifactsShippingPackagesDir)*.nupkg" Exclude="@(PackageToPublish)" />
     </ItemGroup>
 
     <!--
@@ -79,10 +79,10 @@
       Publishing these can be disabled.
     -->
     <ItemGroup Condition=" '$(PublishInternalPackages)' != 'false' ">
-      <PackageToPublish Include="$(InternalPackageOutputPath)*.symbols.nupkg" IsSymbolsPackage="true">
+      <PackageToPublish Include="$(ArtifactsNonShippingPackagesDir)*.symbols.nupkg" IsSymbolsPackage="true">
         <ManifestArtifactData>NonShipping=true</ManifestArtifactData>
       </PackageToPublish>
-      <PackageToPublish Include="$(InternalPackageOutputPath)*.nupkg" Exclude="@(PackageToPublish)">
+      <PackageToPublish Include="$(ArtifactsNonShippingPackagesDir)*.nupkg" Exclude="@(PackageToPublish)">
         <ManifestArtifactData>NonShipping=true</ManifestArtifactData>
       </PackageToPublish>
     </ItemGroup>

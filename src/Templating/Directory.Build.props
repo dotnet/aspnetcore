@@ -19,10 +19,9 @@
   <!-- Artifacts layout -->
   <PropertyGroup>
     <ArtifactsDir>$(MSBuildThisFileDirectory)..\..\artifacts\</ArtifactsDir>
-    <ArtifactsConfigurationDir>$(ArtifactsDir)$(Configuration)\</ArtifactsConfigurationDir>
-    <BasePackageOutputPath>$(ArtifactsConfigurationDir)packages\</BasePackageOutputPath>
-    <ProductPackageOutputPath>$(BasePackageOutputPath)product\</ProductPackageOutputPath>
-    <InternalPackageOutputPath>$(BasePackageOutputPath)internal\</InternalPackageOutputPath>
+    <ArtifactsPackagesDir>$(ArtifactsDir)packages\$(Configuration)\</ArtifactsPackagesDir>
+    <ArtifactsShippingPackagesDir>$(ArtifactsPackagesDir)Shipping\</ArtifactsShippingPackagesDir>
+    <ArtifactsNonShippingPackagesDir>$(ArtifactsPackagesDir)NonShipping\</ArtifactsNonShippingPackagesDir>
   </PropertyGroup>
 
   <ItemGroup>

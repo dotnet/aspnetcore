@@ -5,7 +5,7 @@
     <Description>Build mechanism for ASP.NET Core Blazor applications.</Description>
     <OutputType>Exe</OutputType>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-    <IsProductPackage>true</IsProductPackage>
+    <IsShippingPackage>true</IsShippingPackage>
   </PropertyGroup>
 
   <!-- Pack settings -->

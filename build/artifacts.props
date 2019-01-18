@@ -57,6 +57,7 @@ This can be done once #4246 is complete, and done in conjunction with converting
     <PackageArtifact Include="Microsoft.AspNetCore.MiddlewareAnalysis" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Analyzers" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Api.Analyzers" Category="ship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Testing" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.NodeServices" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Owin" Category="ship" />
@@ -137,7 +138,6 @@ This can be done once #4246 is complete, and done in conjunction with converting
       <PackageArtifact Include="Microsoft.AspNetCore.Mvc.DataAnnotations" Category="noship" />
       <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Formatters.Xml" Category="noship" />
       <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Localization" Category="noship" />
-      <PackageArtifact Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Category="ship" />
       <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Razor" Category="noship" />
       <PackageArtifact Include="Microsoft.AspNetCore.Mvc.RazorPages" Category="noship" />
       <PackageArtifact Include="Microsoft.AspNetCore.Mvc.TagHelpers" Category="noship" />

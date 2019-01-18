@@ -25,7 +25,7 @@
       <AzureIntegrationArtifacts Include="$(AzureIntegrationProjectRoot)artifacts\build\*" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(AzureIntegrationArtifacts)" DestinationFolder="$(ProductPackageOutputPath)" />
+    <Copy SourceFiles="@(AzureIntegrationArtifacts)" DestinationFolder="$(ArtifactsShippingPackagesDir)" />
   </Target>
 
 </Project>
