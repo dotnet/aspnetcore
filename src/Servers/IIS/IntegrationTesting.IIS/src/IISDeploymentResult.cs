@@ -32,7 +32,24 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
         public HttpClient CreateClient(HttpMessageHandler messageHandler)
         {
-            return new HttpClient(new LoggingHandler(messageHandler, Logger))
+            if (DeploymentParameters.AncmVersion == AncmVersion.AspNetCoreModule)
+            {
+                return CreateRetryClient(messageHandler);
+            }
+            else
+            {
+                return new HttpClient(new LoggingHandler(messageHandler, Logger))
+                {
+                    BaseAddress = base.HttpClient.BaseAddress
+                };
+            }
+        }
+
+        private HttpClient CreateRetryClient(HttpMessageHandler messageHandler)
+        {
+            var loggingHandler = new LoggingHandler(messageHandler, Logger);
+            var retryHandler = new RetryHandler(loggingHandler, Logger);
+            return new HttpClient(retryHandler)
             {
                 BaseAddress = base.HttpClient.BaseAddress
             };
