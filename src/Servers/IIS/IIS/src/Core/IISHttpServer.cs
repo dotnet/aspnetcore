@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private static readonly NativeMethods.PFN_SHUTDOWN_HANDLER _shutdownHandler = HandleShutdown;
         private static readonly NativeMethods.PFN_DISCONNECT_HANDLER _onDisconnect = OnDisconnect;
         private static readonly NativeMethods.PFN_ASYNC_COMPLETION _onAsyncCompletion = OnAsyncCompletion;
-        private static readonly NativeMethods.PFN_REQUESTS_DRAINED_HANDLER _drainHandler = OnDrainComplete;
+        private static readonly NativeMethods.PFN_REQUESTS_DRAINED_HANDLER _drainHandler = OnRequestsDrained;
 
         private IISContextFactory _iisContextFactory;
         private readonly MemoryPool<byte> _memoryPool = new SlabMemoryPool();
@@ -97,20 +97,14 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            void RegisterCancelation()
-            {
-                _stopRegistration = cancellationToken.Register(() =>
-                {
-                    _nativeApplication.StopCallsIntoManaged();
-                    _shutdownSignal.TrySetResult(null);
-                });
-            }
-
             _nativeApplication.StopIncomingRequests();
 
             try
             {
-                RegisterCancelation();
+                _stopRegistration = cancellationToken.Register(() =>
+                {
+                    _shutdownSignal.TrySetResult(null);
+                });
             }
             catch (Exception ex)
             {
@@ -203,19 +197,20 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
         }
 
-        private static void OnDrainComplete(IntPtr serverContext)
+        private static void OnRequestsDrained(IntPtr serverContext)
         {
             IISHttpServer server = null;
             try
             {
                 server = (IISHttpServer)GCHandle.FromIntPtr(serverContext).Target;
+
                 server._nativeApplication.StopCallsIntoManaged();
                 server._shutdownSignal.TrySetResult(null);
                 server._stopRegistration.Dispose();
             }
             catch (Exception ex)
             {
-                server?._logger.LogError(0, ex, $"Unexpected exception in {nameof(IISHttpServer)}.{nameof(OnDrainComplete)}.");
+                server?._logger.LogError(0, ex, $"Unexpected exception in {nameof(IISHttpServer)}.{nameof(OnRequestsDrained)}.");
             }
         }
         private class IISContextFactory<T> : IISContextFactory
