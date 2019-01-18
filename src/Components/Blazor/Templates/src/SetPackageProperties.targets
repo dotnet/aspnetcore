@@ -21,6 +21,7 @@
       <GeneratedContentProperties>
         IncludeCustomRestoreSources=$(IncludeCustomRestoreSourcesValue);
         TemplateBlazorVersion=$(PackageVersion);
+        TemplateComponentsVersion=$(ComponentsPackageVersion);
         RepositoryCommit=$(RepositoryCommit);
       </GeneratedContentProperties>
     </PropertyGroup>
