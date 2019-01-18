@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Text;
@@ -30,13 +30,17 @@ namespace Templates.Test
                 get
                 {
                     var message = new StringBuilder();
-                    message.Append(Result.ProcessStartInfo.FileName);
+                    message.Append(Result.TestProcessStartInfo.FileName);
                     message.Append(" ");
-                    message.Append(Result.ProcessStartInfo.Arguments);
+                    message.Append(Result.TestProcessStartInfo.Arguments);
                     message.Append($" exited with {Result.ExitCode}.");
                     message.AppendLine();
                     message.AppendLine();
                     message.Append(Result.Output);
+                    message.AppendLine();
+                    message.Append("Server:");
+                    message.AppendLine();
+                    message.Append(Result.ServerOutput);
                     return message.ToString();
                 }
             }

@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using Microsoft.Extensions.CommandLineUtils;
 using Xunit;
 using Xunit.Abstractions;
@@ -14,7 +13,6 @@ namespace Templates.Test.Helpers
     public class AspNetProcess : IDisposable
     {
         private const string DefaultFramework = "netcoreapp3.0";
-        private const string ListeningMessagePrefix = "Now listening on: ";
 
         private readonly ProcessEx _process;
 
@@ -99,6 +97,8 @@ namespace Templates.Test.Helpers
             return new Uri(listeningUrlString, UriKind.Absolute);
             _process.Dispose();
         }
+
+        public string Output => _process.Output;
 
         private static string GetSolutionDir()
         {

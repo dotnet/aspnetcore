@@ -7,15 +7,17 @@ namespace Templates.Test
 {
     public readonly struct ProcessResult
     {
-        public ProcessResult(ProcessStartInfo processStartInfo, int exitCode, string output)
+        public ProcessResult(ProcessStartInfo testProcessStartInfo, int exitCode, string output, string serverOutput)
         {
-            ProcessStartInfo = processStartInfo;
+            TestProcessStartInfo = testProcessStartInfo;
             ExitCode = exitCode;
             Output = output;
+            ServerOutput = serverOutput;
         }
-
-        public ProcessStartInfo ProcessStartInfo { get; }
+        
+        public ProcessStartInfo TestProcessStartInfo { get; }
         public int ExitCode { get; }
+        public string ServerOutput { get; }
         public string Output { get; }
     }
 }

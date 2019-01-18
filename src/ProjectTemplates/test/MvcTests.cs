@@ -33,8 +33,8 @@ namespace Templates.Test
             bool useLocalDb = false)
             => await TemplateBase(
                 "mvc",
-                httpPort: 5002,
-                httpsPort: 5003,
+                httpPort: 5008,
+                httpsPort: 5009,
                 languageOverride,
                 auth,
                 noHttps,

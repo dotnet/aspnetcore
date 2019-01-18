@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Templates.Test.Helpers;
 
 namespace Templates.Test
 {
@@ -13,7 +14,7 @@ namespace Templates.Test
     {
         private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(150);
 
-        public static Task<ProcessResult> RunProcessAsync(ProcessStartInfo processStartInfo)
+        public static Task<ProcessResult> RunProcessAsync(ProcessStartInfo processStartInfo, AspNetProcess serverProcess = null)
         {
             processStartInfo.UseShellExecute = false;
             processStartInfo.RedirectStandardError = true;
@@ -76,7 +77,7 @@ namespace Templates.Test
                     outputString = output.ToString();
                 }
 
-                return new ProcessResult(processStartInfo, process.ExitCode, outputString);
+                return new ProcessResult(processStartInfo, process.ExitCode, outputString, serverOutput: serverProcess?.Output);
             });
 
             return Task.WhenAny<ProcessResult>(waitTask, timeoutTask).Unwrap();

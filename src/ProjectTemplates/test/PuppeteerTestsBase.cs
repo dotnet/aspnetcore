@@ -23,7 +23,7 @@ namespace Templates.Test
         private static readonly string TestDir = Path.Join(TestPathUtilities.GetSolutionRootDirectory("Templating"), "test", "Templates.Test");
         protected static readonly string PuppeteerDir = Path.Join(TestDir, "PuppeteerTests");
 
-        protected async Task<ProcessResult> RunTest(string test)
+        protected async Task<ProcessResult> RunTest(string test, AspNetProcess serverProcess)
         {
             ProcessStartInfo processStartInfo;
 
@@ -48,7 +48,7 @@ namespace Templates.Test
             }
 
             // Act
-            return await ProcessManager.RunProcessAsync(processStartInfo);
+            return await ProcessManager.RunProcessAsync(processStartInfo, serverProcess);
         }
 
         protected async Task TemplateBase(
@@ -98,7 +98,7 @@ namespace Templates.Test
                 using (var aspNetProcess = StartAspNetProcess(publish, httpPort, httpsPort))
                 {
                     // Act
-                    var testResult = await RunTest(templateName);
+                    var testResult = await RunTest(templateName, aspNetProcess);
 
                     // Assert
                     AssertNpmTest.Success(testResult);
