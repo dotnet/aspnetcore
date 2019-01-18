@@ -681,7 +681,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 onStarting = _onStarting;
             }
 
-            if (onStarting?.Count == 0)
+            if (onStarting == null || onStarting.Count == 0)
             {
                 return Task.CompletedTask;
             }
@@ -742,7 +742,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 onCompleted = _onCompleted;
             }
 
-            if (onCompleted?.Count == 0)
+            if (onCompleted == null || onCompleted.Count == 0)
             {
                 return Task.CompletedTask;
             }
