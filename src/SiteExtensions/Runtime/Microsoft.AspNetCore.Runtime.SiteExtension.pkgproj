@@ -12,7 +12,7 @@
     <PackageId>AspNetCoreRuntime.$(TrimmedVersion).$(SharedFxArchitecture)</PackageId>
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <DotNetUnpackFolder>$(RepositoryRoot)obj\ar\$(SharedFxRid)\</DotNetUnpackFolder>
-    <IsProductPackage>true</IsProductPackage>
+    <IsShippingPackage>true</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>

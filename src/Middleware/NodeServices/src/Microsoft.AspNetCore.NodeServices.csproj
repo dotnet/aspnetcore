@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Description>Invoke Node.js modules at runtime in ASP.NET Core applications.</Description>
     <TargetFramework>netcoreapp3.0</TargetFramework>
-    <IsProductPackage>true</IsProductPackage>
+    <IsShippingPackage>true</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>

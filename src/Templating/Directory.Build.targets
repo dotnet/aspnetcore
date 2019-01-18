@@ -8,10 +8,10 @@
       By default, all projects which produce packages are not intended to ship to NuGet.org as a product package.
       Packages which are intended to ship to NuGet.org must opt-in by setting this to true in the project file.
     -->
-    <IsProductPackage Condition=" '$(IsProductPackage)' == '' ">false</IsProductPackage>
+    <IsShippingPackage Condition=" '$(IsShippingPackage)' == '' ">false</IsShippingPackage>
 
-    <PackageOutputPath Condition=" '$(IsProductPackage)' == 'true' ">$(ProductPackageOutputPath)</PackageOutputPath>
-    <PackageOutputPath Condition=" '$(IsProductPackage)' != 'true' ">$(InternalPackageOutputPath)</PackageOutputPath>
+    <PackageOutputPath Condition=" '$(IsShippingPackage)' == 'true' ">$(ArtifactsShippingPackagesDir)</PackageOutputPath>
+    <PackageOutputPath Condition=" '$(IsShippingPackage)' != 'true' ">$(ArtifactsNonShippingPackagesDir)</PackageOutputPath>
   </PropertyGroup>
 
 </Project>

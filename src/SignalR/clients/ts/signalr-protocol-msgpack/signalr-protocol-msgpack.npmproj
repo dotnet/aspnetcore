@@ -5,7 +5,7 @@
     <PackageId>@aspnet/signalr-protocol-msgpack</PackageId>
     <IsPackable>true</IsPackable>
     <IsTestProject>false</IsTestProject>
-    <IsProductPackage>true</IsProductPackage>
+    <IsShippingPackage>true</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>

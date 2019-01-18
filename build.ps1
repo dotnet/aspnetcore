@@ -213,8 +213,8 @@ if (Test-Path $ConfigFile) {
     try {
         $config = Get-Content -Raw -Encoding UTF8 -Path $ConfigFile | ConvertFrom-Json
         if ($config) {
-            if (!($Channel) -and (Get-Member -Name 'channel' -InputObject $config)) { [string] $Channel = $config.channel }
-            if (!($ToolsSource) -and (Get-Member -Name 'toolsSource' -InputObject $config)) { [string] $ToolsSource = $config.toolsSource}
+            if (Get-Member -Name 'channel' -InputObject $config) { [string] $Channel = $config.channel }
+            if (Get-Member -Name 'toolsSource' -InputObject $config) { [string] $ToolsSource = $config.toolsSource}
         }
     } catch {
         Write-Warning "$ConfigFile could not be read. Its settings will be ignored."

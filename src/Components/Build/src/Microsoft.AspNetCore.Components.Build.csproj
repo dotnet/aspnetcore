@@ -4,7 +4,7 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <Description>Build mechanism for ASP.NET Core components.</Description>
     <OutputType>Library</OutputType>
-    <IsProductPackage>true</IsProductPackage>
+    <IsShippingPackage>true</IsShippingPackage>
   </PropertyGroup>
 
   <!-- Pack settings -->

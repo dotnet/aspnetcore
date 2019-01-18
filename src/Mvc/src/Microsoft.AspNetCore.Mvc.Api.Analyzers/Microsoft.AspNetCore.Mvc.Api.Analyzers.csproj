@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Description>CSharp Analyzers for ASP.NET Core MVC.</Description>
     <PackageTags>aspnetcore;aspnetcoremvc</PackageTags>
-    <IsProductPackage>true</IsProductPackage>
+    <IsShippingPackage>true</IsShippingPackage>
 
     <TargetFramework>netstandard1.3</TargetFramework>
     <IncludeBuildOutput>false</IncludeBuildOutput>

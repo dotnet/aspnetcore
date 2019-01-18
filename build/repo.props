@@ -15,9 +15,9 @@
 
     <SubmoduleRoot>$(RepositoryRoot)src\</SubmoduleRoot>
 
-    <ProductPackageOutputPath>$(ArtifactsDir)$(Configuration)\packages\product\</ProductPackageOutputPath>
-    <InternalPackageOutputPath>$(ArtifactsDir)$(Configuration)\packages\internal\</InternalPackageOutputPath>
-    <InstallersOutputPath>$(ArtifactsDir)$(Configuration)\installers\</InstallersOutputPath>
+    <ArtifactsShippingPackagesDir>$(ArtifactsDir)\packages\$(Configuration)\Shipping\</ArtifactsShippingPackagesDir>
+    <ArtifactsNonShippingPackagesDir>$(ArtifactsDir)\packages\$(Configuration)\NonShipping\</ArtifactsNonShippingPackagesDir>
+    <InstallersOutputPath>$(ArtifactsDir)installers\$(Configuration)\</InstallersOutputPath>
 
     <SignCheckExclusionsFile>$(RepositoryRoot)eng\signcheck.exclusions.txt</SignCheckExclusionsFile>
 

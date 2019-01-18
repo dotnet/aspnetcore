@@ -8,15 +8,4 @@
     <RuntimeIdentifier Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">win7-x86</RuntimeIdentifier>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <!--
-      By default, all projects which produce packages are not intended to ship to NuGet.org as a product package.
-      Packages which are intended to ship to NuGet.org must opt-in by setting this to true in the project file.
-    -->
-    <IsProductPackage Condition=" '$(IsProductPackage)' == '' ">false</IsProductPackage>
-
-    <PackageOutputPath Condition=" '$(IsProductPackage)' == 'true' ">$(ProductPackageOutputPath)</PackageOutputPath>
-    <PackageOutputPath Condition=" '$(IsProductPackage)' != 'true' ">$(InternalPackageOutputPath)</PackageOutputPath>
-  </PropertyGroup>
-
 </Project>
