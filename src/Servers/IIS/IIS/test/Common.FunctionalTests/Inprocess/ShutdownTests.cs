@@ -13,11 +13,11 @@ using Xunit;
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
     [Collection(PublishedSitesCollection.Name)]
-    public class IISExpressShutdownTests : IISFunctionalTestBase
+    public class ShutdownTests : IISFunctionalTestBase
     {
         private readonly PublishedSitesFixture _fixture;
 
-        public IISExpressShutdownTests(PublishedSitesFixture fixture)
+        public ShutdownTests(PublishedSitesFixture fixture)
         {
             _fixture = fixture;
         }
