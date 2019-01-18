@@ -541,6 +541,7 @@ IN_PROCESS_APPLICATION::HandleRequestCompletion()
     auto requestCount = m_requestCount--;
     if (m_fStopCalled && requestCount == 0)
     {
+        LOG_INFO(L"Drained all requests, notifying managed.");
         m_DrainHandler(m_ShutdownHandlerContext);
     }
 }

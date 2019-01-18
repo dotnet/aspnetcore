@@ -68,13 +68,6 @@ public:
         QueueStop();
 
         LOG_INFOF(L"Waiting for %d requests to drain", m_requestCount.load());
-
-        // Wait infinitely for all requests to drain.
-        // This will not cause the process to be hung indefinitely because we will hit
-        // a shutdown timeout which is triggered by QueueStop
-        // If we hit that timeout and the In process app is disposed/destructed, undefined behavior
-        // will occur because m_pDrainRequestEvent will be closed, however through experiments, it looks
-        // like this will just wait forever.
     }
 
     void
