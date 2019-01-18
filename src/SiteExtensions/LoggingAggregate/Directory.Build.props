@@ -5,9 +5,4 @@
   <Import Project="build\dependencies.props" />
   <Import Project="version.props" />
 
-  <PropertyGroup>
-    <EnableApiCheck>false</EnableApiCheck>
-    <GenerateSourceLinkFile>false</GenerateSourceLinkFile>
-  </PropertyGroup>
-
 </Project>
