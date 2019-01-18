@@ -11,6 +11,6 @@ namespace Microsoft.AspNetCore.Components.Hosting
     {
         void ConfigureServices(IServiceCollection services);
 
-        void Configure(IBlazorApplicationBuilder app, IServiceProvider services);
+        void Configure(IComponentsApplicationBuilder app, IServiceProvider services);
     }
 }

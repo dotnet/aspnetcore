@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Components.Builder;
 
 namespace Microsoft.AspNetCore.Components.Hosting
 {
-    internal class ServerSideBlazorApplicationBuilder : IBlazorApplicationBuilder
+    internal class ServerSideBlazorApplicationBuilder : IComponentsApplicationBuilder
     {
         public ServerSideBlazorApplicationBuilder(IServiceProvider services)
         {
