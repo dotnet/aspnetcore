@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.ObjectPool;
 using Moq;
 using Xunit;
 
@@ -950,6 +949,19 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             // Assert
             Assert.NotNull(url);
             Assert.Equal("/b/Store/Checkout", url);
+        }
+
+        [Fact]
+        public void ActionLink_ReturnsAbsoluteUrlToAction()
+        {
+            // Arrange
+            var urlHelper = CreateUrlHelperWithDefaultRoutes();
+
+            // Act
+            var url = urlHelper.ActionLink("contact", "home");
+
+            // Assert
+            Assert.Equal("http://localhost/app/home/contact", url);
         }
 
         protected abstract IServiceProvider CreateServices();
