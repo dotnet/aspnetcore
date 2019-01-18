@@ -16,7 +16,7 @@ namespace BasicTestApp
         {
         }
 
-        public void Configure(IBlazorApplicationBuilder app)
+        public void Configure(IComponentsApplicationBuilder app)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Create("WEBASSEMBLY")))
             {

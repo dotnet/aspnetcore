@@ -12,7 +12,7 @@ namespace HostedInAspNet.Client
         {
         }
 
-        public void Configure(IBlazorApplicationBuilder app)
+        public void Configure(IComponentsApplicationBuilder app)
         {
             app.AddComponent<Home>("app");
         }

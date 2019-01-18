@@ -6,9 +6,9 @@ using System;
 namespace Microsoft.AspNetCore.Components.Builder
 {
     /// <summary>
-    /// A builder for constructing a Blazor application.
+    /// A builder for adding components to an application.
     /// </summary>
-    public interface IBlazorApplicationBuilder
+    public interface IComponentsApplicationBuilder
     {
         /// <summary>
         /// Gets the application services.

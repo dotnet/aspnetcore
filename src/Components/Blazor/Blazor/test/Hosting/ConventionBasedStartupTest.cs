@@ -200,7 +200,7 @@ namespace Microsoft.AspNetCore.Components.Hosting
         {
             public List<object> Arguments { get; } = new List<object>();
 
-            public void Configure(IBlazorApplicationBuilder app, string foo)
+            public void Configure(IComponentsApplicationBuilder app, string foo)
             {
                 Arguments.Add(app);
                 Arguments.Add(foo);

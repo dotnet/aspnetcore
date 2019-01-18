@@ -12,7 +12,7 @@ namespace RazorComponentsWeb_CSharp.App
             services.AddSingleton<WeatherForecastService>();
         }
 
-        public void Configure(IBlazorApplicationBuilder app)
+        public void Configure(IComponentsApplicationBuilder app)
         {
             app.AddComponent<App>("app");
         }

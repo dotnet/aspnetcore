@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Components.Hosting
 
         public object Instance { get; }
 
-        public void Configure(IBlazorApplicationBuilder app, IServiceProvider services)
+        public void Configure(IComponentsApplicationBuilder app, IServiceProvider services)
         {
             try
             {
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Components.Hosting
                 for (var i = 0; i < parameters.Length; i++)
                 {
                     var parameter = parameters[i];
-                    arguments[i] = parameter.ParameterType == typeof(IBlazorApplicationBuilder)
+                    arguments[i] = parameter.ParameterType == typeof(IComponentsApplicationBuilder)
                         ? app
                         : services.GetRequiredService(parameter.ParameterType);
                 }

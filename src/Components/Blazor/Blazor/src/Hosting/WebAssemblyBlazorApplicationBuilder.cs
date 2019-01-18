@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Components.Builder;
 
 namespace Microsoft.AspNetCore.Blazor.Hosting
 {
-    internal class WebAssemblyBlazorApplicationBuilder : IBlazorApplicationBuilder
+    internal class WebAssemblyBlazorApplicationBuilder : IComponentsApplicationBuilder
     {
         public WebAssemblyBlazorApplicationBuilder(IServiceProvider services)
         {

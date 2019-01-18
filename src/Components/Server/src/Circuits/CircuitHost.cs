@@ -44,14 +44,14 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         public event UnhandledExceptionEventHandler UnhandledException;
 
         private bool _isInitialized;
-        private Action<IBlazorApplicationBuilder> _configure;
+        private Action<IComponentsApplicationBuilder> _configure;
 
         public CircuitHost(
             IServiceScope scope,
             IClientProxy client,
             RendererRegistry rendererRegistry,
             RemoteRenderer renderer,
-            Action<IBlazorApplicationBuilder> configure,
+            Action<IComponentsApplicationBuilder> configure,
             IJSRuntime jsRuntime,
             CircuitSynchronizationContext synchronizationContext)
         {
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         public IServiceScope Scope { get; }
 
         public IServiceProvider Services { get; }
-        
+
         public CircuitSynchronizationContext SynchronizationContext { get; }
 
         public async Task InitializeAsync()
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 await SynchronizationContext.Invoke(() =>
                 {
                     SetCurrentCircuitHost(this);
-                    
+
                     DotNetDispatcher.BeginInvoke(callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson);
                 });
             }

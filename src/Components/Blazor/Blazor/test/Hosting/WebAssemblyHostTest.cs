@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Blazor.Hosting.Test
             // Arrange
             var builder = new WebAssemblyHostBuilder();
             var host = builder.Build();
-            
+
             // Act
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () => await host.StartAsync());
 
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Blazor.Hosting.Test
         {
             public bool ConfigureCalled { get; set; }
 
-            public void Configure(IBlazorApplicationBuilder app, IServiceProvider services)
+            public void Configure(IComponentsApplicationBuilder app, IServiceProvider services)
             {
                 ConfigureCalled = true;
             }

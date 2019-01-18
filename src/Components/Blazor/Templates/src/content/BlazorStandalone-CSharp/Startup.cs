@@ -9,7 +9,7 @@ namespace BlazorStandalone_CSharp
         {
         }
 
-        public void Configure(IBlazorApplicationBuilder app)
+        public void Configure(IComponentsApplicationBuilder app)
         {
             app.AddComponent<App>("app");
         }
