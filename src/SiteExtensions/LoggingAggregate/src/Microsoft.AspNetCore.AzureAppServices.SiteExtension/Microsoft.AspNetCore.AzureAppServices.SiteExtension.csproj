@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <title>ASP.NET Core Logging Extensions</title>
-    <Description>This extension enables additional functionality for ASP.NET Core on Azure WebSites, such as enabling Azure logging.</Description>
+    <title>ASP.NET Core Logging Integration</title>
+    <Description>This site extension enables logging integration for ASP.NET Core applications on Azure App Service.</Description>
     <TargetFramework>net461</TargetFramework>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <PackageTags>aspnet;logging;aspnetcore;AzureSiteExtension;keyvault;configuration;dataprotection</PackageTags>
