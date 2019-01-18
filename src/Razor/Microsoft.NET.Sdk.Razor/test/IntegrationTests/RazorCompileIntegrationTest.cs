@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -63,16 +64,16 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             Assert.Equal(new string[]
             {
-                "/Views/_ViewImports.cshtml",
-                "/Views/_ViewStart.cshtml",
                 "/Views/Home/About.cshtml",
                 "/Views/Home/Contact.cshtml",
                 "/Views/Home/Index.cshtml",
+                "/Views/Shared/Error.cshtml",
                 "/Views/Shared/_Layout.cshtml",
                 "/Views/Shared/_ValidationScriptsPartial.cshtml",
-                "/Views/Shared/Error.cshtml",
+                "/Views/_ViewImports.cshtml",
+                "/Views/_ViewStart.cshtml",
             },
-            resources.OrderBy(r => r));
+            resources.OrderBy(r => r, StringComparer.Ordinal));
         }
 
         [Fact]
@@ -90,16 +91,16 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             Assert.Equal(new string[]
             {
-                "/Views/_ViewImports.cshtml",
-                "/Views/_ViewStart.cshtml",
                 "/Views/Home/About.cshtml",
                 "/Views/Home/Contact.cshtml",
                 "/Views/Home/Index.cshtml",
+                "/Views/Shared/Error.cshtml",
                 "/Views/Shared/_Layout.cshtml",
                 "/Views/Shared/_ValidationScriptsPartial.cshtml",
-                "/Views/Shared/Error.cshtml",
+                "/Views/_ViewImports.cshtml",
+                "/Views/_ViewStart.cshtml",
             },
-            resources.OrderBy(r => r));
+            resources.OrderBy(r => r, StringComparer.Ordinal));
         }
 
         private Assembly LoadAssemblyFromBytes(params string[] paths)
