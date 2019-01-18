@@ -172,11 +172,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return Regex.Replace(content, "(?<!\r)\n", "\r\n", RegexOptions.None, TimeSpan.FromSeconds(10));
         }
 
-        internal virtual void BaselineTest(RazorSyntaxTree syntaxTree, bool verifySyntaxTree = true, bool ensureFullFidelity = true)
+        internal virtual void BaselineTest(RazorSyntaxTree syntaxTree, bool verifySyntaxTree = true, bool ensureFullFidelity = true, int? expectedParseLength = null)
         {
             if (verifySyntaxTree)
             {
-                SyntaxTreeVerifier.Verify(syntaxTree, ensureFullFidelity);
+                SyntaxTreeVerifier.Verify(syntaxTree, ensureFullFidelity, expectedParseLength);
             }
 
             AssertSyntaxTreeNodeMatchesBaseline(syntaxTree);
@@ -271,41 +271,31 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return syntaxTree;
         }
 
-        internal virtual void ParseBlockTest(string document)
+        internal virtual void ParseBlockTest(string document, int? expectedParseLength = null)
         {
-            ParseBlockTest(document, null, false);
+            ParseBlockTest(document, null, false, expectedParseLength);
         }
 
-        internal virtual void ParseBlockTest(string document, bool designTime)
+        internal virtual void ParseBlockTest(string document, bool designTime, int? expectedParseLength = null)
         {
-            ParseBlockTest(document, null, designTime);
+            ParseBlockTest(document, null, designTime, expectedParseLength);
         }
 
-        internal virtual void ParseBlockTest(RazorLanguageVersion version, string document)
+        internal virtual void ParseBlockTest(string document, IEnumerable<DirectiveDescriptor> directives, int? expectedParseLength = null)
         {
-            ParseBlockTest(version, document, false);
+            ParseBlockTest(document, directives, false, expectedParseLength);
         }
 
-        internal virtual void ParseBlockTest(string document, IEnumerable<DirectiveDescriptor> directives)
+        internal virtual void ParseBlockTest(string document, IEnumerable<DirectiveDescriptor> directives, bool designTime, int? expectedParseLength = null)
         {
-            ParseBlockTest(document, directives, false);
+            ParseBlockTest(RazorLanguageVersion.Latest, document, directives, designTime, expectedParseLength);
         }
 
-        internal virtual void ParseBlockTest(RazorLanguageVersion version, string document, bool designTime)
-        {
-            ParseBlockTest(version, document, null, designTime);
-        }
-
-        internal virtual void ParseBlockTest(string document, IEnumerable<DirectiveDescriptor> directives, bool designTime)
-        {
-            ParseBlockTest(RazorLanguageVersion.Latest, document, directives, designTime);
-        }
-
-        internal virtual void ParseBlockTest(RazorLanguageVersion version, string document, IEnumerable<DirectiveDescriptor> directives, bool designTime)
+        internal virtual void ParseBlockTest(RazorLanguageVersion version, string document, IEnumerable<DirectiveDescriptor> directives, bool designTime, int? expectedParseLength = null)
         {
             var result = ParseBlock(version, document, directives, designTime);
 
-            BaselineTest(result, ensureFullFidelity: false);
+            BaselineTest(result, expectedParseLength: expectedParseLength);
         }
 
         internal virtual void ParseDocumentTest(string document)
