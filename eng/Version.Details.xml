@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.NET.Sdk.Razor" Version="3.0.0-preview-19068-01">
+    <Dependency Name="Microsoft.NET.Sdk.Razor" Version="3.0.0-preview-19068-02">
       <Uri>https://github.com/aspnet/AspNetCore-Tooling</Uri>
-      <Sha>86270e62d2e8957ad228d5fb921c64986a26b050</Sha>
+      <Sha>5166fec846624811fab64492df835cb7d5ce434a</Sha>
     </Dependency>
     <Dependency Name="dotnet-ef" Version="3.0.0-preview.19068.1">
       <Uri>https://github.com/aspnet/EntityFrameworkCore</Uri>
