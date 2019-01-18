@@ -15,11 +15,11 @@ using Xunit;
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
     [Collection(PublishedSitesCollection.Name)]
-    public class ShutdownTests : IISFunctionalTestBase
+    public class IISExpressShutdownTests : IISFunctionalTestBase
     {
         private readonly PublishedSitesFixture _fixture;
 
-        public ShutdownTests(PublishedSitesFixture fixture)
+        public IISExpressShutdownTests(PublishedSitesFixture fixture)
         {
             _fixture = fixture;
         }
@@ -86,25 +86,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var response = await result.HttpClient.GetAsync("/HelloWorld");
             StopServer(gracefulShutdown: false);
             Assert.True(result.HostProcess.ExitCode == 1);
-        }
-
-        [ConditionalTheory]
-        [InlineData("/ShutdownStopAsync")]
-        [InlineData("/ShutdownStopAsyncWithCancelledToken")]
-        public async Task CallStopAsyncOnRequestThread_DoesNotHangIndefinitely(string path)
-        {
-            var parameters = _fixture.GetBaseDeploymentParameters(publish: true);
-            var deploymentResult = await DeployAsync(parameters);
-            try
-            {
-                await deploymentResult.HttpClient.GetAsync(path);
-            }
-            catch (HttpRequestException ex) when (ex.InnerException is IOException)
-            {
-                // Server might close a connection before request completes
-            }
-
-            deploymentResult.AssertWorkerProcessStop();
         }
     }
 }

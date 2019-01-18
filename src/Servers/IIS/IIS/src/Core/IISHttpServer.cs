@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private static readonly NativeMethods.PFN_SHUTDOWN_HANDLER _shutdownHandler = HandleShutdown;
         private static readonly NativeMethods.PFN_DISCONNECT_HANDLER _onDisconnect = OnDisconnect;
         private static readonly NativeMethods.PFN_ASYNC_COMPLETION _onAsyncCompletion = OnAsyncCompletion;
-        private static readonly NativeMethods.PFN_REQUESTS_DRAINED_HANDLER _drainHandler = OnRequestsDrained;
+        private static readonly NativeMethods.PFN_REQUESTS_DRAINED_HANDLER _requestsDrainedHandler = OnRequestsDrained;
 
         private IISContextFactory _iisContextFactory;
         private readonly MemoryPool<byte> _memoryPool = new SlabMemoryPool();
@@ -35,8 +35,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private readonly IISServerOptions _options;
         private readonly IISNativeApplication _nativeApplication;
         private readonly ServerAddressesFeature _serverAddressesFeature;
-
-        private CancellationTokenRegistration _stopRegistration;
 
         private readonly TaskCompletionSource<object> _shutdownSignal = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
         private bool? _websocketAvailable;
@@ -88,7 +86,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             _httpServerHandle = GCHandle.Alloc(this);
 
             _iisContextFactory = new IISContextFactory<TContext>(_memoryPool, application, _options, this, _logger);
-            _nativeApplication.RegisterCallbacks(_requestHandler, _shutdownHandler, _onDisconnect, _onAsyncCompletion, _drainHandler, (IntPtr)_httpServerHandle, (IntPtr)_httpServerHandle);
+            _nativeApplication.RegisterCallbacks(_requestHandler, _shutdownHandler, _onDisconnect, _onAsyncCompletion, _requestsDrainedHandler, (IntPtr)_httpServerHandle, (IntPtr)_httpServerHandle);
 
             _serverAddressesFeature.Addresses = _options.ServerAddresses;
 
@@ -98,18 +96,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         public Task StopAsync(CancellationToken cancellationToken)
         {
             _nativeApplication.StopIncomingRequests();
-
-            try
-            {
-                _stopRegistration = cancellationToken.Register(() =>
-                {
-                    _shutdownSignal.TrySetResult(null);
-                });
-            }
-            catch (Exception ex)
-            {
-                _shutdownSignal.TrySetException(ex);
-            }
 
             return _shutdownSignal.Task;
         }
@@ -206,13 +192,13 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
                 server._nativeApplication.StopCallsIntoManaged();
                 server._shutdownSignal.TrySetResult(null);
-                server._stopRegistration.Dispose();
             }
             catch (Exception ex)
             {
                 server?._logger.LogError(0, ex, $"Unexpected exception in {nameof(IISHttpServer)}.{nameof(OnRequestsDrained)}.");
             }
         }
+
         private class IISContextFactory<T> : IISContextFactory
         {
             private readonly IHttpApplication<T> _application;

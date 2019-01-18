@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -338,25 +339,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             EventLogHelpers.VerifyEventLogEvents(deploymentResult,
                 EventLogHelpers.InProcessFailedToStart(deploymentResult, "Managed server didn't initialize after 1000 ms.")
                 );
-        }
-
-        [ConditionalFact]
-        public async Task ShutdownTimeoutIsApplied()
-        {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite, publish: true);
-            deploymentParameters.TransformArguments((a, _) => $"{a} HangOnStop");
-            deploymentParameters.WebConfigActionList.Add(
-                WebConfigHelpers.AddOrModifyAspNetCoreSection("shutdownTimeLimit", "1"));
-
-            var deploymentResult = await DeployAsync(deploymentParameters);
-
-            Assert.Equal("Hello World", await deploymentResult.HttpClient.GetStringAsync("/HelloWorld"));
-
-            StopServer();
-
-            EventLogHelpers.VerifyEventLogEvents(deploymentResult,
-                EventLogHelpers.InProcessStarted(deploymentResult),
-                EventLogHelpers.InProcessFailedToStop(deploymentResult, ""));
         }
 
         [ConditionalFact]
