@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Http.Features
     public class HttpRequestIdentifierFeature : IHttpRequestIdentifierFeature
     {
         // Base32 encoding - in ascii sort order for easy text based sorting
-        private static readonly string _encode32Chars = "0123456789ABCDEFGHIJKLMNOPQRSTUV";
+        private static readonly char[] s_encode32Chars = "0123456789ABCDEFGHIJKLMNOPQRSTUV".ToCharArray();
         // Seed the _requestId for this application instance with
         // the number of 100-nanosecond intervals that have elapsed since 12:00:00 midnight, January 1, 0001
         // for a roughly increasing _requestId over restarts
@@ -36,26 +36,23 @@ namespace Microsoft.AspNetCore.Http.Features
 
         private static string GenerateRequestId(long id)
         {
-            // The following routine is ~310% faster than calling long.ToString() on x64
-            // and ~600% faster than calling long.ToString() on x86 in tight loops of 1 million+ iterations
-            // See: https://github.com/aspnet/Hosting/pull/385
-
-            // stackalloc to allocate array on stack rather than heap
-            return string.Create(13, id, (span, value) =>
+            return string.Create(13, id, (buffer, value) =>
             {
-                span[12] = _encode32Chars[(int)value & 31];
-                span[11] = _encode32Chars[(int)(value >> 5) & 31];
-                span[10] = _encode32Chars[(int)(value >> 10) & 31];
-                span[9] = _encode32Chars[(int)(value >> 15) & 31];
-                span[8] = _encode32Chars[(int)(value >> 20) & 31];
-                span[7] = _encode32Chars[(int)(value >> 25) & 31];
-                span[6] = _encode32Chars[(int)(value >> 30) & 31];
-                span[5] = _encode32Chars[(int)(value >> 35) & 31];
-                span[4] = _encode32Chars[(int)(value >> 40) & 31];
-                span[3] = _encode32Chars[(int)(value >> 45) & 31];
-                span[2] = _encode32Chars[(int)(value >> 50) & 31];
-                span[1] = _encode32Chars[(int)(value >> 55) & 31];
-                span[0] = _encode32Chars[(int)(value >> 60) & 31];
+                char[] encode32Chars = s_encode32Chars;
+
+                buffer[12] = encode32Chars[value & 31];
+                buffer[11] = encode32Chars[(value >> 5) & 31];
+                buffer[10] = encode32Chars[(value >> 10) & 31];
+                buffer[9] = encode32Chars[(value >> 15) & 31];
+                buffer[8] = encode32Chars[(value >> 20) & 31];
+                buffer[7] = encode32Chars[(value >> 25) & 31];
+                buffer[6] = encode32Chars[(value >> 30) & 31];
+                buffer[5] = encode32Chars[(value >> 35) & 31];
+                buffer[4] = encode32Chars[(value >> 40) & 31];
+                buffer[3] = encode32Chars[(value >> 45) & 31];
+                buffer[2] = encode32Chars[(value >> 50) & 31];
+                buffer[1] = encode32Chars[(value >> 55) & 31];
+                buffer[0] = encode32Chars[(value >> 60) & 31];
             });
         }
     }

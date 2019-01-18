@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             return isValid;
         }
 
-        private static readonly string _encode16Chars = "0123456789ABCDEF";
+        private static readonly char[] s_encode16Chars = "0123456789ABCDEF".ToCharArray();
 
         /// <summary>
         /// A faster version of String.Concat(<paramref name="str"/>, <paramref name="separator"/>, <paramref name="number"/>.ToString("X8"))
@@ -126,26 +126,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 length += str.Length;
             }
 
-            return string.Create(length, (str, separator, number), (charBuffer, tuple) =>
+            return string.Create(length, (str, separator, number), (buffer, tuple) =>
             {
+                var (tupleStr, tupleSeparator, tupleNumber) = tuple;
+                char[] encode16Chars = s_encode16Chars;
+
                 var i = 0;
-                if (tuple.str != null)
+                if (tupleStr != null)
                 {
-                    for (i = 0; i < tuple.str.Length; i++)
-                    {
-                        charBuffer[i] = tuple.str[i];
-                    }
+                    tupleStr.AsSpan().CopyTo(buffer);
+                    i = tupleStr.Length;
                 }
-                
-                charBuffer[i + 8] = _encode16Chars[(int)tuple.number & 0xF];
-                charBuffer[i + 7] = _encode16Chars[(int)(tuple.number >> 4) & 0xF];
-                charBuffer[i + 6] = _encode16Chars[(int)(tuple.number >> 8) & 0xF];
-                charBuffer[i + 5] = _encode16Chars[(int)(tuple.number >> 12) & 0xF];
-                charBuffer[i + 4] = _encode16Chars[(int)(tuple.number >> 16) & 0xF];
-                charBuffer[i + 3] = _encode16Chars[(int)(tuple.number >> 20) & 0xF];
-                charBuffer[i + 2] = _encode16Chars[(int)(tuple.number >> 24) & 0xF];
-                charBuffer[i + 1] = _encode16Chars[(int)(tuple.number >> 28) & 0xF];
-                charBuffer[i] = tuple.separator;
+
+                buffer[i + 8] = encode16Chars[tupleNumber & 0xF];
+                buffer[i + 7] = encode16Chars[(tupleNumber >> 4) & 0xF];
+                buffer[i + 6] = encode16Chars[(tupleNumber >> 8) & 0xF];
+                buffer[i + 5] = encode16Chars[(tupleNumber >> 12) & 0xF];
+                buffer[i + 4] = encode16Chars[(tupleNumber >> 16) & 0xF];
+                buffer[i + 3] = encode16Chars[(tupleNumber >> 20) & 0xF];
+                buffer[i + 2] = encode16Chars[(tupleNumber >> 24) & 0xF];
+                buffer[i + 1] = encode16Chars[(tupleNumber >> 28) & 0xF];
+                buffer[i] = tupleSeparator;
             });
         }
 
