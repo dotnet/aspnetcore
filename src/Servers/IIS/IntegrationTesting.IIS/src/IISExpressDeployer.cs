@@ -453,19 +453,23 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             internal static extern bool PostMessage(HandleRef hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
         }
 
-        private static void SendStopMessageToProcess(int pid)
+        private void SendStopMessageToProcess(int pid)
         {
+            Logger.LogInformation($"Sending shutdown request to {pid}");
             for (var ptr = WindowsNativeMethods.GetTopWindow(IntPtr.Zero); ptr != IntPtr.Zero; ptr = WindowsNativeMethods.GetWindow(ptr, 2))
             {
-                uint num;
-                WindowsNativeMethods.GetWindowThreadProcessId(ptr, out num);
-                if (pid == num)
+                WindowsNativeMethods.GetWindowThreadProcessId(ptr, out var windowProcessId);
+                if (pid == windowProcessId)
                 {
                     var hWnd = new HandleRef(null, ptr);
-                    WindowsNativeMethods.PostMessage(hWnd, 0x12, IntPtr.Zero, IntPtr.Zero);
+                    if (!WindowsNativeMethods.PostMessage(hWnd, 0x12, IntPtr.Zero, IntPtr.Zero))
+                    {
+                        throw new InvalidOperationException($"Unable to PostMessage to process {pid}. LastError: {Marshal.GetLastWin32Error()}");
+                    }
                     return;
                 }
             }
+            throw new InvalidOperationException($"Unable to find main window for process {pid}");
         }
 
         private void GracefullyShutdownProcess(Process hostProcess)
