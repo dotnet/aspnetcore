@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Server.IIS
             PFN_SHUTDOWN_HANDLER shutdownCallback,
             PFN_DISCONNECT_HANDLER disconnectCallback,
             PFN_ASYNC_COMPLETION asyncCallback,
-            PFN_REQUESTS_DRAINED_HANDLER drainHandler,
+            PFN_REQUESTS_DRAINED_HANDLER requestsDrainedHandler,
             IntPtr pvRequestContext,
             IntPtr pvShutdownContext);
 
@@ -162,11 +162,11 @@ namespace Microsoft.AspNetCore.Server.IIS
             PFN_SHUTDOWN_HANDLER shutdownCallback,
             PFN_DISCONNECT_HANDLER disconnectCallback,
             PFN_ASYNC_COMPLETION asyncCallback,
-            PFN_REQUESTS_DRAINED_HANDLER drainHandler,
+            PFN_REQUESTS_DRAINED_HANDLER requestsDrainedHandler,
             IntPtr pvRequestContext,
             IntPtr pvShutdownContext)
         {
-            Validate(register_callbacks(pInProcessApplication, requestCallback, shutdownCallback, disconnectCallback, asyncCallback, drainHandler, pvRequestContext, pvShutdownContext));
+            Validate(register_callbacks(pInProcessApplication, requestCallback, shutdownCallback, disconnectCallback, asyncCallback, requestsDrainedHandler, pvRequestContext, pvShutdownContext));
         }
 
         public static unsafe int HttpWriteResponseBytes(IntPtr pInProcessHandler, HttpApiTypes.HTTP_DATA_CHUNK* pDataChunks, int nChunks, out bool fCompletionExpected)

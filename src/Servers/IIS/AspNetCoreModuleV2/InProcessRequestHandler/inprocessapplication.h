@@ -162,7 +162,7 @@ private:
 
     PFN_ASYNC_COMPLETION_HANDLER    m_AsyncCompletionHandler;
     PFN_DISCONNECT_HANDLER          m_DisconnectHandler;
-    PFN_REQUESTS_DRAINED_HANDLER               m_RequestsDrainedHandler;
+    PFN_REQUESTS_DRAINED_HANDLER    m_RequestsDrainedHandler;
 
     std::wstring                    m_dotnetExeKnownLocation;
 
