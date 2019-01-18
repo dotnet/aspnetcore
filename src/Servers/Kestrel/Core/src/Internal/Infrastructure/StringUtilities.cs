@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -136,17 +136,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                         charBuffer[i] = tuple.str[i];
                     }
                 }
-
-                charBuffer[i] = tuple.separator;
-
-                charBuffer[i + 1] = _encode16Chars[(int)(tuple.number >> 28) & 0xF];
-                charBuffer[i + 2] = _encode16Chars[(int)(tuple.number >> 24) & 0xF];
-                charBuffer[i + 3] = _encode16Chars[(int)(tuple.number >> 20) & 0xF];
-                charBuffer[i + 4] = _encode16Chars[(int)(tuple.number >> 16) & 0xF];
-                charBuffer[i + 5] = _encode16Chars[(int)(tuple.number >> 12) & 0xF];
-                charBuffer[i + 6] = _encode16Chars[(int)(tuple.number >> 8) & 0xF];
-                charBuffer[i + 7] = _encode16Chars[(int)(tuple.number >> 4) & 0xF];
+                
                 charBuffer[i + 8] = _encode16Chars[(int)tuple.number & 0xF];
+                charBuffer[i + 7] = _encode16Chars[(int)(tuple.number >> 4) & 0xF];
+                charBuffer[i + 6] = _encode16Chars[(int)(tuple.number >> 8) & 0xF];
+                charBuffer[i + 5] = _encode16Chars[(int)(tuple.number >> 12) & 0xF];
+                charBuffer[i + 4] = _encode16Chars[(int)(tuple.number >> 16) & 0xF];
+                charBuffer[i + 3] = _encode16Chars[(int)(tuple.number >> 20) & 0xF];
+                charBuffer[i + 2] = _encode16Chars[(int)(tuple.number >> 24) & 0xF];
+                charBuffer[i + 1] = _encode16Chars[(int)(tuple.number >> 28) & 0xF];
+                charBuffer[i] = tuple.separator;
             });
         }
 
