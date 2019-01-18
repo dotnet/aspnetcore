@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Http
             }
 
             byte[] data = encoding.GetBytes(text);
-            return response.Body.WriteAsync(data, 0, data.Length, cancellationToken);
+            return response.BodyPipe.WriteAsync(new Memory<byte>(data, 0, data.Length), cancellationToken).AsTask();
         }
     }
 }

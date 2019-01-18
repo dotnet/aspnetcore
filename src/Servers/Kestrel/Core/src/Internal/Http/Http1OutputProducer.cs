@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Text;
 using System.Threading;
@@ -26,14 +27,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private readonly IHttpMinResponseDataRateFeature _minResponseDataRateFeature;
         private readonly TimingPipeFlusher _flusher;
 
-        // This locks access to to all of the below fields
+        // This locks access to all of the below fields
         private readonly object _contextLock = new object();
 
         private bool _completed = false;
         private bool _aborted;
         private long _unflushedBytes;
-
+        private bool _autoChunk;
         private readonly PipeWriter _pipeWriter;
+
+        private const int BeginChunkLengthMax = 5;
+        private const int EndChunkLength = 2;
+
+        // Chunked responses need to be treated uniquely when using GetMemory + Advance.
+        // We need to know the size of the data written to the chunk before calling Advance on the
+        // PipeWriter, meaning we internally track how far we have advanced through a current chunk (_advancedBytesForChunk).
+        // Once write or flush is called, we modify the _currentChunkMemory to prepend the size of data written
+        // and append the end terminator.
+        private int _advancedBytesForChunk;
+        private Memory<byte> _currentChunkMemory;
 
         public Http1OutputProducer(
             PipeWriter pipeWriter,
@@ -58,27 +70,91 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 return Task.FromCanceled(cancellationToken);
             }
 
+            return WriteAsync(buffer, cancellationToken).AsTask();
+        }
+
+        public ValueTask<FlushResult> WriteDataToPipeAsync(ReadOnlySpan<byte> buffer, CancellationToken cancellationToken = default)
+        {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return new ValueTask<FlushResult>(Task.FromCanceled<FlushResult>(cancellationToken));
+            }
+
             return WriteAsync(buffer, cancellationToken);
         }
 
-        public Task WriteStreamSuffixAsync()
+        public ValueTask<FlushResult> WriteStreamSuffixAsync()
         {
             return WriteAsync(_endChunkedResponseBytes.Span);
         }
 
-        public Task FlushAsync(CancellationToken cancellationToken = default)
+        public ValueTask<FlushResult> FlushAsync(CancellationToken cancellationToken = default)
         {
             return WriteAsync(Constants.EmptyData, cancellationToken);
         }
 
-        public Task WriteChunkAsync(ReadOnlySpan<byte> buffer, CancellationToken cancellationToken)
+        public Memory<byte> GetMemory(int sizeHint = 0)
+        {
+            if (_autoChunk)
+            {
+                return GetChunkedMemory(sizeHint);
+            }
+            else
+            {
+                return _pipeWriter.GetMemory(sizeHint);
+            }
+        }
+
+        public Span<byte> GetSpan(int sizeHint = 0)
+        {
+            if (_autoChunk)
+            {
+                return GetChunkedMemory(sizeHint).Span;
+            }
+            else
+            {
+                return _pipeWriter.GetMemory(sizeHint).Span;
+            }
+        }
+
+        public void Advance(int bytes)
+        {
+            if (_autoChunk)
+            {
+                if (bytes < 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(bytes));
+                }
+
+                if (bytes + _advancedBytesForChunk > _currentChunkMemory.Length - BeginChunkLengthMax - EndChunkLength)
+                {
+                    throw new InvalidOperationException("Can't advance past buffer size.");
+                }
+                _advancedBytesForChunk += bytes;
+            }
+            else
+            {
+                _pipeWriter.Advance(bytes);
+            }
+        }
+
+        public void CancelPendingFlush()
+        {
+            // TODO we may not want to support this.
+            _pipeWriter.CancelPendingFlush();
+        }
+
+        // This method is for chunked http responses
+        public ValueTask<FlushResult> WriteChunkAsync(ReadOnlySpan<byte> buffer, CancellationToken cancellationToken)
         {
             lock (_contextLock)
             {
                 if (_completed)
                 {
-                    return Task.CompletedTask;
+                    return default;
                 }
+
+                CommitChunkToPipe();
 
                 if (buffer.Length > 0)
                 {
@@ -96,7 +172,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return FlushAsync(cancellationToken);
         }
 
-        public void WriteResponseHeaders(int statusCode, string reasonPhrase, HttpResponseHeaders responseHeaders)
+        public void WriteResponseHeaders(int statusCode, string reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk)
         {
             lock (_contextLock)
             {
@@ -117,6 +193,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 writer.Commit();
 
                 _unflushedBytes += writer.BytesCommitted;
+                _autoChunk = autoChunk;
             }
         }
 
@@ -139,7 +216,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             // Abort can be called after Dispose if there's a flush timeout.
             // It's important to still call _lifetimeFeature.Abort() in this case.
-
             lock (_contextLock)
             {
                 if (_aborted)
@@ -153,12 +229,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        public Task Write100ContinueAsync()
+        public ValueTask<FlushResult> Write100ContinueAsync()
         {
             return WriteAsync(_continueBytes.Span);
         }
 
-        private Task WriteAsync(
+        public void Complete(Exception exception = null)
+        {
+            // TODO What to do with exception.
+            // and how to handle writing to response here.
+        }
+
+        private ValueTask<FlushResult> WriteAsync(
             ReadOnlySpan<byte> buffer,
             CancellationToken cancellationToken = default)
         {
@@ -166,7 +248,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 if (_completed)
                 {
-                    return Task.CompletedTask;
+                    return default;
+                }
+
+                if (_autoChunk)
+                {
+                    // If there is data that was chunked before writing (ex someone did GetMemory->Advance->WriteAsync)
+                    // make sure to write whatever was advanced first
+                    CommitChunkToPipe();
                 }
 
                 var writer = new BufferWriter<PipeWriter>(_pipeWriter);
@@ -186,6 +275,57 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     bytesWritten,
                     this,
                     cancellationToken);
+            }
+        }
+
+        private Memory<byte> GetChunkedMemory(int sizeHint)
+        {
+            // The max size of a chunk will be the size of memory returned from the PipeWriter (today 4096)
+            // minus 5 for the max chunked prefix size and minus 2 for the chunked ending, leaving a total of
+            // 4089.
+
+            if (_currentChunkMemory.Length == 0)
+            {
+                // First time calling GetMemory
+                _currentChunkMemory = _pipeWriter.GetMemory(sizeHint);
+            }
+
+            var memoryMaxLength = _currentChunkMemory.Length - BeginChunkLengthMax - EndChunkLength;
+            if (_advancedBytesForChunk == memoryMaxLength)
+            {
+                // Chunk is completely written, commit it to the pipe so GetMemory will return a new chunk of memory.
+                CommitChunkToPipe();
+                _currentChunkMemory = _pipeWriter.GetMemory(sizeHint);
+            }
+
+            var actualMemory = _currentChunkMemory.Slice(
+                BeginChunkLengthMax + _advancedBytesForChunk,
+                memoryMaxLength - _advancedBytesForChunk);
+
+            return actualMemory;
+        }
+
+        private void CommitChunkToPipe()
+        {
+            var writer = new BufferWriter<PipeWriter>(_pipeWriter);
+
+            Debug.Assert(_advancedBytesForChunk <= _currentChunkMemory.Length);
+
+            if (_advancedBytesForChunk > 0)
+            {
+                var bytesWritten = writer.WriteBeginChunkBytes(_advancedBytesForChunk);
+                if (bytesWritten < BeginChunkLengthMax)
+                {
+                    // If the current chunk of memory isn't completely utilized, we need to copy the contents forwards.
+                    // This occurs if someone uses less than 255 bytes of the current Memory segment.
+                    // Therefore, we need to copy it forwards by either 1 or 2 bytes (depending on number of bytes)
+                    _currentChunkMemory.Slice(BeginChunkLengthMax, _advancedBytesForChunk).CopyTo(_currentChunkMemory.Slice(bytesWritten));
+                }
+
+                writer.Write(_currentChunkMemory.Slice(bytesWritten, _advancedBytesForChunk).Span);
+                writer.WriteEndChunkBytes();
+                writer.Commit();
+                _advancedBytesForChunk = 0;
             }
         }
     }

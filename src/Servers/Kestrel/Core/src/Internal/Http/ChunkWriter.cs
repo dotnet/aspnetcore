@@ -44,13 +44,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return count;
         }
 
-        internal static void WriteBeginChunkBytes(this ref BufferWriter<PipeWriter> start, int dataCount)
+        internal static int WriteBeginChunkBytes(this ref BufferWriter<PipeWriter> start, int dataCount)
         {
             // 10 bytes is max length + \r\n
             start.Ensure(10);
 
             var count = BeginChunkBytes(dataCount, start.Span);
             start.Advance(count);
+            return count;
         }
 
         internal static void WriteEndChunkBytes(this ref BufferWriter<PipeWriter> start)

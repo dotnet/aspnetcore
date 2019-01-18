@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -9,12 +10,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     public interface IHttpOutputProducer
     {
-        Task WriteChunkAsync(ReadOnlySpan<byte> data, CancellationToken cancellationToken);
-        Task FlushAsync(CancellationToken cancellationToken);
-        Task Write100ContinueAsync();
-        void WriteResponseHeaders(int statusCode, string ReasonPhrase, HttpResponseHeaders responseHeaders);
+        ValueTask<FlushResult> WriteChunkAsync(ReadOnlySpan<byte> data, CancellationToken cancellationToken);
+        ValueTask<FlushResult> FlushAsync(CancellationToken cancellationToken);
+        ValueTask<FlushResult> Write100ContinueAsync();
+        void WriteResponseHeaders(int statusCode, string ReasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk);
         // This takes ReadOnlySpan instead of ReadOnlyMemory because it always synchronously copies data before flushing.
+        ValueTask<FlushResult> WriteDataToPipeAsync(ReadOnlySpan<byte> data, CancellationToken cancellationToken);
         Task WriteDataAsync(ReadOnlySpan<byte> data, CancellationToken cancellationToken);
-        Task WriteStreamSuffixAsync();
+        ValueTask<FlushResult> WriteStreamSuffixAsync();
+        void Advance(int bytes);
+        Span<byte> GetSpan(int sizeHint = 0);
+        Memory<byte> GetMemory(int sizeHint = 0);
+        void CancelPendingFlush();
+        void Complete(Exception exception = null);
     }
 }

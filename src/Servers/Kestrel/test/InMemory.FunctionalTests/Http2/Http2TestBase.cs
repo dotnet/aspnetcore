@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _mockConnectionContext.Setup(c => c.Abort(It.IsAny<ConnectionAbortedException>())).Callback<ConnectionAbortedException>(ex =>
             {
                 // Emulate transport abort so the _connectionTask completes.
-                _pair.Application.Output.Complete(ex);
+                Task.Run(() => _pair.Application.Output.Complete(ex));
             });
 
             _noopApplication = context => Task.CompletedTask;
@@ -380,7 +380,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _serviceContext = new TestServiceContext(LoggerFactory, _mockKestrelTrace.Object)
             {
-                Scheduler = PipeScheduler.Inline
+                Scheduler = PipeScheduler.Inline,
             };
         }
 

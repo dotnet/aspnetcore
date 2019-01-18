@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private readonly IKestrelTrace _log;
 
         private readonly object _flushLock = new object();
-        private Task _lastFlushTask = Task.CompletedTask;
+        private Task<FlushResult> _lastFlushTask = null;
 
         public TimingPipeFlusher(
             PipeWriter writer,
@@ -34,22 +34,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             _log = log;
         }
 
-        public Task FlushAsync()
+        public ValueTask<FlushResult> FlushAsync()
         {
             return FlushAsync(outputAborter: null, cancellationToken: default);
         }
 
-        public Task FlushAsync(IHttpOutputAborter outputAborter, CancellationToken cancellationToken)
+        public ValueTask<FlushResult> FlushAsync(IHttpOutputAborter outputAborter, CancellationToken cancellationToken)
         {
             return FlushAsync(minRate: null, count: 0, outputAborter: outputAborter, cancellationToken: cancellationToken);
         }
 
-        public Task FlushAsync(MinDataRate minRate, long count)
+        public ValueTask<FlushResult> FlushAsync(MinDataRate minRate, long count)
         {
             return FlushAsync(minRate, count, outputAborter: null, cancellationToken: default);
         }
 
-        public Task FlushAsync(MinDataRate minRate, long count, IHttpOutputAborter outputAborter, CancellationToken cancellationToken)
+        public ValueTask<FlushResult> FlushAsync(MinDataRate minRate, long count, IHttpOutputAborter outputAborter, CancellationToken cancellationToken)
         {
             var flushValueTask = _writer.FlushAsync(cancellationToken);
 
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
             if (flushValueTask.IsCompletedSuccessfully)
             {
-                return Task.CompletedTask;
+                return new ValueTask<FlushResult>(flushValueTask.Result);
             }
 
             // https://github.com/dotnet/corefxlab/issues/1334
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             // we find previous flush Task which still accounts for any newly committed bytes and await that.
             lock (_flushLock)
             {
-                if (_lastFlushTask.IsCompleted)
+                if (_lastFlushTask == null || _lastFlushTask.IsCompleted)
                 {
                     _lastFlushTask = flushValueTask.AsTask();
                 }
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
         }
 
-        private async Task TimeFlushAsync(MinDataRate minRate, long count, IHttpOutputAborter outputAborter, CancellationToken cancellationToken)
+        private async ValueTask<FlushResult> TimeFlushAsync(MinDataRate minRate, long count, IHttpOutputAborter outputAborter, CancellationToken cancellationToken)
         {
             if (minRate != null)
             {
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
             try
             {
-                await _lastFlushTask;
+                return await _lastFlushTask;
             }
             catch (OperationCanceledException ex) when (outputAborter != null)
             {
@@ -99,13 +99,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 // A canceled token is the only reason flush should ever throw.
                 _log.LogError(0, ex, $"Unexpected exception in {nameof(TimingPipeFlusher)}.{nameof(TimeFlushAsync)}.");
             }
-
-            if (minRate != null)
+            finally
             {
-                _timeoutControl.StopTimingWrite();
+                if (minRate != null)
+                {
+                    _timeoutControl.StopTimingWrite();
+                }
+
+                cancellationToken.ThrowIfCancellationRequested();
             }
 
-            cancellationToken.ThrowIfCancellationRequested();
+            return default;
         }
     }
 }

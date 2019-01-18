@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -18,11 +18,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private readonly HttpRequestStream _emptyRequest;
         private readonly Stream _upgradeStream;
 
-        public Streams(IHttpBodyControlFeature bodyControl, IHttpResponseControl httpResponseControl)
+        public Streams(IHttpBodyControlFeature bodyControl, HttpResponsePipeWriter writer)
         {
             _request = new HttpRequestStream(bodyControl);
             _emptyRequest = new HttpRequestStream(bodyControl);
-            _response = new HttpResponseStream(bodyControl, httpResponseControl);
+            _response = new HttpResponseStream(bodyControl, writer);
             _upgradeableResponse = new WrappingStream(_response);
             _upgradeStream = new HttpUpgradeStream(_request, _response);
         }

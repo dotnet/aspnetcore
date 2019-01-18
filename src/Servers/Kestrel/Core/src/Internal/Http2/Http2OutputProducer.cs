@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private readonly Http2Stream _stream;
         private readonly object _dataWriterLock = new object();
         private readonly Pipe _dataPipe;
-        private readonly Task _dataWriteProcessingTask;
+        private readonly ValueTask<FlushResult> _dataWriteProcessingTask;
         private bool _startedWritingDataFrames;
         private bool _completed;
         private bool _disposed;
@@ -88,18 +88,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             throw new NotImplementedException();
         }
 
-        public Task FlushAsync(CancellationToken cancellationToken)
+        public ValueTask<FlushResult> FlushAsync(CancellationToken cancellationToken)
         {
             if (cancellationToken.IsCancellationRequested)
             {
-                return Task.FromCanceled(cancellationToken);
+                return new ValueTask<FlushResult>(Task.FromCanceled<FlushResult>(cancellationToken));
             }
 
             lock (_dataWriterLock)
             {
                 if (_completed)
                 {
-                    return Task.CompletedTask;
+                    return default;
                 }
 
                 if (_startedWritingDataFrames)
@@ -117,20 +117,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        public Task Write100ContinueAsync()
+        public ValueTask<FlushResult> Write100ContinueAsync()
         {
             lock (_dataWriterLock)
             {
                 if (_completed)
                 {
-                    return Task.CompletedTask;
+                    return default;
                 }
 
                 return _frameWriter.Write100ContinueAsync(_streamId);
             }
         }
 
-        public void WriteResponseHeaders(int statusCode, string ReasonPhrase, HttpResponseHeaders responseHeaders)
+        public void WriteResponseHeaders(int statusCode, string ReasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk)
         {
             lock (_dataWriterLock)
             {
@@ -164,17 +164,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 _startedWritingDataFrames = true;
 
                 _dataPipe.Writer.Write(data);
-                return _flusher.FlushAsync(this, cancellationToken);
+                return _flusher.FlushAsync(this, cancellationToken).AsTask();
             }
         }
 
-        public Task WriteStreamSuffixAsync()
+        public ValueTask<FlushResult> WriteStreamSuffixAsync()
         {
             lock (_dataWriterLock)
             {
                 if (_completed)
                 {
-                    return Task.CompletedTask;
+                    return default;
                 }
 
                 _completed = true;
@@ -184,7 +184,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        public Task WriteRstStreamAsync(Http2ErrorCode error)
+        public ValueTask<FlushResult> WriteRstStreamAsync(Http2ErrorCode error)
         {
             lock (_dataWriterLock)
             {
@@ -196,8 +196,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        private async Task ProcessDataWrites()
+        private async ValueTask<FlushResult> ProcessDataWrites()
         {
+            FlushResult flushResult = default;
             try
             {
                 ReadResult readResult;
@@ -210,14 +211,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     {
                         if (readResult.Buffer.Length > 0)
                         {
-                            await _frameWriter.WriteDataAsync(_streamId, _flowControl, readResult.Buffer, endStream: false);
+                            flushResult = await _frameWriter.WriteDataAsync(_streamId, _flowControl, readResult.Buffer, endStream: false);
                         }
 
-                        await _frameWriter.WriteResponseTrailers(_streamId, _stream.Trailers);
+                        flushResult = await _frameWriter.WriteResponseTrailers(_streamId, _stream.Trailers);
                     }
                     else
                     {
-                        await _frameWriter.WriteDataAsync(_streamId, _flowControl, readResult.Buffer, endStream: readResult.IsCompleted);
+                        flushResult = await _frameWriter.WriteDataAsync(_streamId, _flowControl, readResult.Buffer, endStream: readResult.IsCompleted);
                     }
 
                     _dataPipe.Reader.AdvanceTo(readResult.Buffer.End);
@@ -233,6 +234,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
 
             _dataPipe.Reader.Complete();
+
+            return flushResult;
         }
 
         private static Pipe CreateDataPipe(MemoryPool<byte> pool)
@@ -246,5 +249,61 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 useSynchronizationContext: false,
                 minimumSegmentSize: KestrelMemoryPool.MinimumSegmentSize
             ));
+
+        public void Advance(int bytes)
+        {
+            _startedWritingDataFrames = true;
+
+            _dataPipe.Writer.Advance(bytes);
+        }
+
+        public Span<byte> GetSpan(int sizeHint = 0)
+        {
+            return _dataPipe.Writer.GetSpan(sizeHint);
+        }
+
+        public Memory<byte> GetMemory(int sizeHint = 0)
+        {
+            return _dataPipe.Writer.GetMemory(sizeHint);
+        }
+
+        public void CancelPendingFlush()
+        {
+            _dataPipe.Writer.CancelPendingFlush();
+        }
+
+        public ValueTask<FlushResult> WriteDataToPipeAsync(ReadOnlySpan<byte> data, CancellationToken cancellationToken)
+        {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return new ValueTask<FlushResult>(Task.FromCanceled<FlushResult>(cancellationToken));
+            }
+
+            lock (_dataWriterLock)
+            {
+                // This length check is important because we don't want to set _startedWritingDataFrames unless a data
+                // frame will actually be written causing the headers to be flushed.
+                if (_completed || data.Length == 0)
+                {
+                    return default;
+                }
+
+                _startedWritingDataFrames = true;
+
+                _dataPipe.Writer.Write(data);
+                return _flusher.FlushAsync(this, cancellationToken);
+            }
+        }
+
+        ValueTask<FlushResult> IHttpOutputProducer.WriteChunkAsync(ReadOnlySpan<byte> data, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Complete(Exception exception = null)
+        {
+            // TODO What to do with exception.
+            // and how to handle writing to response here.
+        }
     }
 }

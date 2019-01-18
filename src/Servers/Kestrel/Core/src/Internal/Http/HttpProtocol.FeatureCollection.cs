@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.IO;
+using System.IO.Pipelines;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,7 +23,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                                         IHttpRequestIdentifierFeature,
                                         IHttpBodyControlFeature,
                                         IHttpMaxRequestBodySizeFeature,
-                                        IHttpResponseStartFeature
+                                        IHttpResponseStartFeature,
+                                        IResponseBodyPipeFeature
     {
         // NOTE: When feature interfaces are added to or removed from this HttpProtocol class implementation,
         // then the list of `implementedFeatures` in the generated code project MUST also be updated.
@@ -111,12 +114,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set => ResponseHeaders = value;
         }
 
-        Stream IHttpResponseFeature.Body
-        {
-            get => ResponseBody;
-            set => ResponseBody = value;
-        }
-
         CancellationToken IHttpRequestLifetimeFeature.RequestAborted
         {
             get => RequestAborted;
@@ -190,6 +187,64 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
 
                 MaxRequestBodySize = value;
+            }
+        }
+
+        PipeWriter IResponseBodyPipeFeature.ResponseBodyPipe
+        {
+            get
+            {
+                if (_userSetPipeWriter != null)
+                {
+                    return _userSetPipeWriter;
+                }
+
+                if (!object.ReferenceEquals(_cachedResponseBodyStream, ResponseBody))
+                {
+                    var responsePipeWriter = new StreamPipeWriter(ResponseBody);
+                    ResponsePipeWriter = responsePipeWriter;
+                    _cachedResponseBodyStream = ResponseBody;
+                    OnCompleted((rpw) =>
+                    {
+                        ((StreamPipeWriter)rpw).Dispose();
+                        return Task.CompletedTask;
+                    }, responsePipeWriter);
+
+                }
+
+                return ResponsePipeWriter;
+            }
+            set
+            {
+                _userSetPipeWriter = value ?? throw new ArgumentNullException(nameof(value));
+                ResponsePipeWriter = _userSetPipeWriter;
+            }
+        }
+
+
+        Stream IHttpResponseFeature.Body
+        {
+            get
+            {
+                if (_userSetResponseBody != null)
+                {
+                    return _userSetResponseBody;
+                }
+
+                if (!object.ReferenceEquals(_cachedResponsePipeWriter, ResponsePipeWriter))
+                {
+                    var responseBody = new WriteOnlyPipeStream(ResponsePipeWriter);
+                    ResponseBody = responseBody;
+                    _cachedResponsePipeWriter = ResponsePipeWriter;
+                    OnCompleted(async (rb) => await ((WriteOnlyPipeStream)rb).DisposeAsync(), responseBody);
+                }
+
+                return ResponseBody;
+            }
+            set
+            {
+                _userSetResponseBody = value ?? throw new ArgumentNullException(nameof(value));
+                ResponseBody = _userSetResponseBody;
             }
         }
 

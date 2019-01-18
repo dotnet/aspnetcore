@@ -705,7 +705,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     }
                 }
 
-                return ackTask;
+                return ackTask.AsTask();
             }
             catch (Http2SettingsParameterOutOfRangeException ex)
             {
@@ -738,7 +738,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 return Task.CompletedTask;
             }
 
-            return _frameWriter.WritePingAsync(Http2PingFrameFlags.ACK, payload);
+            return _frameWriter.WritePingAsync(Http2PingFrameFlags.ACK, payload).AsTask();
         }
 
         private Task ProcessGoAwayFrameAsync()

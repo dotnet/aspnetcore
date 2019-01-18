@@ -23,8 +23,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             using (var server = new TestServer(async httpContext =>
             {
                 var response = httpContext.Response;
-                await response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello "), 0, 6);
-                await response.Body.WriteAsync(Encoding.ASCII.GetBytes("World!"), 0, 6);
+                await response.BodyPipe.WriteAsync(new Memory<byte>(Encoding.ASCII.GetBytes("Hello "), 0, 6));
+                await response.BodyPipe.WriteAsync(new Memory<byte>(Encoding.ASCII.GetBytes("World!"), 0, 6));
             }, testContext))
             {
                 using (var connection = server.CreateConnection())
@@ -162,9 +162,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             using (var server = new TestServer(async httpContext =>
             {
                 var response = httpContext.Response;
-                await response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello "), 0, 6);
-                await response.Body.WriteAsync(new byte[0], 0, 0);
-                await response.Body.WriteAsync(Encoding.ASCII.GetBytes("World!"), 0, 6);
+                await response.BodyPipe.WriteAsync(new Memory<byte>(Encoding.ASCII.GetBytes("Hello "), 0, 6));
+                await response.BodyPipe.WriteAsync(new Memory<byte>(new byte[0], 0, 0));
+                await response.BodyPipe.WriteAsync(new Memory<byte>(Encoding.ASCII.GetBytes("World!"), 0, 6));
             }, testContext))
             {
                 using (var connection = server.CreateConnection())
@@ -244,7 +244,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             using (var server = new TestServer(async httpContext =>
             {
                 var response = httpContext.Response;
-                await response.Body.WriteAsync(new byte[0], 0, 0);
+                await response.BodyPipe.WriteAsync(new Memory<byte>(new byte[0], 0, 0));
             }, testContext))
             {
                 using (var connection = server.CreateConnection())
@@ -275,7 +275,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             using (var server = new TestServer(async httpContext =>
             {
                 var response = httpContext.Response;
-                await response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello World!"), 0, 12);
+                await response.BodyPipe.WriteAsync(new Memory<byte>(Encoding.ASCII.GetBytes("Hello World!"), 0, 12));
                 throw new Exception();
             }, testContext))
             {
@@ -309,7 +309,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             using (var server = new TestServer(async httpContext =>
             {
                 var response = httpContext.Response;
-                await response.Body.WriteAsync(new byte[0], 0, 0);
+                await response.BodyPipe.WriteAsync(new Memory<byte>(new byte[0], 0, 0));
                 throw new Exception();
             }, testContext))
             {
@@ -344,12 +344,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             using (var server = new TestServer(async httpContext =>
             {
                 var response = httpContext.Response;
-                await response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello "), 0, 6);
+                await response.BodyPipe.WriteAsync(new Memory<byte>(Encoding.ASCII.GetBytes("Hello "), 0, 6));
 
                 // Don't complete response until client has received the first chunk.
                 await flushWh.Task.DefaultTimeout();
 
-                await response.Body.WriteAsync(Encoding.ASCII.GetBytes("World!"), 0, 6);
+                await response.BodyPipe.WriteAsync(new Memory<byte>(Encoding.ASCII.GetBytes("World!"), 0, 6));
             }, testContext))
             {
                 using (var connection = server.CreateConnection())
@@ -391,9 +391,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 var response = httpContext.Response;
                 response.Headers["Transfer-Encoding"] = "chunked";
 
-                await response.Body.WriteAsync(Encoding.ASCII.GetBytes("6\r\nHello \r\n"), 0, 11);
-                await response.Body.WriteAsync(Encoding.ASCII.GetBytes("6\r\nWorld!\r\n"), 0, 11);
-                await response.Body.WriteAsync(Encoding.ASCII.GetBytes("0\r\n\r\n"), 0, 5);
+                await response.BodyPipe.WriteAsync(new Memory<byte>(Encoding.ASCII.GetBytes("6\r\nHello \r\n"), 0, 11));
+                await response.BodyPipe.WriteAsync(new Memory<byte>(Encoding.ASCII.GetBytes("6\r\nWorld!\r\n"), 0, 11));
+                await response.BodyPipe.WriteAsync(new Memory<byte>(Encoding.ASCII.GetBytes("0\r\n\r\n"), 0, 5));
             }, testContext))
             {
                 using (var connection = server.CreateConnection())
@@ -417,6 +417,418 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                 }
 
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task ChunksWithGetMemoryBeforeFirstFlushStillFlushes()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                var response = httpContext.Response;
+                await response.StartAsync();
+                var memory = response.BodyPipe.GetMemory();
+                var fisrtPartOfResponse = Encoding.ASCII.GetBytes("Hello ");
+                fisrtPartOfResponse.CopyTo(memory);
+                response.BodyPipe.Advance(6);
+
+                memory = response.BodyPipe.GetMemory();
+                var secondPartOfResponse = Encoding.ASCII.GetBytes("World!");
+                secondPartOfResponse.CopyTo(memory);
+                response.BodyPipe.Advance(6);
+
+                await response.BodyPipe.FlushAsync();
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host: ",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "c",
+                        "Hello World!",
+                        "0",
+                        "",
+                        "");
+                }
+
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task ChunksWithGetMemoryLargeWriteBeforeFirstFlush()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                var response = httpContext.Response;
+                await response.StartAsync();
+
+                var memory = response.BodyPipe.GetMemory(5000); // This will return 4089
+                var fisrtPartOfResponse = Encoding.ASCII.GetBytes(new string('a', memory.Length));
+                fisrtPartOfResponse.CopyTo(memory);
+                response.BodyPipe.Advance(memory.Length);
+
+                memory = response.BodyPipe.GetMemory();
+                var secondPartOfResponse = Encoding.ASCII.GetBytes("World!");
+                secondPartOfResponse.CopyTo(memory);
+                response.BodyPipe.Advance(6);
+
+                await response.BodyPipe.FlushAsync();
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host: ",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "ff9",
+                        new string('a', 4089),
+                        "6",
+                        "World!",
+                        "0",
+                        "",
+                        "");
+                }
+
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task ChunksWithGetMemoryWithInitialFlushWorks()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                var response = httpContext.Response;
+
+                await response.BodyPipe.FlushAsync();
+
+                var memory = response.BodyPipe.GetMemory(5000); // This will return 4089
+                var fisrtPartOfResponse = Encoding.ASCII.GetBytes(new string('a', memory.Length));
+                fisrtPartOfResponse.CopyTo(memory);
+                response.BodyPipe.Advance(memory.Length);
+
+                memory = response.BodyPipe.GetMemory();
+                var secondPartOfResponse = Encoding.ASCII.GetBytes("World!");
+                secondPartOfResponse.CopyTo(memory);
+                response.BodyPipe.Advance(6);
+
+                await response.BodyPipe.FlushAsync();
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host: ",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "ff9",
+                        new string('a', 4089),
+                        "6",
+                        "World!",
+                        "0",
+                        "",
+                        "");
+                }
+
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task ChunkGetMemoryMultipleAdvance()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                var response = httpContext.Response;
+
+                await response.StartAsync();
+
+                var memory = response.BodyPipe.GetMemory(4096);
+                var fisrtPartOfResponse = Encoding.ASCII.GetBytes("Hello ");
+                fisrtPartOfResponse.CopyTo(memory);
+                response.BodyPipe.Advance(6);
+
+                var secondPartOfResponse = Encoding.ASCII.GetBytes("World!");
+                secondPartOfResponse.CopyTo(memory.Slice(6));
+                response.BodyPipe.Advance(6);
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host: ",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "c",
+                        "Hello World!",
+                        "0",
+                        "",
+                        "");
+                }
+
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task ChunkGetSpanMultipleAdvance()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                var response = httpContext.Response;
+
+                // To avoid using span in an async method
+                void NonAsyncMethod()
+                {
+                    var span = response.BodyPipe.GetSpan(4096);
+                    var fisrtPartOfResponse = Encoding.ASCII.GetBytes("Hello ");
+                    fisrtPartOfResponse.CopyTo(span);
+                    response.BodyPipe.Advance(6);
+
+                    var secondPartOfResponse = Encoding.ASCII.GetBytes("World!");
+                    secondPartOfResponse.CopyTo(span.Slice(6));
+                    response.BodyPipe.Advance(6);
+                }
+
+                await response.StartAsync();
+
+                NonAsyncMethod();
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host: ",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "c",
+                        "Hello World!",
+                        "0",
+                        "",
+                        "");
+                }
+
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task ChunkGetMemoryAndWrite()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                var response = httpContext.Response;
+
+                await response.StartAsync();
+
+                var memory = response.BodyPipe.GetMemory(4096);
+                var fisrtPartOfResponse = Encoding.ASCII.GetBytes("Hello ");
+                fisrtPartOfResponse.CopyTo(memory);
+                response.BodyPipe.Advance(6);
+
+                await response.WriteAsync("World!");
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host: ",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "6",
+                        "Hello ",
+                        "6",
+                        "World!",
+                        "0",
+                        "",
+                        "");
+                }
+
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task GetMemoryWithSizeHint()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                var response = httpContext.Response;
+
+                await response.StartAsync();
+
+                var memory = response.BodyPipe.GetMemory(0);
+
+                // Headers are already written to memory, sliced appropriately
+                Assert.Equal(4005, memory.Length);
+
+                memory = response.BodyPipe.GetMemory(1000000);
+                Assert.Equal(4005, memory.Length);
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host: ",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "0",
+                        "",
+                        "");
+                }
+
+                await server.StopAsync();
+            }
+        }
+
+        [Theory]
+        [InlineData(15)]
+        [InlineData(255)]
+        public async Task ChunkGetMemoryWithSmallerSizesWork(int writeSize)
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                var response = httpContext.Response;
+
+                await response.StartAsync();
+
+                var memory = response.BodyPipe.GetMemory(4096);
+                var fisrtPartOfResponse = Encoding.ASCII.GetBytes(new string('a', writeSize));
+                fisrtPartOfResponse.CopyTo(memory);
+                response.BodyPipe.Advance(writeSize);
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host: ",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        writeSize.ToString("X").ToLower(),
+                        new string('a', writeSize),
+                        "0",
+                        "",
+                        "");
+                }
+
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task ChunkedWithBothPipeAndStreamWorks()
+        {
+            using (var server = new TestServer(async httpContext =>
+            {
+                var response = httpContext.Response;
+                await response.StartAsync();
+                var memory = response.BodyPipe.GetMemory(4096);
+                var fisrtPartOfResponse = Encoding.ASCII.GetBytes("hello,");
+                fisrtPartOfResponse.CopyTo(memory);
+                response.BodyPipe.Advance(6);
+                var secondPartOfResponse = Encoding.ASCII.GetBytes(" world");
+                secondPartOfResponse.CopyTo(memory.Slice(6));
+                response.BodyPipe.Advance(6);
+
+                await response.Body.WriteAsync(Encoding.ASCII.GetBytes("hello, world"));
+                await response.BodyPipe.WriteAsync(Encoding.ASCII.GetBytes("hello, world"));
+                await response.WriteAsync("hello, world");
+
+            }, new TestServiceContext(LoggerFactory)))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "c",
+                        "hello, world",
+                        "c",
+                        "hello, world",
+                        "c",
+                        "hello, world",
+                        "c",
+                        "hello, world",
+                        "0",
+                        "",
+                        "");
+                }
                 await server.StopAsync();
             }
         }

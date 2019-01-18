@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -63,6 +62,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected string _methodText = null;
         private string _scheme = null;
+
+        protected PipeWriter _userSetPipeWriter;
+        protected Stream _userSetResponseBody;
+        protected PipeWriter _cachedResponsePipeWriter;
+        protected Stream _cachedResponseBodyStream;
 
         public HttpProtocol(HttpConnectionContext context)
         {
@@ -227,6 +231,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public IHeaderDictionary ResponseHeaders { get; set; }
         public Stream ResponseBody { get; set; }
+        public PipeWriter ResponsePipeWriter { get; set; }
 
         public CancellationToken RequestAborted
         {
@@ -295,10 +300,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             if (_streams == null)
             {
-                _streams = new Streams(bodyControl: this, httpResponseControl: this);
+                var pipeWriter = new HttpResponsePipeWriter(this);
+                _streams = new Streams(bodyControl: this, pipeWriter);
+                ResponsePipeWriter = pipeWriter;
             }
 
             (RequestBody, ResponseBody) = _streams.Start(messageBody);
+
+            _cachedResponseBodyStream = ResponseBody;
+            _cachedResponsePipeWriter = ResponsePipeWriter;
         }
 
         public void StopStreams() => _streams.Stop();
@@ -780,21 +790,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         }
 
-        public Task FlushAsync(CancellationToken cancellationToken = default(CancellationToken))
-        {
-            if (!HasResponseStarted)
-            {
-                var initializeTask = InitializeResponseAsync(0);
-                // If return is Task.CompletedTask no awaiting is required
-                if (!ReferenceEquals(initializeTask, Task.CompletedTask))
-                {
-                    return InitializeAndFlushAsyncAwaited(initializeTask, cancellationToken);
-                }
-            }
-
-            return FlushAsyncInternal(cancellationToken);
-        }
-
         [MethodImpl(MethodImplOptions.NoInlining)]
         private async Task InitializeAndFlushAsyncAwaited(Task initializeTask, CancellationToken cancellationToken)
         {
@@ -803,83 +798,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private Task FlushAsyncInternal(CancellationToken cancellationToken)
+        private ValueTask<FlushResult> FlushAsyncInternal(CancellationToken cancellationToken)
         {
             _requestProcessingStatus = RequestProcessingStatus.HeadersFlushed;
             return Output.FlushAsync(cancellationToken);
-        }
-
-        public Task WriteAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            // For the first write, ensure headers are flushed if WriteDataAsync isn't called.
-            var firstWrite = !HasResponseStarted;
-
-            if (firstWrite)
-            {
-                var initializeTask = InitializeResponseAsync(data.Length);
-                // If return is Task.CompletedTask no awaiting is required
-                if (!ReferenceEquals(initializeTask, Task.CompletedTask))
-                {
-                    return WriteAsyncAwaited(initializeTask, data, cancellationToken);
-                }
-            }
-            else
-            {
-                VerifyAndUpdateWrite(data.Length);
-            }
-
-            if (_canWriteResponseBody)
-            {
-                if (_autoChunk)
-                {
-                    if (data.Length == 0)
-                    {
-                        return !firstWrite ? Task.CompletedTask : FlushAsyncInternal(cancellationToken);
-                    }
-                    return WriteChunkedAsync(data.Span, cancellationToken);
-                }
-                else
-                {
-                    CheckLastWrite();
-                    return WriteDataAsync(data, cancellationToken: cancellationToken);
-                }
-            }
-            else
-            {
-                HandleNonBodyResponseWrite();
-                return !firstWrite ? Task.CompletedTask : FlushAsyncInternal(cancellationToken);
-            }
-        }
-
-        public async Task WriteAsyncAwaited(Task initializeTask, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
-        {
-            await initializeTask;
-
-            // WriteAsyncAwaited is only called for the first write to the body.
-            // Ensure headers are flushed if Write(Chunked)Async isn't called.
-            if (_canWriteResponseBody)
-            {
-                if (_autoChunk)
-                {
-                    if (data.Length == 0)
-                    {
-                        await FlushAsyncInternal(cancellationToken);
-                        return;
-                    }
-
-                    await WriteChunkedAsync(data.Span, cancellationToken);
-                }
-                else
-                {
-                    CheckLastWrite();
-                    await WriteDataAsync(data, cancellationToken);
-                }
-            }
-            else
-            {
-                HandleNonBodyResponseWrite();
-                await FlushAsyncInternal(cancellationToken);
-            }
         }
 
         private Task WriteDataAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
@@ -958,7 +880,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        private Task WriteChunkedAsync(ReadOnlySpan<byte> data, CancellationToken cancellationToken)
+        private ValueTask<FlushResult> WriteChunkedAsync(ReadOnlySpan<byte> data, CancellationToken cancellationToken)
         {
             _requestProcessingStatus = RequestProcessingStatus.HeadersFlushed;
             return Output.WriteChunkAsync(data, cancellationToken);
@@ -1090,7 +1012,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             if (!HasFlushedHeaders)
             {
-                return FlushAsyncInternal(default);
+                return FlushAsyncInternal(default).AsTask();
             }
 
             return Task.CompletedTask;
@@ -1208,7 +1130,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 responseHeaders.SetRawDate(dateHeaderValues.String, dateHeaderValues.Bytes);
             }
 
-            Output.WriteResponseHeaders(StatusCode, ReasonPhrase, responseHeaders);
+            Output.WriteResponseHeaders(StatusCode, ReasonPhrase, responseHeaders, _autoChunk);
         }
 
         private bool CanWriteResponseBody()
@@ -1344,6 +1266,150 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             Log.ApplicationError(ConnectionId, TraceIdentifier, ex);
+        }
+
+        public void Advance(int bytes)
+        {
+            VerifyAndUpdateWrite(bytes);
+            Output.Advance(bytes);
+        }
+
+        public Memory<byte> GetMemory(int sizeHint = 0)
+        {
+            ThrowIfResponseNotStarted();
+
+            return Output.GetMemory(sizeHint);
+        }
+
+        public Span<byte> GetSpan(int sizeHint = 0)
+        {
+            ThrowIfResponseNotStarted();
+
+            return Output.GetSpan(sizeHint);
+        }
+
+        [StackTraceHidden]
+        private void ThrowIfResponseNotStarted()
+        {
+            if (!HasResponseStarted)
+            {
+                throw new InvalidOperationException("Cannot call GetMemory() until response has started. " +
+                    "Call HttpResponse.StartAsync() before calling GetMemory().");
+            }
+        }
+
+        public ValueTask<FlushResult> FlushPipeAsync(CancellationToken cancellationToken)
+        {
+            if (!HasResponseStarted)
+            {
+                var initializeTask = InitializeResponseAsync(0);
+                // If return is Task.CompletedTask no awaiting is required
+                if (!ReferenceEquals(initializeTask, Task.CompletedTask))
+                {
+                    return FlushAsyncAwaited(initializeTask, cancellationToken);
+                }
+            }
+
+            return Output.FlushAsync(cancellationToken);
+        }
+
+        public void CancelPendingFlush()
+        {
+            Output.CancelPendingFlush();
+        }
+
+        public void Complete(Exception exception = null)
+        {
+            Output.Complete(exception);
+        }
+
+        public ValueTask<FlushResult> WritePipeAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+        {
+            // For the first write, ensure headers are flushed if WriteDataAsync isn't called.
+            var firstWrite = !HasResponseStarted;
+
+            if (firstWrite)
+            {
+                var initializeTask = InitializeResponseAsync(data.Length);
+                // If return is Task.CompletedTask no awaiting is required
+                if (!ReferenceEquals(initializeTask, Task.CompletedTask))
+                {
+                    return WriteAsyncAwaited(initializeTask, data, cancellationToken);
+                }
+            }
+            else
+            {
+                VerifyAndUpdateWrite(data.Length);
+            }
+
+            if (_canWriteResponseBody)
+            {
+                if (_autoChunk)
+                {
+                    if (data.Length == 0)
+                    {
+                        return !firstWrite ? default : FlushAsyncInternal(cancellationToken);
+                    }
+                    return WriteChunkedAsync(data.Span, cancellationToken);
+                }
+                else
+                {
+                    CheckLastWrite();
+                    return Output.WriteDataToPipeAsync(data.Span, cancellationToken: cancellationToken);
+                }
+            }
+            else
+            {
+                HandleNonBodyResponseWrite();
+                return !firstWrite ? default : FlushAsyncInternal(cancellationToken);
+            }
+        }
+
+        public Task FlushAsync(CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return FlushPipeAsync(cancellationToken).AsTask();
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private async ValueTask<FlushResult> FlushAsyncAwaited(Task initializeTask, CancellationToken cancellationToken)
+        {
+            await initializeTask;
+            return await Output.FlushAsync(cancellationToken);
+        }
+
+        public Task WriteAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return WritePipeAsync(data, cancellationToken).AsTask();
+        }
+
+        public async ValueTask<FlushResult> WriteAsyncAwaited(Task initializeTask, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+        {
+            await initializeTask;
+
+            // WriteAsyncAwaited is only called for the first write to the body.
+            // Ensure headers are flushed if Write(Chunked)Async isn't called.
+            if (_canWriteResponseBody)
+            {
+                if (_autoChunk)
+                {
+                    if (data.Length == 0)
+                    {
+                        return await FlushAsyncInternal(cancellationToken);
+                    }
+
+                    return await WriteChunkedAsync(data.Span, cancellationToken);
+                }
+                else
+                {
+                    CheckLastWrite();
+                    return await Output.WriteDataToPipeAsync(data.Span, cancellationToken: cancellationToken);
+                }
+            }
+            else
+            {
+                HandleNonBodyResponseWrite();
+                return await FlushAsyncInternal(cancellationToken);
+            }
         }
     }
 }

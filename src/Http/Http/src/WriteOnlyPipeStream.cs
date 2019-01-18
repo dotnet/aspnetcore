@@ -60,6 +60,8 @@ namespace System.IO.Pipelines
             set => throw new NotSupportedException();
         }
 
+        public PipeWriter InnerPipeWriter => _pipeWriter;
+
         /// <inheritdoc />
         public override int Read(byte[] buffer, int offset, int count)
             => throw new NotSupportedException();
