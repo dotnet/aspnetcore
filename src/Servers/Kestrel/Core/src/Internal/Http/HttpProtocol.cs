@@ -752,22 +752,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private Task FireOnCompletedMayAwait(Stack<KeyValuePair<Func<object, Task>, object>> onCompleted)
         {
-            try
+
+            var count = onCompleted.Count;
+            for (var i = 0; i < count; i++)
             {
-                var count = onCompleted.Count;
-                for (var i = 0; i < count; i++)
+                var entry = onCompleted.Pop();
+                try
                 {
-                    var entry = onCompleted.Pop();
                     var task = entry.Key.Invoke(entry.Value);
                     if (!ReferenceEquals(task, Task.CompletedTask))
                     {
                         return FireOnCompletedAwaited(task, onCompleted);
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                ReportApplicationError(ex);
+                catch (Exception ex)
+                {
+                    ReportApplicationError(ex);
+                }
             }
 
             return Task.CompletedTask;
@@ -778,18 +779,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             try
             {
                 await currentTask;
-
-                var count = onCompleted.Count;
-                for (var i = 0; i < count; i++)
-                {
-                    var entry = onCompleted.Pop();
-                    await entry.Key.Invoke(entry.Value);
-                }
             }
             catch (Exception ex)
             {
                 Log.ApplicationError(ConnectionId, TraceIdentifier, ex);
             }
+
+            var count = onCompleted.Count;
+            for (var i = 0; i < count; i++)
+            {
+                try
+                {
+                    var entry = onCompleted.Pop();
+                    await entry.Key.Invoke(entry.Value);
+                }
+                catch (Exception ex)
+                {
+                    Log.ApplicationError(ConnectionId, TraceIdentifier, ex);
+                }
+            }
+
         }
 
         public Task FlushAsync(CancellationToken cancellationToken = default(CancellationToken))
