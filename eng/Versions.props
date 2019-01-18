@@ -106,7 +106,7 @@
     <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>3.0.0-preview-19068-05</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
     <MicrosoftAspNetCoreRazorLanguagePackageVersion>3.0.0-preview-19068-05</MicrosoftAspNetCoreRazorLanguagePackageVersion>
     <MicrosoftCodeAnalysisRazorPackageVersion>3.0.0-preview-19068-05</MicrosoftCodeAnalysisRazorPackageVersion>
-    <MicrosoftNETSdkRazorPackageVersion>3.0.0-preview-19068-05</MicrosoftNETSdkRazorPackageVersion>
+    <MicrosoftNETSdkRazorPackageVersion>3.0.0-preview-19068-06</MicrosoftNETSdkRazorPackageVersion>
   </PropertyGroup>
   <PropertyGroup Label="Build tool dependencies">
     <InternalAspNetCoreSdkPackageVersion>$(KoreBuildVersion)</InternalAspNetCoreSdkPackageVersion>

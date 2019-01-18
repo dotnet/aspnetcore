@@ -13,9 +13,9 @@
       <Uri>https://github.com/aspnet/AspNetCore-Tooling</Uri>
       <Sha>9bf9131b15963c2233cde9c0ee319baba4635d04</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.Razor" Version="3.0.0-preview-19068-05">
+    <Dependency Name="Microsoft.NET.Sdk.Razor" Version="3.0.0-preview-19068-06">
       <Uri>https://github.com/aspnet/AspNetCore-Tooling</Uri>
-      <Sha>9bf9131b15963c2233cde9c0ee319baba4635d04</Sha>
+      <Sha>84f41979bdfe699ce16f6fc07cda5d443aa13c0b</Sha>
     </Dependency>
     <Dependency Name="dotnet-ef" Version="3.0.0-preview.19068.1">
       <Uri>https://github.com/aspnet/EntityFrameworkCore</Uri>
