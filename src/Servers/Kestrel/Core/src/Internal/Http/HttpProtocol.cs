@@ -314,8 +314,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public void Reset()
         {
-            _onStarting = null;
-            _onCompleted = null;
+            _onStarting?.Clear();
+            _onCompleted?.Clear();
 
             _requestProcessingStatus = RequestProcessingStatus.RequestPending;
             _autoChunk = false;
@@ -585,7 +585,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 // already failed. If an OnStarting callback throws we can go through
                 // our normal error handling in ProduceEnd.
                 // https://github.com/aspnet/KestrelHttpServer/issues/43
-                if (!HasResponseStarted && _applicationException == null && _onStarting != null)
+                if (!HasResponseStarted && _applicationException == null && _onStarting?.Count > 0)
                 {
                     await FireOnStarting();
                 }
@@ -621,7 +621,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                 }
 
-                if (_onCompleted != null)
+                if (_onCompleted?.Count > 0)
                 {
                     await FireOnCompleted();
                 }
@@ -679,10 +679,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             lock (_onStartingSync)
             {
                 onStarting = _onStarting;
-                _onStarting = null;
             }
 
-            if (onStarting == null)
+            if (onStarting?.Count == 0)
             {
                 return Task.CompletedTask;
             }
@@ -741,29 +740,55 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             lock (_onCompletedSync)
             {
                 onCompleted = _onCompleted;
-                _onCompleted = null;
             }
 
-            if (onCompleted == null)
+            if (onCompleted?.Count == 0)
             {
                 return Task.CompletedTask;
             }
 
-            return FireOnCompletedAwaited(onCompleted);
+            return FireOnCompletedMayAwait(onCompleted);
         }
 
-        private async Task FireOnCompletedAwaited(Stack<KeyValuePair<Func<object, Task>, object>> onCompleted)
+        private Task FireOnCompletedMayAwait(Stack<KeyValuePair<Func<object, Task>, object>> onCompleted)
         {
-            foreach (var entry in onCompleted)
+            try
             {
-                try
+                var count = onCompleted.Count;
+                for (var i = 0; i < count; i++)
                 {
+                    var entry = onCompleted.Pop();
+                    var task = entry.Key.Invoke(entry.Value);
+                    if (!ReferenceEquals(task, Task.CompletedTask))
+                    {
+                        return FireOnCompletedAwaited(task, onCompleted);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ReportApplicationError(ex);
+            }
+
+            return Task.CompletedTask;
+        }
+
+        private async Task FireOnCompletedAwaited(Task currentTask, Stack<KeyValuePair<Func<object, Task>, object>> onCompleted)
+        {
+            try
+            {
+                await currentTask;
+
+                var count = onCompleted.Count;
+                for (var i = 0; i < count; i++)
+                {
+                    var entry = onCompleted.Pop();
                     await entry.Key.Invoke(entry.Value);
                 }
-                catch (Exception ex)
-                {
-                    Log.ApplicationError(ConnectionId, TraceIdentifier, ex);
-                }
+            }
+            catch (Exception ex)
+            {
+                Log.ApplicationError(ConnectionId, TraceIdentifier, ex);
             }
         }
 
