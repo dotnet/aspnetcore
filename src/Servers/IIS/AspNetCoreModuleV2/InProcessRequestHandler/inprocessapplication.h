@@ -13,7 +13,7 @@ typedef REQUEST_NOTIFICATION_STATUS(WINAPI * PFN_REQUEST_HANDLER) (IN_PROCESS_HA
 typedef VOID(WINAPI * PFN_DISCONNECT_HANDLER) (void *pvManagedHttpContext);
 typedef BOOL(WINAPI * PFN_SHUTDOWN_HANDLER) (void* pvShutdownHandlerContext);
 typedef REQUEST_NOTIFICATION_STATUS(WINAPI * PFN_ASYNC_COMPLETION_HANDLER)(void *pvManagedHttpContext, HRESULT hrCompletionStatus, DWORD cbCompletion);
-typedef void(WINAPI * PFN_DRAIN_HANDLER) (void* pvShutdownHandlerContext);
+typedef void(WINAPI * PFN_REQUESTS_DRAINED_HANDLER) (void* pvShutdownHandlerContext);
 
 class IN_PROCESS_APPLICATION : public InProcessApplicationBase
 {
@@ -37,7 +37,7 @@ public:
         _In_ PFN_SHUTDOWN_HANDLER shutdown_callback,
         _In_ PFN_DISCONNECT_HANDLER disconnect_callback,
         _In_ PFN_ASYNC_COMPLETION_HANDLER managed_context_callback,
-        _In_ PFN_DRAIN_HANDLER drainHandler,
+        _In_ PFN_REQUESTS_DRAINED_HANDLER requestsDrainedHandler,
         _In_ VOID* pvRequstHandlerContext,
         _In_ VOID* pvShutdownHandlerContext
     );
@@ -150,7 +150,7 @@ private:
     // The event that gets triggered when worker thread should exit
     HandleWrapper<NullHandleTraits> m_pShutdownEvent;
 
-    HandleWrapper<NullHandleTraits> m_pDrainRequestEvent;
+    HandleWrapper<NullHandleTraits> m_pRequestDrainEvent;
 
     // The request handler callback from managed code
     PFN_REQUEST_HANDLER             m_RequestHandler;
@@ -162,7 +162,7 @@ private:
 
     PFN_ASYNC_COMPLETION_HANDLER    m_AsyncCompletionHandler;
     PFN_DISCONNECT_HANDLER          m_DisconnectHandler;
-    PFN_DRAIN_HANDLER               m_DrainHandler;
+    PFN_REQUESTS_DRAINED_HANDLER               m_RequestsDrainedHandler;
 
     std::wstring                    m_dotnetExeKnownLocation;
 

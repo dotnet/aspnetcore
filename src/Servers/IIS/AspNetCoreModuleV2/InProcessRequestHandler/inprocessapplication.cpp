@@ -91,7 +91,7 @@ IN_PROCESS_APPLICATION::SetCallbackHandles(
     _In_ PFN_SHUTDOWN_HANDLER shutdown_handler,
     _In_ PFN_DISCONNECT_HANDLER disconnect_callback,
     _In_ PFN_ASYNC_COMPLETION_HANDLER async_completion_handler,
-    _In_ PFN_DRAIN_HANDLER drainHandler,
+    _In_ PFN_REQUESTS_DRAINED_HANDLER requestsDrainedHandler,
     _In_ VOID* pvRequstHandlerContext,
     _In_ VOID* pvShutdownHandlerContext
 )
@@ -104,7 +104,7 @@ IN_PROCESS_APPLICATION::SetCallbackHandles(
     m_ShutdownHandler = shutdown_handler;
     m_ShutdownHandlerContext = pvShutdownHandlerContext;
     m_AsyncCompletionHandler = async_completion_handler;
-    m_DrainHandler = drainHandler;
+    m_RequestsDrainedHandler = requestsDrainedHandler;
 
     m_blockManagedCallbacks = false;
     m_Initialized = true;
@@ -134,7 +134,7 @@ IN_PROCESS_APPLICATION::LoadManagedApplication()
         FALSE,    // not set
         nullptr)); // name
 
-    THROW_LAST_ERROR_IF_NULL(m_pDrainRequestEvent = CreateEvent(
+    THROW_LAST_ERROR_IF_NULL(m_pRequestDrainEvent = CreateEvent(
         nullptr,  // default security attributes
         TRUE,     // manual reset event
         FALSE,    // not set
@@ -175,7 +175,6 @@ IN_PROCESS_APPLICATION::LoadManagedApplication()
 
     return S_OK;
 }
-
 
 void
 IN_PROCESS_APPLICATION::ExecuteApplication()
@@ -542,6 +541,6 @@ IN_PROCESS_APPLICATION::HandleRequestCompletion()
     if (m_fStopCalled && requestCount == 0)
     {
         LOG_INFO(L"Drained all requests, notifying managed.");
-        m_DrainHandler(m_ShutdownHandlerContext);
+        m_RequestsDrainedHandler(m_ShutdownHandlerContext);
     }
 }

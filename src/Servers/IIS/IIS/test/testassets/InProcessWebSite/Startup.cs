@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
@@ -662,6 +663,15 @@ namespace TestSite
             await ctx.Response.WriteAsync("Shutting down");
             var server = ctx.RequestServices.GetService<IServer>();
             await server.StopAsync(default);
+        }
+
+        private async Task ShutdownStopAsyncWithCancelledToken(HttpContext ctx)
+        {
+            await ctx.Response.WriteAsync("Shutting down");
+            var server = ctx.RequestServices.GetService<IServer>();
+            var cts = new CancellationTokenSource();
+            cts.Cancel();
+            await server.StopAsync(cts.Token);
         }
 
         private async Task GetServerVariableStress(HttpContext ctx)

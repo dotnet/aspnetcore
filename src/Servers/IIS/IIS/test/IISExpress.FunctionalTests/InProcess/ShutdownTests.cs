@@ -88,14 +88,16 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.True(result.HostProcess.ExitCode == 1);
         }
 
-        [ConditionalFact]
-        public async Task CallStopAsyncOnRequestThread_DoesNotHangIndefinitely()
+        [ConditionalTheory]
+        [InlineData("/ShutdownStopAsync")]
+        [InlineData("/ShutdownStopAsyncWithCancelledToken")]
+        public async Task CallStopAsyncOnRequestThread_DoesNotHangIndefinitely(string path)
         {
             var parameters = _fixture.GetBaseDeploymentParameters(publish: true);
             var deploymentResult = await DeployAsync(parameters);
             try
             {
-                await deploymentResult.HttpClient.GetAsync("/ShutdownStopAsync");
+                await deploymentResult.HttpClient.GetAsync(path);
             }
             catch (HttpRequestException ex) when (ex.InnerException is IOException)
             {

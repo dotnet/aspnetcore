@@ -44,8 +44,7 @@ namespace Microsoft.AspNetCore.Server.IIS
         public delegate bool PFN_SHUTDOWN_HANDLER(IntPtr pvRequestContext);
         public delegate REQUEST_NOTIFICATION_STATUS PFN_ASYNC_COMPLETION(IntPtr pvManagedHttpContext, int hr, int bytes);
         public delegate REQUEST_NOTIFICATION_STATUS PFN_WEBSOCKET_ASYNC_COMPLETION(IntPtr pInProcessHandler, IntPtr completionInfo, IntPtr pvCompletionContext);
-        public delegate void PFN_DRAIN_HANDLER(IntPtr pvRequestContext);
-
+        public delegate void PFN_REQUESTS_DRAINED_HANDLER(IntPtr pvRequestContext);
 
         [DllImport(AspNetCoreModuleDll)]
         private static extern int http_post_completion(IntPtr pInProcessHandler, int cbBytes);
@@ -62,7 +61,7 @@ namespace Microsoft.AspNetCore.Server.IIS
             PFN_SHUTDOWN_HANDLER shutdownCallback,
             PFN_DISCONNECT_HANDLER disconnectCallback,
             PFN_ASYNC_COMPLETION asyncCallback,
-            PFN_DRAIN_HANDLER drainHandler,
+            PFN_REQUESTS_DRAINED_HANDLER drainHandler,
             IntPtr pvRequestContext,
             IntPtr pvShutdownContext);
 
@@ -163,7 +162,7 @@ namespace Microsoft.AspNetCore.Server.IIS
             PFN_SHUTDOWN_HANDLER shutdownCallback,
             PFN_DISCONNECT_HANDLER disconnectCallback,
             PFN_ASYNC_COMPLETION asyncCallback,
-            PFN_DRAIN_HANDLER drainHandler,
+            PFN_REQUESTS_DRAINED_HANDLER drainHandler,
             IntPtr pvRequestContext,
             IntPtr pvShutdownContext)
         {

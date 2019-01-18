@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             NativeMethods.PFN_SHUTDOWN_HANDLER shutdownHandler,
             NativeMethods.PFN_DISCONNECT_HANDLER disconnectHandler,
             NativeMethods.PFN_ASYNC_COMPLETION onAsyncCompletion,
-            NativeMethods.PFN_DRAIN_HANDLER drainHandler,
+            NativeMethods.PFN_REQUESTS_DRAINED_HANDLER requestDrainedHandler,
             IntPtr requestContext,
             IntPtr shutdownContext)
         {
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 shutdownHandler,
                 disconnectHandler,
                 onAsyncCompletion,
-                drainHandler,
+                requestDrainedHandler,
                 requestContext,
                 shutdownContext);
         }

@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private static readonly NativeMethods.PFN_SHUTDOWN_HANDLER _shutdownHandler = HandleShutdown;
         private static readonly NativeMethods.PFN_DISCONNECT_HANDLER _onDisconnect = OnDisconnect;
         private static readonly NativeMethods.PFN_ASYNC_COMPLETION _onAsyncCompletion = OnAsyncCompletion;
-        private static readonly NativeMethods.PFN_DRAIN_HANDLER _drainHandler = OnDrainComplete;
+        private static readonly NativeMethods.PFN_REQUESTS_DRAINED_HANDLER _drainHandler = OnDrainComplete;
 
         private IISContextFactory _iisContextFactory;
         private readonly MemoryPool<byte> _memoryPool = new SlabMemoryPool();
@@ -36,9 +36,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private readonly IISNativeApplication _nativeApplication;
         private readonly ServerAddressesFeature _serverAddressesFeature;
 
-        private volatile int _stopping;
+        private CancellationTokenRegistration _stopRegistration;
 
-        private bool Stopping => _stopping == 1;
         private readonly TaskCompletionSource<object> _shutdownSignal = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
         private bool? _websocketAvailable;
 
@@ -100,17 +99,11 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         {
             void RegisterCancelation()
             {
-                cancellationToken.Register(() =>
+                _stopRegistration = cancellationToken.Register(() =>
                 {
                     _nativeApplication.StopCallsIntoManaged();
                     _shutdownSignal.TrySetResult(null);
                 });
-            }
-            if (Interlocked.Exchange(ref _stopping, 1) == 1)
-            {
-                RegisterCancelation();
-
-                return _shutdownSignal.Task;
             }
 
             _nativeApplication.StopIncomingRequests();
@@ -129,8 +122,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         public void Dispose()
         {
-            _stopping = 1;
-
             // Block any more calls into managed from native as we are unloading.
             _nativeApplication.StopCallsIntoManaged();
             _shutdownSignal.TrySetResult(null);
@@ -220,6 +211,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 server = (IISHttpServer)GCHandle.FromIntPtr(serverContext).Target;
                 server._nativeApplication.StopCallsIntoManaged();
                 server._shutdownSignal.TrySetResult(null);
+                server._stopRegistration.Dispose();
             }
             catch (Exception ex)
             {
