@@ -694,7 +694,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 return new ChannelAsyncEnumerator(_inner, cancellationToken);
             }
 
-            // Copied from AsyncEnumeratorAdapters.ChannelAsyncEnumerator<T>. Implements IAsyncEnumerator<T> instead of IAsyncEnumerator<object>.
+            // Copied from AsyncEnumeratorAdapters
             private class ChannelAsyncEnumerator : IAsyncEnumerator<T>
             {
                 /// <summary>The channel being enumerated.</summary>
@@ -799,7 +799,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return Channel.CreateUnbounded<string>().Reader;
         }
 
-        public ChannelReader<int> CancelableStream(CancellationToken token)
+        public ChannelReader<int> CancelableStreamSingleParameter(CancellationToken token)
         {
             var channel = Channel.CreateBounded<int>(10);
 
@@ -814,7 +814,37 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return channel.Reader;
         }
 
-        public async IAsyncEnumerable<int> CancelableAsyncEnumerableStream(CancellationToken token)
+        public ChannelReader<int> CancelableStreamMultiParameter(int ignore, int ignore2, CancellationToken token)
+        {
+            var channel = Channel.CreateBounded<int>(10);
+
+            Task.Run(async () =>
+            {
+                _tcsService.StartedMethod.SetResult(null);
+                await token.WaitForCancellationAsync();
+                channel.Writer.TryComplete();
+                _tcsService.EndMethod.SetResult(null);
+            });
+
+            return channel.Reader;
+        }
+
+        public ChannelReader<int> CancelableStreamMiddleParameter(int ignore, CancellationToken token, int ignore2)
+        {
+            var channel = Channel.CreateBounded<int>(10);
+
+            Task.Run(async () =>
+            {
+                _tcsService.StartedMethod.SetResult(null);
+                await token.WaitForCancellationAsync();
+                channel.Writer.TryComplete();
+                _tcsService.EndMethod.SetResult(null);
+            });
+
+            return channel.Reader;
+        }
+
+        public async IAsyncEnumerable<int> CancelableStreamGeneratedAsyncEnumerable(CancellationToken token)
         {
             _tcsService.StartedMethod.SetResult(null);
             await token.WaitForCancellationAsync();
@@ -822,39 +852,56 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             yield break;
         }
 
-        public ChannelReader<int> CancelableStream2(int ignore, int ignore2, CancellationToken token)
+        public IAsyncEnumerable<int> CancelableStreamCustomAsyncEnumerable()
         {
-            var channel = Channel.CreateBounded<int>(10);
-
-            Task.Run(async () =>
-            {
-                _tcsService.StartedMethod.SetResult(null);
-                await token.WaitForCancellationAsync();
-                channel.Writer.TryComplete();
-                _tcsService.EndMethod.SetResult(null);
-            });
-
-            return channel.Reader;
-        }
-
-        public ChannelReader<int> CancelableStreamMiddle(int ignore, CancellationToken token, int ignore2)
-        {
-            var channel = Channel.CreateBounded<int>(10);
-
-            Task.Run(async () =>
-            {
-                _tcsService.StartedMethod.SetResult(null);
-                await token.WaitForCancellationAsync();
-                channel.Writer.TryComplete();
-                _tcsService.EndMethod.SetResult(null);
-            });
-
-            return channel.Reader;
+            return new CustomAsyncEnumerable(_tcsService);
         }
 
         public int SimpleMethod()
         {
             return 21;
+        }
+
+        private class CustomAsyncEnumerable : IAsyncEnumerable<int>
+        {
+            private readonly TcsService _tcsService;
+
+            public CustomAsyncEnumerable(TcsService tcsService)
+            {
+                _tcsService = tcsService;
+            }
+
+            public IAsyncEnumerator<int> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+            {
+                return new CustomAsyncEnumerator(_tcsService, cancellationToken);
+            }
+
+            private class CustomAsyncEnumerator : IAsyncEnumerator<int>
+            {
+                private readonly TcsService _tcsService;
+                private readonly CancellationToken _cancellationToken;
+
+                public CustomAsyncEnumerator(TcsService tcsService, CancellationToken cancellationToken)
+                {
+                    _tcsService = tcsService;
+                    _cancellationToken = cancellationToken;
+                }
+
+                public int Current => throw new NotImplementedException();
+
+                public ValueTask DisposeAsync()
+                {
+                    return default;
+                }
+
+                public async ValueTask<bool> MoveNextAsync()
+                {
+                    _tcsService.StartedMethod.SetResult(null);
+                    await _cancellationToken.WaitForCancellationAsync();
+                    _tcsService.EndMethod.SetResult(null);
+                    return false;
+                }
+            }
         }
     }
 

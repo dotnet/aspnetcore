@@ -3158,11 +3158,12 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Theory]
-        [InlineData(nameof(LongRunningHub.CancelableStream))]
-        [InlineData(nameof(LongRunningHub.CancelableStream2), 1, 2)]
-        [InlineData(nameof(LongRunningHub.CancelableStreamMiddle), 1, 2)]
-        [InlineData(nameof(LongRunningHub.CancelableAsyncEnumerableStream))]
-        public async Task StreamHubMethodCanAcceptCancellationTokenAsArgumentAndBeTriggeredOnCancellation(string methodName, params object[] args)
+        [InlineData(nameof(LongRunningHub.CancelableStreamSingleParameter))]
+        [InlineData(nameof(LongRunningHub.CancelableStreamMultiParameter), 1, 2)]
+        [InlineData(nameof(LongRunningHub.CancelableStreamMiddleParameter), 1, 2)]
+        [InlineData(nameof(LongRunningHub.CancelableStreamGeneratedAsyncEnumerable))]
+        [InlineData(nameof(LongRunningHub.CancelableStreamCustomAsyncEnumerable))]
+        public async Task StreamHubMethodCanBeTriggeredOnCancellation(string methodName, params object[] args)
         {
             using (StartVerifiableLog())
             {
@@ -3216,7 +3217,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 {
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
 
-                    var streamInvocationId = await client.SendStreamInvocationAsync(nameof(LongRunningHub.CancelableStream)).OrTimeout();
+                    var streamInvocationId = await client.SendStreamInvocationAsync(nameof(LongRunningHub.CancelableStreamSingleParameter)).OrTimeout();
                     // Wait for the stream method to start
                     await tcsService.StartedMethod.Task.OrTimeout();
 
