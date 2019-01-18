@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Authentication.AzureAD.UI
         {
             foreach (var mapping in _schemeOptions.Value.OpenIDMappings)
             {
-                if (mapping.Value.OpenIdConnectScheme == name)
+                if (mapping.Value.CookieScheme == name)
                 {
                     return mapping.Key;
                 }
