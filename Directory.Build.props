@@ -81,10 +81,10 @@
     <ArtifactsDir>$(MSBuildThisFileDirectory)artifacts\</ArtifactsDir>
     <ArtifactsObjDir>$(ArtifactsDir)obj\</ArtifactsObjDir>
     <ArtifactsConfigurationDir>$(ArtifactsDir)$(Configuration)\</ArtifactsConfigurationDir>
-    <BasePackageOutputPath>$(ArtifactsConfigurationDir)packages\</BasePackageOutputPath>
-    <ProductPackageOutputPath>$(BasePackageOutputPath)product\</ProductPackageOutputPath>
-    <InternalPackageOutputPath>$(BasePackageOutputPath)internal\</InternalPackageOutputPath>
-    <InstallersOutputPath>$(ArtifactsConfigurationDir)installers\</InstallersOutputPath>
+    <ArtifactsPackagesDir>$(ArtifactsDir)packages\$(Configuration)\</ArtifactsPackagesDir>
+    <ArtifactsShippingPackagesDir>$(ArtifactsPackagesDir)Shipping\</ArtifactsShippingPackagesDir>
+    <ArtifactsNonShippingPackagesDir>$(ArtifactsPackagesDir)NonShipping\</ArtifactsNonShippingPackagesDir>
+    <InstallersOutputPath>$(ArtifactsDir)installers\$(Configuration)\</InstallersOutputPath>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(OutputInRepoRoot)' == 'true' ">

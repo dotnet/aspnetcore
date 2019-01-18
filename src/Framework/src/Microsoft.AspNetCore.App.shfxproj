@@ -46,7 +46,7 @@
 
 $(MSBuildProjectName) provides a default set of APIs for building an ASP.NET Core application.
     </PackageDescription>
-    <IsProductPackage>true</IsProductPackage>
+    <IsShippingPackage>true</IsShippingPackage>
 
     <IncludeSymbols>true</IncludeSymbols>
     <NuspecFile>$(MSBuildThisFileDirectory)runtime.fx.nuspec</NuspecFile>

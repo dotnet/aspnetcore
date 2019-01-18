@@ -8,7 +8,7 @@
     <Description>ASP.NET Core Web Template Pack for Microsoft Template Engine
 
     To install the templates in this package, run 'dotnet new --install $(PackageId)::$(PackageVersion)'.</Description>
-    <IsProductPackage>true</IsProductPackage>
+    <IsShippingPackage>true</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>

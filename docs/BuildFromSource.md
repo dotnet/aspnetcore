@@ -171,7 +171,7 @@ SharedFxRID              | The runtime identifier of the shared framework.
 After building ASP.NET Core from source, you will need to install and use your local version of ASP.NET Core.
 See ["Artifacts"](./Artifacts.md) for more explanation of the different folders produced by a build.
 
-- Run the installers produced in `artifacts/{Debug, Release}/installers/` for your platform.
+- Run the installers produced in `artifacts/installers/{Debug, Release}/` for your platform.
 - Add a NuGet.Config to your project directory with the following content:
 
   ```xml
@@ -179,7 +179,7 @@ See ["Artifacts"](./Artifacts.md) for more explanation of the different folders 
   <configuration>
       <packageSources>
           <clear />
-          <add key="MyBuildOfAspNetCore" value="C:\src\aspnet\AspNetCore\artifacts\Debug\packages\product\" />
+          <add key="MyBuildOfAspNetCore" value="C:\src\aspnet\AspNetCore\artifacts\packages\Debug\Shipping\" />
           <add key="NuGet.org" value="https://api.nuget.org/v3/index.json" />
       </packageSources>
   </configuration>

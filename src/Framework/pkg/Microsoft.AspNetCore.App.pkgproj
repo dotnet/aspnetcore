@@ -16,7 +16,7 @@
 
 This package requires the ASP.NET Core runtime. This runtime is installed by the .NET Core SDK, or can be acquired separately using installers available at https://aka.ms/dotnet-download.
     </PackageDescription>
-    <IsProductPackage>true</IsProductPackage>
+    <IsShippingPackage>true</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>
