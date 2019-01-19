@@ -2002,7 +2002,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public async Task OnStartingThrowsInsideOnStartingCallbacksRunsInline()
+        public async Task OnStartingThrowsInsideOnStartingCallbacksRuns()
         {
             var testContext = new TestServiceContext(LoggerFactory);
             var callbacks = 0;
@@ -2049,7 +2049,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public async Task OnCompletedThrowsInsideOnCompletedCallbackRunsInline()
+        public async Task OnCompletedThrowsInsideOnCompletedCallbackRuns()
         {
             var testContext = new TestServiceContext(LoggerFactory);
             var callbacks = 0;
