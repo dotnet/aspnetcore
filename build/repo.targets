@@ -23,7 +23,6 @@
     <SkipTests Condition=" '$(_RunTests)' != 'true' ">true</SkipTests>
     <DisableCodeSigning Condition=" '$(_RunSign)' != 'true' OR '$(OS)' != 'Windows_NT' ">true</DisableCodeSigning>
 
-    <PrepareDependsOn>SetTeamCityBuildNumberToVersion;$(PrepareDependsOn)</PrepareDependsOn>
     <PrepareDependsOn Condition=" '$(BuildAllProjects)' == 'true' ">$(PrepareDependsOn);VerifyPackageArtifactConfig;VerifyExternalDependencyConfig;PrepareOutputPaths</PrepareDependsOn>
 
     <CleanDependsOn>$(CleanDependsOn);CleanArtifacts;CleanRepoArtifacts</CleanDependsOn>
