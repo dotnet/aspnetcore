@@ -10,10 +10,10 @@ namespace Microsoft.Extensions.ObjectPool
 {
     public class DefaultObjectPool<T> : ObjectPool<T> where T : class
     {
-        private readonly ObjectWrapper[] _items;
+        protected readonly ObjectWrapper[] _items;
         private readonly IPooledObjectPolicy<T> _policy;
         private readonly bool _isDefaultPolicy;
-        private T _firstItem;
+        protected T _firstItem;
 
         // This class was introduced in 2.1 to avoid the interface call where possible
         private readonly PooledObjectPolicy<T> _fastPolicy;
@@ -71,29 +71,43 @@ namespace Microsoft.Extensions.ObjectPool
         [MethodImpl(MethodImplOptions.NoInlining)]
         private T Create() => _fastPolicy?.Create() ?? _policy.Create();
 
-        public override void Return(T obj)
+        public override void Return(T obj) => ReturnCore(obj);
+
+        protected bool ReturnCore(T obj)
         {
             if (_isDefaultPolicy || (_fastPolicy?.Return(obj) ?? _policy.Return(obj)))
             {
-                if (_firstItem != null || Interlocked.CompareExchange(ref _firstItem, obj, null) != null)
+                if (_firstItem == null && Interlocked.CompareExchange(ref _firstItem, obj, null) == null)
                 {
-                    ReturnViaScan(obj);
+                    return true;        // returned to pool
+                }
+                else
+                {
+                    return ReturnViaScan(obj);
                 }
             }
+
+            return false;           // not returned to pool
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void ReturnViaScan(T obj)
+        private bool ReturnViaScan(T obj)
         {
             var items = _items;
-            for (var i = 0; i < items.Length && Interlocked.CompareExchange(ref items[i].Element, obj, null) != null; ++i)
+            for (var i = 0; i < items.Length; i++)
             {
+                if (Interlocked.CompareExchange(ref items[i].Element, obj, null) == null)
+                {
+                    return true;
+                }
             }
+
+            return false;
         }
 
         // PERF: the struct wrapper avoids array-covariance-checks from the runtime when assigning to elements of the array.
         [DebuggerDisplay("{Element}")]
-        private struct ObjectWrapper
+        protected struct ObjectWrapper
         {
             public T Element;
         }
