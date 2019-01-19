@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -79,6 +79,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                     Assert.Single(TestApplicationErrorLogger.Messages, w => w.EventId.Id == 28 && w.LogLevel == LogLevel.Information);
                 }
+                await server.StopAsync();
             }
         }
     }

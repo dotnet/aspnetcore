@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
@@ -29,11 +29,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     listenOptions.UseConnectionLogging();
                 }))
             {
-                var response = await server.HttpClientSlim.GetStringAsync($"https://localhost:{server.Port}/", validateCertificate: false)
-                                                          .DefaultTimeout();
+                {
+                    var response = await server.HttpClientSlim.GetStringAsync($"https://localhost:{server.Port}/", validateCertificate: false)
+                                                              .DefaultTimeout();
 
 
-                Assert.Equal("Hello World!", response);
+                    Assert.Equal("Hello World!", response);
+                }
+                await server.StopAsync();
             }
         }
     }
