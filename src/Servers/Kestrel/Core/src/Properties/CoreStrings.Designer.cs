@@ -2212,34 +2212,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         internal static string FormatHttp2ErrorStreamAborted(object frameType, object streamId)
             => string.Format(CultureInfo.CurrentCulture, GetString("Http2ErrorStreamAborted", "frameType", "streamId"), frameType, streamId);
 
-        /// <summary>
-        /// OnCompleted cannot be registered during a call to OnCompleted.
-        /// </summary>
-        internal static string OnCompletedNotSupported
-        {
-            get => GetString("OnCompletedNotSupported");
-        }
-
-        /// <summary>
-        /// OnCompleted cannot be registered during a call to OnCompleted.
-        /// </summary>
-        internal static string FormatOnCompletedNotSupported()
-            => GetString("OnCompletedNotSupported");
-
-        /// <summary>
-        /// OnStarting cannot be registered during a call to OnStarting.
-        /// </summary>
-        internal static string OnStartingNotSupported
-        {
-            get => GetString("OnStartingNotSupported");
-        }
-
-        /// <summary>
-        /// OnStarting cannot be registered during a call to OnStarting.
-        /// </summary>
-        internal static string FormatOnStartingNotSupported()
-            => GetString("OnStartingNotSupported");
-
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

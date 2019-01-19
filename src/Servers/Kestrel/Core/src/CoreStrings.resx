@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -589,11 +589,5 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   </data>
   <data name="Http2ErrorStreamAborted" xml:space="preserve">
     <value>A frame of type {frameType} was received after stream {streamId} was reset or aborted.</value>
-  </data>
-  <data name="OnCompletedNotSupported" xml:space="preserve">
-    <value>OnCompleted cannot be registered during a call to OnCompleted.</value>
-  </data>
-  <data name="OnStartingNotSupported" xml:space="preserve">
-    <value>OnStarting cannot be registered during a call to OnStarting.</value>
   </data>
 </root>
