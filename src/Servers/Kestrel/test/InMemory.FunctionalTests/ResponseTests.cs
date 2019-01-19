@@ -2005,17 +2005,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         public async Task OnStartingThrowsInsideOnStartingCallbacksRuns()
         {
             var testContext = new TestServiceContext(LoggerFactory);
-            var callbacks = 0;
+            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             using (var server = new TestServer(async httpContext =>
             {
                 var response = httpContext.Response;
                 response.OnStarting(state1 =>
                 {
-                    callbacks++;
                     response.OnStarting(state2 =>
                     {
-                        callbacks++;
+                        tcs.TrySetResult(null);
                         return Task.CompletedTask;
                     },
                     null);
@@ -2040,9 +2039,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "HTTP/1.1 200 OK",
                         $"Date: {testContext.DateHeaderValue}",
                         "");
-                }
 
-                Assert.Equal(2, callbacks);
+                    await tcs.Task.DefaultTimeout();
+                }
 
                 await server.StopAsync();
             }
@@ -2052,16 +2051,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         public async Task OnCompletedThrowsInsideOnCompletedCallbackRuns()
         {
             var testContext = new TestServiceContext(LoggerFactory);
-            var callbacks = 0;
+            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
             using (var server = new TestServer(async httpContext =>
             {
                 var response = httpContext.Response;
                 response.OnCompleted(state1 =>
                 {
-                    callbacks++;
                     response.OnCompleted(state2 =>
                     {
-                        callbacks++;
+                        tcs.TrySetResult(null);
+
                         return Task.CompletedTask;
                     },
                     null);
@@ -2086,9 +2086,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "HTTP/1.1 200 OK",
                         $"Date: {testContext.DateHeaderValue}",
                         "");
+
+                    await tcs.Task.DefaultTimeout();
                 }
 
-                Assert.Equal(2, callbacks);
                 await server.StopAsync();
             }
         }
