@@ -13,9 +13,9 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
         private readonly Stream _innerStream;
         private readonly long _maxBufferSize;
         private readonly int _segmentSize;
-        private SegmentWriteStream _segmentWriteStream;
-        private Action _startResponseCallback;
-        private Func<Task> _startResponseCallbackAsync;
+        private readonly SegmentWriteStream _segmentWriteStream;
+        private readonly Action _startResponseCallback;
+        private readonly Func<Task> _startResponseCallbackAsync;
 
         internal ResponseCachingStream(Stream innerStream, long maxBufferSize, int segmentSize, Action startResponseCallback, Func<Task> startResponseCallbackAsync)
         {

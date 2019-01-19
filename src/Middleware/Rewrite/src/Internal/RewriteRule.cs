@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
                     }
                 }
 
-                context.Logger?.RewriteSummary(result);
+                context.Logger?.RewrittenRequest(result);
             }
         }
     }

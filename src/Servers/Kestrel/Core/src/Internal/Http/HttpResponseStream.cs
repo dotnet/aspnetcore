@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public override void Flush()
         {
-            FlushAsync(default(CancellationToken)).GetAwaiter().GetResult();
+            FlushAsync(default).GetAwaiter().GetResult();
         }
 
         public override Task FlushAsync(CancellationToken cancellationToken)
@@ -64,12 +64,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 throw new InvalidOperationException(CoreStrings.SynchronousWritesDisallowed);
             }
 
-            WriteAsync(buffer, offset, count, default(CancellationToken)).GetAwaiter().GetResult();
+            WriteAsync(buffer, offset, count, default).GetAwaiter().GetResult();
         }
 
         public override IAsyncResult BeginWrite(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
-            var task = WriteAsync(buffer, offset, count, default(CancellationToken), state);
+            var task = WriteAsync(buffer, offset, count, default, state);
             if (callback != null)
             {
                 task.ContinueWith(t => callback.Invoke(t));

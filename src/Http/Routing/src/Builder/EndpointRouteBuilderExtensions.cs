@@ -10,6 +10,9 @@ using Microsoft.AspNetCore.Routing.Patterns;
 
 namespace Microsoft.AspNetCore.Builder
 {
+    /// <summary>
+    /// Provides extension methods for <see cref="IEndpointRouteBuilder"/> to add endpoints.
+    /// </summary>
     public static class EndpointRouteBuilderExtensions
     {
         // Avoid creating a new array every call
@@ -19,6 +22,15 @@ namespace Microsoft.AspNetCore.Builder
         private static readonly string[] DeleteVerb = new[] { "DELETE" };
 
         #region MapVerbs
+        /// <summary>
+        /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP GET requests
+        /// for the specified pattern.
+        /// </summary>
+        /// <param name="builder">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="pattern">The route pattern.</param>
+        /// <param name="requestDelegate">The delegate executed when the endpoint is matched.</param>
+        /// <param name="metadata">Metadata that is added to the endpoint.</param>
+        /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
         public static IEndpointConventionBuilder MapGet(
             this IEndpointRouteBuilder builder,
             string pattern,
@@ -28,6 +40,16 @@ namespace Microsoft.AspNetCore.Builder
             return MapVerbs(builder, pattern, displayName: null, requestDelegate, GetVerb, metadata);
         }
 
+        /// <summary>
+        /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP GET requests
+        /// for the specified pattern.
+        /// </summary>
+        /// <param name="builder">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="pattern">The route pattern.</param>
+        /// <param name="displayName">The display name for the endpoint.</param>
+        /// <param name="requestDelegate">The delegate executed when the endpoint is matched.</param>
+        /// <param name="metadata">Metadata that is added to the endpoint.</param>
+        /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
         public static IEndpointConventionBuilder MapGet(
             this IEndpointRouteBuilder builder,
             string pattern,
@@ -38,6 +60,15 @@ namespace Microsoft.AspNetCore.Builder
             return MapVerbs(builder, pattern, displayName, requestDelegate, GetVerb, metadata);
         }
 
+        /// <summary>
+        /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP POST requests
+        /// for the specified pattern.
+        /// </summary>
+        /// <param name="builder">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="pattern">The route pattern.</param>
+        /// <param name="requestDelegate">The delegate executed when the endpoint is matched.</param>
+        /// <param name="metadata">Metadata that is added to the endpoint.</param>
+        /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
         public static IEndpointConventionBuilder MapPost(
             this IEndpointRouteBuilder builder,
             string pattern,
@@ -47,6 +78,16 @@ namespace Microsoft.AspNetCore.Builder
             return MapVerbs(builder, pattern, displayName: null, requestDelegate, PostVerb, metadata);
         }
 
+        /// <summary>
+        /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP POST requests
+        /// for the specified pattern.
+        /// </summary>
+        /// <param name="builder">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="pattern">The route pattern.</param>
+        /// <param name="displayName">The display name for the endpoint.</param>
+        /// <param name="requestDelegate">The delegate executed when the endpoint is matched.</param>
+        /// <param name="metadata">Metadata that is added to the endpoint.</param>
+        /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
         public static IEndpointConventionBuilder MapPost(
             this IEndpointRouteBuilder builder,
             string pattern,
@@ -57,6 +98,15 @@ namespace Microsoft.AspNetCore.Builder
             return MapVerbs(builder, pattern, displayName, requestDelegate, PostVerb, metadata);
         }
 
+        /// <summary>
+        /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP PUT requests
+        /// for the specified pattern.
+        /// </summary>
+        /// <param name="builder">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="pattern">The route pattern.</param>
+        /// <param name="requestDelegate">The delegate executed when the endpoint is matched.</param>
+        /// <param name="metadata">Metadata that is added to the endpoint.</param>
+        /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
         public static IEndpointConventionBuilder MapPut(
             this IEndpointRouteBuilder builder,
             string pattern,
@@ -66,6 +116,16 @@ namespace Microsoft.AspNetCore.Builder
             return MapVerbs(builder, pattern, displayName: null, requestDelegate, PutVerb, metadata);
         }
 
+        /// <summary>
+        /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP PUT requests
+        /// for the specified pattern.
+        /// </summary>
+        /// <param name="builder">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="pattern">The route pattern.</param>
+        /// <param name="displayName">The display name for the endpoint.</param>
+        /// <param name="requestDelegate">The delegate executed when the endpoint is matched.</param>
+        /// <param name="metadata">Metadata that is added to the endpoint.</param>
+        /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
         public static IEndpointConventionBuilder MapPut(
             this IEndpointRouteBuilder builder,
             string pattern,
@@ -76,6 +136,15 @@ namespace Microsoft.AspNetCore.Builder
             return MapVerbs(builder, pattern, displayName, requestDelegate, PutVerb, metadata);
         }
 
+        /// <summary>
+        /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP DELETE requests
+        /// for the specified pattern.
+        /// </summary>
+        /// <param name="builder">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="pattern">The route pattern.</param>
+        /// <param name="requestDelegate">The delegate executed when the endpoint is matched.</param>
+        /// <param name="metadata">Metadata that is added to the endpoint.</param>
+        /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
         public static IEndpointConventionBuilder MapDelete(
             this IEndpointRouteBuilder builder,
             string pattern,
@@ -85,6 +154,16 @@ namespace Microsoft.AspNetCore.Builder
             return MapVerbs(builder, pattern, displayName: null, requestDelegate, DeleteVerb, metadata);
         }
 
+        /// <summary>
+        /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP DELETE requests
+        /// for the specified pattern.
+        /// </summary>
+        /// <param name="builder">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="pattern">The route pattern.</param>
+        /// <param name="displayName">The display name for the endpoint.</param>
+        /// <param name="requestDelegate">The delegate executed when the endpoint is matched.</param>
+        /// <param name="metadata">Metadata that is added to the endpoint.</param>
+        /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
         public static IEndpointConventionBuilder MapDelete(
             this IEndpointRouteBuilder builder,
             string pattern,
@@ -95,6 +174,16 @@ namespace Microsoft.AspNetCore.Builder
             return MapVerbs(builder, pattern, displayName, requestDelegate, DeleteVerb, metadata);
         }
 
+        /// <summary>
+        /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP requests
+        /// for the specified HTTP methods and pattern.
+        /// </summary>
+        /// <param name="builder">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="pattern">The route pattern.</param>
+        /// <param name="requestDelegate">The delegate executed when the endpoint is matched.</param>
+        /// <param name="httpMethods">HTTP methods that the endpoint will match.</param>
+        /// <param name="metadata">Metadata that is added to the endpoint.</param>
+        /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
         public static IEndpointConventionBuilder MapVerbs(
            this IEndpointRouteBuilder builder,
            string pattern,
@@ -105,6 +194,17 @@ namespace Microsoft.AspNetCore.Builder
             return MapVerbs(builder, pattern, displayName: null, requestDelegate, httpMethods, metadata);
         }
 
+        /// <summary>
+        /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP requests
+        /// for the specified HTTP methods and pattern.
+        /// </summary>
+        /// <param name="builder">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="pattern">The route pattern.</param>
+        /// <param name="displayName">The display name for the endpoint.</param>
+        /// <param name="requestDelegate">The delegate executed when the endpoint is matched.</param>
+        /// <param name="httpMethods">HTTP methods that the endpoint will match.</param>
+        /// <param name="metadata">Metadata that is added to the endpoint.</param>
+        /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
         public static IEndpointConventionBuilder MapVerbs(
            this IEndpointRouteBuilder builder,
            string pattern,
@@ -130,6 +230,15 @@ namespace Microsoft.AspNetCore.Builder
         #endregion
 
         #region Map
+        /// <summary>
+        /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP requests
+        /// for the specified pattern.
+        /// </summary>
+        /// <param name="builder">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="pattern">The route pattern.</param>
+        /// <param name="requestDelegate">The delegate executed when the endpoint is matched.</param>
+        /// <param name="metadata">Metadata that is added to the endpoint.</param>
+        /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
         public static IEndpointConventionBuilder Map(
             this IEndpointRouteBuilder builder,
             string pattern,
@@ -139,6 +248,16 @@ namespace Microsoft.AspNetCore.Builder
             return Map(builder, RoutePatternFactory.Parse(pattern), pattern, requestDelegate, metadata);
         }
 
+        /// <summary>
+        /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP requests
+        /// for the specified pattern.
+        /// </summary>
+        /// <param name="builder">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="pattern">The route pattern.</param>
+        /// <param name="displayName">The display name for the endpoint.</param>
+        /// <param name="requestDelegate">The delegate executed when the endpoint is matched.</param>
+        /// <param name="metadata">Metadata that is added to the endpoint.</param>
+        /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
         public static IEndpointConventionBuilder Map(
             this IEndpointRouteBuilder builder,
             string pattern,
@@ -149,6 +268,15 @@ namespace Microsoft.AspNetCore.Builder
             return Map(builder, RoutePatternFactory.Parse(pattern), displayName, requestDelegate, metadata);
         }
 
+        /// <summary>
+        /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP requests
+        /// for the specified pattern.
+        /// </summary>
+        /// <param name="builder">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="pattern">The route pattern.</param>
+        /// <param name="requestDelegate">The delegate executed when the endpoint is matched.</param>
+        /// <param name="metadata">Metadata that is added to the endpoint.</param>
+        /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
         public static IEndpointConventionBuilder Map(
             this IEndpointRouteBuilder builder,
             RoutePattern pattern,
@@ -158,6 +286,16 @@ namespace Microsoft.AspNetCore.Builder
             return Map(builder, pattern, pattern.RawText ?? pattern.DebuggerToString(), requestDelegate, metadata);
         }
 
+        /// <summary>
+        /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP requests
+        /// for the specified pattern.
+        /// </summary>
+        /// <param name="builder">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="pattern">The route pattern.</param>
+        /// <param name="displayName">The display name for the endpoint.</param>
+        /// <param name="requestDelegate">The delegate executed when the endpoint is matched.</param>
+        /// <param name="metadata">Metadata that is added to the endpoint.</param>
+        /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
         public static IEndpointConventionBuilder Map(
             this IEndpointRouteBuilder builder,
             RoutePattern pattern,

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -288,6 +288,36 @@ namespace Microsoft.AspNetCore.Routing.Matching
             MatcherAssert.AssertMatch(context, httpContext, endpoint2, ignoreValues: true);
         }
 
+        [Fact] // See https://github.com/aspnet/AspNetCore/issues/6415
+        public async Task NotMatch_HttpMethod_Returns405Endpoint_ReExecute()
+        {
+            // Arrange
+            var endpoint1 = CreateEndpoint("/hello", httpMethods: new string[] { "GET", "PUT" });
+            var endpoint2 = CreateEndpoint("/hello", httpMethods: new string[] { "DELETE" });
+
+            var matcher = CreateMatcher(endpoint1, endpoint2);
+            var (httpContext, context) = CreateContext("/hello", "POST");
+
+            // Act
+            await matcher.MatchAsync(httpContext, context);
+
+            // Assert
+            Assert.NotSame(endpoint1, context.Endpoint);
+            Assert.NotSame(endpoint2, context.Endpoint);
+
+            Assert.Same(HttpMethodMatcherPolicy.Http405EndpointDisplayName, context.Endpoint.DisplayName);
+
+            // Invoke the endpoint
+            await context.Endpoint.RequestDelegate(httpContext);
+            Assert.Equal(405, httpContext.Response.StatusCode);
+            Assert.Equal("DELETE, GET, PUT", httpContext.Response.Headers["Allow"]);
+
+            // Invoke the endpoint again to verify headers not duplicated
+            await context.Endpoint.RequestDelegate(httpContext);
+            Assert.Equal(405, httpContext.Response.StatusCode);
+            Assert.Equal("DELETE, GET, PUT", httpContext.Response.Headers["Allow"]);
+        }
+
         private static Matcher CreateMatcher(params RouteEndpoint[] endpoints)
         {
             var services = new ServiceCollection()
@@ -326,6 +356,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             return (httpContext, context);
         }
+
         internal static RouteEndpoint CreateEndpoint(
             string template,
             object defaults = null,

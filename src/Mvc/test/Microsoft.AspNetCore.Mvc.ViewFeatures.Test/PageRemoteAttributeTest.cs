@@ -187,7 +187,6 @@ namespace Microsoft.AspNetCore.Mvc
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection
-                .AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>()
                 .AddSingleton<ILoggerFactory>(new NullLoggerFactory());
 
             serviceCollection.AddOptions();

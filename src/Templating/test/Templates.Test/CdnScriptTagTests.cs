@@ -13,6 +13,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
+using Templates.Test.Helpers;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -22,16 +23,12 @@ namespace Templates.Test
     {
         private readonly ITestOutputHelper _output;
         private readonly HttpClient _httpClient;
-        private static readonly string _solutionDir;
-        private static readonly string _artifactsDir;
         private static List<ScriptTag> _scriptTags;
         private static List<LinkTag> _linkTags;
 
         static CdnScriptTagTests()
         {
-            _solutionDir = GetSolutionDir();
-            _artifactsDir = Path.Combine(_solutionDir, "artifacts", "build");
-            var packages = Directory.GetFiles(_artifactsDir, "*.nupkg");
+            var packages = MondoHelpers.GetNupkgFiles();
 
             _scriptTags = new List<ScriptTag>();
             _linkTags = new List<LinkTag>();
@@ -164,7 +161,7 @@ namespace Templates.Test
 
         private static string GetFileContentFromArchive(ScriptTag scriptTag, string relativeFilePath)
         {
-            var file = Path.Combine(_artifactsDir, scriptTag.FileName);
+            var file = MondoHelpers.GetNupkgFiles().Single(f => f.EndsWith(scriptTag.FileName));
             using (var zip = new ZipArchive(File.OpenRead(file), ZipArchiveMode.Read, leaveOpen: false))
             {
                 var entry = zip.Entries

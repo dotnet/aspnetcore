@@ -81,10 +81,10 @@
     <ArtifactsDir>$(MSBuildThisFileDirectory)artifacts\</ArtifactsDir>
     <ArtifactsObjDir>$(ArtifactsDir)obj\</ArtifactsObjDir>
     <ArtifactsConfigurationDir>$(ArtifactsDir)$(Configuration)\</ArtifactsConfigurationDir>
-    <BasePackageOutputPath>$(ArtifactsConfigurationDir)packages\</BasePackageOutputPath>
-    <ProductPackageOutputPath>$(BasePackageOutputPath)product\</ProductPackageOutputPath>
-    <InternalPackageOutputPath>$(BasePackageOutputPath)internal\</InternalPackageOutputPath>
-    <InstallersOutputPath>$(ArtifactsConfigurationDir)installers\</InstallersOutputPath>
+    <ArtifactsPackagesDir>$(ArtifactsDir)packages\$(Configuration)\</ArtifactsPackagesDir>
+    <ArtifactsShippingPackagesDir>$(ArtifactsPackagesDir)Shipping\</ArtifactsShippingPackagesDir>
+    <ArtifactsNonShippingPackagesDir>$(ArtifactsPackagesDir)NonShipping\</ArtifactsNonShippingPackagesDir>
+    <InstallersOutputPath>$(ArtifactsDir)installers\$(Configuration)\</InstallersOutputPath>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(OutputInRepoRoot)' == 'true' ">
@@ -100,13 +100,19 @@
   <PropertyGroup>
     <RepoRelativeProjectDir>$([MSBuild]::MakeRelative($(RepositoryRoot), $(MSBuildProjectDirectory)))</RepoRelativeProjectDir>
 
-    <IsBenchmarkProject Condition="$(MSBuildProjectName.EndsWith('.Performance'))">true</IsBenchmarkProject>
+    <IsBenchmarkProject Condition="$(MSBuildProjectName.EndsWith('.Performance')) OR $(RepoRelativeProjectDir.Contains('perf'))">true</IsBenchmarkProject>
     <IsTestProject Condition="$(MSBuildProjectName.EndsWith('Tests')) OR $(MSBuildProjectName.EndsWith('.Test'))">true</IsTestProject>
     <IsTestAssetProject Condition="$(RepoRelativeProjectDir.Contains('testassets'))">true</IsTestAssetProject>
     <IsSampleProject Condition="$(RepoRelativeProjectDir.Contains('sample'))">true</IsSampleProject>
+    <DisableDeterministicSourceRoot Condition="'$(IsSampleProject)' == 'true' OR '$(IsTestAssetProject)' == 'true'">true</DisableDeterministicSourceRoot>
   </PropertyGroup>
 
   <Import Project="build\tasks\RepoTasks.tasks" Condition="'$(MSBuildProjectName)' != 'RepoTasks' AND '$(DesignTimeBuild)' != 'true'" />
+
+  <PropertyGroup>
+    <!-- Projects which reference Microsoft.AspNetCore.Mvc.Testing should import this targets file to ensure dependency .deps.json files are copied into test output. -->
+    <MvcTestingTargets>$(MSBuildThisFileDirectory)src\Mvc\src\Microsoft.AspNetCore.Mvc.Testing\Microsoft.AspNetCore.Mvc.Testing.targets</MvcTestingTargets>
+  </PropertyGroup>
 
   <Import Project="eng\Dependencies.props" />
   <Import Project="eng\PatchConfig.props" />
@@ -115,5 +121,6 @@
   <Import Project="eng\targets\Cpp.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.vcxproj'" />
   <Import Project="eng\targets\CSharp.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.csproj'" />
   <Import Project="eng\targets\Wix.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.wixproj'" />
+  <Import Project="eng\targets\Npm.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.npmproj'" />
 
 </Project>

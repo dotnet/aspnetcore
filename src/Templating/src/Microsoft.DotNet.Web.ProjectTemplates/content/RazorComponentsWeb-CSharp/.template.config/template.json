@@ -5,9 +5,9 @@
     "Web",
     "RazorComponents"
   ],
-  "name": "ASP.NET Core Razor Components",
+  "name": "ASP.NET Core Web App (Razor Components)",
   "generatorVersions": "[1.0.0.0-*)",
-  "description": "A project template for creating an ASP.NET Core Razor Components application. This template can be used for web applications with rich dynamic user interfaces (UIs).",
+  "description": "A project template for creating an ASP.NET Core application with Razor Components. This template can be used for web applications with rich dynamic user interfaces (UIs).",
   "groupIdentity": "Microsoft.Web.RazorComponents",
   "precedence": "5000",
   "identity": "Microsoft.Web.RazorComponents.CSharp.3.0",

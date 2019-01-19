@@ -520,7 +520,7 @@ Hello from /Pages/Shared/";
             Assert.Contains("Name is required", response);
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6122")]
+        [Fact]
         public async Task PagesFromClassLibraries_CanBeServed()
         {
             // Act

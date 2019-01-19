@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.Mvc
 {
@@ -84,7 +83,6 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Gets the validation errors associated with this instance of <see cref="ValidationProblemDetails"/>.
         /// </summary>
-        [JsonProperty(PropertyName = "errors")]
         public IDictionary<string, string[]> Errors { get; } = new Dictionary<string, string[]>(StringComparer.Ordinal);
     }
 }

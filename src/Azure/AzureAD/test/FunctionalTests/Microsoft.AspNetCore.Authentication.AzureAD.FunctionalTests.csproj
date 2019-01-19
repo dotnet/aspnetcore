@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\testassets\AzureAD.WebSite\AzureAD.WebSite.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <Reference Include="Microsoft.Extensions.Logging.Testing" />
+  </ItemGroup>
+
+  <Import Project="$(MvcTestingTargets)" Condition="'$(MvcTestingTargets)' != ''" />
+</Project>

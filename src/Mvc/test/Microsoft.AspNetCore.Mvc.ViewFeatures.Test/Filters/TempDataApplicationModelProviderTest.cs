@@ -6,7 +6,9 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure;
 using Microsoft.Extensions.Options;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters
@@ -18,8 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters
         {
             // Arrange
             var type = typeof(TestController_NoTempDataProperties);
-            var options = Options.Create(new MvcViewOptions());
-            var provider = new TempDataApplicationModelProvider(options);
+            var provider = CreateProvider();
 
             var context = GetContext(type);
 
@@ -36,8 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters
         {
             // Arrange
             var type = typeof(TestController_PrivateSet);
-            var options = Options.Create(new MvcViewOptions());
-            var provider = new TempDataApplicationModelProvider(options);
+            var provider = CreateProvider();
             var expected = $"The '{type.FullName}.Test' property with TempDataAttribute is invalid. A property using TempDataAttribute must have a public getter and setter.";
 
             var context = GetContext(type);
@@ -52,8 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters
         {
             // Arrange
             var type = typeof(TestController_NullableNonPrimitiveTempDataProperty);
-            var options = Options.Create(new MvcViewOptions());
-            var provider = new TempDataApplicationModelProvider(options);
+            var provider = CreateProvider();
 
             var context = GetContext(type);
 
@@ -71,8 +70,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters
             // Arrange
             var type = typeof(TestController_OneTempDataProperty);
             var expected = type.GetProperty(nameof(TestController_OneTempDataProperty.Test2));
-            var options = Options.Create(new MvcViewOptions());
-            var provider = new TempDataApplicationModelProvider(options);
+            var provider = CreateProvider();
 
             var context = GetContext(type);
 
@@ -93,9 +91,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters
         {
             // Arrange
             var expected = typeof(TestController_OneTempDataProperty).GetProperty(nameof(TestController_OneTempDataProperty.Test2));
-            var options = Options.Create(new MvcViewOptions());
             var type = typeof(TestController_OneTempDataProperty);
-            var provider = new TempDataApplicationModelProvider(options);
+            var provider = CreateProvider();
             var context = GetContext(type);
 
             // Act
@@ -108,6 +105,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters
             var property = Assert.Single(filter.TempDataProperties);
             Assert.Same(expected, property.PropertyInfo);
             Assert.Equal("Test2", property.Key);
+        }
+
+        private static TempDataApplicationModelProvider CreateProvider()
+        {
+            var tempDataSerializer = Mock.Of<TempDataSerializer>(s => s.CanSerializeType(It.IsAny<Type>()) == true);
+            return new TempDataApplicationModelProvider(tempDataSerializer);
         }
 
         private static ApplicationModelProviderContext GetContext(Type type)

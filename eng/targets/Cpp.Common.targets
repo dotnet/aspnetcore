@@ -3,6 +3,12 @@
 
   <Import Project="$(MicroBuildPluginDirectory)\MicroBuild.Plugins.*\**\build\MicroBuild.Plugins.*.targets" Condition="'$(DisableMicroBuild)' != 'true' AND '$(MicroBuildPluginDirectory)' != ''" />
 
+  <Target Name="GetVcxprojFilesToSign" BeforeTargets="SignFiles">
+    <ItemGroup>
+      <FilesToSign Include="$(TargetPath)" Condition="'$(ConfigurationType)' == 'DynamicLibrary'" Authenticode="Microsoft400" />
+    </ItemGroup>
+  </Target>
+
   <Target Name="Pack" />
   <Target Name="Restore" />
   <Target Name="ResolveNuGetPackageAssets" />

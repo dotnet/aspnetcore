@@ -1,9 +1,14 @@
 param($Mode)
 
-$DumpFolder = "$env:ASPNETCORE_TEST_LOG_DIR\dumps"
+# TEMP TEMP TEMP
+# While doing https://github.com/aspnet/AspNetCore/pull/5705 I accidentally disabled ANCM on CI machines using
+# the registy key. Remove it to allow tests to pass
+
+Remove-Item "HKLM:\SOFTWARE\Microsoft\IIS Extensions\IIS AspNetCore Module V2\Parameters" -ErrorAction Ignore;
+
 if (!($DumpFolder))
 {
-    $DumpFolder = "$PSScriptRoot\..\artifacts\dumps"
+    $DumpFolder = "$PSScriptRoot\..\..\..\..\artifacts\dumps"
 }
 if (!(Test-Path $DumpFolder))
 {
@@ -70,7 +75,7 @@ function Setup-Dumps()
         New-Item -Path $werHive -Name LocalDumps
     }
 
-    Move-Item $env:windir\System32\vsjitdebugger.exe $env:windir\System32\_vsjitdebugger.exe;
+    Move-Item $env:windir\System32\vsjitdebugger.exe $env:windir\System32\_vsjitdebugger.exe -ErrorAction Ignore;
 
     New-ItemProperty $werHive -Name "DontShowUI" -Value 1 -PropertyType "DWORD" -Force;
 
@@ -94,6 +99,7 @@ function Shutdown-Dumps()
     {
         $downloadedFile = [System.IO.Path]::GetTempFileName();
         $downloadedFile = "$downloadedFile.exe";
+        $ProgressPreference = 'SilentlyContinue' # Workaround PowerShell/PowerShell#2138
         Invoke-WebRequest -Uri "https://go.microsoft.com/fwlink/p/?linkid=870807" -OutFile $downloadedFile;
         & $downloadedFile /features OptionId.WindowsDesktopDebuggers /norestart /q;
     }

@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <IsSampleProject>false</IsSampleProject>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+  </PropertyGroup>
+
+  <Import Project="$(MvcTestingTargets)" Condition="'$(MvcTestingTargets)' != ''" />
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\samples\Cookies\Cookies.csproj" />
+    <ProjectReference Include="..\..\samples\ClaimsTransformation\ClaimsTransformation.csproj" />
+    <ProjectReference Include="..\..\samples\CustomPolicyProvider\CustomPolicyProvider.csproj" />
+    <ProjectReference Include="..\..\samples\DynamicSchemes\DynamicSchemes.csproj" />
+    <ProjectReference Include="..\..\samples\Identity.ExternalClaims\Identity.ExternalClaims.csproj" />
+    <ProjectReference Include="..\..\samples\PathSchemeSelection\PathSchemeSelection.csproj" />
+    <ProjectReference Include="..\..\samples\StaticFilesAuth\StaticFilesAuth.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore" />
+    <Reference Include="Microsoft.AspNetCore.Hosting" />
+    <Reference Include="Microsoft.AspNetCore.Server.IntegrationTesting" />
+    <Reference Include="Microsoft.AspNetCore.TestHost" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <Reference Include="AngleSharp" />
+  </ItemGroup>
+</Project>

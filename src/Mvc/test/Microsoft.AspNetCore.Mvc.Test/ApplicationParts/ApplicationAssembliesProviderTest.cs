@@ -31,6 +31,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
             {
                 // The following assemblies are not reachable from Microsoft.AspNetCore.Mvc
                 "Microsoft.AspNetCore.App",
+                "Microsoft.AspNetCore.Mvc.NewtonsoftJson",
                 "Microsoft.AspNetCore.Mvc.Formatters.Xml",
             };
 

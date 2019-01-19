@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
@@ -106,7 +107,7 @@ namespace Microsoft.AspNetCore.Mvc
         {
             var options = Options.Create(new MvcOptions());
             options.Value.OutputFormatters.Add(new StringOutputFormatter());
-            options.Value.OutputFormatters.Add(new JsonOutputFormatter(
+            options.Value.OutputFormatters.Add(new NewtonsoftJsonOutputFormatter(
                 new JsonSerializerSettings(),
                 ArrayPool<char>.Shared));
 

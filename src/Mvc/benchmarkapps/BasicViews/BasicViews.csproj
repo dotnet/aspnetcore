@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.0</TargetFrameworks>
     <TargetFrameworks Condition="'$(BenchmarksTargetFramework)' != ''">$(BenchmarksTargetFramework)</TargetFrameworks>
@@ -11,16 +11,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="$(BenchmarksOnlyNpgsqlEntityFrameworkCorePostgreSQLPackageVersion)" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="2.1.1.1" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' != 'net461'">
-    <PackageReference Include="MySqlConnector" Version="$(BenchmarksOnlyMySqlConnectorPackageVersion)" />
-    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="$(BenchmarksOnlyPomeloEntityFrameworkCoreMySqlPackageVersion)" />
+    <PackageReference Include="MySqlConnector" Version="0.43.0" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="2.1.1" />
 
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="$(BenchmarksOnlyMicrosoftEntityFrameworkCoreDesignPackageVersion)" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="$(BenchmarksOnlyMicrosoftEntityFrameworkCoreSqlitePackageVersion)" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(BenchmarksOnlyMicrosoftEntityFrameworkCoreSqlServerPackageVersion)" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.1.1" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="2.1.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.1.1" />
   </ItemGroup>
 
   <!-- These references are used when running locally -->

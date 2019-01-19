@@ -35,7 +35,7 @@
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
     </ProjectReference>
 
-    <ProjectReference Include="..\..\Framework\src\Microsoft.AspNetCore.App.shfxproj">
+     <ProjectReference Include="..\..\Framework\src\Microsoft.AspNetCore.App.shfxproj">
       <Targets>Pack</Targets>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>

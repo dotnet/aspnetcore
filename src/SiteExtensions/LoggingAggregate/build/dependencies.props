@@ -3,7 +3,7 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
 
-  <Import Project="..\..\..\build\dependencies.props" />
+  <Import Project="$(RepositoryRoot)Versions.props" />
 
   <PropertyGroup Label="Package Versions">
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension21PackageVersion>2.1.1-rtm-31076</MicrosoftAspNetCoreAzureAppServicesSiteExtension21PackageVersion>

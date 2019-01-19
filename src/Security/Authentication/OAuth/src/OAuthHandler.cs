@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNetCore.Authentication.OAuth
@@ -70,7 +71,9 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                 // Visit https://tools.ietf.org/html/rfc6749#section-4.1.2.1 for more information.
                 if (StringValues.Equals(error, "access_denied"))
                 {
-                    return await HandleAccessDeniedErrorAsync(properties);
+                    var result = await HandleAccessDeniedErrorAsync(properties);
+                    return !result.None ? result
+                        : HandleRequestResult.Fail("Access was denied by the resource owner or by the remote server.", properties);
                 }
 
                 var failureMessage = new StringBuilder();
@@ -215,6 +218,18 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                 Context, Scheme, Options,
                 properties, authorizationEndpoint);
             await Events.RedirectToAuthorizationEndpoint(redirectContext);
+
+            var location = Context.Response.Headers[HeaderNames.Location];
+            if (location == StringValues.Empty)
+            {
+                location = "(not set)";
+            }
+            var cookie = Context.Response.Headers[HeaderNames.SetCookie];
+            if (cookie == StringValues.Empty)
+            {
+                cookie = "(not set)";
+            }
+            Logger.HandleChallenge(location, cookie);
         }
 
         protected virtual string BuildChallengeUrl(AuthenticationProperties properties, string redirectUri)

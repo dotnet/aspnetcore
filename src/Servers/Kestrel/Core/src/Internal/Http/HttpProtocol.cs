@@ -17,13 +17,14 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    public abstract partial class HttpProtocol : IHttpResponseControl
+    public abstract partial class HttpProtocol : IHttpContextContainer, IHttpResponseControl
     {
         private static readonly byte[] _bytesConnectionClose = Encoding.ASCII.GetBytes("\r\nConnection: close");
         private static readonly byte[] _bytesConnectionKeepAlive = Encoding.ASCII.GetBytes("\r\nConnection: keep-alive");
@@ -63,6 +64,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private long _responseBytesWritten;
 
         private readonly HttpConnectionContext _context;
+        private DefaultHttpContext _httpContext;
 
         protected string _methodText = null;
         private string _scheme = null;
@@ -275,6 +277,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected HttpResponseHeaders HttpResponseHeaders { get; } = new HttpResponseHeaders();
 
+        DefaultHttpContext IHttpContextContainer.HttpContext
+        {
+            get
+            {
+                if (_httpContext is null)
+                {
+                    _httpContext = new DefaultHttpContext(this);
+                }
+                else
+                {
+                    _httpContext.Initialize(this);
+                }
+
+                return _httpContext;
+            }
+        }
+
         public void InitializeStreams(MessageBody messageBody)
         {
             if (_streams == null)
@@ -348,16 +367,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // Lock to prevent CancelRequestAbortedToken from attempting to cancel an disposed CTS.
             lock (_abortLock)
             {
-                if (!_requestAborted)
-                {
-                    _abortedCts?.Dispose();
-                    _abortedCts = null;
-                }
+                _abortedCts?.Dispose();
+                _abortedCts = null;
             }
 
             _requestHeadersParsed = 0;
 
             _responseBytesWritten = 0;
+
+            _httpContext?.Uninitialize();
 
             OnReset();
         }
@@ -394,15 +412,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private void CancelRequestAbortedToken()
         {
-            try
+            lock (_abortLock)
             {
-                _abortedCts.Cancel();
-                _abortedCts.Dispose();
-                _abortedCts = null;
-            }
-            catch (Exception ex)
-            {
-                Log.ApplicationError(ConnectionId, TraceIdentifier, ex);
+                try
+                {
+                    _abortedCts?.Cancel();
+                }
+                catch (Exception ex)
+                {
+                    Log.ApplicationError(ConnectionId, TraceIdentifier, ex);
+                }
             }
         }
 
@@ -416,12 +435,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
 
                 _requestAborted = true;
-            }
 
-            if (_abortedCts != null)
-            {
-                // Potentially calling user code. CancelRequestAbortedToken logs any exceptions.
-                ServiceContext.Scheduler.Schedule(state => ((HttpProtocol)state).CancelRequestAbortedToken(), this);
+                if (_abortedCts != null && !_preventRequestAbortedCancellation)
+                {
+                    // Potentially calling user code. CancelRequestAbortedToken logs any exceptions.
+                    ServiceContext.Scheduler.Schedule(state => ((HttpProtocol)state).CancelRequestAbortedToken(), this);
+                }
             }
         }
 
@@ -441,8 +460,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
 
                 _preventRequestAbortedCancellation = true;
-                _abortedCts?.Dispose();
-                _abortedCts = null;
             }
         }
 
@@ -535,14 +552,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 InitializeStreams(messageBody);
 
-                var httpContext = application.CreateContext(this);
+                var context = application.CreateContext(this);
 
                 try
                 {
                     KestrelEventSource.Log.RequestStart(this);
 
                     // Run the application code for this request
-                    await application.ProcessRequestAsync(httpContext);
+                    await application.ProcessRequestAsync(context);
 
                     if (!_requestAborted)
                     {
@@ -609,7 +626,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     await FireOnCompleted();
                 }
 
-                application.DisposeContext(httpContext, _applicationException);
+                application.DisposeContext(context, _applicationException);
 
                 // Even for non-keep-alive requests, try to consume the entire body to avoid RSTs.
                 if (!_requestAborted && _requestRejectedException == null && !messageBody.IsEmpty)

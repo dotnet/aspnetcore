@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Provides scale-out support for ASP.NET Core SignalR using a Redis server and the StackExchange.Redis client.</Description>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <IsShippingPackage>true</IsShippingPackage>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SignalRSharedSourceRoot)JsonUtils.cs" Link="Internal\JsonUtils.cs" />
+    <Compile Include="$(SignalRSharedSourceRoot)MemoryBufferWriter.cs" Link="Internal\MemoryBufferWriter.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Extensions.Options" />
+    <Reference Include="StackExchange.Redis" />
+    <Reference Include="MessagePack" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.Core" />
+  </ItemGroup>
+
+</Project>

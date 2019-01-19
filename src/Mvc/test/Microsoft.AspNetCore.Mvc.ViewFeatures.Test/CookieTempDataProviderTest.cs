@@ -4,10 +4,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Filters;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -19,17 +20,19 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
     public class CookieTempDataProviderTest
     {
+        private static readonly byte[] Bytes = Encoding.UTF8.GetBytes("test value");
+        private static readonly IDictionary<string, object> Dictionary = new Dictionary<string, object>
+        {
+            { "key", "value" },
+        };
+
         [Fact]
         public void SaveTempData_UsesCookieName_FromOptions()
         {
             // Arrange
             var expectedCookieName = "TestCookieName";
-            var values = new Dictionary<string, object>();
-            values.Add("int", 10);
 
-            var tempDataProviderStore = new TempDataSerializer();
-            var expectedDataToProtect = tempDataProviderStore.Serialize(values);
-            var expectedDataInCookie = WebEncoders.Base64UrlEncode(expectedDataToProtect);
+            var expectedDataInCookie = WebEncoders.Base64UrlEncode(Bytes);
             var tempDataProvider = GetProvider(dataProtector: null, options: new CookieTempDataProviderOptions()
             {
                 Cookie = { Name = expectedCookieName }
@@ -45,7 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 .Returns(responseCookies);
 
             // Act
-            tempDataProvider.SaveTempData(httpContext.Object, values);
+            tempDataProvider.SaveTempData(httpContext.Object, Dictionary);
 
             // Assert
             Assert.Contains(responseCookies, (cookie) => cookie.Key == expectedCookieName);
@@ -79,10 +82,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             var tempDataProvider = GetProvider(dataProtector.Object);
 
-            var inputData = new Dictionary<string, object>();
-            inputData.Add("int", 10);
-            var tempDataProviderSerializer = new TempDataSerializer();
-            var expectedDataToUnprotect = tempDataProviderSerializer.Serialize(inputData);
+            var expectedDataToUnprotect = Bytes;
             var base64AndUrlEncodedDataInCookie = WebEncoders.Base64UrlEncode(expectedDataToUnprotect);
 
             var context = new DefaultHttpContext();
@@ -106,10 +106,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         public void LoadTempData_Base64UrlDecodesAnd_UnprotectsData_FromCookie()
         {
             // Arrange
-            var expectedValues = new Dictionary<string, object>();
-            expectedValues.Add("int", 10);
-            var tempDataProviderSerializer = new TempDataSerializer();
-            var expectedDataToUnprotect = tempDataProviderSerializer.Serialize(expectedValues);
+            var expectedDataToUnprotect = Bytes;
             var base64AndUrlEncodedDataInCookie = WebEncoders.Base64UrlEncode(expectedDataToUnprotect);
             var dataProtector = new PassThroughDataProtector();
             var tempDataProvider = GetProvider(dataProtector);
@@ -127,7 +124,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             // Assert
             Assert.Equal(expectedDataToUnprotect, dataProtector.DataToUnprotect);
-            Assert.Equal(expectedValues, actualValues);
+            Assert.Same(Dictionary, actualValues);
         }
 
         [Fact]
@@ -136,8 +133,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             // Arrange
             var values = new Dictionary<string, object>();
             values.Add("int", 10);
-            var tempDataProviderStore = new TempDataSerializer();
-            var expectedDataToProtect = tempDataProviderStore.Serialize(values);
+            var expectedDataToProtect = Bytes;
             var expectedDataInCookie = WebEncoders.Base64UrlEncode(expectedDataToProtect);
             var dataProtector = new PassThroughDataProtector();
             var tempDataProvider = GetProvider(dataProtector);
@@ -151,7 +147,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 .Returns(responseCookies);
 
             // Act
-            tempDataProvider.SaveTempData(httpContext.Object, values);
+            tempDataProvider.SaveTempData(httpContext.Object, Dictionary);
 
             // Assert
             Assert.Equal(1, responseCookies.Count);
@@ -174,10 +170,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             bool expectedSecureFlag)
         {
             // Arrange
-            var values = new Dictionary<string, object>();
-            values.Add("int", 10);
-            var tempDataProviderStore = new TempDataSerializer();
-            var expectedDataToProtect = tempDataProviderStore.Serialize(values);
+            var expectedDataToProtect = Bytes;
             var expectedDataInCookie = WebEncoders.Base64UrlEncode(expectedDataToProtect);
             var dataProtector = new PassThroughDataProtector();
             var options = new CookieTempDataProviderOptions();
@@ -196,7 +189,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 .Returns(responseCookies);
 
             // Act
-            tempDataProvider.SaveTempData(httpContext.Object, values);
+            tempDataProvider.SaveTempData(httpContext.Object, Dictionary);
 
             // Assert
             Assert.Equal(1, responseCookies.Count);
@@ -221,10 +214,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             string expectedCookiePath)
         {
             // Arrange
-            var values = new Dictionary<string, object>();
-            values.Add("int", 10);
-            var tempDataProviderStore = new TempDataSerializer();
-            var expectedDataToProtect = tempDataProviderStore.Serialize(values);
+            var expectedDataToProtect = Bytes;
             var expectedDataInCookie = WebEncoders.Base64UrlEncode(expectedDataToProtect);
             var dataProtector = new PassThroughDataProtector();
             var tempDataProvider = GetProvider(dataProtector);
@@ -241,7 +231,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 .Returns(responseCookies);
 
             // Act
-            tempDataProvider.SaveTempData(httpContext.Object, values);
+            tempDataProvider.SaveTempData(httpContext.Object, Dictionary);
 
             // Assert
             Assert.Equal(1, responseCookies.Count);
@@ -271,10 +261,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             string expectedDomain)
         {
             // Arrange
-            var values = new Dictionary<string, object>();
-            values.Add("int", 10);
-            var tempDataProviderStore = new TempDataSerializer();
-            var expectedDataToProtect = tempDataProviderStore.Serialize(values);
+            var expectedDataToProtect = Bytes;
             var expectedDataInCookie = WebEncoders.Base64UrlEncode(expectedDataToProtect);
             var dataProtector = new PassThroughDataProtector();
             var tempDataProvider = GetProvider(
@@ -300,7 +287,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 .Returns(responseCookies);
 
             // Act
-            tempDataProvider.SaveTempData(httpContext.Object, values);
+            tempDataProvider.SaveTempData(httpContext.Object, Dictionary);
 
             // Assert
             Assert.Equal(1, responseCookies.Count);
@@ -320,9 +307,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         {
             // Arrange
             var values = new Dictionary<string, object>();
-            values.Add("int", 10);
-            var tempDataProviderStore = new TempDataSerializer();
-            var serializedData = tempDataProviderStore.Serialize(values);
+            var serializedData = Bytes;
             var base64AndUrlEncodedData = WebEncoders.Base64UrlEncode(serializedData);
             var dataProtector = new PassThroughDataProtector();
             var tempDataProvider = GetProvider(dataProtector);
@@ -358,7 +343,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         }
 
         [Fact]
-        public void SaveAndLoad_StringCanBeStoredAndLoaded()
+        public void SaveAndLoad_Works()
         {
             // Arrange
             var testProvider = GetProvider();
@@ -371,220 +356,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             // Act
             testProvider.SaveTempData(context, input);
             UpdateRequestWithCookies(context);
-            var TempData = testProvider.LoadTempData(context);
+            var tempData = testProvider.LoadTempData(context);
 
             // Assert
-            var stringVal = Assert.IsType<string>(TempData["string"]);
-            Assert.Equal("value", stringVal);
-        }
-
-        [Theory]
-        [InlineData(10)]
-        [InlineData(int.MaxValue)]
-        [InlineData(int.MinValue)]
-        public void SaveAndLoad_IntCanBeStoredAndLoaded(int expected)
-        {
-            // Arrange
-            var testProvider = GetProvider();
-            var input = new Dictionary<string, object>
-            {
-                { "int", expected }
-            };
-            var context = GetHttpContext();
-
-            // Act
-            testProvider.SaveTempData(context, input);
-            UpdateRequestWithCookies(context);
-            var TempData = testProvider.LoadTempData(context);
-
-            // Assert
-            var intVal = Assert.IsType<int>(TempData["int"]);
-            Assert.Equal(expected, intVal);
-        }
-
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void SaveAndLoad_BoolCanBeStoredAndLoaded(bool value)
-        {
-            // Arrange
-            var testProvider = GetProvider();
-            var input = new Dictionary<string, object>
-            {
-                { "bool", value }
-            };
-            var context = GetHttpContext();
-
-            // Act
-            testProvider.SaveTempData(context, input);
-            UpdateRequestWithCookies(context);
-            var TempData = testProvider.LoadTempData(context);
-
-            // Assert
-            var boolVal = Assert.IsType<bool>(TempData["bool"]);
-            Assert.Equal(value, boolVal);
-        }
-
-        [Fact]
-        public void SaveAndLoad_DateTimeCanBeStoredAndLoaded()
-        {
-            // Arrange
-            var testProvider = GetProvider();
-            var inputDatetime = new DateTime(2010, 12, 12, 1, 2, 3, DateTimeKind.Local);
-            var input = new Dictionary<string, object>
-            {
-                { "DateTime", inputDatetime }
-            };
-            var context = GetHttpContext();
-
-            // Act
-            testProvider.SaveTempData(context, input);
-            UpdateRequestWithCookies(context);
-            var TempData = testProvider.LoadTempData(context);
-
-            // Assert
-            var datetime = Assert.IsType<DateTime>(TempData["DateTime"]);
-            Assert.Equal(inputDatetime, datetime);
-        }
-
-        [Fact]
-        public void SaveAndLoad_GuidCanBeStoredAndLoaded()
-        {
-            // Arrange
-            var testProvider = GetProvider();
-            var inputGuid = Guid.NewGuid();
-            var input = new Dictionary<string, object>
-            {
-                { "Guid", inputGuid }
-            };
-            var context = GetHttpContext();
-
-            // Act
-            testProvider.SaveTempData(context, input);
-            UpdateRequestWithCookies(context);
-            var TempData = testProvider.LoadTempData(context);
-
-            // Assert
-            var guidVal = Assert.IsType<Guid>(TempData["Guid"]);
-            Assert.Equal(inputGuid, guidVal);
-        }
-
-        [Fact]
-        public void SaveAndLoad_EnumCanBeSavedAndLoaded()
-        {
-            // Arrange
-            var key = "EnumValue";
-            var testProvider = GetProvider();
-            var expected = DayOfWeek.Friday;
-            var input = new Dictionary<string, object>
-            {
-                { key, expected }
-            };
-            var context = GetHttpContext();
-
-            // Act
-            testProvider.SaveTempData(context, input);
-            UpdateRequestWithCookies(context);
-            var TempData = testProvider.LoadTempData(context);
-            var result = TempData[key];
-
-            // Assert
-            var actual = (DayOfWeek)result;
-            Assert.Equal(expected, actual);
-        }
-
-        [Theory]
-        [InlineData(3100000000L)]
-        [InlineData(-3100000000L)]
-        public void SaveAndLoad_LongCanBeSavedAndLoaded(long expected)
-        {
-            // Arrange
-            var key = "LongValue";
-            var testProvider = GetProvider();
-            var input = new Dictionary<string, object>
-            {
-                { key, expected }
-            };
-            var context = GetHttpContext();
-
-            // Act
-            testProvider.SaveTempData(context, input);
-            UpdateRequestWithCookies(context);
-            var TempData = testProvider.LoadTempData(context);
-            var result = TempData[key];
-
-            // Assert
-            var actual = Assert.IsType<long>(result);
-            Assert.Equal(expected, actual);
-        }
-
-        [Fact]
-        public void SaveAndLoad_ListCanBeStoredAndLoaded()
-        {
-            // Arrange
-            var testProvider = GetProvider();
-            var input = new Dictionary<string, object>
-            {
-                { "List`string", new List<string> { "one", "two" } }
-            };
-            var context = GetHttpContext();
-
-            // Act
-            testProvider.SaveTempData(context, input);
-            UpdateRequestWithCookies(context);
-            var TempData = testProvider.LoadTempData(context);
-
-            // Assert
-            var list = (IList<string>)TempData["List`string"];
-            Assert.Equal(2, list.Count);
-            Assert.Equal("one", list[0]);
-            Assert.Equal("two", list[1]);
-        }
-
-        [Fact]
-        public void SaveAndLoad_DictionaryCanBeStoredAndLoaded()
-        {
-            // Arrange
-            var testProvider = GetProvider();
-            var inputDictionary = new Dictionary<string, string>
-            {
-                { "Hello", "World" },
-            };
-            var input = new Dictionary<string, object>
-            {
-                { "Dictionary", inputDictionary }
-            };
-            var context = GetHttpContext();
-
-            // Act
-            testProvider.SaveTempData(context, input);
-            UpdateRequestWithCookies(context);
-            var TempData = testProvider.LoadTempData(context);
-
-            // Assert
-            var dictionary = Assert.IsType<Dictionary<string, string>>(TempData["Dictionary"]);
-            Assert.Equal("World", dictionary["Hello"]);
-        }
-
-        [Fact]
-        public void SaveAndLoad_EmptyDictionary_RoundTripsAsNull()
-        {
-            // Arrange
-            var testProvider = GetProvider();
-            var input = new Dictionary<string, object>
-            {
-                { "EmptyDictionary", new Dictionary<string, int>() }
-            };
-            var context = GetHttpContext();
-
-            // Act
-            testProvider.SaveTempData(context, input);
-            UpdateRequestWithCookies(context);
-            var TempData = testProvider.LoadTempData(context);
-
-            // Assert
-            var emptyDictionary = (IDictionary<string, int>)TempData["EmptyDictionary"];
-            Assert.Null(emptyDictionary);
+            Assert.Same(Dictionary, tempData);
         }
 
         private static HttpContext GetHttpContext()
@@ -680,7 +455,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             var testOptions = new Mock<IOptions<CookieTempDataProviderOptions>>();
             testOptions.SetupGet(o => o.Value).Returns(options);
 
-            return new CookieTempDataProvider(new PassThroughDataProtectionProvider(dataProtector), NullLoggerFactory.Instance, testOptions.Object);
+            return new CookieTempDataProvider(
+                new PassThroughDataProtectionProvider(dataProtector),
+                NullLoggerFactory.Instance,
+                testOptions.Object,
+                new TestTempDataSerializer());
         }
 
         private class PassThroughDataProtectionProvider : IDataProtectionProvider
@@ -730,6 +509,19 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             public string Value { get; set; }
 
             public CookieOptions Options { get; set; }
+        }
+
+        private class TestTempDataSerializer : TempDataSerializer
+        {
+            public override IDictionary<string, object> Deserialize(byte[] unprotectedData)
+            {
+                return Dictionary;
+            }
+
+            public override byte[] Serialize(IDictionary<string, object> values)
+            {
+                return Bytes;
+            }
         }
     }
 }

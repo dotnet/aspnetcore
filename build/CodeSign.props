@@ -1,6 +1,11 @@
 <Project>
 
   <ItemGroup>
+    <!-- We don't need to code sign .js files because they are not used in Windows Script Host. -->
+    <FileExtensionsToSign Include=".js" CertificateName="None" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- Third-party components which should be signed.  -->
       <!-- Microsoft.AspNetCore.App -->
       <FilesToSign Include="Newtonsoft.Json.dll"                                           Certificate="$(AssemblySigning3rdPartyCertName)" Container="Microsoft.AspNetCore.App" />
@@ -68,7 +73,6 @@
       <FilesToSign Include="Microsoft.DotNet.PlatformAbstractions.dll"                      Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="Microsoft.Extensions.DependencyModel.dll"                       Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="System.IO.Pipelines.dll"                                        Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="System.Net.Http.Formatting.dll"                                 Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="System.Net.WebSockets.WebSocketProtocol.dll"                    Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="System.Runtime.CompilerServices.Unsafe.dll"                     Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
       <FilesToSign Include="System.Security.Cryptography.Pkcs.dll"                          Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />

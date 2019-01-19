@@ -1,79 +1,94 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27130.2027
-MinimumVisualStudioVersion = 15.0.26730.03
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{0F647068-6602-4E24-B1DC-8ED91481A50A}"
-	ProjectSection(SolutionItems) = preProject
-		src\Directory.Build.props = src\Directory.Build.props
-	EndProjectSection
+VisualStudioVersion = 15.0.26124.0
+MinimumVisualStudioVersion = 15.0.26124.0
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApiAuthSample", "ApiAuthorization.IdentityServer\samples\ApiAuthSample\ApiAuthSample.csproj", "{AADD8652-321B-4C7E-B345-C789776667D4}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{52D59F18-62D2-4D17-8CF2-BE192445AF8E}"
-	ProjectSection(SolutionItems) = preProject
-		test\Directory.Build.props = test\Directory.Build.props
-	EndProjectSection
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.ApiAuthorization.IdentityServer", "ApiAuthorization.IdentityServer\src\Microsoft.AspNetCore.ApiAuthorization.IdentityServer.csproj", "{4650E92F-C492-4B44-84FD-83C88972071D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity", "src\Identity\Microsoft.AspNetCore.Identity.csproj", "{1729302E-A58E-4652-B639-5B6B68DA2748}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Tests", "ApiAuthorization.IdentityServer\test\Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Tests.csproj", "{219C7185-7963-452C-BDD6-85057E3612D0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.Test", "test\Identity.Test\Microsoft.AspNetCore.Identity.Test.csproj", "{2CF3927B-19E4-4866-9BAA-2C131580E7C3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity", "Core\src\Microsoft.AspNetCore.Identity.csproj", "{B6AC3237-41CC-4799-9E4E-2A0D3283C834}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.InMemory.Test", "test\InMemory.Test\Microsoft.AspNetCore.Identity.InMemory.Test.csproj", "{65161409-C4C4-4D63-A73B-231FCFF4D503}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.EntityFrameworkCore", "EntityFrameworkCore\src\Microsoft.AspNetCore.Identity.EntityFrameworkCore.csproj", "{470D3752-4253-4BE6-8EEC-647556FD6889}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{58D94A0E-C2B7-43A7-8826-99ECBB1E0A50}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.Specification.Tests", "Specification.Tests\src\Microsoft.AspNetCore.Identity.Specification.Tests.csproj", "{5608E828-DD54-4E2A-B73C-FC22268BE797}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentitySample.Mvc", "samples\IdentitySample.Mvc\IdentitySample.Mvc.csproj", "{E1BFA023-CFFD-49CE-8466-1C28DD2EC1F6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Identity.Core", "Extensions.Core\src\Microsoft.Extensions.Identity.Core.csproj", "{937F5280-EE8C-4C0F-8DCE-BABA9DD29E8F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test", "test\EF.Test\Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test.csproj", "{37236EA3-915D-46D5-997C-DF513C500E4B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Identity.Stores", "Extensions.Stores\src\Microsoft.Extensions.Identity.Stores.csproj", "{2ED964ED-DD61-4E0C-A40F-9E706C5DED9E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test", "test\EF.InMemory.Test\Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test.csproj", "{EA7EB28F-53B8-4009-9C6B-74DB090CA8DD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentitySample.DefaultUI", "samples\IdentitySample.DefaultUI\IdentitySample.DefaultUI.csproj", "{B9A44F66-42AF-450D-9E34-7DD79869F225}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.EntityFrameworkCore", "src\EF\Microsoft.AspNetCore.Identity.EntityFrameworkCore.csproj", "{4490894C-3572-4E63-86F1-EE5105CE8A06}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentitySample.Mvc", "samples\IdentitySample.Mvc\IdentitySample.Mvc.csproj", "{D67C2ED8-55FD-4D57-8A4F-C6983265A745}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.Specification.Tests", "src\Specification.Tests\Microsoft.AspNetCore.Identity.Specification.Tests.csproj", "{5608E828-DD54-4E2A-B73C-FC22268BE797}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.Specification.Tests", "Specification.Tests\src\Microsoft.AspNetCore.Identity.Specification.Tests.csproj", "{7AE1CE81-F93B-4E49-A481-1B0EE2EFDE0B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Identity.Core", "src\Core\Microsoft.Extensions.Identity.Core.csproj", "{D5905D78-A32E-44B8-8F21-EDAEDC95D9B8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.FunctionalTests", "test\Identity.FunctionalTests\Microsoft.AspNetCore.Identity.FunctionalTests.csproj", "{FE4C359B-0155-4C07-8797-A33291B7A5EA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Identity.Stores", "src\Stores\Microsoft.Extensions.Identity.Stores.csproj", "{FADA11FC-DC06-4832-A569-7B2374A6CD42}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.Test", "test\Identity.Test\Microsoft.AspNetCore.Identity.Test.csproj", "{08B472C6-1859-4E22-8F91-2742DD9DC48D}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebSites", "WebSites", "{1F83D453-E094-4D28-BCFA-9E537ABB5AD6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.InMemory.Test", "test\InMemory.Test\Microsoft.AspNetCore.Identity.InMemory.Test.csproj", "{83B37863-5C94-48E4-AAD6-1DF7E1D2FBFA}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{42F5B772-1D61-4C18-9457-412DE8E170A5}"
-	ProjectSection(SolutionItems) = preProject
-		Directory.Build.props = Directory.Build.props
-		Directory.Build.targets = Directory.Build.targets
-	EndProjectSection
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Identity.DefaultUI.WebSite", "testassets\Identity.DefaultUI.WebSite\Identity.DefaultUI.WebSite.csproj", "{35C96499-4B59-44A2-B09B-83D3BEA9E45F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentitySample.DefaultUI", "samples\IdentitySample.DefaultUI\IdentitySample.DefaultUI.csproj", "{ACC75F4F-EA7D-49E0-A64C-9D4A3DFD5B8A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.UI", "UI\src\Microsoft.AspNetCore.Identity.UI.csproj", "{29890CAC-D5AC-4644-9337-CF853683423F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.UI", "src\UI\Microsoft.AspNetCore.Identity.UI.csproj", "{894E102D-56D4-4B02-8F13-8781F4324C3E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Http", "..\Http\Http\src\Microsoft.AspNetCore.Http.csproj", "{913C4E0B-64A2-4655-A2FD-EF72A3471AD4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Identity.DefaultUI.WebSite", "test\WebSites\Identity.DefaultUI.WebSite\Identity.DefaultUI.WebSite.csproj", "{CAE02AD2-F941-4ACB-B469-13EFF551BB74}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Hosting", "..\Hosting\Hosting\src\Microsoft.AspNetCore.Hosting.csproj", "{CF5345B3-EEF7-4CFC-B963-D34E47F697A5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.FunctionalTests", "test\Identity.FunctionalTests\Microsoft.AspNetCore.Identity.FunctionalTests.csproj", "{B3616029-7DA6-4FB3-8722-D5AC69884B3F}"
-	ProjectSection(ProjectDependencies) = postProject
-		{894E102D-56D4-4B02-8F13-8781F4324C3E} = {894E102D-56D4-4B02-8F13-8781F4324C3E}
-	EndProjectSection
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.TestHost", "..\Hosting\TestHost\src\Microsoft.AspNetCore.TestHost.csproj", "{C763AABD-4B9A-4BE5-9DED-C980FD76BC53}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApiAuthSample", "samples\ApiAuthSample\ApiAuthSample.csproj", "{7FA90737-4A2D-4BBB-8245-F6564D462FCB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authorization", "..\Security\Authorization\Core\src\Microsoft.AspNetCore.Authorization.csproj", "{2684E887-6DE3-4BB8-9B8E-80791457092A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.ApiAuthorization.IdentityServer", "src\ApiAuth.IS\Microsoft.AspNetCore.ApiAuthorization.IdentityServer.csproj", "{590C70E2-FCCC-49C2-93F3-60B7AA0533A4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Rewrite", "..\Middleware\Rewrite\src\Microsoft.AspNetCore.Rewrite.csproj", "{B23309CC-4FBF-402F-8926-D6EDB738784B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Test", "test\ApiAuth.IS.Test\Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Test.csproj", "{ECFE11DD-1111-4557-8E28-42F8E9878823}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.Twitter", "..\Security\Authentication\Twitter\src\Microsoft.AspNetCore.Authentication.Twitter.csproj", "{08A04E75-10E7-4FBC-8B4B-664345E8BEEC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.Cookies", "..\Security\Authentication\Cookies\src\Microsoft.AspNetCore.Authentication.Cookies.csproj", "{21A8B5F0-9063-4A0E-9A6E-496977534203}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.StaticFiles", "..\Middleware\StaticFiles\src\Microsoft.AspNetCore.StaticFiles.csproj", "{031CB4EE-B043-4FC6-9D02-18EC60D47B87}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Testing", "..\Mvc\src\Microsoft.AspNetCore.Mvc.Testing\Microsoft.AspNetCore.Mvc.Testing.csproj", "{D3EEC342-6362-4C61-9E42-957063901C10}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Core", "..\Servers\Kestrel\Core\src\Microsoft.AspNetCore.Server.Kestrel.Core.csproj", "{3305D777-062C-4F8B-BCA6-23C1871504F8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel", "..\Servers\Kestrel\Kestrel\src\Microsoft.AspNetCore.Server.Kestrel.csproj", "{06339361-AD2B-4EAD-B2B4-A5FF2462ACFA}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions", "..\Servers\Kestrel\Transport.Abstractions\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.csproj", "{A0001CC6-64EF-40A5-B18C-A7B870FEE7EA}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.CookiePolicy", "..\Security\CookiePolicy\src\Microsoft.AspNetCore.CookiePolicy.csproj", "{5A3F9FE4-60E5-481E-BD8B-207B50E09C49}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Diagnostics", "..\Middleware\Diagnostics\src\Microsoft.AspNetCore.Diagnostics.csproj", "{359D1811-5249-41AF-AE21-E3032AC1F9FB}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.DataProtection", "..\DataProtection\DataProtection\src\Microsoft.AspNetCore.DataProtection.csproj", "{695B250A-0B2B-4C64-B90D-0547D446437B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.Google", "..\Security\Authentication\Google\src\Microsoft.AspNetCore.Authentication.Google.csproj", "{9866C7F8-CFAD-48EF-8FA7-8E513D4EEB94}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc", "..\Mvc\src\Microsoft.AspNetCore.Mvc\Microsoft.AspNetCore.Mvc.csproj", "{0A7B4840-5C94-4AA4-B5FA-4B6FE1F24509}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Core", "..\Mvc\src\Microsoft.AspNetCore.Mvc.Core\Microsoft.AspNetCore.Mvc.Core.csproj", "{89D4ADBA-8124-4B4B-9E25-12FBF6976EE1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore", "..\Middleware\Diagnostics.EntityFrameworkCore\src\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.csproj", "{2ABD07B2-9CA8-4A8D-BD8D-275B5B6E4E28}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.Facebook", "..\Security\Authentication\Facebook\src\Microsoft.AspNetCore.Authentication.Facebook.csproj", "{C260677E-6DDA-46EF-B522-86273D9AB4CF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.DataProtection.Extensions", "..\DataProtection\Extensions\src\Microsoft.AspNetCore.DataProtection.Extensions.csproj", "{B1014D85-8CC5-495E-8AD2-BD5CFCB8FE2D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.HttpsPolicy", "..\Middleware\HttpsPolicy\src\Microsoft.AspNetCore.HttpsPolicy.csproj", "{0B75D2E0-7B18-4DAF-848B-EE2C836F1B1A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.IISIntegration", "..\Servers\IIS\IISIntegration\src\Microsoft.AspNetCore.Server.IISIntegration.csproj", "{BEFAC4AC-70FB-403C-AE5D-2E2CE3508095}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
-		DebugNoWPF|Any CPU = DebugNoWPF|Any CPU
-		DebugNoWPF|x64 = DebugNoWPF|x64
-		DebugNoWPF|x86 = DebugNoWPF|x86
 		Release|Any CPU = Release|Any CPU
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
-		ReleaseNoWPF|Any CPU = ReleaseNoWPF|Any CPU
-		ReleaseNoWPF|x64 = ReleaseNoWPF|x64
-		ReleaseNoWPF|x86 = ReleaseNoWPF|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{1729302E-A58E-4652-B639-5B6B68DA2748}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -509,6 +524,6 @@ Global
 		{ECFE11DD-1111-4557-8E28-42F8E9878823} = {52D59F18-62D2-4D17-8CF2-BE192445AF8E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {B3F2A592-CCE0-40C2-8CA4-7B1293DED874}
+		SolutionGuid = {37006CC5-F2DD-411A-BC9C-565614CD85CD}
 	EndGlobalSection
 EndGlobal

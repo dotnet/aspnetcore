@@ -20,10 +20,6 @@ export enum MessageType {
     Ping = 6,
     /** Indicates the message is a Close message and implements the {@link @aspnet/signalr.CloseMessage} interface. */
     Close = 7,
-    /** Indicates the message is a StreamComplete message and implements the {@link StreamCompleteMessage} interface */
-    StreamComplete = 8,
-    /** Indicates the message is a ParamterStreaming message and implements the {@link StreamDataMessage} interface */
-    StreamData = 9,
 }
 
 /** Defines a dictionary of string keys and string values representing headers attached to a Hub message. */
@@ -40,9 +36,7 @@ export type HubMessage =
     CompletionMessage |
     CancelInvocationMessage |
     PingMessage |
-    CloseMessage |
-    StreamCompleteMessage |
-    StreamDataMessage;
+    CloseMessage;
 
 /** Defines properties common to all Hub messages. */
 export interface HubMessageBase {
@@ -70,6 +64,8 @@ export interface InvocationMessage extends HubInvocationMessage {
     readonly target: string;
     /** The target method arguments. */
     readonly arguments: any[];
+    /** The target methods stream IDs. */
+    readonly streamIds: string[];
 }
 
 /** A hub message representing a streaming invocation. */
@@ -83,6 +79,8 @@ export interface StreamInvocationMessage extends HubInvocationMessage {
     readonly target: string;
     /** The target method arguments. */
     readonly arguments: any[];
+    /** The target methods stream IDs. */
+    readonly streamIds: string[];
 }
 
 /** A hub message representing a single item produced as part of a result stream. */
@@ -94,18 +92,6 @@ export interface StreamItemMessage extends HubInvocationMessage {
     readonly invocationId: string;
 
     /** The item produced by the server. */
-    readonly item?: any;
-}
-
-/** A hub message representing a single stream item, transferred through a streaming parameter. */
-export interface StreamDataMessage extends HubMessageBase {
-    /** @inheritDoc */
-    readonly type: MessageType.StreamData;
-
-    /** The streamId. */
-    readonly streamId: string;
-
-    /** The item produced by the client. */
     readonly item?: any;
 }
 
@@ -155,16 +141,6 @@ export interface CancelInvocationMessage extends HubInvocationMessage {
     readonly invocationId: string;
 }
 
-/** A hub message sent to indicate the end of stream items for a streaming parameter. */
-export interface StreamCompleteMessage extends HubMessageBase {
-    /** @inheritDoc */
-    readonly type: MessageType.StreamComplete;
-    /** The stream ID of the stream to be completed. */
-    readonly streamId: string;
-    /** The error that triggered completion, if any. */
-    readonly error?: string;
-}
-
 /** A protocol abstraction for communicating with SignalR Hubs.  */
 export interface IHubProtocol {
     /** The name of the protocol. This is used by SignalR to resolve the protocol between the client and server. */
@@ -178,10 +154,10 @@ export interface IHubProtocol {
      *
      * If {@link @aspnet/signalr.IHubProtocol.transferFormat} is 'Text', the `input` parameter must be a string, otherwise it must be an ArrayBuffer.
      *
-     * @param {string | ArrayBuffer} input A string, or ArrayBuffer containing the serialized representation.
+     * @param {string | ArrayBuffer | Buffer} input A string, ArrayBuffer, or Buffer containing the serialized representation.
      * @param {ILogger} logger A logger that will be used to log messages that occur during parsing.
      */
-    parseMessages(input: string | ArrayBuffer, logger: ILogger): HubMessage[];
+    parseMessages(input: string | ArrayBuffer | Buffer, logger: ILogger): HubMessage[];
 
     /** Writes the specified {@link @aspnet/signalr.HubMessage} to a string or ArrayBuffer and returns it.
      *

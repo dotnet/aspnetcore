@@ -10,7 +10,7 @@ $platforms = @(
         VCPlatform = "Win32";
     }
 );
-$srcDir = "`$(MSBuildThisFileDirectory)..\src";
+$srcDir = "`$(MSBuildThisFileDirectory)..";
 $projects = @(
     @{
         ProjectDirectory = "$srcDir\AspNetCoreModuleV1\AspNetCore";

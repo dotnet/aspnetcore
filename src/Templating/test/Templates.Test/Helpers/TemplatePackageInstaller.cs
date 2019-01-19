@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -70,7 +70,7 @@ namespace Templates.Test.Helpers
 
         public static ProcessEx RunDotNetNew(ITestOutputHelper output, string arguments, bool assertSuccess)
         {
-            lock(DotNetNewLock)
+            lock (DotNetNewLock)
             {
                 var proc = ProcessEx.Run(
                     output,
@@ -100,10 +100,7 @@ namespace Templates.Test.Helpers
             VerifyCannotFindTemplate(output, "reactredux");
             VerifyCannotFindTemplate(output, "angular");
 
-            // Locate the artifacts directory containing the built template packages
-            var solutionDir = FindAncestorDirectoryContaining("Templating.sln");
-            var artifactsDir = Path.Combine(solutionDir, "artifacts", "build");
-            var builtPackages = Directory.GetFiles(artifactsDir, "*.nupkg");
+            var builtPackages = MondoHelpers.GetNupkgFiles();
             foreach (var packagePath in builtPackages)
             {
                 if (_templatePackages.Any(name => Path.GetFileName(packagePath).StartsWith(name, StringComparison.OrdinalIgnoreCase)))
@@ -145,22 +142,6 @@ namespace Templates.Test.Helpers
             {
                 Directory.Delete(tempDir, recursive: true);
             }
-        }
-
-        private static string FindAncestorDirectoryContaining(string filename)
-        {
-            var dir = AppContext.BaseDirectory;
-            while (dir != null)
-            {
-                if (File.Exists(Path.Combine(dir, filename)))
-                {
-                    return dir;
-                }
-
-                dir = Directory.GetParent(dir)?.FullName;
-            }
-
-            throw new InvalidOperationException($"Could not find any ancestor directory containing {filename} at or above {AppContext.BaseDirectory}");
         }
     }
 }

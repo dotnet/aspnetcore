@@ -1,10 +1,20 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.Http;
+
 namespace Microsoft.AspNetCore.Builder
 {
     public class IISServerOptions
     {
+        /// <summary>
+        /// Gets or sets a value that controls whether synchronous IO is allowed for the <see cref="HttpContext.Request"/> and <see cref="HttpContext.Response"/>
+        /// </summary>
+        /// <remarks>
+        /// Defaults to true.
+        /// </remarks>
+        public bool AllowSynchronousIO { get; set; } = true;
+
         /// <summary>
         /// If true the server should set HttpContext.User. If false the server will only provide an
         /// identity when explicitly requested by the AuthenticationScheme.

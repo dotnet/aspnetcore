@@ -309,7 +309,7 @@ namespace Microsoft.AspNetCore.StaticFiles
         {
             ApplyResponseHeaders(statusCode);
 
-            _logger.LogHandled(statusCode, SubPath);
+            _logger.Handled(statusCode, SubPath);
             return Task.CompletedTask;
         }
 
@@ -335,7 +335,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             }
             catch (OperationCanceledException ex)
             {
-                _logger.LogWriteCancelled(ex);
+                _logger.WriteCancelled(ex);
                 // Don't throw this exception, it's most likely caused by the client disconnecting.
                 // However, if it was cancelled for any other reason we need to prevent empty responses.
                 _context.Abort();
@@ -353,7 +353,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 _responseHeaders.ContentRange = new ContentRangeHeaderValue(_length);
                 ApplyResponseHeaders(Constants.Status416RangeNotSatisfiable);
 
-                _logger.LogRangeNotSatisfiable(SubPath);
+                _logger.RangeNotSatisfiable(SubPath);
                 return;
             }
 
@@ -365,7 +365,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             var sendFile = _context.Features.Get<IHttpSendFileFeature>();
             if (sendFile != null && !string.IsNullOrEmpty(physicalPath))
             {
-                _logger.LogSendingFileRange(_response.Headers[HeaderNames.ContentRange], physicalPath);
+                _logger.SendingFileRange(_response.Headers[HeaderNames.ContentRange], physicalPath);
                 // We don't need to directly cancel this, if the client disconnects it will fail silently.
                 await sendFile.SendFileAsync(physicalPath, start, length, CancellationToken.None);
                 return;
@@ -376,13 +376,13 @@ namespace Microsoft.AspNetCore.StaticFiles
                 using (var readStream = _fileInfo.CreateReadStream())
                 {
                     readStream.Seek(start, SeekOrigin.Begin); // TODO: What if !CanSeek?
-                    _logger.LogCopyingFileRange(_response.Headers[HeaderNames.ContentRange], SubPath);
+                    _logger.CopyingFileRange(_response.Headers[HeaderNames.ContentRange], SubPath);
                     await StreamCopyOperation.CopyToAsync(readStream, _response.Body, length, _context.RequestAborted);
                 }
             }
             catch (OperationCanceledException ex)
             {
-                _logger.LogWriteCancelled(ex);
+                _logger.WriteCancelled(ex);
                 // Don't throw this exception, it's most likely caused by the client disconnecting.
                 // However, if it was cancelled for any other reason we need to prevent empty responses.
                 _context.Abort();

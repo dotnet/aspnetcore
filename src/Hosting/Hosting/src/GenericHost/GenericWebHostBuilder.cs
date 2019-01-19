@@ -89,15 +89,9 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 services.TryAddSingleton<DiagnosticListener>(listener);
                 services.TryAddSingleton<DiagnosticSource>(listener);
 
-                services.TryAddSingleton<IHttpContextFactory, HttpContextFactory>();
+                services.TryAddSingleton<IHttpContextFactory, DefaultHttpContextFactory>();
                 services.TryAddScoped<IMiddlewareFactory, MiddlewareFactory>();
                 services.TryAddSingleton<IApplicationBuilderFactory, ApplicationBuilderFactory>();
-
-                // Conjure up a RequestServices
-                services.TryAddTransient<IStartupFilter, AutoRequestServicesStartupFilter>();
-
-                // Ensure object pooling is available everywhere.
-                services.TryAddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
 
                 // Support UseStartup(assemblyName)
                 if (!string.IsNullOrEmpty(webHostOptions.StartupAssembly))
@@ -209,9 +203,14 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
         public IWebHostBuilder UseStartup(Type startupType)
         {
+            // UseStartup can be called multiple times. Only run the last one.
+            _builder.Properties["UseStartup.StartupType"] = startupType;
             _builder.ConfigureServices((context, services) =>
             {
-                UseStartup(startupType, context, services);
+                if (_builder.Properties.TryGetValue("UseStartup.StartupType", out var cachedType) && (Type)cachedType == startupType)
+                {
+                    UseStartup(startupType, context, services);
+                }
             });
 
             return this;
@@ -328,7 +327,10 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 return webHostBuilderContext;
             }
 
-            return (WebHostBuilderContext)contextVal;
+            // Refresh config, it's periodically updated/replaced
+            var webHostContext = (WebHostBuilderContext)contextVal;
+            webHostContext.Configuration = context.Configuration;
+            return webHostContext;
         }
 
         public string GetSetting(string key)

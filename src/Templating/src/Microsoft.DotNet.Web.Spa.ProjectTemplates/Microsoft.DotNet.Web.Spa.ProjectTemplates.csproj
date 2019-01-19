@@ -8,7 +8,7 @@
 
     To install the templates in this package, run 'dotnet new --install $(PackageId)::$(PackageVersion)'.</Description>
     <PackageTags>$(PackageTags);spa</PackageTags>
-    <IsProductPackage>true</IsProductPackage>
+    <IsShippingPackage>true</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,6 +23,7 @@
     <GeneratedContentProperties>
       MicrosoftAspNetCorePackageVersion=$(MicrosoftAspNetCorePackageVersion);
       MicrosoftAspNetCoreAppPackageVersion=$(MicrosoftAspNetCoreAppPackageVersion);
+      MicrosoftAspNetCoreMvcNewtonsoftJsonPackageVersion=$(MicrosoftAspNetCoreMvcNewtonsoftJsonPackageVersion);
       MicrosoftAspNetCoreSpaServicesExtensionsPackageVersion=$(MicrosoftAspNetCoreSpaServicesExtensionsPackageVersion);
     </GeneratedContentProperties>
   </PropertyGroup>

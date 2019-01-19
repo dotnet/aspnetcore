@@ -4,7 +4,7 @@
 using System;
 using System.Runtime.CompilerServices;
 
-namespace Microsoft.AspNetCore.Http
+namespace System.IO.Pipelines
 {
     internal static class ThrowHelper
     {
@@ -19,5 +19,17 @@ namespace Microsoft.AspNetCore.Http
         public static void ThrowInvalidOperationException_NoDataRead() => throw CreateInvalidOperationException_NoDataRead();
         [MethodImpl(MethodImplOptions.NoInlining)]
         public static Exception CreateInvalidOperationException_NoDataRead() => new InvalidOperationException("No data has been read into the StreamPipeReader.");
+
+        public static void ThrowInvalidOperationException_SynchronousReadsDisallowed() => throw CreateInvalidOperationException_SynchronousReadsDisallowed();
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public static Exception CreateInvalidOperationException_SynchronousReadsDisallowed() => new InvalidOperationException("Synchronous operations are disallowed. Call ReadAsync or set allowSynchronousIO to true instead.");
+        
+        public static void ThrowInvalidOperationException_SynchronousWritesDisallowed() => throw CreateInvalidOperationException_SynchronousWritesDisallowed();
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public static Exception CreateInvalidOperationException_SynchronousWritesDisallowed() => new InvalidOperationException("Synchronous operations are disallowed. Call WriteAsync or set allowSynchronousIO to true instead.");
+        
+        public static void ThrowInvalidOperationException_SynchronousFlushesDisallowed() => throw CreateInvalidOperationException_SynchronousFlushesDisallowed();
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public static Exception CreateInvalidOperationException_SynchronousFlushesDisallowed() => new InvalidOperationException("Synchronous operations are disallowed. Call FlushAsync or set allowSynchronousIO to true instead.");
     }
 }

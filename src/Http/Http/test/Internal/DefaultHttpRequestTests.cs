@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
+using System.IO.Pipelines;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Primitives;
@@ -239,6 +241,44 @@ namespace Microsoft.AspNetCore.Http.Internal
             // Can clear feature
             context.Features.Set<IRouteValuesFeature>(null);
             Assert.Empty(request.RouteValues);
+        }
+
+        [Fact]
+        public void BodyPipe_CanGet()
+        {
+            var context = new DefaultHttpContext();
+            var bodyPipe = context.Request.BodyPipe;
+            Assert.NotNull(bodyPipe);
+        }
+
+        [Fact]
+        public void BodyPipe_CanSet()
+        {
+            var pipeReader = new Pipe().Reader;
+            var context = new DefaultHttpContext();
+
+            context.Request.BodyPipe = pipeReader;
+
+            Assert.Equal(pipeReader, context.Request.BodyPipe);
+        }
+
+        [Fact]
+        public void BodyPipe_WrapsStream()
+        {
+            var context = new DefaultHttpContext();
+            var expectedStream = new MemoryStream();
+            context.Request.Body = expectedStream;
+
+            var bodyPipe = context.Request.BodyPipe as StreamPipeReader;
+
+            Assert.Equal(expectedStream, bodyPipe.InnerStream);
+        }
+
+        [Fact]
+        public void BodyPipe_ThrowsWhenSettingNull()
+        {
+            var context = new DefaultHttpContext();
+            Assert.Throws<ArgumentNullException>(() => context.Request.BodyPipe = null);
         }
 
         private class CustomRouteValuesFeature : IRouteValuesFeature

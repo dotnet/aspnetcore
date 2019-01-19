@@ -43,6 +43,8 @@ namespace Microsoft.AspNetCore.TestHost
             _pathBase = pathBase;
         }
 
+        internal bool AllowSynchronousIO { get; set; }
+
         /// <summary>
         /// This adapts HttpRequestMessages to ASP.NET Core requests, dispatches them through the pipeline, and returns the
         /// associated HttpResponseMessage.
@@ -59,7 +61,7 @@ namespace Microsoft.AspNetCore.TestHost
                 throw new ArgumentNullException(nameof(request));
             }
 
-            var contextBuilder = new HttpContextBuilder(_application);
+            var contextBuilder = new HttpContextBuilder(_application, AllowSynchronousIO);
 
             Stream responseBody = null;
             var requestContent = request.Content ?? new StreamContent(Stream.Null);
@@ -110,7 +112,7 @@ namespace Microsoft.AspNetCore.TestHost
                     // This body may have been consumed before, rewind it.
                     body.Seek(0, SeekOrigin.Begin);
                 }
-                req.Body = body;
+                req.Body = new AsyncStreamWrapper(body, () => contextBuilder.AllowSynchronousIO);
 
                 responseBody = context.Response.Body;
             });

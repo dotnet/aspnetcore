@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Description>Build client-side single-page applications (SPAs) with Razor Components running under WebAssembly.</Description>
+    <IsShippingPackage>true</IsShippingPackage>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Mono.WebAssembly.Interop" />
+    <Reference Include="Microsoft.AspNetCore.Components.Browser" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(ComponentsSharedSourceRoot)src\ConventionBasedStartup.cs" Link="Hosting\ConventionBasedStartup.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\IBlazorStartup.cs" Link="Hosting\IBlazorStartup.cs" />
+  </ItemGroup>
+
+</Project>

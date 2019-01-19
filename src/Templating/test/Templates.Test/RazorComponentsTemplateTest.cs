@@ -29,7 +29,10 @@ namespace Templates.Test
                 "<Project />");
             File.WriteAllText(
                 Path.Combine(TemplateOutputDir, "Directory.Build.targets"),
-                "<Project />");
+                @"<Project> <ItemGroup Condition=""'$(TargetFramework)' != 'netstandard2.0'"" >
+    <FrameworkReference Include = ""Microsoft.AspNetCore.App"" />
+  </ItemGroup>
+</Project>");
 
             // Run the "server" project
             ProjectName += ".Server";

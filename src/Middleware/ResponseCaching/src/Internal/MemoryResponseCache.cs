@@ -13,20 +13,14 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
 
         public MemoryResponseCache(IMemoryCache cache)
         {
-            if (cache == null)
-            {
-                throw new ArgumentNullException(nameof(cache));
-            }
-
-            _cache = cache;
+            _cache = cache ?? throw new ArgumentNullException(nameof(cache));
         }
 
         public IResponseCacheEntry Get(string key)
         {
             var entry = _cache.Get(key);
 
-            var memoryCachedResponse = entry as MemoryCachedResponse;
-            if (memoryCachedResponse != null)
+            if (entry is MemoryCachedResponse memoryCachedResponse)
             {
                 return new CachedResponse
                 {
@@ -49,8 +43,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
 
         public void Set(string key, IResponseCacheEntry entry, TimeSpan validFor)
         {
-            var cachedResponse = entry as CachedResponse;
-            if (cachedResponse != null)
+            if (entry is CachedResponse cachedResponse)
             {
                 var segmentStream = new SegmentWriteStream(StreamUtilities.BodySegmentSize);
                 cachedResponse.Body.CopyTo(segmentStream);
