@@ -17,7 +17,6 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
@@ -32,13 +31,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private static readonly byte[] _bytesServer = Encoding.ASCII.GetBytes("\r\nServer: " + Constants.ServerName);
         private static readonly Func<PipeWriter, ReadOnlyMemory<byte>, long> _writeChunk = WriteChunk;
 
-        private readonly object _onStartingSync = new Object();
-        private readonly object _onCompletedSync = new Object();
-
         protected Streams _streams;
 
         private Stack<KeyValuePair<Func<object, Task>, object>> _onStarting;
         private Stack<KeyValuePair<Func<object, Task>, object>> _onCompleted;
+
+        private bool _onStartingRunning;
+        private bool _onCompletedRunning;
 
         private object _abortLock = new object();
         private volatile bool _requestAborted;
@@ -314,7 +313,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public void Reset()
         {
+            _onStartingRunning = false;
             _onStarting?.Clear();
+            _onCompletedRunning = false;
             _onCompleted?.Clear();
 
             _requestProcessingStatus = RequestProcessingStatus.RequestPending;
@@ -587,7 +588,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 // https://github.com/aspnet/KestrelHttpServer/issues/43
                 if (!HasResponseStarted && _applicationException == null && _onStarting?.Count > 0)
                 {
+                    _onStartingRunning = true;
                     await FireOnStarting();
+                    _onStartingRunning = false;
                 }
 
                 // At this point all user code that needs use to the request or response streams has completed.
@@ -623,7 +626,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 if (_onCompleted?.Count > 0)
                 {
+                    _onCompletedRunning = true;
                     await FireOnCompleted();
+                    _onCompletedRunning = false;
                 }
 
                 application.DisposeContext(context, _applicationException);
@@ -646,40 +651,42 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public void OnStarting(Func<object, Task> callback, object state)
         {
-            lock (_onStartingSync)
+            if (HasResponseStarted)
             {
-                if (HasResponseStarted)
-                {
-                    ThrowResponseAlreadyStartedException(nameof(OnStarting));
-                }
-
-                if (_onStarting == null)
-                {
-                    _onStarting = new Stack<KeyValuePair<Func<object, Task>, object>>();
-                }
-                _onStarting.Push(new KeyValuePair<Func<object, Task>, object>(callback, state));
+                ThrowResponseAlreadyStartedException(nameof(OnStarting));
             }
+
+            if (_onStartingRunning)
+            {
+                callback(state);
+                return;
+            }
+
+            if (_onStarting == null)
+            {
+                _onStarting = new Stack<KeyValuePair<Func<object, Task>, object>>();
+            }
+            _onStarting.Push(new KeyValuePair<Func<object, Task>, object>(callback, state));
         }
 
         public void OnCompleted(Func<object, Task> callback, object state)
         {
-            lock (_onCompletedSync)
+            if (_onCompletedRunning)
             {
-                if (_onCompleted == null)
-                {
-                    _onCompleted = new Stack<KeyValuePair<Func<object, Task>, object>>();
-                }
-                _onCompleted.Push(new KeyValuePair<Func<object, Task>, object>(callback, state));
+                callback(state);
+                return;
             }
+
+            if (_onCompleted == null)
+            {
+                _onCompleted = new Stack<KeyValuePair<Func<object, Task>, object>>();
+            }
+            _onCompleted.Push(new KeyValuePair<Func<object, Task>, object>(callback, state));
         }
 
         protected Task FireOnStarting()
         {
-            Stack<KeyValuePair<Func<object, Task>, object>> onStarting;
-            lock (_onStartingSync)
-            {
-                onStarting = _onStarting;
-            }
+            var onStarting = _onStarting;
 
             if (onStarting == null || onStarting.Count == 0)
             {
@@ -736,11 +743,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected Task FireOnCompleted()
         {
-            Stack<KeyValuePair<Func<object, Task>, object>> onCompleted;
-            lock (_onCompletedSync)
-            {
-                onCompleted = _onCompleted;
-            }
+            var onCompleted = _onCompleted;
 
             if (onCompleted == null || onCompleted.Count == 0)
             {
@@ -1006,12 +1009,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public Task InitializeResponseAsync(int firstWriteByteCount)
         {
+            _onStartingRunning = true;
+
             var startingTask = FireOnStarting();
             // If return is Task.CompletedTask no awaiting is required
             if (!ReferenceEquals(startingTask, Task.CompletedTask))
             {
                 return InitializeResponseAwaited(startingTask, firstWriteByteCount);
             }
+
+            _onStartingRunning = false;
 
             if (_applicationException != null)
             {
@@ -1028,6 +1035,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public async Task InitializeResponseAwaited(Task startingTask, int firstWriteByteCount)
         {
             await startingTask;
+
+            _onStartingRunning = false;
 
             if (_applicationException != null)
             {
