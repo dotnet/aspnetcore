@@ -9,4 +9,13 @@ namespace Microsoft.Extensions.ObjectPool
 
         public abstract void Return(T obj);
     }
+
+    public static class ObjectPool
+    {
+        public static ObjectPool<T> Create<T>(IPooledObjectPolicy<T> policy = null) where T : class, new()
+        {
+            var provider = new DefaultObjectPoolProvider();
+            return provider.Create(policy ?? new DefaultPooledObjectPolicy<T>());
+        }
+    }
 }

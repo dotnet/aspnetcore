@@ -11,6 +11,11 @@ namespace Microsoft.Extensions.ObjectPool
 
         public override ObjectPool<T> Create<T>(IPooledObjectPolicy<T> policy)
         {
+            if (typeof(IDisposable).IsAssignableFrom(typeof(T)))
+            {
+                return new DisposableObjectPool<T>(policy, MaximumRetained);
+            }
+
             return new DefaultObjectPool<T>(policy, MaximumRetained);
         }
     }
