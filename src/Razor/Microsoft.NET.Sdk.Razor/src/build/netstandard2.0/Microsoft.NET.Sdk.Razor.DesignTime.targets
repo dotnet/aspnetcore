@@ -34,9 +34,12 @@ Copyright (c) .NET Foundation. All rights reserved.
     to trigger a workspace update for the declaration files when they change.
   -->
   <ItemGroup>
-    <Content Update="@(RazorComponent)">
+    <Content Update="**\*.razor">
       <Generator>MSBuild:RazorGenerateComponentDeclarationDesignTime</Generator>
-      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </Content>
+
+    <Content Update="$(_RazorComponentInclude)">
+      <Generator>MSBuild:RazorGenerateComponentDeclarationDesignTime</Generator>
     </Content>
   </ItemGroup>
 

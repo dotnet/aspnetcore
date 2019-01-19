@@ -92,8 +92,13 @@ Copyright (c) .NET Foundation. All rights reserved.
       _RazorAddDebugSymbolsProjectOutputGroupOutput
     </DebugSymbolsProjectOutputGroupDependsOn>
 
-    <CoreCompileDependsOn>
+    <CoreCompileDependsOn Condition="'$(DesignTimeBuild)'!='true'">
       RazorComponentGenerate;
+      $(CoreCompileDependsOn)
+    </CoreCompileDependsOn>
+
+    <CoreCompileDependsOn Condition="'$(DesignTimeBuild)'=='true'">
+      RazorGenerateComponentDeclarationDesignTime;
       $(CoreCompileDependsOn)
     </CoreCompileDependsOn>
 
@@ -408,7 +413,21 @@ Copyright (c) .NET Foundation. All rights reserved.
       <RazorComponent Include="@(Content)" Condition="'%(Content.Extension)'=='.razor'" />
       <RazorComponent Include="$(_RazorComponentInclude)" />
     </ItemGroup>
+
+    <ItemGroup>
+      <Content Condition="'%(Content.Extension)'=='.razor'" CopyToPublishDirectory="Never" />
+    </ItemGroup>
   </Target>
+
+  <!--
+    Temporarary workaround for https://github.com/aspnet/AspNetCore/issues/6859. This can be removed after a VS insertion with a newer copy of the DesignTime targets.
+  -->
+  <ItemGroup>
+    <Content Update="$(_RazorComponentInclude)">
+      <Generator>MSBuild:RazorGenerateComponentDeclarationDesignTime</Generator>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
 
   <Target Name="AssignRazorComponentTargetPaths" Condition="'@(RazorComponent)' != ''">
     <AssignTargetPath Files="@(RazorComponent)" RootFolder="$(MSBuildProjectDirectory)">
