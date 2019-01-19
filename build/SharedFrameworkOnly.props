@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <!-- Packages to be removed from the shared framework but not done yet due to JSON.net dependency. -->
-    <SharedFrameworkAndPackage Include="Microsoft.AspNetCore.JsonPatch" />
     <SharedFrameworkAndPackage Include="Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson" />
 
     <!-- Assemblies required by components and WebAssembly -->

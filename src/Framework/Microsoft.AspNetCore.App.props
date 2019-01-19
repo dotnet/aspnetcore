@@ -46,7 +46,6 @@
     <Dependency Include="Microsoft.AspNetCore.HttpOverrides"                           Version="$(MicrosoftAspNetCoreHttpOverridesPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.HttpsPolicy"                             Version="$(MicrosoftAspNetCoreHttpsPolicyPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Identity"                                Version="$(MicrosoftAspNetCoreIdentityPackageVersion)" />
-    <Dependency Include="Microsoft.AspNetCore.JsonPatch"                               Version="$(MicrosoftAspNetCoreJsonPatchPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Localization.Routing"                    Version="$(MicrosoftAspNetCoreLocalizationRoutingPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Localization"                            Version="$(MicrosoftAspNetCoreLocalizationPackageVersion)" />
     <Dependency Include="Microsoft.AspNetCore.Mvc.Abstractions"                        Version="$(MicrosoftAspNetCoreMvcAbstractionsPackageVersion)" />
