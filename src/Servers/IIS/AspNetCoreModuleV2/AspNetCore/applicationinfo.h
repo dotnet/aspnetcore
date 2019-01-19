@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "hostfxroptions.h"
+#include "HostFxrResolutionResult.h"
 #include "iapplication.h"
 #include "SRWSharedLock.h"
 #include "HandlerResolver.h"

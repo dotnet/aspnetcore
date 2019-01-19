@@ -63,7 +63,7 @@ Language=English
 .
 
 Messageid=1007
-SymbolicName=ASPNETCORE_EVENT_LOAD_CLR_FALIURE
+SymbolicName=ASPNETCORE_EVENT_LOAD_CLR_FAILURE
 Language=English
 %1
 .

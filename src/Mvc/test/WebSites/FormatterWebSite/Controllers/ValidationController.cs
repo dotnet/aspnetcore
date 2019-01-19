@@ -57,15 +57,15 @@ namespace FormatterWebSite
         // 'Developer' type is excluded but the shallow validation on the
         // property Developers should happen
         [ModelStateValidationFilter]
-        public IActionResult CreateProject([FromBody] Project project)
+        public Project CreateProject([FromBody] Project project)
         {
-            return Json(project);
+            return project;
         }
 
         [ModelStateValidationFilter]
-        public IActionResult CreateSimpleTypePropertiesModel([FromBody] SimpleTypePropertiesModel simpleTypePropertiesModel)
+        public SimpleTypePropertiesModel CreateSimpleTypePropertiesModel([FromBody] SimpleTypePropertiesModel simpleTypePropertiesModel)
         {
-            return Json(simpleTypePropertiesModel);
+            return simpleTypePropertiesModel;
         }
 
         [HttpPost]

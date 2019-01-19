@@ -9,4 +9,4 @@ $ErrorActionPreference = 'Stop'
 
 . $PSScriptRoot\Test-Template.ps1
 
-Test-Template "angular" "angular" "Microsoft.DotNet.Web.Spa.ProjectTemplates.3.0.0-alpha1.nupkg" $true
+Test-Template "angular" "angular" "Microsoft.DotNet.Web.Spa.ProjectTemplates.3.0.0-preview-t000.nupkg" $true

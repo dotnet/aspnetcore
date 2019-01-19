@@ -31,7 +31,9 @@ This can be done once #4246 is complete, and done in conjunction with converting
     <PackageArtifact Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.AzureAppServicesIntegration" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Blazor" Category="ship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Blazor.Build" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Blazor.Cli" Category="ship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Blazor.Server" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Blazor.Templates" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Components.Analyzers" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Components.Browser" Category="ship" />
@@ -46,6 +48,7 @@ This can be done once #4246 is complete, and done in conjunction with converting
     <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Hosting.WindowsServices" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Http.Connections.Client" Category="ship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Http.Connections.Common" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Http.Features" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Identity.Specification.Tests" Category="ship" />
@@ -54,6 +57,7 @@ This can be done once #4246 is complete, and done in conjunction with converting
     <PackageArtifact Include="Microsoft.AspNetCore.MiddlewareAnalysis" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Analyzers" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Api.Analyzers" Category="ship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Testing" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.NodeServices" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Owin" Category="ship" />
@@ -78,7 +82,7 @@ This can be done once #4246 is complete, and done in conjunction with converting
 
     <!-- Experimental packages which are not ready for production yet -->
       <PackageArtifact Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" Category="noship" />
-      <PackageArtifact Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.0.$(SharedFxArchitecture)" Category="noship" Condition=" '$(BuildSiteExtensions)' == 'true' " />
+      <PackageArtifact Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(SharedFxArchitecture)" Category="noship" Condition=" '$(BuildSiteExtensions)' == 'true' " />
 
     <!-- Packages for internal use only. -->
       <!-- These packages contain CLI tools which are bundled in the .NET Core SDK. -->
@@ -90,17 +94,9 @@ This can be done once #4246 is complete, and done in conjunction with converting
     <!-- This package contains API for the .NET CLI to generate the aspnet HTTPs dev cert during CLI first-run initialization. -->
       <PackageArtifact Include="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Category="noship" />
 
-    <!-- This packages contain bits used by Azure site extensions, and are not currently deployed to NuGet.org automatically like the rest of our packages. -->
-      <PackageArtifact Include="Microsoft.Extensions.ApplicationModelDetection" Category="noship" />
-
     <!-- This packages are produce for testing purposes only. -->
-      <PackageArtifact Include="Microsoft.AspNetCore.AspNetCoreModule" Category="noship" Condition=" '$(OS)' == 'Windows_NT' " />
-      <PackageArtifact Include="Microsoft.AspNetCore.AspNetCoreModuleV2" Category="noship" Condition=" '$(OS)' == 'Windows_NT' " />
       <PackageArtifact Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" Category="noship" />
       <PackageArtifact Include="Microsoft.AspNetCore.Server.IntegrationTesting" Category="noship" />
-
-    <!-- This package is produced for use in aspnet/EntityFrameworkCore to ensure EF tools can load a service collection from and app using ASP.NET's Program/Startup patterns/ -->
-      <PackageArtifact Include="Internal.WebHostBuilderFactory.Sources" Category="noship"/>
 
     <!-- These packages are produced temporarily while we finish refactoring the way this repo builds. See https://github.com/aspnet/AspNetCore/issues/4246 -->
       <PackageArtifact Include="Microsoft.AspNetCore.Antiforgery" Category="noship" />
@@ -127,7 +123,6 @@ This can be done once #4246 is complete, and done in conjunction with converting
       <PackageArtifact Include="Microsoft.AspNetCore.Hosting" Category="noship" />
       <PackageArtifact Include="Microsoft.AspNetCore.Html.Abstractions" Category="noship" />
       <PackageArtifact Include="Microsoft.AspNetCore.Http.Abstractions" Category="noship" />
-      <PackageArtifact Include="Microsoft.AspNetCore.Http.Connections.Common" Category="noship" />
       <PackageArtifact Include="Microsoft.AspNetCore.Http.Connections" Category="noship" />
       <PackageArtifact Include="Microsoft.AspNetCore.Http.Extensions" Category="noship" />
       <PackageArtifact Include="Microsoft.AspNetCore.Http" Category="noship" />
@@ -141,7 +136,6 @@ This can be done once #4246 is complete, and done in conjunction with converting
       <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Core" Category="noship" />
       <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Cors" Category="noship" />
       <PackageArtifact Include="Microsoft.AspNetCore.Mvc.DataAnnotations" Category="noship" />
-      <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Formatters.Json" Category="noship" />
       <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Formatters.Xml" Category="noship" />
       <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Localization" Category="noship" />
       <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Razor" Category="noship" />

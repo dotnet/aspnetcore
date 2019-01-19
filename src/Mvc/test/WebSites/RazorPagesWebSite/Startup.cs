@@ -17,6 +17,7 @@ namespace RazorPagesWebSite
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options => options.LoginPath = "/Login");
             services.AddMvc()
                 .AddMvcLocalization()
+                .AddNewtonsoftJson()
                 .AddRazorPagesOptions(options =>
                 {
                     options.Conventions.AuthorizePage("/HelloWorldWithAuth");

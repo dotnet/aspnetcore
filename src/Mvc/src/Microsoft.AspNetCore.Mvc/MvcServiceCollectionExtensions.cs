@@ -49,9 +49,6 @@ namespace Microsoft.Extensions.DependencyInjection
             // +1 order
             builder.AddDataAnnotations(); // +1 order
 
-            // +10 order
-            builder.AddJsonFormatters();
-
             builder.AddCors();
 
             return new MvcBuilder(builder.Services, builder.PartManager);

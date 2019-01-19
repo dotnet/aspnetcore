@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
@@ -11,6 +11,7 @@
     <UseLatestPackageReferences>true</UseLatestPackageReferences>
     <UseProjectReferences>true</UseProjectReferences>
     <IsPackable>true</IsPackable>
+    <AspNetCoreModuleOutOfProcessVersion>2.0.0</AspNetCoreModuleOutOfProcessVersion>
   </PropertyGroup>
 
   <Import Project="..\..\build\assets.props" />
@@ -29,20 +30,29 @@
   <ItemGroup Condition="'$(OS)' == 'Windows_NT' AND '$(VCTargetsPath)' != ''">
     <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\..\AspNetCoreModuleV1\AspNetCore\AspNetCore.vcxproj" Platform="x64"/>
     <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\..\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj" Platform="x64"/>
-    <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\..\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" HandlerPath="2.0.0" Platform="x64" />
+    <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\..\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" Platform="x64" />
 
-    <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\..\AspNetCoreModuleV1\AspNetCore\AspNetCore.vcxproj" Platform="x86" />
-    <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\..\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj" Platform="x86" />
-    <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\..\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" HandlerPath="2.0.0" Platform="x86" />
+    <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\..\AspNetCoreModuleV1\AspNetCore\AspNetCore.vcxproj" Platform="Win32" />
+    <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\..\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj" Platform="Win32" />
+    <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\..\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" Platform="Win32" />
   </ItemGroup>
 
   <Target Name="AddRunNativeComponents" BeforeTargets="AssignTargetPaths" Condition="'$(OS)' == 'Windows_NT'">
     <ItemGroup>
-      <None Include="%(ShimComponents.DllLocation)" CopyToOutputDirectory="PreserveNewest" Link="%(ShimComponents.Platform)\%(ShimComponents.HandlerPath)\%(ShimComponents.NativeAsset).dll" />
+      <None Include="%(ShimComponents.DllLocation)" CopyToOutputDirectory="PreserveNewest" Link="%(ShimComponents.Platform)\%(ShimComponents.PackageSubPath)\%(ShimComponents.NativeAsset).dll" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="AddPackNativeComponents" BeforeTargets="_GetPackageFiles;GetSignedPackageFiles" Condition="$(PackNativeAssets) == 'true'">
+    <ItemGroup>
+      <Content Include="%(ShimComponents.DllLocation)" PackageCopyToOutput="true" PackagePath="contentFiles/any/any/%(ShimComponents.Platform)/%(ShimComponents.PackageSubPath)" />
+      <SignedPackageFile Include="%(ShimComponents.DllLocation)" PackagePath="contentFiles/any/any/%(ShimComponents.Platform)/%(ShimComponents.PackageSubPath)%(ShimComponents.NativeAsset).dll" Certificate="$(AssemblySigningCertName)" />
     </ItemGroup>
   </Target>
 
   <ItemGroup>
+    <ProjectReference Include="$(RepositoryRoot)src\Servers\IIS\IIS\test\testassets\TestTasks\TestTasks.csproj" ReferenceOutputAssembly="false" />
+
     <Reference Include="Microsoft.AspNetCore.Server.IntegrationTesting" />
     <Reference Include="Microsoft.NETCore.Windows.ApiSets" />
     <Reference Include="Microsoft.Web.Administration" />

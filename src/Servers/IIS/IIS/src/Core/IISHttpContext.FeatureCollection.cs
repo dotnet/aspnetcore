@@ -195,8 +195,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             set => User = value;
         }
 
-        public IAuthenticationHandler Handler { get; set; }
-
         string IServerVariablesFeature.this[string variableName]
         {
             get

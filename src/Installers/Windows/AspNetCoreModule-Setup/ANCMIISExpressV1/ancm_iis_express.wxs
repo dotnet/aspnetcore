@@ -36,15 +36,6 @@
     <?define SchemaGuid = "61134449-1DA9-447F-8F2A-DCE91C757629" ?>
 <?endif ?>
 
-<!-- ANCM dlls must be provided in specified root folder -->
-<?if $(var.PreBuiltANCMRoot) = "" ?>
-  <?error PreBuiltANCMRoot must be defined ?>
-<?endif?>
-
-<?define AspNetCoreTargetPath = "$(var.PreBuiltANCMRoot)$(var.Platform)\aspnetcore.dll" ?>
-<?define AspNetCoreWoW64TargetPath = "$(var.PreBuiltANCMRoot)x86\aspnetcore.dll" ?>
-<?define AspNetCoreSchemaPath = "$(var.PreBuiltANCMSchema)aspnetcore_schema.xml" ?>
-
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:dep="http://schemas.microsoft.com/wix/DependencyExtension">
     <Product Id="$(var.ProductCode)"
           Name="!(loc.AspNetCoreIISExpressModuleProductName)"
@@ -170,7 +161,7 @@
             <Component Id="AspNetCoreModule" Guid="A1D9FE60-0486-4ED9-AEC7-6544B827B1AE" Win64="$(var.IsWin64)">
                 <File Id="AspNetCoreModuleDll"
                       Name="aspnetcore.dll"
-                      Source="$(var.AspNetCoreTargetPath)"
+                      Source="$(var.AspNetCoreV1.TargetPath)"
                       DiskId="1"
                       Vital="yes">
                 </File>
@@ -200,7 +191,7 @@
                         <Component Id="AspNetCoreModule.wow" Guid="F16FBAF7-4A51-4FB4-AB17-FE02548A6C7E" Win64="no">
                             <File Id="AspNetCoreModuleDll.wow"
                                     Name="aspnetcore.dll"
-                                    Source="$(var.AspNetCoreWoW64TargetPath)"
+                                    Source="$(var.AspNetCoreV2WoW64.TargetPath)"
                                     DiskId="1"
                                     Vital="yes">
                             </File>

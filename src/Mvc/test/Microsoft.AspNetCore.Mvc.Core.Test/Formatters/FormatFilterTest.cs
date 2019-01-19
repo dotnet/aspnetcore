@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -467,7 +468,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 // Set up default output formatters.
                 MvcOptions.OutputFormatters.Add(new HttpNoContentOutputFormatter());
                 MvcOptions.OutputFormatters.Add(new StringOutputFormatter());
-                MvcOptions.OutputFormatters.Add(new JsonOutputFormatter(
+                MvcOptions.OutputFormatters.Add(new NewtonsoftJsonOutputFormatter(
                     new JsonSerializerSettings(),
                     ArrayPool<char>.Shared));
 

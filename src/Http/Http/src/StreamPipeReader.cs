@@ -12,12 +12,12 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Http
+namespace System.IO.Pipelines
 {
     /// <summary>
     /// Implements PipeReader using an underlying stream.
     /// </summary>
-    public class StreamPipeReader : PipeReader
+    public class StreamPipeReader : PipeReader, IDisposable
     {
         private readonly int _minimumSegmentSize;
         private readonly int _minimumReadThreshold;
@@ -25,7 +25,8 @@ namespace Microsoft.AspNetCore.Http
         private readonly MemoryPool<byte> _pool;
 
         private CancellationTokenSource _internalTokenSource;
-        private bool _isCompleted;
+        private bool _isReaderCompleted;
+        private bool _isWriterCompleted;
         private ExceptionDispatchInfo _exceptionInfo;
 
         private BufferSegment _readHead;
@@ -69,6 +70,11 @@ namespace Microsoft.AspNetCore.Http
             _minimumReadThreshold = Math.Min(options.MinimumReadThreshold, options.MinimumSegmentSize);
             _pool = options.MemoryPool;
         }
+
+        /// <summary>
+        /// Gets the inner stream that is being read from.
+        /// </summary>
+        public Stream InnerStream => _readingStream;
 
         /// <inheritdoc />
         public override void AdvanceTo(SequencePosition consumed)
@@ -177,12 +183,12 @@ namespace Microsoft.AspNetCore.Http
         /// <inheritdoc />
         public override void Complete(Exception exception = null)
         {
-            if (_isCompleted)
+            if (_isReaderCompleted)
             {
                 return;
             }
 
-            _isCompleted = true;
+            _isReaderCompleted = true;
             if (exception != null)
             {
                 _exceptionInfo = ExceptionDispatchInfo.Capture(exception);
@@ -243,6 +249,11 @@ namespace Microsoft.AspNetCore.Http
 
                     _readTail.End += length;
                     _bufferedBytes += length;
+
+                    if (length == 0)
+                    {
+                        _isWriterCompleted = true;
+                    }
                 }
                 catch (OperationCanceledException)
                 {
@@ -270,7 +281,7 @@ namespace Microsoft.AspNetCore.Http
 
         private void ThrowIfCompleted()
         {
-            if (_isCompleted)
+            if (_isReaderCompleted)
             {
                 ThrowHelper.ThrowInvalidOperationException_NoReadingAllowed();
             }
@@ -352,7 +363,7 @@ namespace Microsoft.AspNetCore.Http
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool IsCompletedOrThrow()
         {
-            if (!_isCompleted)
+            if (!_isWriterCompleted)
             {
                 return false;
             }

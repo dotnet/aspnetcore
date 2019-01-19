@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Http.Internal
 {
-    public class DefaultConnectionInfo : ConnectionInfo
+    public sealed class DefaultConnectionInfo : ConnectionInfo
     {
         // Lambdas hoisted to static readonly fields to improve inlining https://github.com/dotnet/roslyn/issues/13624
         private readonly static Func<IFeatureCollection, IHttpConnectionFeature> _newHttpConnectionFeature = f => new HttpConnectionFeature();
@@ -23,14 +23,14 @@ namespace Microsoft.AspNetCore.Http.Internal
             Initialize(features);
         }
 
-        public virtual void Initialize( IFeatureCollection features)
+        public void Initialize( IFeatureCollection features)
         {
             _features = new FeatureReferences<FeatureInterfaces>(features);
         }
 
-        public virtual void Uninitialize()
+        public void Uninitialize()
         {
-            _features = default(FeatureReferences<FeatureInterfaces>);
+            _features = default;
         }
 
         private IHttpConnectionFeature HttpConnectionFeature =>
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Http.Internal
             set { TlsConnectionFeature.ClientCertificate = value; }
         }
 
-        public override Task<X509Certificate2> GetClientCertificateAsync(CancellationToken cancellationToken = new CancellationToken())
+        public override Task<X509Certificate2> GetClientCertificateAsync(CancellationToken cancellationToken = default)
         {
             return TlsConnectionFeature.GetClientCertificateAsync(cancellationToken);
         }

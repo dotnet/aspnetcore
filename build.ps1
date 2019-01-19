@@ -1,4 +1,4 @@
-#requires -version 4
+#requires -version 5
 
 <#
 .SYNOPSIS
@@ -102,6 +102,11 @@ param(
     [Parameter(ParameterSetName = 'Groups')]
     [switch]$Installers,
 
+    # By default, Windows builds will use MSBuild.exe. Passing this will force the build to run on
+    # dotnet.exe instead, which may cause issues if you invoke build on a project unsupported by
+    # MSBuild for .NET Core
+    [switch]$ForceCoreMsbuild,
+
     # Other lifecycle targets
     [switch]$Help, # Show help
 
@@ -175,6 +180,7 @@ function Get-RemoteFile([string]$RemotePath, [string]$LocalPath) {
     while ($retries -gt 0) {
         $retries -= 1
         try {
+            $ProgressPreference = 'SilentlyContinue' # Workaround PowerShell/PowerShell#2138
             Invoke-WebRequest -UseBasicParsing -Uri $RemotePath -OutFile $LocalPath
             return
         }
@@ -207,8 +213,8 @@ if (Test-Path $ConfigFile) {
     try {
         $config = Get-Content -Raw -Encoding UTF8 -Path $ConfigFile | ConvertFrom-Json
         if ($config) {
-            if (!($Channel) -and (Get-Member -Name 'channel' -InputObject $config)) { [string] $Channel = $config.channel }
-            if (!($ToolsSource) -and (Get-Member -Name 'toolsSource' -InputObject $config)) { [string] $ToolsSource = $config.toolsSource}
+            if (Get-Member -Name 'channel' -InputObject $config) { [string] $Channel = $config.channel }
+            if (Get-Member -Name 'toolsSource' -InputObject $config) { [string] $ToolsSource = $config.toolsSource}
         }
     } catch {
         Write-Warning "$ConfigFile could not be read. Its settings will be ignored."
@@ -268,6 +274,9 @@ Import-Module -Force -Scope Local (Join-Path $korebuildPath 'KoreBuild.psd1')
 
 try {
     Set-KoreBuildSettings -ToolsSource $ToolsSource -DotNetHome $DotNetHome -RepoPath $RepoRoot -ConfigFile $ConfigFile -CI:$CI
+    if ($ForceCoreMsbuild) {
+        $global:KoreBuildSettings.MSBuildType = 'core'
+    }
     Invoke-KoreBuildCommand 'default-build' @MSBuildArguments
 }
 finally {

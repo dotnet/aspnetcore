@@ -6,7 +6,8 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels
@@ -18,8 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         {
             // Arrange
             var type = typeof(TestPageModel_NoTempDataProperties);
-            var options = Options.Create(new MvcViewOptions());
-            var provider = new TempDataFilterPageApplicationModelProvider(options);
+            var provider = CreateProvider();
             var context = CreateProviderContext(type);
 
             // Act
@@ -36,8 +36,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             var type = typeof(TestPageModel_PrivateSet);
             var expected = $"The '{type.FullName}.Test' property with TempDataAttribute is invalid. A property using TempDataAttribute must have a public getter and setter.";
 
-            var options = Options.Create(new MvcViewOptions());
-            var provider = new TempDataFilterPageApplicationModelProvider(options);
+            var provider = CreateProvider();
             var context = CreateProviderContext(type);
 
             // Act & Assert
@@ -50,8 +49,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         {
             // Arrange
             var type = typeof(TestPageModel_OneTempDataProperty);
-            var options = Options.Create(new MvcViewOptions());
-            var provider = new TempDataFilterPageApplicationModelProvider(options);
+            var provider = CreateProvider();
             var context = CreateProviderContext(type);
 
             // Act
@@ -67,8 +65,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         {
             // Arrange
             var type = typeof(TestPageModel_OneTempDataProperty);
-            var options = Options.Create(new MvcViewOptions());
-            var provider = new TempDataFilterPageApplicationModelProvider(options);
+            var provider = CreateProvider();
             var context = CreateProviderContext(type);
 
             // Act
@@ -90,8 +87,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         {
             // Arrange
             var type = typeof(TestPageModel_OneTempDataProperty);
-            var options = Options.Create(new MvcViewOptions());
-            var provider = new TempDataFilterPageApplicationModelProvider(options);
+            var provider = CreateProvider();
             var context = CreateProviderContext(type);
 
             // Act
@@ -125,6 +121,12 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                 PageTypeInfo = typeof(TestPage).GetTypeInfo(),
                 HandlerTypeInfo = type.GetTypeInfo(),
             };
+        }
+
+        private static TempDataFilterPageApplicationModelProvider CreateProvider()
+        {
+            var tempDataSerializer = Mock.Of<TempDataSerializer>(s => s.CanSerializeType(It.IsAny<Type>()) == true);
+            return new TempDataFilterPageApplicationModelProvider(tempDataSerializer);
         }
 
         private class TestPage : Page

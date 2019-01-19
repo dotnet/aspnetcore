@@ -4,9 +4,18 @@
     <RestoreSources>${RestoreSources}</RestoreSources>
     <RuntimeFrameworkVersion>${RuntimeFrameworkVersion}</RuntimeFrameworkVersion>
     <MicrosoftNETSdkRazorPackageVersion>${MicrosoftNETSdkRazorPackageVersion}</MicrosoftNETSdkRazorPackageVersion>
-    <BundledAspNetCoreAppTargetFrameworkVersion>${BundledAspNetCoreAppTargetFrameworkVersion}</BundledAspNetCoreAppTargetFrameworkVersion>
-    <BundledAspNetCoreAppPackageVersion>${BundledAspNetCoreAppPackageVersion}</BundledAspNetCoreAppPackageVersion>
-    <!-- aspnet/BuildTools#662 Don't police what version of NetCoreApp we use -->
-    <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
+    <AspNetCoreModuleName>AspNetCoreModuleV2</AspNetCoreModuleName>
   </PropertyGroup>
+
+  <ItemGroup>
+    <KnownFrameworkReference
+      Update="Microsoft.AspNetCore.App"
+      DefaultRuntimeFrameworkVersion="${MicrosoftAspNetCoreAppPackageVersion}"
+      LatestRuntimeFrameworkVersion="${MicrosoftAspNetCoreAppPackageVersion}"
+      TargetingPackVersion="${MicrosoftAspNetCoreAppPackageVersion}" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' != 'netstandard2.0'" >
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
 </Project>

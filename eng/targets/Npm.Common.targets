@@ -1,0 +1,84 @@
+<Project DefaultTargets="Build" InitialTargets="_CheckForInvalidConfiguration">
+
+  <PropertyGroup>
+    <NormalizedPackageId>$(PackageId.Replace('@','').Replace('/','-'))</NormalizedPackageId>
+    <PackageFileName>$(NormalizedPackageId)-$(PackageVersion).tgz</PackageFileName>
+    <PackageJson>$(MSBuildProjectDirectory)\package.json</PackageJson>
+    <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)' == ''">$(MSBuildProjectDirectory)\obj\</BaseIntermediateOutputPath>
+    <IntermediateOutputPath>$([MSBuild]::NormalizeDirectory('$(BaseIntermediateOutputPath)'))$(Configuration)\</IntermediateOutputPath>
+  </PropertyGroup>
+
+  <Target Name="_CheckForInvalidConfiguration">
+    <Error Text="Missing expected property: PackageId" Condition="'$(IsPackable)' != 'false' and '$(PackageId)' == ''" />
+  </Target>
+
+  <Target Name="Restore">
+    <Message Importance="High" Text="Running npm install on $(MSBuildProjectFullPath)" />
+    <Exec Command="npm ci" Condition="'$(CI)' == 'true'" />
+    <Exec Command="npm install --no-optional" Condition="'$(CI)' != 'true'" />
+  </Target>
+
+  <Target Name="PrepareForBuild">
+    <MakeDir Directories="$(IntermediateOutputPath);$(PackageOutputPath)"  />
+  </Target>
+
+  <Target Name="ResolveProjectReferences">
+    <MSBuild Projects="@(ProjectReference)"
+             BuildInParallel="true" />
+  </Target>
+
+  <Target Name="Build" DependsOnTargets="PrepareForBuild;ResolveProjectReferences">
+    <Exec Command="npm run build" IgnoreStandardErrorWarningFormat="true" Condition="'$(IsBuildable)' != 'false'" />
+  </Target>
+
+  <PropertyGroup>
+    <PackDependsOn>
+      $(PackDependsOn);
+      PrepareForBuild
+    </PackDependsOn>
+    <PackDependsOn Condition="'$(NoBuild)' != 'true'">
+      $(PackDependsOn);
+      Build
+    </PackDependsOn>
+  </PropertyGroup>
+
+  <Target Name="Pack" Condition="'$(IsPackable)' == 'true'" DependsOnTargets="$(PackDependsOn)">
+    <PropertyGroup>
+      <_BackupPackageJson>$(IntermediateOutputPath)$(MSBuildProjectName).package.json.bak</_BackupPackageJson>
+      <_PackageTargetPath>$(MSBuildProjectDirectory)\$(PackageFileName)</_PackageTargetPath>
+    </PropertyGroup>
+
+    <Copy SourceFiles="$(PackageJson)" DestinationFiles="$(_BackupPackageJson)" />
+
+    <Exec Command="npm --no-git-tag-version --allow-same-version version $(PackageVersion)" StandardOutputImportance="Normal" StandardErrorImportance="Normal" />
+    <Exec Command="npm pack" StandardOutputImportance="Normal" StandardErrorImportance="Normal" />
+
+    <Move SourceFiles="$(_PackageTargetPath)" DestinationFolder="$(PackageOutputPath)" />
+    <Message Importance="High" Text="$(MSBuildProjectName) -> $(_PackageTargetPath)" />
+
+    <CallTarget Targets="_RestoreBackupPackageJsonFile" />
+    <OnError ExecuteTargets="_RestoreBackupPackageJsonFile" />
+  </Target>
+
+  <Target Name="_RestoreBackupPackageJsonFile">
+    <Move SourceFiles="$(_BackupPackageJson)" DestinationFiles="$(PackageJson)" />
+  </Target>
+
+  <Target Name="Test" Condition="'$(IsTestProject)' == 'true'">
+    <Message Importance="High" Text="Running npm tests for $(MSBuildProjectName)" />
+    <Exec Command="npm $(NpmTestArgs)" IgnoreStandardErrorWarningFormat="true" />
+  </Target>
+
+  <Target Name="GetArtifactInfo" Condition="'$(IsPackable)' == 'true'" Returns="@(ArtifactInfo)">
+    <ItemGroup>
+      <ArtifactInfo Include="$(TargetPath)" >
+        <ArtifactType>NpmPackage</ArtifactType>
+        <PackageId>$(PackageId)</PackageId>
+        <Version>$(PackageVersion)</Version>
+      </ArtifactInfo>
+
+      <FilesToExcludeFromSigning Include="$(TargetPath)" />
+    </ItemGroup>
+  </Target>
+
+</Project>

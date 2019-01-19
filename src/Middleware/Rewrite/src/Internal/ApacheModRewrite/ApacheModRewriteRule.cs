@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite
 
             if (!initMatchRes.Success)
             {
-                context.Logger?.ModRewriteDidNotMatchRule();
+                context.Logger?.ModRewriteNotMatchedRule();
                 return;
             }
 
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite
                 var condResult = ConditionEvaluator.Evaluate(Conditions, context, initMatchRes.BackReferences);
                 if (!condResult.Success)
                 {
-                    context.Logger?.ModRewriteDidNotMatchRule();
+                    context.Logger?.ModRewriteNotMatchedRule();
                     return;
                 }
             }

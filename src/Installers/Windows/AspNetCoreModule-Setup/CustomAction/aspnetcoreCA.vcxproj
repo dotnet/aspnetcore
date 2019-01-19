@@ -83,7 +83,6 @@
     <ProjectReference Include="$(IIS-Common)lib\CommonLib.vcxproj">
       <Project>{b54a8f61-60de-4ad9-87ca-d102f230678e}</Project>
     </ProjectReference>
-    <FilesToSign Include="$(MSBuildProjectDirectory)\$(OutDir)$(TargetName)$(TargetExt)" Authenticode="Microsoft400" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Target Name="EnsureImportsExist" BeforeTargets="PrepareForBuild">

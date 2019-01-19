@@ -3,7 +3,6 @@
 
 #include "inprocesshandler.h"
 #include "inprocessapplication.h"
-#include "IOutputManager.h"
 #include "ShuttingDownApplication.h"
 #include "ntassert.h"
 

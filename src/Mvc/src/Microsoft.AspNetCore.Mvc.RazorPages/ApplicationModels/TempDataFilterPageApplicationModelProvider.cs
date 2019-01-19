@@ -4,17 +4,17 @@
 using System;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Filters;
-using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
     internal class TempDataFilterPageApplicationModelProvider : IPageApplicationModelProvider
     {
-        private readonly MvcViewOptions _options;
+        private readonly TempDataSerializer _tempDataSerializer;
 
-        public TempDataFilterPageApplicationModelProvider(IOptions<MvcViewOptions> options)
+        public TempDataFilterPageApplicationModelProvider(TempDataSerializer tempDataSerializer)
         {
-            _options = options.Value;
+            _tempDataSerializer = tempDataSerializer;
         }
 
         // The order is set to execute after the DefaultPageApplicationModelProvider.
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             var pageApplicationModel = context.PageApplicationModel;
             var handlerType = pageApplicationModel.HandlerType.AsType();
 
-            var tempDataProperties = SaveTempDataPropertyFilterBase.GetTempDataProperties(handlerType, _options);
+            var tempDataProperties = SaveTempDataPropertyFilterBase.GetTempDataProperties(_tempDataSerializer, handlerType);
             if (tempDataProperties == null)
             {
                 return;

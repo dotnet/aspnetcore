@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Http;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures
@@ -45,7 +46,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         private TempDataDictionaryFactory CreateFactory()
         {
-            var provider = new SessionStateTempDataProvider();
+            var provider = Mock.Of<ITempDataProvider>();
             return new TempDataDictionaryFactory(provider);
         }
     }

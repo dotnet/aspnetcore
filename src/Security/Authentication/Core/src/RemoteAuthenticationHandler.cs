@@ -127,12 +127,12 @@ namespace Microsoft.AspNetCore.Authentication
             {
                 if (ticketContext.Result.Handled)
                 {
-                    Logger.SigninHandled();
+                    Logger.SignInHandled();
                     return true;
                 }
                 else if (ticketContext.Result.Skipped)
                 {
-                    Logger.SigninSkipped();
+                    Logger.SignInSkipped();
                     return false;
                 }
             }
@@ -283,7 +283,7 @@ namespace Microsoft.AspNetCore.Authentication
                 return HandleRequestResult.Handle();
             }
 
-            return HandleRequestResult.Fail("Access was denied by the resource owner or by the remote server.", properties);
+            return HandleRequestResult.NoResult();
         }
     }
 }

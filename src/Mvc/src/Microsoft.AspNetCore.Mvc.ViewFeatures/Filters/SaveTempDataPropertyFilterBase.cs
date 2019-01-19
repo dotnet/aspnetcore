@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure;
 using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters
@@ -80,7 +81,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters
             }
         }
 
-        public static IReadOnlyList<LifecycleProperty> GetTempDataProperties(Type type, MvcViewOptions viewOptions)
+        public static IReadOnlyList<LifecycleProperty> GetTempDataProperties(
+            TempDataSerializer tempDataSerializer,
+            Type type)
         {
             List<LifecycleProperty> results = null;
 
@@ -92,7 +95,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters
                 var tempDataAttribute = property.GetCustomAttribute<TempDataAttribute>();
                 if (tempDataAttribute != null)
                 {
-                    ValidateProperty(propertyHelper.Property);
+                    ValidateProperty(tempDataSerializer, propertyHelper.Property);
                     if (results == null)
                     {
                         results = new List<LifecycleProperty>();
@@ -111,7 +114,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters
             return results;
         }
 
-        private static void ValidateProperty(PropertyInfo property)
+        private static void ValidateProperty(TempDataSerializer tempDataSerializer, PropertyInfo property)
         {
             if (!(property.SetMethod != null &&
                 property.SetMethod.IsPublic &&
@@ -122,16 +125,13 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters
                     Resources.FormatTempDataProperties_PublicGetterSetter(property.DeclaringType.FullName, property.Name, nameof(TempDataAttribute)));
             }
 
-            var propertyType = Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType;
-
-            if (!TempDataSerializer.CanSerializeType(propertyType, out var errorMessage))
+            if (!tempDataSerializer.CanSerializeType(property.PropertyType))
             {
-                var messageWithPropertyInfo = Resources.FormatTempDataProperties_InvalidType(
-                    property.DeclaringType.FullName,
+                throw new InvalidOperationException(Resources.FormatTempDataProperties_InvalidType(
+                    tempDataSerializer.GetType().FullName,
+                    TypeNameHelper.GetTypeDisplayName(property.DeclaringType),
                     property.Name,
-                    nameof(TempDataAttribute));
-
-                throw new InvalidOperationException($"{messageWithPropertyInfo} {errorMessage}");
+                    TypeNameHelper.GetTypeDisplayName(property.PropertyType)));
             }
         }
     }

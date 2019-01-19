@@ -3,13 +3,16 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.WebSockets;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Http
@@ -187,14 +190,53 @@ namespace Microsoft.AspNetCore.Http
             Assert.NotEqual(3, newFeatures.Count());
         }
 
+        [Fact]
+        public void RequestServicesAreNotOverwrittenIfAlreadySet()
+        {
+            var serviceProvider = new ServiceCollection()
+                        .BuildServiceProvider();
+
+            var scopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
+            
+            var context = new DefaultHttpContext();
+            context.ServiceScopeFactory = scopeFactory;
+            context.RequestServices = serviceProvider;
+
+            Assert.Same(serviceProvider, context.RequestServices);
+        }
+
+        [Fact]
+        public async Task RequestServicesAreDisposedOnCompleted()
+        {
+            var serviceProvider = new ServiceCollection()
+                        .AddTransient<DisposableThing>()
+                        .BuildServiceProvider();
+
+            var scopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
+            DisposableThing instance = null;
+
+            var context = new DefaultHttpContext();
+            context.ServiceScopeFactory = scopeFactory;
+            var responseFeature = new TestHttpResponseFeature();
+            context.Features.Set<IHttpResponseFeature>(responseFeature);
+
+            Assert.NotNull(context.RequestServices);
+            Assert.Single(responseFeature.CompletedCallbacks);
+
+            instance = context.RequestServices.GetRequiredService<DisposableThing>();
+
+            var callback = responseFeature.CompletedCallbacks[0];
+            await callback.callback(callback.state);
+
+            Assert.Null(context.RequestServices);
+            Assert.True(instance.Disposed);
+        }
+
         void TestAllCachedFeaturesAreNull(HttpContext context, IFeatureCollection features)
         {
             TestCachedFeaturesAreNull(context, features);
             TestCachedFeaturesAreNull(context.Request, features);
             TestCachedFeaturesAreNull(context.Response, features);
-#pragma warning disable CS0618 // Type or member is obsolete
-            TestCachedFeaturesAreNull(context.Authentication, features);
-#pragma warning restore CS0618 // Type or member is obsolete
             TestCachedFeaturesAreNull(context.Connection, features);
             TestCachedFeaturesAreNull(context.WebSockets, features);
         }
@@ -223,9 +265,6 @@ namespace Microsoft.AspNetCore.Http
             TestCachedFeaturesAreSet(context, features);
             TestCachedFeaturesAreSet(context.Request, features);
             TestCachedFeaturesAreSet(context.Response, features);
-#pragma warning disable CS0618 // Type or member is obsolete
-            TestCachedFeaturesAreSet(context.Authentication, features);
-#pragma warning restore CS0618 // Type or member is obsolete
             TestCachedFeaturesAreSet(context.Connection, features);
             TestCachedFeaturesAreSet(context.WebSockets, features);
         }
@@ -242,7 +281,7 @@ namespace Microsoft.AspNetCore.Http
 
             var fields = type
                 .GetFields(BindingFlags.NonPublic | BindingFlags.Instance)
-                .Where(f => f.FieldType.GetTypeInfo().IsInterface);
+                .Where(f => f.FieldType.GetTypeInfo().IsInterface && f.GetCustomAttribute<CompilerGeneratedAttribute>() == null);
 
             foreach (var field in fields)
             {
@@ -284,6 +323,36 @@ namespace Microsoft.AspNetCore.Http
         {
             var context = new DefaultHttpContext();
             return context;
+        }
+
+        private class DisposableThing : IDisposable
+        {
+            public bool Disposed { get; set; }
+            public void Dispose()
+            {
+                Disposed = true;
+            }
+        }
+
+        private class TestHttpResponseFeature : IHttpResponseFeature
+        {
+            public List<(Func<object, Task> callback, object state)> CompletedCallbacks = new List<(Func<object, Task> callback, object state)>();
+
+            public int StatusCode { get; set; }
+            public string ReasonPhrase { get; set; }
+            public IHeaderDictionary Headers { get; set; } = new HeaderDictionary();
+            public Stream Body { get; set; }
+
+            public bool HasStarted => false;
+
+            public void OnCompleted(Func<object, Task> callback, object state)
+            {
+                CompletedCallbacks.Add((callback, state));
+            }
+
+            public void OnStarting(Func<object, Task> callback, object state)
+            {
+            }
         }
 
         private class TestSession : ISession

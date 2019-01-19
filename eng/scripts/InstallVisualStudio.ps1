@@ -48,6 +48,7 @@ $intermedateDir = "$PSScriptRoot\obj"
 mkdir $intermedateDir -ErrorAction Ignore | Out-Null
 
 $bootstrapper = "$intermedateDir\vsinstaller.exe"
+$ProgressPreference = 'SilentlyContinue' # Workaround PowerShell/PowerShell#2138
 Invoke-WebRequest -Uri "https://aka.ms/vs/15/release/vs_$($Edition.ToLowerInvariant()).exe" -OutFile $bootstrapper
 
 if (-not $InstallPath) {

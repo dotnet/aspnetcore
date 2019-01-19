@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using System.Xml;
 using Microsoft.Extensions.Logging;
 
@@ -14,6 +15,8 @@ namespace Interop.FunctionalTests
 {
     public static class H2SpecCommands
     {
+        private const int TimeoutSeconds = 15;
+
         private static string GetToolLocation()
         {
             var root = Path.Combine(Environment.CurrentDirectory, "h2spec");
@@ -166,14 +169,14 @@ namespace Interop.FunctionalTests
             return false;
         }
 
-        public static void RunTest(string testId, int port, bool https, ILogger logger)
+        public static async Task RunTest(string testId, int port, bool https, ILogger logger)
         {
             var tempFile = Path.GetTempPath() + Guid.NewGuid() + ".xml";
             var processOptions = new ProcessStartInfo
             {
                 FileName = GetToolLocation(),
                 RedirectStandardOutput = true,
-                Arguments = $"{testId} -p {port.ToString(CultureInfo.InvariantCulture)} --strict -j {tempFile} --timeout 15"
+                Arguments = $"{testId} -p {port.ToString(CultureInfo.InvariantCulture)} --strict -j {tempFile} --timeout {TimeoutSeconds}"
                     + (https ? " --tls --insecure" : ""),
                 WindowStyle = ProcessWindowStyle.Hidden,
                 CreateNoWindow = true,
@@ -181,7 +184,14 @@ namespace Interop.FunctionalTests
 
             using (var process = Process.Start(processOptions))
             {
-                var data = process.StandardOutput.ReadToEnd();
+                var dataTask = process.StandardOutput.ReadToEndAsync();
+
+                if (await Task.WhenAny(dataTask, Task.Delay(TimeSpan.FromSeconds(TimeoutSeconds * 2))) != dataTask)
+                {
+                    throw new TimeoutException($"h2spec didn't exit within {TimeoutSeconds * 2} seconds.");
+                }
+
+                var data = await dataTask;
                 logger.LogDebug(data);
 
                 var results = File.ReadAllText(tempFile);

@@ -24,15 +24,6 @@
 <?define PlatformValue = "x86" ?>
 <?endif?>
 
-<!-- ANCM dlls must be provided in specified root folder -->
-<?if $(var.PreBuiltANCMRoot) = "" ?>
-  <?error PreBuiltANCMRoot must be defined ?>
-<?endif?>
-
-<?define AspNetCoreTargetPath = "$(var.PreBuiltANCMRoot)$(var.Platform)\aspnetcore.dll" ?>
-<?define AspNetCoreWoW64TargetPath = "$(var.PreBuiltANCMRoot)x86\aspnetcore.dll" ?>
-<?define AspNetCoreSchemaPath = "$(var.PreBuiltANCMSchema)aspnetcore_schema.xml" ?>
-
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:dep="http://schemas.microsoft.com/wix/DependencyExtension">
     <Product Id="$(var.ProductCode)"
           Name="!(loc.AspNetCoreModuleProductName)"
@@ -60,6 +51,7 @@
 
         <Property Id="ARPCONTACT">Microsoft Corporation</Property>
         <Property Id="ARPPRODUCTICON" Value="AspNetCoreModule.ico" />
+        <Property Id="OPT_NO_SHARED_CONFIG_CHECK"  Value="0"/>
         <Icon Id="AspNetCoreModule.ico" SourceFile="..\Bitmaps\AspNetCoreModule.ico" />
         <!-- <Property Id="REINSTALLMODE" Value="emus"/> -->
 
@@ -132,7 +124,7 @@
                     <Component Id="AspNetCoreModule" Guid="A1D9FE60-0486-4ED9-AEC7-6544B827B1AE" Win64="$(var.IsWin64)">
                         <File Id="AspNetCoreModuleDll"
                               Name="aspnetcore.dll"
-                              Source="$(var.AspNetCoreTargetPath)"
+                              Source="$(var.AspNetCoreV2.TargetPath)"
                               DiskId="1"
                               Vital="yes">
                         </File>
@@ -173,7 +165,7 @@
                     <Component Id="AspNetCoreModule.wow" Guid="F16FBAF7-4A51-4FB4-AB17-FE02548A6C7E" Win64="no">
                         <File Id="AspNetCoreModuleDll.wow"
                                 Name="aspnetcore.dll"
-                                Source="$(var.AspNetCoreWoW64TargetPath)"
+                                Source="$(var.AspNetCoreV2WoW64.TargetPath)"
                                 DiskId="1"
                                 Vital="yes">
                         </File>
@@ -251,7 +243,7 @@
             <AppSearch Before="LaunchConditions" />
             <LaunchConditions After="FindRelatedProducts" />
             <MigrateFeatureStates />
-            <Custom Action="CheckForSharedConfiguration" After="InstallInitialize"></Custom>
+            <Custom Action="CheckForSharedConfiguration" After="InstallInitialize">OPT_NO_SHARED_CONFIG_CHECK=0 AND NOT Installed AND NOT REMOVE="ALL"</Custom>
             <Custom Action="CA_UNLOCk_HANDLER_PROPERTY" After="InstallFiles"><![CDATA[(NOT PATCH)]]></Custom>
             <Custom Action="CA_UNLOCk_HANDLER" After="CA_UNLOCk_HANDLER_PROPERTY"><![CDATA[(NOT PATCH)]]></Custom>
             <Custom Action="UpdateDynamicCompression" After="InstallFiles"><![CDATA[(NOT PATCH)]]></Custom>

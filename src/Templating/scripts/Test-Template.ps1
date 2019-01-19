@@ -1,9 +1,9 @@
 function Test-Template($templateName, $templateArgs, $templateNupkg, $isSPA) {
     $tmpDir = "$PSScriptRoot/$templateName"
     Remove-Item -Path $tmpDir -Recurse -ErrorAction Ignore
+    dotnet pack
 
-    & "$PSScriptRoot/../build.cmd" /t:Package
-    Run-DotnetNew "--install", "$PSScriptRoot/../artifacts/build/$templateNupkg"
+    Run-DotnetNew "--install", "$PSScriptRoot/../../../artifacts/Debug/packages/product/$templateNupkg"
 
     New-Item -ErrorAction Ignore -Path $tmpDir -ItemType Directory
     Push-Location $tmpDir
@@ -20,14 +20,14 @@ function Test-Template($templateName, $templateArgs, $templateNupkg, $isSPA) {
         $proj = "$tmpDir/$templateName.$extension"
         $projContent = Get-Content -Path $proj -Raw
         $projContent = $projContent -replace ('<Project Sdk="Microsoft.NET.Sdk.Web">', "<Project Sdk=""Microsoft.NET.Sdk.Web"">
-  <Import Project=""$PSScriptRoot/../test/Templates.Test/bin/Debug/netcoreapp2.2/TemplateTests.props"" />
+  <Import Project=""$PSScriptRoot/../test/Templates.Test/bin/Debug/netcoreapp3.0/TemplateTests.props"" />
   <ItemGroup>
     <PackageReference Include=""Microsoft.NET.Sdk.Razor"" Version=""`$(MicrosoftNETSdkRazorPackageVersion)"" />
   </ItemGroup>")
         $projContent | Set-Content $proj
-
+        dotnet ef migrations add mvc
         dotnet publish --configuration Release
-        dotnet bin\Release\netcoreapp2.2\publish\$templateName.dll
+        dotnet bin\Release\netcoreapp3.0\publish\$templateName.dll
     }
     finally {
         Pop-Location

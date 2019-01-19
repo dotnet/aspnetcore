@@ -29,7 +29,6 @@
     <CleanDependsOn>$(CleanDependsOn);CleanArtifacts;CleanRepoArtifacts</CleanDependsOn>
 
     <RestoreDependsOn>$(RestoreDependsOn);InstallDotNet;RestoreProjects</RestoreDependsOn>
-    <RestoreDependsOn Condition=" '$(BuildNodeJS)' == 'true' ">$(RestoreDependsOn);RestoreNpm</RestoreDependsOn>
 
     <CompileDependsOn />
     <CompileDependsOn Condition=" '$(_RunRestore)' == 'true' ">Restore</CompileDependsOn>
@@ -52,15 +51,8 @@
     <CodeSignDependsOn>$(CodeSignDependsOn);RemoveSharedFrameworkOnlyRefsFromNuspec</CodeSignDependsOn>
   </PropertyGroup>
 
-  <Target Name="RestoreNpm" Condition="@(NpmProjectDirectory->Count()) != 0">
-    <Message Text="Restoring NPM modules" Importance="high" />
-
-    <!-- Always run `npm ci` because `npm install` has a tendancy to churn package-lock.json for no apparent reason. -->
-    <Exec Command="npm ci" WorkingDirectory="%(NpmProjectDirectory.Identity)" Condition=" '%(NpmProjectDirectory.Identity)' != '' " />
-  </Target>
-
   <Target Name="PrepareOutputPaths">
-    <MakeDir Directories="$(ArtifactsDir);$(ProductPackageOutputPath);$(InternalPackageOutputPath)" />
+    <MakeDir Directories="$(ArtifactsDir);$(ArtifactsShippingPackagesDir);$(ArtifactsNonShippingPackagesDir)" />
   </Target>
 
   <Target Name="GenerateProjectList" DependsOnTargets="ResolveProjects">
@@ -105,7 +97,6 @@
     <!-- We need to pass the NETCoreApp package versions to msbuild so that it doesn't complain about us using a different one than it was restored against.  -->
     <PropertyGroup>
       <DesignTimeBuildProps>$(BuildProperties);MicrosoftNETCoreAppPackageVersion=$(MicrosoftNETCoreAppPackageVersion);</DesignTimeBuildProps>
-      <DesignTimeBuildProps>$(DesignTimeBuildProps);MicrosoftNETCoreApp30PackageVersion=$(MicrosoftNETCoreApp30PackageVersion);</DesignTimeBuildProps>
     </PropertyGroup>
 
     <ItemGroup>
@@ -118,14 +109,6 @@
     <MSBuild Projects="@(_RepositoryProject)"
              Targets="GetArtifactInfo"
              Properties="$(DesignTimeBuildProps);Configuration=$(Configuration);VersionSuffix=$(VersionSuffix);BuildNumberSuffix=$(BuildNumberSuffix);DesignTimeBuild=true;"
-             BuildInParallel="true">
-      <Output TaskParameter="TargetOutputs" ItemName="ArtifactInfo" />
-    </MSBuild>
-
-    <MSBuild Projects="@(ProjectToBuild)"
-             Targets="GetArtifactInfo"
-             Properties="$(DesignTimeBuildProps);Configuration=$(Configuration);VersionSuffix=$(VersionSuffix);BuildNumberSuffix=$(BuildNumberSuffix);DesignTimeBuild=true"
-             SkipNonexistentTargets="true"
              BuildInParallel="true">
       <Output TaskParameter="TargetOutputs" ItemName="ArtifactInfo" />
     </MSBuild>
@@ -209,8 +192,8 @@
       <_LineupPackages Include="@(ExternalDependency)" />
       <_LineupPackages Include="%(ArtifactInfo.PackageId)" Version="%(ArtifactInfo.Version)" Condition=" '%(ArtifactInfo.ArtifactType)' == 'NuGetPackage' " />
 
-      <_RestoreSources Include="$(ProductPackageOutputPath)" />
-      <_RestoreSources Include="$(InternalPackageOutputPath)"  />
+      <_RestoreSources Include="$(ArtifactsShippingPackagesDir)" />
+      <_RestoreSources Include="$(ArtifactsNonShippingPackagesDir)"  />
       <_RestoreSources Include="$(RestoreSources)" />
     </ItemGroup>
 
@@ -218,13 +201,9 @@
       Packages="@(_LineupPackages)"
       OutputPath="$(GeneratedPackageVersionPropsPath)" />
 
-    <Copy SourceFiles="$(GeneratedPackageVersionPropsPath)" DestinationFolder="$(ArtifactsDir)" />
-
     <RepoTasks.GenerateRestoreSourcesPropsFile
       Sources="@(_RestoreSources)"
       OutputPath="$(GeneratedRestoreSourcesPropsPath)" />
-
-    <Copy SourceFiles="$(GeneratedPackageVersionPropsPath);$(GeneratedBrandingPropsPath)" DestinationFolder="$(ArtifactsDir)" />
   </Target>
 
   <Target Name="CleanRepoArtifacts">
@@ -276,7 +255,7 @@
   <!-- This is temporary until we can use FrameworkReference to build our own packages. -->
   <Target Name="RemoveSharedFrameworkOnlyRefsFromNuspec">
     <ItemGroup>
-      <_BuildOutput Include="$(ProductPackageOutputPath)%(PackageArtifact.Identity).*.nupkg"
+      <_BuildOutput Include="$(ArtifactsShippingPackagesDir)%(PackageArtifact.Identity).*.nupkg"
                     Condition=" '%(PackageArtifact.Category)' == 'ship' " />
 
       <SharedFxPackageRefToHide Include="@(SharedFrameworkOnlyPackage)" Exclude="@(ExternalDependency)" />

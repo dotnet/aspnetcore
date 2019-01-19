@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Routing;
 using Moq;
-using Newtonsoft.Json;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc
@@ -225,7 +224,7 @@ namespace Microsoft.AspNetCore.Mvc
             // Arrange
             var controller = new TestabilityController();
             var model = new MyModel() { Property1 = "Property_1" };
-            var serializerSettings = new JsonSerializerSettings();
+            var serializerSettings = new object();
 
             // Act
             var result = controller.JsonWithSerializerSettings_Action(model, serializerSettings);
@@ -745,7 +744,7 @@ namespace Microsoft.AspNetCore.Mvc
                 return Json(data);
             }
 
-            public IActionResult JsonWithSerializerSettings_Action(object data, JsonSerializerSettings serializerSettings)
+            public IActionResult JsonWithSerializerSettings_Action(object data, object serializerSettings)
             {
                 return Json(data, serializerSettings);
             }

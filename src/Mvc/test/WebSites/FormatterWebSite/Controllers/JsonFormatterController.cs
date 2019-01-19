@@ -5,6 +5,7 @@ using System.Buffers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using Newtonsoft.Json;
 
 namespace FormatterWebSite.Controllers
@@ -12,7 +13,7 @@ namespace FormatterWebSite.Controllers
     public class JsonFormatterController : Controller
     {
         private static readonly JsonSerializerSettings _indentedSettings;
-        private readonly JsonOutputFormatter _indentingFormatter;
+        private readonly NewtonsoftJsonOutputFormatter _indentingFormatter;
 
         static JsonFormatterController()
         {
@@ -22,7 +23,7 @@ namespace FormatterWebSite.Controllers
 
         public JsonFormatterController(ArrayPool<char> charPool)
         {
-            _indentingFormatter = new JsonOutputFormatter(_indentedSettings, charPool);
+            _indentingFormatter = new NewtonsoftJsonOutputFormatter(_indentedSettings, charPool);
         }
 
         public IActionResult ReturnsIndentedJson()

@@ -277,6 +277,9 @@ msbuild_args[${#msbuild_args[*]}]="-p:_RunBuild=$run_build"
 msbuild_args[${#msbuild_args[*]}]="-p:_RunPack=$run_pack"
 msbuild_args[${#msbuild_args[*]}]="-p:_RunTests=$run_tests"
 
+# Disable downloading ref assemblies as a tarball. Use netfx refs from the Microsoft.NETFramework.ReferenceAssemblies NuGet package instead.
+KOREBUILD_SKIP_INSTALL_NETFX=1
+
 set_korebuildsettings "$tools_source" "$DOTNET_HOME" "$repo_path" "$config_file" "$ci"
 
 # This incantation avoids unbound variable issues if msbuild_args is empty

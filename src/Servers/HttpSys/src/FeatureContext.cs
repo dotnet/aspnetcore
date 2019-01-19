@@ -450,8 +450,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             set { _user = value; }
         }
 
-        IAuthenticationHandler IHttpAuthenticationFeature.Handler { get; set; }
-
         string IHttpRequestIdentifierFeature.TraceIdentifier
         {
             get

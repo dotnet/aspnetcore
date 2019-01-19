@@ -119,8 +119,9 @@ namespace Templates.Test.Helpers
             var listeningMessage = _process
                 .OutputLinesAsEnumerable
                 .Where(line => line != null)
-                .FirstOrDefault(line => line.StartsWith(ListeningMessagePrefix, StringComparison.Ordinal));
+                .FirstOrDefault(line => line.Trim().StartsWith(ListeningMessagePrefix, StringComparison.Ordinal));
             Assert.True(!string.IsNullOrEmpty(listeningMessage), $"ASP.NET process exited without listening for requests.\nOutput: { _process.Output }\nError: { _process.Error }");
+            listeningMessage = listeningMessage.Trim();
 
             // Verify we have a valid URL to make requests to
             var listeningUrlString = listeningMessage.Substring(ListeningMessagePrefix.Length);

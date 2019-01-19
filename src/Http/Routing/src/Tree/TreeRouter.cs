@@ -208,7 +208,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
                                 continue;
                             }
 
-                            _logger.MatchedRoute(entry.RouteName, entry.RouteTemplate.TemplateText);
+                            _logger.RequestMatchedRoute(entry.RouteName, entry.RouteTemplate.TemplateText);
                             context.RouteData.Routers.Add(entry.Handler);
 
                             await entry.Handler.RouteAsync(context);

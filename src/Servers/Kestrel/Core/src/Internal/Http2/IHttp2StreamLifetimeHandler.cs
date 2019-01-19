@@ -5,6 +5,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
     public interface IHttp2StreamLifetimeHandler
     {
-        void OnStreamCompleted(int streamId);
+        void OnStreamCompleted(Http2Stream stream);
     }
 }
