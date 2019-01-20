@@ -2,11 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Runtime.CompilerServices;
 using System.Threading;
 
 namespace Microsoft.Extensions.ObjectPool
 {
-    public class DisposableObjectPool<T> : DefaultObjectPool<T>, IDisposable where T : class
+    internal sealed class DisposableObjectPool<T> : DefaultObjectPool<T>, IDisposable where T : class
     {
         private volatile bool _isDisposed;
 
@@ -31,7 +32,7 @@ namespace Microsoft.Extensions.ObjectPool
 
             void ThrowObjectDisposedException()
             {
-                throw new ObjectDisposedException(this.GetType().Name);
+                throw new ObjectDisposedException(GetType().Name);
             }
         }
 
@@ -44,8 +45,32 @@ namespace Microsoft.Extensions.ObjectPool
             }
         }
 
+        private bool ReturnCore(T obj)
+        {
+            bool returnedTooPool = false;
+
+            if (_isDefaultPolicy || (_fastPolicy?.Return(obj) ?? _policy.Return(obj)))
+            {
+                if (_firstItem == null && Interlocked.CompareExchange(ref _firstItem, obj, null) == null)
+                {
+                    returnedTooPool = true;
+                }
+                else
+                {
+                    var items = _items;
+                    for (var i = 0; i < items.Length && !(returnedTooPool = Interlocked.CompareExchange(ref items[i].Element, obj, null) == null); i++)
+                    {
+                    }
+                }
+            }
+
+            return returnedTooPool;
+        }
+
         public void Dispose()
         {
+            _isDisposed = true;
+
             DisposeItem(_firstItem);
             _firstItem = null;
 
@@ -55,8 +80,6 @@ namespace Microsoft.Extensions.ObjectPool
                 DisposeItem(items[i].Element);
                 items[i].Element = null;
             }
-
-            _isDisposed = true;
         }
 
         private void DisposeItem(T item)
