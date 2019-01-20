@@ -84,6 +84,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 throw new ArgumentNullException(nameof(key));
             }
 
+            if (key.Length == 0)
+            {
+                // Top level parameters will fall back to an empty prefix when the parameter name does not
+                // appear in any value provider. This would result in the parameter binding to a query string
+                // parameter with a empty key (e.g. /User?=test) which isn't a scenario we want to support.
+                // Return a "None" result in this event.
+                return ValueProviderResult.None;
+            }
+
             if (_values.TryGetValue(key, out var values) && values.Count > 0)
             {
                 return new ValueProviderResult(values, Culture);
