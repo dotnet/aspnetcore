@@ -114,6 +114,25 @@ namespace Microsoft.AspNetCore.Builder
             Assert.IsType<Attribute2>(endpointBuilder1.Metadata[1]);
         }
 
+        [Fact]
+        public void MapEndpoint_ExplicitMetadataAddedAfterAttributeMetadata()
+        {
+            // Arrange
+            var builder = new DefaultEndpointRouteBuilder();
+
+            // Act
+            var endpointBuilder = builder.Map(RoutePatternFactory.Parse("/"), "Display name!", Handle, new Metadata());
+
+            // Assert
+            var endpointBuilder1 = GetRouteEndpointBuilder(builder);
+            Assert.Equal("Display name!", endpointBuilder1.DisplayName);
+            Assert.Equal("/", endpointBuilder1.RoutePattern.RawText);
+            Assert.Equal(3, endpointBuilder1.Metadata.Count);
+            Assert.IsType<Attribute1>(endpointBuilder1.Metadata[0]);
+            Assert.IsType<Attribute2>(endpointBuilder1.Metadata[1]);
+            Assert.IsType<Metadata>(endpointBuilder1.Metadata[2]);
+        }
+
         [Attribute1]
         [Attribute2]
         private static Task Handle(HttpContext context) => Task.CompletedTask;
@@ -124,6 +143,11 @@ namespace Microsoft.AspNetCore.Builder
 
         private class Attribute2 : Attribute
         {
+        }
+
+        private class Metadata
+        {
+
         }
     }
 }

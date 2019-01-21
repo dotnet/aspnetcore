@@ -326,18 +326,18 @@ namespace Microsoft.AspNetCore.Builder
                 DisplayName = displayName
             };
 
+            // Add delegate attributes as metadata
+            foreach (var attribute in requestDelegate.Method.GetCustomAttributes())
+            {
+                routeEndpointBuilder.Metadata.Add(attribute);
+            }
+
             if (metadata != null)
             {
                 foreach (var item in metadata)
                 {
                     routeEndpointBuilder.Metadata.Add(item);
                 }
-            }
-
-            // Add delegate attributes as metadata
-            foreach (var attribute in requestDelegate.Method.GetCustomAttributes())
-            {
-                routeEndpointBuilder.Metadata.Add(attribute);
             }
 
             var modelEndpointDataSource = builder.DataSources.OfType<ModelEndpointDataSource>().FirstOrDefault();
