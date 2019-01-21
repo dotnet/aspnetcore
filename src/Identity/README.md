@@ -24,3 +24,4 @@ The previous versions of Identity for MVC5 and lower, previously available on Co
  * [ASP.NET Identity Redis Provider](https://github.com/aguacongas/Identity.Redis)
  * [ASP.NET Identity DocumentDB](https://github.com/FelschR/AspNetCore.Identity.DocumentDB)
  * [ASP.NET Identity Amazon Cognito Provider](https://github.com/aws/aws-aspnet-cognito-identity-provider)
+ * [ASP.NET Identity Marten Provider](https://github.com/yetanotherchris/Marten.AspNetIdentity)
