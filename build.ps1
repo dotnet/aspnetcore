@@ -273,6 +273,7 @@ $MSBuildArguments += "/p:_RunSign=$Sign"
 Import-Module -Force -Scope Local (Join-Path $korebuildPath 'KoreBuild.psd1')
 
 try {
+    $RepoRoot = Resolve-Path $RepoRoot
     Set-KoreBuildSettings -ToolsSource $ToolsSource -DotNetHome $DotNetHome -RepoPath $RepoRoot -ConfigFile $ConfigFile -CI:$CI
     if ($ForceCoreMsbuild) {
         $global:KoreBuildSettings.MSBuildType = 'core'
