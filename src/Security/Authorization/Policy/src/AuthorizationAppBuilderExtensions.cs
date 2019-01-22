@@ -1,8 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization.Policy;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -23,7 +25,22 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(app));
             }
 
+            VerifyServicesRegistered(app);
+
             return app.UseMiddleware<AuthorizationMiddleware>();
+        }
+
+        private static void VerifyServicesRegistered(IApplicationBuilder app)
+        {
+            // Verify that AddAuthorizationPolicy was called before calling UseAuthorization
+            // We use the AuthorizationPolicyMarkerService to ensure all the services were added.
+            if (app.ApplicationServices.GetService(typeof(AuthorizationPolicyMarkerService)) == null)
+            {
+                throw new InvalidOperationException(Resources.FormatException_UnableToFindServices(
+                    nameof(IServiceCollection),
+                    nameof(PolicyServiceCollectionExtensions.AddAuthorizationPolicyEvaluator),
+                    "ConfigureServices(...)"));
+            }
         }
     }
 }
