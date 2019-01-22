@@ -256,7 +256,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            builder.Services.Configure<HttpClientFactoryOptions>(options =>
+            builder.Services.Configure<HttpClientFactoryOptions>(builder.Name, options =>
             {
                 options.HttpMessageHandlerBuilderActions.Add(b => b.PrimaryHandler = b.Services.GetRequiredService<THandler>());
             });
