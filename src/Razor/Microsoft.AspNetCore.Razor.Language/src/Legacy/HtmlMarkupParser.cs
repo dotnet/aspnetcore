@@ -480,7 +480,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 var endTagStart = CurrentStart;
                 var endTag = ParseEndTag(mode, out var endTagName, out var _);
 
-                if (endTagName != null && string.Equals(CurrentStartTagName, endTagName, StringComparison.OrdinalIgnoreCase))
+                Debug.Assert(endTagName != null);
+                if (string.Equals(CurrentStartTagName, endTagName, StringComparison.OrdinalIgnoreCase))
                 {
                     // Happy path. Found a matching start tag. Create the element and reset the builder.
                     var tracker = _tagTracker.Pop();
@@ -520,7 +521,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 // We can't possibly have a matching start tag.
                 Context.ErrorSink.OnError(
                     RazorDiagnosticFactory.CreateParsing_UnexpectedEndTag(
-                        new SourceSpan(SourceLocationTracker.Advance(endTagStartLocation, "</"), endTagName.Length), endTagName));
+                        new SourceSpan(SourceLocationTracker.Advance(endTagStartLocation, "</"), Math.Max(endTagName.Length, 1)), endTagName));
                 return;
             }
 
@@ -602,8 +603,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             Assert(SyntaxKind.OpenAngle);
 
-            tagName = null;
-            tagMode = MarkupTagMode.Invalid;
+            tagName = string.Empty;
+            tagMode = MarkupTagMode.Normal;
             isWellFormed = false;
 
             var openAngleToken = EatCurrentToken(); // Accept '<'
@@ -612,7 +613,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             if (At(SyntaxKind.Text))
             {
                 tagName = CurrentToken.Content;
-                tagMode = MarkupTagMode.Normal;
 
                 if (isBangEscape)
                 {
@@ -658,9 +658,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Context.ErrorSink.OnError(
                         RazorDiagnosticFactory.CreateParsing_UnfinishedTag(
                             new SourceSpan(
-                                tagName == null ? tagStartLocation : SourceLocationTracker.Advance(tagStartLocation, "<"),
-                                Math.Max(tagName?.Length ?? 0, 1)),
-                            tagName ?? string.Empty));
+                                tagName.Length == 0 ? tagStartLocation : SourceLocationTracker.Advance(tagStartLocation, "<"),
+                                Math.Max(tagName.Length, 1)),
+                            tagName));
                 }
                 else
                 {
@@ -725,6 +725,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 {
                     tagMode = MarkupTagMode.Script;
                 }
+            }
+
+            if (tagNameToken.IsMissing && closeAngleToken.IsMissing)
+            {
+                // We want to consider tags with no name and no closing angle as invalid.
+                // E.g,
+                // <, <  @DateTime.Now are all invalid tags
+                // <>, < @DateTime.Now>, <strong are all still valid.
+                tagMode = MarkupTagMode.Invalid;
             }
 
             return GetNodeWithSpanContext(startTag);
@@ -806,7 +815,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // This section can accept things like: '</p  >' or '</p>' etc.
             Assert(SyntaxKind.OpenAngle);
 
-            tagName = null;
+            tagName = string.Empty;
             SyntaxToken tagNameToken = null;
 
             var openAngleToken = EatCurrentToken(); // Accept '<'
