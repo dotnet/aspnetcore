@@ -1982,6 +1982,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
             else
             {
+                if (transition != null)
+                {
+                    builder.Add(transition);
+                }
+
                 AcceptAndMoveNext();
                 AcceptWhile(IsSpacingToken(includeNewLines: false, includeComments: true));
             }
