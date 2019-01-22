@@ -50,6 +50,24 @@ namespace Microsoft.AspNetCore.Authorization.Test
             Assert.Equal("policy", Assert.IsAssignableFrom<IAuthorizeData>(Assert.Single(endpointModel.Metadata)).Policy);
         }
 
+        [Fact]
+        public void RequireAuthorization_Default()
+        {
+            // Arrange
+            var builder = new TestEndpointConventionBuilder();
+
+            // Act
+            builder.RequireAuthorization();
+
+            // Assert
+            var convention = Assert.Single(builder.Conventions);
+
+            var endpointModel = new RouteEndpointBuilder((context) => Task.CompletedTask, RoutePatternFactory.Parse("/"), 0);
+            convention(endpointModel);
+
+            Assert.Null(Assert.IsAssignableFrom<IAuthorizeData>(Assert.Single(endpointModel.Metadata)).Policy);
+        }
+
         private class TestEndpointConventionBuilder : IEndpointConventionBuilder
         {
             public IList<Action<EndpointBuilder>> Conventions { get; } = new List<Action<EndpointBuilder>>();
