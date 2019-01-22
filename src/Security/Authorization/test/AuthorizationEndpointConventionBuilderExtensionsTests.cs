@@ -47,7 +47,8 @@ namespace Microsoft.AspNetCore.Authorization.Test
             var endpointModel = new RouteEndpointBuilder((context) => Task.CompletedTask, RoutePatternFactory.Parse("/"), 0);
             convention(endpointModel);
 
-            Assert.Equal("policy", Assert.IsAssignableFrom<IAuthorizeData>(Assert.Single(endpointModel.Metadata)).Policy);
+            var authMetadata = Assert.IsAssignableFrom<IAuthorizeData>(Assert.Single(endpointModel.Metadata));
+            Assert.Equal("policy", authMetadata.Policy);
         }
 
         [Fact]
@@ -65,7 +66,8 @@ namespace Microsoft.AspNetCore.Authorization.Test
             var endpointModel = new RouteEndpointBuilder((context) => Task.CompletedTask, RoutePatternFactory.Parse("/"), 0);
             convention(endpointModel);
 
-            Assert.Null(Assert.IsAssignableFrom<IAuthorizeData>(Assert.Single(endpointModel.Metadata)).Policy);
+            var authMetadata = Assert.IsAssignableFrom<IAuthorizeData>(Assert.Single(endpointModel.Metadata));
+            Assert.Null(authMetadata.Policy);
         }
 
         private class TestEndpointConventionBuilder : IEndpointConventionBuilder
