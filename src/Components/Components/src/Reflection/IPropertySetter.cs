@@ -6,7 +6,5 @@ namespace Microsoft.AspNetCore.Components.Reflection
     internal interface IPropertySetter
     {
         void SetValue(object target, object value);
-
-        void SetDefaultValue(object target);
     }
 }

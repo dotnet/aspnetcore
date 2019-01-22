@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public void NoIncomingParameterMatchesDeclaredParameter_SetValuesDefault()
+        public void NoIncomingParameterMatchesDeclaredParameter_LeavesValueUnchanged()
         {
             // Arrange
             var existingObjectValue = new object();
@@ -90,9 +90,9 @@ namespace Microsoft.AspNetCore.Components.Test
             parameterCollection.SetParameterProperties(target);
 
             // Assert
-            Assert.Equal(0, target.IntProp);
-            Assert.Null(target.StringProp);
-            Assert.Null(target.ObjectPropCurrentValue);
+            Assert.Equal(456, target.IntProp);
+            Assert.Equal("Existing value", target.StringProp);
+            Assert.Same(existingObjectValue, target.ObjectPropCurrentValue);
         }
 
         [Fact]
