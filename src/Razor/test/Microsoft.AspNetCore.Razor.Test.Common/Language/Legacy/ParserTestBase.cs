@@ -314,7 +314,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         internal virtual void ParseDocumentTest(string document, IEnumerable<DirectiveDescriptor> directives, bool designTime)
         {
-            var result = ParseDocument(document, designTime, directives);
+            ParseDocumentTest(RazorLanguageVersion.Latest, document, directives, designTime);
+        }
+
+        internal virtual void ParseDocumentTest(RazorLanguageVersion version, string document, IEnumerable<DirectiveDescriptor> directives, bool designTime)
+        {
+            var result = ParseDocument(version, document, directives, designTime);
 
             BaselineTest(result);
         }
