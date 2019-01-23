@@ -231,7 +231,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             var state = TemplateParserState.Plaintext;
 
             int? tokenStart = null;
-            int scope = 0;
+            var scope = 0;
 
             // We'll run the loop one extra time with 'null' to detect the end of the string.
             for (var i = 0; i <= template.Length; i++)
