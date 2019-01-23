@@ -22,6 +22,8 @@
     <NoWarn>$(NoWarn);NU5125</NoWarn>
     <!-- Suppress warnings about using SemVer 2.0. -->
     <NoWarn>$(NoWarn);NU5105</NoWarn>
+    <!-- Enables Strict mode for Roslyn compiler -->
+    <Features>strict</Features>
 
     <!-- Contact email address for NuGet packages and Linux installers. -->
     <MaintainerEmail>nugetaspnet@microsoft.com</MaintainerEmail>
