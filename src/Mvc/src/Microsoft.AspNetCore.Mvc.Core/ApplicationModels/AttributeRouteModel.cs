@@ -359,7 +359,6 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                         if (c == ']' && scope == 0)
                         {
                             // This is an escaped right-bracket
-                            --scope;
                             state = TemplateParserState.InsideToken;
                             break;
                         }
