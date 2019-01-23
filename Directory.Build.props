@@ -87,6 +87,13 @@
     <InstallersOutputPath>$(ArtifactsDir)installers\$(Configuration)\</InstallersOutputPath>
   </PropertyGroup>
 
+  <!-- Ensure these output paths exist. -->
+  <ItemGroup>
+    <CreateDirectory Include="$(ArtifactsShippingPackagesDir)" />
+    <CreateDirectory Include="$(ArtifactsNonShippingPackagesDir)" />
+    <CreateDirectory Include="$(InstallersOutputPath)" />
+  </ItemGroup>
+
   <PropertyGroup Condition=" '$(OutputInRepoRoot)' == 'true' ">
     <BaseOutputPath>$(RepositoryRoot)bin\$(Configuration)\$(MSBuildProjectName)\</BaseOutputPath>
     <OutputPath>$(BaseOutputPath)</OutputPath>

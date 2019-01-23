@@ -36,6 +36,5 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Repository Include="Templating" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
   </ItemGroup>
 </Project>

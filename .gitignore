@@ -32,4 +32,6 @@ korebuild-lock.txt
 .gradle/
 src/SignalR/clients/**/dist/
 modules/
-.template.config/
+
+# Template config files for blazor templates is generated on-build
+src/Components/**/.template.config/
