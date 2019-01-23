@@ -590,6 +590,39 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                     },
                     "Home/Index/{id}"
                 };
+
+                yield return new object[]
+                {
+                    "[controller]/[[[action]]]/{id}",
+                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "controller", "Home" },
+                        { "action", "Index" }
+                    },
+                    "Home/[Index]/{id}"
+                };
+
+                yield return new object[]
+                {
+                    "[controller]/[[[[[action]]]]]/{id}",
+                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "controller", "Home" },
+                        { "action", "Index" }
+                    },
+                    "Home/[[Index]]/{id}"
+                };
+
+                yield return new object[]
+                {
+                    "[controller]/[[[[[[[action]]]]]]]/{id}",
+                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "controller", "Home" },
+                        { "action", "Index" }
+                    },
+                    "Home/[[[Index]]]/{id}"
+                };
             }
         }
 
