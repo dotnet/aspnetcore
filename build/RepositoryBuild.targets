@@ -106,7 +106,7 @@
     <Message Text="============ Building $(RepositoryToBuild) ============" Importance="High" />
 
     <Exec
-      Command="./$(_BuildScriptToExecute) -RepoRoot $(BuildRepositoryRoot) $(BuildArguments)"
+      Command="./$(_BuildScriptToExecute) -RepoRoot $(BuildRepositoryRoot.TrimEnd('\').TrimEnd('/')) $(BuildArguments)"
       IgnoreStandardErrorWarningFormat="true"
       WorkingDirectory="$(RepositoryRoot)"
       IgnoreExitCode="true"
