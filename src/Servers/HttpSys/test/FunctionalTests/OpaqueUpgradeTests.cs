@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
@@ -104,25 +105,20 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
         public async Task OpaqueUpgrade_GetUpgrade_Success()
         {
-            ManualResetEvent waitHandle = new ManualResetEvent(false);
-            bool? upgraded = null;
-            string address;
-            using (Utilities.CreateHttpServer(out address, async httpContext =>
+            var upgraded = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            using (Utilities.CreateHttpServer(out var address, async httpContext =>
             {
                 httpContext.Response.Headers["Upgrade"] = "websocket"; // Win8.1 blocks anything but WebSockets
                 var opaqueFeature = httpContext.Features.Get<IHttpUpgradeFeature>();
                 Assert.NotNull(opaqueFeature);
                 Assert.True(opaqueFeature.IsUpgradableRequest);
                 await opaqueFeature.UpgradeAsync();
-                upgraded = true;
-                waitHandle.Set();
+                upgraded.SetResult(true);
             }))
             {
                 using (Stream stream = await SendOpaqueRequestAsync("GET", address))
                 {
-                    Assert.True(waitHandle.WaitOne(TimeSpan.FromSeconds(1)), "Timed out");
-                    Assert.True(upgraded.HasValue, "Upgraded not set");
-                    Assert.True(upgraded.Value, "Upgrade failed");
+                    Assert.True(await upgraded.Task.TimeoutAfter(TimeSpan.FromSeconds(1)));
                 }
             }
         }
@@ -131,10 +127,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
         public async Task OpaqueUpgrade_GetUpgrade_NotAffectedByMaxRequestBodyLimit()
         {
-            ManualResetEvent waitHandle = new ManualResetEvent(false);
-            bool? upgraded = null;
-            string address;
-            using (Utilities.CreateHttpServer(out address, async httpContext =>
+            var upgraded = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            using (Utilities.CreateHttpServer(out var address, async httpContext =>
             {
                 var feature = httpContext.Features.Get<IHttpMaxRequestBodySizeFeature>();
                 Assert.NotNull(feature);
@@ -150,16 +144,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 Assert.Null(feature.MaxRequestBodySize);
                 Assert.Throws<InvalidOperationException>(() => feature.MaxRequestBodySize = 12);
                 Assert.Equal(15, await stream.ReadAsync(new byte[15], 0, 15));
-                upgraded = true;
-                waitHandle.Set();
+                upgraded.SetResult(true);
             }, options => options.MaxRequestBodySize = 10))
             {
                 using (Stream stream = await SendOpaqueRequestAsync("GET", address))
                 {
                     stream.Write(new byte[15], 0, 15);
-                    Assert.True(waitHandle.WaitOne(TimeSpan.FromSeconds(10)), "Timed out");
-                    Assert.True(upgraded.HasValue, "Upgraded not set");
-                    Assert.True(upgraded.Value, "Upgrade failed");
+                    Assert.True(await upgraded.Task.TimeoutAfter(TimeSpan.FromSeconds(10)));
                 }
             }
         }
@@ -169,10 +160,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public async Task OpaqueUpgrade_WithOnStarting_CallbackCalled()
         {
             var callbackCalled = false;
-            var waitHandle = new ManualResetEvent(false);
-            bool? upgraded = null;
-            string address;
-            using (Utilities.CreateHttpServer(out address, async httpContext =>
+            var upgraded = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            using (Utilities.CreateHttpServer(out var address, async httpContext =>
             {
                 httpContext.Response.OnStarting(_ =>
                 {
@@ -184,15 +173,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 Assert.NotNull(opaqueFeature);
                 Assert.True(opaqueFeature.IsUpgradableRequest);
                 await opaqueFeature.UpgradeAsync();
-                upgraded = true;
-                waitHandle.Set();
+                upgraded.SetResult(true);
             }))
             {
                 using (Stream stream = await SendOpaqueRequestAsync("GET", address))
                 {
-                    Assert.True(waitHandle.WaitOne(TimeSpan.FromSeconds(1)), "Timed out");
-                    Assert.True(upgraded.HasValue, "Upgraded not set");
-                    Assert.True(upgraded.Value, "Upgrade failed");
+                    Assert.True(await upgraded.Task.TimeoutAfter(TimeSpan.FromSeconds(1)));
                     Assert.True(callbackCalled, "Callback not called");
                 }
             }

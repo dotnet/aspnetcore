@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Primitives;
@@ -545,9 +546,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // Arrange
             var id = "unique-id";
             var childContent = "some-content";
-            var resetEvent1 = new ManualResetEvent(false);
-            var resetEvent2 = new ManualResetEvent(false);
-            var resetEvent3 = new ManualResetEvent(false);
+            var event1 = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var event2 = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var event3 = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             var calls = 0;
             var cache = new MemoryCache(new MemoryCacheOptions());
 
@@ -560,7 +561,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 getChildContentAsync: (useCachedResult, encoder) =>
                 {
                     calls++;
-                    resetEvent2.Set();
+                    event2.SetResult(0);
 
                     var tagHelperContent = new DefaultTagHelperContent();
                     tagHelperContent.SetHtmlContent(childContent);
@@ -570,14 +571,14 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var tagHelperOutput2 = new TagHelperOutput(
                 "cache",
                 new TagHelperAttributeList(),
-                getChildContentAsync: (useCachedResult, encoder) =>
+                getChildContentAsync: async (useCachedResult, encoder) =>
                 {
                     calls++;
-                    resetEvent3.WaitOne(5000);
+                    await event3.Task.TimeoutAfter(TimeSpan.FromSeconds(5));
 
                     var tagHelperContent = new DefaultTagHelperContent();
                     tagHelperContent.SetHtmlContent(childContent);
-                    return Task.FromResult<TagHelperContent>(tagHelperContent);
+                    return tagHelperContent;
                 });
 
             var cacheTagHelper1 = new CacheTagHelper(new CacheTagHelperMemoryCacheFactory(cache), new HtmlTestEncoder())
@@ -596,18 +597,18 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             var task1 = Task.Run(async () =>
             {
-                resetEvent1.WaitOne(5000);
+                await event1.Task.TimeoutAfter(TimeSpan.FromSeconds(5));
                 await cacheTagHelper1.ProcessAsync(tagHelperContext1, tagHelperOutput1);
-                resetEvent3.Set();
+                event3.SetResult(0);
             });
 
             var task2 = Task.Run(async () =>
             {
-                resetEvent2.WaitOne(5000);
+                await event2.Task.TimeoutAfter(TimeSpan.FromSeconds(5));
                 await cacheTagHelper2.ProcessAsync(tagHelperContext1, tagHelperOutput2);
             });
 
-            resetEvent1.Set();
+            event1.SetResult(0);
             await Task.WhenAll(task1, task2);
 
             // Assert
@@ -630,9 +631,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // Arrange
             var id = "unique-id";
             var childContent = "some-content";
-            var resetEvent1 = new ManualResetEvent(false);
-            var resetEvent2 = new ManualResetEvent(false);
-            var resetEvent3 = new ManualResetEvent(false);
+            var event1 = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var event2 = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var event3 = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             var calls = 0;
             var cache = new MemoryCache(new MemoryCacheOptions());
 
@@ -645,7 +646,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 getChildContentAsync: (useCachedResult, encoder) =>
                 {
                     calls++;
-                    resetEvent2.Set();
+                    event2.SetResult(0);
 
                     throw new Exception();
                 });
@@ -653,14 +654,14 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var tagHelperOutput2 = new TagHelperOutput(
                 "cache",
                 new TagHelperAttributeList(),
-                getChildContentAsync: (useCachedResult, encoder) =>
+                getChildContentAsync: async (useCachedResult, encoder) =>
                 {
                     calls++;
-                    resetEvent3.WaitOne(5000);
+                    await event3.Task.TimeoutAfter(TimeSpan.FromSeconds(5));
 
                     var tagHelperContent = new DefaultTagHelperContent();
                     tagHelperContent.SetHtmlContent(childContent);
-                    return Task.FromResult<TagHelperContent>(tagHelperContent);
+                    return tagHelperContent;
                 });
 
             var cacheTagHelper1 = new CacheTagHelper(new CacheTagHelperMemoryCacheFactory(cache), new HtmlTestEncoder())
@@ -679,18 +680,18 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             var task1 = Task.Run(async () =>
             {
-                resetEvent1.WaitOne(5000);
+                await event1.Task.TimeoutAfter(TimeSpan.FromSeconds(5));
                 await Assert.ThrowsAsync<Exception>(() => cacheTagHelper1.ProcessAsync(tagHelperContext1, tagHelperOutput1));
-                resetEvent3.Set();
+                event3.SetResult(0);
             });
 
             var task2 = Task.Run(async () =>
             {
-                resetEvent2.WaitOne(5000);
+                await event2.Task.TimeoutAfter(TimeSpan.FromSeconds(5));
                 await cacheTagHelper2.ProcessAsync(tagHelperContext2, tagHelperOutput2);
             });
 
-            resetEvent1.Set();
+            event1.SetResult(0);
             await Task.WhenAll(task1, task2);
 
             // Assert
