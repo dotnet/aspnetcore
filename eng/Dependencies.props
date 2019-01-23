@@ -117,6 +117,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
     <LatestPackageReference Include="Selenium.Support" Version="$(SeleniumSupportPackageVersion)" />
     <LatestPackageReference Include="Selenium.WebDriver.ChromeDriver" Version="$(SeleniumWebDriverChromeDriverPackageVersion)" />
+    <LatestPackageReference Include="Selenium.WebDriver.MicrosoftDriver" Version="$(SeleniumWebDriverMicrosoftDriverPackageVersion)" />
     <LatestPackageReference Include="Selenium.WebDriver" Version="$(SeleniumWebDriverPackageVersion)" />
     <LatestPackageReference Include="Serilog.Extensions.Logging" Version="$(SerilogExtensionsLoggingPackageVersion)" />
     <LatestPackageReference Include="Serilog.Sinks.File" Version="$(SerilogSinksFilePackageVersion)" />

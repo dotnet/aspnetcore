@@ -1,5 +1,5 @@
 <Project>
-    <Import Project="..\..\..\build\sources.props" />
+    <Import Project="..\..\..\..\build\sources.props" />
     <!--
         This file intentionally left mostly blank to ensure the template projects
         are independent from the template package build config (other than to share

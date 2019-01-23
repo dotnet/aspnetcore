@@ -60,6 +60,8 @@
                       $(RepositoryRoot)src\SignalR\clients\cpp\**\*.*proj;
                       $(RepositoryRoot)src\SignalR\clients\ts\**\node_modules\**\*.*proj;
                       $(RepositoryRoot)src\Components\Blazor\Templates\src\content\**\*.*proj;
+                      $(RepositoryRoot)src\ProjectTemplates\Web.ProjectTemplates\content\**\*.csproj;
+                      $(RepositoryRoot)src\ProjectTemplates\Web.Spa.ProjectTemplates\content\**\*.csproj;
                       " />
   </ItemGroup>
 
@@ -125,6 +127,10 @@
                           @(ProjectToBuild);
                           @(ProjectToExclude);" />
 
+        <!--
+          Use caution to avoid deep recursion. If the globbing pattern picks up something which exceeds MAX_PATH,
+          the entire pattern will silently fail to evaluate correctly.
+        -->
         <ProjectToBuild Condition=" '$(BuildManaged)' == 'true' "
                         Include="
                           $(RepositoryRoot)src\DefaultBuilder\**\*.*proj;
@@ -146,6 +152,9 @@
                           $(RepositoryRoot)src\MusicStore\**\*.*proj;
                           $(RepositoryRoot)src\SignalR\**\*.csproj;
                           $(RepositoryRoot)src\Components\**\*.csproj;
+                          $(RepositoryRoot)src\ProjectTemplates\*\*.csproj;
+                          $(RepositoryRoot)src\ProjectTemplates\test\*.csproj;
+                          $(RepositoryRoot)src\ProjectTemplates\testassets\*\*.csproj;
                           "
                         Exclude="
                           @(ProjectToBuild);

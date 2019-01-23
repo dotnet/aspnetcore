@@ -3,7 +3,7 @@ function Test-Template($templateName, $templateArgs, $templateNupkg, $isSPA) {
     Remove-Item -Path $tmpDir -Recurse -ErrorAction Ignore
     dotnet pack
 
-    Run-DotnetNew "--install", "$PSScriptRoot/../../../artifacts/Debug/packages/product/$templateNupkg"
+    Run-DotnetNew "--install", "$PSScriptRoot/../../../artifacts/packages/Debug/Shipping/$templateNupkg"
 
     New-Item -ErrorAction Ignore -Path $tmpDir -ItemType Directory
     Push-Location $tmpDir
@@ -20,7 +20,7 @@ function Test-Template($templateName, $templateArgs, $templateNupkg, $isSPA) {
         $proj = "$tmpDir/$templateName.$extension"
         $projContent = Get-Content -Path $proj -Raw
         $projContent = $projContent -replace ('<Project Sdk="Microsoft.NET.Sdk.Web">', "<Project Sdk=""Microsoft.NET.Sdk.Web"">
-  <Import Project=""$PSScriptRoot/../test/Templates.Test/bin/Debug/netcoreapp3.0/TemplateTests.props"" />
+  <Import Project=""$PSScriptRoot/../test/bin/Debug/netcoreapp3.0/TemplateTests.props"" />
   <ItemGroup>
     <PackageReference Include=""Microsoft.NET.Sdk.Razor"" Version=""`$(MicrosoftNETSdkRazorPackageVersion)"" />
   </ItemGroup>")

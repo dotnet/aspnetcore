@@ -7,6 +7,5 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
-    <RepositoryBuildOrder Include="Templating" Order="18" />
   </ItemGroup>
 </Project>

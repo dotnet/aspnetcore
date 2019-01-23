@@ -19,15 +19,14 @@ namespace Templates.Test
         }
 
         [Theory]
-        [InlineData("Microsoft.DotNet.Web.ProjectTemplates")]
-        [InlineData("Microsoft.DotNet.Web.Spa.ProjectTemplates")]
-        public void CheckForByteOrderMark_ForAllTemplates(string projectType)
+        [InlineData("Web.ProjectTemplates")]
+        [InlineData("Web.Spa.ProjectTemplates")]
+        public void CheckForByteOrderMark_ForAllTemplates(string projectName)
         {
             var currentDirectory = Directory.GetCurrentDirectory();
-            var repositoryPath = Directory.GetParent(currentDirectory).Parent.Parent.Parent.Parent.FullName;
-            var srcDirectory = Path.Combine(repositoryPath, "src");
-            var path = Path.Combine(projectType, "content");
-            var directories = Directory.GetDirectories(Path.Combine(srcDirectory, path), "*Sharp");
+            var projectTemplateDir = Directory.GetParent(currentDirectory).Parent.Parent.Parent.FullName;
+            var path = Path.Combine(projectName, "content");
+            var directories = Directory.GetDirectories(Path.Combine(projectTemplateDir, path), "*Sharp");
 
             var filesWithBOMCharactersPresent = false;
             foreach (var directory in directories)

@@ -235,20 +235,6 @@ namespace Templates.Test
             return (scriptTags, linkTags);
         }
 
-        private static string GetSolutionDir()
-        {
-            var dir = new DirectoryInfo(AppContext.BaseDirectory);
-            while (dir != null)
-            {
-                if (File.Exists(Path.Combine(dir.FullName, "Templating.sln")))
-                {
-                    break;
-                }
-                dir = dir.Parent;
-            }
-            return dir.FullName;
-        }
-
         private static string RemoveLineEndings(string originalString)
         {
             return originalString.Replace("\r\n", "").Replace("\n", "");

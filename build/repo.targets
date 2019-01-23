@@ -182,8 +182,6 @@
       <_NoBuildSolution Update="@(_NoBuildSolution)" Build="false" />
       <Solution Include="@(_NoBuildSolution);@(_ShippedSolution)" />
     </ItemGroup>
-
-    <Error Text="No solutions were found in '$(SubmoduleRoot)'. Did you forget to clone the submodules? Run `git submodule update --init`." Condition="@(Solution->Count()) == 0" />
   </Target>
 
   <Target Name="GeneratePropsFiles" DependsOnTargets="PrepareOutputPaths;GetArtifactInfo">
