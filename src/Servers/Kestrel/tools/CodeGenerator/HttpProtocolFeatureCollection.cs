@@ -17,6 +17,7 @@ namespace CodeGenerator
                 "IServiceProvidersFeature",
                 "IHttpRequestLifetimeFeature",
                 "IHttpConnectionFeature",
+                "IHttpResponseStartFeature"
             };
 
             var commonFeatures = new[]
@@ -65,6 +66,7 @@ namespace CodeGenerator
                 "IHttpConnectionFeature",
                 "IHttpMaxRequestBodySizeFeature",
                 "IHttpBodyControlFeature",
+                "IHttpResponseStartFeature"
             };
 
             var usings = $@"

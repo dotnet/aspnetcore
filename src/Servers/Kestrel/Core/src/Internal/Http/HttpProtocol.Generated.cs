@@ -19,6 +19,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private static readonly Type IServiceProvidersFeatureType = typeof(IServiceProvidersFeature);
         private static readonly Type IHttpRequestLifetimeFeatureType = typeof(IHttpRequestLifetimeFeature);
         private static readonly Type IHttpConnectionFeatureType = typeof(IHttpConnectionFeature);
+        private static readonly Type IHttpResponseStartFeatureType = typeof(IHttpResponseStartFeature);
         private static readonly Type IHttpAuthenticationFeatureType = typeof(IHttpAuthenticationFeature);
         private static readonly Type IQueryFeatureType = typeof(IQueryFeature);
         private static readonly Type IFormFeatureType = typeof(IFormFeature);
@@ -42,6 +43,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private object _currentIServiceProvidersFeature;
         private object _currentIHttpRequestLifetimeFeature;
         private object _currentIHttpConnectionFeature;
+        private object _currentIHttpResponseStartFeature;
         private object _currentIHttpAuthenticationFeature;
         private object _currentIQueryFeature;
         private object _currentIFormFeature;
@@ -73,6 +75,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _currentIHttpConnectionFeature = this;
             _currentIHttpMaxRequestBodySizeFeature = this;
             _currentIHttpBodyControlFeature = this;
+            _currentIHttpResponseStartFeature = this;
 
             _currentIServiceProvidersFeature = null;
             _currentIHttpAuthenticationFeature = null;
@@ -165,6 +168,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 else if (key == IHttpConnectionFeatureType)
                 {
                     feature = _currentIHttpConnectionFeature;
+                }
+                else if (key == IHttpResponseStartFeatureType)
+                {
+                    feature = _currentIHttpResponseStartFeature;
                 }
                 else if (key == IHttpAuthenticationFeatureType)
                 {
@@ -266,6 +273,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     _currentIHttpConnectionFeature = value;
                 }
+                else if (key == IHttpResponseStartFeatureType)
+                {
+                    _currentIHttpResponseStartFeature = value;
+                }
                 else if (key == IHttpAuthenticationFeatureType)
                 {
                     _currentIHttpAuthenticationFeature = value;
@@ -363,6 +374,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             else if (typeof(TFeature) == typeof(IHttpConnectionFeature))
             {
                 feature = (TFeature)_currentIHttpConnectionFeature;
+            }
+            else if (typeof(TFeature) == typeof(IHttpResponseStartFeature))
+            {
+                feature = (TFeature)_currentIHttpResponseStartFeature;
             }
             else if (typeof(TFeature) == typeof(IHttpAuthenticationFeature))
             {
@@ -468,6 +483,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 _currentIHttpConnectionFeature = feature;
             }
+            else if (typeof(TFeature) == typeof(IHttpResponseStartFeature))
+            {
+                _currentIHttpResponseStartFeature = feature;
+            }
             else if (typeof(TFeature) == typeof(IHttpAuthenticationFeature))
             {
                 _currentIHttpAuthenticationFeature = feature;
@@ -563,6 +582,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (_currentIHttpConnectionFeature != null)
             {
                 yield return new KeyValuePair<Type, object>(IHttpConnectionFeatureType, _currentIHttpConnectionFeature);
+            }
+            if (_currentIHttpResponseStartFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(IHttpResponseStartFeatureType, _currentIHttpResponseStartFeature);
             }
             if (_currentIHttpAuthenticationFeature != null)
             {
