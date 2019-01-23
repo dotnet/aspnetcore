@@ -36,10 +36,13 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             SetAbsoluteUri(uriAbsolute);
             TriggerOnLocationChanged();
 
-            _jsRuntime.InvokeAsync<object>(
-                Interop.EnableNavigationInterception,
-                typeof(RemoteUriHelper).Assembly.GetName().Name,
-                nameof(NotifyLocationChanged));
+            if (_jsRuntime != null) // It's null during prerendering
+            {
+                _jsRuntime.InvokeAsync<object>(
+                    Interop.EnableNavigationInterception,
+                    typeof(RemoteUriHelper).Assembly.GetName().Name,
+                    nameof(NotifyLocationChanged));
+            }
         }
 
         /// <summary>
