@@ -68,6 +68,13 @@ IN_PROCESS_APPLICATION::StopClr()
         {
             shutdownHandler(m_ShutdownHandlerContext);
         }
+
+        auto requestCount = m_requestCount.load();
+        if (requestCount == 0)
+        {
+            LOG_INFO(L"Drained all requests, notifying managed.");
+            m_RequestsDrainedHandler(m_ShutdownHandlerContext);
+        }
     }
 
     // Signal shutdown
@@ -537,6 +544,7 @@ IN_PROCESS_APPLICATION::CreateHandler(
 void
 IN_PROCESS_APPLICATION::HandleRequestCompletion()
 {
+    SRWSharedLock lock(m_stateLock);
     auto requestCount = m_requestCount--;
     if (m_fStopCalled && requestCount == 0)
     {
