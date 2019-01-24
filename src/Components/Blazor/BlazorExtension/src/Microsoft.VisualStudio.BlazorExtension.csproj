@@ -8,10 +8,15 @@
     <ImportDirectoryBuildTargets>true</ImportDirectoryBuildTargets>
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
-    <!-- Other projects should not reference this assembly. It is only mean to be used in Visual Studio. -->
+    <!-- Other projects should not reference this assembly. It is only meaning to be used in Visual Studio. -->
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
+    <IsShippingPackage>false</IsShippingPackage>
+    <IsPackable>false</IsPackable>
+    <EnableSourceLink>false</EnableSourceLink>
+    <GenerateSourceLinkFile>false</GenerateSourceLinkFile>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+
   <!--
     Since the VSSDK doeesn't support SDK-based projects, we have to use the long/verbose version.
 
@@ -21,25 +26,22 @@
     BEGIN INTERESTING STUFF
   -->
   <PropertyGroup>
-    <!-- VSIXes are always signed. This is the same key that ASP.NET uses for OSS signing -->
-    <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>..\..\..\eng\AspNetCore.snk</AssemblyOriginatorKeyFile>
-  </PropertyGroup>
-  <PropertyGroup>
     <!--
       Following VS convention of using the VS release # as a convention for the vsix version.
 
-      VS needs this build number to be parsable by System.Version, so it can't have any letters.
+      VS needs this build number to be parsable by System.Version, so it can't have any letters or a - which
+      is used by our build system.
     -->
-    <VsixVersion>15.7</VsixVersion>
-    <VsixVersion Condition="'$(BuildNumber)'!='' AND '$(BuildNumber)'!='t000'">$(VsixVersion).$(BuildNumber)</VsixVersion>
-    <VsixVersion Condition="'$(BuildNumber)'=='' AND '$(CI)'!='true'">$(VsixVersion).999999</VsixVersion>
-    <VsixVersion Condition="'$(BuildNumber)'=='' AND '$(CI)'=='true'">$(VsixVersion).ERROR-MISSING_BUILD_NUMBER</VsixVersion>
+    <VsixVersionPrefix>16.0</VsixVersionPrefix>
+    <VsixVersionSuffix Condition="'$(BuildNumberSuffix)'=='t000'">424242.424242</VsixVersionSuffix>
+    <VsixVersionSuffix Condition="'$(VsixVersionSuffix)'==''">$(BuildNumberSuffix.Replace('-', '.'))</VsixVersionSuffix>
+    <VsixVersion>$(VsixVersionPrefix).$(VsixVersionSuffix)</VsixVersion>
   </PropertyGroup>
   <!--
     Used by the .vsixmanifest to insert the the VSIX version based on $(VsixVersion)
   -->
   <Target Name="GetBuildVersion" Outputs="$(VsixVersion)" />
+
   <PropertyGroup>
     <!-- Use the same experimental hive as Roslyn and Razor. This makes it easy to mix private builds. -->
     <StartAction>Program</StartAction>
@@ -71,7 +73,7 @@
     <CopyBuildOutputToOutputDirectory>true</CopyBuildOutputToOutputDirectory>
     <CopyOutputSymbolsToOutputDirectory>true</CopyOutputSymbolsToOutputDirectory>
   </PropertyGroup>
-  <Target Name="PreCreateVsixContainer" BeforeTargets="CreateVsixContainer">
+  <Target Name="PreCreateVsixContainer" BeforeTargets="GetVsixSourceItems">
     <ItemGroup>
       <VSIXSourceItem Include="$(ArtifactsShippingPackagesDir)Microsoft.AspNetCore.Blazor.Templates.*.nupkg">
         <VSIXSubPath>ProjectTemplates\</VSIXSubPath>
@@ -89,25 +91,7 @@
   <Target Name="CopySymbolsToOutput" AfterTargets="Build" Condition="'$(SymbolsPublishDir)' != ''">
     <Copy SourceFiles="$(OutDir)$(AssemblyName).pdb" DestinationFolder="$(SymbolsPublishDir)" />
   </Target>
-  <!--
-    We should be really careful about what goes into the VSIX and what doesn't. Since we're using
-    P2P references and packages, there are some things we need to exclude.
 
-    We want everything that *we* don't own to be excluded, those dependencies need to be satisfied
-    by other VS components (Razor, Roslyn).
-
-    Ideally we could use an allow-list here, but I don't know how to do that.
-  -->
-  <ItemDefinitionGroup>
-    <SuppressFromVsix>
-      <Visible>false</Visible>
-    </SuppressFromVsix>
-  </ItemDefinitionGroup>
-  <ItemGroup>
-    <SuppressFromVsix Include="Microsoft.AspNetCore.Razor.Language.dll" />
-    <SuppressFromVsix Include="Microsoft.CodeAnalysis.Razor.dll" />
-    <SuppressFromVsix Include="Microsoft.CodeAnalysis.Razor.Workspaces.dll" />
-  </ItemGroup>
   <ItemGroup>
     <!--
       Let's continue our parade of gross workarounds.
@@ -124,27 +108,13 @@
     <ProjectReference Include="..\..\Templates\src\Microsoft.AspNetCore.Blazor.Templates.csproj">
       <Project>{edd21533-c6e6-4f85-be4f-10e06756e24c}</Project>
       <Name>Microsoft.AspNetCore.Blazor.Templates</Name>
+      <Targets>Pack</Targets>
       <Private>False</Private>
       <IncludeOutputGroupsInVSIX>
       </IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>
       </IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
-    <ProjectReference Include="..\..\BlazorLanguageServices\src\Microsoft.VisualStudio.LanguageServices.Blazor.csproj">
-      <Project>{b9f7f502-6dd2-4e77-8fd1-cbd76f695b26}</Project>
-      <Name>Microsoft.VisualStudio.LanguageServices.Blazor</Name>
-      <Private>False</Private>
-      <IncludeOutputGroupsInVSIX>
-      </IncludeOutputGroupsInVSIX>
-      <IncludeOutputGroupsInVSIXLocalOnly>
-      </IncludeOutputGroupsInVSIXLocalOnly>
-    </ProjectReference>
-    <Content Include="..\..\BlazorLanguageServices\src\bin\$(Configuration)\net461\Microsoft.VisualStudio.LanguageServices.Blazor.dll">
-      <Link>Microsoft.VisualStudio.LanguageServices.Blazor.dll</Link>
-      <IncludeInVSIX>true</IncludeInVSIX>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Visible>false</Visible>
-    </Content>
   </ItemGroup>
   <!--
     We need to generate the assembly attributes for our assembly using the version from the build, so
@@ -189,7 +159,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Microsoft.VisualStudio.BlazorExtension</RootNamespace>
     <AssemblyName>Microsoft.VisualStudio.BlazorExtension</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <GeneratePkgDefFile>true</GeneratePkgDefFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -208,25 +178,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.CoreUtility" Version="15.6.27413" />
-    <PackageReference Include="Microsoft.VisualStudio.Imaging" Version="15.6.27413" />
-    <PackageReference Include="Microsoft.VisualStudio.OLE.Interop" Version="7.10.6071" />
-    <PackageReference Include="Microsoft.VisualStudio.ProjectSystem" Version="15.3.224" />
-    <PackageReference Include="Microsoft.VisualStudio.SDK.EmbedInteropTypes" Version="15.0.16" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="15.6.27413" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.Framework" Version="15.6.27413" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop" Version="7.10.6072" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.10.0" Version="10.0.30320" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.11.0" Version="11.0.61031" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.12.0" Version="12.0.30110" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.8.0" Version="8.0.50728" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.9.0" Version="9.0.30730" />
-    <PackageReference Include="Microsoft.VisualStudio.TextManager.Interop" Version="7.10.6071" />
-    <PackageReference Include="Microsoft.VisualStudio.TextManager.Interop.8.0" Version="8.0.50728" />
-    <PackageReference Include="Microsoft.VisualStudio.Threading" Version="15.6.46" />
-    <PackageReference Include="Microsoft.VisualStudio.Utilities" Version="15.6.27413" />
-    <PackageReference Include="Microsoft.VisualStudio.Validation" Version="15.3.15" />
-    <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="15.5.100" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="15.7.27703" />
+    <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="15.9.3032" />
+    <PackageReference Include="StreamJsonRpc" Version="1.5.43" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AboutDialogInfoAttribute.cs" />
@@ -234,7 +188,6 @@
     <Compile Include="AutoRebuild\BuildEventsWatcher.cs" />
     <Compile Include="AutoRebuild\StreamProtocolExtensions.cs" />
     <Compile Include="BlazorPackage.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="CodeSnippets\Blazor\para.snippet">
@@ -306,4 +259,8 @@
     <_GeneratedVSIXAssemblyInfoInputsCacheFile>$(IntermediateOutputPath)$(MSBuildProjectName).VSIXAssemblyInfo.cache.txt</_GeneratedVSIXAssemblyInfoInputsCacheFile>
     <_GeneratedVSIXAssemblyInfoFile>$(IntermediateOutputPath)$(MSBuildProjectName).VSIXAssemblyInfo.cs</_GeneratedVSIXAssemblyInfoFile>
   </PropertyGroup>
+
+  <!-- This needs to be here because the build will try to call it -->
+  <Target Name="Pack">
+  </Target>
 </Project>

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.VisualStudio.Shell.Interop;
@@ -33,12 +33,12 @@ namespace Microsoft.VisualStudio.BlazorExtension
 
         public void Listen()
         {
-            AddBuildServiceNamedPipeServer();
+            _ = AddBuildServiceNamedPipeServerAsync();
         }
 
-        private void AddBuildServiceNamedPipeServer()
+        private Task AddBuildServiceNamedPipeServerAsync()
         {
-            Task.Factory.StartNew(async () =>
+            return Task.Factory.StartNew(async () =>
             {
                 try
                 {
@@ -69,7 +69,7 @@ namespace Microsoft.VisualStudio.BlazorExtension
                         // As soon as we receive a connection, spin up another background
                         // listener to wait for the next connection
                         await serverPipe.WaitForConnectionAsync();
-                        AddBuildServiceNamedPipeServer();
+                        _ = AddBuildServiceNamedPipeServerAsync();
 
                         await HandleRequestAsync(serverPipe, isServerElevated);
                     }
