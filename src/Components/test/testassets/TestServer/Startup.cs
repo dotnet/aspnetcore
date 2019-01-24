@@ -46,7 +46,7 @@ namespace TestServer
                 // we're not relying on any extra magic inside UseServerSideBlazor, since it's
                 // important that people can set up these bits of middleware manually (e.g., to
                 // swap in UseAzureSignalR instead of UseSignalR).
-                subdirApp.UseSignalR(route => route.MapHub<BlazorHub>(BlazorHub.DefaultPath));
+                subdirApp.UseSignalR(route => route.MapHub<ComponentsHub>(ComponentsHub.DefaultPath));
                 subdirApp.UseBlazor<BasicTestApp.Startup>();
             });
         }

@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Builder
             // add SignalR and BlazorHub automatically.
             if (options.UseSignalRWithBlazorHub)
             {
-                builder.UseSignalR(route => route.MapHub<BlazorHub>(BlazorHub.DefaultPath));
+                builder.UseSignalR(route => route.MapHub<ComponentsHub>(ComponentsHub.DefaultPath));
             }
 
             // Use embedded static content for /_framework

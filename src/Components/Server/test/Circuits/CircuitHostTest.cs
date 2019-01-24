@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Browser;
 using Microsoft.AspNetCore.Components.Browser.Rendering;
 using Microsoft.AspNetCore.SignalR;
@@ -16,30 +17,143 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
     public class CircuitHostTest
     {
         [Fact]
-        public void Dispose_DisposesResources()
+        public async Task DisposeAsync_DisposesResources()
         {
             // Arrange
             var serviceScope = new Mock<IServiceScope>();
+            var remoteRenderer = GetRemoteRenderer();
+            var circuitHost = GetCircuitHost(
+                serviceScope.Object,
+                remoteRenderer);
+
+            // Act
+            await circuitHost.DisposeAsync();
+
+            // Assert
+            serviceScope.Verify(s => s.Dispose(), Times.Once());
+            Assert.True(remoteRenderer.Disposed);
+        }
+
+        [Fact]
+        public async Task InitializeAsync_InvokesHandlers()
+        {
+            // Arrange
+            var cancellationToken = new CancellationToken();
+            var handler1 = new Mock<CircuitHandler>(MockBehavior.Strict);
+            var handler2 = new Mock<CircuitHandler>(MockBehavior.Strict);
+            var sequence = new MockSequence();
+
+            handler1
+                .InSequence(sequence)
+                .Setup(h => h.OnCircuitOpenedAsync(It.IsAny<Circuit>(), cancellationToken))
+                .Returns(Task.CompletedTask)
+                .Verifiable();
+
+            handler2
+                .InSequence(sequence)
+                .Setup(h => h.OnCircuitOpenedAsync(It.IsAny<Circuit>(), cancellationToken))
+                .Returns(Task.CompletedTask)
+                .Verifiable();
+
+            handler1
+                .InSequence(sequence)
+                .Setup(h => h.OnConnectionUpAsync(It.IsAny<Circuit>(), cancellationToken))
+                .Returns(Task.CompletedTask)
+                .Verifiable();
+
+            handler2
+                .InSequence(sequence)
+                .Setup(h => h.OnConnectionUpAsync(It.IsAny<Circuit>(), cancellationToken))
+                .Returns(Task.CompletedTask)
+                .Verifiable();
+
+            var circuitHost = GetCircuitHost(handlers: new[] { handler1.Object, handler2.Object });
+
+            // Act
+            await circuitHost.InitializeAsync(cancellationToken);
+
+            // Assert
+            handler1.VerifyAll();
+            handler2.VerifyAll();
+        }
+
+        [Fact]
+        public async Task DisposeAsync_InvokesCircuitHandler()
+        {
+            // Arrange
+            var cancellationToken = new CancellationToken();
+            var handler1 = new Mock<CircuitHandler>(MockBehavior.Strict);
+            var handler2 = new Mock<CircuitHandler>(MockBehavior.Strict);
+            var sequence = new MockSequence();
+
+            handler1
+                .InSequence(sequence)
+                .Setup(h => h.OnConnectionDownAsync(It.IsAny<Circuit>(), cancellationToken))
+                .Returns(Task.CompletedTask)
+                .Verifiable();
+
+            handler2
+                .InSequence(sequence)
+                .Setup(h => h.OnConnectionDownAsync(It.IsAny<Circuit>(), cancellationToken))
+                .Returns(Task.CompletedTask)
+                .Verifiable();
+
+            handler1
+                .InSequence(sequence)
+                .Setup(h => h.OnCircuitClosedAsync(It.IsAny<Circuit>(), cancellationToken))
+                .Returns(Task.CompletedTask)
+                .Verifiable();
+
+            handler2
+                .InSequence(sequence)
+                .Setup(h => h.OnCircuitClosedAsync(It.IsAny<Circuit>(), cancellationToken))
+                .Returns(Task.CompletedTask)
+                .Verifiable();
+
+            var circuitHost = GetCircuitHost(handlers: new[] { handler1.Object, handler2.Object });
+
+            // Act
+            await circuitHost.DisposeAsync();
+
+            // Assert
+            handler1.VerifyAll();
+            handler2.VerifyAll();
+        }
+
+        private static CircuitHost GetCircuitHost(
+            IServiceScope serviceScope = null,
+            RemoteRenderer remoteRenderer = null,
+            CircuitHandler[] handlers = null)
+        {
+            serviceScope = serviceScope ?? Mock.Of<IServiceScope>();
             var clientProxy = Mock.Of<IClientProxy>();
             var renderRegistry = new RendererRegistry();
             var jsRuntime = Mock.Of<IJSRuntime>();
             var syncContext = new CircuitSynchronizationContext();
 
-            var remoteRenderer = new TestRemoteRenderer(
-                Mock.Of<IServiceProvider>(),
-                renderRegistry,
-                jsRuntime,
+            remoteRenderer = remoteRenderer ?? GetRemoteRenderer();
+            handlers = handlers ?? Array.Empty<CircuitHandler>();
+
+            return new CircuitHost(
+                serviceScope,
                 clientProxy,
-                syncContext);
+                renderRegistry,
+                remoteRenderer,
+                configure: _ => { },
+                jsRuntime: jsRuntime,
+                synchronizationContext:
+                syncContext,
+                handlers);
+        }
 
-            var circuitHost = new CircuitHost(serviceScope.Object, clientProxy, renderRegistry, remoteRenderer, configure: _ => { }, jsRuntime: jsRuntime, synchronizationContext: syncContext);
-
-            // Act
-            circuitHost.Dispose();
-
-            // Assert
-            serviceScope.Verify(s => s.Dispose(), Times.Once());
-            Assert.True(remoteRenderer.Disposed);
+        private static TestRemoteRenderer GetRemoteRenderer()
+        {
+            return new TestRemoteRenderer(
+                Mock.Of<IServiceProvider>(),
+                new RendererRegistry(),
+                Mock.Of<IJSRuntime>(),
+                Mock.Of<IClientProxy>(),
+                new CircuitSynchronizationContext());
         }
 
         private class TestRemoteRenderer : RemoteRenderer
