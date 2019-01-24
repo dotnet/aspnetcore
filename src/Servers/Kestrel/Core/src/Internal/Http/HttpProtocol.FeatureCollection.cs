@@ -271,7 +271,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 return Task.CompletedTask;
             }
 
-            return InitializeTaskAwaited(initializeTask);
+            return initializeTask;
         }
     }
 }

@@ -126,7 +126,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _collection[typeof(IHttpBodyControlFeature)] = CreateHttp1Connection();
             _collection[typeof(IHttpResponseStartFeature)] = CreateHttp1Connection();
 
-
             CompareGenericGetterToIndexer();
 
             EachHttpProtocolFeatureSetAndUnique();

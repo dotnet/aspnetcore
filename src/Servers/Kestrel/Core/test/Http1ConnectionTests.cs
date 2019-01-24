@@ -692,7 +692,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             // Only first write can be WriteAsyncAwaited
             var startingTask = _http1Connection.InitializeResponseAwaited(Task.CompletedTask, 1);
-            await _http1Connection.InitializeAndWriteAsyncAwaited(startingTask, new ArraySegment<byte>(new[] { (byte)'h' }), default(CancellationToken));
+            await _http1Connection.WriteAsyncAwaited(startingTask, new ArraySegment<byte>(new[] { (byte)'h' }), default(CancellationToken));
             Assert.Equal(original, _http1Connection.RequestAborted);
 
             foreach (var ch in "ello, worl")
