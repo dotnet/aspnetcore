@@ -3,5 +3,5 @@ content/*.js;Microsoft.DotNet.Web.Spa.ProjectTemplates.*.nupkg; Exclude JavaScri
 content/*.js;Microsoft.DotNet.Web.ProjectTemplates.*.nupkg; Exclude JavaScript files from codesigning in project templates
 Templates/*.js;Microsoft.VisualStudio.Web.CodeGenerators.Mvc.*.nupkg; Exclude JavaScript files from codesigning in code generators
 *.js;signalr-*-javadoc.jar; Exclude JavaScript files in the generated javadocs
-*.binlog; Exclude msbuild log files
-*.symbols.nupkg; Exclude NuGet symbols packages. These are not shipped to customers and should not be code signed.
+*.binlog;; Exclude msbuild log files
+*;*.symbols.nupkg; Exclude NuGet symbols packages. These are not shipped to customers and should not be code signed.
