@@ -249,10 +249,9 @@ public class HubConnection {
 
             if (negotiateResponse.getAccessToken() != null) {
                 this.accessTokenProvider = Single.just(negotiateResponse.getAccessToken());
-                String token = "";
                 // We know the Single is non blocking in this case
                 // It's fine to call blockingGet() on it.
-                token = this.accessTokenProvider.blockingGet();
+                String token = this.accessTokenProvider.blockingGet();
                 this.headers.put("Authorization", "Bearer " + token);
             }
 
