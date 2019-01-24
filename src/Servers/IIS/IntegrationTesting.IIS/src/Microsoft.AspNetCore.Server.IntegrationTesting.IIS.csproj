@@ -8,8 +8,11 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;iis</PackageTags>
     <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
-    <IsTestAssetProject>true</IsTestAssetProject>
     <AspNetCoreModuleOutOfProcessVersion>2.0.0</AspNetCoreModuleOutOfProcessVersion>
+    <IsTestAssetProject>true</IsTestAssetProject>
+    <!-- This is used as a package by aspnet benchmarking infrastructure. It is meant for internal-use only. -->
+    <IsPackable>true</IsPackable>
+    <IsShippingPackage>false</IsShippingPackage>
   </PropertyGroup>
 
   <Import Project="..\..\build\assets.props" />
@@ -38,6 +41,13 @@
   <Target Name="AddRunNativeComponents" BeforeTargets="AssignTargetPaths" Condition="'$(OS)' == 'Windows_NT'">
     <ItemGroup>
       <None Include="%(ShimComponents.DllLocation)" CopyToOutputDirectory="PreserveNewest" Link="%(ShimComponents.Platform)\%(ShimComponents.PackageSubPath)\%(ShimComponents.NativeAsset).dll" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="AddPackNativeComponents" BeforeTargets="_GetPackageFiles" Condition="$(PackNativeAssets) == 'true'">
+    <ItemGroup>
+      <Content Include="%(ShimComponents.DllLocation)" PackageCopyToOutput="true" PackagePath="contentFiles/any/any/%(ShimComponents.Platform)/%(ShimComponents.PackageSubPath)" />
+      <SignedPackageFile Include="%(ShimComponents.DllLocation)" PackagePath="contentFiles/any/any/%(ShimComponents.Platform)/%(ShimComponents.PackageSubPath)%(ShimComponents.NativeAsset).dll" Certificate="$(AssemblySigningCertName)" />
     </ItemGroup>
   </Target>
 
