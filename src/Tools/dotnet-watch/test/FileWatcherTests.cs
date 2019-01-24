@@ -39,7 +39,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                     watcher.OnFileChange += (_, f) =>
                     {
                         filesChanged.Add(f);
-                        changedEv.SetResult(0);
+                        changedEv.TrySetResult(0);
                     };
                     watcher.EnableRaisingEvents = true;
 
@@ -74,7 +74,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                         watcher.OnFileChange -= handler;
 
                         filesChanged.Add(f);
-                        changedEv.SetResult(0);
+                        changedEv.TrySetResult(0);
                     };
 
                     watcher.OnFileChange += handler;
@@ -119,7 +119,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                             watcher.EnableRaisingEvents = false;
                             watcher.OnFileChange -= handler;
 
-                            changedEv.SetResult(0);
+                            changedEv.TrySetResult(0);
                         }
                     };
 
@@ -160,7 +160,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                         {
                             watcher.EnableRaisingEvents = false;
                             watcher.OnFileChange -= handler;
-                            changedEv.SetResult(0);
+                            changedEv.TrySetResult(0);
                         }
                     };
 
@@ -190,7 +190,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 using (var watcher = FileWatcherFactory.CreateWatcher(dir, usePolling))
                 {
                     var changedEv = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
-                    watcher.OnFileChange += (_, f) => changedEv.SetResult(0);
+                    watcher.OnFileChange += (_, f) => changedEv.TrySetResult(0);
 
                     // Disable
                     watcher.EnableRaisingEvents = false;
@@ -218,7 +218,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 var changedEv = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
                 using (var watcher = FileWatcherFactory.CreateWatcher(dir, usePolling))
                 {
-                    watcher.OnFileChange += (_, f) => changedEv.SetResult(0);
+                    watcher.OnFileChange += (_, f) => changedEv.TrySetResult(0);
                     watcher.EnableRaisingEvents = true;
                 }
 
@@ -260,7 +260,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                         watcher.EnableRaisingEvents = false;
                         watcher.OnFileChange -= handler;
                         filesChanged.Add(f);
-                        changedEv.SetResult(0);
+                        changedEv.TrySetResult(0);
                     };
 
                     watcher.OnFileChange += handler;
@@ -313,7 +313,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 {
                     if (string.Equals(f, expectedPath, StringComparison.OrdinalIgnoreCase))
                     {
-                        changedEv.SetResult(0);
+                        changedEv.TrySetResult(0);
                     }
                 }
                 catch (ObjectDisposedException)
@@ -375,7 +375,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                         {
                             watcher.EnableRaisingEvents = false;
                             watcher.OnFileChange -= handler;
-                            changedEv.SetResult(0);
+                            changedEv.TrySetResult(0);
                         }
                     };
 
