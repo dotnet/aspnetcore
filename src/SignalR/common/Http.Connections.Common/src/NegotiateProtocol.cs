@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Http.Connections
             writer.Flush(isFinalBlock: true);
         }
 
-        public static NegotiationResponse ParseResponse(byte[] content)
+        public static NegotiationResponse ParseResponse(ReadOnlySpan<byte> content)
         {
             try
             {
@@ -105,16 +105,16 @@ namespace Microsoft.AspNetCore.Http.Connections
                         case JsonTokenType.PropertyName:
                             var memberName = reader.ValueSpan;
 
-                            if (ArrayEqual(memberName, UrlPropertyNameBytes))
+                            if (memberName.SequenceEqual(UrlPropertyNameBytes))
                             {
                                 url = ReadAsString(ref reader, UrlPropertyNameBytes);
-                            } else if (ArrayEqual(memberName, AccessTokenPropertyNameBytes))
+                            } else if (memberName.SequenceEqual(AccessTokenPropertyNameBytes))
                             {
                                 accessToken = ReadAsString(ref reader, AccessTokenPropertyNameBytes);
-                            } else if (ArrayEqual(memberName, ConnectionIdPropertyNameBytes))
+                            } else if (memberName.SequenceEqual(ConnectionIdPropertyNameBytes))
                             {
                                 connectionId = ReadAsString(ref reader, ConnectionIdPropertyNameBytes);
-                            } else if (ArrayEqual(memberName, AvailableTransportsPropertyNameBytes))
+                            } else if (memberName.SequenceEqual(AvailableTransportsPropertyNameBytes))
                             {
                                 CheckRead(ref reader);
                                 EnsureArrayStart(ref reader);
@@ -131,10 +131,10 @@ namespace Microsoft.AspNetCore.Http.Connections
                                         break;
                                     }
                                 }
-                            } else if (ArrayEqual(memberName, ErrorPropertyNameBytes))
+                            } else if (memberName.SequenceEqual(ErrorPropertyNameBytes))
                             {
                                 error = ReadAsString(ref reader, ErrorPropertyNameBytes);
-                            } else if (ArrayEqual(memberName, ProtocolVersionPropertyNameBytes))
+                            } else if (memberName.SequenceEqual(ProtocolVersionPropertyNameBytes))
                             {
                                 throw new InvalidOperationException("Detected a connection attempt to an ASP.NET SignalR Server. This client only supports connecting to an ASP.NET Core SignalR Server. See https://aka.ms/signalr-core-differences for details.");
                             } else {
@@ -350,10 +350,10 @@ namespace Microsoft.AspNetCore.Http.Connections
                     case JsonTokenType.PropertyName:
                         var memberName = reader.ValueSpan;
 
-                        if (ArrayEqual(memberName, TransportPropertyNameBytes))
+                        if (memberName.SequenceEqual(TransportPropertyNameBytes))
                         {
                             availableTransport.Transport = ReadAsString(ref reader, TransportPropertyNameBytes);
-                        } else if (ArrayEqual(memberName, TransferFormatsPropertyNameBytes))
+                        } else if (memberName.SequenceEqual(TransferFormatsPropertyNameBytes))
                         {
                             CheckRead(ref reader);
                             EnsureArrayStart(ref reader);
@@ -445,24 +445,6 @@ namespace Microsoft.AspNetCore.Http.Connections
             }
         }
 
-        private static bool ArrayEqual(ReadOnlySpan<byte> left, byte[] right)
-        {
-            if (left.Length != right.Length)
-            {
-                return false;
-            }
-
-            for (var i = 0; i < left.Length; ++i)
-            {
-                if (left[i] != right[i])
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
         private static void Skip(ref Utf8JsonReader reader)
         {
             if (reader.TokenType == JsonTokenType.PropertyName)
@@ -482,7 +464,6 @@ namespace Microsoft.AspNetCore.Http.Connections
         private static string ReadAsString(ref Utf8JsonReader reader, byte[] propertyName)
         {
             reader.Read();
-
             if (reader.TokenType != JsonTokenType.String)
             {
                 throw new InvalidDataException($"Expected '{Encoding.UTF8.GetString(propertyName)}' to be of type {JsonTokenType.String}.");
