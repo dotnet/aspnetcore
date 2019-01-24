@@ -37,14 +37,9 @@
   <!-- These projects are always excluded, even when -projects is specified on command line. -->
   <ItemGroup>
 
-    <!--
-      Excluding the Blazor VSIX because MSBuild.exe currently always fails with "error NETSDK1050: The version of Microsoft.NET.Sdk used by this project is insufficient".
-      This VSIX is going to move into aspnet/AspNetCore-Tooling soon
-    -->
-    <ProjectToExclude Include="$(RepositoryRoot)src\Components\Blazor\BlazorExtension\src\Microsoft.VisualStudio.BlazorExtension.csproj" />
-
     <!-- These projects use 'legacy' csproj, which is not supported by dotnet-msbuild. -->
     <ProjectToExclude Include="
+                      $(RepositoryRoot)src\Components\Blazor\BlazorExtension\src\Microsoft.VisualStudio.BlazorExtension.csproj;
                       $(RepositoryRoot)src\Servers\HttpSys\samples\TestClient\TestClient.csproj;
                       $(RepositoryRoot)src\Middleware\WebSockets\samples\TestServer\TestServer.csproj;
                       "
