@@ -1,4 +1,3 @@
-﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26124.0
@@ -22,8 +21,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentitySample.DefaultUI", "samples\IdentitySample.DefaultUI\IdentitySample.DefaultUI.csproj", "{B9A44F66-42AF-450D-9E34-7DD79869F225}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentitySample.Mvc", "samples\IdentitySample.Mvc\IdentitySample.Mvc.csproj", "{D67C2ED8-55FD-4D57-8A4F-C6983265A745}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.Specification.Tests", "Specification.Tests\src\Microsoft.AspNetCore.Identity.Specification.Tests.csproj", "{7AE1CE81-F93B-4E49-A481-1B0EE2EFDE0B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.FunctionalTests", "test\Identity.FunctionalTests\Microsoft.AspNetCore.Identity.FunctionalTests.csproj", "{FE4C359B-0155-4C07-8797-A33291B7A5EA}"
 EndProject
