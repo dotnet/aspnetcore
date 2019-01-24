@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Razor.Language
     // Verifies recursively that a syntax tree has no gaps in terms of position/location.
     internal class SyntaxTreeVerifier
     {
-        public static void Verify(RazorSyntaxTree syntaxTree, bool ensureFullFidelity = true, int? expectedParseLength = null)
+        public static void Verify(RazorSyntaxTree syntaxTree, bool ensureFullFidelity = true)
         {
             var verifier = new Verifier(syntaxTree.Source);
             verifier.Visit(syntaxTree.Root);
@@ -21,8 +21,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 var syntaxTreeString = syntaxTree.Root.ToFullString();
                 var builder = new StringBuilder(syntaxTree.Source.Length);
-                var sourceLength = expectedParseLength ?? syntaxTree.Source.Length;
-                for (var i = 0; i < sourceLength; i++)
+                for (var i = 0; i < syntaxTree.Source.Length; i++)
                 {
                     builder.Append(syntaxTree.Source[i]);
                 }

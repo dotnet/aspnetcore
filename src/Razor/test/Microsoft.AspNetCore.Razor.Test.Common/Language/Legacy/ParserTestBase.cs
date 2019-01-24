@@ -171,17 +171,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return Regex.Replace(content, "(?<!\r)\n", "\r\n", RegexOptions.None, TimeSpan.FromSeconds(10));
         }
 
-        internal virtual void BaselineTest(RazorSyntaxTree syntaxTree, bool verifySyntaxTree = true, bool ensureFullFidelity = true, int? expectedParseLength = null)
+        internal virtual void BaselineTest(RazorSyntaxTree syntaxTree, bool verifySyntaxTree = true, bool ensureFullFidelity = true)
         {
             if (verifySyntaxTree)
             {
-                SyntaxTreeVerifier.Verify(syntaxTree, ensureFullFidelity, expectedParseLength);
+                SyntaxTreeVerifier.Verify(syntaxTree, ensureFullFidelity);
             }
 
             AssertSyntaxTreeNodeMatchesBaseline(syntaxTree);
         }
-
-        internal abstract RazorSyntaxTree ParseBlock(RazorLanguageVersion version, string document, IEnumerable<DirectiveDescriptor> directives, bool designTime);
 
         internal RazorSyntaxTree ParseDocument(string document, bool designTime = false, IEnumerable<DirectiveDescriptor> directives = null, RazorParserFeatureFlags featureFlags = null)
         {
@@ -216,85 +214,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             syntaxTree = defaultDirectivePass.Execute(codeDocument, syntaxTree);
 
             return syntaxTree;
-        }
-
-        internal virtual RazorSyntaxTree ParseHtmlBlock(RazorLanguageVersion version, string document, IEnumerable<DirectiveDescriptor> directives, bool designTime = false)
-        {
-            directives = directives ?? Array.Empty<DirectiveDescriptor>();
-
-            var source = TestRazorSourceDocument.Create(document, filePath: null, relativePath: null, normalizeNewLines: true);
-
-            var options = CreateParserOptions(version, directives, designTime);
-            var context = new ParserContext(source, options);
-
-            var codeParser = new CSharpCodeParser(directives, context);
-            var markupParser = new HtmlMarkupParser(context);
-
-            codeParser.HtmlParser = markupParser;
-            markupParser.CodeParser = codeParser;
-
-            var root = markupParser.ParseBlock().CreateRed();
-
-            var diagnostics = context.ErrorSink.Errors;
-
-            var syntaxTree = RazorSyntaxTree.Create(root, source, diagnostics, options);
-
-            return syntaxTree;
-        }
-
-        internal virtual RazorSyntaxTree ParseCodeBlock(
-            RazorLanguageVersion version,
-            string document,
-            IEnumerable<DirectiveDescriptor> directives,
-            bool designTime)
-        {
-            directives = directives ?? Array.Empty<DirectiveDescriptor>();
-
-            var source = TestRazorSourceDocument.Create(document, filePath: null, relativePath: null, normalizeNewLines: true);
-
-            var options = CreateParserOptions(version, directives, designTime);
-            var context = new ParserContext(source, options);
-
-            var codeParser = new CSharpCodeParser(directives, context);
-            var markupParser = new HtmlMarkupParser(context);
-
-            codeParser.HtmlParser = markupParser;
-            markupParser.CodeParser = codeParser;
-
-            var root = codeParser.ParseBlock().CreateRed();
-
-            var diagnostics = context.ErrorSink.Errors;
-
-            var syntaxTree = RazorSyntaxTree.Create(root, source, diagnostics, options);
-
-            return syntaxTree;
-        }
-
-        internal virtual void ParseBlockTest(string document, int? expectedParseLength = null)
-        {
-            ParseBlockTest(document, null, false, expectedParseLength);
-        }
-
-        internal virtual void ParseBlockTest(string document, bool designTime, int? expectedParseLength = null)
-        {
-            ParseBlockTest(document, null, designTime, expectedParseLength);
-        }
-
-        internal virtual void ParseBlockTest(string document, IEnumerable<DirectiveDescriptor> directives, int? expectedParseLength = null)
-        {
-            ParseBlockTest(document, directives, false, expectedParseLength);
-        }
-
-        internal virtual void ParseBlockTest(string document, IEnumerable<DirectiveDescriptor> directives, bool designTime, int? expectedParseLength = null)
-        {
-            ParseBlockTest(RazorLanguageVersion.Latest, document, directives, designTime, expectedParseLength);
-        }
-
-        internal virtual void ParseBlockTest(RazorLanguageVersion version, string document, IEnumerable<DirectiveDescriptor> directives, bool designTime, int? expectedParseLength = null)
-        {
-            var result = ParseBlock(version, document, directives, designTime);
-
-            BaselineTest(result, expectedParseLength: expectedParseLength);
         }
 
         internal virtual void ParseDocumentTest(string document)
