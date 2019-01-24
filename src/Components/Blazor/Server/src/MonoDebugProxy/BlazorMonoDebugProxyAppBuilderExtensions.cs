@@ -29,6 +29,8 @@ namespace Microsoft.AspNetCore.Builder
         {
             app.UseWebSockets();
 
+            app.UseVisualStudioDebuggerConnectionRequestHandlers();
+
             app.Use((context, next) =>
             {
                 var requestPath = context.Request.Path;
@@ -49,6 +51,71 @@ namespace Microsoft.AspNetCore.Builder
 
                 context.Response.StatusCode = (int)HttpStatusCode.NotFound;
                 return Task.CompletedTask;
+            });
+        }
+
+        private static void UseVisualStudioDebuggerConnectionRequestHandlers(this IApplicationBuilder app)
+        {
+            // Unfortunately VS doesn't send any deliberately distinguishing information so we know it's
+            // not a regular browser or API client. The closest we can do is look for the *absence* of a
+            // User-Agent header. In the future, we should try to get VS to send a special header to indicate
+            // this is a debugger metadata request.
+            app.Use(async (context, next) =>
+            {
+                var request = context.Request;
+                var requestPath = request.Path;
+                if (requestPath.StartsWithSegments("/json")
+                    && !request.Headers.ContainsKey("User-Agent"))
+                {
+                    if (requestPath.Equals("/json", StringComparison.OrdinalIgnoreCase) || requestPath.Equals("/json/list", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var debuggerHost = "http://localhost:9222";
+                        var availableTabs = await GetOpenedBrowserTabs(debuggerHost);
+
+                        // Filter the list to only include tabs displaying the requested app,
+                        // but only during the "choose application to debug" phase. We can't apply
+                        // the same filter during the "connecting" phase (/json/list), nor do we need to.
+                        if (requestPath.Equals("/json"))
+                        {
+                            availableTabs = availableTabs.Where(tab => tab.Url.StartsWith($"{request.Scheme}://{request.Host}{request.PathBase}/"));
+                        }
+
+                        var proxiedTabInfos = availableTabs.Select(tab =>
+                        {
+                            var underlyingV8Endpoint = tab.WebSocketDebuggerUrl;
+                            var proxiedV8Endpoint = $"ws://{request.Host}{request.PathBase}/_framework/debug/ws-proxy?browser={WebUtility.UrlEncode(underlyingV8Endpoint)}";
+                            return new
+                            {
+                                description = "",
+                                devtoolsFrontendUrl = "",
+                                id = tab.Id,
+                                title = tab.Title,
+                                type = tab.Type,
+                                url = tab.Url,
+                                webSocketDebuggerUrl = proxiedV8Endpoint
+                            };
+                        });
+
+                        context.Response.ContentType = "application/json";
+                        await context.Response.WriteAsync(JsonConvert.SerializeObject(proxiedTabInfos));
+                    }
+                    else if (requestPath.Equals("/json/version", StringComparison.OrdinalIgnoreCase))
+                    {
+                        context.Response.ContentType = "application/json";
+                        await context.Response.WriteAsync(JsonConvert.SerializeObject(new Dictionary<string, string>
+                        {
+                            { "Browser", "Chrome/71.0.3578.98" },
+                            { "Protocol-Version", "1.3" },
+                            { "User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36" },
+                            { "V8-Version", "7.1.302.31" },
+                            { "WebKit-Version", "537.36 (@15234034d19b85dcd9a03b164ae89d04145d8368)" },
+                        }));
+                    }
+                }
+                else
+                {
+                    await next();
+                }
             });
         }
 
@@ -207,6 +274,7 @@ namespace Microsoft.AspNetCore.Builder
 
         class BrowserTab
         {
+            public string Id { get; set; }
             public string Type { get; set; }
             public string Url { get; set; }
             public string Title { get; set; }
