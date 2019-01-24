@@ -2431,6 +2431,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task StartAsyncThrowException()
         {
+            // TODO this behavior isn't great. Throwing here should
+            // abort the connection or return a 500 rather than a partial write.
             var testContext = new TestServiceContext(LoggerFactory);
 
             using (var server = new TestServer(async httpContext =>
