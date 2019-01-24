@@ -79,13 +79,11 @@
     <_InvalidReferenceToNonSharedFxAssembly Condition="'$(IsAspNetCoreApp)' == 'true'"
       Include="@(Reference)"
       Exclude="
-        Newtonsoft.Json;
         @(AspNetCoreAppReference);
         @(AspNetCoreAppReferenceAndPackage);
         @(ExternalAspNetCoreAppReference);
         @(_CompilationOnlyReference);
         @(Reference->WithMetadataValue('IsSharedSource', 'true'))" />
-    <!-- TODO: remove Newtonsoft.Json from this list once https://github.com/aspnet/AspNetCore/issues/4260 is resolved -->
     <_OriginalReferences Include="@(Reference)" />
     <!--
       Turn Reference items into a ProjectReference when UseProjectReferences is true.

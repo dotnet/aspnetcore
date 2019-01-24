@@ -32,7 +32,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddAuthorization();
 
             var builder = new SignalRServerBuilder(services);
-            builder.AddNewtonsoftJsonProtocol();
+            builder.AddJsonProtocol();
             return builder;
         }
     }

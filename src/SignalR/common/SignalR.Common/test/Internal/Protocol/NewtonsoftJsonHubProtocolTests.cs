@@ -13,14 +13,14 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 {
-    public class JsonHubProtocolTests : JsonHubProtocolTestsBase
+    public class NewtonsoftJsonHubProtocolTests : JsonHubProtocolTestsBase
     {
-        protected override IHubProtocol JsonHubProtocol => new JsonHubProtocol();
+        protected override IHubProtocol JsonHubProtocol => new NewtonsoftJsonHubProtocol();
 
         [Theory]
-        [InlineData("", "Error reading JSON.")]
-        [InlineData("42", "Unexpected JSON Token Type 'Number'. Expected a JSON Object.")]
-        [InlineData("{\"type\":\"foo\"}", "Expected 'type' to be of type Number.")]
+        [InlineData("", "Unexpected end when reading JSON.")]
+        [InlineData("42", "Unexpected JSON Token Type 'Integer'. Expected a JSON Object.")]
+        [InlineData("{\"type\":\"foo\"}", "Expected 'type' to be of type Integer.")]
         public void CustomInvalidMessages(string input, string expectedMessage)
         {
             input = Frame(input);
@@ -55,11 +55,11 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 
         public static IDictionary<string, JsonProtocolTestData> CustomProtocolTestData => new[]
         {
-            new JsonProtocolTestData("InvocationMessage_HasFloatArgument", new InvocationMessage(null, "Target", new object[] { 1, "Foo", 2.0f }), "{\"type\":1,\"target\":\"Target\",\"arguments\":[1,\"Foo\",2]}"),
-            new JsonProtocolTestData("StreamItemMessage_HasFloatItem", new StreamItemMessage("123", 2.0f), "{\"type\":2,\"invocationId\":\"123\",\"item\":2}"),
-            new JsonProtocolTestData("CompletionMessage_HasFloatResult", CompletionMessage.WithResult("123", 2.0f), "{\"type\":3,\"invocationId\":\"123\",\"result\":2}"),
-            new JsonProtocolTestData("StreamInvocationMessage_HasFloatArgument", new StreamInvocationMessage("123", "Target", new object[] { 1, "Foo", 2.0f }), "{\"type\":4,\"invocationId\":\"123\",\"target\":\"Target\",\"arguments\":[1,\"Foo\",2]}"),
-            //new JsonProtocolTestData("InvocationMessage_StringIsoDateArgument", new InvocationMessage("Method", new object[] { "2016-05-10T13:51:20+12:34" }), "{\"type\":1,\"target\":\"Method\",\"arguments\":[\"2016-05-10T13:51:20+12:34\"]}"),
+            new JsonProtocolTestData("InvocationMessage_HasFloatArgument", new InvocationMessage(null, "Target", new object[] { 1, "Foo", 2.0f }), "{\"type\":1,\"target\":\"Target\",\"arguments\":[1,\"Foo\",2.0]}"),
+            new JsonProtocolTestData("StreamItemMessage_HasFloatItem", new StreamItemMessage("123", 2.0f), "{\"type\":2,\"invocationId\":\"123\",\"item\":2.0}"),
+            new JsonProtocolTestData("CompletionMessage_HasFloatResult", CompletionMessage.WithResult("123", 2.0f), "{\"type\":3,\"invocationId\":\"123\",\"result\":2.0}"),
+            new JsonProtocolTestData("StreamInvocationMessage_HasFloatArgument", new StreamInvocationMessage("123", "Target", new object[] { 1, "Foo", 2.0f }), "{\"type\":4,\"invocationId\":\"123\",\"target\":\"Target\",\"arguments\":[1,\"Foo\",2.0]}"),
+            new JsonProtocolTestData("InvocationMessage_StringIsoDateArgument", new InvocationMessage("Method", new object[] { "2016-05-10T13:51:20+12:34" }), "{\"type\":1,\"target\":\"Method\",\"arguments\":[\"2016-05-10T13:51:20+12:34\"]}"),
         }.ToDictionary(t => t.Name);
 
         public static IEnumerable<object[]> CustomProtocolTestDataNames => CustomProtocolTestData.Keys.Select(name => new object[] { name });

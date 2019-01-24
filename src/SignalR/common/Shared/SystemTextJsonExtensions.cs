@@ -2,9 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.IO;
-using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.AspNetCore.Internal
 {
@@ -24,8 +25,13 @@ namespace Microsoft.AspNetCore.Internal
         {
             if (reader.TokenType != JsonTokenType.StartObject)
             {
-                throw new InvalidDataException($"Unexpected JSON Token Type '{GetTokenString(reader.TokenType)}'. Expected a JSON Object.");
+                throw new InvalidDataException($"Unexpected JSON Token Type '{reader.GetTokenString()}'. Expected a JSON Object.");
             }
+        }
+
+        public static string GetTokenString(this ref Utf8JsonReader reader)
+        {
+            return GetTokenString(reader.TokenType);
         }
 
         public static string GetTokenString(JsonTokenType tokenType)
@@ -50,7 +56,7 @@ namespace Microsoft.AspNetCore.Internal
         {
             if (reader.TokenType != JsonTokenType.StartArray)
             {
-                throw new InvalidDataException($"Unexpected JSON Token Type '{GetTokenString(reader.TokenType)}'. Expected a JSON Array.");
+                throw new InvalidDataException($"Unexpected JSON Token Type '{reader.GetTokenString()}'. Expected a JSON Array.");
             }
         }
 
@@ -98,6 +104,25 @@ namespace Microsoft.AspNetCore.Internal
             }
 
             return reader.GetInt32();
+        }
+
+        public static object ReadAsType(this ref Utf8JsonReader reader, Type type)
+        {
+            if (type == typeof(DateTime) || type == typeof(DateTime?))
+            {
+                return reader.GetDateTime();
+            }
+            else if (type == typeof(DateTimeOffset) || type == typeof(DateTimeOffset?))
+            {
+                return reader.GetDateTimeOffset();
+            }
+            else
+            {
+                reader.Read();
+
+                var bytes = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
+                return JsonSerializer.Parse(bytes, type);
+            }
         }
     }
 }

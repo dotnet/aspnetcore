@@ -273,7 +273,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Objects not supported yet")]
         [LogLevel(LogLevel.Trace)]
         public async Task StreamsObjectsToServer()
         {
@@ -361,7 +361,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 await hubConnection.StartAsync().OrTimeout();
 
                 var channel = Channel.CreateUnbounded<int>();
-                var invokeTask = hubConnection.InvokeAsync<object>("UploadMethod", channel.Reader);
+                var invokeTask = hubConnection.InvokeAsync<long>("UploadMethod", channel.Reader);
                 var invocation = await connection.ReadSentJsonAsync().OrTimeout();
                 Assert.Equal(HubProtocolConstants.InvocationMessageType, invocation["type"]);
                 var id = invocation["invocationId"];
@@ -408,10 +408,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 try
                 {
                     await invokeTask;
+                    Assert.True(false);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
-                    Assert.Equal(typeof(Newtonsoft.Json.JsonSerializationException), ex.GetType());
                 }
             }
         }

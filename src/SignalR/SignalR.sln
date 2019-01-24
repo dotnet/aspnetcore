@@ -145,6 +145,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Signal
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.HttpOverrides", "..\Middleware\HttpOverrides\src\Microsoft.AspNetCore.HttpOverrides.csproj", "{FD3A8F8D-2967-4635-86FC-CC49BAF651C1}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SignalR.Protocols.Json", "common\Protocols.Json\src\Microsoft.AspNetCore.SignalR.Protocols.Json.csproj", "{BB52C0FB-19FD-485A-9EBD-3FC173ECAEA0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -399,6 +401,10 @@ Global
 		{FD3A8F8D-2967-4635-86FC-CC49BAF651C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FD3A8F8D-2967-4635-86FC-CC49BAF651C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FD3A8F8D-2967-4635-86FC-CC49BAF651C1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BB52C0FB-19FD-485A-9EBD-3FC173ECAEA0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB52C0FB-19FD-485A-9EBD-3FC173ECAEA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BB52C0FB-19FD-485A-9EBD-3FC173ECAEA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BB52C0FB-19FD-485A-9EBD-3FC173ECAEA0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -468,6 +474,7 @@ Global
 		{3BE66897-A7E7-4AC8-B2EF-516366A6710F} = {1C8016A8-F362-45C7-9EA9-A1CCE7918F2F}
 		{762A7DD1-E45E-4EA3-8109-521E844AE613} = {1C8016A8-F362-45C7-9EA9-A1CCE7918F2F}
 		{FD3A8F8D-2967-4635-86FC-CC49BAF651C1} = {EDE8E45E-A5D0-4F0E-B72C-7CC14146C60A}
+		{BB52C0FB-19FD-485A-9EBD-3FC173ECAEA0} = {9FCD621E-E710-4991-B45C-1BABC977BEEC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7945A4E4-ACDB-4F6E-95CA-6AC6E7C2CD59}

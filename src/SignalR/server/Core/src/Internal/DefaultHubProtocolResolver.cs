@@ -23,16 +23,20 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             _logger = logger ?? NullLogger<DefaultHubProtocolResolver>.Instance;
             _availableProtocols = new Dictionary<string, IHubProtocol>(StringComparer.OrdinalIgnoreCase);
 
-            // We might get duplicates in _hubProtocols, but we're going to check it and throw in just a sec.
+            // We might get duplicates in _hubProtocols, but we're going to check it and overwrite in just a sec.
             _hubProtocols = availableProtocols.ToList();
             foreach (var protocol in _hubProtocols)
             {
                 if (_availableProtocols.ContainsKey(protocol.Name))
                 {
-                    throw new InvalidOperationException($"Multiple Hub Protocols with the name '{protocol.Name}' were registered.");
+                    Log.OverwroteSignalRProtocol(_logger, protocol.Name, protocol.GetType());
+                    _availableProtocols[protocol.Name] = protocol;
                 }
-                Log.RegisteredSignalRProtocol(_logger, protocol.Name, protocol.GetType());
-                _availableProtocols.Add(protocol.Name, protocol);
+                else
+                {
+                    Log.RegisteredSignalRProtocol(_logger, protocol.Name, protocol.GetType());
+                    _availableProtocols.Add(protocol.Name, protocol);
+                }
             }
         }
 
@@ -60,6 +64,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             private static readonly Action<ILogger, string, Exception> _foundImplementationForProtocol =
                 LoggerMessage.Define<string>(LogLevel.Debug, new EventId(2, "FoundImplementationForProtocol"), "Found protocol implementation for requested protocol: {ProtocolName}.");
 
+            private static readonly Action<ILogger, string, Type, Exception> _overwroteSignalRProtocol =
+                LoggerMessage.Define<string, Type>(LogLevel.Debug, new EventId(3, "OverwroteSignalRProtocol"), "Overwrote SignalR Protocol: {ProtocolName}, with implemention by {ImplementationType}.");
+
             public static void RegisteredSignalRProtocol(ILogger logger, string protocolName, Type implementationType)
             {
                 _registeredSignalRProtocol(logger, protocolName, implementationType, null);
@@ -68,6 +75,11 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             public static void FoundImplementationForProtocol(ILogger logger, string protocolName)
             {
                 _foundImplementationForProtocol(logger, protocolName, null);
+            }
+
+            public static void OverwroteSignalRProtocol(ILogger logger, string protocolName, Type implementationType)
+            {
+                _overwroteSignalRProtocol(logger, protocolName, implementationType, null);
             }
         }
     }

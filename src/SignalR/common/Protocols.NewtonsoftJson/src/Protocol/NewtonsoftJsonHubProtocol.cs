@@ -172,7 +172,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
                                         if (reader.TokenType != JsonToken.StartArray)
                                         {
-                                            throw new InvalidDataException($"Expected '{ArgumentsPropertyName}' to be of type {JTokenType.Array}.");
+                                            throw new InvalidDataException($"Expected '{StreamIdsPropertyName}' to be of type {JTokenType.Array}.");
                                         }
 
                                         var newStreamIds = new List<string>();

@@ -17,7 +17,7 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Authorization" />
     <Reference Include="Microsoft.AspNetCore.SignalR.Common" />
-    <Reference Include="Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" />
     <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="System.Threading.Channels" />

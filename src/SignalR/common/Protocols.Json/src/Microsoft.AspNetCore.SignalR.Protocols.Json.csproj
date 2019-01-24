@@ -1,15 +1,16 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>Implements the SignalR Hub Protocol using Newtonsoft.Json.</Description>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <Description>Implements the SignalR Hub Protocol using System.Text.Json.</Description>
+    <TargetFrameworks>netstandard2.0;netcoreapp3.0</TargetFrameworks>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <RootNamespace>Microsoft.AspNetCore.SignalR</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <IsShippingPackage>true</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(SignalRSharedSourceRoot)JsonUtils.cs" Link="Internal\JsonUtils.cs" />
+    <Compile Include="$(SignalRSharedSourceRoot)SystemTextJsonExtensions.cs" Link="Internal\SystemTextJsonExtensions.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)TextMessageFormatter.cs" Link="TextMessageFormatter.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)TextMessageParser.cs" Link="TextMessageParser.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)Utf8BufferTextReader.cs" Link="Utf8BufferTextReader.cs" />
@@ -18,7 +19,12 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.SignalR.Common" />
-    <Reference Include="Newtonsoft.Json" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'" >
+    <Reference Include="Microsoft.Bcl.Json.Sources" />
+    <Reference Include="System.Buffers" />
+    <Reference Include="System.Runtime.CompilerServices.Unsafe" />
   </ItemGroup>
 
 </Project>
