@@ -264,5 +264,157 @@ namespace Microsoft.AspNetCore.Http.Connections
 
             throw new InvalidDataException("Unexpected end when reading JSON.");
         }
+
+        private static AvailableTransport ParseAvailableTransport(ref Utf8JsonReader reader)
+        {
+            var availableTransport = new AvailableTransport();
+
+            while (CheckRead(ref reader))
+            {
+                switch (reader.TokenType)
+                {
+                    case JsonTokenType.PropertyName:
+                        var memberName = reader.ValueSpan;
+
+                        if (ArrayEqual(memberName, TransportPropertyNameBytes))
+                        {
+                            availableTransport.Transport = ReadAsString(ref reader, TransportPropertyNameBytes);
+                        } else if (ArrayEqual(memberName, TransferFormatsPropertyNameBytes))
+                        {
+                            CheckRead(ref reader);
+                            EnsureArrayStart(ref reader);
+
+                            var completed = false;
+
+                            availableTransport.TransferFormats = new List<string>();
+                            while (!completed && CheckRead(ref reader))
+                            {
+                                switch (reader.TokenType)
+                                {
+                                    case JsonTokenType.String:
+                                        availableTransport.TransferFormats.Add(reader.GetString());
+                                        break;
+                                    case JsonTokenType.EndArray:
+                                        completed = true;
+                                        break;
+                                    default:
+                                        throw new InvalidDataException($"Unexpected token '{reader.TokenType}' when reading transfer formats JSON.");
+                                }
+                            }
+                        }
+                        else
+                        {
+                            Skip(ref reader);
+                        }
+                        break;
+                    case JsonTokenType.EndObject:
+                        if (availableTransport.Transport == null)
+                        {
+                            throw new InvalidDataException($"Missing required property '{TransportPropertyName}'.");
+                        }
+
+                        if (availableTransport.TransferFormats == null)
+                        {
+                            throw new InvalidDataException($"Missing required property '{TransferFormatsPropertyName}'.");
+                        }
+
+                        return availableTransport;
+                    default:
+                        throw new InvalidDataException($"Unexpected token '{reader.TokenType}' when reading available transport JSON.");
+                }
+            }
+
+            throw new InvalidDataException("Unexpected end when reading JSON.");
+        }
+
+        private static bool CheckRead(ref Utf8JsonReader reader)
+        {
+            if (!reader.Read())
+            {
+                throw new InvalidDataException("Unexpected end when reading JSON.");
+            }
+
+            return true;
+        }
+
+        private static void EnsureObjectStart(ref Utf8JsonReader reader)
+        {
+            if (reader.TokenType != JsonTokenType.StartObject)
+            {
+                throw new InvalidDataException($"Unexpected JSON Token Type '{GetTokenString(reader.TokenType)}'. Expected a JSON Object.");
+            }
+        }
+
+        private static string GetTokenString(JsonTokenType tokenType)
+        {
+            switch (tokenType)
+            {
+                case JsonTokenType.None:
+                    break;
+                case JsonTokenType.StartObject:
+                    return "StartObject";
+                case JsonTokenType.StartArray:
+                    return "StartArray";
+                case JsonTokenType.PropertyName:
+                    return "PropertyName";
+                default:
+                    break;
+            }
+            return tokenType.ToString();
+        }
+
+        private static void EnsureArrayStart(ref Utf8JsonReader reader)
+        {
+            if (reader.TokenType != JsonTokenType.StartArray)
+            {
+                throw new InvalidDataException($"Unexpected JSON Token Type '{GetTokenString(reader.TokenType)}'. Expected a JSON Array.");
+            }
+        }
+
+        private static bool ArrayEqual(ReadOnlySpan<byte> left, byte[] right)
+        {
+            if (left.Length != right.Length)
+            {
+                return false;
+            }
+
+            for (var i = 0; i < left.Length; ++i)
+            {
+                if (left[i] != right[i])
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static void Skip(ref Utf8JsonReader reader)
+        {
+            if (reader.TokenType == JsonTokenType.PropertyName)
+            {
+                reader.Read();
+            }
+
+            if (reader.TokenType == JsonTokenType.StartObject || reader.TokenType == JsonTokenType.StartArray)
+            {
+                int depth = reader.CurrentDepth;
+                while (reader.Read() && depth < reader.CurrentDepth)
+                {
+                }
+            }
+        }
+
+        private static string ReadAsString(ref Utf8JsonReader reader, byte[] propertyName)
+        {
+            reader.Read();
+
+            if (reader.TokenType != JsonTokenType.String)
+            {
+                throw new InvalidDataException($"Expected '{Encoding.UTF8.GetString(propertyName)}' to be of type {JsonTokenType.String}.");
+            }
+
+            return reader.GetString();
+        }
     }
 }
