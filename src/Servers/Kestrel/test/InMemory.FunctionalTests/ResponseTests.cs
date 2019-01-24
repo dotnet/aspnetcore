@@ -103,6 +103,39 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
+        public async Task OnStartingThrowsWhenSetAfterStartAsyncIsCalled()
+        {
+            InvalidOperationException ex = null;
+
+            using (var server = new TestServer(async context =>
+            {
+                await context.Response.StartAsync(flush: false);
+                ex = Assert.Throws<InvalidOperationException>(() => context.Response.OnStarting(_ => Task.CompletedTask, null));
+            }, new TestServiceContext(LoggerFactory)))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+
+                    await connection.Receive($"HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "0",
+                        "",
+                        "");
+
+                    Assert.NotNull(ex);
+                }
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
         public async Task ResponseBodyWriteAsyncCanBeCancelled()
         {
             var serviceContext = new TestServiceContext(LoggerFactory);
@@ -2367,7 +2400,37 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public async Task StartAsyncWithFlushWork()
+        public async Task StartAsyncWithoutFlushDefaultsToChunkedResponse()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                httpContext.Response.Headers["Content-Length"] = new[] { "0" };
+                await httpContext.Response.StartAsync(flush: false);
+                Assert.True(httpContext.Response.HasStarted);
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task StartAsyncWithFlushWorks()
         {
             var testContext = new TestServiceContext(LoggerFactory);
 
@@ -2423,6 +2486,37 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Content-Length: 11",
                         "",
                         "Hello World");
+                }
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task StartAsyncAndFlushWorks()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                httpContext.Response.Headers["Content-Length"] = new[] { "0" };
+                await httpContext.Response.StartAsync(flush: false);
+                await httpContext.Response.Body.FlushAsync();
+                Assert.True(httpContext.Response.HasStarted);
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
                 }
                 await server.StopAsync();
             }
