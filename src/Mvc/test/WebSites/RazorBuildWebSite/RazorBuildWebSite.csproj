@@ -19,13 +19,6 @@
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
     <Reference Include="Microsoft.AspNetCore.Diagnostics" />
-
-    <!--
-      Referencing here so you can easily regenerate the C# from Razor.
-      Just do `dotnet build /t:RazorGenerate /p:TargetFramework=netcoreapp2.0` and look in obj/Debug/netcoreapp2.0/Razor
-      -->
-    <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="$(MicrosoftAspNetCoreRazorDesignPackageVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="$(MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion)" />
   </ItemGroup>
 
 </Project>
