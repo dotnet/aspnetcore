@@ -1,15 +1,12 @@
-<Project>
-  <!--
-    Currently, the shared framework builds by using PackageReference to internally generate the deps.json files and move bits between projects.
-    For local builds, this import is required to point to packages which actually exists. Run "build.cmd /t:GeneratePropsFiles /p:BuildNumberSuffix=xyz" to
-    build the shared framework against a particular set of packages.
-  -->
-  <Import Condition="Exists('..\..\obj\dependencies.g.props') AND '$(DotNetPackageVersionPropsPath)' == ''" Project="..\..\obj\dependencies.g.props" />
-  <Import Condition="'$(DotNetPackageVersionPropsPath)' != ''" Project="$(DotNetPackageVersionPropsPath)" />
 
+<Project>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
 
   <PropertyGroup>
-    <IsFrameworkMetapackage>true</IsFrameworkMetapackage>
+    <RestoreSources>
+      $(RestoreSources);
+      $(ArtifactsShippingPackagesDir);
+      $(ArtifactsNonShippingPackagesDir)
+    </RestoreSources>
   </PropertyGroup>
 </Project>

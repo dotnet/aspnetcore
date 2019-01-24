@@ -2,73 +2,22 @@
 
   <PropertyGroup>
     <CodeSignDependsOn>$(CodeSignDependsOn);CollectFileSignInfo</CodeSignDependsOn>
+    <RedistNetCorePath>$(IntermediateDir)ar\$(SharedFxRid)\</RedistNetCorePath>
   </PropertyGroup>
 
-  <Target Name="CollectFileSignInfo" DependsOnTargets="_PrepareRepositories;GetProjectArtifactInfo;GetFxProjectArtifactInfo">
-
+  <Target Name="CollectFileSignInfo">
     <ItemGroup>
-      <_RepositoryProject Remove="@(_RepositoryProject)" />
-      <_RepositoryProject Include="$(MSBuildProjectFullPath)" Condition="'%(Repository.Identity)' != ''">
-        <AdditionalProperties>RepositoryRoot=%(Repository.RootPath)</AdditionalProperties>
-        <Build>%(Repository.Build)</Build>
-      </_RepositoryProject>
-      <_ShippedRepositoryProject Include="$(MSBuildProjectFullPath)" Condition="'%(ShippedRepository.Identity)' != ''">
-        <AdditionalProperties>RepositoryRoot=%(ShippedRepository.RootPath)</AdditionalProperties>
-        <Build>false</Build>
-      </_ShippedRepositoryProject>
-    </ItemGroup>
+      <FilesToSign Include="$(ArtifactsShippingPackagesDir)*.jar" Certificate="MicrosoftJAR" />
+      <FilesToSign Include="$(ArtifactsShippingPackagesDir)*.nupkg" Exclude="$(ArtifactsShippingPackagesDir)*.symbols.nupkg" Certificate="NuGet" />
+      <FilesToSign Include="$(ArtifactsNonShippingPackagesDir)*.nupkg" Exclude="$(ArtifactsNonShippingPackagesDir)*.symbols.nupkg" Certificate="NuGet" />
+      <FilesToSign Include="$(InstallersOutputPath)*.vsix" Certificate="VsixSHA2" />
+      <!-- "None" means don't sign the .zip file itself, but still scan the contents of the .zip for signable files. -->
+      <FilesToSign Include="$(InstallersOutputPath)*.zip" Certificate="None" />
 
-    <PropertyGroup>
-      <GetFileSignInfoProps>
-        AssemblySigningCertName=$(AssemblySigningCertName);
-        AssemblySigning3rdPartyCertName=$(AssemblySigning3rdPartyCertName);
-        PowerShellSigningCertName=$(PowerShellSigningCertName);
-        PackageSigningCertName=$(PackageSigningCertName);
-        VsixSigningCertName=$(VsixSigningCertName);
-        JarSigningCertName=$(JarSigningCertName);
-        ArtifactsDir=$(ArtifactsDir)
-      </GetFileSignInfoProps>
-    </PropertyGroup>
-
-    <MSBuild Projects="@(_RepositoryProject)"
-             Condition="@(_RepositoryProject->Count()) != 0"
-             Targets="_GetFileSignInfo"
-             Properties="$(GetFileSignInfoProps);$(DesignTimeBuildProps);DesignTimeBuild=true;Configuration=$(Configuration);VersionSuffix=$(VersionSuffix);BuildNumberSuffix=$(BuildNumberSuffix);CustomAfterKoreBuildTargets=$(MSBuildThisFileFullPath)"
-             BuildInParallel="true">
-      <Output TaskParameter="TargetOutputs" ItemName="_RepoFileSignInfo" />
-    </MSBuild>
-    <MSBuild Projects="@(_ShippedRepositoryProject)"
-             Condition="@(_ShippedRepositoryProject->Count()) != 0"
-             Targets="_GetFileSignInfo"
-             Properties="$(GetFileSignInfoProps);$(DesignTimeBuildProps);IsFinalBuild=true;DesignTimeBuild=true;Configuration=$(Configuration);VersionSuffix=$(VersionSuffix);BuildNumberSuffix=$(BuildNumberSuffix);CustomAfterKoreBuildTargets=$(MSBuildThisFileFullPath)"
-             BuildInParallel="true">
-      <Output TaskParameter="TargetOutputs" ItemName="_ShippedRepoFileSignInfo" />
-    </MSBuild>
-
-    <ItemGroup>
-      <!-- If repos were not built, only use this info to collect the mapping of FileName -> Certificate. Otherwise, include .nupkg and .zips in signing. -->
-      <_FilesToSign Include="@(_RepoFileSignInfo)" Condition="'%(_RepoFileSignInfo.IsFileToSign)' == 'true' AND ('$(_ReposWereBuilt)' == 'true' OR '%(_RepoFileSignInfo.Container)' != '' ) " />
-      <_FilesToSign Include="@(_ShippedRepoFileSignInfo)" Condition="'%(_ShippedRepoFileSignInfo.IsFileToSign)' == 'true' AND '%(_ShippedRepoFileSignInfo.Container)' != '' " />
-      <FilesToSign Include="@(_FilesToSign)" />
-
-      <!-- Normalize FilesToExcludeFromSigning to filename + extension. -->
-      <_Temp Remove="@(_Temp)" />
-      <_Temp Include="@(FilesToExcludeFromSigning)" />
-      <FilesToExcludeFromSigning Remove="@(FilesToExcludeFromSigning)" />
-      <FilesToExcludeFromSigning Include="@(_Temp->'%(FileName)%(Extension)')" />
-      <_Temp Remove="@(_Temp)" />
-
-      <FilesToExcludeFromSigning Include="@(_ShippedRepoFileSignInfo->'%(FileName)%(Extension)')" Condition="'%(_ShippedRepoFileSignInfo.IsFileToExcludeFromSign)' == 'true'" />
-      <FilesToExcludeFromSigning Include="@(_RepoFileSignInfo->'%(FileName)%(Extension)')" Condition="'%(_RepoFileSignInfo.IsFileToExcludeFromSign)' == 'true'" />
-      <!-- Workaround for the way we have both repo and Universe builds, crossgen AND uncrossgened outputs. This prevents duplicate configuration between 'exclude' and 'sign' options. -->
-      <FilesToExcludeFromSigning Remove="@(FilesToSign->'%(FileName)%(Extension)')" />
-    </ItemGroup>
-  </Target>
-
-  <Target Name="_GetFileSignInfo" DependsOnTargets="GetArtifactInfo" Returns="@(_FileSignInfo)">
-    <ItemGroup>
-      <_FileSignInfo Include="@(FilesToSign)" IsFileToSign="true" />
-      <_FileSignInfo Include="@(FilesToExcludeFromSigning)" IsFileToExcludeFromSign="true" />
+      <!-- These files should already be signed by the .NET Core team. They have to be listed again here because we recreate a redistributable which includes the Microsoft.NETCore.App runtime. -->
+      <FilesToExcludeFromSigning Include="$(RedistNetCorePath)shared\Microsoft.NETCore.App\**\*.dll" />
+      <FilesToExcludeFromSigning Include="$(RedistNetCorePath)host\**\*.dll" />
+      <FilesToExcludeFromSigning Include="$(RedistNetCorePath)dotnet.exe" />
     </ItemGroup>
   </Target>
 </Project>

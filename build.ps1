@@ -9,9 +9,6 @@ This build script installs required tools and runs an MSBuild command on this re
 This script can be used to invoke various targets, such as targets to produce packages,
 build projects, run tests, and generate code.
 
-.PARAMETER RepoPath
-The folder to build. Defaults to the folder containing this script. This will be removed soon.
-
 .PARAMETER CI
 Sets up CI specific settings and variables.
 
@@ -71,10 +68,6 @@ Online version: https://github.com/aspnet/AspNetCore/blob/master/docs/BuildFromS
 #>
 [CmdletBinding(PositionalBinding = $false, DefaultParameterSetName='Groups')]
 param(
-    # Bootstrapper options
-    [Obsolete('This parameter will be removed when we finish https://github.com/aspnet/AspNetCore/issues/4246')]
-    [string]$RepoRoot = $PSScriptRoot,
-
     [switch]$CI,
 
     # Build lifecycle options
@@ -203,7 +196,6 @@ if ($Help) {
     exit 1
 }
 
-$RepoRoot = Resolve-Path $RepoRoot
 $Channel = 'master'
 $ToolsSource = 'https://aspnetcore.blob.core.windows.net/buildtools'
 $ConfigFile = Join-Path $PSScriptRoot 'korebuild.json'
@@ -273,8 +265,7 @@ $MSBuildArguments += "/p:_RunSign=$Sign"
 Import-Module -Force -Scope Local (Join-Path $korebuildPath 'KoreBuild.psd1')
 
 try {
-    $RepoRoot = Resolve-Path $RepoRoot
-    Set-KoreBuildSettings -ToolsSource $ToolsSource -DotNetHome $DotNetHome -RepoPath $RepoRoot -ConfigFile $ConfigFile -CI:$CI
+    Set-KoreBuildSettings -ToolsSource $ToolsSource -DotNetHome $DotNetHome -RepoPath $PSScriptRoot -ConfigFile $ConfigFile -CI:$CI
     if ($ForceCoreMsbuild) {
         $global:KoreBuildSettings.MSBuildType = 'core'
     }

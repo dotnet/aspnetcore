@@ -9,16 +9,6 @@
     <IsShippingPackage>true</IsShippingPackage>
   </PropertyGroup>
 
-  <ItemGroup>
-    <!-- We don't need to code sign these .js files because they are not used in Windows Script Host. -->
-    <ExcludePackageFileFromSigning Include="content\**\*.js" />
-
-    <!-- Similarly, not applicable to sign fonts -->
-    <ExcludePackageFileFromSigning Include="content\**\*.ttf" />
-    <ExcludePackageFileFromSigning Include="content\**\*.otf" />
-  </ItemGroup>
-
-
   <PropertyGroup>
     <!-- Lists the versions of dependencies not built in this repo. Packages produced from this repo should be listed as a PackageVersionVariableReference.  -->
     <GeneratedContentProperties>

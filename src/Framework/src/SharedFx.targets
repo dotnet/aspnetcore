@@ -139,7 +139,7 @@ This targets file should only be imported by .shfxproj files.
       <AllowExplicitVersion>true</AllowExplicitVersion>
     </PackageReference>
 
-    <PackageReference Include="@(Dependency)">
+    <PackageReference Include="@(Dependency);@(ExternalDependency)">
       <IncludeAssets>Runtime;Native</IncludeAssets>
       <Publish>true</Publish>
     </PackageReference>
@@ -332,34 +332,6 @@ This targets file should only be imported by .shfxproj files.
   </Target>
 
   <Target Name="CreateManifestResourceNames" />
-
-  <Target Name="GetArtifactInfo" Returns="@(ArtifactInfo)">
-    <PropertyGroup>
-      <FullPackageOutputPath>$(PackageOutputPath)$(PackageId).$(PackageVersion).nupkg</FullPackageOutputPath>
-      <SymbolsPackageOutputPath>$(PackageOutputPath)$(PackageId).$(PackageVersion).symbols.nupkg</SymbolsPackageOutputPath>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <ArtifactInfo Include="$(FullPackageOutputPath)">
-        <ArtifactType>NuGetPackage</ArtifactType>
-        <PackageId>$(PackageId)</PackageId>
-        <Version>$(PackageVersion)</Version>
-        <RepositoryRoot>$(RepositoryRoot)</RepositoryRoot>
-        <Certificate>$(PackageSigningCertName)</Certificate>
-        <ShouldBeSigned>true</ShouldBeSigned>
-        <IsContainer>true</IsContainer>
-      </ArtifactInfo>
-      <ArtifactInfo Include="$(SymbolsPackageOutputPath)" Condition="'$(IncludeSymbols)' != 'false'">
-        <ArtifactType>NuGetSymbolsPackage</ArtifactType>
-        <PackageId>$(PackageId)</PackageId>
-        <Version>$(PackageVersion)</Version>
-        <RepositoryRoot>$(RepositoryRoot)</RepositoryRoot>
-        <Certificate>$(PackageSigningCertName)</Certificate>
-        <ShouldBeSigned>true</ShouldBeSigned>
-        <IsContainer>true</IsContainer>
-      </ArtifactInfo>
-    </ItemGroup>
-  </Target>
 
   <Target Name="PopulateNuspec" BeforeTargets="GenerateNuspec">
     <PropertyGroup>

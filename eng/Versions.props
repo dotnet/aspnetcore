@@ -58,7 +58,6 @@
     <MicrosoftExtensionsConfigurationXmlPackageVersion>3.0.0-preview.19069.2</MicrosoftExtensionsConfigurationXmlPackageVersion>
     <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>3.0.0-preview.19069.2</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
     <MicrosoftExtensionsDependencyInjectionPackageVersion>3.0.0-preview.19069.2</MicrosoftExtensionsDependencyInjectionPackageVersion>
-    <MicrosoftExtensionsDependencyInjectionSpecificationTestsPackageVersion>3.0.0-preview.19069.2</MicrosoftExtensionsDependencyInjectionSpecificationTestsPackageVersion>
     <MicrosoftExtensionsDiagnosticAdapterPackageVersion>3.0.0-preview.19069.2</MicrosoftExtensionsDiagnosticAdapterPackageVersion>
     <MicrosoftExtensionsDiagnosticsHealthChecksAbstractionsPackageVersion>3.0.0-preview.19069.2</MicrosoftExtensionsDiagnosticsHealthChecksAbstractionsPackageVersion>
     <MicrosoftExtensionsDiagnosticsHealthChecksPackageVersion>3.0.0-preview.19069.2</MicrosoftExtensionsDiagnosticsHealthChecksPackageVersion>
@@ -95,7 +94,6 @@
     <MicrosoftJSInteropPackageVersion>3.0.0-preview.19069.2</MicrosoftJSInteropPackageVersion>
     <!-- Packages from aspnet/EntityFrameworkCore -->
     <dotnetefPackageVersion>3.0.0-preview.19069.2</dotnetefPackageVersion>
-    <MicrosoftEntityFrameworkCoreDesignPackageVersion>3.0.0-preview.19069.2</MicrosoftEntityFrameworkCoreDesignPackageVersion>
     <MicrosoftEntityFrameworkCoreInMemoryPackageVersion>3.0.0-preview.19069.2</MicrosoftEntityFrameworkCoreInMemoryPackageVersion>
     <MicrosoftEntityFrameworkCoreRelationalPackageVersion>3.0.0-preview.19069.2</MicrosoftEntityFrameworkCoreRelationalPackageVersion>
     <MicrosoftEntityFrameworkCoreSqlitePackageVersion>3.0.0-preview.19069.2</MicrosoftEntityFrameworkCoreSqlitePackageVersion>

@@ -13,8 +13,6 @@
 
     <IsFinalBuild Condition="'$(IsFinalBuild)' == ''">false</IsFinalBuild>
 
-    <SubmoduleRoot>$(RepositoryRoot)src\</SubmoduleRoot>
-
     <ArtifactsShippingPackagesDir>$(ArtifactsDir)packages\$(Configuration)\Shipping\</ArtifactsShippingPackagesDir>
     <ArtifactsNonShippingPackagesDir>$(ArtifactsDir)packages\$(Configuration)\NonShipping\</ArtifactsNonShippingPackagesDir>
     <InstallersOutputPath>$(ArtifactsDir)installers\$(Configuration)\</InstallersOutputPath>
@@ -166,10 +164,7 @@
     </Otherwise>
   </Choose>
 
+  <Import Project="..\eng\Versions.props" />
   <Import Project="runtimes.props" />
-  <Import Project="sources.props" />
-  <Import Project="external-dependencies.props" />
-  <Import Project="artifacts.props" />
-  <Import Project="submodules.props" />
   <Import Project="CodeSign.props" />
 </Project>

@@ -21,10 +21,6 @@
       <Uri>https://github.com/aspnet/EntityFrameworkCore</Uri>
       <Sha>4c985938cf66e449802ce4600917a181a80e7159</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Design" Version="3.0.0-preview.19069.2">
-      <Uri>https://github.com/aspnet/EntityFrameworkCore</Uri>
-      <Sha>4c985938cf66e449802ce4600917a181a80e7159</Sha>
-    </Dependency>
     <Dependency Name="Microsoft.EntityFrameworkCore.InMemory" Version="3.0.0-preview.19069.2">
       <Uri>https://github.com/aspnet/EntityFrameworkCore</Uri>
       <Sha>4c985938cf66e449802ce4600917a181a80e7159</Sha>
@@ -130,10 +126,6 @@
       <Sha>36471a9622b74a43185915550907aa28605be099</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.0.0-preview.19069.2">
-      <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>36471a9622b74a43185915550907aa28605be099</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.Extensions.DependencyInjection.Specification.Tests" Version="3.0.0-preview.19069.2">
       <Uri>https://github.com/aspnet/Extensions</Uri>
       <Sha>36471a9622b74a43185915550907aa28605be099</Sha>
     </Dependency>
