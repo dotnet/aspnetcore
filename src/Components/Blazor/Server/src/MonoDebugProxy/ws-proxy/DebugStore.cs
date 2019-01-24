@@ -6,6 +6,7 @@ using Mono.Cecil.Cil;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 
 namespace WsProxy {
 	internal class BreakPointRequest {
@@ -18,30 +19,37 @@ namespace WsProxy {
 			return $"BreakPointRequest Assembly: {Assembly} File: {File} Line: {Line} Column: {Column}";
 		}
 
-		public static BreakPointRequest Parse (JObject args)
+		public static BreakPointRequest Parse (JObject args, DebugStore store)
 		{
 			if (args == null)
 				return null;
 
-			var url = args? ["url"]?.Value<string> ();
-			if (!url.StartsWith ("dotnet://", StringComparison.InvariantCulture))
-				return null;
+            var line = args?["lineNumber"]?.Value<int>();
+            var column = args?["columnNumber"]?.Value<int>();
 
-			var parts = url.Substring ("dotnet://".Length).Split ('/');
-			if (parts.Length != 2)
-				return null;
+            SourceFile file = null;
 
-			var line = args? ["lineNumber"]?.Value<int> ();
-			var column = args? ["columnNumber"]?.Value<int> ();
-			if (line == null || column == null)
-				return null;
+            // Requests from VS specify urlRegex
+            var urlRegex = args?["urlRegex"]?.Value<string>();
+            if (urlRegex != null)
+            {
+                file = store.GetFileByUrlRegex(urlRegex);
+            }
 
-			return new BreakPointRequest () {
-				Assembly = parts [0],
-				File = parts [1],
-				Line = line.Value,
-				Column = column.Value
-			};
+            // Requests from Chromium specify url
+            var url = args?["url"]?.Value<string>();
+            if (url != null)
+            {
+                file = store.GetFileByUrl(url);
+            }
+
+            return file == null ? null : new BreakPointRequest()
+            {
+                Assembly = file.AssemblyName,
+                File = file.FileName,
+                Line = line.Value,
+                Column = column.Value
+            };
 		}
 	}
 
@@ -365,14 +373,28 @@ namespace WsProxy {
 		{
 			this.methods.Add (mi);
 		}
+        public string AssemblyName => assembly.Name;
 		public string FileName => Path.GetFileName (doc.Url);
-		public string Url => $"dotnet://{assembly.Name}/{FileName}";
-		public string DocHashCode => "abcdee" + id;
+        public string Url => LocalPathToFileUrl(doc.Url);
+
+        public string DocHashCode => "abcdee" + id;
 		public SourceId SourceId => new SourceId (assembly.Id, this.id);
 		public string LocalPath => doc.Url;
 
 		public IEnumerable<MethodInfo> Methods => this.methods;
-	}
+
+
+
+        private static string LocalPathToFileUrl(string localPath)
+        {
+            if (!localPath.StartsWith('/'))
+            {
+                localPath = "/" + localPath;
+            }
+
+            return $"file://{localPath.Replace('\\', '/')}";
+        }
+    }
 
 	internal class DebugStore {
 		List<AssemblyInfo> assemblies = new List<AssemblyInfo> ();
@@ -524,5 +546,16 @@ namespace WsProxy {
 		{
 			return GetFileById (location.Id).Url;
 		}
-	}
+
+        public SourceFile GetFileByUrlRegex(string urlRegex)
+        {
+            var regex = new Regex(urlRegex);
+            return AllSources().FirstOrDefault(file => regex.IsMatch(file.Url));
+        }
+
+        public SourceFile GetFileByUrl(string url)
+        {
+            return AllSources().FirstOrDefault(file => file.Url == url);
+        }
+    }
 }
