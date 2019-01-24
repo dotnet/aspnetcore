@@ -53,7 +53,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var connectionFeatures = new FeatureCollection();
             connectionFeatures.Set(Mock.Of<IConnectionLifetimeFeature>());
 
-            _serviceContext = new TestServiceContext();
+            _serviceContext = new TestServiceContext()
+            {
+                Scheduler = PipeScheduler.Inline
+            };
+
             _timeoutControl = new Mock<ITimeoutControl>();
             _http1ConnectionContext = new HttpConnectionContext
             {
@@ -722,6 +726,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Assert.False(original.IsCancellationRequested);
             Assert.False(_http1Connection.RequestAborted.IsCancellationRequested);
+        }
+
+        [Fact]
+        public void RequestAbortedTokenIsUsableAfterCancellation()
+        {
+            var originalToken = _http1Connection.RequestAborted;
+            var originalRegistration = originalToken.Register(() => { });
+
+            _http1Connection.Abort(new ConnectionAbortedException());
+
+            // The following line will throw an ODE because the original CTS backing the token has been diposed.
+            // See https://github.com/aspnet/AspNetCore/pull/4447 for the history behind this test.
+            //Assert.True(originalToken.WaitHandle.WaitOne(TestConstants.DefaultTimeout));
+            Assert.True(_http1Connection.RequestAborted.WaitHandle.WaitOne(TestConstants.DefaultTimeout));
+
+#if NETCOREAPP2_2
+            Assert.Equal(originalToken, originalRegistration.Token);
+#elif NET461
+#else
+#error Target framework needs to be updated
+#endif
         }
 
         [Fact]
