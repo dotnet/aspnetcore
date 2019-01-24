@@ -276,10 +276,10 @@ namespace Microsoft.AspNetCore.Http.Connections
                     case JsonTokenType.PropertyName:
                         var memberName = reader.ValueSpan;
 
-                        if (ArrayEqual(memberName, TransportPropertyNameBytes))
+                        if (memberName.SequenceEqual(TransportPropertyNameBytes))
                         {
                             availableTransport.Transport = ReadAsString(ref reader, TransportPropertyNameBytes);
-                        } else if (ArrayEqual(memberName, TransferFormatsPropertyNameBytes))
+                        } else if (memberName.SequenceEqual(TransferFormatsPropertyNameBytes))
                         {
                             CheckRead(ref reader);
                             EnsureArrayStart(ref reader);
@@ -371,24 +371,6 @@ namespace Microsoft.AspNetCore.Http.Connections
             }
         }
 
-        private static bool ArrayEqual(ReadOnlySpan<byte> left, byte[] right)
-        {
-            if (left.Length != right.Length)
-            {
-                return false;
-            }
-
-            for (var i = 0; i < left.Length; ++i)
-            {
-                if (left[i] != right[i])
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
         private static void Skip(ref Utf8JsonReader reader)
         {
             if (reader.TokenType == JsonTokenType.PropertyName)
@@ -408,7 +390,6 @@ namespace Microsoft.AspNetCore.Http.Connections
         private static string ReadAsString(ref Utf8JsonReader reader, byte[] propertyName)
         {
             reader.Read();
-
             if (reader.TokenType != JsonTokenType.String)
             {
                 throw new InvalidDataException($"Expected '{Encoding.UTF8.GetString(propertyName)}' to be of type {JsonTokenType.String}.");
