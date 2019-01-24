@@ -254,6 +254,11 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 result,
                 tagHelperOutputCacheFile,
                 @"""Name"":""MvcWithComponents.Views.Shared.NavMenu""");
+
+            Assert.FileContains(
+                result,
+                tagHelperOutputCacheFile,
+                @"""Name"":""MvcWithComponents.SimpleTagHelper""");
         }
 
         private class TestProjectDirectory : ProjectDirectory

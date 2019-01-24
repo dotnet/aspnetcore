@@ -70,14 +70,15 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
-  <Target
+   <!-- Force a Compile to happen if we are not doing a components build. This keeps parity with 2.x CodeGeneration targets -->
+   <Target
     Name="_RazorEnsureCompiled"
-    Condition="!Exists('$(_RazorGenerateTargetReferenceAssembly)')"
+    Condition="'$(_RazorComponentDeclarationAssemblyFullPath)' == ''"
     DependsOnTargets="Compile" />
 
   <Target
     Name="ResolveTagHelperRazorGenerateInputs"
-    Inputs="$(MSBuildAllProjects);@(RazorReferencePath);$(_RazorGenerateTargetReferenceAssembly)"
+    Inputs="$(MSBuildAllProjects);@(RazorReferencePath)"
     DependsOnTargets="_RazorEnsureCompiled"
     Outputs="$(_RazorTagHelperInputCache)"
     Condition="'@(RazorGenerateWithTargetPath)' != ''">
@@ -105,7 +106,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       Version="$(RazorLangVersion)"
       Configuration="@(ResolvedRazorConfiguration)"
       Extensions="@(ResolvedRazorExtension)"
-      Assemblies="@(RazorReferencePath);$(_RazorGenerateTargetReferenceAssembly)"
+      Assemblies="@(RazorReferencePath)"
       ProjectRoot="$(MSBuildProjectDirectory)"
       TagHelperManifest="$(_RazorTagHelperOutputCache)">
       <Output

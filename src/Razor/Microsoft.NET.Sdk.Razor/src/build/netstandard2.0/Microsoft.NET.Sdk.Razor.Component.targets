@@ -253,7 +253,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- Point to the declaration assembly to perform taghelper discovery -->
     <PropertyGroup>
-      <_RazorGenerateTargetReferenceAssembly>@(_RazorComponentDeclarationAssembly->Metadata('FullPath'))</_RazorGenerateTargetReferenceAssembly>
+      <_RazorComponentDeclarationAssemblyFullPath>@(_RazorComponentDeclarationAssembly->Metadata('FullPath'))</_RazorComponentDeclarationAssemblyFullPath>
     </PropertyGroup>
   </Target>
 

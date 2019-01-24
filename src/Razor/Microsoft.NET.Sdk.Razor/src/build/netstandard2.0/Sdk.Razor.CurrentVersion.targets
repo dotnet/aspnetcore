@@ -74,7 +74,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PrepareForRazorCompileDependsOn>
 
     <ResolveRazorCompileInputsDependsOn>
-      ResolveRazorEmbeddedResources
+      ResolveRazorEmbeddedResources;
+      _FixupRazorReferencePathForRazorCompile;
     </ResolveRazorCompileInputsDependsOn>
 
     <RazorCompileDependsOn>
@@ -471,22 +472,33 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target
     Name="ResolveAssemblyReferenceRazorGenerateInputs"
     DependsOnTargets="ResolveReferences">
+
     <ItemGroup>
       <RazorReferencePath Include="@(ReferencePath)"/>
-    </ItemGroup>
 
-    <PropertyGroup>
       <!--
-        Assembly of the project used as input in RazorGenerate. This property is overwritten to point to the definition assembly when components are present.
+      RazorReferencePath must include the closure of assemblies required for tag helper discovery to keep parity with the 2.1 Razor.Design package.
+      Use the component declaration assembly, if available or the IntermediateAssembly if no components are involved in the build.
       -->
-      <_RazorGenerateTargetReferenceAssembly Condition="'$(_RazorGenerateTargetReferenceAssembly)'==''">
-        @(IntermediateAssembly->Metadata('FullPath'))
-      </_RazorGenerateTargetReferenceAssembly>
+      <RazorReferencePath
+        Include="$(_RazorComponentDeclarationAssemblyFullPath)"
+        Condition="'$(_RazorComponentDeclarationAssemblyFullPath)' != ''" />
 
-      <_RazorCompileTargetReferenceAssembly Condition="'$(_RazorCompileTargetReferenceAssembly)'==''">
-        @(IntermediateAssembly->Metadata('FullPath'))
-      </_RazorCompileTargetReferenceAssembly>
-    </PropertyGroup>
+      <RazorReferencePath
+        Include="@(IntermediateAssembly->Metadata('FullPath'))"
+        Condition="'$(_RazorComponentDeclarationAssemblyFullPath)' == ''" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_FixupRazorReferencePathForRazorCompile" Condition="'$(_RazorComponentDeclarationAssemblyFullPath)' != ''">
+    <!--
+      ResolveAssemblyReferenceRazorGenerateInputs may have added the component declaration assembly to RazorReferencePath to perform tag helper discovery.
+      However, we want to compile the Razor assembly against the actual output of the project build i.e. the IntermediateAssembly.
+    -->
+    <ItemGroup>
+      <RazorReferencePath Remove="$(_RazorComponentDeclarationAssemblyFullPath)" />
+      <RazorReferencePath Include="@(IntermediateAssembly->Metadata('FullPath'))" />
+    </ItemGroup>
   </Target>
 
   <!--
