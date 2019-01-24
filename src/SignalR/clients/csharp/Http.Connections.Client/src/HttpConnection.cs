@@ -440,10 +440,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                     {
                         response.EnsureSuccessStatusCode();
                         NegotiationResponse negotiateResponse;
-                        using (var responseStream = await response.Content.ReadAsStreamAsync())
-                        {
-                            negotiateResponse = NegotiateProtocol.ParseResponse(responseStream);
-                        }
+                        var responseStream = await response.Content.ReadAsByteArrayAsync();
+                        negotiateResponse = NegotiateProtocol.ParseResponse(responseStream);
                         if (!string.IsNullOrEmpty(negotiateResponse.Error))
                         {
                             throw new Exception(negotiateResponse.Error);

@@ -6,6 +6,7 @@
     <RootNamespace>Microsoft.AspNetCore.Http.Connections</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <IsShippingPackage>true</IsShippingPackage>
+    <NoWarn>3021;1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,5 +18,8 @@
     <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
     <Reference Include="Newtonsoft.Json" />
     <Reference Include="System.Buffers" />
+    <PackageReference Include="Microsoft.Bcl.Json.Sources" Version="4.6.0-preview.19073.1">
+      <PrivateAssets>All</PrivateAssets>
+    </PackageReference>
   </ItemGroup>
 </Project>
