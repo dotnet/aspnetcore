@@ -20,10 +20,8 @@
 
   <ItemGroup>
     <Reference Include="AngleSharp" />
-    <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" />
-    <Reference Include="Selenium.Support" />
-    <Reference Include="Selenium.WebDriver.MicrosoftDriver" />
-    <Reference Include="Selenium.WebDriver" />
+    <Reference Include="Microsoft.AspNetCore.Server.IntegrationTesting" />
+    <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>

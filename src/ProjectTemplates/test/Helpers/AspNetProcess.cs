@@ -72,29 +72,11 @@ namespace Templates.Test.Helpers
             var config = "Release";
 #endif
             var solutionDir = GetSolutionDir();
-            return Path.Combine(solutionDir, "..", "..", "artifacts", config, "packages", "product");
+            return Path.Combine(solutionDir, "..", "..", "artifacts", "packages", config, "Shipping");
         }
 
         public void Dispose()
         {
-            // Wait until the app is accepting HTTP requests
-            output.WriteLine("Waiting until ASP.NET application is accepting connections...");
-            var listeningMessage = _process
-                .OutputLinesAsEnumerable
-                .Where(line => line != null)
-                .FirstOrDefault(line => line.Trim().StartsWith(ListeningMessagePrefix, StringComparison.Ordinal));
-            Assert.True(!string.IsNullOrEmpty(listeningMessage), $"ASP.NET process exited without listening for requests.\nOutput: { _process.Output }\nError: { _process.Error }");
-            listeningMessage = listeningMessage.Trim();
-
-            // Verify we have a valid URL to make requests to
-            var listeningUrlString = listeningMessage.Substring(ListeningMessagePrefix.Length);
-            output.WriteLine($"Detected that ASP.NET application is accepting connections on: {listeningUrlString}");
-            listeningUrlString = listeningUrlString.Substring(0, listeningUrlString.IndexOf(':')) +
-                "://localhost" +
-                listeningUrlString.Substring(listeningUrlString.LastIndexOf(':'));
-
-            output.WriteLine("Sending requests to " + listeningUrlString);
-            return new Uri(listeningUrlString, UriKind.Absolute);
             _process.Dispose();
         }
 
