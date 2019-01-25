@@ -21,7 +21,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             _output = output;
         }
 
-        private readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(10);
+        private readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(60);
         private readonly ITestOutputHelper _output;
 
         [Theory]
