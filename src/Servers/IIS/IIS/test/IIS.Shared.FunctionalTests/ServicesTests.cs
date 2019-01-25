@@ -3,7 +3,6 @@
 
 using System;
 using System.IO;
-using System.Linq;
 using System.ServiceProcess;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,13 +12,12 @@ using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
-using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace IIS.FunctionalTests
 {
     [Collection(PublishedSitesCollection.Name)]
-    public class ApplicationInitializationTests : LogFileTestBase
+    public class ApplicationInitializationTests : IISFunctionalTestBase
     {
         private readonly PublishedSitesFixture _fixture;
 
@@ -56,35 +54,25 @@ namespace IIS.FunctionalTests
         [InlineData(HostingModel.OutOfProcess)]
         public async Task ApplicationInitializationPageIsRequested(HostingModel hostingModel)
         {
-            try
+            // This test often hits a memory leak in warmup.dll module, it has been reported to IIS team
+            using (AppVerifier.Disable(DeployerSelector.ServerType, 0x900))
             {
-                // This test often hits a memory leak in warmup.dll module, it has been reported to IIS team
-                using (AppVerifier.Disable(DeployerSelector.ServerType, 0x900))
-                {
-                    var baseDeploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel, publish: true);
-                    EnablePreload(baseDeploymentParameters);
-                    baseDeploymentParameters.EnableLogging(_logFolderPath);
-                    baseDeploymentParameters.ServerConfigActionList.Add(
-                        (config, _) => {
-                            config
-                                .RequiredElement("system.webServer")
-                                .GetOrAdd("applicationInitialization")
-                                .GetOrAdd("add", "initializationPage", "/CreateFile");
-                        });
+                var baseDeploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel, publish: true);
+                EnablePreload(baseDeploymentParameters);
 
-                    var result = await DeployAsync(baseDeploymentParameters);
+                baseDeploymentParameters.ServerConfigActionList.Add(
+                    (config, _) => {
+                        config
+                            .RequiredElement("system.webServer")
+                            .GetOrAdd("applicationInitialization")
+                            .GetOrAdd("add", "initializationPage", "/CreateFile");
+                    });
 
-                    await Helpers.Retry(async () => await File.ReadAllTextAsync(Path.Combine(result.ContentRoot, "Started.txt")), TimeoutExtensions.DefaultTimeoutValue);
-                    await Task.Delay(1000);
-                    StopServer();
-                    EventLogHelpers.VerifyEventLogEvent(result, EventLogHelpers.Started(result));
-                }
-            }
-            finally
-            {
-                var fileInDirectory = Directory.GetFiles(_logFolderPath).First();
-                var contents = Helpers.ReadAllTextFromFile(fileInDirectory, Logger);
-                Logger.LogInformation(contents);
+                var result = await DeployAsync(baseDeploymentParameters);
+
+                await Helpers.Retry(async () => await File.ReadAllTextAsync(Path.Combine(result.ContentRoot, "Started.txt")), TimeoutExtensions.DefaultTimeoutValue);
+                StopServer();
+                EventLogHelpers.VerifyEventLogEvent(result, EventLogHelpers.Started(result));
             }
         }
 
