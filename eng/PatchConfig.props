@@ -26,7 +26,6 @@ Later on, this will be checked using this condition:
       Microsoft.AspNetCore.Mvc.Core;
       Microsoft.AspNetCore.Routing;
       Microsoft.AspNetCore.Server.IIS;
-      Microsoft.AspNetCore.Server.Kestrel.Core;
       java:signalr;
     </PackagesInPatch>
   </PropertyGroup>

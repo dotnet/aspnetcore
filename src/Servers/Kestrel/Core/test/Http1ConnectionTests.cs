@@ -729,14 +729,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public void RequestAbortedTokenIsFullyUsableAfterCancellation()
+        public void RequestAbortedTokenIsUsableAfterCancellation()
         {
             var originalToken = _http1Connection.RequestAborted;
             var originalRegistration = originalToken.Register(() => { });
 
             _http1Connection.Abort(new ConnectionAbortedException());
 
-            Assert.True(originalToken.WaitHandle.WaitOne(TestConstants.DefaultTimeout));
+            // The following line will throw an ODE because the original CTS backing the token has been diposed.
+            // See https://github.com/aspnet/AspNetCore/pull/4447 for the history behind this test.
+            //Assert.True(originalToken.WaitHandle.WaitOne(TestConstants.DefaultTimeout));
             Assert.True(_http1Connection.RequestAborted.WaitHandle.WaitOne(TestConstants.DefaultTimeout));
 
             Assert.Equal(originalToken, originalRegistration.Token);
