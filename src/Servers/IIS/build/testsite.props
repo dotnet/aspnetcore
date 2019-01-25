@@ -91,6 +91,6 @@
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="Publish"
              RemoveProperties="Platform;PlatformTarget"
-             Properties="_InsidePublishTestsAssets=True;PublishDir=$(PublishDir)%(TestAssetPublishProfile.Identity)/;%(TestAssetPublishProfile.Properties)" />
+             Properties="ReferenceTestTasks=false;_InsidePublishTestsAssets=True;PublishDir=$(PublishDir)%(TestAssetPublishProfile.Identity)/;%(TestAssetPublishProfile.Properties)" />
   </Target>
 </Project>
