@@ -841,7 +841,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 else
                 {
                     CheckLastWrite();
-                    return Output.WriteDataAsync(data.Span, cancellationToken: cancellationToken);
+                    return WriteDataAsync(data, cancellationToken: cancellationToken);
                 }
             }
             else
@@ -872,7 +872,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 else
                 {
                     CheckLastWrite();
-                    await Output.WriteDataAsync(data.Span, cancellationToken: cancellationToken);
+                    await WriteDataAsync(data, cancellationToken);
                 }
             }
             else
@@ -880,6 +880,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 HandleNonBodyResponseWrite();
                 await FlushAsyncInternal(cancellationToken);
             }
+        }
+
+        private Task WriteDataAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+        {
+            _requestProcessingStatus = RequestProcessingStatus.HeadersFlushed;
+            return Output.WriteDataAsync(data.Span, cancellationToken: cancellationToken);
         }
 
         private void VerifyAndUpdateWrite(int count)
@@ -954,8 +960,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private Task WriteChunkedAsync(ReadOnlySpan<byte> data, CancellationToken cancellationToken)
         {
+            _requestProcessingStatus = RequestProcessingStatus.HeadersFlushed;
             return Output.WriteChunkAsync(data, cancellationToken);
         }
+
 
         public void ProduceContinue()
         {
