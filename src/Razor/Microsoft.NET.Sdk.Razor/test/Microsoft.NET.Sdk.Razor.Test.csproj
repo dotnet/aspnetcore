@@ -29,7 +29,6 @@
   <!-- The test projects rely on these binaries being available -->
   <ItemGroup>
     <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="$(SystemDiagnosticsDiagnosticSourcePackageVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Html.Abstractions" Version="$(MicrosoftAspNetCoreHtmlAbstractionsPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>
