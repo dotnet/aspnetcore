@@ -466,8 +466,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
         {
             Logger.LogInformation($"Sending shutdown request to {pid}");
             var found = false;
-            WindowsNativeMethods.EnumWindows ((ptr, param) => {
-
+            WindowsNativeMethods.EnumWindows((ptr, param) => {
                 WindowsNativeMethods.GetWindowThreadProcessId(ptr, out var windowProcessId);
                 if (pid == windowProcessId)
                 {
