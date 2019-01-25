@@ -146,7 +146,7 @@ $backupName = Start-Backup $ciServer $ciUsername $ciPassword
 
 # Wait for the backup to finish
 while ((Get-BackupStatus $ciServer $ciUsername $ciPassword) -eq "Running") {
-    Start-Sleep -Seconds 60
+    Start-Sleep -Seconds 600
 }
 
 Save-TeamCityBackup $ciServer $backupName $ciUsername $ciPassword "$PSScriptRoot/"
