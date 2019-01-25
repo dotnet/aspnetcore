@@ -446,10 +446,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
         {
             internal delegate bool EnumWindowProc(IntPtr hwnd, IntPtr lParam);
             [DllImport("user32.dll")]
-            internal static extern IntPtr GetTopWindow(IntPtr hWnd);
-            [DllImport("user32.dll")]
-            internal static extern IntPtr GetWindow(IntPtr hWnd, uint uCmd);
-            [DllImport("user32.dll")]
             internal static extern uint GetWindowThreadProcessId(IntPtr hwnd, out uint lpdwProcessId);
             [DllImport("user32.dll")]
             internal static extern bool PostMessage(HandleRef hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
