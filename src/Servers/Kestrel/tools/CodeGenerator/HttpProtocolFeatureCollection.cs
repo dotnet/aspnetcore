@@ -17,7 +17,6 @@ namespace CodeGenerator
                 "IServiceProvidersFeature",
                 "IHttpRequestLifetimeFeature",
                 "IHttpConnectionFeature",
-                "IHttpResponseStartFeature"
             };
 
             var commonFeatures = new[]
@@ -41,6 +40,7 @@ namespace CodeGenerator
                 "IHttpMinRequestBodyDataRateFeature",
                 "IHttpMinResponseDataRateFeature",
                 "IHttpBodyControlFeature",
+                "IHttpResponseStartFeature"
             };
 
             var rareFeatures = new[]
