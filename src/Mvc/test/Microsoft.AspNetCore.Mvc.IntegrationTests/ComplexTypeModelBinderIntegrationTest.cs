@@ -3141,6 +3141,66 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal("10,20", entry.RawValue);
         }
 
+        private class Person5
+        {
+            public string Name { get; set; }
+            public IFormFile Photo { get; set; }
+        }
+
+        // Regression test for #4802.
+        [Fact]
+        public async Task ComplexTypeModelBinder_FailsWhenGreedyBindersFail()
+        {
+            // Arrange
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(IList<Person5>),
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                SetFormFileBodyContent(request, "Hello world!", "[0].Photo");
+
+                // CollectionModelBinder binds an empty collection when value providers are all empty.
+                request.QueryString = new QueryString("?a=b");
+            });
+
+            var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
+            var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
+
+            // Act
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<List<Person5>>(modelBindingResult.Model);
+            var person = Assert.Single(model);
+            Assert.Null(person.Name);
+            Assert.NotNull(person.Photo);
+            using (var reader = new StreamReader(person.Photo.OpenReadStream()))
+            {
+                Assert.Equal("Hello world!", await reader.ReadToEndAsync());
+            }
+
+            Assert.True(modelState.IsValid);
+            var state = Assert.Single(modelState);
+            Assert.Equal("[0].Photo", state.Key);
+            Assert.Null(state.Value.AttemptedValue);
+            Assert.Empty(state.Value.Errors);
+            Assert.Null(state.Value.RawValue);
+        }
+
         private static void SetJsonBodyContent(HttpRequest request, string content)
         {
             var stream = new MemoryStream(new UTF8Encoding(encoderShouldEmitUTF8Identifier: false).GetBytes(content));

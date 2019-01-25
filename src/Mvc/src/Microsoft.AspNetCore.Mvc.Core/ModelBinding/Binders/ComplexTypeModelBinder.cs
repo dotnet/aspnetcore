@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -18,9 +19,18 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     /// </summary>
     public class ComplexTypeModelBinder : IModelBinder
     {
-        internal const int PropertyDataNotAvailable = 0;
-        internal const int PropertyDataMayBeAvailable = 1;
-        internal const int PropertyDataAvailable = 2;
+        // Don't want a new public enum because communication between the private and internal methods of this class
+        // should not be exposed. Can't use an internal enum because types of [TheoryData] values must be public.
+
+        // Model contains only properties that are expected to bind from value providers and no value provider has
+        // matching data.
+        internal const int NoDataAvailable = 0;
+        // If model contains properties that are expected to bind from value providers, no value provider has matching
+        // data. Remaining (greedy) properties might bind successfully.
+        internal const int GreedyPropertiesMayHaveData = 1;
+        // Model contains at least one property that is expected to bind from value providers and a value provider has
+        // matching data.
+        internal const int ValueProviderDataAvailable = 2;
 
         private readonly IDictionary<ModelMetadata, IModelBinder> _propertyBinders;
         private readonly ILogger _logger;
@@ -97,7 +107,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             _logger.AttemptingToBindModel(bindingContext);
 
             var propertyData = CanCreateModel(bindingContext);
-            if (propertyData == PropertyDataNotAvailable)
+            if (propertyData == NoDataAvailable)
             {
                 return Task.CompletedTask;
             }
@@ -109,6 +119,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
         private async Task BindModelCoreAsync(ModelBindingContext bindingContext, int propertyData)
         {
+            Debug.Assert(propertyData == GreedyPropertiesMayHaveData || propertyData == ValueProviderDataAvailable);
+
             // Create model first (if necessary) to avoid reporting errors about properties when activation fails.
             if (bindingContext.Model == null)
             {
@@ -182,11 +194,29 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             _logger.DoneAttemptingToBindModel(bindingContext);
 
-            // Have all binders failed because no data was available? Idea is to continue if for data was available but
-            // the binders failed due to (say) conversion errors.
+            // Have all binders failed because no data was available?
+            //
+            // If CanCreateModel determined a property has data, failures are likely due to conversion errors. For
+            // example, user may submit ?[0].id=twenty&[1].id=twenty-one&[2].id=22 for a collection of a complex type
+            // with an int id property. In that case, the bound model should be [ {}, {}, { id = 22 }] and
+            // ModelState should contain errors about both [0].id and [1].id. Do not inform higher-level binders of the
+            // failure in this and similar cases.
+            //
+            // If CanCreateModel could not find data for non-greedy properties, failures indicate greedy binders were
+            // unsuccessful. For example, user may submit file attachments [0].File and [1].File but not [2].File for
+            // a collection of a complex type containing an IFormFile property. In that case, we have exhausted the
+            // attached files and checking for [2].File would be pointless. (And, if it had a point, would we stop
+            // after 10 failures, 100, or more -- all adding redundant errors to ModelState?) Inform higher-level
+            // binders of the failure.
+            //
+            // Required properties do not change the logic below. Missed required properties cause ModelState errors
+            // but do not necessarily prevent further attempts to bind.
+            //
+            // This logic is intended to maximize correctness but does not avoid infinite loops or recursion when a
+            // greedy model binder succeeds unconditionally.
             if (!bindingContext.IsTopLevelObject &&
                 !propertyBindingSucceeded &&
-                propertyData == PropertyDataMayBeAvailable)
+                propertyData == GreedyPropertiesMayHaveData)
             {
                 bindingContext.Result = ModelBindingResult.Failed();
                 return;
@@ -261,14 +291,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var bindingSource = bindingContext.BindingSource;
             if (!isTopLevelObject && bindingSource != null && bindingSource.IsGreedy)
             {
-                return PropertyDataNotAvailable;
+                return NoDataAvailable;
             }
 
             // Create the object if:
             // 1. It is a top level model.
             if (isTopLevelObject)
             {
-                return PropertyDataAvailable;
+                return ValueProviderDataAvailable;
             }
 
             // 2. Any of the model properties can be bound.
@@ -282,7 +312,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             if (bindingContext.ModelMetadata.Properties.Count == 0)
             {
                 _logger.NoPublicSettableProperties(bindingContext);
-                return PropertyDataNotAvailable;
+                return NoDataAvailable;
             }
 
             // We want to check to see if any of the properties of the model can be bound using the value providers or
@@ -337,19 +367,19 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                     // If any property can be bound from a value provider, then success.
                     if (bindingContext.ValueProvider.ContainsPrefix(bindingContext.ModelName))
                     {
-                        return PropertyDataAvailable;
+                        return ValueProviderDataAvailable;
                     }
                 }
             }
 
             if (hasGreedyBinders)
             {
-                return PropertyDataMayBeAvailable;
+                return GreedyPropertiesMayHaveData;
             }
 
             _logger.CannotBindToComplexType(bindingContext);
 
-            return PropertyDataNotAvailable;
+            return NoDataAvailable;
         }
 
         // Internal for tests
