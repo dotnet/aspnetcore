@@ -12,7 +12,7 @@
         "Windows"
       ],
       "includePrerelease": true,
-      "versionRange": "[15.8, 16.0)",
+      "versionRange": "[16.0,)",
       "requiredWorkloads": [
         "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
         "Microsoft.VisualStudio.Component.VC.ATL",

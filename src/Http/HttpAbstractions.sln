@@ -1,8 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.136
-MinimumVisualStudioVersion = 15.0.26124.0
+# Visual Studio 16
+VisualStudioVersion = 16.0.0.0
+MinimumVisualStudioVersion = 16.0.0.0
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Authentication.Abstractions", "Authentication.Abstractions", "{587C3D55-6092-4B86-99F5-E9772C9C1ADB}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.Abstractions", "Authentication.Abstractions\src\Microsoft.AspNetCore.Authentication.Abstractions.csproj", "{565B7B00-96A1-49B8-9753-9E045C6527A2}"

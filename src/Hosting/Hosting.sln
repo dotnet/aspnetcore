@@ -1,8 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27428.2037
-MinimumVisualStudioVersion = 10.0.40219.1
+# Visual Studio 16
+VisualStudioVersion = 16.0.0.0
+MinimumVisualStudioVersion = 16.0.0.0
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Hosting", "Hosting\src\Microsoft.AspNetCore.Hosting.csproj", "{254295FC-35AF-4A45-A6F4-FF93C1B7CD8D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Hosting.Tests", "Hosting\test\Microsoft.AspNetCore.Hosting.Tests.csproj", "{B2A631BD-744E-42FB-BA79-8F22BB27DA65}"

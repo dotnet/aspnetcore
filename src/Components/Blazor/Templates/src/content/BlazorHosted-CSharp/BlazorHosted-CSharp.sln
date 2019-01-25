@@ -1,7 +1,7 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2027
-MinimumVisualStudioVersion = 15.0.26124.0
+# Visual Studio 16
+VisualStudioVersion = 16.0.0.0
+MinimumVisualStudioVersion = 16.0.0.0
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorHosted-CSharp.Server", "BlazorHosted-CSharp.Server\BlazorHosted-CSharp.Server.csproj", "{650B3CE7-2E93-4CC4-9F46-466686815EAA}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorHosted-CSharp.Client", "BlazorHosted-CSharp.Client\BlazorHosted-CSharp.Client.csproj", "{5990939C-7E7B-4CFA-86FF-44CA5756498A}"

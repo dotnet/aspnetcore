@@ -1,8 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26124.0
-MinimumVisualStudioVersion = 15.0.26124.0
+# Visual Studio 16
+VisualStudioVersion = 16.0.0.0
+MinimumVisualStudioVersion = 16.0.0.0
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Connections.Abstractions", "Connections.Abstractions\src\Microsoft.AspNetCore.Connections.Abstractions.csproj", "{710E0641-FFF4-4994-A7FA-B22A550A8F20}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Core", "Kestrel\Core\src\Microsoft.AspNetCore.Server.Kestrel.Core.csproj", "{5F6D1661-652E-4DF3-8A81-6EBE4208CE1A}"
