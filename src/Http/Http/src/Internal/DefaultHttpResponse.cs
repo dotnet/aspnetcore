@@ -144,14 +144,14 @@ namespace Microsoft.AspNetCore.Http.Internal
             Headers[HeaderNames.Location] = location;
         }
 
-        public override Task StartAsync(bool flush, CancellationToken token)
+        public override Task StartAsync(CancellationToken cancellationToken = default)
         {
             if (HttpResponseStartFeature == null)
             {
-                return HttpResponseFeature.Body.FlushAsync(token);
+                return HttpResponseFeature.Body.FlushAsync(cancellationToken);
             }
 
-            return HttpResponseStartFeature.StartAsync(flush, token);
+            return HttpResponseStartFeature.StartAsync();
         }
 
         struct FeatureInterfaces

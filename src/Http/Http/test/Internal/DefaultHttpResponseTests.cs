@@ -102,20 +102,18 @@ namespace Microsoft.AspNetCore.Http.Internal
             Assert.Throws<ArgumentNullException>(() => context.Response.BodyPipe = null);
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task ResponseStart_CallsFeatureIfSet(bool flush)
+        [Fact]
+        public async Task ResponseStart_CallsFeatureIfSet()
         {
             var features = new FeatureCollection();
             var mock = new Mock<IHttpResponseStartFeature>();
-            mock.Setup(o => o.StartAsync(flush, It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+            mock.Setup(o => o.StartAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
             features.Set(mock.Object);
 
             var context = new DefaultHttpContext(features);
-            await context.Response.StartAsync(flush: flush);
+            await context.Response.StartAsync();
 
-            mock.Verify(m => m.StartAsync(flush, default), Times.Once());
+            mock.Verify(m => m.StartAsync(default), Times.Once());
         }
 
         [Fact]
@@ -125,7 +123,7 @@ namespace Microsoft.AspNetCore.Http.Internal
             var mock = new FlushAsyncCheckStream();
             context.Response.Body = mock;
 
-            await context.Response.StartAsync(flush: false);
+            await context.Response.StartAsync(default);
 
             Assert.True(mock.IsCalled);
         }

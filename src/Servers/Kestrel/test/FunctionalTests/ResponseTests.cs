@@ -886,6 +886,33 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             Assert.False(requestAborted);
         }
 
+        [Theory, MemberData(nameof(ConnectionAdapterData))]
+        public async Task ConnectionClosedIfResponseStartedAndExceptionThrown(ListenOptions listenOptions)
+        {
+            using (var server = new TestServer(async httpContext =>
+            {
+                await httpContext.Response.StartAsync();
+                throw new Exception();
+            }, new TestServiceContext(LoggerFactory), listenOptions))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.WaitForConnectionClose();
+                }
+
+                // Write failed - can throw TaskCanceledException or OperationCanceledException,
+                // depending on how far the canceled write goes.
+
+                // RequestAborted tripped
+                await server.StopAsync();
+            }
+        }
+
         private async Task AssertStreamAborted(Stream stream, int totalBytes)
         {
             var receiveBuffer = new byte[64 * 1024];

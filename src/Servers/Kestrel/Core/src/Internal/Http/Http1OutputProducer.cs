@@ -149,7 +149,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 _aborted = true;
                 _connectionContext.Abort(error);
-                Dispose();
+
+                _log.ConnectionDisconnect(_connectionId);
+                _completed = true;
+                _pipeWriter.Complete(error);
             }
         }
 

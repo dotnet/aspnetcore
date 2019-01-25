@@ -14,8 +14,6 @@ namespace Microsoft.AspNetCore.Http.Features
         /// <summary>
         /// Starts the response by calling OnStarting() and making headers unmodifiable.
         /// </summary>
-        /// <param name="flush"><c>True</c> if headers and request line should be flushed, otherwise <c>false</c>.</param>
-        /// <param name="cancellationToken"></param>
-        Task StartAsync(bool flush = false, CancellationToken cancellationToken = default);
+        Task StartAsync(CancellationToken token = default);
     }
 }

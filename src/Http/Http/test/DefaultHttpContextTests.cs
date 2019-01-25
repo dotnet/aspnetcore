@@ -422,7 +422,7 @@ namespace Microsoft.AspNetCore.Http
 
         private class MockHttpResponseStartFeature : IHttpResponseStartFeature
         {
-            public Task StartAsync(bool flush = false, CancellationToken cancellationToken = default)
+            public Task StartAsync(CancellationToken cancellationToken)
             {
                 throw new NotImplementedException();
             }

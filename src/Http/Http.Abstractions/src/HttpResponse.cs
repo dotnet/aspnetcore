@@ -117,11 +117,10 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Starts the response by calling OnStarting() and making headers unmodifiable.
         /// </summary>
-        /// <param name="flush"><c>True</c> if headers and request line should be flushed, otherwise <c>false</c>.</param>
         /// <param name="cancellationToken"></param>
         /// <remarks>
         /// If the <see cref="IHttpResponseStartFeature"/> isn't set, StartAsync will default to calling HttpResponse.Body.FlushAsync().
         /// </remarks>
-        public abstract Task StartAsync(bool flush, CancellationToken cancellationToken = default);
+        public abstract Task StartAsync(CancellationToken cancellationToken = default);
     }
 }

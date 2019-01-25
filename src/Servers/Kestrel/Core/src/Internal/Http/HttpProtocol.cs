@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         protected volatile bool _keepAlive = true;
         private bool _canHaveBody;
         private bool _autoChunk;
-        private Exception _applicationException;
+        protected Exception _applicationException;
         private BadHttpRequestException _requestRejectedException;
 
         protected HttpVersion _httpVersion;
@@ -1057,22 +1057,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (!HasResponseStarted)
             {
                 ProduceStart(appCompleted: true);
-                return ProduceEndAwaited();
-            }
-            else if (!HasFlushedHeaders)
-            {
-                return ProduceEndAwaited();
             }
 
             return WriteSuffix();
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private async Task ProduceEndAwaited()
-        {
-            await FlushAsyncInternal(default);
-
-            await WriteSuffix();
         }
 
         private Task WriteSuffix()
@@ -1092,6 +1079,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (Method == HttpMethod.Head && _responseBytesWritten > 0)
             {
                 Log.ConnectionHeadResponseBodyWrite(ConnectionId, _responseBytesWritten);
+            }
+
+            if (!HasFlushedHeaders)
+            {
+                return FlushAsyncInternal(default);
             }
 
             return Task.CompletedTask;
