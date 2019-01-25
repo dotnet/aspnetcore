@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>Common primitives for ASP.NET Connection Handlers and clients</Description>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;netcoreapp3.0</TargetFrameworks>
     <RootNamespace>Microsoft.AspNetCore.Http.Connections</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <IsShippingPackage>true</IsShippingPackage>
@@ -10,15 +10,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(SignalRSharedSourceRoot)JsonUtils.cs" Link="Internal\JsonUtils.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)Utf8BufferTextWriter.cs" Link="Internal\Utf8BufferTextWriter.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
-    <Reference Include="Newtonsoft.Json" />
     <Reference Include="System.Buffers" />
-    <PackageReference Include="Microsoft.Bcl.Json.Sources" Version="4.6.0-preview.19073.1">
+    <PackageReference Condition="'$(TargetFramework)' == 'netstandard2.0'" Include="Microsoft.Bcl.Json.Sources" Version="4.6.0-preview.19073.1">
       <PrivateAssets>All</PrivateAssets>
     </PackageReference>
   </ItemGroup>
