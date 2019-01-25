@@ -9,6 +9,7 @@
     <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
     <!-- Work around until we get a new WebSdk -->
     <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
+    <BuildProjectReferences Condition="'$(_InsidePublishTestsAssets)' == 'True'">False</BuildProjectReferences>
   </PropertyGroup>
 
   <Import Project="assets.props" />
@@ -81,7 +82,7 @@
   <Target Name="PublishTestsAssets" AfterTargets="Build" Condition="'$(_InsidePublishTestsAssets)' != 'true'">
     <ItemGroup>
       <!-- UseAppHost is a workaround for https://github.com/aspnet/websdk/issues/422 -->
-      <TestAssetPublishProfile Include="Default" Properties="UseAppHost=false" />
+      <TestAssetPublishProfile Include="Default" Properties="UseAppHost=false;TargetFramework=netcoreapp3.0" />
     </ItemGroup>
 
     <!--
