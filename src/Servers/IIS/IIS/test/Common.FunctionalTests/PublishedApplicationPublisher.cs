@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.Extensions.Logging;
@@ -34,7 +35,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 profileName = "Standalone-" + deploymentParameters.RuntimeArchitecture;
             }
 
-            var path = Path.Combine(_applicationPath, "bin", "Debug", deploymentParameters.TargetFramework, "publish", profileName);
+            var configuration = this.GetType().GetTypeInfo().Assembly.GetCustomAttribute<AssemblyConfigurationAttribute>().Configuration;
+
+            var path = Path.Combine(_applicationPath, "bin", configuration, deploymentParameters.TargetFramework, "publish", profileName);
             logger.LogInformation("Using prepublished application from {PublishDir}", path);
 
             var target = CreateTempDirectory();

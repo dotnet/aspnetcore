@@ -85,12 +85,11 @@
     </ItemGroup>
 
     <!--
-      We always published in debug configuration in functional tests
       _InsidePublishTestsAssets is to avoid invoking this target recursively
       Platform;PlatformTarget removal is fix builds inside VS -->
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="Publish"
              RemoveProperties="Platform;PlatformTarget"
-             Properties="_InsidePublishTestsAssets=True;Configuration=Debug;PublishDir=$(PublishDir)%(TestAssetPublishProfile.Identity)/;%(TestAssetPublishProfile.Properties)" />
+             Properties="_InsidePublishTestsAssets=True;PublishDir=$(PublishDir)%(TestAssetPublishProfile.Identity)/;%(TestAssetPublishProfile.Properties)" />
   </Target>
 </Project>
