@@ -337,7 +337,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     await connection.StartAsync().OrTimeout();
 
                     var channel = await connection.StreamAsChannelAsync<int>("Stream", 5).OrTimeout();
-                    var results = await channel.ReadAllAsync().OrTimeout();
+                    var results = await channel.ReadAndCollectAllAsync().OrTimeout();
 
                     Assert.Equal(new[] { 0, 1, 2, 3, 4 }, results.ToArray());
                 }
@@ -375,7 +375,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     Assert.Equal("2", await channel.ReadAsync().AsTask().OrTimeout());
                     channelWriter.Writer.Complete();
 
-                    var results = await channel.ReadAllAsync().OrTimeout();
+                    var results = await channel.ReadAndCollectAllAsync().OrTimeout();
                     Assert.Empty(results);
                 }
                 catch (Exception ex)
@@ -420,7 +420,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
                     cts.Cancel();
 
-                    var results = await channel.ReadAllAsync(suppressExceptions: true).OrTimeout();
+                    var results = await channel.ReadAndCollectAllAsync(suppressExceptions: true).OrTimeout();
 
                     Assert.True(results.Count > 0 && results.Count < 1000);
 
@@ -488,7 +488,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     await connection.StartAsync().OrTimeout();
                     var channel = await connection.StreamAsChannelAsync<int>("StreamException").OrTimeout();
 
-                    var ex = await Assert.ThrowsAsync<HubException>(() => channel.ReadAllAsync().OrTimeout());
+                    var ex = await Assert.ThrowsAsync<HubException>(() => channel.ReadAndCollectAllAsync().OrTimeout());
                     Assert.Equal("An unexpected error occurred invoking 'StreamException' on the server. InvalidOperationException: Error occurred while streaming.", ex.Message);
                 }
                 catch (Exception ex)
@@ -654,7 +654,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     await connection.StartAsync().OrTimeout();
 
                     var channel = await connection.StreamAsChannelAsync<int>("!@#$%");
-                    var ex = await Assert.ThrowsAsync<HubException>(() => channel.ReadAllAsync().OrTimeout());
+                    var ex = await Assert.ThrowsAsync<HubException>(() => channel.ReadAndCollectAllAsync().OrTimeout());
                     Assert.Equal("Failed to invoke '!@#$%' due to an error on the server. HubException: Method does not exist.", ex.Message);
                 }
                 catch (Exception ex)
@@ -688,7 +688,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     await connection.StartAsync().OrTimeout();
 
                     var channel = await connection.StreamAsChannelAsync<int>("Stream", 42, 42);
-                    var ex = await Assert.ThrowsAsync<HubException>(() => channel.ReadAllAsync().OrTimeout());
+                    var ex = await Assert.ThrowsAsync<HubException>(() => channel.ReadAndCollectAllAsync().OrTimeout());
                     Assert.Equal("Failed to invoke 'Stream' due to an error on the server. InvalidDataException: Invocation provides 2 argument(s) but target expects 1.", ex.Message);
                 }
                 catch (Exception ex)
@@ -722,7 +722,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     await connection.StartAsync().OrTimeout();
 
                     var channel = await connection.StreamAsChannelAsync<int>("Stream", "xyz");
-                    var ex = await Assert.ThrowsAsync<HubException>(() => channel.ReadAllAsync().OrTimeout());
+                    var ex = await Assert.ThrowsAsync<HubException>(() => channel.ReadAndCollectAllAsync().OrTimeout());
                     Assert.Equal("Failed to invoke 'Stream' due to an error on the server. InvalidDataException: Error binding arguments. Make sure that the types of the provided values match the types of the hub method being invoked.", ex.Message);
                 }
                 catch (Exception ex)
@@ -755,7 +755,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 {
                     await connection.StartAsync().OrTimeout();
                     var channel = await connection.StreamAsChannelAsync<int>("HelloWorld").OrTimeout();
-                    var ex = await Assert.ThrowsAsync<HubException>(() => channel.ReadAllAsync()).OrTimeout();
+                    var ex = await Assert.ThrowsAsync<HubException>(() => channel.ReadAndCollectAllAsync()).OrTimeout();
                     Assert.Equal("The client attempted to invoke the non-streaming 'HelloWorld' method with a streaming invocation.", ex.Message);
                 }
                 catch (Exception ex)
@@ -821,7 +821,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 {
                     await connection.StartAsync().OrTimeout();
                     var channel = await connection.StreamAsChannelAsync<int>("StreamBroken").OrTimeout();
-                    var ex = await Assert.ThrowsAsync<HubException>(() => channel.ReadAllAsync()).OrTimeout();
+                    var ex = await Assert.ThrowsAsync<HubException>(() => channel.ReadAndCollectAllAsync()).OrTimeout();
                     Assert.Equal("The value returned by the streaming method 'StreamBroken' is not a ChannelReader<>.", ex.Message);
                 }
                 catch (Exception ex)

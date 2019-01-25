@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             [Fact]
             public async Task ClientIsOkayReceivingMinorVersionInHandshake()
             {
-                // We're just testing that the client doesn't fail when a minor version is added to the handshake 
+                // We're just testing that the client doesn't fail when a minor version is added to the handshake
                 // The client doesn't actually use that version anywhere yet so there's nothing else to test at this time
 
                 var connection = new TestConnection(autoHandshake: false);
@@ -228,7 +228,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                     await connection.ReceiveJsonMessage(new { invocationId = "1", type = 3 }).OrTimeout();
 
-                    Assert.Empty(await channel.ReadAllAsync());
+                    Assert.Empty(await channel.ReadAndCollectAllAsync().OrTimeout());
                 }
                 finally
                 {
@@ -295,7 +295,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                     await connection.ReceiveJsonMessage(new { invocationId = "1", type = 3, result = "Oops" }).OrTimeout();
 
-                    var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () => await channel.ReadAllAsync().OrTimeout());
+                    var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () => await channel.ReadAndCollectAllAsync().OrTimeout());
                     Assert.Equal("Server provided a result in a completion response to a streamed invocation.", ex.Message);
                 }
                 finally
@@ -318,7 +318,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                     await connection.ReceiveJsonMessage(new { invocationId = "1", type = 3, error = "An error occurred" }).OrTimeout();
 
-                    var ex = await Assert.ThrowsAsync<HubException>(async () => await channel.ReadAllAsync().OrTimeout());
+                    var ex = await Assert.ThrowsAsync<HubException>(async () => await channel.ReadAndCollectAllAsync().OrTimeout());
                     Assert.Equal("An error occurred", ex.Message);
                 }
                 finally
@@ -367,7 +367,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     await connection.ReceiveJsonMessage(new { invocationId = "1", type = 2, item = "3" }).OrTimeout();
                     await connection.ReceiveJsonMessage(new { invocationId = "1", type = 3 }).OrTimeout();
 
-                    var notifications = await channel.ReadAllAsync().OrTimeout();
+                    var notifications = await channel.ReadAndCollectAllAsync().OrTimeout();
 
                     Assert.Equal(new[] { "1", "2", "3", }, notifications.ToArray());
                 }

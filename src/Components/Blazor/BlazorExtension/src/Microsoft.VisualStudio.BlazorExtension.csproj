@@ -14,6 +14,7 @@
     <IsPackable>false</IsPackable>
     <EnableSourceLink>false</EnableSourceLink>
     <GenerateSourceLinkFile>false</GenerateSourceLinkFile>
+    <DeployExtension Condition="'$(CI)' == 'true'">false</DeployExtension>
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />

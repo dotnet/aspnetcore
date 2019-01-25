@@ -232,6 +232,10 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 {
                     throw new NotSupportedException($"{typeof(IStartup)} isn't supported");
                 }
+                if (StartupLoader.HasConfigureServicesIServiceProviderDelegate(startupType, context.HostingEnvironment.EnvironmentName))
+                {
+                    throw new NotSupportedException($"ConfigureServices returning an {typeof(IServiceProvider)} isn't supported.");
+                }
 
                 instance = ActivatorUtilities.CreateInstance(new HostServiceProvider(webHostBuilderContext), startupType);
                 context.Properties[_startupKey] = instance;

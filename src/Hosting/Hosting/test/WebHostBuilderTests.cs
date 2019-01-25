@@ -889,6 +889,22 @@ namespace Microsoft.AspNetCore.Hosting
             Assert.Equal("Building this implementation of IWebHostBuilder is not supported.", exception.Message);
         }
 
+        [Fact]
+        public void GenericWebHostDoesNotSupportBuildingInConfigureServices()
+        {
+            var hostBuilder = new HostBuilder()
+                   .ConfigureWebHost(builder =>
+                   {
+                       builder.UseStartup<StartupWithBuiltConfigureServices>();
+                   });
+            var exception = Assert.Throws<NotSupportedException>(() =>
+            {
+                hostBuilder.Build();
+            });
+
+            Assert.Equal($"ConfigureServices returning an {typeof(IServiceProvider)} isn't supported.", exception.Message);
+        }
+
         [Theory]
         [MemberData(nameof(DefaultWebHostBuildersWithConfig))]
         public void Build_HostingStartupAssemblyCanBeExcluded(IWebHostBuilder builder)
