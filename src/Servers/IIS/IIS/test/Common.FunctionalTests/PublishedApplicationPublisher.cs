@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
     {
         private readonly string _applicationPath;
 
-        public PublishedApplicationPublisher(string applicationPath):base(applicationPath)
+        public PublishedApplicationPublisher(string applicationPath) : base(applicationPath)
         {
             _applicationPath = applicationPath;
         }
