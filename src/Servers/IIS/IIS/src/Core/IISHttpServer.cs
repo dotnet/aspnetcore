@@ -38,6 +38,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         private readonly TaskCompletionSource<object> _shutdownSignal = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
         private bool? _websocketAvailable;
+        private CancellationTokenRegistration _cancellationTokenRegistration;
 
         public IFeatureCollection Features { get; } = new FeatureCollection();
 
@@ -96,6 +97,11 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         public Task StopAsync(CancellationToken cancellationToken)
         {
             _nativeApplication.StopIncomingRequests();
+
+            _cancellationTokenRegistration = cancellationToken.Register(() =>
+            {
+                _shutdownSignal.TrySetResult(null);
+            });
 
             return _shutdownSignal.Task;
         }
@@ -192,6 +198,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
                 server._nativeApplication.StopCallsIntoManaged();
                 server._shutdownSignal.TrySetResult(null);
+                server._cancellationTokenRegistration.Dispose();
             }
             catch (Exception ex)
             {
