@@ -80,10 +80,17 @@
 
   <Target Name="PublishTestsAssets" AfterTargets="Build" Condition="'$(_InsidePublishTestsAssets)' != 'true'">
     <ItemGroup>
+      <!-- UseAppHost is a workaround for https://github.com/aspnet/websdk/issues/422 -->
       <TestAssetPublishProfile Include="Default" Properties="UseAppHost=false" />
     </ItemGroup>
 
-    <!-- We always published in debug configuration before -->
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" Properties="_InsidePublishTestsAssets=True;Configuration=Debug;PublishDir=$(PublishDir)%(TestAssetPublishProfile.Identity)/;%(TestAssetPublishProfile.Properties)" />
+    <!--
+      We always published in debug configuration in functional tests
+      _InsidePublishTestsAssets is to avoid invoking this target recursively
+      Platform;PlatformTarget removal is fix builds inside VS -->
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="Publish"
+             RemoveProperties="Platform;PlatformTarget"
+             Properties="_InsidePublishTestsAssets=True;Configuration=Debug;PublishDir=$(PublishDir)%(TestAssetPublishProfile.Identity)/;%(TestAssetPublishProfile.Properties)" />
   </Target>
 </Project>
