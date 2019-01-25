@@ -149,10 +149,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 _aborted = true;
                 _connectionContext.Abort(error);
+                Dispose();
 
-                _log.ConnectionDisconnect(_connectionId);
-                _completed = true;
-                _pipeWriter.Complete(error);
+                // TODO we eventually want to complete the pipeWriter with an error,
+                // but this causes ~30 tests to fail due to this exception being thrown.
+
+                //_log.ConnectionDisconnect(_connectionId);
+                //_completed = true;
+                //_pipeWriter.Complete(error);
             }
         }
 

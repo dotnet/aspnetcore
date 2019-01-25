@@ -259,14 +259,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 return Task.CompletedTask;
             }
 
-            var initializeTask = InitializeResponseAsync(0);
-            // If return is Task.CompletedTask no awaiting is required
-            if (ReferenceEquals(initializeTask, Task.CompletedTask))
-            {
-                return Task.CompletedTask;
-            }
-
-            return initializeTask;
+            return InitializeResponseAsync(0);
         }
     }
 }

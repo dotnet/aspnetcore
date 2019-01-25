@@ -101,12 +101,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             PoisonRequestBodyStream(abortReason);
         }
 
-        protected override void OnErrorAfterResponseStarted()
-        {
-            // We can no longer change the response, send a Reset instead.
-            var abortReason = new ConnectionAbortedException(CoreStrings.ConnectionAbortedByApplication, _applicationException);
-            _http1Output.Abort(abortReason);
-        }
+        //protected override void OnErrorAfterResponseStarted()
+        //{
+        //    // We can no longer change the response, send a Reset instead.
+        //    var abortReason = new ConnectionAbortedException(CoreStrings.ConnectionAbortedByApplication, _applicationException);
+        //    _http1Output.Abort(abortReason);
+        //}
 
         protected override void ApplicationAbort()
         {
