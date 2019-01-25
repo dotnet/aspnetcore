@@ -439,7 +439,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                     using (var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead))
                     {
                         response.EnsureSuccessStatusCode();
-                        NegotiationResponse negotiateResponse;
                         var responseBuffer = await response.Content.ReadAsByteArrayAsync();
                         var negotiateResponse = NegotiateProtocol.ParseResponse(responseBuffer);
                         if (!string.IsNullOrEmpty(negotiateResponse.Error))
