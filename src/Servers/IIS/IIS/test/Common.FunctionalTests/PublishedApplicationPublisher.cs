@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             }
             else if (deploymentParameters.ApplicationType == ApplicationType.Portable)
             {
-                profileName = "Default";
+                profileName = "Portable";
             }
             else
             {
