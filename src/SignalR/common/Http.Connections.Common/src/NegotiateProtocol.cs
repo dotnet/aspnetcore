@@ -279,7 +279,8 @@ namespace Microsoft.AspNetCore.Http.Connections
                         if (memberName.SequenceEqual(TransportPropertyNameBytes))
                         {
                             availableTransport.Transport = ReadAsString(ref reader, TransportPropertyNameBytes);
-                        } else if (memberName.SequenceEqual(TransferFormatsPropertyNameBytes))
+                        }
+                        else if (memberName.SequenceEqual(TransferFormatsPropertyNameBytes))
                         {
                             CheckRead(ref reader);
                             EnsureArrayStart(ref reader);
@@ -354,7 +355,7 @@ namespace Microsoft.AspNetCore.Http.Connections
                 case JsonTokenType.StartObject:
                     return "StartObject";
                 case JsonTokenType.StartArray:
-                    return "StartArray";
+                    return "Array";
                 case JsonTokenType.PropertyName:
                     return "PropertyName";
                 default:
