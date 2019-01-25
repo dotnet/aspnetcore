@@ -24,11 +24,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         private static readonly IModelMetadataProvider _metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
 
         [Theory]
-        [InlineData(true, true)]
-        [InlineData(false, false)]
-        public void CanCreateModel_ReturnsTrue_IfIsTopLevelObject(
-            bool isTopLevelObject,
-            bool expectedCanCreate)
+        [InlineData(true, ComplexTypeModelBinder.PropertyDataAvailable)]
+        [InlineData(false, ComplexTypeModelBinder.PropertyDataNotAvailable)]
+        public void CanCreateModel_ReturnsTrue_IfIsTopLevelObject(bool isTopLevelObject, int expectedCanCreate)
         {
             var bindingContext = CreateContext(GetMetadataForType(typeof(Person)));
             bindingContext.IsTopLevelObject = isTopLevelObject;
@@ -56,7 +54,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var canCreate = binder.CanCreateModel(bindingContext);
 
             // Assert
-            Assert.False(canCreate);
+            Assert.Equal(ComplexTypeModelBinder.PropertyDataNotAvailable, canCreate);
         }
 
         [Fact]
@@ -71,16 +69,16 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var canCreate = binder.CanCreateModel(bindingContext);
 
             // Assert
-            Assert.True(canCreate);
+            Assert.Equal(ComplexTypeModelBinder.PropertyDataAvailable, canCreate);
         }
 
         [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void CanCreateModel_CreatesModel_WithAllGreedyProperties(bool isTopLevelObject)
+        [InlineData(ComplexTypeModelBinder.PropertyDataAvailable)]
+        [InlineData(ComplexTypeModelBinder.PropertyDataMayBeAvailable)]
+        public void CanCreateModel_CreatesModel_WithAllGreedyProperties(int expectedCanCreate)
         {
             var bindingContext = CreateContext(GetMetadataForType(typeof(HasAllGreedyProperties)));
-            bindingContext.IsTopLevelObject = isTopLevelObject;
+            bindingContext.IsTopLevelObject = expectedCanCreate == ComplexTypeModelBinder.PropertyDataAvailable;
 
             var binder = CreateBinder(bindingContext.ModelMetadata);
 
@@ -88,20 +86,19 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var canCreate = binder.CanCreateModel(bindingContext);
 
             // Assert
-            Assert.True(canCreate);
+            Assert.Equal(expectedCanCreate, canCreate);
         }
 
         [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void CanCreateModel_ReturnsTrue_IfNotIsTopLevelObject_BasedOnValueAvailability(
-            bool valueAvailable)
+        [InlineData(ComplexTypeModelBinder.PropertyDataAvailable)]
+        [InlineData(ComplexTypeModelBinder.PropertyDataNotAvailable)]
+        public void CanCreateModel_ReturnsTrue_IfNotIsTopLevelObject_BasedOnValueAvailability(int valueAvailable)
         {
             // Arrange
             var valueProvider = new Mock<IValueProvider>(MockBehavior.Strict);
             valueProvider
                 .Setup(provider => provider.ContainsPrefix("SimpleContainer.Simple.Name"))
-                .Returns(valueAvailable);
+                .Returns(valueAvailable == ComplexTypeModelBinder.PropertyDataAvailable);
 
             var modelMetadata = GetMetadataForProperty(typeof(SimpleContainer), nameof(SimpleContainer.Simple));
             var bindingContext = CreateContext(modelMetadata);
@@ -133,7 +130,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var canCreate = binder.CanCreateModel(bindingContext);
 
             // Assert
-            Assert.False(canCreate);
+            Assert.Equal(ComplexTypeModelBinder.PropertyDataNotAvailable, canCreate);
         }
 
         [Fact]
@@ -149,20 +146,20 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var canCreate = binder.CanCreateModel(bindingContext);
 
             // Assert
-            Assert.True(canCreate);
+            Assert.Equal(ComplexTypeModelBinder.PropertyDataAvailable, canCreate);
         }
 
         [Theory]
-        [InlineData(typeof(TypeWithNoBinderMetadata), false)]
-        [InlineData(typeof(TypeWithNoBinderMetadata), true)]
+        [InlineData(typeof(TypeWithNoBinderMetadata), ComplexTypeModelBinder.PropertyDataNotAvailable)]
+        [InlineData(typeof(TypeWithNoBinderMetadata), ComplexTypeModelBinder.PropertyDataAvailable)]
         public void CanCreateModel_CreatesModelForValueProviderBasedBinderMetadatas_IfAValueProviderProvidesValue(
             Type modelType,
-            bool valueProviderProvidesValue)
+            int valueProviderProvidesValue)
         {
             var valueProvider = new Mock<IValueProvider>();
             valueProvider
                 .Setup(o => o.ContainsPrefix(It.IsAny<string>()))
-                .Returns(valueProviderProvidesValue);
+                .Returns(valueProviderProvidesValue == ComplexTypeModelBinder.PropertyDataAvailable);
 
             var bindingContext = CreateContext(GetMetadataForType(modelType));
             bindingContext.IsTopLevelObject = false;
@@ -179,18 +176,18 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         }
 
         [Theory]
-        [InlineData(typeof(TypeWithAtLeastOnePropertyMarkedUsingValueBinderMetadata), false)]
-        [InlineData(typeof(TypeWithAtLeastOnePropertyMarkedUsingValueBinderMetadata), true)]
-        [InlineData(typeof(TypeWithUnmarkedAndBinderMetadataMarkedProperties), false)]
-        [InlineData(typeof(TypeWithUnmarkedAndBinderMetadataMarkedProperties), true)]
+        [InlineData(typeof(TypeWithAtLeastOnePropertyMarkedUsingValueBinderMetadata), ComplexTypeModelBinder.PropertyDataMayBeAvailable)]
+        [InlineData(typeof(TypeWithAtLeastOnePropertyMarkedUsingValueBinderMetadata), ComplexTypeModelBinder.PropertyDataAvailable)]
+        [InlineData(typeof(TypeWithUnmarkedAndBinderMetadataMarkedProperties), ComplexTypeModelBinder.PropertyDataMayBeAvailable)]
+        [InlineData(typeof(TypeWithUnmarkedAndBinderMetadataMarkedProperties), ComplexTypeModelBinder.PropertyDataAvailable)]
         public void CanCreateModel_CreatesModelForValueProviderBasedBinderMetadatas_IfPropertyHasGreedyBindingSource(
             Type modelType,
-            bool valueProviderProvidesValue)
+            int expectedCanCreate)
         {
             var valueProvider = new Mock<IValueProvider>();
             valueProvider
                 .Setup(o => o.ContainsPrefix(It.IsAny<string>()))
-                .Returns(valueProviderProvidesValue);
+                .Returns(expectedCanCreate == ComplexTypeModelBinder.PropertyDataAvailable);
 
             var bindingContext = CreateContext(GetMetadataForType(modelType));
             bindingContext.IsTopLevelObject = false;
@@ -203,15 +200,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var canCreate = binder.CanCreateModel(bindingContext);
 
             // Assert
-            Assert.True(canCreate);
+            Assert.Equal(expectedCanCreate, canCreate);
         }
 
         [Theory]
-        [InlineData(typeof(TypeWithAtLeastOnePropertyMarkedUsingValueBinderMetadata), false)]
-        [InlineData(typeof(TypeWithAtLeastOnePropertyMarkedUsingValueBinderMetadata), true)]
+        [InlineData(typeof(TypeWithAtLeastOnePropertyMarkedUsingValueBinderMetadata), ComplexTypeModelBinder.PropertyDataMayBeAvailable)]
+        [InlineData(typeof(TypeWithAtLeastOnePropertyMarkedUsingValueBinderMetadata), ComplexTypeModelBinder.PropertyDataAvailable)]
         public void CanCreateModel_ForExplicitValueProviderMetadata_UsesOriginalValueProvider(
             Type modelType,
-            bool originalValueProviderProvidesValue)
+            int expectedCanCreate)
         {
             var valueProvider = new Mock<IValueProvider>();
             valueProvider
@@ -221,7 +218,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var originalValueProvider = new Mock<IBindingSourceValueProvider>();
             originalValueProvider
                 .Setup(o => o.ContainsPrefix(It.IsAny<string>()))
-                .Returns(originalValueProviderProvidesValue);
+                .Returns(expectedCanCreate == ComplexTypeModelBinder.PropertyDataAvailable);
 
             originalValueProvider
                 .Setup(o => o.Filter(It.IsAny<BindingSource>()))
@@ -238,18 +235,18 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var canCreate = binder.CanCreateModel(bindingContext);
 
             // Assert
-            Assert.True(canCreate);
+            Assert.Equal(expectedCanCreate, canCreate);
         }
 
         [Theory]
-        [InlineData(typeof(TypeWithUnmarkedAndBinderMetadataMarkedProperties), false, true)]
-        [InlineData(typeof(TypeWithUnmarkedAndBinderMetadataMarkedProperties), true, true)]
-        [InlineData(typeof(TypeWithNoBinderMetadata), false, false)]
-        [InlineData(typeof(TypeWithNoBinderMetadata), true, true)]
+        [InlineData(typeof(TypeWithUnmarkedAndBinderMetadataMarkedProperties), false, ComplexTypeModelBinder.PropertyDataMayBeAvailable)]
+        [InlineData(typeof(TypeWithUnmarkedAndBinderMetadataMarkedProperties), true, ComplexTypeModelBinder.PropertyDataAvailable)]
+        [InlineData(typeof(TypeWithNoBinderMetadata), false, ComplexTypeModelBinder.PropertyDataNotAvailable)]
+        [InlineData(typeof(TypeWithNoBinderMetadata), true, ComplexTypeModelBinder.PropertyDataAvailable)]
         public void CanCreateModel_UnmarkedProperties_UsesCurrentValueProvider(
             Type modelType,
             bool valueProviderProvidesValue,
-            bool expectedCanCreate)
+            int expectedCanCreate)
         {
             var valueProvider = new Mock<IValueProvider>();
             valueProvider
