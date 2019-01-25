@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Authorization
             var endpoint = context.GetEndpoint();
 
             // Workaround for https://github.com/aspnet/AspNetCore/issues/7011. Do not use the AuthorizationMiddleware for Razor Pages
-            if (endpoint.Metadata.Any(m => m.GetType().FullName == "Microsoft.AspNetCore.Mvc.ApplicationModels.PageRouteMetadata"))
+            if (endpoint != null && endpoint.Metadata.Any(m => m.GetType().FullName == "Microsoft.AspNetCore.Mvc.ApplicationModels.PageRouteMetadata"))
             {
                 await _next(context);
                 return;
