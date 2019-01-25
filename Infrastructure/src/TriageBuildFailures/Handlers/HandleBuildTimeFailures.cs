@@ -30,7 +30,8 @@ namespace TriageBuildFailures.Handlers
             "npm ERR!",
             "Number of tests 0 is 1 less than the provided threshold",
             "SSL_ERROR_SYSCALL",
-            "API rate limit exceeded for user ID"
+            "API rate limit exceeded for user ID",
+            "##[error]"
         };
 
         public override async Task<bool> CanHandleFailure(ICIBuild build)
