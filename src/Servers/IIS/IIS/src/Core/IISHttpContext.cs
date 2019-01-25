@@ -182,9 +182,17 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         private string GetOriginalPath()
         {
-            // applicationInitialization request might have trailing \0 character included in the length
-            // check and skip it
+
             var rawUrlInBytes = GetRawUrlInBytes();
+
+            // On Windows 2012 applicationInitialization request might not have pRawUrl set, fallback to coocked url
+            if (rawUrlInBytes == null)
+            {
+                return GetCookedUrl().GetFullUrl();
+            }
+
+            // ApplicationInitialization request might have trailing \0 character included in the length
+            // check and skip it
             if (rawUrlInBytes.Length > 0 && rawUrlInBytes[rawUrlInBytes.Length - 1] == 0)
             {
                 var newRawUrlInBytes = new byte[rawUrlInBytes.Length - 1];
