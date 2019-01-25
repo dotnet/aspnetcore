@@ -42,9 +42,11 @@ async function boot() {
 }
 
 async function initializeConnection(circuitHandlers: CircuitHandler[]): Promise<signalR.HubConnection> {
+  const hubProtocol = new MessagePackHubProtocol();
+  (hubProtocol as any).name = 'blazorpack';
   const connection = new signalR.HubConnectionBuilder()
     .withUrl('_blazor')
-    .withHubProtocol(new MessagePackHubProtocol())
+    .withHubProtocol(hubProtocol)
     .configureLogging(signalR.LogLevel.Information)
     .build();
 
