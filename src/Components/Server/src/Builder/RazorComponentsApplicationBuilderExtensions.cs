@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Builder
             });
 
             // Use SPA fallback routing for anything else
-            builder.UseSpa(spa => { });
+            //builder.UseSpa(spa =>{ spa.Options.DefaultPage = "/Index"; });
 
             return builder;
         }
