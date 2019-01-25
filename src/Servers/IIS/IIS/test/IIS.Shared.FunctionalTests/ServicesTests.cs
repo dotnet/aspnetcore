@@ -26,7 +26,7 @@ namespace IIS.FunctionalTests
             _fixture = fixture;
         }
 
-        [ConditionalTheory(Skip="https://github.com/aspnet/AspNetCore/issues/6752")]
+        [ConditionalTheory]
         [RequiresIIS(IISCapability.ApplicationInitialization)]
         [InlineData(HostingModel.InProcess)]
         [InlineData(HostingModel.OutOfProcess)]
@@ -42,13 +42,13 @@ namespace IIS.FunctionalTests
 
                 var result = await DeployAsync(baseDeploymentParameters);
 
-                await Helpers.Retry(async () => await File.ReadAllTextAsync(Path.Combine(result.ContentRoot, "Started.txt")), 10, 200);
+                await Helpers.Retry(async () => await File.ReadAllTextAsync(Path.Combine(result.ContentRoot, "Started.txt")), TimeoutExtensions.DefaultTimeoutValue);
                 StopServer();
                 EventLogHelpers.VerifyEventLogEvent(result, EventLogHelpers.Started(result));
             }
         }
 
-        [ConditionalTheory(Skip="https://github.com/aspnet/AspNetCore/issues/6752")]
+        [ConditionalTheory]
         [RequiresIIS(IISCapability.ApplicationInitialization)]
         [InlineData(HostingModel.InProcess)]
         [InlineData(HostingModel.OutOfProcess)]
@@ -70,7 +70,7 @@ namespace IIS.FunctionalTests
 
                 var result = await DeployAsync(baseDeploymentParameters);
 
-                await Helpers.Retry(async () => await File.ReadAllTextAsync(Path.Combine(result.ContentRoot, "Started.txt")), 10, 200);
+                await Helpers.Retry(async () => await File.ReadAllTextAsync(Path.Combine(result.ContentRoot, "Started.txt")), TimeoutExtensions.DefaultTimeoutValue);
                 StopServer();
                 EventLogHelpers.VerifyEventLogEvent(result, EventLogHelpers.Started(result));
             }
