@@ -905,10 +905,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     await connection.WaitForConnectionClose();
                 }
 
-                // Write failed - can throw TaskCanceledException or OperationCanceledException,
-                // depending on how far the canceled write goes.
-
-                // RequestAborted tripped
                 await server.StopAsync();
             }
         }
