@@ -444,6 +444,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
         private class WindowsNativeMethods
         {
+            internal delegate bool EnumWindowProc(IntPtr hwnd, IntPtr lParam);
             [DllImport("user32.dll")]
             internal static extern IntPtr GetTopWindow(IntPtr hWnd);
             [DllImport("user32.dll")]
@@ -452,12 +453,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             internal static extern uint GetWindowThreadProcessId(IntPtr hwnd, out uint lpdwProcessId);
             [DllImport("user32.dll")]
             internal static extern bool PostMessage(HandleRef hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
-
-            internal delegate bool EnumWindowProc(IntPtr hwnd, IntPtr lParam);
-            [DllImport("user32")]
-            [return: MarshalAs(UnmanagedType.Bool)]
-            internal static extern bool EnumWindows (EnumWindowProc callback, IntPtr lParam);
-
+            [DllImport("user32.dll")]
+            internal static extern bool EnumWindows(EnumWindowProc callback, IntPtr lParam);
             [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
             internal static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName,int nMaxCount);
         }
