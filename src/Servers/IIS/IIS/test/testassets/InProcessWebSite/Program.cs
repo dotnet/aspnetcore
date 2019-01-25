@@ -101,7 +101,7 @@ namespace TestSite
                 .ConfigureLogging((_, factory) =>
                 {
                     factory.AddConsole();
-                    factory.AddFilter("Console", level => level >= LogLevel.Information);
+                    factory.AddFilter("Console", level => level >= LogLevel.Trace);
                 })
                 .UseIIS()
                 .UseStartup<Startup>()
