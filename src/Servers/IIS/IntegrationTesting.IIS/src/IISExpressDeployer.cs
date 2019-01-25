@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -443,33 +444,56 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
         private class WindowsNativeMethods
         {
-            [DllImport("user32.dll")]
-            internal static extern IntPtr GetTopWindow(IntPtr hWnd);
-            [DllImport("user32.dll")]
-            internal static extern IntPtr GetWindow(IntPtr hWnd, uint uCmd);
+            internal delegate bool EnumWindowProc(IntPtr hwnd, IntPtr lParam);
             [DllImport("user32.dll")]
             internal static extern uint GetWindowThreadProcessId(IntPtr hwnd, out uint lpdwProcessId);
             [DllImport("user32.dll")]
             internal static extern bool PostMessage(HandleRef hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+            [DllImport("user32.dll")]
+            internal static extern bool EnumWindows(EnumWindowProc callback, IntPtr lParam);
+            [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+            internal static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName,int nMaxCount);
         }
 
         private void SendStopMessageToProcess(int pid)
         {
             Logger.LogInformation($"Sending shutdown request to {pid}");
-            for (var ptr = WindowsNativeMethods.GetTopWindow(IntPtr.Zero); ptr != IntPtr.Zero; ptr = WindowsNativeMethods.GetWindow(ptr, 2))
-            {
+            var found = false;
+            WindowsNativeMethods.EnumWindows((ptr, param) => {
                 WindowsNativeMethods.GetWindowThreadProcessId(ptr, out var windowProcessId);
                 if (pid == windowProcessId)
                 {
+                    // 256 is the max length
+                    var className = new StringBuilder(256);
+
+                    if (WindowsNativeMethods.GetClassName(ptr, className, className.Capacity) == 0)
+                    {
+                        throw new InvalidOperationException($"Unable to get window class name: {Marshal.GetLastWin32Error()}");
+                    }
+
+                    if (!string.Equals(className.ToString(), "IISEXPRESS", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // skip windows without IISEXPRESS class
+                        return true;
+                    }
+
                     var hWnd = new HandleRef(null, ptr);
                     if (!WindowsNativeMethods.PostMessage(hWnd, 0x12, IntPtr.Zero, IntPtr.Zero))
                     {
                         throw new InvalidOperationException($"Unable to PostMessage to process {pid}. LastError: {Marshal.GetLastWin32Error()}");
                     }
-                    return;
+
+                    found = true;
+                    return false;
                 }
+
+                return true;
+            }, IntPtr.Zero);
+
+            if (!found)
+            {
+                throw new InvalidOperationException($"Unable to find main window for process {pid}");
             }
-            throw new InvalidOperationException($"Unable to find main window for process {pid}");
         }
 
         private void GracefullyShutdownProcess(Process hostProcess)
