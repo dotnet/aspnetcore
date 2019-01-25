@@ -441,7 +441,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                         response.EnsureSuccessStatusCode();
                         NegotiationResponse negotiateResponse;
                         var responseBuffer = await response.Content.ReadAsByteArrayAsync();
-                        negotiateResponse = NegotiateProtocol.ParseResponse(responseBuffer);
+                        var negotiateResponse = NegotiateProtocol.ParseResponse(responseBuffer);
                         if (!string.IsNullOrEmpty(negotiateResponse.Error))
                         {
                             throw new Exception(negotiateResponse.Error);
