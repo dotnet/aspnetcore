@@ -7,6 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+     <TestAssetPublishProfile Include="Standalone-x64" Properties="RuntimeIdentifier=win7-x64;" />
+     <TestAssetPublishProfile Include="Standalone-x86" Properties="RuntimeIdentifier=win7-x86;" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="..\shared\**\*.cs" />
     <Compile Include="..\InProcessWebSite\*.cs" />
     <Compile Include="..\InProcessWebSite\Properties\*.cs" />

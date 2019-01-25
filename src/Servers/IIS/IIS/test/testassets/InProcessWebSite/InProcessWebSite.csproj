@@ -8,6 +8,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+     <TestAssetPublishProfile Include="Standalone-x64" Properties="RuntimeIdentifier=win7-x64;" />
+     <TestAssetPublishProfile Include="Standalone-x86" Properties="RuntimeIdentifier=win7-x86;" />
+     <TestAssetPublishProfile Include="AppHost" Properties="RuntimeIdentifier=win7-x64;UseAppHost=true;SelfContained=false;ReferenceTestTasks=false;"/>
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="..\shared\**\*.cs" />
     <None Include="wwwroot\**" CopyToOutputDirectory="Always" />
   </ItemGroup>

@@ -78,4 +78,12 @@
     <Exec Command="$(InjectDepsApp) &quot;$(PublishDepsFilePath)&quot; $(RuntimeIdentifier) " />
   </Target>
 
+  <Target Name="PublishTestsAssets" AfterTargets="Build" Condition="'$(_InsidePublishTestsAssets)' != 'true'">
+    <ItemGroup>
+      <TestAssetPublishProfile Include="Default" Properties="UseAppHost=false" />
+    </ItemGroup>
+
+    <!-- We always published in debug configuration before -->
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" Properties="_InsidePublishTestsAssets=True;Configuration=Debug;PublishDir=$(PublishDir)%(TestAssetPublishProfile.Identity)/;%(TestAssetPublishProfile.Properties)" />
+  </Target>
 </Project>

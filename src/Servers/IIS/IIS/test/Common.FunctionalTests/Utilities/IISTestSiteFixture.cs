@@ -116,7 +116,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 TargetFramework = Tfm.NetCoreApp30,
                 AncmVersion = AncmVersion.AspNetCoreModuleV2,
                 HostingModel = HostingModel.InProcess,
-                PublishApplicationBeforeDeployment = true,
+                ApplicationPublisher = new PublishedApplicationPublisher(Helpers.GetInProcessTestSitesPath()),
+                PublishApplicationBeforeDeployment = true
             };
 
             _configure(deploymentParameters);
