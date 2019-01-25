@@ -25,7 +25,7 @@ namespace ServerComparison.FunctionalTests
         }
 
         public static TestMatrix TestVariants
-            => TestMatrix.ForServers(/* ServerType.IISExpress, https://github.com/aspnet/AspNetCore/issues/6168, */ ServerType.Kestrel, /* ServerType.Nginx, https://github.com/aspnet/AspNetCore-Internal/issues/1525 */ ServerType.HttpSys)
+            => TestMatrix.ForServers(/* ServerType.IISExpress, https://github.com/aspnet/AspNetCore/issues/6168, */ ServerType.Kestrel, ServerType.Nginx, ServerType.HttpSys)
                 .WithTfms(Tfm.NetCoreApp30)
                 .WithAncmVersions(AncmVersion.AspNetCoreModuleV2)
                 .WithAllHostingModels();
