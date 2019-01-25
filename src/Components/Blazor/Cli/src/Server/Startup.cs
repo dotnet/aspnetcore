@@ -37,8 +37,8 @@ namespace Microsoft.AspNetCore.Blazor.Cli.Server
             EnableConfiguredPathbase(app, configuration);
 
             var clientAssemblyPath = FindClientAssemblyPath(app);
-            app.UseBlazor(new BlazorOptions { ClientAssemblyPath = clientAssemblyPath });
             app.UseBlazorDebugging();
+            app.UseBlazor(new BlazorOptions { ClientAssemblyPath = clientAssemblyPath });
         }
 
         private static void EnableConfiguredPathbase(IApplicationBuilder app, IConfiguration configuration)

@@ -154,7 +154,7 @@ namespace WsProxy {
 
 			case "Debugger.setBreakpointByUrl": {
 					Info ($"BP req {args}");
-					var bp_req = BreakPointRequest.Parse (args);
+					var bp_req = BreakPointRequest.Parse (args, store);
 					if (bp_req != null) {
 						await SetBreakPoint (id, bp_req, token);
 						return true;
