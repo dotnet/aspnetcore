@@ -100,15 +100,15 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
                         var response = await responseTask;
                         if (response.StatusCode == HttpStatusCode.OK)
                         {
-                            break;
+                            return;
                         }
                     }
                     catch (OperationCanceledException)
                     {
 
                     }
-
                     await Task.Delay(1000);
+
                 }
             });
 
