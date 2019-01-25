@@ -22,6 +22,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         }
 
         private readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(60);
+        private readonly TimeSpan NegativeTimeout = TimeSpan.FromSeconds(5);
         private readonly ITestOutputHelper _output;
 
         [Theory]
@@ -203,7 +204,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                     await Task.Delay(1000);
                     File.WriteAllText(testFileFullPath, string.Empty);
 
-                    await Assert.ThrowsAsync<TimeoutException>(() => changedEv.Task.TimeoutAfter(DefaultTimeout / 2));
+                    await Assert.ThrowsAsync<TimeoutException>(() => changedEv.Task.TimeoutAfter(NegativeTimeout));
                 }
             });
         }
@@ -230,7 +231,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 await Task.Delay(1000);
                 File.WriteAllText(testFileFullPath, string.Empty);
 
-                await Assert.ThrowsAsync<TimeoutException>(() => changedEv.Task.TimeoutAfter(DefaultTimeout / 2));
+                await Assert.ThrowsAsync<TimeoutException>(() => changedEv.Task.TimeoutAfter(NegativeTimeout));
             });
         }
 
