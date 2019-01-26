@@ -4,6 +4,7 @@
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
     // This is used to store the uncombined parts of the final page route
+    // Note: This type name is referenced by name in AuthorizationMiddleware, do not change this without addressing https://github.com/aspnet/AspNetCore/issues/7011
     internal class PageRouteMetadata
     {
         public PageRouteMetadata(string pageRoute, string routeTemplate)
