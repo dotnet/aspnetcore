@@ -10,7 +10,7 @@
       <FilesToSign Include="$(ArtifactsShippingPackagesDir)*.jar" Certificate="MicrosoftJAR" />
       <FilesToSign Include="$(ArtifactsShippingPackagesDir)*.nupkg" Exclude="$(ArtifactsShippingPackagesDir)*.symbols.nupkg" Certificate="NuGet" />
       <FilesToSign Include="$(ArtifactsNonShippingPackagesDir)*.nupkg" Exclude="$(ArtifactsNonShippingPackagesDir)*.symbols.nupkg" Certificate="NuGet" />
-      <FilesToSign Include="$(InstallersOutputPath)*.vsix" Certificate="VsixSHA2" />
+      <FilesToSign Include="$(VisualStudioSetupOutputPath)*.vsix" Certificate="VsixSHA2" />
       <!-- "None" means don't sign the .zip file itself, but still scan the contents of the .zip for signable files. -->
       <FilesToSign Include="$(InstallersOutputPath)*.zip" Certificate="None" />
 
