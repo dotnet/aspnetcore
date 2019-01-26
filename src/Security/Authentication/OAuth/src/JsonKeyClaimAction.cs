@@ -1,8 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Security.Claims;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 
 namespace Microsoft.AspNetCore.Authentication.OAuth.Claims
 {
@@ -30,19 +30,26 @@ namespace Microsoft.AspNetCore.Authentication.OAuth.Claims
         public string JsonKey { get; }
 
         /// <inheritdoc />
-        public override void Run(JObject userData, ClaimsIdentity identity, string issuer)
+        public override void Run(JsonDocument userData, ClaimsIdentity identity, string issuer)
         {
-            var value = userData?[JsonKey];
-            if (value is JValue)
+            if (userData == null || !userData.RootElement.TryGetProperty(JsonKey, out var value))
             {
-                AddClaim(value?.ToString(), identity, issuer);
+                return;
             }
-            else if (value is JArray)
+            if (value.Type == JsonValueType.Array)
             {
-                foreach (var v in value)
+                foreach (var v in value.EnumerateArray())
                 {
-                    AddClaim(v?.ToString(), identity, issuer);
+                    AddClaim(v.ToString(), identity, issuer);
                 }
+            }
+            else if (value.Type == JsonValueType.Object || value.Type == JsonValueType.Undefined)
+            {
+                // Skip, because they were previously skipped
+            }
+            else
+            {
+                AddClaim(value.ToString(), identity, issuer);
             }
         }
 

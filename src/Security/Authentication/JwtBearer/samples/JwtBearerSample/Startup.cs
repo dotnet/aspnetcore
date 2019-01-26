@@ -1,7 +1,11 @@
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Pipelines;
 using System.Runtime.ExceptionServices;
+using System.Text.Json;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -10,7 +14,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
-using Newtonsoft.Json.Linq;
 
 namespace JwtBearerSample
 {
@@ -93,19 +96,41 @@ namespace JwtBearerSample
                     {
                         var reader = new StreamReader(context.Request.Body);
                         var body = await reader.ReadToEndAsync();
-                        var obj = JObject.Parse(body);
-                        var todo = new Todo() { Description = obj["Description"].Value<string>(), Owner = context.User.Identity.Name };
+                        var obj = JsonDocument.Parse(body).RootElement;
+                        var todo = new Todo() { Description = obj.GetProperty("Description").ToString(), Owner = context.User.Identity.Name };
                         Todos.Add(todo);
                     }
                     else
                     {
                         response.ContentType = "application/json";
                         response.Headers[HeaderNames.CacheControl] = "no-cache";
-                        var json = JToken.FromObject(Todos);
-                        await response.WriteAsync(json.ToString());
+                        await SerializeAsync(Todos, response.Body);
                     }
                 });
             });
+        }
+
+        private async Task SerializeAsync(IList<Todo> todos, Stream stream)
+        {
+            var pipe = new StreamPipeWriter(stream);
+            Serialize(todos, pipe);
+            await pipe.FlushAsync();
+            pipe.Complete();
+        }
+
+        private void Serialize(IList<Todo> todos, IBufferWriter<byte> output)
+        {
+            var writer = new Utf8JsonWriter(output);
+            writer.WriteStartArray();
+            foreach (var todo in todos)
+            {
+                writer.WriteStartObject();
+                writer.WriteString("Description", todo.Description);
+                writer.WriteString("Owner", todo.Owner);
+                writer.WriteEndObject();
+            }
+            writer.WriteEndArray();
+            writer.Flush();
         }
     }
 }

@@ -1,9 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Security.Claims;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 
 namespace Microsoft.AspNetCore.Authentication.OAuth.Claims
 {
@@ -17,24 +17,24 @@ namespace Microsoft.AspNetCore.Authentication.OAuth.Claims
         {
         }
 
-        public override void Run(JObject userData, ClaimsIdentity identity, string issuer)
+        public override void Run(JsonDocument userData, ClaimsIdentity identity, string issuer)
         {
             if (userData == null)
             {
                 return;
             }
-            foreach (var pair in userData)
+            foreach (var pair in userData.RootElement.EnumerateObject())
             {
-                var claimValue = userData.TryGetValue(pair.Key, out var value) ? value.ToString() : null;
+                var claimValue = userData.GetString(pair.Name);
 
                 // Avoid adding a claim if there's a duplicate name and value. This often happens in OIDC when claims are
                 // retrieved both from the id_token and from the user-info endpoint.
-                var duplicate = identity.FindFirst(c => string.Equals(c.Type, pair.Key, StringComparison.OrdinalIgnoreCase)
+                var duplicate = identity.FindFirst(c => string.Equals(c.Type, pair.Name, StringComparison.OrdinalIgnoreCase)
                         && string.Equals(c.Value, claimValue, StringComparison.Ordinal)) != null;
 
                 if (!duplicate)
                 {
-                    identity.AddClaim(new Claim(pair.Key, claimValue, ClaimValueTypes.String, issuer));
+                    identity.AddClaim(new Claim(pair.Name, claimValue, ClaimValueTypes.String, issuer));
                 }
             }
         }

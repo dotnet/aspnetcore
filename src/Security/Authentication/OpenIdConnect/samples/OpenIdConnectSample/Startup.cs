@@ -5,6 +5,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Encodings.Web;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -16,7 +17,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
-using Newtonsoft.Json.Linq;
 
 namespace OpenIdConnectSample
 {
@@ -208,12 +208,12 @@ namespace OpenIdConnectSample
                     var tokenResponse = await options.Backchannel.PostAsync(metadata.TokenEndpoint, content, context.RequestAborted);
                     tokenResponse.EnsureSuccessStatusCode();
 
-                    var payload = JObject.Parse(await tokenResponse.Content.ReadAsStringAsync());
+                    var payload = JsonDocument.Parse(await tokenResponse.Content.ReadAsStringAsync());
 
                     // Persist the new acess token
-                    props.UpdateTokenValue("access_token", payload.Value<string>("access_token"));
-                    props.UpdateTokenValue("refresh_token", payload.Value<string>("refresh_token"));
-                    if (int.TryParse(payload.Value<string>("expires_in"), NumberStyles.Integer, CultureInfo.InvariantCulture, out var seconds))
+                    props.UpdateTokenValue("access_token", payload.GetString("access_token"));
+                    props.UpdateTokenValue("refresh_token", payload.GetString("refresh_token"));
+                    if (payload.RootElement.TryGetProperty("expires_in", out var property) && property.TryGetInt32(out var seconds))
                     {
                         var expiresAt = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(seconds);
                         props.UpdateTokenValue("expires_at", expiresAt.ToString("o", CultureInfo.InvariantCulture));

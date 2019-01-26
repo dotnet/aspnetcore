@@ -12,6 +12,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Encodings.Web;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -20,7 +21,6 @@ using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
 {
@@ -853,42 +853,46 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             responseMessage.EnsureSuccessStatusCode();
             var userInfoResponse = await responseMessage.Content.ReadAsStringAsync();
 
-            JObject user;
+            JsonDocument user;
             var contentType = responseMessage.Content.Headers.ContentType;
             if (contentType.MediaType.Equals("application/json", StringComparison.OrdinalIgnoreCase))
             {
-                user = JObject.Parse(userInfoResponse);
+                user = JsonDocument.Parse(userInfoResponse);
             }
             else if (contentType.MediaType.Equals("application/jwt", StringComparison.OrdinalIgnoreCase))
             {
                 var userInfoEndpointJwt = new JwtSecurityToken(userInfoResponse);
-                user = JObject.FromObject(userInfoEndpointJwt.Payload);
+                user = JsonDocument.Parse(userInfoEndpointJwt.Payload.SerializeToJson());
             }
             else
             {
                 return HandleRequestResult.Fail("Unknown response type: " + contentType.MediaType, properties);
             }
 
-            var userInformationReceivedContext = await RunUserInformationReceivedEventAsync(principal, properties, message, user);
-            if (userInformationReceivedContext.Result != null)
+            using (user)
             {
-                return userInformationReceivedContext.Result;
-            }
-            principal = userInformationReceivedContext.Principal;
-            properties = userInformationReceivedContext.Properties;
-            user = userInformationReceivedContext.User;
+                var userInformationReceivedContext = await RunUserInformationReceivedEventAsync(principal, properties, message, user);
+                if (userInformationReceivedContext.Result != null)
+                {
+                    return userInformationReceivedContext.Result;
+                }
+                principal = userInformationReceivedContext.Principal;
+                properties = userInformationReceivedContext.Properties;
+                using (var updatedUser = userInformationReceivedContext.User)
+                {
+                    Options.ProtocolValidator.ValidateUserInfoResponse(new OpenIdConnectProtocolValidationContext()
+                    {
+                        UserInfoEndpointResponse = userInfoResponse,
+                        ValidatedIdToken = jwt,
+                    });
 
-            Options.ProtocolValidator.ValidateUserInfoResponse(new OpenIdConnectProtocolValidationContext()
-            {
-                UserInfoEndpointResponse = userInfoResponse,
-                ValidatedIdToken = jwt,
-            });
+                    var identity = (ClaimsIdentity)principal.Identity;
 
-            var identity = (ClaimsIdentity)principal.Identity;
-
-            foreach (var action in Options.ClaimActions)
-            {
-                action.Run(user, identity, ClaimsIssuer);
+                    foreach (var action in Options.ClaimActions)
+                    {
+                        action.Run(user, identity, ClaimsIssuer);
+                    }
+                }
             }
 
             return HandleRequestResult.Success(new AuthenticationTicket(principal, properties, Scheme.Name));
@@ -1144,7 +1148,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             return context;
         }
 
-        private async Task<UserInformationReceivedContext> RunUserInformationReceivedEventAsync(ClaimsPrincipal principal, AuthenticationProperties properties, OpenIdConnectMessage message, JObject user)
+        private async Task<UserInformationReceivedContext> RunUserInformationReceivedEventAsync(ClaimsPrincipal principal, AuthenticationProperties properties, OpenIdConnectMessage message, JsonDocument user)
         {
             Logger.UserInformationReceived(user.ToString());
 

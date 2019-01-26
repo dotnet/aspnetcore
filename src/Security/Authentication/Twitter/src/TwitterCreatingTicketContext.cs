@@ -1,10 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Security.Claims;
+using System.Text.Json;
 using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNetCore.Authentication.Twitter
 {
@@ -36,14 +35,14 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             string screenName,
             string accessToken,
             string accessTokenSecret,
-            JObject user)
+            JsonDocument user)
             : base(context, scheme, options)
         {
             UserId = userId;
             ScreenName = screenName;
             AccessToken = accessToken;
             AccessTokenSecret = accessTokenSecret;
-            User = user ?? new JObject();
+            User = user ?? JsonDocument.Parse(string.Empty);
             Principal = principal;
             Properties = properties;
         }
@@ -70,8 +69,8 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
 
         /// <summary>
         /// Gets the JSON-serialized user or an empty
-        /// <see cref="JObject"/> if it is not available.
+        /// <see cref="JsonDocument"/> if it is not available.
         /// </summary>
-        public JObject User { get; }
+        public JsonDocument User { get; }
     }
 }

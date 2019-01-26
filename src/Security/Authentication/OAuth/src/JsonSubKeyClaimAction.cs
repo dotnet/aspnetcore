@@ -1,8 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Newtonsoft.Json.Linq;
 using System.Security.Claims;
+using System.Text.Json;
 
 namespace Microsoft.AspNetCore.Authentication.OAuth.Claims
 {
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth.Claims
         public string SubKey { get; }
 
         /// <inheritdoc />
-        public override void Run(JObject userData, ClaimsIdentity identity, string issuer)
+        public override void Run(JsonDocument userData, ClaimsIdentity identity, string issuer)
         {
             var value = GetValue(userData, JsonKey, SubKey);
             if (!string.IsNullOrEmpty(value))
@@ -42,15 +42,12 @@ namespace Microsoft.AspNetCore.Authentication.OAuth.Claims
         }
 
         // Get the given subProperty from a property.
-        private static string GetValue(JObject userData, string propertyName, string subProperty)
+        private static string GetValue(JsonDocument userData, string propertyName, string subProperty)
         {
-            if (userData != null && userData.TryGetValue(propertyName, out var value))
+            if (userData != null && userData.RootElement.TryGetProperty(propertyName, out var value)
+                && value.Type == JsonValueType.Object && value.TryGetProperty(subProperty, out value))
             {
-                var subObject = JObject.Parse(value.ToString());
-                if (subObject != null && subObject.TryGetValue(subProperty, out value))
-                {
-                    return value.ToString();
-                }
+                return value.ToString();
             }
             return null;
         }

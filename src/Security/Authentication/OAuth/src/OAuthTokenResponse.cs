@@ -2,19 +2,19 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 
 namespace Microsoft.AspNetCore.Authentication.OAuth
 {
-    public class OAuthTokenResponse
+    public class OAuthTokenResponse : IDisposable
     {
-        private OAuthTokenResponse(JObject response)
+        private OAuthTokenResponse(JsonDocument response)
         {
             Response = response;
-            AccessToken = response.Value<string>("access_token");
-            TokenType = response.Value<string>("token_type");
-            RefreshToken = response.Value<string>("refresh_token");
-            ExpiresIn = response.Value<string>("expires_in");
+            AccessToken = response.GetString("access_token");
+            TokenType = response.GetString("token_type");
+            RefreshToken = response.GetString("refresh_token");
+            ExpiresIn = response.GetString("expires_in");
         }
 
         private OAuthTokenResponse(Exception error)
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             Error = error;
         }
 
-        public static OAuthTokenResponse Success(JObject response)
+        public static OAuthTokenResponse Success(JsonDocument response)
         {
             return new OAuthTokenResponse(response);
         }
@@ -32,7 +32,12 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             return new OAuthTokenResponse(error);
         }
 
-        public JObject Response { get; set; }
+        public void Dispose()
+        {
+            Response?.Dispose();
+        }
+
+        public JsonDocument Response { get; set; }
         public string AccessToken { get; set; }
         public string TokenType { get; set; }
         public string RefreshToken { get; set; }

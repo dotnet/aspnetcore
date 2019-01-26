@@ -5,8 +5,8 @@ using System;
 using System.Globalization;
 using System.Net.Http;
 using System.Security.Claims;
+using System.Text.Json;
 using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNetCore.Authentication.OAuth
 {
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             OAuthOptions options,
             HttpClient backchannel,
             OAuthTokenResponse tokens)
-            : this(principal, properties, context, scheme, options, backchannel, tokens, user: new JObject())
+            : this(principal, properties, context, scheme, options, backchannel, tokens, user: JsonDocument.Parse(string.Empty))
         { }
 
         /// <summary>
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             OAuthOptions options,
             HttpClient backchannel,
             OAuthTokenResponse tokens,
-            JObject user)
+            JsonDocument user)
             : base(context, scheme, options)
         {
             if (backchannel == null)
@@ -82,9 +82,9 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
 
         /// <summary>
         /// Gets the JSON-serialized user or an empty
-        /// <see cref="JObject"/> if it is not available.
+        /// <see cref="JsonDocument"/> if it is not available.
         /// </summary>
-        public JObject User { get; }
+        public JsonDocument User { get; }
 
         /// <summary>
         /// Gets the token response returned by the authentication service.
@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
 
         public void RunClaimActions() => RunClaimActions(User);
 
-        public void RunClaimActions(JObject userData)
+        public void RunClaimActions(JsonDocument userData)
         {
             if (userData == null)
             {

@@ -1,10 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Security.Claims;
+using System.Text.Json;
 using Microsoft.AspNetCore.Authentication.OAuth.Claims;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNetCore.Authentication
 {
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="collection"></param>
         /// <param name="claimType">The value to use for Claim.Type when creating a Claim.</param>
         /// <param name="resolver">The Func that will be called to select value from the given json user data.</param>
-        public static void MapCustomJson(this ClaimActionCollection collection, string claimType, Func<JObject, string> resolver)
+        public static void MapCustomJson(this ClaimActionCollection collection, string claimType, Func<JsonDocument, string> resolver)
         {
             collection.MapCustomJson(claimType, ClaimValueTypes.String, resolver);
         }
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="claimType">The value to use for Claim.Type when creating a Claim.</param>
         /// <param name="valueType">The value to use for Claim.ValueType when creating a Claim.</param>
         /// <param name="resolver">The Func that will be called to select value from the given json user data.</param>
-        public static void MapCustomJson(this ClaimActionCollection collection, string claimType, string valueType, Func<JObject, string> resolver)
+        public static void MapCustomJson(this ClaimActionCollection collection, string claimType, string valueType, Func<JsonDocument, string> resolver)
         {
             collection.Add(new CustomJsonClaimAction(claimType, valueType, resolver));
         }

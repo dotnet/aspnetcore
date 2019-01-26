@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
-using Newtonsoft.Json;
 using System;
 using System.Linq;
 using System.Net;
@@ -302,7 +301,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.MicrosoftAccount
         private static HttpResponseMessage ReturnJsonResponse(object content)
         {
             var res = new HttpResponseMessage(HttpStatusCode.OK);
-            var text = JsonConvert.SerializeObject(content);
+            var text = Newtonsoft.Json.JsonConvert.SerializeObject(content);
             res.Content = new StringContent(text, Encoding.UTF8, "application/json");
             return res;
         }

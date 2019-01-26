@@ -9,13 +9,13 @@ using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNetCore.Authentication.OAuth
 {
@@ -99,62 +99,63 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                 return HandleRequestResult.Fail("Code was not found.", properties);
             }
 
-            var tokens = await ExchangeCodeAsync(code, BuildRedirectUri(Options.CallbackPath));
-
-            if (tokens.Error != null)
+            using (var tokens = await ExchangeCodeAsync(code, BuildRedirectUri(Options.CallbackPath)))
             {
-                return HandleRequestResult.Fail(tokens.Error, properties);
-            }
-
-            if (string.IsNullOrEmpty(tokens.AccessToken))
-            {
-                return HandleRequestResult.Fail("Failed to retrieve access token.", properties);
-            }
-
-            var identity = new ClaimsIdentity(ClaimsIssuer);
-
-            if (Options.SaveTokens)
-            {
-                var authTokens = new List<AuthenticationToken>();
-
-                authTokens.Add(new AuthenticationToken { Name = "access_token", Value = tokens.AccessToken });
-                if (!string.IsNullOrEmpty(tokens.RefreshToken))
+                if (tokens.Error != null)
                 {
-                    authTokens.Add(new AuthenticationToken { Name = "refresh_token", Value = tokens.RefreshToken });
+                    return HandleRequestResult.Fail(tokens.Error, properties);
                 }
 
-                if (!string.IsNullOrEmpty(tokens.TokenType))
+                if (string.IsNullOrEmpty(tokens.AccessToken))
                 {
-                    authTokens.Add(new AuthenticationToken { Name = "token_type", Value = tokens.TokenType });
+                    return HandleRequestResult.Fail("Failed to retrieve access token.", properties);
                 }
 
-                if (!string.IsNullOrEmpty(tokens.ExpiresIn))
+                var identity = new ClaimsIdentity(ClaimsIssuer);
+
+                if (Options.SaveTokens)
                 {
-                    int value;
-                    if (int.TryParse(tokens.ExpiresIn, NumberStyles.Integer, CultureInfo.InvariantCulture, out value))
+                    var authTokens = new List<AuthenticationToken>();
+
+                    authTokens.Add(new AuthenticationToken { Name = "access_token", Value = tokens.AccessToken });
+                    if (!string.IsNullOrEmpty(tokens.RefreshToken))
                     {
-                        // https://www.w3.org/TR/xmlschema-2/#dateTime
-                        // https://msdn.microsoft.com/en-us/library/az4se3k1(v=vs.110).aspx
-                        var expiresAt = Clock.UtcNow + TimeSpan.FromSeconds(value);
-                        authTokens.Add(new AuthenticationToken
-                        {
-                            Name = "expires_at",
-                            Value = expiresAt.ToString("o", CultureInfo.InvariantCulture)
-                        });
+                        authTokens.Add(new AuthenticationToken { Name = "refresh_token", Value = tokens.RefreshToken });
                     }
+
+                    if (!string.IsNullOrEmpty(tokens.TokenType))
+                    {
+                        authTokens.Add(new AuthenticationToken { Name = "token_type", Value = tokens.TokenType });
+                    }
+
+                    if (!string.IsNullOrEmpty(tokens.ExpiresIn))
+                    {
+                        int value;
+                        if (int.TryParse(tokens.ExpiresIn, NumberStyles.Integer, CultureInfo.InvariantCulture, out value))
+                        {
+                            // https://www.w3.org/TR/xmlschema-2/#dateTime
+                            // https://msdn.microsoft.com/en-us/library/az4se3k1(v=vs.110).aspx
+                            var expiresAt = Clock.UtcNow + TimeSpan.FromSeconds(value);
+                            authTokens.Add(new AuthenticationToken
+                            {
+                                Name = "expires_at",
+                                Value = expiresAt.ToString("o", CultureInfo.InvariantCulture)
+                            });
+                        }
+                    }
+
+                    properties.StoreTokens(authTokens);
                 }
 
-                properties.StoreTokens(authTokens);
-            }
-
-            var ticket = await CreateTicketAsync(identity, properties, tokens);
-            if (ticket != null)
-            {
-                return HandleRequestResult.Success(ticket);
-            }
-            else
-            {
-                return HandleRequestResult.Fail("Failed to retrieve user information from remote server.", properties);
+                var ticket = await CreateTicketAsync(identity, properties, tokens);
+                if (ticket != null)
+                {
+                    return HandleRequestResult.Success(ticket);
+                }
+                else
+                {
+                    return HandleRequestResult.Fail("Failed to retrieve user information from remote server.", properties);
+                }
             }
         }
 
@@ -177,7 +178,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             var response = await Backchannel.SendAsync(requestMessage, Context.RequestAborted);
             if (response.IsSuccessStatusCode)
             {
-                var payload = JObject.Parse(await response.Content.ReadAsStringAsync());
+                var payload = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
                 return OAuthTokenResponse.Success(payload);
             }
             else

@@ -1,9 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Linq;
 using System.Security.Claims;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 
 namespace Microsoft.AspNetCore.Authentication.OAuth.Claims
 {
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth.Claims
         }
 
         /// <inheritdoc />
-        public override void Run(JObject userData, ClaimsIdentity identity, string issuer)
+        public override void Run(JsonDocument userData, ClaimsIdentity identity, string issuer)
         {
             foreach (var claim in identity.FindAll(ClaimType).ToList())
             {

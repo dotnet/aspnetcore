@@ -1,8 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Security.Claims;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
 
 namespace Microsoft.AspNetCore.Authentication.OAuth.Claims
 {
@@ -37,6 +37,6 @@ namespace Microsoft.AspNetCore.Authentication.OAuth.Claims
         /// <param name="userData">The source data to examine. This value may be null.</param>
         /// <param name="identity">The identity to add Claims to.</param>
         /// <param name="issuer">The value to use for Claim.Issuer when creating a Claim.</param>
-        public abstract void Run(JObject userData, ClaimsIdentity identity, string issuer);
+        public abstract void Run(JsonDocument userData, ClaimsIdentity identity, string issuer);
     }
 }
