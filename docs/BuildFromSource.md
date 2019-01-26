@@ -87,10 +87,13 @@ Opening solution files may produce an error code NU1105 with a message such
 
 This is a known issue in NuGet (<https://github.com/NuGet/Home/issues/5820>) and we are working with them for a solution. See also <https://github.com/aspnet/AspNetCore/issues/4183> to track progress on this.
 
-**The workaround** for now is to add all projects to the solution.
+**The workaround** for now is to add all projects to the solution. You can either do this one by one using `dotnet sln`
 
     dotnet sln add C:\src\AspNetCore\src\Hosting\Abstractions\src\Microsoft.AspNetCore.Hosting.Abstractions.csproj
 
+Or you can use this script to automatically traverse the project reference graph, which then invokes `dotnet sln` for you: [eng/scripts/AddAllProjectRefsToSolution.ps1](/eng/scripts/AddAllProjectRefsToSolution.ps1).
+
+    ./eng/scripts/AddAllProjectRefsToSolution.ps1 -WorkingDir src/Mvc/
 
 #### PATH
 
