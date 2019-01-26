@@ -50,6 +50,7 @@ namespace IIS.FunctionalTests
 
         [ConditionalTheory]
         [RequiresIIS(IISCapability.ApplicationInitialization)]
+        [RequiresNewHandler]
         [InlineData(HostingModel.InProcess)]
         [InlineData(HostingModel.OutOfProcess)]
         public async Task ApplicationInitializationPageIsRequested(HostingModel hostingModel)
