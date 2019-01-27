@@ -95,8 +95,8 @@ namespace Microsoft.AspNetCore.Http.Connections
             {
                 var reader = new Utf8JsonReader(content, isFinalBlock: true, state: default);
 
-                CheckRead(ref reader);
-                EnsureObjectStart(ref reader);
+                SystemTextJsonUtils.CheckRead(ref reader);
+                SystemTextJsonUtils.EnsureObjectStart(ref reader);
 
                 string connectionId = null;
                 string url = null;
@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Http.Connections
                 string error = null;
 
                 var completed = false;
-                while (!completed && CheckRead(ref reader))
+                while (!completed && SystemTextJsonUtils.CheckRead(ref reader))
                 {
                     switch (reader.TokenType)
                     {
@@ -114,23 +114,23 @@ namespace Microsoft.AspNetCore.Http.Connections
 
                             if (memberName.SequenceEqual(UrlPropertyNameBytes))
                             {
-                                url = ReadAsString(ref reader, UrlPropertyNameBytes);
+                                url = SystemTextJsonUtils.ReadAsString(ref reader, UrlPropertyNameBytes);
                             }
                             else if (memberName.SequenceEqual(AccessTokenPropertyNameBytes))
                             {
-                                accessToken = ReadAsString(ref reader, AccessTokenPropertyNameBytes);
+                                accessToken = SystemTextJsonUtils.ReadAsString(ref reader, AccessTokenPropertyNameBytes);
                             }
                             else if (memberName.SequenceEqual(ConnectionIdPropertyNameBytes))
                             {
-                                connectionId = ReadAsString(ref reader, ConnectionIdPropertyNameBytes);
+                                connectionId = SystemTextJsonUtils.ReadAsString(ref reader, ConnectionIdPropertyNameBytes);
                             }
                             else if (memberName.SequenceEqual(AvailableTransportsPropertyNameBytes))
                             {
-                                CheckRead(ref reader);
-                                EnsureArrayStart(ref reader);
+                                SystemTextJsonUtils.CheckRead(ref reader);
+                                SystemTextJsonUtils.EnsureArrayStart(ref reader);
 
                                 availableTransports = new List<AvailableTransport>();
-                                while (CheckRead(ref reader))
+                                while (SystemTextJsonUtils.CheckRead(ref reader))
                                 {
                                     if (reader.TokenType == JsonTokenType.StartObject)
                                     {
@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Http.Connections
                             }
                             else if (memberName.SequenceEqual(ErrorPropertyNameBytes))
                             {
-                                error = ReadAsString(ref reader, ErrorPropertyNameBytes);
+                                error = SystemTextJsonUtils.ReadAsString(ref reader, ErrorPropertyNameBytes);
                             }
                             else if (memberName.SequenceEqual(ProtocolVersionPropertyNameBytes))
                             {
@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Http.Connections
                             }
                             else
                             {
-                                Skip(ref reader);
+                                SystemTextJsonUtils.Skip(ref reader);
                             }
                             break;
                         case JsonTokenType.EndObject:
@@ -192,6 +192,13 @@ namespace Microsoft.AspNetCore.Http.Connections
             }
         }
 
+        /// <summary>
+        /// <para>
+        ///     This method is obsolete and will be removed in a future version.
+        ///     The recommended alternative is <see cref="ParseResponse(ReadOnlySpan{byte})" />.
+        /// </para>
+        /// </summary>
+        [Obsolete("This method is obsolete and will be removed in a future version. The recommended alternative is Microsoft.AspNetCore.Http.Connections.ParseResponse(ReadOnlySpan{byte}).")]
         public static NegotiationResponse ParseResponse(Stream content)
         {
             var buffer = new byte[content.Length];
@@ -203,7 +210,7 @@ namespace Microsoft.AspNetCore.Http.Connections
         {
             var availableTransport = new AvailableTransport();
 
-            while (CheckRead(ref reader))
+            while (SystemTextJsonUtils.CheckRead(ref reader))
             {
                 switch (reader.TokenType)
                 {
@@ -212,17 +219,17 @@ namespace Microsoft.AspNetCore.Http.Connections
 
                         if (memberName.SequenceEqual(TransportPropertyNameBytes))
                         {
-                            availableTransport.Transport = ReadAsString(ref reader, TransportPropertyNameBytes);
+                            availableTransport.Transport = SystemTextJsonUtils.ReadAsString(ref reader, TransportPropertyNameBytes);
                         }
                         else if (memberName.SequenceEqual(TransferFormatsPropertyNameBytes))
                         {
-                            CheckRead(ref reader);
-                            EnsureArrayStart(ref reader);
+                            SystemTextJsonUtils.CheckRead(ref reader);
+                            SystemTextJsonUtils.EnsureArrayStart(ref reader);
 
                             var completed = false;
 
                             availableTransport.TransferFormats = new List<string>();
-                            while (!completed && CheckRead(ref reader))
+                            while (!completed && SystemTextJsonUtils.CheckRead(ref reader))
                             {
                                 switch (reader.TokenType)
                                 {
@@ -239,7 +246,7 @@ namespace Microsoft.AspNetCore.Http.Connections
                         }
                         else
                         {
-                            Skip(ref reader);
+                            SystemTextJsonUtils.Skip(ref reader);
                         }
                         break;
                     case JsonTokenType.EndObject:
@@ -260,77 +267,6 @@ namespace Microsoft.AspNetCore.Http.Connections
             }
 
             throw new InvalidDataException("Unexpected end when reading JSON.");
-        }
-
-        private static bool CheckRead(ref Utf8JsonReader reader)
-        {
-            if (!reader.Read())
-            {
-                throw new InvalidDataException("Unexpected end when reading JSON.");
-            }
-
-            return true;
-        }
-
-        private static void EnsureObjectStart(ref Utf8JsonReader reader)
-        {
-            if (reader.TokenType != JsonTokenType.StartObject)
-            {
-                throw new InvalidDataException($"Unexpected JSON Token Type '{GetTokenString(reader.TokenType)}'. Expected a JSON Object.");
-            }
-        }
-
-        private static string GetTokenString(JsonTokenType tokenType)
-        {
-            switch (tokenType)
-            {
-                case JsonTokenType.None:
-                    break;
-                case JsonTokenType.StartObject:
-                    return "StartObject";
-                case JsonTokenType.StartArray:
-                    return "Array";
-                case JsonTokenType.PropertyName:
-                    return "PropertyName";
-                default:
-                    break;
-            }
-            return tokenType.ToString();
-        }
-
-        private static void EnsureArrayStart(ref Utf8JsonReader reader)
-        {
-            if (reader.TokenType != JsonTokenType.StartArray)
-            {
-                throw new InvalidDataException($"Unexpected JSON Token Type '{GetTokenString(reader.TokenType)}'. Expected a JSON Array.");
-            }
-        }
-
-        private static void Skip(ref Utf8JsonReader reader)
-        {
-            if (reader.TokenType == JsonTokenType.PropertyName)
-            {
-                reader.Read();
-            }
-
-            if (reader.TokenType == JsonTokenType.StartObject || reader.TokenType == JsonTokenType.StartArray)
-            {
-                int depth = reader.CurrentDepth;
-                while (reader.Read() && depth < reader.CurrentDepth)
-                {
-                }
-            }
-        }
-
-        private static string ReadAsString(ref Utf8JsonReader reader, byte[] propertyName)
-        {
-            reader.Read();
-            if (reader.TokenType != JsonTokenType.String)
-            {
-                throw new InvalidDataException($"Expected '{Encoding.UTF8.GetString(propertyName)}' to be of type {JsonTokenType.String}.");
-            }
-
-            return reader.GetString();
         }
     }
 }
