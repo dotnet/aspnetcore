@@ -13,6 +13,7 @@
     <MicrosoftNETCoreAppPackageVersion>3.0.0-preview-27324-5</MicrosoftNETCoreAppPackageVersion>
     <MicrosoftDotNetPlatformAbstractionsPackageVersion>3.0.0-preview-27324-5</MicrosoftDotNetPlatformAbstractionsPackageVersion>
     <!-- Packages from dotnet/corefx -->
+    <MicrosoftBclJsonSourcesPacakgeVersion>4.6.0-preview.19073.11</MicrosoftBclJsonSourcesPacakgeVersion>
     <MicrosoftCSharpPackageVersion>4.6.0-preview.19073.11</MicrosoftCSharpPackageVersion>
     <MicrosoftWin32RegistryPackageVersion>4.6.0-preview.19073.11</MicrosoftWin32RegistryPackageVersion>
     <SystemComponentModelAnnotationsPackageVersion>4.6.0-preview.19073.11</SystemComponentModelAnnotationsPackageVersion>
