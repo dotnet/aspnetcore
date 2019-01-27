@@ -17,7 +17,7 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
     <Reference Include="System.Buffers" />
-    <PackageReference Condition="'$(TargetFramework)' == 'netstandard2.0'" Include="Microsoft.Bcl.Json.Sources" Version="4.6.0-preview.19073.1">
+    <PackageReference Include="Microsoft.Bcl.Json.Sources" Version="4.6.0-preview.19073.1" Condition="'$(TargetFramework)' == 'netstandard2.0'">
       <PrivateAssets>All</PrivateAssets>
     </PackageReference>
   </ItemGroup>
