@@ -6,7 +6,7 @@
     <RootNamespace>Microsoft.AspNetCore.Http.Connections</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <IsShippingPackage>true</IsShippingPackage>
-    <NoWarn>3021;1591</NoWarn>
+    <NoWarn>3021</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
