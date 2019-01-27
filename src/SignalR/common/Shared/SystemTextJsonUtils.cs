@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.IO;
 using System.Text;
 using System.Text.Json;
@@ -50,6 +53,7 @@ namespace Microsoft.AspNetCore.Internal
             }
         }
 
+        // Remove after https://github.com/dotnet/corefx/issues/33295 is done
         internal static void Skip(ref Utf8JsonReader reader)
         {
             if (reader.TokenType == JsonTokenType.PropertyName)
