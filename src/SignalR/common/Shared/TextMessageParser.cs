@@ -55,20 +55,25 @@ namespace Microsoft.AspNetCore.Internal
             }
             else
             {
-                var position = buffer.PositionOf(TextMessageFormatter.RecordSeparator);
-                if (position == null)
-                {
-                    payload = default;
-                    return false;
-                }
-
-                payload = buffer.Slice(0, position.Value);
-
-                // Skip record separator
-                buffer = buffer.Slice(buffer.GetPosition(1, position.Value));
-
-                return true;
+                return TryParseMessageMultiSegment(ref buffer, out payload);
             }
+        }
+
+        private static bool TryParseMessageMultiSegment(ref ReadOnlySequence<byte> buffer, out ReadOnlySequence<byte> payload)
+        {
+            var position = buffer.PositionOf(TextMessageFormatter.RecordSeparator);
+            if (position == null)
+            {
+                payload = default;
+                return false;
+            }
+
+            payload = buffer.Slice(0, position.Value);
+
+            // Skip record separator
+            buffer = buffer.Slice(buffer.GetPosition(1, position.Value));
+
+            return true;
         }
     }
 }
