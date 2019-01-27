@@ -95,8 +95,8 @@ namespace Microsoft.AspNetCore.Http.Connections
             {
                 var reader = new Utf8JsonReader(content, isFinalBlock: true, state: default);
 
-                SystemTextJsonUtils.CheckRead(ref reader);
-                SystemTextJsonUtils.EnsureObjectStart(ref reader);
+                reader.CheckRead();
+                reader.EnsureObjectStart();
 
                 string connectionId = null;
                 string url = null;
@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Http.Connections
                 string error = null;
 
                 var completed = false;
-                while (!completed && SystemTextJsonUtils.CheckRead(ref reader))
+                while (!completed && reader.CheckRead())
                 {
                     switch (reader.TokenType)
                     {
@@ -114,23 +114,23 @@ namespace Microsoft.AspNetCore.Http.Connections
 
                             if (memberName.SequenceEqual(UrlPropertyNameBytes))
                             {
-                                url = SystemTextJsonUtils.ReadAsString(ref reader, UrlPropertyNameBytes);
+                                url = reader.ReadAsString(UrlPropertyNameBytes);
                             }
                             else if (memberName.SequenceEqual(AccessTokenPropertyNameBytes))
                             {
-                                accessToken = SystemTextJsonUtils.ReadAsString(ref reader, AccessTokenPropertyNameBytes);
+                                accessToken = reader.ReadAsString(AccessTokenPropertyNameBytes);
                             }
                             else if (memberName.SequenceEqual(ConnectionIdPropertyNameBytes))
                             {
-                                connectionId = SystemTextJsonUtils.ReadAsString(ref reader, ConnectionIdPropertyNameBytes);
+                                connectionId = reader.ReadAsString(ConnectionIdPropertyNameBytes);
                             }
                             else if (memberName.SequenceEqual(AvailableTransportsPropertyNameBytes))
                             {
-                                SystemTextJsonUtils.CheckRead(ref reader);
-                                SystemTextJsonUtils.EnsureArrayStart(ref reader);
+                                reader.CheckRead();
+                                reader.EnsureArrayStart();
 
                                 availableTransports = new List<AvailableTransport>();
-                                while (SystemTextJsonUtils.CheckRead(ref reader))
+                                while (reader.CheckRead())
                                 {
                                     if (reader.TokenType == JsonTokenType.StartObject)
                                     {
@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Http.Connections
                             }
                             else if (memberName.SequenceEqual(ErrorPropertyNameBytes))
                             {
-                                error = SystemTextJsonUtils.ReadAsString(ref reader, ErrorPropertyNameBytes);
+                                error = reader.ReadAsString(ErrorPropertyNameBytes);
                             }
                             else if (memberName.SequenceEqual(ProtocolVersionPropertyNameBytes))
                             {
@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Http.Connections
                             }
                             else
                             {
-                                SystemTextJsonUtils.Skip(ref reader);
+                                reader.Skip();
                             }
                             break;
                         case JsonTokenType.EndObject:
@@ -210,7 +210,7 @@ namespace Microsoft.AspNetCore.Http.Connections
         {
             var availableTransport = new AvailableTransport();
 
-            while (SystemTextJsonUtils.CheckRead(ref reader))
+            while (reader.CheckRead())
             {
                 switch (reader.TokenType)
                 {
@@ -219,17 +219,17 @@ namespace Microsoft.AspNetCore.Http.Connections
 
                         if (memberName.SequenceEqual(TransportPropertyNameBytes))
                         {
-                            availableTransport.Transport = SystemTextJsonUtils.ReadAsString(ref reader, TransportPropertyNameBytes);
+                            availableTransport.Transport = reader.ReadAsString(TransportPropertyNameBytes);
                         }
                         else if (memberName.SequenceEqual(TransferFormatsPropertyNameBytes))
                         {
-                            SystemTextJsonUtils.CheckRead(ref reader);
-                            SystemTextJsonUtils.EnsureArrayStart(ref reader);
+                            reader.CheckRead();
+                            reader.EnsureArrayStart();
 
                             var completed = false;
 
                             availableTransport.TransferFormats = new List<string>();
-                            while (!completed && SystemTextJsonUtils.CheckRead(ref reader))
+                            while (!completed && reader.CheckRead())
                             {
                                 switch (reader.TokenType)
                                 {
@@ -246,7 +246,7 @@ namespace Microsoft.AspNetCore.Http.Connections
                         }
                         else
                         {
-                            SystemTextJsonUtils.Skip(ref reader);
+                            reader.Skip();
                         }
                         break;
                     case JsonTokenType.EndObject:
