@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.SpaServices.Npm
                 throw new ArgumentException("Cannot be null or empty", nameof(npmScriptName));
             }
 
-            // Start Angular CLI and attach to middleware pipeline
+            // Start the provided npm script and attach to middleware pipeline
             var appBuilder = spaBuilder.ApplicationBuilder;
             var logger = LoggerFinder.GetOrCreateLogger(appBuilder, LogCategoryName);
             var npmServerPortTask = 
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.SpaServices.Npm
                 }
             }
 
-            // Even after the Angular CLI claims to be listening for requests, there's a short
+            // Even after the CLI tool claims to be listening for requests, there's a short
             // period where it will give an error if you make a request too quickly
             await WaitForNpmServerToAcceptRequests(uri);
 
