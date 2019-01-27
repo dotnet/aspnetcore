@@ -7,9 +7,9 @@ using System.Text.Json;
 
 namespace Microsoft.AspNetCore.Internal
 {
-    internal static class SystemTextJsonUtils
+    internal static class SystemTextJsonExtensions
     {
-        internal static bool CheckRead(ref Utf8JsonReader reader)
+        public static bool CheckRead(this ref Utf8JsonReader reader)
         {
             if (!reader.Read())
             {
@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Internal
             return true;
         }
 
-        internal static void EnsureObjectStart(ref Utf8JsonReader reader)
+        public static void EnsureObjectStart(this ref Utf8JsonReader reader)
         {
             if (reader.TokenType != JsonTokenType.StartObject)
             {
@@ -27,25 +27,25 @@ namespace Microsoft.AspNetCore.Internal
             }
         }
 
-        internal static string GetTokenString(JsonTokenType tokenType)
+        public static string GetTokenString(JsonTokenType tokenType)
         {
             switch (tokenType)
             {
                 case JsonTokenType.None:
                     break;
                 case JsonTokenType.StartObject:
-                    return "StartObject";
+                    return "Object";
                 case JsonTokenType.StartArray:
                     return "Array";
                 case JsonTokenType.PropertyName:
-                    return "PropertyName";
+                    return "Property";
                 default:
                     break;
             }
             return tokenType.ToString();
         }
 
-        internal static void EnsureArrayStart(ref Utf8JsonReader reader)
+        public static void EnsureArrayStart(this ref Utf8JsonReader reader)
         {
             if (reader.TokenType != JsonTokenType.StartArray)
             {
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Internal
         }
 
         // Remove after https://github.com/dotnet/corefx/issues/33295 is done
-        internal static void Skip(ref Utf8JsonReader reader)
+        public static void Skip(this ref Utf8JsonReader reader)
         {
             if (reader.TokenType == JsonTokenType.PropertyName)
             {
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Internal
             }
         }
 
-        internal static string ReadAsString(ref Utf8JsonReader reader, byte[] propertyName)
+        public static string ReadAsString(this ref Utf8JsonReader reader, byte[] propertyName)
         {
             reader.Read();
             if (reader.TokenType != JsonTokenType.String)
@@ -79,6 +79,23 @@ namespace Microsoft.AspNetCore.Internal
             }
 
             return reader.GetString();
+        }
+
+        public static int? ReadAsInt32(this ref Utf8JsonReader reader, byte[] propertyName)
+        {
+            reader.Read();
+
+            if (reader.TokenType != JsonTokenType.Number)
+            {
+                throw new InvalidDataException($"Expected '{Encoding.UTF8.GetString(propertyName)}' to be of type {JsonTokenType.Number}.");
+            }
+
+            if (reader.ValueSpan.IsEmpty)
+            {
+                return null;
+            }
+
+            return reader.GetInt32();
         }
     }
 }

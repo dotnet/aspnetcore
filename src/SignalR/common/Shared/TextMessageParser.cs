@@ -39,16 +39,36 @@ namespace Microsoft.AspNetCore.Internal
             var position = buffer.PositionOf(TextMessageFormatter.RecordSeparator);
             if (position == null)
             {
-                payload = default;
-                return false;
+                var span = buffer.First.Span;
+                var index = span.IndexOf(TextMessageFormatter.RecordSeparator);
+                if (index == -1)
+                {
+                    payload = default;
+                    return false;
+                }
+
+                payload = buffer.Slice(0, index);
+
+                buffer = buffer.Slice(index + 1);
+
+                return true;
             }
+            else
+            {
+                var position = buffer.PositionOf(TextMessageFormatter.RecordSeparator);
+                if (position == null)
+                {
+                    payload = default;
+                    return false;
+                }
 
-            payload = buffer.Slice(0, position.Value);
+                payload = buffer.Slice(0, position.Value);
 
-            // Skip record separator
-            buffer = buffer.Slice(buffer.GetPosition(1, position.Value));
+                // Skip record separator
+                buffer = buffer.Slice(buffer.GetPosition(1, position.Value));
 
-            return true;
+                return true;
+            }
         }
     }
 }
