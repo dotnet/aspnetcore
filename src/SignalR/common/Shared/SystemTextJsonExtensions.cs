@@ -73,7 +73,6 @@ namespace Microsoft.AspNetCore.Internal
         public static string ReadAsString(this ref Utf8JsonReader reader, byte[] propertyName)
         {
             reader.Read();
-
             if (reader.TokenType != JsonTokenType.String)
             {
                 throw new InvalidDataException($"Expected '{Encoding.UTF8.GetString(propertyName)}' to be of type {JsonTokenType.String}.");
@@ -86,14 +85,14 @@ namespace Microsoft.AspNetCore.Internal
         {
             reader.Read();
 
-            if (reader.TokenType == JsonTokenType.Null)
-            {
-                return null;
-            }
-
             if (reader.TokenType != JsonTokenType.Number)
             {
                 throw new InvalidDataException($"Expected '{Encoding.UTF8.GetString(propertyName)}' to be of type {JsonTokenType.Number}.");
+            }
+
+            if (reader.ValueSpan.IsEmpty)
+            {
+                return null;
             }
 
             return reader.GetInt32();
