@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.NodeServices.Npm
             {
                 var message = $"Failed to start 'npm'. To resolve this:.\n\n"
                             + "[1] Ensure that 'npm' is installed and can be found in one of the PATH directories.\n"
-                            + $"    Current PATH enviroment variable is: { Environment.GetEnvironmentVariable("PATH") }\n"
+                            + $"    Current PATH environment variable is: { Environment.GetEnvironmentVariable("PATH") }\n"
                             + "    Make sure the executable is in one of those directories, or update your PATH.\n\n"
                             + "[2] See the InnerException for further details of the cause.";
                 throw new InvalidOperationException(message, ex);
