@@ -18,6 +18,7 @@
 
     <PackageId>$(MSBuildProjectName)</PackageId>
     <TargetPath>$(PackageOutputPath)$(PackageId).$(PackageVersion).nupkg</TargetPath>
+
   </PropertyGroup>
 
   <ItemGroup>
@@ -29,7 +30,7 @@
       <AllowExplicitVersion>true</AllowExplicitVersion>
     </PackageReference>
 
-    <PackageReference Include="@(Dependency)" />
+    <PackageReference Include="@(Dependency);@(ExternalDependency)" />
   </ItemGroup>
 
   <ItemDefinitionGroup>

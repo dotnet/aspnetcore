@@ -20,7 +20,6 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Hosting.Abstractions" ProjectPath="$(RepositoryRoot)src\Hosting\Abstractions\src\Microsoft.AspNetCore.Hosting.Abstractions.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Hosting" ProjectPath="$(RepositoryRoot)src\Hosting\Hosting\src\Microsoft.AspNetCore.Hosting.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" ProjectPath="$(RepositoryRoot)src\Hosting\Server.Abstractions\src\Microsoft.AspNetCore.Hosting.Server.Abstractions.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Server.IntegrationTesting" ProjectPath="$(RepositoryRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.TestHost" ProjectPath="$(RepositoryRoot)src\Hosting\TestHost\src\Microsoft.AspNetCore.TestHost.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Hosting.WindowsServices" ProjectPath="$(RepositoryRoot)src\Hosting\WindowsServices\src\Microsoft.AspNetCore.Hosting.WindowsServices.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Authentication.Abstractions" ProjectPath="$(RepositoryRoot)src\Http\Authentication.Abstractions\src\Microsoft.AspNetCore.Authentication.Abstractions.csproj" />
@@ -46,11 +45,8 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Server.HttpSys" ProjectPath="$(RepositoryRoot)src\Servers\HttpSys\src\Microsoft.AspNetCore.Server.HttpSys.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Server.IISIntegration" ProjectPath="$(RepositoryRoot)src\Servers\IIS\IISIntegration\src\Microsoft.AspNetCore.Server.IISIntegration.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Server.IIS" ProjectPath="$(RepositoryRoot)src\Servers\IIS\IIS\src\Microsoft.AspNetCore.Server.IIS.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" ProjectPath="$(RepositoryRoot)src\Servers\IIS\IntegrationTesting.IIS\src\Microsoft.AspNetCore.Server.IntegrationTesting.IIS.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Server.Kestrel.Core" ProjectPath="$(RepositoryRoot)src\Servers\Kestrel\Core\src\Microsoft.AspNetCore.Server.Kestrel.Core.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Server.Kestrel" ProjectPath="$(RepositoryRoot)src\Servers\Kestrel\Kestrel\src\Microsoft.AspNetCore.Server.Kestrel.csproj" />
-    <ProjectReferenceProvider Include="PlatformBenchmarks" ProjectPath="$(RepositoryRoot)src\Servers\Kestrel\perf\PlatformBenchmarks\PlatformBenchmarks.csproj" />
-    <ProjectReferenceProvider Include="CodeGenerator" ProjectPath="$(RepositoryRoot)src\Servers\Kestrel\tools\CodeGenerator\CodeGenerator.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions" ProjectPath="$(RepositoryRoot)src\Servers\Kestrel\Transport.Abstractions\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" ProjectPath="$(RepositoryRoot)src\Servers\Kestrel\Transport.Libuv\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" ProjectPath="$(RepositoryRoot)src\Servers\Kestrel\Transport.Sockets\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj" />
@@ -128,7 +124,6 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Blazor" ProjectPath="$(RepositoryRoot)src\Components\Blazor\Blazor\src\Microsoft.AspNetCore.Blazor.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Blazor.Build" ProjectPath="$(RepositoryRoot)src\Components\Blazor\Build\src\Microsoft.AspNetCore.Blazor.Build.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Blazor.Server" ProjectPath="$(RepositoryRoot)src\Components\Blazor\Server\src\Microsoft.AspNetCore.Blazor.Server.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Blazor.Templates" ProjectPath="$(RepositoryRoot)src\Components\Blazor\Templates\src\Microsoft.AspNetCore.Blazor.Templates.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Browser.JS" ProjectPath="$(RepositoryRoot)src\Components\Browser.JS\src\Microsoft.AspNetCore.Components.Browser.JS.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Browser" ProjectPath="$(RepositoryRoot)src\Components\Browser\src\Microsoft.AspNetCore.Components.Browser.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Build" ProjectPath="$(RepositoryRoot)src\Components\Build\src\Microsoft.AspNetCore.Components.Build.csproj" />

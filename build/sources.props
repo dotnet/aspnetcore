@@ -12,29 +12,19 @@
       $(RestoreSources);
       https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json;
       https://api.nuget.org/v3/index.json;
-    </RestoreSources>
-    <RestoreSources Condition=" '$(DotNetBuildOffline)' != 'true' AND '$(DisableMyGetRestoreSources)' != 'true' ">
-      $(RestoreSources);
-      https://dotnet.myget.org/F/dotnet-core/api/v3/index.json;
       https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json;
-      https://dotnet.myget.org/F/aspnetcore-tools/api/v3/index.json;
       https://dotnet.myget.org/F/aspnetcore-master/api/v3/index.json;
+      https://dotnet.myget.org/F/aspnetcore-tools/api/v3/index.json;
       https://dotnet.myget.org/F/blazor-dev/api/v3/index.json;
-      https://dotnet.myget.org/F/roslyn/api/v3/index.json;
+      https://dotnet.myget.org/F/dotnet-core/api/v3/index.json;
       https://dotnet.myget.org/F/roslyn-tools/api/v3/index.json;
-      https://vside.myget.org/F/vssdk/api/v3/index.json;
+      https://dotnet.myget.org/F/roslyn/api/v3/index.json;
+      https://vside.myget.org/F/devcore/api/v3/index.json;
       https://vside.myget.org/F/vsmac/api/v3/index.json;
-      https://vside.myget.org/F/devcore/api/v3/index.json
+      https://vside.myget.org/F/vssdk/api/v3/index.json;
     </RestoreSources>
-    <!-- Temporary until we can replace PackageRef with ProjectRef -->
-    <RestoreSources Condition=" '$(SubFolderRepoBuild)' == 'true' AND '$(DotNetBuildOffline)' != 'true' AND '$(DisableMyGetRestoreSources)' != 'true' ">
-      $(RestoreSources);
-      https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json;
-    </RestoreSources>
-
-    <PublicCoreFeedPrefix>https://dotnetcli.blob.core.windows.net/dotnet/</PublicCoreFeedPrefix>
 
     <!-- In an orchestrated build, this may be overriden to other Azure feeds. -->
-    <DotNetAssetRootUrl Condition="'$(DotNetAssetRootUrl)'==''">$(PublicCoreFeedPrefix)</DotNetAssetRootUrl>
+    <DotNetAssetRootUrl Condition="'$(DotNetAssetRootUrl)'==''">https://dotnetcli.blob.core.windows.net/dotnet/</DotNetAssetRootUrl>
   </PropertyGroup>
 </Project>

@@ -6,21 +6,20 @@
     <DefineConstants Condition=" '$(GenerateSqlScripts)'=='true' ">$(DefineConstants);GENERATE_SQL_SCRIPTS</DefineConstants>
     <DefineConstants>$(DefineConstants);__RemoveThisBitTo__GENERATE_SQL_SCRIPTS</DefineConstants>
 
-    <WarningsNotAsErrors>CS8002;$(WarningsNotAsErrors)</WarningsNotAsErrors>
+    <!-- Pomelo.EntityFrameworkCore.MySql is not strong named, so this test assembly cannot be strong-named signed either. -->
+    <SignAssembly>false</SignAssembly>
     <IsTestAssetProject>true</IsTestAssetProject>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="2.1.1.1" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' != 'net461'">
     <PackageReference Include="MySqlConnector" Version="0.43.0" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="2.1.1" />
-
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.1.1" PrivateAssets="All" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="2.1.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.1.1" />
+    <!-- This suppresses errors about using PackageReference instead of Reference. For unclear reasons, this project has pinned dependencies. -->
+    <PackageReference Update="@(PackageReference)" AllowExplicitReference="true" />
   </ItemGroup>
 
   <!-- These references are used when running locally -->

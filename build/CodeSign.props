@@ -1,85 +1,45 @@
 <Project>
 
   <ItemGroup>
-    <!-- We don't need to code sign .js files because they are not used in Windows Script Host. -->
-    <FileExtensionsToSign Include=".js" CertificateName="None" />
+    <!-- Use the PublicKeyToken of .NET assemblies to determine 'Microsoft' assemblies. -->
+    <AssemblyToSign Include="AspNetCore" PublicKeyToken="adb9793829ddae60" CertificateName="Microsoft400" />
+    <AssemblyToSign Include="MsSharedLib72" PublicKeyToken="31bf3856ad364e35" CertificateName="Microsoft400" />
+    <AssemblyToSign Include="MsftStrongName" PublicKeyToken="b03f5f7f11d50a3a" CertificateName="Microsoft400" />
+    <AssemblyToSign Include="MsftStrongName2" PublicKeyToken="b77a5c561934e089" CertificateName="Microsoft400" />
+    <AssemblyToSign Include="MsftOpenStrongName" PublicKeyToken="cc7b13ffcd2ddd51" CertificateName="Microsoft400" />
+
+    <!-- Native .dll's. These don't have a public key token, but are from Microsoft and should be signed. -->
+    <FileNamesToSign Include="aspnetcore.dll" CertificateName="Microsoft400" />
+    <FileNamesToSign Include="aspnetcorev2_inprocess.dll" CertificateName="Microsoft400" />
+    <FileNamesToSign Include="aspnetcorev2_outofprocess.dll" CertificateName="Microsoft400" />
+    <FileNamesToSign Include="aspnetcorev2.dll" CertificateName="Microsoft400" />
+    <FileNamesToSign Include="dotnet-blazor.exe" CertificateName="Microsoft400" />
+    <FileNamesToSign Include="dotnet-dev-certs.exe" CertificateName="Microsoft400" />
+    <FileNamesToSign Include="dotnet-sql-cache.exe" CertificateName="Microsoft400" />
+    <FileNamesToSign Include="dotnet-user-secrets.exe" CertificateName="Microsoft400" />
+    <FileNamesToSign Include="dotnet-watch.exe" CertificateName="Microsoft400" />
+    <FileNamesToSign Include="Microsoft.AspNetCore.Blazor.Build.exe" CertificateName="Microsoft400" />
+    <FileNamesToSign Include="sni.dll" CertificateName="Microsoft400" />
+
+    <!-- Third-party components which should be signed.  -->
+    <FileNamesToSign Include="Newtonsoft.Json.dll" CertificateName="3PartySHA2" />
+    <FileNamesToSign Include="AngleSharp.dll" CertificateName="3PartySHA2" />
+    <FileNamesToSign Include="Mono.Cecil.dll" CertificateName="3PartySHA2" />
+    <FileNamesToSign Include="Mono.Cecil.Mdb.dll" CertificateName="3PartySHA2" />
+    <FileNamesToSign Include="Mono.Cecil.Pdb.dll" CertificateName="3PartySHA2" />
+    <FileNamesToSign Include="Mono.Cecil.Rocks.dll" CertificateName="3PartySHA2" />
   </ItemGroup>
 
-  <ItemGroup>
-    <!-- Third-party components which should be signed.  -->
-      <!-- Microsoft.AspNetCore.App -->
-      <FilesToSign Include="Newtonsoft.Json.dll"                                           Certificate="$(AssemblySigning3rdPartyCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Newtonsoft.Json.Bson.dll"                                      Certificate="$(AssemblySigning3rdPartyCertName)" Container="Microsoft.AspNetCore.App" />
-
-    <!-- These files came from the aspnet/Extensions build, but have to be re-signed because we crossgen them. -->
-      <FilesToSign Include="Microsoft.Extensions.Caching.Abstractions.dll"                  Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.Extensions.Caching.Memory.dll"                        Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.Extensions.Configuration.Abstractions.dll"            Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.Extensions.Configuration.Binder.dll"                  Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.Extensions.Configuration.CommandLine.dll"             Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.Extensions.Configuration.dll"                         Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.Extensions.Configuration.EnvironmentVariables.dll"    Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.Extensions.Configuration.FileExtensions.dll"          Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.Extensions.Configuration.Ini.dll"                     Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.Extensions.Configuration.Json.dll"                    Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.Extensions.Configuration.KeyPerFile.dll"              Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.Extensions.Configuration.UserSecrets.dll"             Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.Extensions.Configuration.Xml.dll"                     Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.Extensions.DependencyInjection.Abstractions.dll"      Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.Extensions.DependencyInjection.dll"                   Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions.dll" Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.Extensions.Diagnostics.HealthChecks.dll"              Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.Extensions.FileProviders.Abstractions.dll"            Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.Extensions.FileProviders.Composite.dll"               Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.Extensions.FileProviders.Embedded.dll"                Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.Extensions.FileProviders.Physical.dll"                Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.Extensions.FileSystemGlobbing.dll"                    Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.Extensions.Hosting.Abstractions.dll"                  Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.Extensions.Hosting.dll"                               Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.Extensions.Http.dll"                                  Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.Extensions.Localization.Abstractions.dll"             Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.Extensions.Localization.dll"                          Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.Extensions.Logging.AzureAppServices.dll"              Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.AzureAppServices.SiteExtension" />
-      <FilesToSign Include="Microsoft.Extensions.Logging.Abstractions.dll"                  Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.Extensions.Logging.Configuration.dll"                 Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.Extensions.Logging.Console.dll"                       Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.Extensions.Logging.Debug.dll"                         Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.Extensions.Logging.EventSource.dll"                   Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.Extensions.Logging.TraceSource.dll"                   Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.Extensions.Logging.dll"                               Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.Extensions.ObjectPool.dll"                            Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.Extensions.Options.ConfigurationExtensions.dll"       Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.Extensions.Options.DataAnnotations.dll"               Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.Extensions.Options.dll"                               Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.Extensions.Primitives.dll"                            Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.Extensions.WebEncoders.dll"                           Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-
-      <!-- ANCM -->
-      <FilesToSign Include="aspnetcore.dll"                                                 Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="aspnetcorev2.dll"                                               Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="aspnetcorev2_inprocess.dll"                                     Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="aspnetcorev2_outofprocess.dll"                                  Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-
-      <!-- Used as part of site extension -->
-      <FilesToSign Include="Microsoft.Web.Xdt.Extensions.dll"                               Certificate="$(AssemblySigningCertName)" Container="AspNetCoreRuntime.3.0" />
-
-
-      <!-- This is a text file which doesn't need to be code signed, even though some .mof files can be signed. -->
-      <FilesToExcludeFromSigning Include="ancm.mof" />
-
-    <!-- These files came from partner teams. They have to be re-signed because we crossgen them and redistributable them in our installers. -->
-
-      <!-- Microsoft.AspNetCore.App -->
-      <FilesToSign Include="Microsoft.DotNet.PlatformAbstractions.dll"                      Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="Microsoft.Extensions.DependencyModel.dll"                       Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="System.IO.Pipelines.dll"                                        Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="System.Net.WebSockets.WebSocketProtocol.dll"                    Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="System.Runtime.CompilerServices.Unsafe.dll"                     Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="System.Security.Cryptography.Pkcs.dll"                          Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="System.Security.Cryptography.Xml.dll"                           Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="System.Security.Permissions.dll"                                Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="System.Text.Encodings.Web.dll"                                  Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
-      <FilesToSign Include="System.Threading.Channels.dll"                                  Certificate="$(AssemblySigningCertName)" Container="Microsoft.AspNetCore.App" />
+  <ItemGroup Label="Code sign exclusions">
+    <!-- We don't need to code sign .js files because they are not used in Windows Script Host. -->
+    <FileExtensionsToSign Include=".js" CertificateName="None" />
+    <!-- We don't produce font files. We rebundle some for using the web brower, so they do not need to be signed. -->
+    <FileExtensionsToSign Include=".otf" CertificateName="None" />
+    <FileExtensionsToSign Include=".ttf" CertificateName="None" />
+    <!-- This is a text file which doesn't need to be code signed, even though some .mof files can be signed. -->
+    <FileNamesToSign Include="ancm.mof" CertificateName="None" />
+    <!-- Exclude the apphost because this is expected to be code-signed by customers after the SDK modifies it. -->
+    <FileNamesToSign Include="apphost.exe" CertificateName="None" />
   </ItemGroup>
 
 </Project>

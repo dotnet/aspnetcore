@@ -16,7 +16,6 @@
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)Buffers.MemoryPool\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)HttpSys\**\*.cs" />
-    <Content Include="$(PackageId).targets" PackagePath="build/$(TargetFramework)/" />
   </ItemGroup>
 
   <Target Name="ValidateNativeComponentsBuilt" AfterTargets="Build" >
@@ -39,7 +38,7 @@
 
   <Import Project="..\..\build\assets.props" />
 
-  <Target Name="AddPackNativeComponents" BeforeTargets="_GetPackageFiles;GetSignedPackageFiles" Condition="$(PackNativeAssets) == 'true'">
+  <Target Name="AddPackNativeComponents" BeforeTargets="_GetPackageFiles" Condition="$(PackNativeAssets) == 'true'">
     <ItemGroup>
       <None Include="%(InProcessComponents.DllLocation)"
             Pack="true"

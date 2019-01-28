@@ -25,48 +25,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build.Utilities.Core"
-        Version="$(MicrosoftBuildUtilitiesCorePackageVersion)" />
-    <PackageReference Include="System.Net.Http"
-        Condition="'$(TargetFramework)' == 'net461'"
-        Version="$(SystemNetHttpPackageVersion)" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' != ''">
-    <SignedPackageFile Include="$(TargetPath)">
-      <Certificate>$(AssemblySigningCertName)</Certificate>
-      <PackagePath>tasks/$(TargetFramework)/$(TargetFileName)</PackagePath>
-      <StrongName>$(AssemblySigningStrongName)</StrongName>
-    </SignedPackageFile>
-  </ItemGroup>
-
-  <!-- Add other signed files in a single inner build, avoiding duplications in this multi-TFM project. -->
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
-    <SignedPackageFile Include="../dotnet-getdocument/bin/$(Configuration)/netcoreapp2.1/publish/dotnet-getdocument.dll">
-      <Certificate>$(AssemblySigningCertName)</Certificate>
-      <PackagePath>tools/dotnet-getdocument.dll</PackagePath>
-      <StrongName>$(AssemblySigningStrongName)</StrongName>
-    </SignedPackageFile>
-    <SignedPackageFile Include="../GetDocumentInsider/bin/$(Configuration)/net461/GetDocument.Insider.exe">
-      <Certificate>$(AssemblySigningCertName)</Certificate>
-      <PackagePath>tools/net461/GetDocument.Insider.exe</PackagePath>
-      <StrongName>$(AssemblySigningStrongName)</StrongName>
-    </SignedPackageFile>
-    <SignedPackageFile Include="../GetDocumentInsider/bin/x86/$(Configuration)/net461/GetDocument.Insider.exe">
-      <Certificate>$(AssemblySigningCertName)</Certificate>
-      <PackagePath>tools/net461-x86/GetDocument.Insider.exe</PackagePath>
-      <StrongName>$(AssemblySigningStrongName)</StrongName>
-    </SignedPackageFile>
-    <SignedPackageFile Include="../GetDocumentInsider/bin/$(Configuration)/netcoreapp2.0/GetDocument.Insider.dll">
-      <Certificate>$(AssemblySigningCertName)</Certificate>
-      <PackagePath>tools/netcoreapp2.0/GetDocument.Insider.exe</PackagePath>
-      <StrongName>$(AssemblySigningStrongName)</StrongName>
-    </SignedPackageFile>
-
-    <SignedPackageFile Include="../dotnet-getdocument/bin/$(Configuration)/netcoreapp2.1/publish/Newtonsoft.Json.dll">
-      <PackagePath>tools/Newtonsoft.Json.dll"</PackagePath>
-      <Certificate>$(AssemblySigning3rdPartyCertName)</Certificate>
-    </SignedPackageFile>
+    <Reference Include="Microsoft.Build.Utilities.Core" />
+    <Reference Include="System.Net.Http" Condition="'$(TargetFramework)' == 'net461'" />
   </ItemGroup>
 
   <Target Name="PopulateNuspec">
