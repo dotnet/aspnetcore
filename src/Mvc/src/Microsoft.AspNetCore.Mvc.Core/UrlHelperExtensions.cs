@@ -582,5 +582,57 @@ namespace Microsoft.AspNetCore.Mvc
 
             return Action(helper, action, controller, values, protocol, host, fragment);
         }
+
+        /// <summary>
+        /// Generates an absolute URL for a page, which contains the specified
+        /// <paramref name="pageName"/>, <paramref name="pageHandler"/>, route <paramref name="values"/>,
+        /// <paramref name="protocol"/> to use, <paramref name="host"/> name, and <paramref name="fragment"/>.
+        /// Generates an absolute URL if the <paramref name="protocol"/> and <paramref name="host"/> are
+        /// non-<c>null</c>. See the remarks section for important security information.
+        /// </summary>
+        /// <param name="urlHelper">The <see cref="IUrlHelper"/>.</param>
+        /// <param name="pageName">The page name to generate the url for. When <see langword="null"/>, defaults to the current executing page.</param>
+        /// <param name="pageHandler">The handler to generate the url for. When <see langword="null"/>, defaults to the current executing handler.</param>
+        /// <param name="values">An object that contains route values.</param>
+        /// <param name="protocol">The protocol for the URL, such as "http" or "https".</param>
+        /// <param name="host">The host name for the URL.</param>
+        /// <param name="fragment">The fragment for the URL.</param>
+        /// <returns>The generated URL.</returns>
+        /// <remarks>
+        /// <para>
+        /// The value of <paramref name="host"/> should be a trusted value. Relying on the value of the current request
+        /// can allow untrusted input to influence the resulting URI unless the <c>Host</c> header has been validated.
+        /// See the deployment documentation for instructions on how to properly validate the <c>Host</c> header in
+        /// your deployment environment.
+        /// </para>
+        /// </remarks>
+        public static string PageLink(
+            this IUrlHelper urlHelper,
+            string pageName = null,
+            string pageHandler = null,
+            object values = null,
+            string protocol = null,
+            string host = null,
+            string fragment = null)
+        {
+            if (urlHelper == null)
+            {
+                throw new ArgumentNullException(nameof(urlHelper));
+            }
+
+            var httpContext = urlHelper.ActionContext.HttpContext;
+
+            if (protocol == null)
+            {
+                protocol = httpContext.Request.Protocol;
+            }
+
+            if (host == null)
+            {
+                host = httpContext.Request.Host.ToUriComponent();
+            }
+
+            return Page(urlHelper, pageName, pageHandler, values, protocol, host, fragment);
+        }
     }
 }
