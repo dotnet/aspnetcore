@@ -964,7 +964,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return Output.WriteChunkAsync(data, cancellationToken);
         }
 
-
         public void ProduceContinue()
         {
             if (HasResponseStarted)
