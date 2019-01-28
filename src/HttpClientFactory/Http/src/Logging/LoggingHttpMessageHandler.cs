@@ -42,7 +42,7 @@ namespace Microsoft.Extensions.Http.Logging
             // Not using a scope here because we always expect this to be at the end of the pipeline, thus there's
             // not really anything to surround.
             Log.RequestStart(_logger, request);
-            var response = await base.SendAsync(request, cancellationToken);
+            var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
             Log.RequestEnd(_logger, response, stopwatch.GetElapsedTime());
 
             return response;

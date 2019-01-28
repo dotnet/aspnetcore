@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -772,6 +773,29 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         [Fact]
+        public void AddHttpClient_GetAwaiterAndResult_InSingleThreadedSynchronizationContext_ShouldNotHangs()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+            // TODO: mocked HttpMessageHandler never hangs
+            serviceCollection.AddHttpClient("example.com");
+
+            var services = serviceCollection.BuildServiceProvider();
+            var factory = services.GetRequiredService<IHttpClientFactory>();
+            var client = factory.CreateClient("example.com");
+            var hangs = true;
+            SingleThreadedSynchronizationContext.Run(() =>
+            {
+                // Act
+                client.GetAsync("http://example.com").GetAwaiter().GetResult();
+                hangs = false;
+            });
+
+            // Assert
+            Assert.False(hangs);
+        }
+
+        [Fact]
         public void SuppressScope_False_CreatesNewScope()
         {
             // Arrange
@@ -995,6 +1019,150 @@ namespace Microsoft.Extensions.DependencyInjection
             public HttpClient HttpClient { get; }
 
             public TransientService Service { get; }
+        }
+
+        // https://github.com/nunit/nunit/blob/master/src/NUnitFramework/framework/Internal/SingleThreadedSynchronizationContext.cs
+        private class SingleThreadedSynchronizationContext : SynchronizationContext, IDisposable
+        {
+            private readonly Queue<ScheduledWork> _queue = new Queue<ScheduledWork>();
+            private Status status;
+
+            private enum Status
+            {
+                NotStarted,
+                Running,
+                ShutDown
+            }
+
+            public static void Run(Action action)
+            {
+                var previous = SynchronizationContext.Current;
+                var context = new SingleThreadedSynchronizationContext();
+                SynchronizationContext.SetSynchronizationContext(context);
+                try
+                {
+                    action();
+                }
+                finally
+                {
+                    SynchronizationContext.SetSynchronizationContext(previous);
+                }
+            }
+
+            public override void Post(SendOrPostCallback d, object state)
+            {
+                AddWork(new ScheduledWork(d, state, finished: null));
+            }
+
+            public override void Send(SendOrPostCallback d, object state)
+            {
+                if (SynchronizationContext.Current == this)
+                {
+                    d.Invoke(state);
+                }
+                else
+                {
+                    using (var finished = new ManualResetEventSlim())
+                    {
+                        AddWork(new ScheduledWork(d, state, finished));
+                        finished.Wait();
+                    }
+                }
+            }
+
+            private void AddWork(ScheduledWork work)
+            {
+                lock (_queue)
+                {
+                    if (status == Status.ShutDown) throw CreateInvalidWhenShutDownException();
+                    _queue.Enqueue(work);
+                    Monitor.Pulse(_queue);
+                }
+            }
+
+            public void ShutDown()
+            {
+                lock (_queue)
+                {
+                    status = Status.ShutDown;
+                    Monitor.Pulse(_queue);
+
+                    if (_queue.Count != 0)
+                        throw new InvalidOperationException("Shutting down SingleThreadedTestSynchronizationContext with work still in the queue.");
+                }
+            }
+
+            private static InvalidOperationException CreateInvalidWhenShutDownException()
+            {
+                return new InvalidOperationException("This SingleThreadedTestSynchronizationContext has been shut down.");
+            }
+
+            public void Run()
+            {
+                lock (_queue)
+                {
+                    switch (status)
+                    {
+                        case Status.Running:
+                            throw new InvalidOperationException("SingleThreadedTestSynchronizationContext.Run may not be reentered.");
+                        case Status.ShutDown:
+                            throw CreateInvalidWhenShutDownException();
+                    }
+
+                    status = Status.Running;
+                }
+
+                ScheduledWork scheduledWork;
+                while (TryTake(out scheduledWork))
+                    scheduledWork.Execute();
+            }
+
+            private bool TryTake(out ScheduledWork scheduledWork)
+            {
+                lock (_queue)
+                {
+                    for (; ; )
+                    {
+                        if (status == Status.ShutDown)
+                        {
+                            scheduledWork = default(ScheduledWork);
+                            return false;
+                        }
+
+                        if (_queue.Count != 0) break;
+                        Monitor.Wait(_queue);
+                    }
+
+                    scheduledWork = _queue.Dequeue();
+                }
+
+                return true;
+            }
+
+            public void Dispose()
+            {
+                ShutDown();
+            }
+
+            private struct ScheduledWork
+            {
+                private readonly SendOrPostCallback _callback;
+                private readonly object _state;
+                private readonly ManualResetEventSlim _finished;
+
+                public ScheduledWork(SendOrPostCallback callback, object state, ManualResetEventSlim finished)
+                {
+                    _callback = callback;
+                    _state = state;
+                    _finished = finished;
+                }
+
+                public void Execute()
+                {
+                    _callback.Invoke(_state);
+                    _finished?.Set();
+                }
+            }
         }
     }
 }
