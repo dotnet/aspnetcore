@@ -170,7 +170,7 @@
     </ItemGroup>
   </Target>
 
-  <!-- This is used by the eng/scripts/AddAllProjectRefsToSolution.ps1.ps1 script to traverse the ProjectRef graph -->
+  <!-- This is used by the eng/scripts/AddAllProjectRefsToSolution.ps1 script to traverse the ProjectRef graph -->
   <PropertyGroup>
     <_CustomCollectProjectReferenceDependsOn Condition="'$(TargetFramework)' != ''">ResolveProjectReferences</_CustomCollectProjectReferenceDependsOn>
   </PropertyGroup>
