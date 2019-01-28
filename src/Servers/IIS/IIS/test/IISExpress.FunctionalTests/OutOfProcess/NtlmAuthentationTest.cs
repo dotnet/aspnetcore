@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             response = await httpClient.GetAsync("/Restricted");
             responseText = await response.Content.ReadAsStringAsync();
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.NotEmpty(responseText);
+            Assert.Equal("Windows", responseText);
         }
     }
 }
