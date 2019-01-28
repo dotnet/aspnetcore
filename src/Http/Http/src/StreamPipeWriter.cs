@@ -93,7 +93,7 @@ namespace System.IO.Pipelines
         {
             EnsureCapacity(sizeHint);
 
-            return _currentSegment;
+            return _currentSegment.Slice(_position);
         }
 
         /// <inheritdoc />
