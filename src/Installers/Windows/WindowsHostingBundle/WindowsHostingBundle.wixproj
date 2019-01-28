@@ -42,20 +42,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AspNetCoreModule-Setup\ANCMV1\ANCMV1.wixproj">
-      <SetPlatform>Platform=x86</SetPlatform>
-      <Name>AspNetCoreModule_x86</Name>
-      <Project>D36FDC38-FE53-48CC-BC82-A17C28F1CEE1</Project>
-      <Private>True</Private>
-      <DoNotHarvest>true</DoNotHarvest>
-    </ProjectReference>
-    <ProjectReference Include="..\AspNetCoreModule-Setup\ANCMV1\ANCMV1.wixproj">
-      <SetPlatform>Platform=x64</SetPlatform>
-      <Name>AspNetCoreModule_x64</Name>
-      <Project>D36FDC38-FE53-48CC-BC82-A17C28F1CEE1</Project>
-      <Private>True</Private>
-      <DoNotHarvest>true</DoNotHarvest>
-    </ProjectReference>
     <ProjectReference Include="..\AspNetCoreModule-Setup\ANCMV2\ANCMV2.wixproj">
       <SetPlatform>Platform=x86</SetPlatform>
       <Name>AspNetCoreModuleV2_x86</Name>

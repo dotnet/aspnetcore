@@ -12,30 +12,6 @@
           VCPlatform="x64" 
           Platform="x64" 
           ProjectName="AspNetCore.vcxproj" 
-          NativeAsset="aspnetcore" 
-          PropetyName="AspNetCoreModuleV1Shim" 
-          BaseOutputPath="AspNetCoreModuleV1" 
-          ProjectDirectory="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV1\AspNetCore" 
-          DllLocation="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV1\AspNetCore\bin\$(Configuration)\x64\aspnetcore.dll" 
-          Include="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV1\AspNetCore\AspNetCore.vcxproj" 
-          PdbLocation="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV1\AspNetCore\bin\$(Configuration)\x64\aspnetcore.pdb"
-        />
-        <Components
-          VCPlatform="Win32" 
-          Platform="x86" 
-          ProjectName="AspNetCore.vcxproj" 
-          NativeAsset="aspnetcore" 
-          PropetyName="AspNetCoreModuleV1Shim" 
-          BaseOutputPath="AspNetCoreModuleV1" 
-          ProjectDirectory="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV1\AspNetCore" 
-          DllLocation="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV1\AspNetCore\bin\$(Configuration)\Win32\aspnetcore.dll" 
-          Include="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV1\AspNetCore\AspNetCore.vcxproj" 
-          PdbLocation="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV1\AspNetCore\bin\$(Configuration)\Win32\aspnetcore.pdb"
-        />
-        <Components
-          VCPlatform="x64" 
-          Platform="x64" 
-          ProjectName="AspNetCore.vcxproj" 
           NativeAsset="aspnetcorev2" 
           PropetyName="AspNetCoreModuleV2Shim" 
           BaseOutputPath="AspNetCoreModuleV2" 
@@ -108,30 +84,6 @@
         />
 
        <ShimComponents
-          VCPlatform="x64" 
-          Platform="x64" 
-          ProjectName="AspNetCore.vcxproj" 
-          NativeAsset="aspnetcore" 
-          PropetyName="AspNetCoreModuleV1Shim" 
-          BaseOutputPath="AspNetCoreModuleV1" 
-          ProjectDirectory="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV1\AspNetCore" 
-          DllLocation="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV1\AspNetCore\bin\$(Configuration)\x64\aspnetcore.dll" 
-          Include="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV1\AspNetCore\AspNetCore.vcxproj" 
-          PdbLocation="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV1\AspNetCore\bin\$(Configuration)\x64\aspnetcore.pdb"
-        />
-        <ShimComponents
-          VCPlatform="Win32" 
-          Platform="x86" 
-          ProjectName="AspNetCore.vcxproj" 
-          NativeAsset="aspnetcore" 
-          PropetyName="AspNetCoreModuleV1Shim" 
-          BaseOutputPath="AspNetCoreModuleV1" 
-          ProjectDirectory="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV1\AspNetCore" 
-          DllLocation="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV1\AspNetCore\bin\$(Configuration)\Win32\aspnetcore.dll" 
-          Include="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV1\AspNetCore\AspNetCore.vcxproj" 
-          PdbLocation="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV1\AspNetCore\bin\$(Configuration)\Win32\aspnetcore.pdb"
-        />
-        <ShimComponents
           VCPlatform="x64" 
           Platform="x64" 
           ProjectName="AspNetCore.vcxproj" 
@@ -211,18 +163,6 @@
           VCPlatform="$(NativeVCPlatform)" 
           Platform="$(NativePlatform)" 
           ProjectName="AspNetCore.vcxproj" 
-          NativeAsset="aspnetcore" 
-          PropetyName="AspNetCoreModuleV1Shim" 
-          BaseOutputPath="AspNetCoreModuleV1" 
-          ProjectDirectory="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV1\AspNetCore" 
-          DllLocation="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV1\AspNetCore\bin\$(Configuration)\$(NativeVCPlatform)\aspnetcore.dll" 
-          Include="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV1\AspNetCore\AspNetCore.vcxproj" 
-          PdbLocation="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV1\AspNetCore\bin\$(Configuration)\$(NativeVCPlatform)\aspnetcore.pdb"
-        />
-        <RunShimComponents
-          VCPlatform="$(NativeVCPlatform)" 
-          Platform="$(NativePlatform)" 
-          ProjectName="AspNetCore.vcxproj" 
           NativeAsset="aspnetcorev2" 
           PropetyName="AspNetCoreModuleV2Shim" 
           BaseOutputPath="AspNetCoreModuleV2" 
@@ -261,7 +201,6 @@
     </ItemGroup>
     <PropertyGroup>
 
-       <AspNetCoreModuleV1ShimDll>$(MSBuildThisFileDirectory)..\AspNetCoreModuleV1\AspNetCore\bin\$(Configuration)\$(NativeVCPlatform)\aspnetcore.dll</AspNetCoreModuleV1ShimDll> 
        <AspNetCoreModuleV2ShimDll>$(MSBuildThisFileDirectory)..\AspNetCoreModuleV2\AspNetCore\bin\$(Configuration)\$(NativeVCPlatform)\aspnetcorev2.dll</AspNetCoreModuleV2ShimDll> 
        <AspNetCoreModuleV2InProcessHandlerDll>$(MSBuildThisFileDirectory)..\AspNetCoreModuleV2\InProcessRequestHandler\bin\$(Configuration)\$(NativeVCPlatform)\aspnetcorev2_inprocess.dll</AspNetCoreModuleV2InProcessHandlerDll> 
        <AspNetCoreModuleV2OutOfProcessHandlerDll>$(MSBuildThisFileDirectory)..\AspNetCoreModuleV2\OutOfProcessRequestHandler\bin\$(Configuration)\$(NativeVCPlatform)\aspnetcorev2_outofprocess.dll</AspNetCoreModuleV2OutOfProcessHandlerDll>

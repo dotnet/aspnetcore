@@ -40,12 +40,6 @@
   </PropertyGroup>
 
  <ItemGroup>
-    <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV1\AspNetCore\AspNetCore.vcxproj" Platform="x64">
-      <Name>AspNetCoreV1WoW64</Name>
-      <Private>True</Private>
-      <DoNotHarvest>True</DoNotHarvest>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
     <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj"  Platform="x64">
       <Name>AspNetCoreV2WoW64</Name>
       <Private>True</Private>
@@ -59,12 +53,6 @@
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
 
-    <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV1\AspNetCore\AspNetCore.vcxproj" Platform="Win32">
-      <Name>AspNetCoreV1</Name>
-      <Private>True</Private>
-      <DoNotHarvest>True</DoNotHarvest>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
     <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj"  Platform="Win32">
       <Name>AspNetCoreV2</Name>
       <Private>True</Private>
