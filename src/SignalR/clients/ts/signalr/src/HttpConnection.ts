@@ -9,7 +9,7 @@ import { ILogger, LogLevel } from "./ILogger";
 import { HttpTransportType, ITransport, TransferFormat } from "./ITransport";
 import { LongPollingTransport } from "./LongPollingTransport";
 import { ServerSentEventsTransport } from "./ServerSentEventsTransport";
-import { Arg, createLogger } from "./Utils";
+import { Arg, createLogger, Platform } from "./Utils";
 import { WebSocketTransport } from "./WebSocketTransport";
 
 /** @private */
@@ -38,7 +38,7 @@ const MAX_REDIRECTS = 100;
 
 let WebSocketModule: any = null;
 let EventSourceModule: any = null;
-if (typeof window === "undefined" && typeof require !== "undefined") {
+if (Platform.isNode && typeof require !== "undefined") {
     // In order to ignore the dynamic require in webpack builds we need to do this magic
     // @ts-ignore: TS doesn't know about these names
     const requireFunc = typeof __webpack_require__ === "function" ? __non_webpack_require__ : require;
@@ -71,18 +71,17 @@ export class HttpConnection implements IConnection {
         options = options || {};
         options.logMessageContent = options.logMessageContent || false;
 
-        const isNode = typeof window === "undefined";
-        if (!isNode && typeof WebSocket !== "undefined" && !options.WebSocket) {
+        if (!Platform.isNode && typeof WebSocket !== "undefined" && !options.WebSocket) {
             options.WebSocket = WebSocket;
-        } else if (isNode && !options.WebSocket) {
+        } else if (Platform.isNode && !options.WebSocket) {
             if (WebSocketModule) {
                 options.WebSocket = WebSocketModule;
             }
         }
 
-        if (!isNode && typeof EventSource !== "undefined" && !options.EventSource) {
+        if (!Platform.isNode && typeof EventSource !== "undefined" && !options.EventSource) {
             options.EventSource = EventSource;
-        } else if (isNode && !options.EventSource) {
+        } else if (Platform.isNode && !options.EventSource) {
             if (typeof EventSourceModule !== "undefined") {
                 options.EventSource = EventSourceModule;
             }
@@ -382,8 +381,7 @@ export class HttpConnection implements IConnection {
         if (url.lastIndexOf("https://", 0) === 0 || url.lastIndexOf("http://", 0) === 0) {
             return url;
         }
-
-        if (typeof window === "undefined" || !window || !window.document) {
+        if (!Platform.isBrowser || !window.document) {
             throw new Error(`Cannot resolve '${url}'.`);
         }
 

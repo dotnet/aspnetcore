@@ -24,6 +24,23 @@ export class Arg {
 }
 
 /** @private */
+export class Platform {
+
+    public static get isBrowser(): boolean {
+        return typeof window === "object";
+    }
+
+    public static get isWebWorker(): boolean {
+        return typeof self === "object" && "importScripts" in self;
+    }
+
+    public static get isNode(): boolean {
+        return !this.isBrowser && !this.isWebWorker;
+    }
+
+}
+
+/** @private */
 export function getDataDetail(data: any, includeContent: boolean): string {
     let detail = "";
     if (isArrayBuffer(data)) {
