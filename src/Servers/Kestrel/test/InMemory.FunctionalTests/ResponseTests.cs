@@ -2002,6 +2002,99 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
+        public async Task OnStartingThrowsInsideOnStartingCallbacksRuns()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                var response = httpContext.Response;
+                response.OnStarting(state1 =>
+                {
+                    response.OnStarting(state2 =>
+                    {
+                        tcs.TrySetResult(null);
+                        return Task.CompletedTask;
+                    },
+                    null);
+
+                    return Task.CompletedTask;
+
+                }, null);
+
+                response.Headers["Content-Length"] = new[] { "11" };
+
+                await response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello World"), 0, 11);
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "");
+
+                    await tcs.Task.DefaultTimeout();
+                }
+
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task OnCompletedThrowsInsideOnCompletedCallbackRuns()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                var response = httpContext.Response;
+                response.OnCompleted(state1 =>
+                {
+                    response.OnCompleted(state2 =>
+                    {
+                        tcs.TrySetResult(null);
+
+                        return Task.CompletedTask;
+                    },
+                    null);
+
+                    return Task.CompletedTask;
+
+                }, null);
+
+                response.Headers["Content-Length"] = new[] { "11" };
+
+                await response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello World"), 0, 11);
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "");
+
+                    await tcs.Task.DefaultTimeout();
+                }
+
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
         public async Task ThrowingInOnCompletedIsLogged()
         {
             var testContext = new TestServiceContext(LoggerFactory);

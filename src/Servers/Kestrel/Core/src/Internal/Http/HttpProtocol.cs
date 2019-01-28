@@ -17,7 +17,6 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
@@ -30,9 +29,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private static readonly byte[] _bytesConnectionKeepAlive = Encoding.ASCII.GetBytes("\r\nConnection: keep-alive");
         private static readonly byte[] _bytesTransferEncodingChunked = Encoding.ASCII.GetBytes("\r\nTransfer-Encoding: chunked");
         private static readonly byte[] _bytesServer = Encoding.ASCII.GetBytes("\r\nServer: " + Constants.ServerName);
-
-        private readonly object _onStartingSync = new Object();
-        private readonly object _onCompletedSync = new Object();
 
         protected Streams _streams;
 
@@ -313,8 +309,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public void Reset()
         {
-            _onStarting = null;
-            _onCompleted = null;
+            _onStarting?.Clear();
+            _onCompleted?.Clear();
 
             _requestProcessingStatus = RequestProcessingStatus.RequestPending;
             _autoChunk = false;
@@ -588,7 +584,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 // already failed. If an OnStarting callback throws we can go through
                 // our normal error handling in ProduceEnd.
                 // https://github.com/aspnet/KestrelHttpServer/issues/43
-                if (!HasResponseStarted && _applicationException == null && _onStarting != null)
+                if (!HasResponseStarted && _applicationException == null && _onStarting?.Count > 0)
                 {
                     await FireOnStarting();
                 }
@@ -624,7 +620,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                 }
 
-                if (_onCompleted != null)
+                if (_onCompleted?.Count > 0)
                 {
                     await FireOnCompleted();
                 }
@@ -649,43 +645,32 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public void OnStarting(Func<object, Task> callback, object state)
         {
-            lock (_onStartingSync)
+            if (HasResponseStarted)
             {
-                if (HasResponseStarted)
-                {
-                    ThrowResponseAlreadyStartedException(nameof(OnStarting));
-                }
-
-                if (_onStarting == null)
-                {
-                    _onStarting = new Stack<KeyValuePair<Func<object, Task>, object>>();
-                }
-                _onStarting.Push(new KeyValuePair<Func<object, Task>, object>(callback, state));
+                ThrowResponseAlreadyStartedException(nameof(OnStarting));
             }
+
+            if (_onStarting == null)
+            {
+                _onStarting = new Stack<KeyValuePair<Func<object, Task>, object>>();
+            }
+            _onStarting.Push(new KeyValuePair<Func<object, Task>, object>(callback, state));
         }
 
         public void OnCompleted(Func<object, Task> callback, object state)
         {
-            lock (_onCompletedSync)
+            if (_onCompleted == null)
             {
-                if (_onCompleted == null)
-                {
-                    _onCompleted = new Stack<KeyValuePair<Func<object, Task>, object>>();
-                }
-                _onCompleted.Push(new KeyValuePair<Func<object, Task>, object>(callback, state));
+                _onCompleted = new Stack<KeyValuePair<Func<object, Task>, object>>();
             }
+            _onCompleted.Push(new KeyValuePair<Func<object, Task>, object>(callback, state));
         }
 
         protected Task FireOnStarting()
         {
-            Stack<KeyValuePair<Func<object, Task>, object>> onStarting;
-            lock (_onStartingSync)
-            {
-                onStarting = _onStarting;
-                _onStarting = null;
-            }
+            var onStarting = _onStarting;
 
-            if (onStarting == null)
+            if (onStarting == null || onStarting.Count == 0)
             {
                 return Task.CompletedTask;
             }
@@ -700,10 +685,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             try
             {
-                var count = onStarting.Count;
-                for (var i = 0; i < count; i++)
+                while (onStarting.TryPop(out var entry))
                 {
-                    var entry = onStarting.Pop();
                     var task = entry.Key.Invoke(entry.Value);
                     if (!ReferenceEquals(task, Task.CompletedTask))
                     {
@@ -725,10 +708,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 await currentTask;
 
-                var count = onStarting.Count;
-                for (var i = 0; i < count; i++)
+                while (onStarting.TryPop(out var entry))
                 {
-                    var entry = onStarting.Pop();
                     await entry.Key.Invoke(entry.Value);
                 }
             }
@@ -740,24 +721,50 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected Task FireOnCompleted()
         {
-            Stack<KeyValuePair<Func<object, Task>, object>> onCompleted;
-            lock (_onCompletedSync)
-            {
-                onCompleted = _onCompleted;
-                _onCompleted = null;
-            }
+            var onCompleted = _onCompleted;
 
-            if (onCompleted == null)
+            if (onCompleted == null || onCompleted.Count == 0)
             {
                 return Task.CompletedTask;
             }
 
-            return FireOnCompletedAwaited(onCompleted);
+            return FireOnCompletedMayAwait(onCompleted);
         }
 
-        private async Task FireOnCompletedAwaited(Stack<KeyValuePair<Func<object, Task>, object>> onCompleted)
+        private Task FireOnCompletedMayAwait(Stack<KeyValuePair<Func<object, Task>, object>> onCompleted)
         {
-            foreach (var entry in onCompleted)
+
+            while (onCompleted.TryPop(out var entry))
+            {
+                try
+                {
+                    var task = entry.Key.Invoke(entry.Value);
+                    if (!ReferenceEquals(task, Task.CompletedTask))
+                    {
+                        return FireOnCompletedAwaited(task, onCompleted);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ReportApplicationError(ex);
+                }
+            }
+
+            return Task.CompletedTask;
+        }
+
+        private async Task FireOnCompletedAwaited(Task currentTask, Stack<KeyValuePair<Func<object, Task>, object>> onCompleted)
+        {
+            try
+            {
+                await currentTask;
+            }
+            catch (Exception ex)
+            {
+                Log.ApplicationError(ConnectionId, TraceIdentifier, ex);
+            }
+
+            while (onCompleted.TryPop(out var entry))
             {
                 try
                 {
@@ -768,6 +775,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     Log.ApplicationError(ConnectionId, TraceIdentifier, ex);
                 }
             }
+
         }
 
         public Task FlushAsync(CancellationToken cancellationToken = default(CancellationToken))
