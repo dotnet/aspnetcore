@@ -534,7 +534,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             }
             catch (Exception e)
             {
-                Logger.LogInformation("Exception while trying to crash the process", e);
+                Logger.LogInformation(e, "Exception while trying to crash the process");
             }
         }
 
