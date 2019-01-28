@@ -30,7 +30,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private static readonly byte[] _bytesConnectionKeepAlive = Encoding.ASCII.GetBytes("\r\nConnection: keep-alive");
         private static readonly byte[] _bytesTransferEncodingChunked = Encoding.ASCII.GetBytes("\r\nTransfer-Encoding: chunked");
         private static readonly byte[] _bytesServer = Encoding.ASCII.GetBytes("\r\nServer: " + Constants.ServerName);
-        private static readonly Func<PipeWriter, ReadOnlyMemory<byte>, long> _writeChunk = WriteChunk;
 
         private readonly object _onStartingSync = new Object();
         private readonly object _onCompletedSync = new Object();
@@ -820,7 +819,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return !firstWrite ? Task.CompletedTask : FlushAsync(cancellationToken);
                     }
-                    return WriteChunkedAsync(data, cancellationToken);
+                    return WriteChunkedAsync(data.Span, cancellationToken);
                 }
                 else
                 {
@@ -851,7 +850,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         return;
                     }
 
-                    await WriteChunkedAsync(data, cancellationToken);
+                    await WriteChunkedAsync(data.Span, cancellationToken);
                 }
                 else
                 {
@@ -936,27 +935,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        private Task WriteChunkedAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+        private Task WriteChunkedAsync(ReadOnlySpan<byte> data, CancellationToken cancellationToken)
         {
-            return Output.WriteAsync(_writeChunk, data, cancellationToken);
-        }
-
-        private static long WriteChunk(PipeWriter writableBuffer, ReadOnlyMemory<byte> buffer)
-        {
-            var bytesWritten = 0L;
-            if (buffer.Length > 0)
-            {
-                var writer = new BufferWriter<PipeWriter>(writableBuffer);
-
-                writer.WriteBeginChunkBytes(buffer.Length);
-                writer.Write(buffer.Span);
-                writer.WriteEndChunkBytes();
-                writer.Commit();
-
-                bytesWritten = writer.BytesCommitted;
-            }
-
-            return bytesWritten;
+            return Output.WriteChunkAsync(data, cancellationToken);
         }
 
         public void ProduceContinue()

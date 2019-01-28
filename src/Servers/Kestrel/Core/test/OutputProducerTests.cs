@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -46,17 +46,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 // Close
                 socketOutput.Dispose();
 
-                var called = false;
+                await socketOutput.WriteDataAsync(new byte[] { 1, 2, 3, 4 }, default);
 
-                await socketOutput.WriteAsync((buffer, state) =>
-                {
-                    called = true;
-                    return 0;
-                },
-                0,
-                default);
-
-                Assert.False(called);
+                Assert.True(socketOutput.Pipe.Reader.TryRead(out var result));
+                Assert.True(result.IsCompleted);
+                Assert.True(result.Buffer.IsEmpty);
             }
         }
 
@@ -80,7 +74,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             mockConnectionContext.Verify(f => f.Abort(null), Times.Once());
         }
 
-        private Http1OutputProducer CreateOutputProducer(
+        private TestHttpOutputProducer CreateOutputProducer(
             PipeOptions pipeOptions = null,
             ConnectionContext connectionContext = null)
         {
@@ -89,8 +83,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var pipe = new Pipe(pipeOptions);
             var serviceContext = new TestServiceContext();
-            var socketOutput = new Http1OutputProducer(
-                pipe.Writer,
+            var socketOutput = new TestHttpOutputProducer(
+                pipe,
                 "0",
                 connectionContext,
                 serviceContext.Log,
@@ -98,6 +92,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 Mock.Of<IHttpMinResponseDataRateFeature>());
 
             return socketOutput;
+        }
+
+        private class TestHttpOutputProducer : Http1OutputProducer
+        {
+            public TestHttpOutputProducer(Pipe pipe, string connectionId, ConnectionContext connectionContext, IKestrelTrace log, ITimeoutControl timeoutControl, IHttpMinResponseDataRateFeature minResponseDataRateFeature) : base(pipe.Writer, connectionId, connectionContext, log, timeoutControl, minResponseDataRateFeature)
+            {
+                Pipe = pipe;
+            }
+
+            public Pipe Pipe { get; }
         }
     }
 }
