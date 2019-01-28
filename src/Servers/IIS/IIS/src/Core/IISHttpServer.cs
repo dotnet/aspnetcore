@@ -97,11 +97,11 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         public Task StopAsync(CancellationToken cancellationToken)
         {
             _nativeApplication.StopIncomingRequests();
-
-            _cancellationTokenRegistration = cancellationToken.Register(() =>
+            _cancellationTokenRegistration = cancellationToken.Register((shutdownSignal) =>
             {
-                _shutdownSignal.TrySetResult(null);
-            });
+                ((TaskCompletionSource<object>)shutdownSignal).TrySetResult(null);
+            },
+            _shutdownSignal);
 
             return _shutdownSignal.Task;
         }
