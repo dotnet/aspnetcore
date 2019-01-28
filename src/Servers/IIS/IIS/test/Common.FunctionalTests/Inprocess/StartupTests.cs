@@ -183,18 +183,15 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             await StartAsync(deploymentParameters);
         }
 
-        [ConditionalFact(Skip="https://github.com/aspnet/AspNetCore/issues/3950")]
+        [ConditionalFact]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         public async Task StartsWithPortableAndBootstraperExe()
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite, publish: true);
             // We need the right dotnet on the path in IIS
             deploymentParameters.EnvironmentVariables["PATH"] = Path.GetDirectoryName(DotNetCommands.GetDotNetExecutable(deploymentParameters.RuntimeArchitecture));
-
-            // rest publisher as it doesn't support additional parameters
-            deploymentParameters.ApplicationPublisher = null;
             // ReferenceTestTasks is workaround for https://github.com/dotnet/sdk/issues/2482
-            deploymentParameters.AdditionalPublishParameters = "-p:RuntimeIdentifier=win7-x64 -p:UseAppHost=true -p:SelfContained=false -p:ReferenceTestTasks=false";
+            deploymentParameters.AdditionalPublishParameters = "AppHost";
             var deploymentResult = await DeployAsync(deploymentParameters);
 
             Assert.True(File.Exists(Path.Combine(deploymentResult.ContentRoot, "InProcessWebSite.exe")));

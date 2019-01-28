@@ -19,13 +19,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
     public class PublishedSitesFixture : IDisposable
     {
-        public CachingApplicationPublisher InProcessTestSite { get; } = new CachingApplicationPublisher(Helpers.GetInProcessTestSitesPath());
-        public CachingApplicationPublisher OutOfProcessTestSite { get; } = new CachingApplicationPublisher(Helpers.GetOutOfProcessTestSitesPath());
+        public PublishedApplicationPublisher InProcessTestSite { get; } = new PublishedApplicationPublisher(Helpers.GetInProcessTestSitesPath());
+        public PublishedApplicationPublisher OutOfProcessTestSite { get; } = new PublishedApplicationPublisher(Helpers.GetOutOfProcessTestSitesPath());
 
         public void Dispose()
         {
-            InProcessTestSite.Dispose();
-            OutOfProcessTestSite.Dispose();
         }
 
         public IISDeploymentParameters GetBaseDeploymentParameters(HostingModel hostingModel = HostingModel.InProcess, bool publish = false)
