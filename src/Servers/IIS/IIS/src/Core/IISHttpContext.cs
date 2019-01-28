@@ -563,7 +563,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 // Post completion after completing the request to resume the state machine
                 PostCompletion(ConvertRequestCompletionResults(successfulRequest));
 
-                Server.DecrementRequests();
 
                 // Dispose the context
                 Dispose();

@@ -338,25 +338,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalFact]
-        public async Task ShutdownTimeoutIsApplied()
-        {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite, publish: true);
-            deploymentParameters.TransformArguments((a, _) => $"{a} HangOnStop");
-            deploymentParameters.WebConfigActionList.Add(
-                WebConfigHelpers.AddOrModifyAspNetCoreSection("shutdownTimeLimit", "1"));
-
-            var deploymentResult = await DeployAsync(deploymentParameters);
-
-            Assert.Equal("Hello World", await deploymentResult.HttpClient.GetStringAsync("/HelloWorld"));
-
-            StopServer();
-
-            EventLogHelpers.VerifyEventLogEvents(deploymentResult,
-                EventLogHelpers.InProcessStarted(deploymentResult),
-                EventLogHelpers.InProcessFailedToStop(deploymentResult, ""));
-        }
-
-        [ConditionalFact]
         public async Task CheckInvalidHostingModelParameter()
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);

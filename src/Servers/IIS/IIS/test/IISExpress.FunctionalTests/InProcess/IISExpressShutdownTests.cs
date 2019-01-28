@@ -8,17 +8,18 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
     [Collection(PublishedSitesCollection.Name)]
-    public class ShutdownTests : IISFunctionalTestBase
+    public class IISExpressShutdownTests : IISFunctionalTestBase
     {
         private readonly PublishedSitesFixture _fixture;
 
-        public ShutdownTests(PublishedSitesFixture fixture)
+        public IISExpressShutdownTests(PublishedSitesFixture fixture)
         {
             _fixture = fixture;
         }
@@ -41,7 +42,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
 
-        [ConditionalFact(Skip = "https://github.com/aspnet/AspNetCore/issues/6605")]
+        [ConditionalFact]
         public async Task ServerShutsDownWhenMainExitsStress()
         {
             var parameters = _fixture.GetBaseDeploymentParameters(publish: true);
