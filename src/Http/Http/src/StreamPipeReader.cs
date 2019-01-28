@@ -1,14 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Buffers;
 using System.Diagnostics;
-using System.IO;
-using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -136,7 +132,7 @@ namespace System.IO.Pipelines
             {
                 // If we examined everything, we force ReadAsync to actually read from the underlying stream
                 // instead of returning a ReadResult from TryRead.
-                _examinedEverything = examinedIndex == _readTail.End - _readTail.Start;
+                _examinedEverything = examinedIndex == _readTail.End;
             }
 
             // Three cases here:
@@ -321,7 +317,7 @@ namespace System.IO.Pipelines
 
         private ReadOnlySequence<byte> GetCurrentReadOnlySequence()
         {
-            return new ReadOnlySequence<byte>(_readHead, _readIndex, _readTail, _readTail.End - _readTail.Start);
+            return new ReadOnlySequence<byte>(_readHead, _readIndex, _readTail, _readTail.End);
         }
 
         private void AllocateReadTail()
