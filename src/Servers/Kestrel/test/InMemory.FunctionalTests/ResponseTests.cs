@@ -2514,6 +2514,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
                         $"Date: {testContext.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
                         "",
                         "0",
                         "",
@@ -2580,6 +2581,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
                         $"Date: {testContext.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
                         "",
                         "0",
                         "",
@@ -2644,6 +2646,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
                         $"Date: {testContext.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
                         "",
                         "0",
                         "",
