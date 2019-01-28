@@ -3,7 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
@@ -18,6 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         private ActionContext _actionContext;
         private ModelStateDictionary _modelState;
         private ValidationStateDictionary _validationState;
+        private int _maxModelBindingRecursionDepth;
 
         private State _state;
         private readonly Stack<State> _stack = new Stack<State>();
@@ -184,6 +188,26 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
         }
 
+        private int MaxModelBindingRecursionDepth
+        {
+            get
+            {
+                if (_maxModelBindingRecursionDepth == 0)
+                {
+                    var mvcOptions = ActionContext?.HttpContext?.RequestServices?.GetService<IOptions<MvcOptions>>();
+                    if (mvcOptions == null)
+                    {
+                        // Ignore incomplete initialization. This must be a test scenario.
+                        return 32;
+                    }
+
+                    _maxModelBindingRecursionDepth = mvcOptions.Value.MaxModelBindingRecursionDepth;
+                }
+
+                return _maxModelBindingRecursionDepth;
+            }
+        }
+
         /// <summary>
         /// Creates a new <see cref="DefaultModelBindingContext"/> for top-level model binding operation.
         /// </summary>
@@ -298,6 +322,21 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public override NestedScope EnterNestedScope()
         {
             _stack.Push(_state);
+
+            // Would this new scope (which isn't in _stack) exceed the allowed recursion depth? That is, has the model
+            // binding system already nested MaxModelBindingRecursionDepth binders?
+            if (_stack.Count >= MaxModelBindingRecursionDepth)
+            {
+                // Find the root of this deeply-nested model.
+                var states = _stack.ToArray();
+                var rootModelType = states[states.Length - 1].ModelMetadata.ModelType;
+
+                throw new InvalidOperationException(Resources.FormatModelBinding_ExceededMaxModelBindingRecursionDepth(
+                    nameof(MvcOptions),
+                    nameof(MvcOptions.MaxModelBindingRecursionDepth),
+                    MaxModelBindingRecursionDepth,
+                    rootModelType));
+            }
 
             Result = default;
 

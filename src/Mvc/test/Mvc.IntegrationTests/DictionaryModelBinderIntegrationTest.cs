@@ -1128,6 +1128,36 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal(0, modelState.ErrorCount);
         }
 
+        [Fact]
+        public async Task DictionaryModelBinder_ThrowsOn1025Items_AtTopLevel()
+        {
+            // Arrange
+            var expectedMessage = "Collection bound to 'parameter' exceeded " +
+                $"{nameof(MvcOptions)}.{nameof(MvcOptions.MaxModelBindingCollectionSize)} (1024). Remove " +
+                $"properties that bind unconditionally from {typeof(KeyValuePair<SuccessfulModel,SuccessfulModel>)}.";
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Dictionary<SuccessfulModel, SuccessfulModel>),
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                // CollectionModelBinder binds an empty collection when value providers are all empty.
+                request.QueryString = new QueryString("?a=b");
+            });
+
+            var modelState = testContext.ModelState;
+            var metadata = testContext.MetadataProvider.GetMetadataForType(parameter.ParameterType);
+            var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => parameterBinder.BindModelAsync(parameter, testContext));
+            Assert.Equal(expectedMessage, exception.Message);
+        }
+
         private class ClosedGenericDictionary : Dictionary<string, string>
         {
         }
@@ -1138,7 +1168,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
         private class ExplicitClosedGenericDictionary : IDictionary<string, string>
         {
-            private IDictionary<string, string> _data = new Dictionary<string, string>();
+            private readonly IDictionary<string, string> _data = new Dictionary<string, string>();
 
             string IDictionary<string, string>.this[string key]
             {
@@ -1243,7 +1273,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
         private class ExplicitDictionary<TKey, TValue> : IDictionary<TKey, TValue>
         {
-            private IDictionary<TKey, TValue> _data = new Dictionary<TKey, TValue>();
+            private readonly IDictionary<TKey, TValue> _data = new Dictionary<TKey, TValue>();
 
             TValue IDictionary<TKey, TValue>.this[TKey key]
             {

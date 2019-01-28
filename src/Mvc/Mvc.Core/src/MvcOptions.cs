@@ -11,8 +11,10 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace Microsoft.AspNetCore.Mvc
 {
@@ -23,6 +25,8 @@ namespace Microsoft.AspNetCore.Mvc
     {
         private readonly IReadOnlyList<ICompatibilitySwitch> _switches = Array.Empty<ICompatibilitySwitch>();
         private int _maxModelStateErrors = ModelStateDictionary.DefaultMaxAllowedErrors;
+        private int _maxModelBindingCollectionSize = FormReader.DefaultValueCountLimit;
+        private int _maxModelBindingRecursionDepth = 32;
         private int? _maxValidationDepth = 32;
 
         /// <summary>
@@ -230,6 +234,74 @@ namespace Microsoft.AspNetCore.Mvc
         /// The default value is <see langword="true"/>.
         /// </value>
         public bool SuppressAsyncSuffixInActionNames { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the maximum size of a complex collection to model bind. When this limit is reached, the model
+        /// binding system will throw an <see cref="InvalidOperationException"/>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// When binding a collection, some element binders may succeed unconditionally and model binding may run out
+        /// of memory. This limit constrains such unbounded collection growth.
+        /// </para>
+        /// <para>
+        /// This limit does not <em>correct</em> the bound model. The <see cref="InvalidOperationException"/> instead
+        /// informs the developer of an issue in their model or model binder.
+        /// </para>
+        /// <para>
+        /// This limit does not apply to collections of simple types. When
+        /// <see cref="CollectionModelBinder{TElement}"/> relies entirely on <see cref="IValueProvider"/>s, it cannot
+        /// create collections larger than the available data.
+        /// </para>
+        /// </remarks>
+        /// <value>The default value is <c>1024</c>, matching <see cref="FormReader.DefaultValueCountLimit"/>.</value>
+        public int MaxModelBindingCollectionSize
+        {
+            get => _maxModelBindingCollectionSize;
+            set
+            {
+                // Disallowing an empty collection would cause the CollectionModelBinder to throw unconditionally.
+                if (value <= 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value));
+                }
+
+                _maxModelBindingCollectionSize = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the maximum recursion depth of the model binding system. The
+        /// <see cref="DefaultModelBindingContext"/> will throw an <see cref="InvalidOperationException"/> if more than
+        /// this number of <see cref="IModelBinder"/>s are on the stack. That is, an attempt to recurse beyond this
+        /// level will fail.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// For models that are very deep or infinitely recursive, model binding may result in stack overflow. This
+        /// limit constrains such recursion.
+        /// </para>
+        /// <para>
+        /// This limit does not <em>correct</em> the bound model. The <see cref="InvalidOperationException"/> instead
+        /// informs the developer of an issue in their model.
+        /// </para>
+        /// </remarks>
+        /// <value>The default value is <c>32</c>, matching the default <see cref="MaxValidationDepth"/> value.</value>
+        public int MaxModelBindingRecursionDepth
+        {
+            get => _maxModelBindingRecursionDepth;
+            set
+            {
+                // Disallowing one model binder (if supported) would cause the model binding system to throw
+                // unconditionally. DefaultModelBindingContext always allows a top-level binder i.e. its own creation.
+                if (value <= 1)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value));
+                }
+
+                _maxModelBindingRecursionDepth = value;
+            }
+        }
 
         IEnumerator<ICompatibilitySwitch> IEnumerable<ICompatibilitySwitch>.GetEnumerator() => _switches.GetEnumerator();
 
