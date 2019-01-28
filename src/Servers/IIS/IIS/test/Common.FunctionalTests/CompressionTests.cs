@@ -27,12 +27,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             public OutOfProcess(OutOfProcessTestSiteFixture fixture) : base(fixture) { }
         }
 
-        [Collection(OutOfProcessV1TestSiteCollection.Name)]
-        public class OutOfProcessV1: CompressionTests
-        {
-            public OutOfProcessV1(OutOfProcessV1TestSiteFixture fixture) : base(fixture) { }
-        }
-
         protected CompressionTests(IISTestSiteFixture fixture) : base(fixture)
         {
             _fixture = fixture;
