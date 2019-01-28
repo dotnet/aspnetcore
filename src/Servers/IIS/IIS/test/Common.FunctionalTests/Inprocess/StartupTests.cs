@@ -49,21 +49,24 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [InlineData("dotnet.zip", "", @"Process path 'dotnet.zip' doesn't have '.exe' extension.")]
         public async Task InvalidProcessPath_ExpectServerError(string path, string arguments, string subError)
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
-            deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("processPath", path));
-            deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("arguments", arguments));
+            for (int i = 0; i < 20; i++)
+            {
+                var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
+                deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("processPath", path));
+                deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("arguments", arguments));
 
-            var deploymentResult = await DeployAsync(deploymentParameters);
+                var deploymentResult = await DeployAsync(deploymentParameters);
 
-            var response = await deploymentResult.HttpClient.GetAsync("HelloWorld");
+                var response = await deploymentResult.HttpClient.GetAsync("HelloWorld");
 
-            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+                Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
 
-            StopServer();
+                StopServer();
 
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.UnableToStart(deploymentResult, subError));
+                EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.UnableToStart(deploymentResult, subError));
 
-            Assert.Contains("HTTP Error 500.0 - ANCM In-Process Handler Load Failure", await response.Content.ReadAsStringAsync());
+                Assert.Contains("HTTP Error 500.0 - ANCM In-Process Handler Load Failure", await response.Content.ReadAsStringAsync());
+            }
         }
 
         [ConditionalFact]
