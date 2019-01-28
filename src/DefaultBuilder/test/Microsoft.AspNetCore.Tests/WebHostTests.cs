@@ -7,9 +7,11 @@ using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.HostFiltering;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -28,7 +30,7 @@ namespace Microsoft.AspNetCore.Tests
         }
 
         [Fact]
-        public void WebHostConfiguration_HostFilterOptionsAreReloadable()
+        public async Task WebHostConfiguration_HostFilterOptionsAreReloadable()
         {
             var host = WebHost.CreateDefaultBuilder()
                 .Configure(app => { })
@@ -42,15 +44,15 @@ namespace Microsoft.AspNetCore.Tests
 
             Assert.Contains("*", options.AllowedHosts);
 
-            var changed = new ManualResetEvent(false);
+            var changed = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             monitor.OnChange(newOptions =>
             {
-                changed.Set();
+                changed.SetResult(0);
             });
 
             config["AllowedHosts"] = "NewHost";
 
-            Assert.True(changed.WaitOne(TimeSpan.FromSeconds(10)));
+            await changed.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
             options = monitor.CurrentValue;
             Assert.Contains("NewHost", options.AllowedHosts);
         }

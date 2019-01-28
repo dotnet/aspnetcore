@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -160,37 +161,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             return server;
         }
 
-        internal static Task WithTimeout(this Task task) => task.WithTimeout(DefaultTimeout);
+        internal static Task WithTimeout(this Task task) => task.TimeoutAfter(DefaultTimeout);
 
-        internal static async Task WithTimeout(this Task task, TimeSpan timeout)
-        {
-            var completedTask = await Task.WhenAny(task, Task.Delay(timeout));
-
-            if (completedTask == task)
-            {
-                await task;
-                return;
-            }
-            else
-            {
-                throw new TimeoutException("The task has timed out.");
-            }
-        }
-
-        internal static Task<T> WithTimeout<T>(this Task<T> task) => task.WithTimeout(DefaultTimeout);
-
-        internal static async Task<T> WithTimeout<T>(this Task<T> task, TimeSpan timeout)
-        {
-            var completedTask = await Task.WhenAny(task, Task.Delay(timeout));
-
-            if (completedTask == task)
-            {
-                return await task;
-            }
-            else
-            {
-                throw new TimeoutException("The task has timed out.");
-            }
-        }
+        internal static Task<T> WithTimeout<T>(this Task<T> task) => task.TimeoutAfter(DefaultTimeout);
     }
 }
