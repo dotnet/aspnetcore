@@ -1,14 +1,6 @@
 <!-- Use this file to workaround issues. List the issue tracking the item to fix so we can remove the workaround when the issue is resolved. -->
 <Project>
 
-  <!-- Workaround https://github.com/dotnet/arcade/issues/1876. Cross-gen assemblies aren't matched by public key token's. -->
-  <ItemGroup>
-    <!-- This lists files by name to be signed. Dependency items are imported from src/Framework/Microsoft.AspNetCore.App.props -->
-    <FileNamesToSign Include="@(Dependency->'%(Identity).dll')" CertificateName="Microsoft400" />
-    <!-- These dependencies come from external teams, but we crossgen them so they need to be re-signed. -->
-    <FileNamesToSign Include="@(ExternalDependency->'%(Identity).dll')" Exclude="Newtonsoft.Json.dll" CertificateName="Microsoft400" />
-  </ItemGroup>
-
   <!-- Workaround https://github.com/aspnet/AspNetCore-Internal/issues/1501. dotnet-blazor.dll isn't strong-named signed. -->
   <ItemGroup>
     <FileNamesToSign Include="dotnet-blazor.dll" CertificateName="Microsoft400" />
