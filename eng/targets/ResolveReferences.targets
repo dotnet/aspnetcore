@@ -169,4 +169,30 @@
       </ProvidesReference>
     </ItemGroup>
   </Target>
+
+  <!-- This is used by the eng/scripts/AddAllProjectRefsToSolution.ps1 script to traverse the ProjectRef graph -->
+  <PropertyGroup>
+    <_CustomCollectProjectReferenceDependsOn Condition="'$(TargetFramework)' != ''">ResolveProjectReferences</_CustomCollectProjectReferenceDependsOn>
+  </PropertyGroup>
+  <Target Name="_CustomCollectProjectReference" DependsOnTargets="$(_CustomCollectProjectReferenceDependsOn)" Returns="$(MSBuildProjectFullPath);@(_MSBuildProjectReferenceExistent)">
+    <ItemGroup>
+      <_TargetFrameworks Include="$(TargetFrameworks)" />
+    </ItemGroup>
+    <MSBuild Condition="'$(TargetFramework)' == ''"
+             Targets="_CustomCollectProjectReference"
+             BuildInParallel="true"
+             Projects="$(MSBuildProjectFullPath)"
+             Properties="TargetFramework=%(_TargetFrameworks.Identity)"
+             RebaseOutputs="True">
+      <Output TaskParameter="TargetOutputs" ItemName="_MSBuildProjectReferenceExistent" />
+    </MSBuild>
+    <MSBuild Condition="'$(TargetFramework)' != ''"
+             Targets="_CustomCollectProjectReference"
+             BuildInParallel="true"
+             SkipNonexistentTargets="true"
+             Projects="@(_MSBuildProjectReferenceExistent)"
+             RebaseOutputs="True">
+      <Output TaskParameter="TargetOutputs" ItemName="_MSBuildProjectReferenceExistent" />
+    </MSBuild>
+  </Target>
 </Project>

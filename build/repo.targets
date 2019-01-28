@@ -38,6 +38,24 @@
     <CodeSignDependsOn>$(CodeSignDependsOn);RemoveSharedFrameworkOnlyRefsFromNuspec</CodeSignDependsOn>
   </PropertyGroup>
 
+  <Target Name="ShowProjectClosure" DependsOnTargets="ResolveProjects">
+    <MSBuild Targets="_CustomCollectProjectReference"
+             BuildInParallel="true"
+             SkipNonexistentTargets="true"
+             Projects="@(ProjectToBuild)"
+             Properties="DesignTimeBuild=true"
+             RebaseOutputs="True">
+      <Output TaskParameter="TargetOutputs" ItemName="_ReferenceProject" />
+    </MSBuild>
+    <RemoveDuplicates Inputs="@(_ReferenceProject->'%(FullPath)')">
+      <Output TaskParameter="Filtered" ItemName="ReferencedProjects" />
+    </RemoveDuplicates>
+    <Message Importance="High" Text="Projects referenced:" />
+    <Message Importance="High" Text=" - %(ReferencedProjects.Identity)" />
+
+    <WriteLinesToFile Lines="@(ReferencedProjects)" File="$(ProjectsReferencedOutFile)" Overwrite="true" Condition="'$(ProjectsReferencedOutFile)' != ''" />
+  </Target>
+
   <Target Name="GenerateProjectList" DependsOnTargets="ResolveProjects">
     <MSBuild Projects="@(ProjectToBuild)"
              Targets="GetReferencesProvided"
