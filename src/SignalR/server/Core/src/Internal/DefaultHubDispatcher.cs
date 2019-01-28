@@ -362,7 +362,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                         connection.StreamTracker.Complete(CompletionMessage.Empty(stream));
                     }
                     // ignore failures, it means the client already completed the streams
-                    catch { }
+                    catch (KeyNotFoundException) { }
                 }
             }
         }
