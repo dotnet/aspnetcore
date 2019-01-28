@@ -1020,18 +1020,19 @@ namespace Microsoft.Extensions.DependencyInjection
 
             public TransientService Service { get; }
         }
-
-        // https://github.com/nunit/nunit/blob/master/src/NUnitFramework/framework/Internal/SingleThreadedSynchronizationContext.cs
-        private class SingleThreadedSynchronizationContext : SynchronizationContext, IDisposable
+        
+        private class SingleThreadedSynchronizationContext : SynchronizationContext
         {
-            private readonly Queue<ScheduledWork> _queue = new Queue<ScheduledWork>();
-            private Status status;
+            private readonly Queue<(SendOrPostCallback Callback, object State)> _queue = new Queue<(SendOrPostCallback Callback, object State)>();
 
-            private enum Status
+            public override void Post(SendOrPostCallback d, object state)
             {
-                NotStarted,
-                Running,
-                ShutDown
+                _queue.Enqueue((d, state));
+            }
+
+            public override void Send(SendOrPostCallback d, object state)
+            {
+                base.Send(d, state);
             }
 
             public static void Run(Action action)
@@ -1042,125 +1043,15 @@ namespace Microsoft.Extensions.DependencyInjection
                 try
                 {
                     action();
+                    while(context._queue.Count > 0)
+                    {
+                        var item = context._queue.Dequeue();
+                        item.Callback(item.State);
+                    }
                 }
                 finally
                 {
                     SynchronizationContext.SetSynchronizationContext(previous);
-                }
-            }
-
-            public override void Post(SendOrPostCallback d, object state)
-            {
-                AddWork(new ScheduledWork(d, state, finished: null));
-            }
-
-            public override void Send(SendOrPostCallback d, object state)
-            {
-                if (SynchronizationContext.Current == this)
-                {
-                    d.Invoke(state);
-                }
-                else
-                {
-                    using (var finished = new ManualResetEventSlim())
-                    {
-                        AddWork(new ScheduledWork(d, state, finished));
-                        finished.Wait();
-                    }
-                }
-            }
-
-            private void AddWork(ScheduledWork work)
-            {
-                lock (_queue)
-                {
-                    if (status == Status.ShutDown) throw CreateInvalidWhenShutDownException();
-                    _queue.Enqueue(work);
-                    Monitor.Pulse(_queue);
-                }
-            }
-
-            public void ShutDown()
-            {
-                lock (_queue)
-                {
-                    status = Status.ShutDown;
-                    Monitor.Pulse(_queue);
-
-                    if (_queue.Count != 0)
-                        throw new InvalidOperationException("Shutting down SingleThreadedTestSynchronizationContext with work still in the queue.");
-                }
-            }
-
-            private static InvalidOperationException CreateInvalidWhenShutDownException()
-            {
-                return new InvalidOperationException("This SingleThreadedTestSynchronizationContext has been shut down.");
-            }
-
-            public void Run()
-            {
-                lock (_queue)
-                {
-                    switch (status)
-                    {
-                        case Status.Running:
-                            throw new InvalidOperationException("SingleThreadedTestSynchronizationContext.Run may not be reentered.");
-                        case Status.ShutDown:
-                            throw CreateInvalidWhenShutDownException();
-                    }
-
-                    status = Status.Running;
-                }
-
-                ScheduledWork scheduledWork;
-                while (TryTake(out scheduledWork))
-                    scheduledWork.Execute();
-            }
-
-            private bool TryTake(out ScheduledWork scheduledWork)
-            {
-                lock (_queue)
-                {
-                    for (; ; )
-                    {
-                        if (status == Status.ShutDown)
-                        {
-                            scheduledWork = default(ScheduledWork);
-                            return false;
-                        }
-
-                        if (_queue.Count != 0) break;
-                        Monitor.Wait(_queue);
-                    }
-
-                    scheduledWork = _queue.Dequeue();
-                }
-
-                return true;
-            }
-
-            public void Dispose()
-            {
-                ShutDown();
-            }
-
-            private struct ScheduledWork
-            {
-                private readonly SendOrPostCallback _callback;
-                private readonly object _state;
-                private readonly ManualResetEventSlim _finished;
-
-                public ScheduledWork(SendOrPostCallback callback, object state, ManualResetEventSlim finished)
-                {
-                    _callback = callback;
-                    _state = state;
-                    _finished = finished;
-                }
-
-                public void Execute()
-                {
-                    _callback.Invoke(_state);
-                    _finished?.Set();
                 }
             }
         }
