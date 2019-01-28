@@ -43,8 +43,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             await deploymentResult.AssertRecycledAsync();
         }
 
-        [Fact]
-        [InlineData(AncmVersion.AspNetCoreModuleV2)]
+        [ConditionalFact]
         public async Task ConfigurationChangeForcesChildProcessRestart()
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess, publish: true);
