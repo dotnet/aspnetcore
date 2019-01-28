@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.TestHost
                     req.Headers.Append(header.Key, header.Value.ToArray());
                 }
 
-                if (req.Host == null || !req.Host.HasValue)
+                if (!req.Host.HasValue)
                 {
                     // If Host wasn't explicitly set as a header, let's infer it from the Uri
                     req.Host = HostString.FromUriComponent(request.RequestUri);

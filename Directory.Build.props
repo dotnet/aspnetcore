@@ -61,6 +61,9 @@
 
     <!-- Fixes a common error in targets implementing a NoBuild mode. -->
     <BuildProjectReferences Condition=" '$(NoBuild)' == 'true' ">false</BuildProjectReferences>
+    
+    <!-- Enables Strict mode for Roslyn compiler -->
+    <Features>strict</Features>
   </PropertyGroup>
 
   <Import Project="eng\Versions.props" />

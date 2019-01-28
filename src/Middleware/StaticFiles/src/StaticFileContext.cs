@@ -233,7 +233,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 // the Range header field.
                 if (ifRangeHeader.LastModified.HasValue)
                 {
-                    if (_lastModified !=null && _lastModified > ifRangeHeader.LastModified)
+                    if (_lastModified > ifRangeHeader.LastModified)
                     {
                         _isRangeRequest = false;
                     }

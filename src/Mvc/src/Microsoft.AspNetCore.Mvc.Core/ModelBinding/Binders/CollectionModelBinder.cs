@@ -448,17 +448,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
         private static IEnumerable<string> GetIndexNamesFromValueProviderResult(ValueProviderResult valueProviderResult)
         {
-            IEnumerable<string> indexNames = null;
-            if (valueProviderResult != null)
-            {
-                var indexes = (string[])valueProviderResult;
-                if (indexes != null && indexes.Length > 0)
-                {
-                    indexNames = indexes;
-                }
-            }
-
-            return indexNames;
+            var indexes = (string[])valueProviderResult;
+            return (indexes == null || indexes.Length == 0) ? null : indexes;
         }
     }
 }

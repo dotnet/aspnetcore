@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
             // If logging is enabled or the diagnostic listener is enabled, try to get the correlation
             // id from the header
-            StringValues correlationId;
+            StringValues correlationId = default;
             if (diagnosticListenerEnabled || loggingEnabled)
             {
                 httpContext.Request.Headers.TryGetValue(RequestIdHeaderName, out correlationId);
