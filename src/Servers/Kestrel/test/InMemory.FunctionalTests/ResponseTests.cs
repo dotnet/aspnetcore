@@ -2531,6 +2531,35 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var expectedException = new Exception();
             using (var server = new TestServer(async httpContext =>
             {
+                await httpContext.Response.StartAsync();
+                throw expectedException;
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "");
+                }
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task StartAsyncWithContentLengthThrowExceptionThrowsConnectionAbortedException()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+            var expectedException = new Exception();
+            using (var server = new TestServer(async httpContext =>
+            {
                 httpContext.Response.ContentLength = 11;
                 await httpContext.Response.StartAsync();
                 throw expectedException;
@@ -2594,7 +2623,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public async Task StartAsyncAndWritingWorks()
+        public async Task StartAsyncWithContentLengthWritingWorks()
         {
             var testContext = new TestServiceContext(LoggerFactory);
 
