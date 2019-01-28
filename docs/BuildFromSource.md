@@ -87,10 +87,13 @@ Opening solution files may produce an error code NU1105 with a message such
 
 This is a known issue in NuGet (<https://github.com/NuGet/Home/issues/5820>) and we are working with them for a solution. See also <https://github.com/aspnet/AspNetCore/issues/4183> to track progress on this.
 
-**The workaround** for now is to add all projects to the solution.
+**The workaround** for now is to add all projects to the solution. You can either do this one by one using `dotnet sln`
 
     dotnet sln add C:\src\AspNetCore\src\Hosting\Abstractions\src\Microsoft.AspNetCore.Hosting.Abstractions.csproj
 
+Or you can use this script to automatically traverse the project reference graph, which then invokes `dotnet sln` for you: [eng/scripts/AddAllProjectRefsToSolution.ps1](/eng/scripts/AddAllProjectRefsToSolution.ps1).
+
+    ./eng/scripts/AddAllProjectRefsToSolution.ps1 -WorkingDir src/Mvc/
 
 #### PATH
 
@@ -171,7 +174,7 @@ SharedFxRID              | The runtime identifier of the shared framework.
 After building ASP.NET Core from source, you will need to install and use your local version of ASP.NET Core.
 See ["Artifacts"](./Artifacts.md) for more explanation of the different folders produced by a build.
 
-- Run the installers produced in `artifacts/{Debug, Release}/installers/` for your platform.
+- Run the installers produced in `artifacts/installers/{Debug, Release}/` for your platform.
 - Add a NuGet.Config to your project directory with the following content:
 
   ```xml
@@ -179,7 +182,7 @@ See ["Artifacts"](./Artifacts.md) for more explanation of the different folders 
   <configuration>
       <packageSources>
           <clear />
-          <add key="MyBuildOfAspNetCore" value="C:\src\aspnet\AspNetCore\artifacts\Debug\packages\product\" />
+          <add key="MyBuildOfAspNetCore" value="C:\src\aspnet\AspNetCore\artifacts\packages\Debug\Shipping\" />
           <add key="NuGet.org" value="https://api.nuget.org/v3/index.json" />
       </packageSources>
   </configuration>

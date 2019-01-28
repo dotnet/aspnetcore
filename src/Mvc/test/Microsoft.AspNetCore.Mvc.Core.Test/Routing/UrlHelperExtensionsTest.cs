@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
@@ -599,6 +600,112 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test.Routing
                     Assert.Equal("page", value.Key);
                     Assert.Equal("ambient-page", value.Value);
                 });
+        }
+
+        [Fact]
+        public void ActionLink_WithActionName_Works()
+        {
+            // Arrange
+            var expectedAction = "TestAction";
+            var expectedProtocol = "testprotocol://";
+            var expectedHost = "www.example.com";
+            UrlActionContext actual = null;
+
+            var httpContext = new DefaultHttpContext
+            {
+                Request =
+                {
+                    Protocol = expectedProtocol,
+                    Host = new HostString(expectedHost),
+                }
+            };
+            var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+            var urlHelper = CreateMockUrlHelper(actionContext);
+            urlHelper.Setup(h => h.Action(It.IsAny<UrlActionContext>()))
+                .Callback((UrlActionContext context) => actual = context);
+
+            // Act
+            urlHelper.Object.ActionLink(expectedAction);
+
+            // Assert
+            urlHelper.Verify();
+            Assert.NotNull(actual);
+            Assert.Equal(expectedAction, actual.Action);
+            Assert.Null(actual.Controller);
+            Assert.Null(actual.Values);
+
+            Assert.Equal(expectedProtocol, actual.Protocol);
+            Assert.Equal(expectedHost, actual.Host);
+        }
+
+        [Fact]
+        public void ActionLink_UsesSpecifiedProtocol()
+        {
+            // Arrange
+            var expectedProtocol = "testprotocol://";
+            var expectedHost = "www.example.com";
+            UrlActionContext actual = null;
+
+            var httpContext = new DefaultHttpContext
+            {
+                Request =
+                {
+                    Protocol = "http://",
+                    Host = new HostString(expectedHost),
+                }
+            };
+            var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+            var urlHelper = CreateMockUrlHelper(actionContext);
+            urlHelper.Setup(h => h.Action(It.IsAny<UrlActionContext>()))
+                .Callback((UrlActionContext context) => actual = context);
+
+            // Act
+            urlHelper.Object.ActionLink(protocol: expectedProtocol);
+
+            // Assert
+            urlHelper.Verify();
+            Assert.NotNull(actual);
+            Assert.Null(actual.Action);
+            Assert.Null(actual.Controller);
+            Assert.Null(actual.Values);
+
+            Assert.Equal(expectedProtocol, actual.Protocol);
+            Assert.Equal(expectedHost, actual.Host);
+        }
+
+        [Fact]
+        public void ActionLink_UsesSpecifiedHost()
+        {
+            // Arrange
+            var expectedProtocol = "testprotocol://";
+            var expectedHost = "www.example.com";
+            UrlActionContext actual = null;
+
+            var httpContext = new DefaultHttpContext
+            {
+                Request =
+                {
+                    Protocol = expectedProtocol,
+                    Host = new HostString("www.asp.net"),
+                }
+            };
+            var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+            var urlHelper = CreateMockUrlHelper(actionContext);
+            urlHelper.Setup(h => h.Action(It.IsAny<UrlActionContext>()))
+                .Callback((UrlActionContext context) => actual = context);
+
+            // Act
+            urlHelper.Object.ActionLink(host: expectedHost);
+
+            // Assert
+            urlHelper.Verify();
+            Assert.NotNull(actual);
+            Assert.Null(actual.Action);
+            Assert.Null(actual.Controller);
+            Assert.Null(actual.Values);
+
+            Assert.Equal(expectedProtocol, actual.Protocol);
+            Assert.Equal(expectedHost, actual.Host);
         }
 
         private static Mock<IUrlHelper> CreateMockUrlHelper(ActionContext context = null)

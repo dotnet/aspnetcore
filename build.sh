@@ -14,7 +14,6 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 verbose=false
 update=false
 reinstall=false
-repo_path="$DIR"
 lockfile_path="$DIR/korebuild-lock.txt"
 config_file="$DIR/korebuild.json"
 channel='master'
@@ -151,12 +150,6 @@ while [[ $# -gt 0 ]]; do
             __usage --no-exit
             exit 0
             ;;
-        --repo-root|-RepoRoot)
-            shift
-            __warn '--repo-root is obsolete and will be removed when we finish https://github.com/aspnet/AspNetCore/issues/4246'
-            repo_path="${1:-}"
-            [ -z "$repo_path" ] && __error "Missing value for parameter --repo-root" && __usage
-            ;;
         --restore|-[Rr]estore)
             run_restore=true
             ;;
@@ -277,7 +270,10 @@ msbuild_args[${#msbuild_args[*]}]="-p:_RunBuild=$run_build"
 msbuild_args[${#msbuild_args[*]}]="-p:_RunPack=$run_pack"
 msbuild_args[${#msbuild_args[*]}]="-p:_RunTests=$run_tests"
 
-set_korebuildsettings "$tools_source" "$DOTNET_HOME" "$repo_path" "$config_file" "$ci"
+# Disable downloading ref assemblies as a tarball. Use netfx refs from the Microsoft.NETFramework.ReferenceAssemblies NuGet package instead.
+[ -z "${KOREBUILD_SKIP_INSTALL_NETFX:-}" ] && KOREBUILD_SKIP_INSTALL_NETFX=1
+
+set_korebuildsettings "$tools_source" "$DOTNET_HOME" "$DIR" "$config_file" "$ci"
 
 # This incantation avoids unbound variable issues if msbuild_args is empty
 # https://stackoverflow.com/questions/7577052/bash-empty-array-expansion-with-set-u

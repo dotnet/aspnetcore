@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <RootNamespace>Microsoft.AspNetCore</RootNamespace>
-    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <Import Project="..\Microsoft.AspNetCore.App.props" />
@@ -28,7 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
+    <Reference Include="Newtonsoft.Json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -40,11 +39,9 @@
 
   <Target Name="GenerateTestData" BeforeTargets="GetAssemblyAttributes" DependsOnTargets="ResolveProjectReferences">
     <ItemGroup>
-      <ExpectedAssemblyNames Include="%(Dependency.AssemblyName)" />
-      <ExpectedAssemblyNames Include="@(Dependency)" Condition="'%(Dependency.AssemblyName)' == '' " />
       <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
         <_Parameter1>SharedFxDependencies</_Parameter1>
-        <_Parameter2>@(ExpectedAssemblyNames)</_Parameter2>
+        <_Parameter2>@(Dependency);@(ExternalDependency)</_Parameter2>
       </AssemblyAttribute>
       <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
         <_Parameter1>MetadataOutputPath</_Parameter1>

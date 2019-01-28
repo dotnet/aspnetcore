@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Description>CSharp Analyzers for ASP.NET Core MVC.</Description>
     <PackageTags>aspnetcore;aspnetcoremvc</PackageTags>
-    <IsProductPackage>true</IsProductPackage>
+    <IsShippingPackage>true</IsShippingPackage>
 
     <TargetFramework>netstandard1.3</TargetFramework>
     <IncludeBuildOutput>false</IncludeBuildOutput>
@@ -18,10 +18,6 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="All" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <SignedPackageFile Include="$(TargetPath)" PackagePath="analyzers/dotnet/cs/$(TargetFileName)" Certificate="$(AssemblySigningCertName)" />
   </ItemGroup>
 
   <Target Name="PopulateNuspec" BeforeTargets="GenerateNuspec" DependsOnTargets="Build">

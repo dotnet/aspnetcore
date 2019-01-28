@@ -48,14 +48,14 @@ else
 
     WeatherForecast[] forecasts;
 
+    public override Task SetParametersAsync(ParameterCollection parameters)
+    {
+        StartDate = DateTime.Now;
+        return base.SetParametersAsync(parameters);
+    }
+
     protected override async Task OnParametersSetAsync()
     {
-        // If no value was given in the URL for StartDate, apply a default
-        if (StartDate == default)
-        {
-            StartDate = DateTime.Now;
-        }
-
         forecasts = await ForecastService.GetForecastAsync(StartDate);
     }
 }

@@ -48,14 +48,10 @@ namespace Microsoft.AspNetCore.Components.Reflection
             {
                 _setterDelegate = (Action<TTarget, TValue>)Delegate.CreateDelegate(
                     typeof(Action<TTarget, TValue>), setMethod);
-                var propertyType = typeof(TValue);
             }
 
             public void SetValue(object target, object value)
                 => _setterDelegate((TTarget)target, (TValue)value);
-
-            public void SetDefaultValue(object target)
-                => _setterDelegate((TTarget)target, default);
         }
     }
 }

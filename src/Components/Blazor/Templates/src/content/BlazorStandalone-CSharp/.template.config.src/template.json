@@ -32,12 +32,12 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "netcoreapp2.1",
-          "description": "Target netcoreapp2.1"
+          "choice": "netcoreapp3.0",
+          "description": "Target netcoreapp3.0"
         }
       ],
-      "replaces": "netcoreapp2.1",
-      "defaultValue": "netcoreapp2.1"
+      "replaces": "netcoreapp3.0",
+      "defaultValue": "netcoreapp3.0"
     },
     "HostIdentifier": {
       "type": "bind",
@@ -55,6 +55,13 @@
       "description": "Specifies which version of Blazor packages to use.",
       "replaces": "$(TemplateBlazorPackageVersion)",
       "defaultValue": "${TemplateBlazorVersion}"
+    },
+    "TemplateComponentsVersionSymbol": {
+      "type": "parameter",
+      "datatype": "string",
+      "description": "Specifies which version of Components packages to use.",
+      "replaces": "$(TemplateComponentsPackageVersion)",
+      "defaultValue": "${TemplateComponentsVersion}"
     },
     "skipRestore": {
       "type": "parameter",

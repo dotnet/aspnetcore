@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Components
         /// </summary>
         /// <param name="parameterCollection">The <see cref="ParameterCollection"/>.</param>
         /// <param name="target">An object that has a public writable property matching each parameter's name and type.</param>
-        public unsafe static void SetParameterProperties(
+        public static void SetParameterProperties(
             in this ParameterCollection parameterCollection,
             object target)
         {
@@ -41,17 +41,6 @@ namespace Microsoft.AspNetCore.Components
                 _cachedWritersByType[targetType] = writers;
             }
 
-            // We only want to iterate through the parameterCollection once, and by the end of it,
-            // need to have tracked which of the parameter properties haven't yet been written.
-            // To avoid allocating any list/dictionary to track that, here we stackalloc an array
-            // of flags and set them based on the indices of the writers we use.
-            var numWriters = writers.WritersByIndex.Count;
-            var numUsedWriters = 0;
-
-            // TODO: Once we're able to move to netstandard2.1, this can be changed to be
-            // a Span<bool> and then the enclosing method no longer needs to be 'unsafe'
-            bool* usageFlags = stackalloc bool[numWriters];
-
             foreach (var parameter in parameterCollection)
             {
                 var parameterName = parameter.Name;
@@ -62,32 +51,13 @@ namespace Microsoft.AspNetCore.Components
 
                 try
                 {
-                    writerWithIndex.Writer.SetValue(target, parameter.Value);
-                    usageFlags[writerWithIndex.Index] = true;
-                    numUsedWriters++;
+                    writerWithIndex.SetValue(target, parameter.Value);
                 }
                 catch (Exception ex)
                 {
                     throw new InvalidOperationException(
                         $"Unable to set property '{parameterName}' on object of " +
                         $"type '{target.GetType().FullName}'. The error was: {ex.Message}", ex);
-                }
-            }
-
-            // Now we can determine whether any writers have not been used, and if there are
-            // some unused ones, find them.
-            for (var index = 0; numUsedWriters < numWriters; index++)
-            {
-                if (index >= numWriters)
-                {
-                    // This should not be possible
-                    throw new InvalidOperationException("Ran out of writers before marking them all as used.");
-                }
-
-                if (!usageFlags[index])
-                {
-                    writers.WritersByIndex[index].SetDefaultValue(target);
-                    numUsedWriters++;
                 }
             }
         }
@@ -125,12 +95,11 @@ namespace Microsoft.AspNetCore.Components
 
         class WritersForType
         {
-            public Dictionary<string, (int Index, IPropertySetter Writer)> WritersByName { get; }
-            public List<IPropertySetter> WritersByIndex { get; }
+            public Dictionary<string, IPropertySetter> WritersByName { get; }
 
             public WritersForType(Type targetType)
             {
-                var propertySettersByName = new Dictionary<string, IPropertySetter>(StringComparer.OrdinalIgnoreCase);
+                WritersByName = new Dictionary<string, IPropertySetter>(StringComparer.OrdinalIgnoreCase);
                 foreach (var propertyInfo in GetCandidateBindableProperties(targetType))
                 {
                     var shouldCreateWriter = propertyInfo.IsDefined(typeof(ParameterAttribute))
@@ -143,24 +112,14 @@ namespace Microsoft.AspNetCore.Components
                     var propertySetter = MemberAssignment.CreatePropertySetter(targetType, propertyInfo);
 
                     var propertyName = propertyInfo.Name;
-                    if (propertySettersByName.ContainsKey(propertyName))
+                    if (WritersByName.ContainsKey(propertyName))
                     {
                         throw new InvalidOperationException(
                             $"The type '{targetType.FullName}' declares more than one parameter matching the " +
                             $"name '{propertyName.ToLowerInvariant()}'. Parameter names are case-insensitive and must be unique.");
                     }
 
-                    propertySettersByName.Add(propertyName, propertySetter);
-                }
-
-                // Now we know all the entries, construct the resulting list/dictionary
-                // with well-defined indices
-                WritersByIndex = new List<IPropertySetter>();
-                WritersByName = new Dictionary<string, (int, IPropertySetter)>(StringComparer.OrdinalIgnoreCase);
-                foreach (var pair in propertySettersByName)
-                {
-                    WritersByName.Add(pair.Key, (WritersByIndex.Count, pair.Value));
-                    WritersByIndex.Add(pair.Value);
+                    WritersByName.Add(propertyName, propertySetter);
                 }
             }
         }

@@ -7,6 +7,14 @@
     <InProcessTestSite>true</InProcessTestSite>
   </PropertyGroup>
 
+  <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
+    <!-- UseAppHost is a workaround for https://github.com/aspnet/websdk/issues/422 -->
+    <TestAssetPublishProfile Include="Portable" Properties="UseAppHost=false;TargetFramework=netcoreapp3.0" />
+    <TestAssetPublishProfile Include="Standalone-x64" Properties="RuntimeIdentifier=win7-x64;" />
+    <TestAssetPublishProfile Include="Standalone-x86" Properties="RuntimeIdentifier=win7-x86;" />
+    <TestAssetPublishProfile Include="AppHost" Properties="RuntimeIdentifier=win7-x64;UseAppHost=true;SelfContained=false;" />
+  </ItemGroup>
+
   <ItemGroup>
     <Compile Include="..\shared\**\*.cs" />
     <None Include="wwwroot\**" CopyToOutputDirectory="Always" />

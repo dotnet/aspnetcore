@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Description>Tests for users to verify their own implementations of SignalR types</Description>
     <TargetFramework>netcoreapp3.0</TargetFramework>
-    <IsProductPackage>true</IsProductPackage>
+    <IsShippingPackage>true</IsShippingPackage>
     <IsTestProject>false</IsTestProject>
   </PropertyGroup>
 

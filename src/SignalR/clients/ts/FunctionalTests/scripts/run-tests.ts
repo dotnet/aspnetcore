@@ -12,7 +12,7 @@ import * as _debug from "debug";
 
 const debug = _debug("signalr-functional-tests:run");
 
-const ARTIFACTS_DIR = path.resolve(__dirname, "..", "..", "..", "..", "artifacts");
+const ARTIFACTS_DIR = path.resolve(__dirname, "..", "..", "..", "..", "..", "..", "artifacts");
 const LOGS_DIR = path.resolve(ARTIFACTS_DIR, "logs");
 
 const HOSTSFILE_PATH = process.platform === "win32" ? `${process.env.SystemRoot}\\System32\\drivers\\etc\\hosts` : null;

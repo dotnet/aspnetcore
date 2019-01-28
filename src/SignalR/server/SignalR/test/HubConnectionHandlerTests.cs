@@ -3101,6 +3101,53 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             Assert.True(errorLogged);
         }
 
+        [Fact]
+        public async Task UploadStreamAndStreamingMethodClosesStreamsOnServerWhenMethodCompletes()
+        {
+            bool errorLogged = false;
+            bool ExpectedErrors(WriteContext writeContext)
+            {
+                if (writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.HubConnectionHandler" &&
+                       writeContext.EventId.Name == "ErrorProcessingRequest")
+                {
+                    errorLogged = true;
+                    return true;
+                }
+
+                return false;
+            }
+
+            using (StartVerifiableLog(ExpectedErrors))
+            {
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(loggerFactory: LoggerFactory);
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+                using (var client = new TestClient())
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
+
+                    await client.SendStreamInvocationAsync(nameof(MethodHub.StreamAndUploadIgnoreItems), streamIds: new[] { "id" }, args: Array.Empty<object>()).OrTimeout();
+
+                    await client.SendHubMessageAsync(new StreamItemMessage("id", "ignored")).OrTimeout();
+                    var result = await client.ReadAsync().OrTimeout();
+
+                    var simpleCompletion = Assert.IsType<CompletionMessage>(result);
+                    Assert.Null(simpleCompletion.Result);
+
+                    // This will log an error on the server as the hub method has completed and will complete all associated streams
+                    await client.SendHubMessageAsync(new StreamItemMessage("id", "error!")).OrTimeout();
+
+                    // Shut down
+                    client.Dispose();
+
+                    await connectionHandlerTask.OrTimeout();
+                }
+            }
+
+            // Check that the stream has been completed by noting the existance of an error
+            Assert.True(errorLogged);
+        }
+
         [Theory]
         [InlineData(nameof(LongRunningHub.CancelableStream))]
         [InlineData(nameof(LongRunningHub.CancelableStream2), 1, 2)]

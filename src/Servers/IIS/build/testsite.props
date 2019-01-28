@@ -9,6 +9,7 @@
     <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
     <!-- Work around until we get a new WebSdk -->
     <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
+    <BuildProjectReferences Condition="'$(_InsidePublishTestsAssets)' == 'True'">False</BuildProjectReferences>
   </PropertyGroup>
 
   <Import Project="assets.props" />
@@ -78,4 +79,14 @@
     <Exec Command="$(InjectDepsApp) &quot;$(PublishDepsFilePath)&quot; $(RuntimeIdentifier) " />
   </Target>
 
+  <Target Name="PublishTestsAssets" AfterTargets="Build" Condition="'$(_InsidePublishTestsAssets)' != 'true' AND '@(TestAssetPublishProfile->Count())' != '0'">
+
+    <!--
+      _InsidePublishTestsAssets is to avoid invoking this target recursively
+      Platform;PlatformTarget removal is fix builds inside VS -->
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="Publish"
+             RemoveProperties="Platform;PlatformTarget"
+             Properties="ReferenceTestTasks=false;_InsidePublishTestsAssets=True;PublishDir=$(PublishDir)%(TestAssetPublishProfile.Identity)/;%(TestAssetPublishProfile.Properties)" />
+  </Target>
 </Project>

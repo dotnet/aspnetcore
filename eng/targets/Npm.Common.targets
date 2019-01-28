@@ -69,16 +69,4 @@
     <Exec Command="npm $(NpmTestArgs)" IgnoreStandardErrorWarningFormat="true" />
   </Target>
 
-  <Target Name="GetArtifactInfo" Condition="'$(IsPackable)' == 'true'" Returns="@(ArtifactInfo)">
-    <ItemGroup>
-      <ArtifactInfo Include="$(TargetPath)" >
-        <ArtifactType>NpmPackage</ArtifactType>
-        <PackageId>$(PackageId)</PackageId>
-        <Version>$(PackageVersion)</Version>
-      </ArtifactInfo>
-
-      <FilesToExcludeFromSigning Include="$(TargetPath)" />
-    </ItemGroup>
-  </Target>
-
 </Project>

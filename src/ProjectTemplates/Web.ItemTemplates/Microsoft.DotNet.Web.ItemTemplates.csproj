@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <Description>Web File Templates for Microsoft Template Engine
+
+    To install the templates in this package, run 'dotnet new --install $(PackageId)::$(PackageVersion)'.</Description>
+    <IsShippingPackage>true</IsShippingPackage>
+  </PropertyGroup>
+
+</Project>

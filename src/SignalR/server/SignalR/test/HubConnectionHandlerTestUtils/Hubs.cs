@@ -258,6 +258,21 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             // Wait for an item to appear first then return from the hub method to end the invocation
             return source.WaitToReadAsync().AsTask();
         }
+
+        public ChannelReader<string> StreamAndUploadIgnoreItems(ChannelReader<string> source)
+        {
+            var channel = Channel.CreateUnbounded<string>();
+            _ = ChannelFunc(channel.Writer, source);
+
+            return channel.Reader;
+
+            async Task ChannelFunc(ChannelWriter<string> output, ChannelReader<string> input)
+            {
+                // Wait for an item to appear first then return from the hub method to end the invocation
+                await input.WaitToReadAsync();
+                output.Complete();
+            }
+        }
     }
 
     public abstract class TestHub : Hub
