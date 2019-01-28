@@ -272,7 +272,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                         }
 
                         Log.StreamingResult(_logger, hubMethodInvocationMessage.InvocationId, methodExecutor);
-                        _ = StreamResultsAsync(hubMethodInvocationMessage.InvocationId, connection, enumerator, scope, hubActivator, hub, cts);
+                        _ = StreamResultsAsync(hubMethodInvocationMessage.InvocationId, connection, enumerator, scope, hubActivator, hub, cts, hubMethodInvocationMessage);
                     }
 
                     else if (string.IsNullOrEmpty(hubMethodInvocationMessage.InvocationId))
@@ -304,17 +304,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                                 // And normal invocations handle cleanup below in the finally
                                 if (isStreamCall)
                                 {
-                                    hubActivator?.Release(hub);
-                                    scope.Dispose();
-                                    foreach (var stream in hubMethodInvocationMessage.StreamIds)
-                                    {
-                                        try
-                                        {
-                                            connection.StreamTracker.Complete(CompletionMessage.Empty(stream));
-                                        }
-                                        // ignore failures, it means the client already completed the streams
-                                        catch { }
-                                    }
+                                    CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, hub, scope);
                                 }
                             }
 
@@ -352,56 +342,72 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             {
                 if (disposeScope)
                 {
-                    hubActivator?.Release(hub);
-                    scope.Dispose();
+                    CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, hub, scope);
+                }
+            }
+        }
+
+        private void CleanupInvocation(HubConnectionContext connection, HubMethodInvocationMessage hubMessage, IHubActivator<THub> hubActivator,
+            THub hub, IServiceScope scope)
+        {
+            hubActivator?.Release(hub);
+            scope.Dispose();
+
+            if (hubMessage.StreamIds != null)
+            {
+                foreach (var stream in hubMessage.StreamIds)
+                {
+                    try
+                    {
+                        connection.StreamTracker.Complete(CompletionMessage.Empty(stream));
+                    }
+                    // ignore failures, it means the client already completed the streams
+                    catch (KeyNotFoundException) { }
                 }
             }
         }
 
         private async Task StreamResultsAsync(string invocationId, HubConnectionContext connection, IAsyncEnumerator<object> enumerator, IServiceScope scope,
-            IHubActivator<THub> hubActivator, THub hub, CancellationTokenSource streamCts)
+            IHubActivator<THub> hubActivator, THub hub, CancellationTokenSource streamCts, HubMethodInvocationMessage hubMethodInvocationMessage)
         {
             string error = null;
 
-            using (scope)
+            try
             {
-                try
+                while (await enumerator.MoveNextAsync())
                 {
-                    while (await enumerator.MoveNextAsync())
-                    {
-                        // Send the stream item
-                        await connection.WriteAsync(new StreamItemMessage(invocationId, enumerator.Current));
-                    }
+                    // Send the stream item
+                    await connection.WriteAsync(new StreamItemMessage(invocationId, enumerator.Current));
                 }
-                catch (ChannelClosedException ex)
+            }
+            catch (ChannelClosedException ex)
+            {
+                // If the channel closes from an exception in the streaming method, grab the innerException for the error from the streaming method
+                error = ErrorMessageHelper.BuildErrorMessage("An error occurred on the server while streaming results.", ex.InnerException ?? ex, _enableDetailedErrors);
+            }
+            catch (Exception ex)
+            {
+                // If the streaming method was canceled we don't want to send a HubException message - this is not an error case
+                if (!(ex is OperationCanceledException && connection.ActiveRequestCancellationSources.TryGetValue(invocationId, out var cts)
+                    && cts.IsCancellationRequested))
                 {
-                    // If the channel closes from an exception in the streaming method, grab the innerException for the error from the streaming method
-                    error = ErrorMessageHelper.BuildErrorMessage("An error occurred on the server while streaming results.", ex.InnerException ?? ex, _enableDetailedErrors);
+                    error = ErrorMessageHelper.BuildErrorMessage("An error occurred on the server while streaming results.", ex, _enableDetailedErrors);
                 }
-                catch (Exception ex)
+            }
+            finally
+            {
+                (enumerator as IDisposable)?.Dispose();
+
+                CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, hub, scope);
+
+                // Dispose the linked CTS for the stream.
+                streamCts.Dispose();
+
+                await connection.WriteAsync(CompletionMessage.WithError(invocationId, error));
+
+                if (connection.ActiveRequestCancellationSources.TryRemove(invocationId, out var cts))
                 {
-                    // If the streaming method was canceled we don't want to send a HubException message - this is not an error case
-                    if (!(ex is OperationCanceledException && connection.ActiveRequestCancellationSources.TryGetValue(invocationId, out var cts)
-                        && cts.IsCancellationRequested))
-                    {
-                        error = ErrorMessageHelper.BuildErrorMessage("An error occurred on the server while streaming results.", ex, _enableDetailedErrors);
-                    }
-                }
-                finally
-                {
-                    (enumerator as IDisposable)?.Dispose();
-
-                    hubActivator.Release(hub);
-
-                    // Dispose the linked CTS for the stream.
-                    streamCts.Dispose();
-
-                    await connection.WriteAsync(CompletionMessage.WithError(invocationId, error));
-
-                    if (connection.ActiveRequestCancellationSources.TryRemove(invocationId, out var cts))
-                    {
-                        cts.Dispose();
-                    }
+                    cts.Dispose();
                 }
             }
         }
