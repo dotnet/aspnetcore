@@ -63,17 +63,7 @@
     <BuildProjectReferences Condition=" '$(NoBuild)' == 'true' ">false</BuildProjectReferences>
   </PropertyGroup>
 
-  <!-- Certificate names used for Authenticode signing. -->
-  <PropertyGroup Condition=" '$(DisableCodeSigning)' != 'true' ">
-    <AssemblySigningCertName>Microsoft400</AssemblySigningCertName>
-    <AssemblySigning3rdPartyCertName>3PartySHA2</AssemblySigning3rdPartyCertName>
-    <PowerShellSigningCertName>Microsoft400</PowerShellSigningCertName>
-    <PackageSigningCertName>NuGet</PackageSigningCertName>
-    <VsixSigningCertName>VsixSHA2</VsixSigningCertName>
-    <JarSigningCertName>MicrosoftJAR</JarSigningCertName>
-  </PropertyGroup>
-
-  <Import Project="build\external-dependencies.props" />
+  <Import Project="eng\Versions.props" />
   <Import Project="build\sources.props" />
 
   <!-- Artifacts layout -->
@@ -85,6 +75,7 @@
     <ArtifactsShippingPackagesDir>$(ArtifactsPackagesDir)Shipping\</ArtifactsShippingPackagesDir>
     <ArtifactsNonShippingPackagesDir>$(ArtifactsPackagesDir)NonShipping\</ArtifactsNonShippingPackagesDir>
     <InstallersOutputPath>$(ArtifactsDir)installers\$(Configuration)\</InstallersOutputPath>
+    <VisualStudioSetupOutputPath>$(ArtifactsDir)VSSetup\$(Configuration)\</VisualStudioSetupOutputPath>
   </PropertyGroup>
 
   <!-- Ensure these output paths exist. -->
@@ -92,6 +83,7 @@
     <CreateDirectory Include="$(ArtifactsShippingPackagesDir)" />
     <CreateDirectory Include="$(ArtifactsNonShippingPackagesDir)" />
     <CreateDirectory Include="$(InstallersOutputPath)" />
+    <CreateDirectory Include="$(VisualStudioSetupOutputPath)" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(OutputInRepoRoot)' == 'true' ">

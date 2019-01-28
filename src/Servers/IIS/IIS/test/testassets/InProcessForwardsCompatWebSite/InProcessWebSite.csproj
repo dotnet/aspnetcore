@@ -18,8 +18,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- This package is hard-coded to 2.2.0 as a part of ensuring ANCM stays forward compatible.  -->
-    <PackageReference Include="Microsoft.AspNetCore.Server.IIS" Version="2.2.0" />
+    <!-- This package is hard-coded to the 2.2.0 package as a part of ensuring ANCM stays forward compatible.  -->
+    <PackageReference Include="Microsoft.AspNetCore.Server.IIS" Version="2.2.0">
+      <AllowExplicitReference>true</AllowExplicitReference>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>

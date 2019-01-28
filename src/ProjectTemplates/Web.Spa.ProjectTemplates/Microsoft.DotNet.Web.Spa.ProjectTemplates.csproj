@@ -10,11 +10,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- We don't need to code sign these .js files because they are not used in Windows Script Host. -->
-    <ExcludePackageFileFromSigning Include="content\**\*.js" />
-  </ItemGroup>
-
-  <ItemGroup>
     <!-- These projects product packages that the templates depend on. See GenerateContent.targets -->
     <PackageVersionVariableReference Include="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.NewtonsoftJson\Microsoft.AspNetCore.Mvc.NewtonsoftJson.csproj" />
     <PackageVersionVariableReference Include="$(RepositoryRoot)src\Middleware\SpaServices.Extensions\src\Microsoft.AspNetCore.SpaServices.Extensions.csproj" />

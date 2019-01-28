@@ -1,6 +1,6 @@
 {
   "name": "@aspnet/signalr",
-  "version": "1.1.0-rtm-t000",
+  "version": "3.0.0-preview-t000",
   "description": "ASP.NET Core SignalR Client",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",

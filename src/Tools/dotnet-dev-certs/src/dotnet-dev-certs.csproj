@@ -9,6 +9,8 @@
     <PackAsTool>true</PackAsTool>
     <!-- This is a requirement for Microsoft tool packages only. -->
     <PackAsToolShimRuntimeIdentifiers>win-x64;win-x86</PackAsToolShimRuntimeIdentifiers>
+    <!-- This package is for internal use only. It contains a CLI which is bundled in the .NET Core SDK. -->
+    <IsShippingPackage>false</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>

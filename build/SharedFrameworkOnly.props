@@ -20,7 +20,7 @@
     <SharedFrameworkAndPackage Include="Microsoft.AspNetCore.Connections.Abstractions" />
     <SharedFrameworkAndPackage Include="Microsoft.AspNetCore.Http.Connections.Common" />
 
-    <SharedFrameworkOnlyPackage Include="@(Dependency)" Exclude="@(SharedFrameworkAndPackage)" />
+    <SharedFrameworkOnlyPackage Include="@(Dependency)" Exclude="@(SharedFrameworkAndPackage);@(ExternalDependency)" />
   </ItemGroup>
 
 </Project>

@@ -2,11 +2,8 @@
   <PropertyGroup>
     <UnitTestFxProject>$(RepositoryRoot)src\Framework\test\Microsoft.AspNetCore.App.UnitTests.csproj</UnitTestFxProject>
     <UnitTestFxProject>$([MSBuild]::NormalizePath($(UnitTestFxProject)))</UnitTestFxProject>
-    <CodeSignDependsOn>$(CodeSignDependsOn);GetSharedFxFilesToSign</CodeSignDependsOn>
     <BuildSharedFxDependsOn>_BuildSharedFxProjects;TestSharedFx</BuildSharedFxDependsOn>
     <BuildSharedFxDependsOn Condition="'$(TestOnly)' != 'true'">$(BuildSharedFxDependsOn);CodeSign</BuildSharedFxDependsOn>
-    <RedistNetCorePath>$(IntermediateDir)ar\$(SharedFxRid)\</RedistNetCorePath>
-    <GetArtifactInfoDependsOn>$(GetArtifactInfo);GetFxProjectArtifactInfo</GetArtifactInfoDependsOn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,27 +21,7 @@
 
   <Target Name="BuildSharedFx" DependsOnTargets="$(BuildSharedFxDependsOn)" />
 
-  <Target Name="GetSharedFxFilesToSign">
-    <ItemGroup>
-      <FilesToSign Include="$(InstallersOutputPath)aspnetcore-runtime-$(PackageVersion)-$(SharedFxRid).zip" Certificate="None" />
-      <FilesToSign Include="$(InstallersOutputPath)aspnetcore-runtime-internal-$(PackageVersion)-$(SharedFxRid).zip" Certificate="None" />
-      <FilesToSign Include="$(ArtifactsShippingPackagesDir)Microsoft.AspNetCore.App.$(PackageVersion).nupkg" Certificate="$(PackageSigningCertName)" />
-      <FilesToSign Include="$(ArtifactsShippingPackagesDir)runtime.$(SharedFxRid).Microsoft.AspNetCore.App.$(PackageVersion).nupkg" Certificate="$(PackageSigningCertName)" />
-      <FilesToSign Include="$(ArtifactsShippingPackagesDir)runtime.$(SharedFxRid).Microsoft.AspNetCore.App.$(PackageVersion).symbols.nupkg" Certificate="$(PackageSigningCertName)" />
-      <FilesToSign Include="$(ArtifactsShippingPackagesDir)AspNetCoreRuntime.3.0.$(SharedFxArchitecture).$(PackageVersion).nupkg" Condition=" '$(BuildSiteExtensions)' == 'true' " Certificate="$(PackageSigningCertName)" />
-      <FilesToSign Include="$(ArtifactsNonShippingPackagesDir)Microsoft.AspNetCore.AzureAppServices.SiteExtension.$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(SharedFxArchitecture).$(PackageVersion).nupkg" Condition=" '$(BuildSiteExtensions)' == 'true' " Certificate="$(PackageSigningCertName)" />
-    </ItemGroup>
-
-    <!-- These files should already be signed by the .NET Core team. They have to be listed again here because we recreate a redistributable which includes the Microsoft.NETCore.App runtime. -->
-    <ItemGroup>
-      <FilesToExcludeFromSigning Include="$(RedistNetCorePath)shared\Microsoft.NETCore.App\**\*.dll" />
-      <FilesToExcludeFromSigning Include="$(RedistNetCorePath)host\**\*.dll" />
-      <FilesToExcludeFromSigning Include="$(RedistNetCorePath)dotnet.exe" />
-    </ItemGroup>
-
-  </Target>
-
-  <Target Name="_BuildSharedFxProjects" DependsOnTargets="GeneratePropsFiles;ResolveCommitHash">
+  <Target Name="_BuildSharedFxProjects" DependsOnTargets="ResolveCommitHash">
 
     <PropertyGroup>
       <_RestoreGraphProjectInput>@(FxProjectToBuild)</_RestoreGraphProjectInput>
@@ -52,8 +29,6 @@
         $(BuildProperties);
         SharedFxRid=$(SharedFxRid);
         SharedFxArchitecture=$(SharedFxArchitecture);
-        DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath);
-        DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath);
         PackageVersion=$(PackageVersion)
       </SharedFxBuildProperties>
     </PropertyGroup>
@@ -73,7 +48,7 @@
              SkipNonexistentTargets="true" />
   </Target>
 
-  <Target Name="TestSharedFx" DependsOnTargets="GeneratePropsFiles;InstallDotNet">
+  <Target Name="TestSharedFx" DependsOnTargets="InstallDotNet">
 
     <PropertyGroup>
       <!-- The file path to the log file, from within the container -->
@@ -102,37 +77,6 @@
       Importance="High"
       Condition="'$(TEAMCITY_VERSION)' != '' AND Exists('$(UnitTestFxTrxLogFile)')" />
     <Error Text="SharedFx.UnitTests failed with exit code '$(VsTestExitCode)'." Condition=" $(VsTestExitCode) != 0 " />
-  </Target>
-
-  <Target Name="GetFxProjectArtifactInfo" Returns="@(ArtifactInfo)">
-    <PropertyGroup>
-      <_InspectionTargetsFile>$(MSBuildProjectDirectory)\Project.Inspection.targets</_InspectionTargetsFile>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <_Temp Remove="@(_Temp)" />
-    </ItemGroup>
-
-    <MSBuild Targets="GetArtifactInfo"
-             Projects="@(FxProjectToBuild)"
-             Condition="@(FxProjectToBuild->Count()) != 0"
-             Properties="$(BuildProperties);DesignTimeBuild=true;EnableApiCheck=false;NoBuild=true;CustomAfterMicrosoftCommonTargets=$(_InspectionTargetsFile);CustomAfterMicrosoftCommonCrossTargetingTargets=$(_InspectionTargetsFile)"
-             BuildInParallel="$(BuildInParallel)"
-             RemoveProperties="$(_BuildPropertiesToRemove)">
-
-      <Output TaskParameter="TargetOutputs" ItemName="_Temp" />
-    </MSBuild>
-
-    <ItemGroup>
-      <!-- Output from this target may include items representing assemblies inside the nupkg. -->
-      <ArtifactInfo Include="@(_Temp)" Condition="'%(_Temp.Container)' == ''" />
-
-      <!-- Nupkgs or assemblies in the nupkg that should be signed -->
-      <FilesToSign Include="@(_Temp)" Condition=" '%(_Temp.ShouldBeSigned)' == 'true' " />
-
-      <!-- Nupkgs or assemblies in the nupkg that should not be signed -->
-      <FilesToExcludeFromSigning Include="@(_Temp)" Condition=" '%(_Temp.ShouldBeSigned)' != 'true' " />
-    </ItemGroup>
   </Target>
 
 </Project>

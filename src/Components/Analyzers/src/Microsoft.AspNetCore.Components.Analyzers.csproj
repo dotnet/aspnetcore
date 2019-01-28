@@ -18,7 +18,6 @@
 
   <ItemGroup>
     <None Include="$(TargetPath)" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
-    <SignedPackageFile Include="$(TargetPath)" Certificate="$(AssemblySigningCertName)" />
   </ItemGroup>
 
   <ItemGroup>

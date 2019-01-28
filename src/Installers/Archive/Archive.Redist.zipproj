@@ -106,5 +106,4 @@
       Overwrite="true" />
   </Target>
 
-  <Target Name="GetArtifactInfo" />
 </Project>

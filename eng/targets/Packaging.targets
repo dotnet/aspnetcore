@@ -7,27 +7,6 @@
                  See $(RepositoryRoot)eng\tools\BaselineGenerator\README.md for instructions on updating this baseline." />
   </Target>
 
-  <!-- Temporary: this target is used to gather version information to pass to submodule builds. This can be removed after we finish merging submodules. -->
-  <Target Name="GetBaselineArtifactInfo"
-          Condition="'$(IsPackableInNonServicingBuild)' == 'true' AND '$(IsSubfolderBuild)' != 'true' AND '$(IsPackable)' != 'true' "
-          Returns="@(ArtifactInfo)"
-          BeforeTargets="GetArtifactInfo">
-
-    <PropertyGroup>
-      <FullPackageOutputPath>$(PackageOutputPath)$(PackageId).$(PackageVersion).nupkg</FullPackageOutputPath>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <ArtifactInfo Include="$(FullPackageOutputPath)">
-        <ArtifactType>NuGetPackage</ArtifactType>
-        <PackageId>$(PackageId)</PackageId>
-        <Version>$(PackageVersion)</Version>
-        <RepositoryRoot>$(RepositoryRoot)</RepositoryRoot>
-        <IsShipped>true</IsShipped>
-      </ArtifactInfo>
-    </ItemGroup>
-  </Target>
-
   <!-- This target is used to get the package versions of projects -->
   <Target Name="_GetPackageVersionInfo" DependsOnTargets="$(GetPackageVersionDependsOn)"
           Returns="@(_ProjectPathWithVersion)">

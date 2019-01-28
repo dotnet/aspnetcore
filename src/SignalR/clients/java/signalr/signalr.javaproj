@@ -52,22 +52,5 @@
     <Exec Command="./gradlew $(GradleOptions) test" IgnoreStandardErrorWarningFormat="true" />
   </Target>
 
-  <Target Name="GetArtifactInfo" Condition="'$(IsPackable)' == 'true' " Returns="@(ArtifactInfo)">
-    <ItemGroup>
-      <ArtifactInfo Include="$(PackageOutputPath)%(Jars.Identity)">
-        <ArtifactType>JavaJar</ArtifactType>
-        <Version>$(PackageVersion)</Version>
-        <Category>ship</Category>
-        <ShouldBeSigned>true</ShouldBeSigned>
-        <Certificate>$(JarSigningCertName)</Certificate>
-      </ArtifactInfo>
-      <ArtifactInfo Include="$(PackageOutputPath)%(PomFile.Identity)">
-        <ArtifactType>MavenPOM</ArtifactType>
-        <Version>$(PackageVersion)</Version>
-        <Category>ship</Category>
-      </ArtifactInfo>
-    </ItemGroup>
-  </Target>
-
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
 </Project>

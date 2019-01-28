@@ -7,7 +7,10 @@
     <PackageId>Microsoft.AspNetCore.Blazor.Cli</PackageId>
     <IsShippingPackage>true</IsShippingPackage>
     <StartupObject>Microsoft.AspNetCore.Blazor.Cli.Program</StartupObject>
-    <!-- Disabled because E2ETest.csproj needs to WebDriver which is not strong named signed, and InternalsVisibleTo must specify a strong-name token -->
+    <!--
+      Disabled because E2ETest.csproj needs to WebDriver which is not strong named signed, and InternalsVisibleTo must specify a strong-name token.
+      See also eng/Workarounds.targets.
+    -->
     <SignAssembly>false</SignAssembly>
     <Description>Development server for use when building Blazor applications.</Description>
     <!-- Set this to false because assemblies should not reference this assembly directly, (except for tests, of course). -->
