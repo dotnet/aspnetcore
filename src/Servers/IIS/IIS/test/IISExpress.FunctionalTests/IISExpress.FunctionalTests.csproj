@@ -13,7 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Common.Tests\Common.Tests.csproj" />
-    <ProjectReference Include="..\WebSites\**\*.csproj">
+    <ProjectReference Include="..\testassets\**\*.csproj">
       <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
     </ProjectReference>
     <ProjectReference Include="$(RepositoryRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
