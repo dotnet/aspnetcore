@@ -14,6 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- TestHost is an ASP.NET app, will replace with a ASP.NET Core app -->
     <!-- <ManagedProjects Include="$(SolutionDir)test\signalrclient-testhost\signalrclient-testhost.csproj" /> -->
     <!--
     <ManagedProjects Include="$(SolutionDir)\samples\SignalRServer\SignalRServer.csproj" />
