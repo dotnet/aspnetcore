@@ -28,29 +28,13 @@
 
     <TestDependsOn />
     <TestDependsOn Condition=" '$(_RunBuild)' == 'true' ">$(TestDependsOn);Compile</TestDependsOn>
-    <TestDependsOn>$(TestDependsOn);TestProjects;TestProjectTemplates</TestDependsOn>
+    <TestDependsOn>$(TestDependsOn);TestProjects</TestDependsOn>
 
     <BuildDependsOn Condition="'$(CI)' == 'true'">$(BuildDependsOn);GenerateBuildAssetManifest</BuildDependsOn>
 
     <!-- Package modification must happen before code signing. -->
     <CodeSignDependsOn>$(CodeSignDependsOn);RemoveSharedFrameworkOnlyRefsFromNuspec</CodeSignDependsOn>
   </PropertyGroup>
-
-  <PropertyGroup>
-    <TempDir>$(ArtifactsDir)temp</TempDir>
-  </PropertyGroup>
-
-  <Target Name="TestProjectTemplates" DependsOnTargets="BuildSharedFx" >
-    <MakeDir Directories="$(TempDir)" />
-    <Unzip
-      SourceFiles="$(ArtifactsShippingPackagesDir)\AspNetCoreRuntime.3.0.x64.3.0.0-preview-t000.nupkg"
-      DestinationFolder="$(TempDir)" />
-    <ItemGroup>
-      <DotNetFiles Include="$(TempDir)\content\*" />
-    </ItemGroup>
-    <Copy SourceFiles="@(DotNetFiles)" DestinationFolder="C:\Users\rybrande\.dotnet\x64\" />
-    <RunDotnet Arguments="test; $(RepositoryRoot)\src\ProjectTemplates\test\" />
-  </Target>
 
   <Target Name="ShowProjectClosure" DependsOnTargets="ResolveProjects">
     <MSBuild Targets="_CustomCollectProjectReference"
