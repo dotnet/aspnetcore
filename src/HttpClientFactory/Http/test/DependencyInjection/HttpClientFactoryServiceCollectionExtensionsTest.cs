@@ -1020,7 +1020,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             public TransientService Service { get; }
         }
-        
+
         private class SingleThreadedSynchronizationContext : SynchronizationContext
         {
             private readonly Queue<(SendOrPostCallback Callback, object State)> _queue = new Queue<(SendOrPostCallback Callback, object State)>();
@@ -1030,20 +1030,15 @@ namespace Microsoft.Extensions.DependencyInjection
                 _queue.Enqueue((d, state));
             }
 
-            public override void Send(SendOrPostCallback d, object state)
-            {
-                base.Send(d, state);
-            }
-
             public static void Run(Action action)
             {
-                var previous = SynchronizationContext.Current;
+                var previous = Current;
                 var context = new SingleThreadedSynchronizationContext();
-                SynchronizationContext.SetSynchronizationContext(context);
+                SetSynchronizationContext(context);
                 try
                 {
                     action();
-                    while(context._queue.Count > 0)
+                    while (context._queue.Count > 0)
                     {
                         var item = context._queue.Dequeue();
                         item.Callback(item.State);
@@ -1051,7 +1046,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 }
                 finally
                 {
-                    SynchronizationContext.SetSynchronizationContext(previous);
+                    SetSynchronizationContext(previous);
                 }
             }
         }
