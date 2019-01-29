@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -18,12 +18,12 @@ namespace Microsoft.Extensions.Logging.Testing
             ITestMethod testMethod,
             IAttributeInfo theoryAttribute,
             object[] dataRow)
-            => new[] { new LoggedTestCase(DiagnosticMessageSink, discoveryOptions.MethodDisplayOrDefault(), testMethod, dataRow) };
+            => new[] { new LoggedTestCase(DiagnosticMessageSink, discoveryOptions.MethodDisplayOrDefault(), TestMethodDisplayOptions.None, testMethod, dataRow) };
 
         protected override IEnumerable<IXunitTestCase> CreateTestCasesForTheory(
             ITestFrameworkDiscoveryOptions discoveryOptions,
             ITestMethod testMethod,
             IAttributeInfo theoryAttribute)
-            => new[] { new LoggedTheoryTestCase(DiagnosticMessageSink, discoveryOptions.MethodDisplayOrDefault(), testMethod) };
+            => new[] { new LoggedTheoryTestCase(DiagnosticMessageSink, discoveryOptions.MethodDisplayOrDefault(), TestMethodDisplayOptions.None, testMethod) };
     }
 }

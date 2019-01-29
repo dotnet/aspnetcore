@@ -6,7 +6,12 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <PackageTags>$(PackageTags);testing</PackageTags>
     <EnableApiCheck>false</EnableApiCheck>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Extensions.Logging.Testing.Tests" />
+  </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Testing" />
