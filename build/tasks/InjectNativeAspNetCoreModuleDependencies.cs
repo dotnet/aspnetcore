@@ -2,26 +2,29 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
+using System.IO;
+using System.Text;
+using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace TestTasks
+namespace RepoTasks
 {
-    public class InjectRequestHandler
+    public class InjectNativeAspNetCoreModuleDependencies : Task
     {
         private const string aspnetcoreV2Name = "aspnetcorev2_inprocess.dll";
 
-        private static void Main(string[] args)
+        public string RuntimeIdentifier { get; set; } = "";
+
+        [Required]
+        public string OutputPath { get; set; }
+
+        public override bool Execute()
         {
-            string depsFile = args[0];
-            string rid = "";
-            if (args.Length > 1)
-            {
-                rid = args[1];
-            }
+            string depsFile = OutputPath;
+            string rid = RuntimeIdentifier;
 
             JToken deps;
             using (var file = File.OpenText(depsFile))
@@ -64,7 +67,7 @@ namespace TestTasks
             targetLibrary =
                 new JProperty(libraryName, new JObject(
                     new JProperty("runtimeTargets", bitness)));
-           
+
             target.AddFirst(targetLibrary);
 
             var library = libraries.Properties().FirstOrDefault(p => p.Name == libraryName);
@@ -83,6 +86,8 @@ namespace TestTasks
             {
                 deps.WriteTo(writer);
             }
+
+            return true;
         }
     }
 }
