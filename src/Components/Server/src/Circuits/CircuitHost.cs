@@ -91,8 +91,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         public CircuitSynchronizationContext SynchronizationContext { get; }
 
-        public CancellationToken ConnectionAborted { get; }
-
         public async Task InitializeAsync(CancellationToken cancellationToken)
         {
             await SynchronizationContext.InvokeAsync(async () =>
