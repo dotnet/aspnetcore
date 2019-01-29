@@ -15,6 +15,7 @@ namespace E2ETests
     {
         public static TestMatrix TestVariants
             => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Kestrel)
+                .WithAncmVersions(AncmVersion.AspNetCoreModuleV2)
                 .WithTfms(Tfm.NetCoreApp30);
 
         [ConditionalTheory]
