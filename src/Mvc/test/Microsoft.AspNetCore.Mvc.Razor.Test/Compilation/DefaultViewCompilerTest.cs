@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
 {
-    public class RazorViewCompilerTest
+    public class DefaultViewCompilerTest
     {
         [Fact]
         public async Task CompileAsync_ReturnsResultWithNullAttribute_IfFileIsNotFoundInFileSystem()
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
             return viewCompiler;
         }
 
-        private class TestRazorViewCompiler : RazorViewCompiler
+        private class TestRazorViewCompiler : DefaultViewCompiler
         {
             public TestRazorViewCompiler(IList<CompiledViewDescriptor> compiledViews) :
                 base(compiledViews, NullLogger.Instance)

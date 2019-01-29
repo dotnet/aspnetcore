@@ -10,7 +10,7 @@ using System.Threading;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
 
-namespace RazorWebSite
+namespace RazorBuildWebSite
 {
     public class UpdateableFileProvider : IFileProvider
     {
@@ -19,15 +19,11 @@ namespace RazorWebSite
         private readonly Dictionary<string, TestFileInfo> _content = new Dictionary<string, TestFileInfo>()
         {
             {
-                "/Views/UpdateableIndex/_ViewImports.cshtml",
+                "/Views/UpdateableViews/_ViewImports.cshtml",
                 new TestFileInfo(string.Empty)
             },
             {
-                "/Views/UpdateableIndex/Index.cshtml",
-                new TestFileInfo(@"@Html.Partial(""../UpdateableShared/_Partial.cshtml"")")
-            },
-            {
-                "/Views/UpdateableShared/_Partial.cshtml",
+                "/Views/UpdateableViews/Index.cshtml",
                 new TestFileInfo("Original content")
             },
             {

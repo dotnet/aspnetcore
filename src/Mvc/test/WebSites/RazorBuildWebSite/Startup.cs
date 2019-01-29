@@ -13,7 +13,11 @@ namespace RazorBuildWebSite
     {
         public void ConfigureServices(IServiceCollection services)
         {
+            var fileProvider = new UpdateableFileProvider();
+            services.AddSingleton(fileProvider);
+
             services.AddMvc()
+                .AddRazorRuntimeCompilation(options => options.FileProviders.Add(fileProvider))
                 .SetCompatibilityVersion(CompatibilityVersion.Latest);
         }
 

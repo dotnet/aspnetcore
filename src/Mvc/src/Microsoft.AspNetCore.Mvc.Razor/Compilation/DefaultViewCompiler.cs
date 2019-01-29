@@ -14,13 +14,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
     /// <summary>
     /// Caches the result of runtime compilation of Razor files for the duration of the application lifetime.
     /// </summary>
-    internal class RazorViewCompiler : IViewCompiler
+    internal class DefaultViewCompiler : IViewCompiler
     {
         private readonly Dictionary<string, Task<CompiledViewDescriptor>> _compiledViews;
         private readonly ConcurrentDictionary<string, string> _normalizedPathCache;
         private readonly ILogger _logger;
 
-        public RazorViewCompiler(
+        public DefaultViewCompiler(
             IList<CompiledViewDescriptor> compiledViews,
             ILogger logger)
         {

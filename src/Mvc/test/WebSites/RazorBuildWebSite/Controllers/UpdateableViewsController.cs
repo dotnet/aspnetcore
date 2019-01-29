@@ -3,11 +3,11 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace RazorWebSite
+namespace RazorBuildWebSite
 {
-    public class UpdateableFileProviderController : Controller
+    public class UpdateableViewsController : Controller
     {
-        public IActionResult Index() => View("/Views/UpdateableIndex/Index.cshtml");
+        public IActionResult Index() => View();
 
         [HttpPost]
         public IActionResult Update([FromServices] UpdateableFileProvider fileProvider, string path, string content)

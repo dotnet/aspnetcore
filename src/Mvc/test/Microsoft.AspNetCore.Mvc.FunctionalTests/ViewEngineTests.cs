@@ -252,30 +252,6 @@ ViewWithNestedLayout-Content
             Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);
         }
 
-        [Fact(Skip = "https://github.com/aspnet/Mvc/issues/8754")]
-        public Task RazorViewEngine_RendersViewsFromEmbeddedFileProvider_WhenLookedupByName()
-            => RazorViewEngine_RendersIndexViewsFromEmbeddedFileProvider("/EmbeddedViews/LookupByName");
-
-        [Fact(Skip = "https://github.com/aspnet/Mvc/issues/8754")]
-        public Task RazorViewEngine_RendersViewsFromEmbeddedFileProvider_WhenLookedupByPath()
-            => RazorViewEngine_RendersIndexViewsFromEmbeddedFileProvider("/EmbeddedViews/LookupByPath");
-
-        private async Task RazorViewEngine_RendersIndexViewsFromEmbeddedFileProvider(string requestPath)
-        {
-            // Arrange
-            var expected =
-@"<embdedded-layout>Hello from EmbeddedShared/_Partial
-Hello from Shared/_EmbeddedPartial
-<a href=""/EmbeddedViews"">Tag Helper Link</a>
-</embdedded-layout>";
-
-            // Act
-            var body = await Client.GetStringAsync(requestPath);
-
-            // Assert
-            Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);
-        }
-
         [Fact]
         public async Task LayoutValueIsPassedBetweenNestedViewStarts()
         {
