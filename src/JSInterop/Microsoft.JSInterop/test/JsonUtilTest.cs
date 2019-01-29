@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using Xunit;
 
-namespace Microsoft.JSInterop.Test
+namespace Microsoft.JSInterop.Tests
 {
     public class JsonUtilTest
     {
@@ -124,10 +124,10 @@ namespace Microsoft.JSInterop.Test
                 BoolProperty = true,
                 NullableIntProperty = 1
             };
-            
+
             // Act
             var result = Json.Serialize(commandResult);
-            
+
             // Assert
             Assert.Equal("{\"stringProperty\":\"Test\",\"boolProperty\":true,\"nullableIntProperty\":1}", result);
         }
@@ -222,12 +222,12 @@ namespace Microsoft.JSInterop.Test
             // Act
             var exception = Assert.Throws<InvalidOperationException>(() =>
             {
-                Json.Deserialize<NonEmptyConstructorPoco>(json); 
+                Json.Deserialize<NonEmptyConstructorPoco>(json);
             });
 
             // Assert
             Assert.Equal(
-                $"Cannot deserialize JSON into type '{type.FullName}' because it does not have a public parameterless constructor.", 
+                $"Cannot deserialize JSON into type '{type.FullName}' because it does not have a public parameterless constructor.",
                 exception.Message);
         }
 
@@ -277,7 +277,7 @@ namespace Microsoft.JSInterop.Test
 
         class NonEmptyConstructorPoco
         {
-            public NonEmptyConstructorPoco(int parameter) {}
+            public NonEmptyConstructorPoco(int parameter) { }
 
             public int Property { get; set; }
         }

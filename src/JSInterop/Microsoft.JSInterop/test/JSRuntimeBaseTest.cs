@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 
-namespace Microsoft.JSInterop.Test
+namespace Microsoft.JSInterop.Tests
 {
     public class JSRuntimeBaseTest
     {
@@ -18,7 +18,7 @@ namespace Microsoft.JSInterop.Test
             var runtime = new TestJSRuntime();
 
             // Act
-            runtime.InvokeAsync<object>("test identifier 1", "arg1", 123, true );
+            runtime.InvokeAsync<object>("test identifier 1", "arg1", 123, true);
             runtime.InvokeAsync<object>("test identifier 2", "some other arg");
 
             // Assert

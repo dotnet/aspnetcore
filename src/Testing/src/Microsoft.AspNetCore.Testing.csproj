@@ -8,9 +8,14 @@
     <PackageTags>aspnetcore</PackageTags>
     <EnableApiCheck>false</EnableApiCheck>
     <IsPackable>true</IsPackable>
+    <IsShipping>false</IsShipping>
     <!-- This package is internal, so we don't generate a package baseline. Always build against the latest dependencies. -->
     <UseLatestPackageReferences>true</UseLatestPackageReferences>
   </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Testing.Tests" />
+  </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.Win32.Registry" />

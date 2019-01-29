@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Microsoft.JSInterop.Test
+namespace Microsoft.JSInterop.Tests
 {
     public class DotNetObjectRefTest
     {

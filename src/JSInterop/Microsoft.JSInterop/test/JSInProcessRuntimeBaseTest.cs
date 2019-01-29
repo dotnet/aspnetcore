@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 
-namespace Microsoft.JSInterop.Test
+namespace Microsoft.JSInterop.Tests
 {
     public class JSInProcessRuntimeBaseTest
     {
@@ -21,7 +21,7 @@ namespace Microsoft.JSInterop.Test
             };
 
             // Act
-            var syncResult = runtime.Invoke<TestDTO>("test identifier 1", "arg1", 123, true );
+            var syncResult = runtime.Invoke<TestDTO>("test identifier 1", "arg1", 123, true);
             var call = runtime.InvokeCalls.Single();
 
             // Assert
