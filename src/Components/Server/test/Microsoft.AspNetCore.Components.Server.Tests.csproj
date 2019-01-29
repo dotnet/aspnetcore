@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
@@ -6,9 +6,6 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.Server" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Reference Include="Microsoft.Extensions.Logging.Testing" />
   </ItemGroup>
 

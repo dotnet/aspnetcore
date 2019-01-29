@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Components.Server
 {
-    public class DefaultCircuitFactoryOptions
+    internal class DefaultCircuitFactoryOptions
     {
         // During the DI configuration phase, we use Configure<DefaultCircuitFactoryOptions>(...)
         // callbacks to build up this dictionary mapping paths to startup actions
