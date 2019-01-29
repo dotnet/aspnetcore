@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -62,21 +62,6 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
                 .WithLogoutRedirectUri(NativeAppClientRedirectUri)
                 .WithPkce()
                 .WithoutClientSecrets()
-                .WithScopes(IdentityServerConstants.StandardScopes.OfflineAccess);
-        }
-
-
-        /// <summary>
-        /// Creates a new builder for an externally registered web application.
-        /// </summary>
-        /// <param name="clientId">The client id for the web application.</param>
-        /// <returns>A <see cref="ClientBuilder"/>.</returns>
-        internal static ClientBuilder WebApplication(string clientId)
-        {
-            var client = CreateClient(clientId);
-            return new ClientBuilder(client)
-                .WithApplicationProfile(ApplicationProfiles.WebApplication)
-                .WithAllowedGrants(GrantTypes.HybridAndClientCredentials)
                 .WithScopes(IdentityServerConstants.StandardScopes.OfflineAccess);
         }
 

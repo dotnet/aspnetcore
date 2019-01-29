@@ -43,9 +43,6 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
                 case ApplicationProfiles.NativeApp:
                     responseType = "code";
                     break;
-                //case ApplicationProfiles.WebApplication:
-                //    responseType = "id_token code";
-                //    break;
                 default:
                     throw new InvalidOperationException($"Invalid application type '{type}' for '{clientId}'.");
             }
