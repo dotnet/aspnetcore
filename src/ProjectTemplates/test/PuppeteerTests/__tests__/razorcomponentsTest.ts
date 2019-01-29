@@ -1,7 +1,7 @@
 import { Page, Browser, launch } from 'puppeteer';
-import { bindConsole, clickByText, validateMessages } from '../testFuncs';
+import { bindConsole, clickByText, clickByHref, validateMessages } from '../testFuncs';
 
-const serverPath = `https://localhost:8001`;
+const serverPath = `https://localhost:7001`;
 
 jest.setTimeout(30000);
 
@@ -32,7 +32,7 @@ describe('razorcomponents are ok', () => {
         let heading = await page.$eval('h1', heading => heading.textContent);
         expect(heading).toBe('Hello, world!');
 
-        await clickByText(page, 'Counter');
+        await clickByHref(page, 'counter');
         await page.waitFor('h1');
         heading = await page.$eval('h1', heading => heading.textContent);
         expect(heading).toBe('Counter');
@@ -45,7 +45,7 @@ describe('razorcomponents are ok', () => {
         counterDisplay = await page.$eval('h1 + p', heading => heading.textContent);
         expect(counterDisplay).toBe('Current count: 1');
 
-        await clickByText(page, 'Fetch data');
+        await clickByHref(page, 'fetchdata');
         await page.waitFor("h1");
         await page.waitFor("table>tbody>tr");
         let rows = await page.$$("tbody tr")

@@ -20,7 +20,7 @@ namespace Templates.Test
         {
         }
 
-        private static readonly string TestDir = Path.Join(TestPathUtilities.GetSolutionRootDirectory("Templating"), "test", "Templates.Test");
+        private static readonly string TestDir = Path.Join(TestPathUtilities.GetSolutionRootDirectory("ProjectTemplates"), "test");
         protected static readonly string PuppeteerDir = Path.Join(TestDir, "PuppeteerTests");
 
         protected async Task<ProcessResult> RunTest(string test, AspNetProcess serverProcess)

@@ -11,13 +11,8 @@ namespace Templates.Test.Helpers
         public static string[] GetNupkgFiles()
         {
             var mondoRoot = GetMondoRepoRoot();
-#if DEBUG
-            var configuration = "Debug";
-#else
-            var configuration = "Release";
-#endif
 
-            return Directory.GetFiles(Path.Combine(mondoRoot, "artifacts", configuration, "packages"), "*.nupkg", SearchOption.AllDirectories);
+            return Directory.GetFiles(AspNetProcess.GetPackageDirectory(), "*.nupkg", SearchOption.AllDirectories);
         }
 
         private static string GetMondoRepoRoot()

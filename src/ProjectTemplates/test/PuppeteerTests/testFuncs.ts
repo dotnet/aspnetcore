@@ -17,6 +17,17 @@ const escapeXpathString = str => {
     return `concat('${splitedQuotes}', '')`;
 };
 
+export async function clickByHref(page: Page, href: string, tag: string = 'a') {
+    const escapedText = escapeXpathString(href);
+    const linkHandlers = await page.$x(`//${tag}[starts-with(@href, ${escapedText})]`);
+
+    if (linkHandlers.length > 0) {
+        await linkHandlers[0].click();
+    } else {
+        throw new Error(`Link not found: ${href}`);
+    }
+}
+
 export async function clickByText(page: Page, text: string, tag: string = 'a') {
     const escapedText = escapeXpathString(text);
     const linkHandlers = await page.$x(`//${tag}[contains(text(), ${escapedText})]`);

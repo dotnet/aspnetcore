@@ -87,7 +87,7 @@ namespace Templates.Test.Helpers
             var dir = new DirectoryInfo(AppContext.BaseDirectory);
             while (dir != null)
             {
-                if (File.Exists(Path.Combine(dir.FullName, "Templating.sln")))
+                if (File.Exists(Path.Combine(dir.FullName, "ProjectTemplates.sln")))
                 {
                     break;
                 }

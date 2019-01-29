@@ -16,8 +16,8 @@ namespace Templates.Test
 
         [Theory]
         [InlineData(null)]
-        [InlineData("F#")]
-        private async Task MvcTemplate_NoAuthImpl(string languageOverride)
+        [InlineData("F#", Skip = "https://github.com/aspnet/Templating/issues/673")]
+        public async Task MvcTemplate_NoAuthImpl(string languageOverride)
             => await MvcTemplateBase(languageOverride: languageOverride);
 
         [Theory]

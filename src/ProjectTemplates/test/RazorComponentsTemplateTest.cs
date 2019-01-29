@@ -20,22 +20,11 @@ namespace Templates.Test
             var template = "razorcomponents";
             RunDotNetNew(template);
 
-            // We don't want the Directory.Build.props/targets interfering
-            File.WriteAllText(
-                Path.Combine(TemplateOutputDir, "Directory.Build.props"),
-                "<Project />");
-            File.WriteAllText(
-                Path.Combine(TemplateOutputDir, "Directory.Build.targets"),
-                @"<Project> <ItemGroup Condition=""'$(TargetFramework)' != 'netstandard2.0'"" >
-    <FrameworkReference Include = ""Microsoft.AspNetCore.App"" />
-  </ItemGroup>
-</Project>");
-
             // Run the "server" project
             ProjectName += ".Server";
             TemplateOutputDir = Path.Combine(TemplateOutputDir, ProjectName);
 
-            await RunPuppeteerTests(template, 8000, 8001);
+            await RunPuppeteerTests(template, 7000, 7001);
         }
     }
 }
