@@ -130,6 +130,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var modelMetadata = bindingContext.ModelMetadata;
             var attemptedPropertyBinding = false;
             var propertyBindingSucceeded = false;
+            var postponePlaceholderBinding = false;
             for (var i = 0; i < modelMetadata.Properties.Count; i++)
             {
                 var property = modelMetadata.Properties[i];
@@ -138,43 +139,62 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                     continue;
                 }
 
-                // Pass complex (including collection) values down so that binding system does not unnecessarily
-                // recreate instances or overwrite inner properties that are not bound. No need for this with simple
-                // values because they will be overwritten if binding succeeds. Arrays are never reused because they
-                // cannot be resized.
-                object propertyModel = null;
-                if (property.PropertyGetter != null &&
-                    property.IsComplexType &&
-                    !property.ModelType.IsArray)
+                if (_propertyBinders[property] is PlaceholderBinder)
                 {
-                    propertyModel = property.PropertyGetter(bindingContext.Model);
+                    if (postponePlaceholderBinding)
+                    {
+                        // Decided to postpone binding properties that complete a loop in the model types when handling
+                        // an earlier loop-completing property. Postpone binding this property too.
+                        continue;
+                    }
+                    else if (!bindingContext.IsTopLevelObject &&
+                        !propertyBindingSucceeded &&
+                        propertyData == GreedyPropertiesMayHaveData)
+                    {
+                        // Have no confirmation of data for the current instance. Postpone completing the loop until
+                        // we _know_ the current instance is useful. Recursion would otherwise occur prior to the
+                        // block with a similar condition after the loop.
+                        //
+                        // Example cases include an Employee class containing
+                        // 1. a Manager property of type Employee
+                        // 2. an Employees property of type IList<Employee>
+                        postponePlaceholderBinding = true;
+                        continue;
+                    }
                 }
 
                 var fieldName = property.BinderModelName ?? property.PropertyName;
                 var modelName = ModelNames.CreatePropertyModelName(bindingContext.ModelName, fieldName);
-
-                ModelBindingResult result;
-                using (bindingContext.EnterNestedScope(
-                    modelMetadata: property,
-                    fieldName: fieldName,
-                    modelName: modelName,
-                    model: propertyModel))
-                {
-                    await BindProperty(bindingContext);
-                    result = bindingContext.Result;
-                }
+                var result = await BindProperty(bindingContext, property, fieldName, modelName);
 
                 if (result.IsModelSet)
                 {
                     attemptedPropertyBinding = true;
                     propertyBindingSucceeded = true;
-                    SetProperty(bindingContext, modelName, property, result);
                 }
                 else if (property.IsBindingRequired)
                 {
                     attemptedPropertyBinding = true;
-                    var message = property.ModelBindingMessageProvider.MissingBindRequiredValueAccessor(fieldName);
-                    bindingContext.ModelState.TryAddModelError(modelName, message);
+                }
+            }
+
+            if (postponePlaceholderBinding && propertyBindingSucceeded)
+            {
+                // Have some data for this instance. Continue with the model type loop.
+                for (var i = 0; i < modelMetadata.Properties.Count; i++)
+                {
+                    var property = modelMetadata.Properties[i];
+                    if (!CanBindProperty(bindingContext, property))
+                    {
+                        continue;
+                    }
+
+                    if (_propertyBinders[property] is PlaceholderBinder)
+                    {
+                        var fieldName = property.BinderModelName ?? property.PropertyName;
+                        var modelName = ModelNames.CreatePropertyModelName(bindingContext.ModelName, fieldName);
+                        await BindProperty(bindingContext, property, fieldName, modelName);
+                    }
                 }
             }
 
@@ -256,6 +276,48 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             }
 
             return true;
+        }
+
+        private async Task<ModelBindingResult> BindProperty(
+            ModelBindingContext bindingContext,
+            ModelMetadata property,
+            string fieldName,
+            string modelName)
+        {
+            // Pass complex (including collection) values down so that binding system does not unnecessarily
+            // recreate instances or overwrite inner properties that are not bound. No need for this with simple
+            // values because they will be overwritten if binding succeeds. Arrays are never reused because they
+            // cannot be resized.
+            object propertyModel = null;
+            if (property.PropertyGetter != null &&
+                property.IsComplexType &&
+                !property.ModelType.IsArray)
+            {
+                propertyModel = property.PropertyGetter(bindingContext.Model);
+            }
+
+            ModelBindingResult result;
+            using (bindingContext.EnterNestedScope(
+                modelMetadata: property,
+                fieldName: fieldName,
+                modelName: modelName,
+                model: propertyModel))
+            {
+                await BindProperty(bindingContext);
+                result = bindingContext.Result;
+            }
+
+            if (result.IsModelSet)
+            {
+                SetProperty(bindingContext, modelName, property, result);
+            }
+            else if (property.IsBindingRequired)
+            {
+                var message = property.ModelBindingMessageProvider.MissingBindRequiredValueAccessor(fieldName);
+                bindingContext.ModelState.TryAddModelError(modelName, message);
+            }
+
+            return result;
         }
 
         /// <summary>

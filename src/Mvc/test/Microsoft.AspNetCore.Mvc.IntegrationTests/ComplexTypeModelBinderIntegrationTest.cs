@@ -3149,7 +3149,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
         // Regression test for #4802.
         [Fact]
-        public async Task ComplexTypeModelBinder_FailsWhenGreedyBindersFail()
+        public async Task ComplexTypeModelBinder_ReportsFailureToCollectionModelBinder()
         {
             // Arrange
             var parameter = new ParameterDescriptor()
@@ -3201,6 +3201,216 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Null(state.Value.RawValue);
         }
 
+        private class Person6
+        {
+            public string Name { get; set; }
+
+            public Person6 Mother { get; set; }
+
+            public IFormFile Photo { get; set; }
+        }
+
+        // Regression test for #6616.
+        [Fact]
+        public async Task ComplexTypeModelBinder_ReportsFailureToComplexTypeModelBinder_NearTopLevel()
+        {
+            // Arrange
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Person6),
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                SetFormFileBodyContent(request, "Hello world!", "Photo");
+            });
+
+            var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
+            var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
+
+            // Act
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Person6>(modelBindingResult.Model);
+            Assert.Null(model.Mother);
+            Assert.Null(model.Name);
+            Assert.NotNull(model.Photo);
+            using (var reader = new StreamReader(model.Photo.OpenReadStream()))
+            {
+                Assert.Equal("Hello world!", await reader.ReadToEndAsync());
+            }
+
+            Assert.True(modelState.IsValid);
+            var state = Assert.Single(modelState);
+            Assert.Equal("Photo", state.Key);
+            Assert.Null(state.Value.AttemptedValue);
+            Assert.Empty(state.Value.Errors);
+            Assert.Null(state.Value.RawValue);
+        }
+
+        // Regression test for #6616.
+        [Fact]
+        public async Task ComplexTypeModelBinder_ReportsFailureToComplexTypeModelBinder()
+        {
+            // Arrange
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Person6),
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                SetFormFileBodyContent(request, "Hello world!", "Photo");
+                SetFormFileBodyContent(request, "Hello Mom!", "Mother.Photo");
+            });
+
+            var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
+            var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
+
+            // Act
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Person6>(modelBindingResult.Model);
+            Assert.NotNull(model.Mother);
+            Assert.Null(model.Mother.Mother);
+            Assert.NotNull(model.Mother.Photo);
+            using (var reader = new StreamReader(model.Mother.Photo.OpenReadStream()))
+            {
+                Assert.Equal("Hello Mom!", await reader.ReadToEndAsync());
+            }
+
+            Assert.Null(model.Name);
+            Assert.NotNull(model.Photo);
+            using (var reader = new StreamReader(model.Photo.OpenReadStream()))
+            {
+                Assert.Equal("Hello world!", await reader.ReadToEndAsync());
+            }
+
+            Assert.True(modelState.IsValid);
+            Assert.Collection(
+                modelState,
+                kvp =>
+                {
+                    Assert.Equal("Photo", kvp.Key);
+                    Assert.Null(kvp.Value.AttemptedValue);
+                    Assert.Empty(kvp.Value.Errors);
+                    Assert.Null(kvp.Value.RawValue);
+                },
+                kvp =>
+                {
+                    Assert.Equal("Mother.Photo", kvp.Key);
+                    Assert.Null(kvp.Value.AttemptedValue);
+                    Assert.Empty(kvp.Value.Errors);
+                    Assert.Null(kvp.Value.RawValue);
+                });
+        }
+
+        private class Person7
+        {
+            public string Name { get; set; }
+
+            public IList<Person7> Children { get; set; }
+
+            public IFormFile Photo { get; set; }
+        }
+
+        // Regression test for #6616.
+        [Fact]
+        public async Task ComplexTypeModelBinder_ReportsFailureToComplexTypeModelBinder_ViaCollection()
+        {
+            // Arrange
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(Person7),
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                SetFormFileBodyContent(request, "Hello world!", "Photo");
+                SetFormFileBodyContent(request, "Hello Fred!", "Children[0].Photo");
+                SetFormFileBodyContent(request, "Hello Ginger!", "Children[1].Photo");
+
+                request.QueryString = new QueryString("?Children[0].Name=Fred&Children[1].Name=Ginger");
+            });
+
+            var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
+            var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
+
+            // Act
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<Person7>(modelBindingResult.Model);
+            Assert.NotNull(model.Children);
+            Assert.Collection(
+                model.Children,
+                item =>
+                {
+                    Assert.Null(item.Children);
+                    Assert.Equal("Fred", item.Name);
+                    using (var reader = new StreamReader(item.Photo.OpenReadStream()))
+                    {
+                        Assert.Equal("Hello Fred!", reader.ReadToEnd());
+                    }
+                },
+                item =>
+                {
+                    Assert.Null(item.Children);
+                    Assert.Equal("Ginger", item.Name);
+                    using (var reader = new StreamReader(item.Photo.OpenReadStream()))
+                    {
+                        Assert.Equal("Hello Ginger!", reader.ReadToEnd());
+                    }
+                });
+
+            Assert.Null(model.Name);
+            Assert.NotNull(model.Photo);
+            using (var reader = new StreamReader(model.Photo.OpenReadStream()))
+            {
+                Assert.Equal("Hello world!", await reader.ReadToEndAsync());
+            }
+
+            Assert.True(modelState.IsValid);
+        }
+
         private static void SetJsonBodyContent(HttpRequest request, string content)
         {
             var stream = new MemoryStream(new UTF8Encoding(encoderShouldEmitUTF8Identifier: false).GetBytes(content));
@@ -3211,18 +3421,32 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         private static void SetFormFileBodyContent(HttpRequest request, string content, string name)
         {
             const string fileName = "text.txt";
-            var fileCollection = new FormFileCollection();
-            var formCollection = new FormCollection(new Dictionary<string, StringValues>(), fileCollection);
-            var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(content));
 
-            request.Form = formCollection;
-            request.ContentType = "multipart/form-data; boundary=----WebKitFormBoundarymx2fSWqWSd0OxQqq";
-            request.Headers["Content-Disposition"] = $"form-data; name={name}; filename={fileName}";
-
-            fileCollection.Add(new FormFile(memoryStream, 0, memoryStream.Length, name, fileName)
+            FormFileCollection fileCollection;
+            if (request.HasFormContentType)
             {
-                Headers = request.Headers
-            });
+                // Do less work and do not overwrite previous information if called a second time.
+                fileCollection = (FormFileCollection)request.Form.Files;
+            }
+            else
+            {
+                fileCollection = new FormFileCollection();
+                var formCollection = new FormCollection(new Dictionary<string, StringValues>(), fileCollection);
+
+                request.ContentType = "multipart/form-data; boundary=----WebKitFormBoundarymx2fSWqWSd0OxQqq";
+                request.Form = formCollection;
+            }
+
+            var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(content));
+            var file = new FormFile(memoryStream, 0, memoryStream.Length, name, fileName)
+            {
+                Headers = new HeaderDictionary(),
+
+                // Do not move this up. Headers must be non-null before the ContentDisposition property is accessed.
+                ContentDisposition = $"form-data; name={name}; filename={fileName}",
+            };
+
+            fileCollection.Add(file);
         }
 
         private ModelMetadata GetMetadata(ModelBindingTestContext context, ParameterDescriptor parameter)
