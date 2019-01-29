@@ -9,6 +9,7 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -92,6 +93,39 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "c",
                         "hello, world",
+                        "0",
+                        "",
+                        "");
+
+                    Assert.NotNull(ex);
+                }
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task OnStartingThrowsWhenSetAfterStartAsyncIsCalled()
+        {
+            InvalidOperationException ex = null;
+
+            using (var server = new TestServer(async context =>
+            {
+                await context.Response.StartAsync();
+                ex = Assert.Throws<InvalidOperationException>(() => context.Response.OnStarting(_ => Task.CompletedTask, null));
+            }, new TestServiceContext(LoggerFactory)))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+
+                    await connection.Receive($"HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
+                        "",
                         "0",
                         "",
                         "");
@@ -2329,6 +2363,321 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "HTTP/1.1 200 OK",
                         $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 0",
+                        "",
+                        "");
+                }
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task StartAsyncDefaultToChunkedResponse()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                await httpContext.Response.StartAsync();
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "0",
+                        "",
+                        "");
+                }
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task StartAsyncWithContentLengthAndEmptyWriteStillCallsFinalFlush()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                httpContext.Response.ContentLength = 0;
+                await httpContext.Response.StartAsync();
+                await httpContext.Response.WriteAsync("");
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "");
+                }
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task StartAsyncAndEmptyWriteStillCallsFinalFlush()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                await httpContext.Response.StartAsync();
+                await httpContext.Response.WriteAsync("");
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "0",
+                        "",
+                        "");
+                }
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task StartAsyncWithSingleChunkedWriteStillWritesSuffix()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                await httpContext.Response.StartAsync();
+                await httpContext.Response.WriteAsync("Hello World!");
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "c",
+                        "Hello World!",
+                        "0",
+                        "",
+                        "");
+                }
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task StartAsyncWithoutFlushStartsResponse()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                await httpContext.Response.StartAsync();
+                Assert.True(httpContext.Response.HasStarted);
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "0",
+                        "",
+                        "");
+                }
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task StartAsyncThrowExceptionThrowsConnectionAbortedException()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+            var expectedException = new Exception();
+            using (var server = new TestServer(async httpContext =>
+            {
+                await httpContext.Response.StartAsync();
+                throw expectedException;
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "");
+                }
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task StartAsyncWithContentLengthThrowExceptionThrowsConnectionAbortedException()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+            var expectedException = new Exception();
+            using (var server = new TestServer(async httpContext =>
+            {
+                httpContext.Response.ContentLength = 11;
+                await httpContext.Response.StartAsync();
+                throw expectedException;
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 11",
+                        "",
+                        "");
+                }
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task StartAsyncWithoutFlushingDoesNotFlush()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                await httpContext.Response.StartAsync();
+                Assert.True(httpContext.Response.HasStarted);
+
+                // Verify that the response isn't flushed by verifying the TCS isn't set
+                var res = await Task.WhenAny(tcs.Task, Task.Delay(1000)) == tcs.Task;
+                Assert.False(res);
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "0",
+                        "",
+                        "");
+                    // If we reach this point before the app exits, this means the flush finished early.
+                    tcs.SetResult(null);
+                }
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task StartAsyncWithContentLengthWritingWorks()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                httpContext.Response.Headers["Content-Length"] = new[] { "11" };
+                await httpContext.Response.StartAsync();
+                await httpContext.Response.WriteAsync("Hello World");
+                Assert.True(httpContext.Response.HasStarted);
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 11",
+                        "",
+                        "Hello World");
+                }
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task StartAsyncAndFlushWorks()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                await httpContext.Response.StartAsync();
+                await httpContext.Response.Body.FlushAsync();
+                Assert.True(httpContext.Response.HasStarted);
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "0",
                         "",
                         "");
                 }
