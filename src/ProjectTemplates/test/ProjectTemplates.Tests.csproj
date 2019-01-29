@@ -20,7 +20,6 @@
 
   <ItemGroup>
     <Reference Include="AngleSharp" />
-    <Reference Include="Microsoft.AspNetCore.Server.IntegrationTesting" />
     <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" PrivateAssets="All" />
     <Reference Include="Microsoft.Extensions.Logging.Testing" />
   </ItemGroup>
