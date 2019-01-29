@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
   <metadata>
     <id>Microsoft.AspNetCore.Blazor.Cli</id>
@@ -12,7 +12,7 @@
     <description>Development server for use when building Blazor applications.
 
 This package was built from the source code at https://github.com/aspnet/AspNetCore/tree/$repositorycommit$</description>
-    <copyright>� Microsoft Corporation. All rights reserved.</copyright>
+    <copyright>© Microsoft Corporation. All rights reserved.</copyright>
     <tags>aspnetcore components</tags>
     <serviceable>true</serviceable>
     <repository type="git" url="https://github.com/aspnet/AspNetCore" commit="$repositorycommit$" />
