@@ -43,13 +43,10 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             await deploymentResult.AssertRecycledAsync();
         }
 
-        [ConditionalTheory]
-        [InlineData(AncmVersion.AspNetCoreModule)]
-        [InlineData(AncmVersion.AspNetCoreModuleV2)]
-        public async Task ConfigurationChangeForcesChildProcessRestart(AncmVersion version)
+        [ConditionalFact]
+        public async Task ConfigurationChangeForcesChildProcessRestart()
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess, publish: true);
-            deploymentParameters.AncmVersion = version;
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 

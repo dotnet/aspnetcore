@@ -82,7 +82,12 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
         protected string GetAncmLocation(AncmVersion version)
         {
-            var ancmDllName = version == AncmVersion.AspNetCoreModuleV2 ? "aspnetcorev2.dll" : "aspnetcore.dll";
+            if (version == AncmVersion.AspNetCoreModule)
+            {
+                throw new NotSupportedException("AspNetCoreModule V1 is not supported in 3.0");
+            }
+
+            var ancmDllName = "aspnetcorev2.dll";
             var arch = DeploymentParameters.RuntimeArchitecture == RuntimeArchitecture.x64 ? $@"x64\{ancmDllName}" : $@"x86\{ancmDllName}";
             var ancmFile = Path.Combine(AppContext.BaseDirectory, arch);
             if (!File.Exists(Environment.ExpandEnvironmentVariables(ancmFile)))

@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             => TestMatrix.ForServers(DeployerSelector.ServerType)
                 .WithTfms(Tfm.NetCoreApp30)
                 .WithAllApplicationTypes()
-                .WithAllAncmVersions()
+                .WithAncmVersions(AncmVersion.AspNetCoreModuleV2)
                 .WithAllHostingModels();
 
         [ConditionalTheory]
