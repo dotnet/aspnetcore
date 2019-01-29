@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.using Microsoft.AspNetCore.Authorization;
 
 using System;
@@ -7,12 +7,12 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Authentication.AzureAD.UI
 {
-    internal class OpenIdConnectOptionsConfiguration : IConfigureNamedOptions<OpenIdConnectOptions>
+    internal class AzureADOpenIdConnectOptionsConfiguration : IConfigureNamedOptions<OpenIdConnectOptions>
     {
         private readonly IOptions<AzureADSchemeOptions> _schemeOptions;
         private readonly IOptionsMonitor<AzureADOptions> _azureADOptions;
 
-        public OpenIdConnectOptionsConfiguration(IOptions<AzureADSchemeOptions> schemeOptions, IOptionsMonitor<AzureADOptions> azureADOptions)
+        public AzureADOpenIdConnectOptionsConfiguration(IOptions<AzureADSchemeOptions> schemeOptions, IOptionsMonitor<AzureADOptions> azureADOptions)
         {
             _schemeOptions = schemeOptions;
             _azureADOptions = azureADOptions;

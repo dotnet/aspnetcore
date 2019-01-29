@@ -6,12 +6,12 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Authentication.AzureADB2C.UI
 {
-    internal class CookieOptionsConfiguration : IConfigureNamedOptions<CookieAuthenticationOptions>
+    internal class AzureADB2CCookieOptionsConfiguration : IConfigureNamedOptions<CookieAuthenticationOptions>
     {
         private readonly IOptions<AzureADB2CSchemeOptions> _schemeOptions;
         private readonly IOptionsMonitor<AzureADB2COptions> _azureADB2COptions;
 
-        public CookieOptionsConfiguration(IOptions<AzureADB2CSchemeOptions> schemeOptions, IOptionsMonitor<AzureADB2COptions> azureADB2COptions)
+        public AzureADB2CCookieOptionsConfiguration(IOptions<AzureADB2CSchemeOptions> schemeOptions, IOptionsMonitor<AzureADB2COptions> azureADB2COptions)
         {
             _schemeOptions = schemeOptions;
             _azureADB2COptions = azureADB2COptions;

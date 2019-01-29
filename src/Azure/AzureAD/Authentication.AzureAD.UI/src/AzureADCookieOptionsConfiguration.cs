@@ -6,12 +6,12 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Authentication.AzureAD.UI
 {
-    internal class CookieOptionsConfiguration : IConfigureNamedOptions<CookieAuthenticationOptions>
+    internal class AzureADCookieOptionsConfiguration : IConfigureNamedOptions<CookieAuthenticationOptions>
     {
         private readonly IOptions<AzureADSchemeOptions> _schemeOptions;
         private readonly IOptionsMonitor<AzureADOptions> _AzureADOptions;
 
-        public CookieOptionsConfiguration(IOptions<AzureADSchemeOptions> schemeOptions, IOptionsMonitor<AzureADOptions> AzureADOptions)
+        public AzureADCookieOptionsConfiguration(IOptions<AzureADSchemeOptions> schemeOptions, IOptionsMonitor<AzureADOptions> AzureADOptions)
         {
             _schemeOptions = schemeOptions;
             _AzureADOptions = AzureADOptions;
