@@ -24,7 +24,7 @@ using Microsoft.Extensions.StackTrace.Sources;
 
 namespace Microsoft.AspNetCore.Hosting.Internal
 {
-    internal class WebHost : IWebHost
+    internal class WebHost : IWebHost, IAsyncDisposable
     {
         private static readonly string DeprecatedServerUrlsKey = "server.urls";
 
@@ -343,11 +343,16 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
         public void Dispose()
         {
+            DisposeAsync().GetAwaiter().GetResult();
+        }
+
+        public async ValueTask DisposeAsync()
+        {
             if (!_stopped)
             {
                 try
                 {
-                    StopAsync().GetAwaiter().GetResult();
+                    await StopAsync();
                 }
                 catch (Exception ex)
                 {
@@ -355,8 +360,21 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 }
             }
 
-            (_applicationServices as IDisposable)?.Dispose();
-            (_hostingServiceProvider as IDisposable)?.Dispose();
+            await DisposeServiceProvider(_applicationServices);
+            await DisposeServiceProvider(_hostingServiceProvider);
+        }
+
+        private async ValueTask DisposeServiceProvider(IServiceProvider serviceProvider)
+        {
+            switch (serviceProvider)
+            {
+                case IAsyncDisposable asyncDisposable:
+                    await asyncDisposable.DisposeAsync();
+                    break;
+                case IDisposable disposable:
+                    disposable.Dispose();
+                    break;
+            }
         }
     }
 }

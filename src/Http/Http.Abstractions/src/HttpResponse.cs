@@ -22,6 +22,11 @@ namespace Microsoft.AspNetCore.Http
             return Task.CompletedTask;
         };
 
+        private static readonly Func<object, Task> _disposeAsyncDelegate = async disposable =>
+        {
+            await ((IAsyncDisposable)disposable).DisposeAsync();
+        };
+
         /// <summary>
         /// Gets the <see cref="HttpContext"/> for this response.
         /// </summary>
@@ -92,6 +97,12 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         /// <param name="disposable">The object to be disposed.</param>
         public virtual void RegisterForDispose(IDisposable disposable) => OnCompleted(_disposeDelegate, disposable);
+
+        /// <summary>
+        /// Registers an object for disposal by the host once the request has finished processing.
+        /// </summary>
+        /// <param name="disposable">The object to be disposed.</param>
+        public virtual void RegisterForDispose(IAsyncDisposable disposable) => OnCompleted(_disposeAsyncDelegate, disposable);
 
         /// <summary>
         /// Adds a delegate to be invoked after the response has finished being sent to the client.

@@ -199,7 +199,7 @@ namespace Microsoft.AspNetCore.Http
                         .BuildServiceProvider();
 
             var scopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
-            
+
             var context = new DefaultHttpContext();
             context.ServiceScopeFactory = scopeFactory;
             context.RequestServices = serviceProvider;
@@ -211,8 +211,8 @@ namespace Microsoft.AspNetCore.Http
         public async Task RequestServicesAreDisposedOnCompleted()
         {
             var serviceProvider = new ServiceCollection()
-                        .AddTransient<DisposableThing>()
-                        .BuildServiceProvider();
+                .AddTransient<DisposableThing>()
+                .BuildServiceProvider();
 
             var scopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
             DisposableThing instance = null;
@@ -232,6 +232,36 @@ namespace Microsoft.AspNetCore.Http
 
             Assert.Null(context.RequestServices);
             Assert.True(instance.Disposed);
+        }
+
+        [Fact]
+        public async Task RequestServicesAreDisposedAsynOnCompleted()
+        {
+            var serviceProvider = new AsyncDisposableServiceProvider(new ServiceCollection()
+                .AddTransient<DisposableThing>()
+                .BuildServiceProvider());
+
+            var scopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
+            DisposableThing instance = null;
+
+            var context = new DefaultHttpContext();
+            context.ServiceScopeFactory = scopeFactory;
+            var responseFeature = new TestHttpResponseFeature();
+            context.Features.Set<IHttpResponseFeature>(responseFeature);
+
+            Assert.NotNull(context.RequestServices);
+            Assert.Single(responseFeature.CompletedCallbacks);
+
+            instance = context.RequestServices.GetRequiredService<DisposableThing>();
+
+            var callback = responseFeature.CompletedCallbacks[0];
+            await callback.callback(callback.state);
+
+            Assert.Null(context.RequestServices);
+            Assert.True(instance.Disposed);
+            var scope = Assert.Single(serviceProvider.Scopes);
+            Assert.True(scope.DisposeAsyncCalled);
+            Assert.False(scope.DisposeCalled);
         }
 
         void TestAllCachedFeaturesAreNull(HttpContext context, IFeatureCollection features)
@@ -425,6 +455,69 @@ namespace Microsoft.AspNetCore.Http
             public Task StartAsync(CancellationToken cancellationToken)
             {
                 throw new NotImplementedException();
+            }
+        }
+
+        private class AsyncDisposableServiceProvider : IServiceProvider, IDisposable, IServiceScopeFactory
+        {
+            private readonly ServiceProvider _serviceProvider;
+
+            public AsyncDisposableServiceProvider(ServiceProvider serviceProvider)
+            {
+                _serviceProvider = serviceProvider;
+            }
+
+            public List<AsyncServiceScope> Scopes { get; } = new List<AsyncServiceScope>();
+
+            public object GetService(Type serviceType)
+            {
+                if (serviceType == typeof(IServiceScopeFactory))
+                {
+                    return this;
+                }
+
+                return _serviceProvider.GetService(serviceType);
+            }
+
+            public void Dispose()
+            {
+                _serviceProvider.Dispose();
+            }
+
+            public IServiceScope CreateScope()
+            {
+                var scope = new AsyncServiceScope(_serviceProvider.GetService<IServiceScopeFactory>().CreateScope());
+                Scopes.Add(scope);
+                return scope;
+            }
+
+            internal class AsyncServiceScope : IServiceScope, IAsyncDisposable
+            {
+                private readonly IServiceScope _scope;
+
+                public AsyncServiceScope(IServiceScope scope)
+                {
+                    _scope = scope;
+                }
+
+                public bool DisposeCalled { get; set; }
+
+                public bool DisposeAsyncCalled { get; set; }
+
+                public void Dispose()
+                {
+                    DisposeCalled = true;
+                    _scope.Dispose();
+                }
+
+                public ValueTask DisposeAsync()
+                {
+                    DisposeAsyncCalled = true;
+                    _scope.Dispose();
+                    return default;
+                }
+
+                public IServiceProvider ServiceProvider => _scope.ServiceProvider;
             }
         }
     }
