@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.using Microsoft.AspNetCore.Authorization;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -7,12 +7,12 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Authentication
 {
-    internal class JwtBearerOptionsConfiguration : IConfigureNamedOptions<JwtBearerOptions>
+    internal class AzureADB2CJwtBearerOptionsConfiguration : IConfigureNamedOptions<JwtBearerOptions>
     {
         private readonly IOptions<AzureADB2CSchemeOptions> _schemeOptions;
         private readonly IOptionsMonitor<AzureADB2COptions> _azureADB2COptions;
 
-        public JwtBearerOptionsConfiguration(
+        public AzureADB2CJwtBearerOptionsConfiguration(
             IOptions<AzureADB2CSchemeOptions> schemeOptions,
             IOptionsMonitor<AzureADB2COptions> azureADB2COptions)
         {
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Authentication
             }
 
             options.Audience = azureADB2COptions.ClientId;
-            options.Authority = OpenIdConnectOptionsConfiguration.BuildAuthority(azureADB2COptions);
+            options.Authority = AzureADB2COpenIdConnectOptionsConfiguration.BuildAuthority(azureADB2COptions);
         }
 
         public void Configure(JwtBearerOptions options)

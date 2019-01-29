@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.using Microsoft.AspNetCore.Authorization;
 
 using System;
@@ -8,12 +8,12 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Authentication
 {
-    internal class JwtBearerOptionsConfiguration : IConfigureNamedOptions<JwtBearerOptions>
+    internal class AzureADJwtBearerOptionsConfiguration : IConfigureNamedOptions<JwtBearerOptions>
     {
         private readonly IOptions<AzureADSchemeOptions> _schemeOptions;
         private readonly IOptionsMonitor<AzureADOptions> _azureADOptions;
 
-        public JwtBearerOptionsConfiguration(
+        public AzureADJwtBearerOptionsConfiguration(
             IOptions<AzureADSchemeOptions> schemeOptions,
             IOptionsMonitor<AzureADOptions> azureADOptions)
         {

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.using Microsoft.AspNetCore.Authorization;
 
 using System;
@@ -9,12 +9,12 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Microsoft.AspNetCore.Authentication.AzureADB2C.UI
 {
-    internal class OpenIdConnectOptionsConfiguration : IConfigureNamedOptions<OpenIdConnectOptions>
+    internal class AzureADB2COpenIdConnectOptionsConfiguration : IConfigureNamedOptions<OpenIdConnectOptions>
     {
         private readonly IOptions<AzureADB2CSchemeOptions> _schemeOptions;
         private readonly IOptionsMonitor<AzureADB2COptions> _azureADB2COptions;
 
-        public OpenIdConnectOptionsConfiguration(IOptions<AzureADB2CSchemeOptions> schemeOptions, IOptionsMonitor<AzureADB2COptions> azureADB2COptions)
+        public AzureADB2COpenIdConnectOptionsConfiguration(IOptions<AzureADB2CSchemeOptions> schemeOptions, IOptionsMonitor<AzureADB2COptions> azureADB2COptions)
         {
             _schemeOptions = schemeOptions;
             _azureADB2COptions = azureADB2COptions;
