@@ -29,9 +29,17 @@ namespace Microsoft.AspNetCore.Hosting
 
                 await host.StopAsync();
 
+                Assert.All(providerFactory.Providers, provider => {
+                    Assert.False(provider.DisposeCalled);
+                    Assert.False(provider.DisposeAsyncCalled);
+                });
+
                 host.Dispose();
 
-                Assert.All(providerFactory.Providers, provider => Assert.True(provider.DisposeAsyncCalled));
+                Assert.All(providerFactory.Providers, provider => {
+                    Assert.False(provider.DisposeCalled);
+                    Assert.True(provider.DisposeAsyncCalled);
+                });
             }
         }
 
