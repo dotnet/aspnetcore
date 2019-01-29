@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
 
         public override void Dispose()
         {
-            _serverToDispose.Dispose();
+            _serverToDispose?.Dispose();
         }
     }
 }

@@ -1,9 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
+  <!-- Reference targets and props from Components.Build package -->
+  <Import Project="..\..\..\Build\src\ReferenceFromSource.props" />
+
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <OutputType>library</OutputType>
-    <ReferenceBlazorBuildLocally>true</ReferenceBlazorBuildLocally>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,7 +23,5 @@
     <Reference Include="Microsoft.AspNetCore.Components" />
     <Reference Include="Microsoft.NET.Sdk.Razor" PrivateAssets="All" />
   </ItemGroup>
-
-  <!-- In real content packages, use a <PackageReference> to Microsoft.AspNetCore.Blazor.Build instead. -->
 
 </Project>
