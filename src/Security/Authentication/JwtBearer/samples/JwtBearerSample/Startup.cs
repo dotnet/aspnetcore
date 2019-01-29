@@ -104,18 +104,11 @@ namespace JwtBearerSample
                     {
                         response.ContentType = "application/json";
                         response.Headers[HeaderNames.CacheControl] = "no-cache";
-                        await SerializeAsync(Todos, response.Body);
+                        Serialize(Todos, response.BodyPipe);
+                        await response.BodyPipe.FlushAsync();
                     }
                 });
             });
-        }
-
-        private async Task SerializeAsync(IList<Todo> todos, Stream stream)
-        {
-            var pipe = new StreamPipeWriter(stream);
-            Serialize(todos, pipe);
-            await pipe.FlushAsync();
-            pipe.Complete();
         }
 
         private void Serialize(IList<Todo> todos, IBufferWriter<byte> output)
