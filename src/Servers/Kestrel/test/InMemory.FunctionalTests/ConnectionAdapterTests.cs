@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
@@ -124,7 +125,33 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
+        [CollectDump]
         public async Task ImmediateShutdownAfterOnConnectionAsyncDoesNotCrash()
+        {
+            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+            {
+                ConnectionAdapters = { new AsyncConnectionAdapter() }
+            };
+
+            var serviceContext = new TestServiceContext(LoggerFactory);
+
+            var stopTask = Task.CompletedTask;
+            using (var server = new TestServer(TestApp.EchoApp, serviceContext, listenOptions))
+            using (var shutdownCts = new CancellationTokenSource(TimeSpan.FromSeconds(5)))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    // Use the default 5 second shutdown timeout. If it hangs that long, we'll look
+                    // at the collected memory dump.
+                    stopTask = server.StopAsync(shutdownCts.Token);
+                }
+
+                await stopTask;
+            }
+        }
+
+        [Fact]
+        public async Task ImmediateShutdownDuringOnConnectionAsyncDoesNotCrash()
         {
             var waitingConnectionAdapter = new WaitingConnectionAdapter();
             var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Pipelines;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -2349,7 +2350,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task AppAbortViaIConnectionLifetimeFeatureIsLogged()
         {
-            var testContext = new TestServiceContext(LoggerFactory);
+            // Ensure the response doesn't get flush before the abort is observed by scheduling inline.
+            var testContext = new TestServiceContext(LoggerFactory)
+            {
+                Scheduler = PipeScheduler.Inline
+            };
 
             using (var server = new TestServer(httpContext =>
             {
