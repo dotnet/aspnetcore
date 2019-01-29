@@ -6,7 +6,8 @@
   <Import Project="version.props" />
 
   <PropertyGroup>
-    <PackageOutputPath>$(MSBuildThisFileDirectory)artifacts\</PackageOutputPath>
+    <!-- temporary until site extension build moves into the main build -->
+    <PackageOutputPath>$(MSBuildThisFileDirectory)..\..\artifacts\packages\$(Configuration)\shipping</PackageOutputPath>
   </PropertyGroup>
 
 </Project>
