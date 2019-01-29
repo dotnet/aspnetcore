@@ -1,7 +1,11 @@
 content/sdk/*/AppHostTemplate/apphost.exe;AspNetCoreRuntime.*.nupkg; Exclude the apphost because this is expected to be code-signed by customers after the SDK modifies it.
-content/*.js;Microsoft.DotNet.Web.Spa.ProjectTemplates.*.nupkg; Exclude JavaScript files from codesigning in project templates
-content/*.js;Microsoft.DotNet.Web.ProjectTemplates.*.nupkg; Exclude JavaScript files from codesigning in project templates
-Templates/*.js;Microsoft.VisualStudio.Web.CodeGenerators.Mvc.*.nupkg; Exclude JavaScript files from codesigning in code generators
+*.js;Microsoft.DotNet.Web.Spa.ProjectTemplates.*.nupkg; Exclude JavaScript files from codesigning in project templates
+*.js;Microsoft.DotNet.Web.ProjectTemplates.*.nupkg; Exclude JavaScript files from codesigning in project templates
+*.js;Microsoft.AspNetCore.Blazor.Templates.*.nupkg; Exclude JavaScript files from codesigning in project templates
+*.js;Microsoft.AspNetCore.Blazor.Build.*.nupkg; Exclude JavaScript files required to make Blazor build tooling work
 *.js;signalr-*-javadoc.jar; Exclude JavaScript files in the generated javadocs
 *.binlog;; Exclude msbuild log files
-*;*.symbols.nupkg; Exclude NuGet symbols packages. These are not shipped to customers and should not be code signed.
+*.symbols.nupkg;; Exclude NuGet symbols packages. These are not shipped to customers and should not be code signed.
+;*.symbols.nupkg; Exclude everything inside NuGet symbols packages. These are not shipped to customers and should not be code signed.
+;runtime.osx-x64.Microsoft.AspNetCore.App.*.nupkg; Exclude the contents of the MacOS runtime package because MacOS only supports codesigning for MacOS native binaries and apps
+;runtime.linux-*.Microsoft.AspNetCore.App.*.nupkg; Exclude the contents of the Linux runtime packages because Linux doesn't support validating authenticode signatures
