@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             {
                 if (reader.TokenType == JsonTokenType.PropertyName)
                 {
-                    var memberName = reader.ValueSpan;
+                    var memberName = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
 
                     if (memberName.SequenceEqual(TypePropertyNameBytes))
                     {
@@ -179,7 +179,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             {
                 if (reader.TokenType == JsonTokenType.PropertyName)
                 {
-                    var memberName = reader.ValueSpan;
+                    var memberName = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
 
                     if (memberName.SequenceEqual(ProtocolPropertyNameBytes))
                     {

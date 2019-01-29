@@ -25,6 +25,17 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             Assert.Equal(version, deserializedMessage.Version);
         }
 
+        [Fact]
+        public void ParsingHandshakeRequestMessageSuccessForValidMessageWithMultipleSegments()
+        {
+            var message = ReadOnlySequenceFactory.SegmentPerByteFactory.CreateWithContent("{\"protocol\":\"json\",\"version\":1}\u001e");
+
+            Assert.True(HandshakeProtocol.TryParseRequestMessage(ref message, out var deserializedMessage));
+
+            Assert.Equal("json", deserializedMessage.Protocol);
+            Assert.Equal(1, deserializedMessage.Version);
+        }
+
         [Theory]
         [InlineData("{\"error\":\"dummy\"}\u001e", "dummy")]
         [InlineData("{\"error\":\"\"}\u001e", "")]
@@ -36,6 +47,16 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 
             Assert.True(HandshakeProtocol.TryParseResponseMessage(ref message, out var response));
             Assert.Equal(error, response.Error);
+        }
+
+        [Fact]
+        public void ParsingHandshakeResponseMessageSuccessForValidMessageWithMultipleSegments()
+        {
+            var message = ReadOnlySequenceFactory.SegmentPerByteFactory.CreateWithContent("{\"error\":\"dummy\"}\u001e");
+
+            Assert.True(HandshakeProtocol.TryParseResponseMessage(ref message, out var response));
+
+            Assert.Equal("dummy", response.Error);
         }
 
         [Theory]
