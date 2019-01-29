@@ -39,7 +39,7 @@ namespace FunctionalTests
                     processStartInfo = new ProcessStartInfo
                     {
                         FileName = "cmd",
-                        Arguments = "/c npm test --no-color",
+                        Arguments = "/c npm test --no-color --no-watchman",
                     };
                 }
                 else
@@ -47,7 +47,7 @@ namespace FunctionalTests
                     processStartInfo = new ProcessStartInfo
                     {
                         FileName = "npm",
-                        Arguments = "test",
+                        Arguments = "test --no-watchman",
                     };
                 }
 
