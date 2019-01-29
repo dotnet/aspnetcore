@@ -90,7 +90,7 @@
   <ItemGroup Condition="'%24(DisableDefaultPackageConflictOverrides)' != 'true'">
     <PackageConflictOverrides Include="Microsoft.AspNetCore.App">
       <OverriddenPackages>
-        @(_AspNetAppPackageConflictOverrides, '%3B%0A        )%3B
+        @(_AspNetAppPackageConflictOverrides, '%3B%0A        ')%3B
       </OverriddenPackages>
     </PackageConflictOverrides>
   </ItemGroup>
