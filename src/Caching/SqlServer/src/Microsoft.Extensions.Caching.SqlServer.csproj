@@ -9,7 +9,12 @@
 
     <!-- Temporary workaround for API Check crash that is part of aspnet/BuildTools#201. -->
     <EnableApiCheck>false</EnableApiCheck>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Extensions.Caching.SqlServer.Tests" />
+  </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.Caching.Abstractions" />

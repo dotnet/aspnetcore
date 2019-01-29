@@ -3,5 +3,6 @@
 
   <PropertyGroup>
     <IsProductComponent>true</IsProductComponent>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
 </Project>
