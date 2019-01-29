@@ -7,6 +7,7 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <EnableApiCheck>false</EnableApiCheck>
     <BuildOutputTargetFolder>analyzers/dotnet/cs/</BuildOutputTargetFolder>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>

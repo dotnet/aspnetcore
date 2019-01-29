@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Analyzer.Testing
         public static TestSource Read(string rawSource)
         {
             var testInput = new TestSource();
-            var lines = rawSource.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+            var lines = rawSource.Split(new[] { "\n", "\r\n" }, StringSplitOptions.None);
             for (var i = 0; i < lines.Length; i++)
             {
                 var line = lines[i];
