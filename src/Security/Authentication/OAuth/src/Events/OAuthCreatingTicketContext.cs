@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             OAuthOptions options,
             HttpClient backchannel,
             OAuthTokenResponse tokens)
-            : this(principal, properties, context, scheme, options, backchannel, tokens, user: JsonDocument.Parse(string.Empty))
+            : this(principal, properties, context, scheme, options, backchannel, tokens, user: JsonDocument.Parse("{}"))
         { }
 
         /// <summary>

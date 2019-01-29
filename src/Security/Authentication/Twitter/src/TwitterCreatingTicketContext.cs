@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             ScreenName = screenName;
             AccessToken = accessToken;
             AccessTokenSecret = accessTokenSecret;
-            User = user ?? JsonDocument.Parse(string.Empty);
+            User = user ?? JsonDocument.Parse("{}");
             Principal = principal;
             Properties = properties;
         }
