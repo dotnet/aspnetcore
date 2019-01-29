@@ -3,10 +3,11 @@
   <!-- Not including parent is intentional, this build should be isolated -->
   <Import Project="build\sources.props" />
   <Import Project="build\dependencies.props" />
-  <Import Project="version.props" />
+  <Import Project="..\..\..\version.props" />
 
   <PropertyGroup>
-    <PackageOutputPath>$(MSBuildThisFileDirectory)artifacts\</PackageOutputPath>
+    <!-- temporary until site extension build moves into the main build -->
+    <PackageOutputPath>$(MSBuildThisFileDirectory)..\..\..\artifacts\packages\$(Configuration)\shipping</PackageOutputPath>
   </PropertyGroup>
 
 </Project>
