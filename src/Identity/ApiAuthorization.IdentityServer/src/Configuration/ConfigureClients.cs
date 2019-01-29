@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -12,8 +12,8 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
 {
     internal class ConfigureClients : IConfigureOptions<ApiAuthorizationOptions>
     {
-        private const string DefaultLocalSPARelativeRedirectUri = "";
-        private const string DefaultLocalSPARelativePostLogoutRedirectUri = "";
+        private const string DefaultLocalSPARelativeRedirectUri = "/authentication/login-callback";
+        private const string DefaultLocalSPARelativePostLogoutRedirectUri = "/authentication/logout-callback";
 
         private readonly IConfiguration _configuration;
         private readonly ILogger<ConfigureClients> _logger;

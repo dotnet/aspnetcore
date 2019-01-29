@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using IdentityServer4;
@@ -58,8 +58,8 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Configuration
             Assert.Equal("MyClient", client.ClientId);
             Assert.Equal("MyClient", client.ClientName);
             Assert.True(client.AllowAccessTokensViaBrowser);
-            Assert.Equal(new[] { "" }, client.RedirectUris.ToArray());
-            Assert.Equal(new[] { "" }, client.PostLogoutRedirectUris.ToArray());
+            Assert.Equal(new[] { "/authentication/login-callback" }, client.RedirectUris.ToArray());
+            Assert.Equal(new[] { "/authentication/logout-callback" }, client.PostLogoutRedirectUris.ToArray());
             Assert.Empty(client.AllowedCorsOrigins);
             Assert.False(client.RequireConsent);
             Assert.Empty(client.ClientSecrets);
@@ -209,8 +209,8 @@ var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<str
             Assert.Equal("MyClient", client.ClientId);
             Assert.Equal("MyClient", client.ClientName);
             Assert.True(client.AllowAccessTokensViaBrowser);
-            Assert.Equal(new[] { "" }, client.RedirectUris.ToArray());
-            Assert.Equal(new[] { "" }, client.PostLogoutRedirectUris.ToArray());
+            Assert.Equal(new[] { "/authentication/login-callback" }, client.RedirectUris.ToArray());
+            Assert.Equal(new[] { "/authentication/logout-callback" }, client.PostLogoutRedirectUris.ToArray());
             Assert.Empty(client.AllowedCorsOrigins);
             Assert.False(client.RequireConsent);
             Assert.Empty(client.ClientSecrets);
