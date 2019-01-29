@@ -6,8 +6,7 @@
   <Import Project="version.props" />
 
   <PropertyGroup>
-    <EnableApiCheck>false</EnableApiCheck>
-    <GenerateSourceLinkFile>false</GenerateSourceLinkFile>
+    <PackageOutputPath>$(MSBuildThisFileDirectory)artifacts\</PackageOutputPath>
   </PropertyGroup>
 
 </Project>

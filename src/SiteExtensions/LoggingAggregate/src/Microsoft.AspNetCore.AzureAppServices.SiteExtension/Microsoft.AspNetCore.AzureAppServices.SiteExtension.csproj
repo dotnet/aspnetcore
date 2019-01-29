@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <title>ASP.NET Core Logging Extensions</title>
-    <Description>This extension enables additional functionality for ASP.NET Core on Azure WebSites, such as enabling Azure logging.</Description>
+    <title>ASP.NET Core Logging Integration</title>
+    <Description>This site extension enables logging integration for ASP.NET Core applications on Azure App Service.</Description>
     <TargetFramework>net461</TargetFramework>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <PackageTags>aspnet;logging;aspnetcore;AzureSiteExtension;keyvault;configuration;dataprotection</PackageTags>
@@ -14,23 +14,23 @@
     <IncludeSource>false</IncludeSource>
     <ContentTargetFolders>content</ContentTargetFolders>
 
-    <!-- Experimental package which is not ready for production yet -->
-    <IsShippingPackage>false</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.2.1" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension21PackageVersion)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.2.2" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension22PackageVersion)" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.0.x86" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension30PackageVersion)" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.0.x64" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension30PackageVersion)" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="applicationHost.xdt" />
     <Content Include="scmApplicationHost.xdt" />
-    <Content Include="$(RepositoryRoot)bin\Microsoft.Web.Xdt.Extensions\$(Configuration)\$(TargetFramework)\Microsoft.Web.Xdt.Extensions.dll" PackagePath="content" />
+    <Content Include="bin\$(Configuration)\$(TargetFramework)\Microsoft.Web.Xdt.Extensions.dll" PackagePath="content" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.Web.Xdt.Extensions\src\Microsoft.Web.Xdt.Extensions.csproj" PrivateAssets="All" />
+    <ProjectReference Include="..\..\..\Microsoft.Web.Xdt.Extensions\src\Microsoft.Web.Xdt.Extensions.csproj" PrivateAssets="All" />
   </ItemGroup>
 
   <Target Name="AddContent" BeforeTargets="_GetPackageFiles">

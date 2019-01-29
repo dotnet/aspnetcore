@@ -5,6 +5,7 @@
       $(RestoreSources);
       https://api.nuget.org/v3/index.json;
       https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json;
+      https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json;
     </RestoreSources>
   </PropertyGroup>
 
