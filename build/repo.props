@@ -75,12 +75,8 @@
         <ProjectToBuild Include="$(RepositoryRoot)src\Installers\Windows\AspNetCoreModule-Setup\CustomAction\aspnetcoreCA.vcxproj" AdditionalProperties="Platform=x86" />
 
         <!-- Build the ANCM msis -->
-        <ProjectToBuild Include="$(RepositoryRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMIISExpressV1\AncmIISExpressV1.wixproj" AdditionalProperties="Platform=x64" />
-        <ProjectToBuild Include="$(RepositoryRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMIISExpressV1\AncmIISExpressV1.wixproj" AdditionalProperties="Platform=x86" />
         <ProjectToBuild Include="$(RepositoryRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMIISExpressV2\AncmIISExpressV2.wixproj" AdditionalProperties="Platform=x64" />
         <ProjectToBuild Include="$(RepositoryRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMIISExpressV2\AncmIISExpressV2.wixproj" AdditionalProperties="Platform=x86" />
-        <ProjectToBuild Include="$(RepositoryRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMV1\ANCMV1.wixproj" AdditionalProperties="Platform=x64" />
-        <ProjectToBuild Include="$(RepositoryRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMV1\ANCMV1.wixproj" AdditionalProperties="Platform=x86" />
         <ProjectToBuild Include="$(RepositoryRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMV2\ANCMV2.wixproj" AdditionalProperties="Platform=x64" />
         <ProjectToBuild Include="$(RepositoryRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMV2\ANCMV2.wixproj" AdditionalProperties="Platform=x86" />
 

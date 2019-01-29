@@ -4,24 +4,6 @@
         <PackageGroup Id="PG_ANCM">
             <RollbackBoundary Id="RB_ANCM" />
 
-            <MsiPackage Id="AspNetCoreModule_x86" SourceFile="$(var.AspNetCoreModule_x86.TargetPath)"
-                        Name="$(var.AspNetCoreModule_x86.TargetFileName)"
-                        Compressed="yes"
-                        Vital="yes"
-                        Visible="no"
-                        InstallCondition="NOT VersionNT64 AND (VersionNT &gt;= v6.1) AND (IISCoreWebEngineInstalled_x86=1) AND (IISW3SVCInstalled_x86=1) AND (NOT OPT_NO_ANCM)">
-                <MsiProperty Name="OPT_NO_SHARED_CONFIG_CHECK" Value="[OPT_NO_SHARED_CONFIG_CHECK]" />
-            </MsiPackage>
-
-            <MsiPackage Id="AspNetCoreModule_x64" SourceFile="$(var.AspNetCoreModule_x64.TargetPath)"
-                        Name="$(var.AspNetCoreModule_x64.TargetFileName)"
-                        Compressed="yes"
-                        Vital="yes"
-                        Visible="no"
-                        InstallCondition="VersionNT64 AND (VersionNT64 &gt;= v6.1) AND (IISCoreWebEngineInstalled_x64=1) AND (IISW3SVCInstalled_x64=1) AND (NOT OPT_NO_ANCM)">
-                <MsiProperty Name="OPT_NO_SHARED_CONFIG_CHECK" Value="[OPT_NO_SHARED_CONFIG_CHECK]" />
-            </MsiPackage>
-
             <MsiPackage Id="AspNetCoreModuleV2_x86" SourceFile="$(var.AspNetCoreModuleV2_x86.TargetPath)"
                         Name="$(var.AspNetCoreModuleV2_x86.TargetFileName)"
                         Compressed="yes"
