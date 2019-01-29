@@ -39,6 +39,12 @@
     <VsixVersionSuffix Condition="'$(VsixVersionSuffix)'==''">$(BuildNumberSuffix.Replace('-', '.'))</VsixVersionSuffix>
     <VsixVersion>$(VsixVersionPrefix).$(VsixVersionSuffix)</VsixVersion>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Output the VSIX to the artifacts directory. This will allow it to be picked up for code-sign -->
+    <TargetVSIXContainer>$(VisualStudioSetupOutputPath)$(MSBuildProjectName).vsix</TargetVSIXContainer>
+  </PropertyGroup>
+
   <!--
     Used by the .vsixmanifest to insert the the VSIX version based on $(VsixVersion)
   -->
