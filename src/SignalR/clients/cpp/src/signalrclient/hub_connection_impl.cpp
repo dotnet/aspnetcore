@@ -18,8 +18,6 @@ namespace signalr
         static std::function<void(const json::value&)> create_hub_invocation_callback(const logger& logger,
             const std::function<void(const json::value&)>& set_result,
             const std::function<void(const std::exception_ptr e)>& set_exception);
-
-        static utility::string_t adapt_url(const utility::string_t& url);
     }
 
     std::shared_ptr<hub_connection_impl> hub_connection_impl::create(const utility::string_t& url, const utility::string_t& query_string,

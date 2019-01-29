@@ -37,10 +37,9 @@ namespace signalr
 
     connection_impl::connection_impl(const utility::string_t& url, const utility::string_t& query_string, trace_level trace_level, const std::shared_ptr<log_writer>& log_writer,
         std::unique_ptr<web_request_factory> web_request_factory, std::unique_ptr<transport_factory> transport_factory)
-        : m_base_url(url), m_query_string(query_string), m_connection_state(connection_state::disconnected), m_reconnect_delay(2000),
-        m_logger(log_writer, trace_level), m_transport(nullptr), m_web_request_factory(std::move(web_request_factory)),
-        m_transport_factory(std::move(transport_factory)), m_message_received([](const web::json::value&){}),
-        m_disconnected([](){}), m_handshakeReceived(false)
+        : m_base_url(url), m_query_string(query_string), m_connection_state(connection_state::disconnected), m_logger(log_writer, trace_level),
+        m_transport(nullptr), m_web_request_factory(std::move(web_request_factory)), m_transport_factory(std::move(transport_factory)),
+        m_message_received([](const web::json::value&){}), m_disconnected([](){}), m_handshakeReceived(false)
     { }
 
     connection_impl::~connection_impl()
@@ -50,11 +49,6 @@ namespace signalr
             // Signaling the event is safe here. We are in the dtor so noone is using this instance. There might be some
             // outstanding threads that hold on to the connection via a weak pointer but they won't be able to acquire
             // the instance since it is being destroyed. Note that the event may actually be in non-signaled state here.
-            // This for instance happens when the connection goes out of scope while a reconnect is in progress. In this
-            // case the reconnect logic will not be able to acquire the connection instance from the weak_pointer to
-            // signal the event so this dtor would hang indefinitely. Using a shared_ptr to the connection in reconnect
-            // is not a good idea since it would prevent from invoking this dtor until the connection is reconnected or
-            // reconnection fails even if the instance actually went out of scope.
             m_start_completed_event.set();
             shutdown().get();
         }
@@ -484,7 +478,7 @@ namespace signalr
                 return pplx::create_task([](){}, cts.get_token());
             }
 
-            // we request a cancellation of the ongoing start or reconnect request (if any) and wait until it is cancelled
+            // we request a cancellation of the ongoing start (if any) and wait until it is canceled
             m_disconnect_cts.cancel();
 
             while (m_start_completed_event.wait(60000) != 0)
@@ -493,7 +487,7 @@ namespace signalr
                     _XPLATSTR("internal error - stopping the connection is still waiting for the start operation to finish which should have already finished or timed out"));
             }
 
-            // at this point we are either in the connected, reconnecting or disconnected state. If we are in the disconnected state
+            // at this point we are either in the connected or disconnected state. If we are in the disconnected state
             // we must break because the transport has already been nulled out.
             if (m_connection_state == connection_state::disconnected)
             {

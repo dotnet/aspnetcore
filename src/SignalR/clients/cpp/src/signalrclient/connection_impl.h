@@ -69,8 +69,6 @@ namespace signalr
         event m_start_completed_event;
         utility::string_t m_connection_id;
         utility::string_t m_connection_data;
-        int m_reconnect_window; // in milliseconds
-        int m_reconnect_delay; // in milliseconds
         utility::string_t m_message_id;
         utility::string_t m_groups_token;
         bool m_handshakeReceived;

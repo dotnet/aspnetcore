@@ -771,55 +771,6 @@ TEST(invoke_void, invoke_creates_runtime_error_when_hub_exception_indicator_fals
 //    }
 //}
 
-//TEST(reconnect, pending_invocations_finished_if_connection_lost)
-//{
-//    auto message_sent_event = std::make_shared<event>();
-//
-//    auto init_sent = false;
-//    auto websocket_client = create_test_websocket_client(
-//        /* receive function */ [init_sent, message_sent_event]() mutable
-//        {
-//            if (init_sent)
-//            {
-//                message_sent_event->wait();
-//                return pplx::task_from_exception<std::string>(std::runtime_error("connection exception"));
-//            }
-//
-//            init_sent = true;
-//            return pplx::task_from_result<std::string>("{ }\x1e");
-//        },
-//        /* send function */ [](const utility::string_t){ return pplx::task_from_result(); },
-//        /* connect function */[](const web::uri&)
-//        {
-//            return pplx::task_from_result();
-//        });
-//
-//    auto hub_connection = create_hub_connection(websocket_client);
-//
-//    auto test_completed_event = std::make_shared<event>();
-//    hub_connection->start()
-//        .then([hub_connection, message_sent_event, test_completed_event]()
-//        {
-//            auto invoke_task = hub_connection->invoke_json(_XPLATSTR("TestMethod"), json::value::array())
-//                .then([test_completed_event, hub_connection](pplx::task<web::json::value> invoke_void_task)
-//                {
-//                    try
-//                    {
-//                        invoke_void_task.get();
-//                        ASSERT_TRUE(false); // exception expected but not thrown
-//                    }
-//                    catch (const std::exception& e)
-//                    {
-//                        ASSERT_STREQ("\"connection has been lost\"", e.what());
-//                    }
-//                });
-//
-//            message_sent_event->set();
-//
-//            return invoke_task;
-//        }).get();
-//}
-
 TEST(connection_id, can_get_connection_id)
 {
     auto websocket_client = create_test_websocket_client(
