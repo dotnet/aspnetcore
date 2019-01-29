@@ -2,10 +2,14 @@
 
   <PropertyGroup>
     <CodeSignDependsOn>$(CodeSignDependsOn);CollectFileSignInfo</CodeSignDependsOn>
-    <RedistNetCorePath>$(IntermediateDir)ar\$(SharedFxRid)\</RedistNetCorePath>
   </PropertyGroup>
 
   <Target Name="CollectFileSignInfo">
+    <PropertyGroup>
+      <BaseRedistNetCorePath>$(IntermediateDir)ar\</BaseRedistNetCorePath>
+      <RedistNetCorePath>$(BaseRedistNetCorePath)$(SharedFxRid)\</RedistNetCorePath>
+    </PropertyGroup>
+
     <ItemGroup>
       <FilesToSign Include="$(ArtifactsShippingPackagesDir)*.jar" Certificate="MicrosoftJAR" />
       <FilesToSign Include="$(ArtifactsShippingPackagesDir)*.nupkg" Exclude="$(ArtifactsShippingPackagesDir)*.symbols.nupkg" Certificate="NuGet" />
@@ -14,9 +18,17 @@
       <!-- "None" means don't sign the .zip file itself, but still scan the contents of the .zip for signable files. -->
       <FilesToSign Include="$(InstallersOutputPath)*.zip" Certificate="None" />
 
-      <!-- These files should already be signed by the .NET Core team. They have to be listed again here because we recreate a redistributable which includes the Microsoft.NETCore.App runtime. -->
-      <FilesToExcludeFromSigning Include="$(RedistNetCorePath)shared\Microsoft.NETCore.App\**\*.dll" />
-      <FilesToExcludeFromSigning Include="$(RedistNetCorePath)host\**\*.dll" />
+      <!--
+        These files should already be signed by the .NET Core team. They have to be listed again here because we recreate a redistributable which includes the Microsoft.NETCore.App runtime.
+        List all combinations of Windows RID's because CI may build multiple combinations of artitectures on the same machine.
+        This uses globs because some of the file names change on every build of .NET Core, like sos_amd64_$(fileversion).dll.
+      -->
+      <FilesToExcludeFromSigning Include="$(BaseRedistNetCorePath)win-x64\shared\Microsoft.NETCore.App\**\*.dll" />
+      <FilesToExcludeFromSigning Include="$(BaseRedistNetCorePath)win-x86\shared\Microsoft.NETCore.App\**\*.dll" />
+      <FilesToExcludeFromSigning Include="$(BaseRedistNetCorePath)win-arm\shared\Microsoft.NETCore.App\**\*.dll" />
+      <FilesToExcludeFromSigning Include="$(BaseRedistNetCorePath)win-x64\host\**\*.dll" />
+      <FilesToExcludeFromSigning Include="$(BaseRedistNetCorePath)win-x86\host\**\*.dll" />
+      <FilesToExcludeFromSigning Include="$(BaseRedistNetCorePath)win-arm\host\**\*.dll" />
       <FilesToExcludeFromSigning Include="$(RedistNetCorePath)dotnet.exe" />
     </ItemGroup>
   </Target>
