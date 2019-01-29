@@ -106,9 +106,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
             return new InMemoryConnection(transportConnection);
         }
 
-        public Task StopAsync()
+        public async Task StopAsync()
         {
-            return _host.StopAsync();
+            using (var cts = new CancellationTokenSource(TestConstants.DefaultTimeout))
+            {
+                await _host.StopAsync(cts.Token);
+            }
         }
 
         public void Dispose()

@@ -126,19 +126,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task ImmediateShutdownAfterOnConnectionAsyncDoesNotCrash()
         {
+            var waitingConnectionAdapter = new WaitingConnectionAdapter();
             var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
             {
-                ConnectionAdapters = { new AsyncConnectionAdapter() }
+                ConnectionAdapters = { waitingConnectionAdapter }
             };
 
             var serviceContext = new TestServiceContext(LoggerFactory);
 
-            var stopTask = Task.CompletedTask;
             using (var server = new TestServer(TestApp.EchoApp, serviceContext, listenOptions))
             {
+                Task stopTask;
+
                 using (var connection = server.CreateConnection())
                 {
+                    var closingMessageTask = TestApplicationErrorLogger.WaitForMessage(m => m.Message.Contains(CoreStrings.ServerShutdownDuringConnectionInitialization));
+
                     stopTask = server.StopAsync();
+
+                    await closingMessageTask.DefaultTimeout();
+
+                    waitingConnectionAdapter.Complete();
                 }
 
                 await stopTask;
@@ -229,6 +237,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             {
                 await Task.Yield();
                 return new AdaptedConnection(new RewritingStream(context.ConnectionStream));
+            }
+        }
+
+        private class WaitingConnectionAdapter : IConnectionAdapter
+        {
+            private TaskCompletionSource<object> _waitingTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            public bool IsHttps => false;
+
+            public async Task<IAdaptedConnection> OnConnectionAsync(ConnectionAdapterContext context)
+            {
+                await _waitingTcs.Task;
+                return new AdaptedConnection(context.ConnectionStream);
+            }
+
+            public void Complete()
+            {
+                _waitingTcs.TrySetResult(null);
             }
         }
 

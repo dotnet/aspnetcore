@@ -590,4 +590,10 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="Http2ErrorStreamAborted" xml:space="preserve">
     <value>A frame of type {frameType} was received after stream {streamId} was reset or aborted.</value>
   </data>
+  <data name="ProtocolSelectionFailed" xml:space="preserve">
+    <value>HTTP protocol selection failed.</value>
+  </data>
+  <data name="ServerShutdownDuringConnectionInitialization" xml:space="preserve">
+    <value>Server shutdown started during connection initialization.</value>
+  </data>
 </root>
