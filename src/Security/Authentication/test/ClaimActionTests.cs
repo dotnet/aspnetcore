@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Authentication
         [Fact]
         public void CanMapArrayValueUserDataToClaims()
         {
-            var userData = JsonDocument.Parse("{ \"role\": [ \"role1\", \"role2\" ] }");
+            var userData = JsonDocument.Parse("{ \"role\": [ \"role1\", null, \"role2\" ] }");
 
             var identity = new ClaimsIdentity();
 
