@@ -30,6 +30,8 @@
       <FilesToExcludeFromSigning Include="$(BaseRedistNetCorePath)win-x86\host\**\*.dll" />
       <FilesToExcludeFromSigning Include="$(BaseRedistNetCorePath)win-arm\host\**\*.dll" />
       <FilesToExcludeFromSigning Include="$(RedistNetCorePath)dotnet.exe" />
+      <FilesToExcludeFromSigning Include="hostpolicy.dll" />
+      <FilesToExcludeFromSigning Include="hostfxr.dll" />
     </ItemGroup>
   </Target>
 </Project>

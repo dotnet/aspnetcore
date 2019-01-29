@@ -7,7 +7,7 @@
 
   <PropertyGroup>
     <!-- temporary until site extension build moves into the main build -->
-    <PackageOutputPath>$(MSBuildThisFileDirectory)..\..\artifacts\packages\$(Configuration)\shipping</PackageOutputPath>
+    <PackageOutputPath>$(MSBuildThisFileDirectory)..\..\..\artifacts\packages\$(Configuration)\shipping</PackageOutputPath>
   </PropertyGroup>
 
 </Project>
