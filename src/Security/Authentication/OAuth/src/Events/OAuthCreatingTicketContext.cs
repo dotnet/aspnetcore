@@ -25,27 +25,6 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         /// <param name="options">The options used by the authentication middleware.</param>
         /// <param name="backchannel">The HTTP client used by the authentication middleware</param>
         /// <param name="tokens">The tokens returned from the token endpoint.</param>
-        public OAuthCreatingTicketContext(
-            ClaimsPrincipal principal,
-            AuthenticationProperties properties,
-            HttpContext context,
-            AuthenticationScheme scheme,
-            OAuthOptions options,
-            HttpClient backchannel,
-            OAuthTokenResponse tokens)
-            : this(principal, properties, context, scheme, options, backchannel, tokens, user: JsonDocument.Parse("{}"))
-        { }
-
-        /// <summary>
-        /// Initializes a new <see cref="OAuthCreatingTicketContext"/>.
-        /// </summary>
-        /// <param name="principal">The <see cref="ClaimsPrincipal"/>.</param>
-        /// <param name="properties">The <see cref="AuthenticationProperties"/>.</param>
-        /// <param name="context">The HTTP environment.</param>
-        /// <param name="scheme">The authentication scheme.</param>
-        /// <param name="options">The options used by the authentication middleware.</param>
-        /// <param name="backchannel">The HTTP client used by the authentication middleware</param>
-        /// <param name="tokens">The tokens returned from the token endpoint.</param>
         /// <param name="user">The JSON-serialized user.</param>
         public OAuthCreatingTicketContext(
             ClaimsPrincipal principal,

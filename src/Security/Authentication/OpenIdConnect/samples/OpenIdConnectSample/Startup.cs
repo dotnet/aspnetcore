@@ -208,30 +208,32 @@ namespace OpenIdConnectSample
                     var tokenResponse = await options.Backchannel.PostAsync(metadata.TokenEndpoint, content, context.RequestAborted);
                     tokenResponse.EnsureSuccessStatusCode();
 
-                    var payload = JsonDocument.Parse(await tokenResponse.Content.ReadAsStringAsync());
-
-                    // Persist the new acess token
-                    props.UpdateTokenValue("access_token", payload.GetString("access_token"));
-                    props.UpdateTokenValue("refresh_token", payload.GetString("refresh_token"));
-                    if (payload.RootElement.TryGetProperty("expires_in", out var property) && property.TryGetInt32(out var seconds))
+                    using (var payload = JsonDocument.Parse(await tokenResponse.Content.ReadAsStringAsync()))
                     {
-                        var expiresAt = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(seconds);
-                        props.UpdateTokenValue("expires_at", expiresAt.ToString("o", CultureInfo.InvariantCulture));
+
+                        // Persist the new acess token
+                        props.UpdateTokenValue("access_token", payload.GetString("access_token"));
+                        props.UpdateTokenValue("refresh_token", payload.GetString("refresh_token"));
+                        if (payload.RootElement.TryGetProperty("expires_in", out var property) && property.TryGetInt32(out var seconds))
+                        {
+                            var expiresAt = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(seconds);
+                            props.UpdateTokenValue("expires_at", expiresAt.ToString("o", CultureInfo.InvariantCulture));
+                        }
+                        await context.SignInAsync(user, props);
+
+                        await WriteHtmlAsync(response, async res =>
+                        {
+                            await res.WriteAsync($"<h1>Refreshed.</h1>");
+                            await res.WriteAsync("<a class=\"btn btn-default\" href=\"/refresh\">Refresh tokens</a>");
+                            await res.WriteAsync("<a class=\"btn btn-default\" href=\"/\">Home</a>");
+
+                            await res.WriteAsync("<h2>Tokens:</h2>");
+                            await WriteTableHeader(res, new string[] { "Token Type", "Value" }, props.GetTokens().Select(token => new string[] { token.Name, token.Value }));
+
+                            await res.WriteAsync("<h2>Payload:</h2>");
+                            await res.WriteAsync(HtmlEncoder.Default.Encode(payload.ToString()).Replace(",", ",<br>") + "<br>");
+                        });
                     }
-                    await context.SignInAsync(user, props);
-
-                    await WriteHtmlAsync(response, async res =>
-                    {
-                        await res.WriteAsync($"<h1>Refreshed.</h1>");
-                        await res.WriteAsync("<a class=\"btn btn-default\" href=\"/refresh\">Refresh tokens</a>");
-                        await res.WriteAsync("<a class=\"btn btn-default\" href=\"/\">Home</a>");
-
-                        await res.WriteAsync("<h2>Tokens:</h2>");
-                        await WriteTableHeader(res, new string[] { "Token Type", "Value" }, props.GetTokens().Select(token => new string[] { token.Name, token.Value }));
-
-                        await res.WriteAsync("<h2>Payload:</h2>");
-                        await res.WriteAsync(HtmlEncoder.Default.Encode(payload.ToString()).Replace(",", ",<br>") + "<br>");
-                    });
 
                     return;
                 }

@@ -96,9 +96,12 @@ namespace JwtBearerSample
                     {
                         var reader = new StreamReader(context.Request.Body);
                         var body = await reader.ReadToEndAsync();
-                        var obj = JsonDocument.Parse(body).RootElement;
-                        var todo = new Todo() { Description = obj.GetProperty("Description").ToString(), Owner = context.User.Identity.Name };
-                        Todos.Add(todo);
+                        using (var json = JsonDocument.Parse(body))
+                        {
+                            var obj = json.RootElement;
+                            var todo = new Todo() { Description = obj.GetProperty("Description").GetString(), Owner = context.User.Identity.Name };
+                            Todos.Add(todo);
+                        }
                     }
                     else
                     {

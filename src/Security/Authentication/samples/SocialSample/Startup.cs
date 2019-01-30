@@ -207,9 +207,10 @@ namespace SocialSample
                         var response = await context.Backchannel.SendAsync(request, context.HttpContext.RequestAborted);
                         response.EnsureSuccessStatusCode();
 
-                        var user = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-
-                        context.RunClaimActions(user);
+                        using (var user = JsonDocument.Parse(await response.Content.ReadAsStringAsync()))
+                        {
+                            context.RunClaimActions(user);
+                        }
                     }
                 };
             });
@@ -332,24 +333,25 @@ namespace SocialSample
                         var refreshResponse = await options.Backchannel.PostAsync(options.TokenEndpoint, content, context.RequestAborted);
                         refreshResponse.EnsureSuccessStatusCode();
 
-                        var payload = JsonDocument.Parse(await refreshResponse.Content.ReadAsStringAsync());
-
-                        // Persist the new acess token
-                        authProperties.UpdateTokenValue("access_token", payload.GetString("access_token"));
-                        refreshToken = payload.GetString("refresh_token");
-                        if (!string.IsNullOrEmpty(refreshToken))
+                        using (var payload = JsonDocument.Parse(await refreshResponse.Content.ReadAsStringAsync()))
                         {
-                            authProperties.UpdateTokenValue("refresh_token", refreshToken);
-                        }
-                        if (payload.RootElement.TryGetProperty("expires_in", out var property) && property.TryGetInt32(out var seconds))
-                        {
-                            var expiresAt = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(seconds);
-                            authProperties.UpdateTokenValue("expires_at", expiresAt.ToString("o", CultureInfo.InvariantCulture));
-                        }
-                        await context.SignInAsync(user, authProperties);
 
-                        await PrintRefreshedTokensAsync(response, payload, authProperties);
+                            // Persist the new acess token
+                            authProperties.UpdateTokenValue("access_token", payload.GetString("access_token"));
+                            refreshToken = payload.GetString("refresh_token");
+                            if (!string.IsNullOrEmpty(refreshToken))
+                            {
+                                authProperties.UpdateTokenValue("refresh_token", refreshToken);
+                            }
+                            if (payload.RootElement.TryGetProperty("expires_in", out var property) && property.TryGetInt32(out var seconds))
+                            {
+                                var expiresAt = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(seconds);
+                                authProperties.UpdateTokenValue("expires_at", expiresAt.ToString("o", CultureInfo.InvariantCulture));
+                            }
+                            await context.SignInAsync(user, authProperties);
 
+                            await PrintRefreshedTokensAsync(response, payload, authProperties);
+                        }
                         return;
                     }
                     // https://developers.facebook.com/docs/facebook-login/access-tokens/expiration-and-extension
@@ -368,18 +370,18 @@ namespace SocialSample
                         }.ToQueryString();
 
                         var refreshResponse = await options.Backchannel.GetStringAsync(options.TokenEndpoint + query);
-                        var payload = JsonDocument.Parse(refreshResponse);
-
-                        authProperties.UpdateTokenValue("access_token", payload.GetString("access_token"));
-                        if (payload.RootElement.TryGetProperty("expires_in", out var property) && property.TryGetInt32(out var seconds))
+                        using (var payload = JsonDocument.Parse(refreshResponse))
                         {
-                            var expiresAt = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(seconds);
-                            authProperties.UpdateTokenValue("expires_at", expiresAt.ToString("o", CultureInfo.InvariantCulture));
+                            authProperties.UpdateTokenValue("access_token", payload.GetString("access_token"));
+                            if (payload.RootElement.TryGetProperty("expires_in", out var property) && property.TryGetInt32(out var seconds))
+                            {
+                                var expiresAt = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(seconds);
+                                authProperties.UpdateTokenValue("expires_at", expiresAt.ToString("o", CultureInfo.InvariantCulture));
+                            }
+                            await context.SignInAsync(user, authProperties);
+
+                            await PrintRefreshedTokensAsync(response, payload, authProperties);
                         }
-                        await context.SignInAsync(user, authProperties);
-
-                        await PrintRefreshedTokensAsync(response, payload, authProperties);
-
                         return;
                     }
 
