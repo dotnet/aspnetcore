@@ -2212,6 +2212,34 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         internal static string FormatHttp2ErrorStreamAborted(object frameType, object streamId)
             => string.Format(CultureInfo.CurrentCulture, GetString("Http2ErrorStreamAborted", "frameType", "streamId"), frameType, streamId);
 
+        /// <summary>
+        /// HTTP protocol selection failed.
+        /// </summary>
+        internal static string ProtocolSelectionFailed
+        {
+            get => GetString("ProtocolSelectionFailed");
+        }
+
+        /// <summary>
+        /// HTTP protocol selection failed.
+        /// </summary>
+        internal static string FormatProtocolSelectionFailed()
+            => GetString("ProtocolSelectionFailed");
+
+        /// <summary>
+        /// Server shutdown started during connection initialization.
+        /// </summary>
+        internal static string ServerShutdownDuringConnectionInitialization
+        {
+            get => GetString("ServerShutdownDuringConnectionInitialization");
+        }
+
+        /// <summary>
+        /// Server shutdown started during connection initialization.
+        /// </summary>
+        internal static string FormatServerShutdownDuringConnectionInitialization()
+            => GetString("ServerShutdownDuringConnectionInitialization");
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
