@@ -5,6 +5,8 @@
     <!-- TODO: fix targets which expect project output to be in the project directory. -->
     <BaseIntermediateOutputPath />
     <BaseOutputPath />
+
+    <BuildIisNativeProjects Condition="'$(BuildNative)' != 'false' AND '$(TargetOsName)' == 'win' AND ('$(TargetArchitecture)' == 'x86' OR '$(TargetArchitecture)' == 'x64')">true</BuildIisNativeProjects>
   </PropertyGroup>
 
 </Project>

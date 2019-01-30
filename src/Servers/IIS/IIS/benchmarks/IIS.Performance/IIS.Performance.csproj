@@ -15,7 +15,7 @@
     <Content Include="..\..\test\Common.FunctionalTests\AppHostConfig\*.config" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
+  <ItemGroup Condition="'$(BuildIisNativeProjects)' == 'true'">
     <None Include="$(MSBuildThisFileDirectory)..\..\..\AspNetCoreModuleV2\InProcessRequestHandler\bin\$(Configuration)\x64\aspnetcorev2_inprocess.dll" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="%(FileName)%(Extension)" />
     <None Include="$(MSBuildThisFileDirectory)..\..\..\AspNetCoreModuleV2\InProcessRequestHandler\bin\$(Configuration)\x64\aspnetcorev2_inprocess.pdb" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="%(FileName)%(Extension)" />
     <None Include="$(MSBuildThisFileDirectory)..\..\..\AspNetCoreModuleV2\AspNetCore\bin\$(Configuration)\x64\aspnetcorev2.dll" CopyToOutputDirectory="PreserveNewest" Visible="true" Link="%(FileName)%(Extension)" />

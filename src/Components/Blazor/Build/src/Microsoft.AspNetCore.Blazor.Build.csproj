@@ -10,6 +10,8 @@
 
   <!-- Pack settings -->
   <PropertyGroup>
+    <!-- Producing this package requires building with NodeJS enabled. -->
+    <IsPackable Condition="'$(BuildNodeJS)' == 'false'">false</IsPackable>
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <NuspecFile>Microsoft.AspNetCore.Blazor.Build.nuspec</NuspecFile>
     <IntermediatePackDir>obj\publish\</IntermediatePackDir>
@@ -35,7 +37,7 @@
   </Target>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Components.Browser.JS" />
+    <ProjectReference Condition="'$(BuildNodeJS)' != 'false'" Include="$(RepositoryRoot)src\Components\Browser.JS\src\Microsoft.AspNetCore.Components.Browser.JS.npmproj" ReferenceOutputAssembly="false" />
     <Reference Include="Microsoft.AspNetCore.Components" />
     <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" PrivateAssets="All" />
     <Reference Include="Microsoft.Extensions.FileProviders.Composite" />

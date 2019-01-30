@@ -8,7 +8,7 @@
     <InternalInstallerBaseName>$(RuntimeInstallerBaseName)-internal</InternalInstallerBaseName>
 
     <ArchiveExtension>.tar.gz</ArchiveExtension>
-    <ArchiveExtension Condition="$(SharedFxRid.StartsWith('win'))">.zip</ArchiveExtension>
+    <ArchiveExtension Condition="'$(TargetOsName)' == 'win'">.zip</ArchiveExtension>
   </PropertyGroup>
 
 </Project>

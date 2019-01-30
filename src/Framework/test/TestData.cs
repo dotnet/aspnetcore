@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore
 
         public static string GetRepositoryCommit() => GetTestDataValue("RepositoryCommit");
 
-        public static string GetSharedFxRuntimeIdentifier() => GetTestDataValue("SharedFxRid");
+        public static string GetSharedFxRuntimeIdentifier() => GetTestDataValue("TargetRuntimeIdentifier");
 
         public static string GetSharedFxDependencies() => GetTestDataValue("SharedFxDependencies");
 

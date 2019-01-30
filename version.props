@@ -81,4 +81,12 @@
     <Message Importance="High" Text="SharedFxCliBlobChannel        = '$(SharedFxCliBlobChannel)'" />
   </Target>
 
+  <Target Name="UpdateCiSettings" Condition="'$(TF_BUILD)' != ''">
+    <!-- Update Azure Pipelines UI to match the actual product version. -->
+    <Message Importance="High" Text="##vso[build.updatebuildnumber]$(PackageVersion)" />
+    <!-- These tags can be used in Azure release pipelines to filter actions based on the type of build. -->
+    <Message Importance="high" Text="##vso[build.addbuildtag]daily-build" Condition=" '$(IsFinalBuild)' != 'true' AND '$(BUILD_REASON)' != 'PullRequest' " />
+    <Message Importance="high" Text="##vso[build.addbuildtag]release-candidate" Condition=" '$(IsFinalBuild)' == 'true' AND '$(BUILD_REASON)' != 'PullRequest' " />
+  </Target>
+
 </Project>
