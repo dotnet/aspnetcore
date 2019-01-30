@@ -5,7 +5,7 @@
     <Description>File provider for files in embedded resources for Microsoft.Extensions.FileProviders.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
     <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
-    <IsPackable>true</IsPackable>
+    <IsShipping>true</IsShipping>
   </PropertyGroup>
 
   <ItemGroup>

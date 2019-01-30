@@ -2,8 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <!-- API Check fails with "Generic method or method in generic class is internal call, PInvoke, or is defined in a COM Import class." -->
-    <EnableApiCheck>false</EnableApiCheck>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 

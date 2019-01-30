@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="$(RepositoryRoot)src\Logging\Logging.Testing\src\build\Microsoft.Extensions.Logging.Testing.props" />
+  <Import Project="$(RepoRoot)src\Logging\Logging.Testing\src\build\Microsoft.Extensions.Logging.Testing.props" />
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.0;net472</TargetFrameworks>
