@@ -291,7 +291,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             var memoryMaxLength = _currentChunkMemory.Length - BeginChunkLengthMax - EndChunkLength;
-            if (_advancedBytesForChunk > memoryMaxLength - MemorySizeThreshold)
+            if (_advancedBytesForChunk > memoryMaxLength - Math.Min(MemorySizeThreshold, sizeHint))
             {
                 // Chunk is completely written, commit it to the pipe so GetMemory will return a new chunk of memory.
                 CommitChunkToPipe();
