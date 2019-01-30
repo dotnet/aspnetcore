@@ -12,4 +12,7 @@
   <Target Name="Pack" />
   <Target Name="Restore" />
   <Target Name="ResolveNuGetPackageAssets" />
+  <Target Name="Test" DependsOnTargets="Build" Condition="'$(IsTestProject)' == 'true'" >
+    <Exec Command="&quot;$(TargetPath)&quot;" />
+  </Target>
 </Project>

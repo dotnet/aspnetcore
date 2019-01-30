@@ -113,4 +113,7 @@
   <Target Name="AfterBuild">
     <Exec Command="copy /y &quot;$(SolutionDir)bin\Desktop\$(Platform)\$(Configuration)\dll\$(SignalrClientTargetName).dll&quot; &quot;$(SolutionDir)bin\Desktop\$(Platform)\$(Configuration)\$(SignalrClientTargetName).dll&quot;" />
   </Target>
+  <PropertyGroup>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
 </Project>

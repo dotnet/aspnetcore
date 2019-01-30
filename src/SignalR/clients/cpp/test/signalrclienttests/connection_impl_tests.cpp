@@ -378,9 +378,17 @@ TEST(connection_impl_send, exceptions_from_send_logged_and_propagated)
 {
     std::shared_ptr<log_writer> writer(std::make_shared<memory_log_writer>());
 
+    bool hasSentHandshake = false;
     auto websocket_client = create_test_websocket_client(
         /* receive function */ []() { return pplx::task_from_result(std::string("{ }\x1e")); },
-        /* send function */ [](const utility::string_t&){ return pplx::task_from_exception<void>(std::runtime_error("error")); });
+        /* send function */ [&hasSentHandshake](const utility::string_t&) {
+            if (hasSentHandshake)
+            {
+                return pplx::task_from_exception<void>(std::runtime_error("error"));
+            }
+            hasSentHandshake = true;
+            return pplx::task_from_result();
+        });
 
     auto connection = create_connection(websocket_client, writer, trace_level::errors);
 
@@ -415,13 +423,12 @@ TEST(connection_impl_set_message_received, callback_invoked_when_message_receive
         std::string responses[]
         {
             "{ }\x1e",
-            "{ \"C\":\"x\", \"G\":\"gr0\", \"M\":[]}",
-            "{ \"C\":\"d-486F0DF9-BAO,5|BAV,1|BAW,0\", \"M\" : [\"Test\"] }",
-            "{ \"C\":\"d-486F0DF9-BAO,5|BAV,1|BAW,0\", \"M\" : [\"release\"] }",
+            "{ \"type\": 1, \"target\": \"something\", \"arguments\" : [\"Test\"] }\x1e",
+            "{ \"type\": 1, \"target\": \"something\", \"arguments\" : [\"release\"] }\x1e",
             "{}"
         };
 
-        call_number = std::min(call_number + 1, 4);
+        call_number = std::min(call_number + 1, 3);
 
         return pplx::task_from_result(responses[call_number]);
     });
@@ -431,13 +438,15 @@ TEST(connection_impl_set_message_received, callback_invoked_when_message_receive
     auto message = std::make_shared<utility::string_t>();
 
     auto message_received_event = std::make_shared<event>();
-    connection->set_message_received_string([message, message_received_event](const utility::string_t &m){
-        if (m == _XPLATSTR("Test"))
+    connection->set_message_received_string([message, message_received_event](const utility::string_t &m)
+    {
+        auto value = web::json::value::parse(m).at(_XPLATSTR("arguments")).as_array()[0].as_string();
+        if (value == _XPLATSTR("Test"))
         {
-            *message = m;
+            *message = value;
         }
 
-        if (m == _XPLATSTR("release"))
+        if (value == _XPLATSTR("release"))
         {
             message_received_event->set();
         }
@@ -459,8 +468,8 @@ TEST(connection_impl_set_message_received, exception_from_callback_caught_and_lo
         std::string responses[]
         {
             "{ }\x1e",
-            "{ \"C\":\"d-486F0DF9-BAO,5|BAV,1|BAW,0\", \"M\" : [\"throw\"] }",
-            "{ \"C\":\"d-486F0DF9-BAO,5|BAV,1|BAW,0\", \"M\" : [\"release\"] }",
+            "{ \"type\": 1, \"target\": \"something\", \"arguments\" : [\"throw\"] }\x1e",
+            "{ \"type\": 1, \"target\": \"something\", \"arguments\" : [\"release\"] }\x1e",
             "{}"
         };
 
@@ -473,13 +482,15 @@ TEST(connection_impl_set_message_received, exception_from_callback_caught_and_lo
     auto connection = create_connection(websocket_client, writer, trace_level::errors);
 
     auto message_received_event = std::make_shared<event>();
-    connection->set_message_received_string([message_received_event](const utility::string_t &m){
-        if (m == _XPLATSTR("throw"))
+    connection->set_message_received_string([message_received_event](const utility::string_t &m)
+    {
+        auto value = web::json::value::parse(m).at(_XPLATSTR("arguments")).as_array()[0].as_string();
+        if (value == _XPLATSTR("throw"))
         {
             throw std::runtime_error("oops");
         }
 
-        if (m == _XPLATSTR("release"))
+        if (value == _XPLATSTR("release"))
         {
             message_received_event->set();
         }
@@ -505,8 +516,8 @@ TEST(connection_impl_set_message_received, non_std_exception_from_callback_caugh
         std::string responses[]
         {
             "{ }\x1e",
-            "{ \"C\":\"d-486F0DF9-BAO,5|BAV,1|BAW,0\", \"M\" : [\"throw\"] }",
-            "{ \"C\":\"d-486F0DF9-BAO,5|BAV,1|BAW,0\", \"M\" : [\"release\"] }",
+            "{ \"type\": 1, \"target\": \"something\", \"arguments\" : [\"throw\"] }\x1e",
+            "{ \"type\": 1, \"target\": \"something\", \"arguments\" : [\"release\"] }\x1e",
             "{}"
         };
 
@@ -521,12 +532,13 @@ TEST(connection_impl_set_message_received, non_std_exception_from_callback_caugh
     auto message_received_event = std::make_shared<event>();
     connection->set_message_received_string([message_received_event](const utility::string_t &m)
     {
-        if (m == _XPLATSTR("throw"))
+        auto value = web::json::value::parse(m).at(_XPLATSTR("arguments")).as_array()[0].as_string();
+        if (value == _XPLATSTR("throw"))
         {
             throw 42;
         }
 
-        if (m == _XPLATSTR("release"))
+        if (value == _XPLATSTR("release"))
         {
             message_received_event->set();
         }

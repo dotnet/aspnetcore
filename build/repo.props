@@ -54,7 +54,7 @@
     <ProjectToExclude Include="
                       $(RepositoryRoot)src\Tools\dotnet-watch\test\TestProjects\**\*.csproj;
                       $(RepositoryRoot)src\Razor\Razor.Design\test\testassets\**\*.*proj;
-                      $(RepositoryRoot)src\SignalR\clients\cpp\**\*.*proj;
+                      $(RepositoryRoot)src\SignalR\clients\cpp\**\samples\**\*.*proj;
                       $(RepositoryRoot)src\SignalR\clients\ts\**\node_modules\**\*.*proj;
                       $(RepositoryRoot)src\Components\Blazor\Templates\src\content\**\*.*proj;
                       $(RepositoryRoot)src\ProjectTemplates\Web.ProjectTemplates\content\**\*.csproj;
@@ -104,10 +104,10 @@
       </ItemGroup>
 
       <ItemGroup>
-        <ProjectToBuild Include="$(RepositoryRoot)src\Servers\**\*.pkgproj" Condition=" '$(_RunPack)' == 'true' OR '$(BuildAllProjects)' == 'true' "/>
+        <ProjectToBuild Include="$(RepositoryRoot)src\**\*.vcxproj" Condition=" '$(_RunPack)' == 'true' OR '$(BuildAllProjects)' == 'true' "/>
 
         <NativeProjects Condition=" '$(TargetOsName)' == 'win' AND ('$(TargetArchitecture)' == 'x86' OR '$(TargetArchitecture)' == 'x64') "
-                        Include="$(RepositoryRoot)src\Servers\**\*.vcxproj">
+                        Include="$(RepositoryRoot)src\**\*.vcxproj">
           <!-- Required to prevent triggering double-builds. See src\Servers\IIS\ResolveIisReferences.targets for details. -->
           <AdditionalProperties Condition="'$(TargetArchitecture)' == 'x64'">Platform=x64</AdditionalProperties>
           <AdditionalProperties Condition="'$(TargetArchitecture)' == 'x86'">Platform=Win32</AdditionalProperties>
