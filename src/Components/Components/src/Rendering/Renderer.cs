@@ -365,10 +365,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
                     new RenderQueueEntry(componentState, renderFragment));
             }
 
-            if (!_isBatchInProgress)
-            {
-                ProcessRenderQueue();
-            }
+            ProcessRenderQueue();
         }
 
         private ComponentState GetRequiredComponentState(int componentId)
@@ -383,7 +380,18 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
         private void ProcessRenderQueue()
         {
-            _isBatchInProgress = true;
+            lock (_asyncWorkLock)
+            {
+                if (!_isBatchInProgress)
+                {
+                    _isBatchInProgress = true;
+                }
+                else
+                {
+                    return;
+                }
+            }
+
             var updateDisplayTask = Task.CompletedTask;
 
             try
@@ -402,7 +410,10 @@ namespace Microsoft.AspNetCore.Components.Rendering
             {
                 RemoveEventHandlerIds(_batchBuilder.DisposedEventHandlerIds.ToRange(), updateDisplayTask);
                 _batchBuilder.Clear();
-                _isBatchInProgress = false;
+                lock (_asyncWorkLock)
+                {
+                    _isBatchInProgress = false;
+                }
             }
         }
 
