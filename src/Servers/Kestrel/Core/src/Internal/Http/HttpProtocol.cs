@@ -1293,8 +1293,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             if (!HasResponseStarted)
             {
-                throw new InvalidOperationException("Cannot call GetMemory() until response has started. " +
-                    "Call HttpResponse.StartAsync() before calling GetMemory().");
+                throw new InvalidOperationException(CoreStrings.StartAsyncBeforeGetMemory);
             }
         }
 

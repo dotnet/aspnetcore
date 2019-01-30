@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     {
                         context.Response.Headers.Add(headerName, headerValue);
 
-                        await context.Response.WriteResponseAsync("");
+                        await context.Response.WriteAsync("");
                     });
                 });
 
@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     requestStarted.SetResult(null);
                     await connectionClosed.Task.DefaultTimeout();
                     httpContext.Response.ContentLength = 12;
-                    await httpContext.Response.WriteResponseAsync("hello, world");
+                    await httpContext.Response.WriteAsync("hello, world");
                     appCompleted.TrySetResult(null);
                 }
                 catch (Exception ex)
@@ -209,7 +209,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 try
                 {
-                    await response.WriteResponseAsync(largeString, token: lifetime.RequestAborted);
+                    await response.WriteAsync(largeString, cancellationToken: lifetime.RequestAborted);
                 }
                 catch (Exception ex)
                 {

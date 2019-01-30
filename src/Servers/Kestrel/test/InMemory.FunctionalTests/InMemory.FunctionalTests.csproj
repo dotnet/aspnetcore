@@ -15,10 +15,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="C:\Users\jukotali\code\aspnetcore\src\Servers\Kestrel\shared\test\HttpResponseWritingExtensions.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.Extensions.TypeNameHelper.Sources" PrivateAssets="All" />
