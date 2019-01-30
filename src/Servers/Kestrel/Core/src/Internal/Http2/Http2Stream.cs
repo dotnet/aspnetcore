@@ -6,6 +6,7 @@ using System.Buffers;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
@@ -17,14 +18,14 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
-    public partial class Http2Stream : HttpProtocol
+    public abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem
     {
         private readonly Http2StreamContext _context;
         private readonly Http2OutputProducer _http2Output;
         private readonly StreamInputFlowControl _inputFlowControl;
         private readonly StreamOutputFlowControl _outputFlowControl;
 
-        internal DateTimeOffset DrainExpiration { get; set; }
+        internal long DrainExpirationTicks { get; set; }
 
         private StreamCompletionFlags _completionState;
         private readonly object _completionLock = new object();
@@ -66,7 +67,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         public bool EndStreamReceived => (_completionState & StreamCompletionFlags.EndStreamReceived) == StreamCompletionFlags.EndStreamReceived;
         private bool IsAborted => (_completionState & StreamCompletionFlags.Aborted) == StreamCompletionFlags.Aborted;
         internal bool RstStreamReceived => (_completionState & StreamCompletionFlags.RstStreamReceived) == StreamCompletionFlags.RstStreamReceived;
-        internal bool IsDraining => (_completionState & StreamCompletionFlags.Draining) == StreamCompletionFlags.Draining;
+
+        public bool ReceivedEmptyRequestBody
+        {
+            get
+            {
+                lock (_completionLock)
+                {
+                    return EndStreamReceived && !RequestBodyStarted;
+                }
+            }
+        }
 
         protected override void OnReset()
         {
@@ -82,8 +93,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 if (!EndStreamReceived && !RstStreamReceived)
                 {
                     Log.RequestBodyNotEntirelyRead(ConnectionIdFeature, TraceIdentifier);
-
-                    ApplyCompletionFlag(StreamCompletionFlags.Draining);
 
                     var states = ApplyCompletionFlag(StreamCompletionFlags.Aborted);
                     if (states.OldState != states.NewState)
@@ -106,7 +115,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
             finally
             {
-                _context.StreamLifetimeHandler.OnStreamCompleted(StreamId);
+                _context.StreamLifetimeHandler.OnStreamCompleted(this);
             }
         }
 
@@ -279,7 +288,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 return false;
             }
 
-            var pathEncoded = pathSegment.IndexOf('%') >= 0;
+            var pathEncoded = pathSegment.Contains('%');
 
             // Compare with Http1Connection.OnOriginFormTarget
 
@@ -324,24 +333,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             if (dataPayload.Length > 0)
             {
-                RequestBodyStarted = true;
-
-                if (endStream)
-                {
-                    // No need to send any more window updates for this stream now that we've received all the data.
-                    // Call before flushing the request body pipe, because that might induce a window update.
-                    _inputFlowControl.StopWindowUpdates();
-                }
-
-                _inputFlowControl.Advance((int)dataPayload.Length);
-
                 lock (_completionLock)
                 {
-                    if (IsAborted)
+                    RequestBodyStarted = true;
+
+                    if (endStream)
                     {
-                        // Ignore data frames for aborted streams, but only after counting them for purposes of connection level flow control.
-                        return Task.CompletedTask;
+                        // No need to send any more window updates for this stream now that we've received all the data.
+                        // Call before flushing the request body pipe, because that might induce a window update.
+                        _inputFlowControl.StopWindowUpdates();
                     }
+
+                    _inputFlowControl.Advance((int)dataPayload.Length);
 
                     // This check happens after flow control so that when we throw and abort, the byte count is returned to the connection
                     // level accounting.
@@ -356,15 +359,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         InputRemaining -= dataPayload.Length;
                     }
 
-                    foreach (var segment in dataPayload)
+                    // Ignore data frames for aborted streams, but only after counting them for purposes of connection level flow control.
+                    if (!IsAborted)
                     {
-                        RequestBodyPipe.Writer.Write(segment.Span);
-                    }
-                    var flushTask = RequestBodyPipe.Writer.FlushAsync();
+                        foreach (var segment in dataPayload)
+                        {
+                            RequestBodyPipe.Writer.Write(segment.Span);
+                        }
+                        var flushTask = RequestBodyPipe.Writer.FlushAsync();
 
-                    // It shouldn't be possible for the RequestBodyPipe to fill up an return an incomplete task if
-                    // _inputFlowControl.Advance() didn't throw.
-                    Debug.Assert(flushTask.IsCompleted);
+                        // It shouldn't be possible for the RequestBodyPipe to fill up an return an incomplete task if
+                        // _inputFlowControl.Advance() didn't throw.
+                        Debug.Assert(flushTask.IsCompleted);
+                    }
                 }
             }
 
@@ -493,6 +500,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
+        /// <summary>
+        /// Used to kick off the request processing loop by derived classes.
+        /// </summary>
+        public abstract void Execute();
+
         [Flags]
         private enum StreamCompletionFlags
         {
@@ -500,7 +512,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             RstStreamReceived = 1,
             EndStreamReceived = 2,
             Aborted = 4,
-            Draining = 8,
         }
     }
 }

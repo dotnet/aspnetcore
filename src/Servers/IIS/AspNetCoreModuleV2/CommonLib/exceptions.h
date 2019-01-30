@@ -134,6 +134,12 @@ private:
     return condition;
 }
 
+ __declspec(noinline) inline VOID ReportException(LOCATION_ARGUMENTS const InvalidOperationException& exception)
+{
+    TraceException(LOCATION_CALL exception);
+    DebugPrintf(ASPNETCORE_DEBUG_FLAG_ERROR, "InvalidOperationException '%ls' caught at " LOCATION_FORMAT, exception.as_wstring().c_str(), LOCATION_CALL_ONLY);
+}
+
  __declspec(noinline) inline VOID ReportException(LOCATION_ARGUMENTS const std::exception& exception)
 {
     TraceException(LOCATION_CALL exception);
@@ -148,6 +154,17 @@ private:
         DebugPrintf(ASPNETCORE_DEBUG_FLAG_ERROR,  "Failed HRESULT returned: 0x%x at " LOCATION_FORMAT, hr, LOCATION_CALL_ONLY);
     }
     return hr;
+}
+
+ __declspec(noinline) inline HRESULT LogHResultFailed(LOCATION_ARGUMENTS const std::error_code& error_code)
+{
+    if (error_code)
+    {
+        TraceHRESULT(LOCATION_CALL error_code.value());
+        DebugPrintf(ASPNETCORE_DEBUG_FLAG_ERROR,  "Failed error_code returned: 0x%x 0xs at " LOCATION_FORMAT, error_code.value(), error_code.message().c_str(), LOCATION_CALL_ONLY);
+        return E_FAIL;
+    }
+    return ERROR_SUCCESS;
 }
 
 __declspec(noinline) inline HRESULT CaughtExceptionHResult(LOCATION_ARGUMENTS_ONLY)
@@ -165,6 +182,11 @@ __declspec(noinline) inline HRESULT CaughtExceptionHResult(LOCATION_ARGUMENTS_ON
         ReportException(LOCATION_CALL exception);
         return exception.GetResult();
     }
+    catch (const InvalidOperationException& exception)
+    {
+        ReportException(LOCATION_CALL exception);
+        return HRESULT_FROM_WIN32(ERROR_UNHANDLED_EXCEPTION);
+    }
     catch (const std::exception& exception)
     {
         ReportException(LOCATION_CALL exception);
@@ -174,6 +196,30 @@ __declspec(noinline) inline HRESULT CaughtExceptionHResult(LOCATION_ARGUMENTS_ON
     {
         ReportUntypedException(LOCATION_CALL_ONLY);
         return HRESULT_FROM_WIN32(ERROR_UNHANDLED_EXCEPTION);
+    }
+}
+
+__declspec(noinline) inline std::wstring CaughtExceptionToString()
+{
+    try
+    {
+        throw;
+    }
+    catch (const InvalidOperationException& exception)
+    {
+        return exception.as_wstring();
+    }
+    catch (const std::system_error& exception)
+    {
+        return to_wide_string(exception.what(), CP_ACP);
+    }
+    catch (const std::exception& exception)
+    {
+        return to_wide_string(exception.what(), CP_ACP);
+    }
+    catch (...)
+    {
+        return L"Unknown exception type";
     }
 }
 

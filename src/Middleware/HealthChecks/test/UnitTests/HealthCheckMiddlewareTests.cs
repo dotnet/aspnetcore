@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -683,6 +685,69 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
             Assert.Equal("Healthy", await response.Content.ReadAsStringAsync());
+        }
+        
+        [Fact]
+        public void HealthCheckOptions_HasDefaultMappingWithDefaultResultStatusCodes()
+        {
+            var options = new HealthCheckOptions();
+            Assert.NotNull(options.ResultStatusCodes);
+            Assert.Equal(StatusCodes.Status200OK, options.ResultStatusCodes[HealthStatus.Healthy]);
+            Assert.Equal(StatusCodes.Status200OK, options.ResultStatusCodes[HealthStatus.Degraded]);
+            Assert.Equal(StatusCodes.Status503ServiceUnavailable, options.ResultStatusCodes[HealthStatus.Unhealthy]);
+        }
+        
+        [Fact]
+        public void HealthCheckOptions_HasDefaultMappingWhenResettingResultStatusCodes()
+        {
+            var options = new HealthCheckOptions { ResultStatusCodes = null };
+            Assert.NotNull(options.ResultStatusCodes);
+            Assert.Equal(StatusCodes.Status200OK, options.ResultStatusCodes[HealthStatus.Healthy]);
+            Assert.Equal(StatusCodes.Status200OK, options.ResultStatusCodes[HealthStatus.Degraded]);
+            Assert.Equal(StatusCodes.Status503ServiceUnavailable, options.ResultStatusCodes[HealthStatus.Unhealthy]);
+        }
+        
+        
+        [Fact]
+        public void HealthCheckOptions_DoesNotThrowWhenProperlyConfiguringResultStatusCodes()
+        {
+            _ = new HealthCheckOptions
+            {
+                ResultStatusCodes = new Dictionary<HealthStatus, int>
+                {
+                    [HealthStatus.Healthy] = 200,
+                    [HealthStatus.Degraded] = 200,
+                    [HealthStatus.Unhealthy] = 503
+                }
+            };
+        }
+
+        [Fact]
+        public void HealthCheckOptions_ThrowsWhenAHealthStatusIsMissing()
+        {
+            var exception = Assert.Throws<InvalidOperationException>(() => 
+                new HealthCheckOptions { ResultStatusCodes = new Dictionary<HealthStatus, int>() }
+            );
+            Assert.Contains($"{nameof(HealthStatus)}.{nameof(HealthStatus.Healthy)}", exception.Message);
+            Assert.Contains($"{nameof(HealthStatus)}.{nameof(HealthStatus.Degraded)}", exception.Message);
+            Assert.Contains($"{nameof(HealthStatus)}.{nameof(HealthStatus.Unhealthy)}", exception.Message);
+        }
+        
+        [Fact]
+        public void HealthCheckOptions_ThrowsWhenAHealthStatusIsMissing_MessageDoesNotContainDefinedStatus()
+        {
+            var exception = Assert.Throws<InvalidOperationException>(() => 
+                new HealthCheckOptions
+                {
+                    ResultStatusCodes = new Dictionary<HealthStatus, int>
+                    {
+                        [HealthStatus.Healthy] = 200
+                    }
+                }
+            );
+            Assert.DoesNotContain($"{nameof(HealthStatus)}.{nameof(HealthStatus.Healthy)}", exception.Message);
+            Assert.Contains($"{nameof(HealthStatus)}.{nameof(HealthStatus.Degraded)}", exception.Message);
+            Assert.Contains($"{nameof(HealthStatus)}.{nameof(HealthStatus.Unhealthy)}", exception.Message);
         }
     }
 }

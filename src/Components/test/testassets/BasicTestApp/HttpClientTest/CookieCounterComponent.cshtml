@@ -1,0 +1,38 @@
+﻿@inject System.Net.Http.HttpClient Http
+
+<h1>Cookie counter</h1>
+<p>The server increments the count by one on each request.</p>
+<p>TestServer base URL: <input bind="@testServerBaseUrl" /></p>
+<button id="delete" onclick="@DeleteCookie">Delete cookie</button>
+<button id="increment" onclick="@GetAndIncrementCounter">Get and increment current value</button>
+
+@if (!requestInProgress)
+{
+    <p id="response-text">@responseText</p>
+}
+
+@functions
+{
+    bool requestInProgress = false;
+    string testServerBaseUrl;
+    string responseText;
+
+    async void DeleteCookie()
+    {
+        await DoRequest("api/cookie/reset");
+        StateHasChanged();
+    }
+
+    async void GetAndIncrementCounter()
+    {
+        await DoRequest("api/cookie/increment");
+        StateHasChanged();
+    }
+
+    async Task DoRequest(string url)
+    {
+        requestInProgress = true;
+        responseText = await Http.GetStringAsync(testServerBaseUrl + url);
+        requestInProgress = false;
+    }
+}

@@ -1,0 +1,32 @@
+﻿[
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.TagHelpers.PartialTagHelper : Microsoft.AspNetCore.Razor.TagHelpers.TagHelper",
+    "MemberId": "public .ctor(Microsoft.AspNetCore.Mvc.ViewEngines.ICompositeViewEngine viewEngine, Microsoft.AspNetCore.Mvc.ViewFeatures.Internal.IViewBufferScope viewBufferScope)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.TagHelpers.LinkTagHelper : Microsoft.AspNetCore.Mvc.Razor.TagHelpers.UrlResolutionTagHelper",
+    "MemberId": "protected Microsoft.AspNetCore.Mvc.TagHelpers.Internal.GlobbingUrlBuilder get_GlobbingUrlBuilder()",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.TagHelpers.LinkTagHelper : Microsoft.AspNetCore.Mvc.Razor.TagHelpers.UrlResolutionTagHelper",
+    "MemberId": "protected System.Void set_GlobbingUrlBuilder(Microsoft.AspNetCore.Mvc.TagHelpers.Internal.GlobbingUrlBuilder value)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.TagHelpers.ScriptTagHelper : Microsoft.AspNetCore.Mvc.Razor.TagHelpers.UrlResolutionTagHelper",
+    "MemberId": "protected Microsoft.AspNetCore.Mvc.TagHelpers.Internal.GlobbingUrlBuilder get_GlobbingUrlBuilder()",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.TagHelpers.ScriptTagHelper : Microsoft.AspNetCore.Mvc.Razor.TagHelpers.UrlResolutionTagHelper",
+    "MemberId": "protected System.Void set_GlobbingUrlBuilder(Microsoft.AspNetCore.Mvc.TagHelpers.Internal.GlobbingUrlBuilder value)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.TagHelpers.CacheTagHelper : Microsoft.AspNetCore.Mvc.TagHelpers.CacheTagHelperBase",
+    "MemberId": "public .ctor(Microsoft.AspNetCore.Mvc.TagHelpers.Internal.CacheTagHelperMemoryCacheFactory factory, System.Text.Encodings.Web.HtmlEncoder htmlEncoder)",
+    "Kind": "Removal"
+  }
+]

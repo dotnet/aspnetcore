@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 try
                 {
-                    if (!readableBuffer.IsEmpty)
+                    if (readableBufferLength != 0)
                     {
                         // buffer.Length is int
                         actual = (int)Math.Min(readableBufferLength, buffer.Length);
@@ -69,8 +69,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         // Make sure we don't double-count bytes on the next read.
                         _alreadyTimedBytes = readableBufferLength - actual;
 
-                        var slice = readableBuffer.Slice(0, actual);
-                        consumed = readableBuffer.GetPosition(actual);
+                        var slice = actual == readableBufferLength ? readableBuffer : readableBuffer.Slice(0, actual);
+                        consumed = slice.End;
                         slice.CopyTo(buffer.Span);
 
                         return actual;
@@ -106,22 +106,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 try
                 {
-                    if (!readableBuffer.IsEmpty)
+                    if (readableBufferLength != 0)
                     {
                         foreach (var memory in readableBuffer)
                         {
                             // REVIEW: This *could* be slower if 2 things are true
                             // - The WriteAsync(ReadOnlyMemory<byte>) isn't overridden on the destination
                             // - We change the Kestrel Memory Pool to not use pinned arrays but instead use native memory
-
-#if NETCOREAPP2_1
                             await destination.WriteAsync(memory, cancellationToken);
-#elif NETSTANDARD2_0
-                            var array = memory.GetArray();
-                            await destination.WriteAsync(array.Array, array.Offset, array.Count, cancellationToken);
-#else
-#error TFMs need to be updated
-#endif
                         }
                     }
 

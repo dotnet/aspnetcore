@@ -2,11 +2,11 @@
 
   <PropertyGroup>
     <Description>ASP.NET Core HTML abstractions used for building HTML content.
-    
+
 Commonly used types:
 Microsoft.AspNetCore.Html.HtmlString
 Microsoft.AspNetCore.Html.IHtmlContent</Description>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore</PackageTags>
   </PropertyGroup>

@@ -3,7 +3,10 @@
 
 using System;
 using System.IO;
+using System.IO.Pipelines;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Http
 {
@@ -38,6 +41,11 @@ namespace Microsoft.AspNetCore.Http
         /// Gets or sets the response body <see cref="Stream"/>.
         /// </summary>
         public abstract Stream Body { get; set; }
+
+        /// <summary>
+        /// Gets or sets the response body pipe <see cref="PipeWriter"/>
+        /// </summary>
+        public abstract PipeWriter BodyPipe { get; set; }
 
         /// <summary>
         /// Gets or sets the value for the <c>Content-Length</c> response header.
@@ -105,5 +113,14 @@ namespace Microsoft.AspNetCore.Http
         /// where only ASCII characters are allowed.</param>
         /// <param name="permanent"><c>True</c> if the redirect is permanent (301), otherwise <c>false</c> (302).</param>
         public abstract void Redirect(string location, bool permanent);
+
+        /// <summary>
+        /// Starts the response by calling OnStarting() and making headers unmodifiable.
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <remarks>
+        /// If the <see cref="IHttpResponseStartFeature"/> isn't set, StartAsync will default to calling HttpResponse.Body.FlushAsync().
+        /// </remarks>
+        public abstract Task StartAsync(CancellationToken cancellationToken = default);
     }
 }

@@ -4,7 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
+using System.IO.Pipelines;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
@@ -192,6 +195,95 @@ namespace Microsoft.AspNetCore.Http.Internal
             Assert.Equal("value2", request.Cookies["name2"]);
             cookieHeaders = request.Headers["Cookie"];
             Assert.Equal(new[] { "name2=value2" }, cookieHeaders);
+        }
+
+        [Fact]
+        public void RouteValues_GetAndSet()
+        {
+            var context = new DefaultHttpContext();
+            var request = context.Request;
+
+            var routeValuesFeature = context.Features.Get<IRouteValuesFeature>();
+            // No feature set for initial DefaultHttpRequest
+            Assert.Null(routeValuesFeature);
+
+            // Route values returns empty collection by default
+            Assert.Empty(request.RouteValues);
+
+            // Get and set value on request route values
+            request.RouteValues["new"] = "setvalue";
+            Assert.Equal("setvalue", request.RouteValues["new"]);
+
+            routeValuesFeature = context.Features.Get<IRouteValuesFeature>();
+            // Accessing DefaultHttpRequest.RouteValues creates feature
+            Assert.NotNull(routeValuesFeature);
+
+            request.RouteValues = new RouteValueDictionary(new { key = "value" });
+            // Can set DefaultHttpRequest.RouteValues
+            Assert.NotNull(request.RouteValues);
+            Assert.Equal("value", request.RouteValues["key"]);
+
+            // DefaultHttpRequest.RouteValues uses feature
+            Assert.Equal(routeValuesFeature.RouteValues, request.RouteValues);
+
+            // Setting route values to null sets empty collection on request
+            routeValuesFeature.RouteValues = null;
+            Assert.Empty(request.RouteValues);
+
+            var customRouteValuesFeature = new CustomRouteValuesFeature
+            {
+                RouteValues = new RouteValueDictionary(new { key = "customvalue" })
+            };
+            context.Features.Set<IRouteValuesFeature>(customRouteValuesFeature);
+            // Can override DefaultHttpRequest.RouteValues with custom feature
+            Assert.Equal(customRouteValuesFeature.RouteValues, request.RouteValues);
+
+            // Can clear feature
+            context.Features.Set<IRouteValuesFeature>(null);
+            Assert.Empty(request.RouteValues);
+        }
+
+        [Fact]
+        public void BodyPipe_CanGet()
+        {
+            var context = new DefaultHttpContext();
+            var bodyPipe = context.Request.BodyPipe;
+            Assert.NotNull(bodyPipe);
+        }
+
+        [Fact]
+        public void BodyPipe_CanSet()
+        {
+            var pipeReader = new Pipe().Reader;
+            var context = new DefaultHttpContext();
+
+            context.Request.BodyPipe = pipeReader;
+
+            Assert.Equal(pipeReader, context.Request.BodyPipe);
+        }
+
+        [Fact]
+        public void BodyPipe_WrapsStream()
+        {
+            var context = new DefaultHttpContext();
+            var expectedStream = new MemoryStream();
+            context.Request.Body = expectedStream;
+
+            var bodyPipe = context.Request.BodyPipe as StreamPipeReader;
+
+            Assert.Equal(expectedStream, bodyPipe.InnerStream);
+        }
+
+        [Fact]
+        public void BodyPipe_ThrowsWhenSettingNull()
+        {
+            var context = new DefaultHttpContext();
+            Assert.Throws<ArgumentNullException>(() => context.Request.BodyPipe = null);
+        }
+
+        private class CustomRouteValuesFeature : IRouteValuesFeature
+        {
+            public RouteValueDictionary RouteValues { get; set; }
         }
 
         private static HttpRequest CreateRequest(IHeaderDictionary headers)

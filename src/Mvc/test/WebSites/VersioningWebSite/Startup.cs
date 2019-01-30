@@ -13,7 +13,8 @@ namespace VersioningWebSite
         public void ConfigureServices(IServiceCollection services)
         {
             // Add MVC services to the services container
-            services.AddMvc()
+            services.AddMvc(ConfigureMvcOptions)
+                .AddNewtonsoftJson()
                 .SetCompatibilityVersion(CompatibilityVersion.Latest);
 
             services.AddScoped<TestResponseGenerator>();
@@ -23,6 +24,10 @@ namespace VersioningWebSite
         public void Configure(IApplicationBuilder app)
         {
             app.UseMvcWithDefaultRoute();
+        }
+
+        protected virtual void ConfigureMvcOptions(MvcOptions options)
+        {
         }
     }
 }

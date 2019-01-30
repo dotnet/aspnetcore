@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -24,15 +24,47 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
             _client.BaseAddress = new Uri("http://localhost");
         }
 
+        [Theory]
+        [InlineData("Branch1")]
+        [InlineData("Branch2")]
+        public async Task Routing_CanRouteRequest_ToBranchRouter(string branch)
+        {
+            // Arrange
+            var message = new HttpRequestMessage(HttpMethod.Get, $"{branch}/api/get/5");
+
+            // Act
+            var response = await _client.SendAsync(message);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal($"{branch} - API Get 5", await response.Content.ReadAsStringAsync());
+        }
+
         [Fact]
         public async Task MatchesRootPath_AndReturnsPlaintext()
         {
             // Arrange
             var expectedContentType = "text/plain";
-            var expectedContent = "Endpoint Routing sample endpoints:" + Environment.NewLine + "/plaintext";
 
             // Act
             var response = await _client.GetAsync("/");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.NotNull(response.Content);
+            Assert.NotNull(response.Content.Headers.ContentType);
+            Assert.Equal(expectedContentType, response.Content.Headers.ContentType.MediaType);
+        }
+
+        [Fact]
+        public async Task MatchesStaticRouteTemplate_AndReturnsPlaintext()
+        {
+            // Arrange
+            var expectedContentType = "text/plain";
+            var expectedContent = "Plain text!";
+
+            // Act
+            var response = await _client.GetAsync("/plaintext");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -44,14 +76,14 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
         }
 
         [Fact]
-        public async Task MatchesStaticRouteTemplate_AndReturnsPlaintext()
+        public async Task MatchesHelloMiddleware_AndReturnsPlaintext()
         {
             // Arrange
             var expectedContentType = "text/plain";
-            var expectedContent = "Hello, World!";
+            var expectedContent = "Hello World";
 
             // Act
-            var response = await _client.GetAsync("/plaintext");
+            var response = await _client.GetAsync("/helloworld");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -176,6 +208,19 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
             Assert.NotNull(response.Content);
             var actualContent = await response.Content.ReadAsStringAsync();
             Assert.Equal("Link: /WithDoubleAsteriskCatchAll/a/b%20b1/c%20c1", actualContent);
+        }
+
+        [Fact]
+        public async Task MapGet_HasConventionMetadata()
+        {
+            // Arrange & Act
+            var response = await _client.GetAsync("/convention");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var actualContent = await response.Content.ReadAsStringAsync();
+            Assert.Equal("Has metadata", actualContent);
         }
 
         public void Dispose()

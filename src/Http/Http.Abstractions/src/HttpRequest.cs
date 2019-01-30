@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Http
 {
@@ -66,9 +68,9 @@ namespace Microsoft.AspNetCore.Http
         public abstract IQueryCollection Query { get; set; }
 
         /// <summary>
-        /// Gets or sets the RequestProtocol.
+        /// Gets or sets the request protocol (e.g. HTTP/1.1).
         /// </summary>
-        /// <returns>The RequestProtocol.</returns>
+        /// <returns>The request protocol.</returns>
         public abstract string Protocol { get; set; }
 
         /// <summary>
@@ -102,6 +104,11 @@ namespace Microsoft.AspNetCore.Http
         public abstract Stream Body { get; set; }
 
         /// <summary>
+        /// Gets or sets the request body pipe <see cref="PipeReader"/>.
+        /// </summary>
+        public abstract PipeReader BodyPipe { get; set; }
+
+        /// <summary>
         /// Checks the Content-Type header for form types.
         /// </summary>
         /// <returns>true if the Content-Type header represents a form content type; otherwise, false.</returns>
@@ -117,5 +124,11 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         /// <returns></returns>
         public abstract Task<IFormCollection> ReadFormAsync(CancellationToken cancellationToken = new CancellationToken());
+
+        /// <summary>
+        /// Gets the collection of route values for this request.
+        /// </summary>
+        /// <returns>The collection of route values for this request.</returns>
+        public virtual RouteValueDictionary RouteValues { get; set; }
     }
 }

@@ -13,11 +13,11 @@ using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -25,6 +25,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Microsoft.Net.Http.Headers;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc
@@ -32,7 +33,7 @@ namespace Microsoft.AspNetCore.Mvc
     public class ViewComponentResultTest
     {
         private readonly ITempDataDictionary _tempDataDictionary =
-            new TempDataDictionary(new DefaultHttpContext(), new SessionStateTempDataProvider());
+            new TempDataDictionary(new DefaultHttpContext(), Mock.Of<ITempDataProvider>());
 
         [Fact]
         public void Model_ExposesViewDataModel()
@@ -561,9 +562,8 @@ namespace Microsoft.AspNetCore.Mvc
             }
 
             var services = new ServiceCollection();
-            services.AddSingleton<DiagnosticSource>(diagnosticSource);
+            services.AddSingleton<DiagnosticListener>(diagnosticSource);
             services.AddSingleton<ViewComponentInvokerCache>();
-            services.AddSingleton<ExpressionTextCache>();
             services.AddSingleton(Options.Create(new MvcViewOptions()));
             services.AddTransient<IViewComponentHelper, DefaultViewComponentHelper>();
             services.AddSingleton<IViewComponentSelector, DefaultViewComponentSelector>();
@@ -577,6 +577,7 @@ namespace Microsoft.AspNetCore.Mvc
             services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
             services.AddSingleton<ITempDataDictionaryFactory, TempDataDictionaryFactory>();
             services.AddSingleton<ITempDataProvider, SessionStateTempDataProvider>();
+            services.AddSingleton<TempDataSerializer, DefaultTempDataSerializer>();
             services.AddSingleton<HtmlEncoder, HtmlTestEncoder>();
             services.AddSingleton<IViewBufferScope, TestViewBufferScope>();
             services.AddSingleton<IActionResultExecutor<ViewComponentResult>, ViewComponentResultExecutor>();

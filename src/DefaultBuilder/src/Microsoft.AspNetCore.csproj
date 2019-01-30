@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <PackageTags>aspnetcore</PackageTags>
     <Description>Microsoft.AspNetCore</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -16,7 +16,6 @@
     <Reference Include="Microsoft.AspNetCore.Server.IIS" PrivateAssets="None" />
     <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" PrivateAssets="None" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" PrivateAssets="None" />
-    <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Https" PrivateAssets="None" />
     <Reference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" PrivateAssets="None" />
     <Reference Include="Microsoft.Extensions.Configuration.FileExtensions" PrivateAssets="None" />
     <Reference Include="Microsoft.Extensions.Configuration.Json" PrivateAssets="None" />

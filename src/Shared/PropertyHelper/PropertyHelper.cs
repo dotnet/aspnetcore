@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 
 namespace Microsoft.Extensions.Internal
 {
@@ -145,7 +144,7 @@ namespace Microsoft.Extensions.Internal
         /// </returns>
         public static PropertyHelper[] GetProperties(Type type)
         {
-            return GetProperties(type, CreateInstance, PropertiesCache);
+            return GetProperties(type, p => CreateInstance(p), PropertiesCache);
         }
 
         /// <summary>
@@ -164,7 +163,7 @@ namespace Microsoft.Extensions.Internal
         /// </returns>
         public static PropertyHelper[] GetVisibleProperties(TypeInfo typeInfo)
         {
-            return GetVisibleProperties(typeInfo.AsType(), CreateInstance, PropertiesCache, VisiblePropertiesCache);
+            return GetVisibleProperties(typeInfo.AsType(), p => CreateInstance(p), PropertiesCache, VisiblePropertiesCache);
         }
 
         /// <summary>
@@ -183,7 +182,7 @@ namespace Microsoft.Extensions.Internal
         /// </returns>
         public static PropertyHelper[] GetVisibleProperties(Type type)
         {
-            return GetVisibleProperties(type, CreateInstance, PropertiesCache, VisiblePropertiesCache);
+            return GetVisibleProperties(type, p => CreateInstance(p), PropertiesCache, VisiblePropertiesCache);
         }
 
         /// <summary>
@@ -420,8 +419,7 @@ namespace Microsoft.Extensions.Internal
             ConcurrentDictionary<Type, PropertyHelper[]> allPropertiesCache,
             ConcurrentDictionary<Type, PropertyHelper[]> visiblePropertiesCache)
         {
-            PropertyHelper[] result;
-            if (visiblePropertiesCache.TryGetValue(type, out result))
+            if (visiblePropertiesCache.TryGetValue(type, out var result))
             {
                 return result;
             }
@@ -497,18 +495,17 @@ namespace Microsoft.Extensions.Internal
             // part of the sequence of properties returned by this method.
             type = Nullable.GetUnderlyingType(type) ?? type;
 
-            PropertyHelper[] helpers;
-            if (!cache.TryGetValue(type, out helpers))
+            if (!cache.TryGetValue(type, out var helpers))
             {
                 // We avoid loading indexed properties using the Where statement.
-                var properties = type.GetRuntimeProperties().Where(IsInterestingProperty);
+                var properties = type.GetRuntimeProperties().Where(p => IsInterestingProperty(p));
 
                 var typeInfo = type.GetTypeInfo();
                 if (typeInfo.IsInterface)
                 {
                     // Reflection does not return information about inherited properties on the interface itself.
                     properties = properties.Concat(typeInfo.ImplementedInterfaces.SelectMany(
-                        interfaceType => interfaceType.GetRuntimeProperties().Where(IsInterestingProperty)));
+                        interfaceType => interfaceType.GetRuntimeProperties().Where(p => IsInterestingProperty(p))));
                 }
 
                 helpers = properties.Select(p => createPropertyHelper(p)).ToArray();
@@ -518,17 +515,16 @@ namespace Microsoft.Extensions.Internal
             return helpers;
         }
 
-        
         private static bool IsInterestingProperty(PropertyInfo property)
         {
             // For improving application startup time, do not use GetIndexParameters() api early in this check as it
             // creates a copy of parameter array and also we would like to check for the presence of a get method
             // and short circuit asap.
-            return 
+            return
                 property.GetMethod != null &&
                 property.GetMethod.IsPublic &&
                 !property.GetMethod.IsStatic &&
-                
+
                 // PropertyHelper can't work with ref structs.
                 !IsRefStructProperty(property) &&
 

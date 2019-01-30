@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         /// <summary>
         /// An empty response message with no error.
         /// </summary>
-        public static readonly HandshakeResponseMessage Empty = new HandshakeResponseMessage(null);
+        public static readonly HandshakeResponseMessage Empty = new HandshakeResponseMessage(error: null);
 
         /// <summary>
         /// Gets the optional error message.
@@ -19,12 +19,33 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         public string Error { get; }
 
         /// <summary>
+        /// Highest minor protocol version that the server supports.
+        /// </summary>
+        public int MinorVersion { get; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HandshakeResponseMessage"/> class.
+        /// An error response does need a minor version. Since the handshake has failed, any extra data will be ignored.
+        /// </summary>
+        /// <param name="error">Error encountered by the server, indicating why the handshake has failed.</param>
+        public HandshakeResponseMessage(string error) : this(null, error) { }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HandshakeResponseMessage"/> class.
+        /// A reponse with a minor version indicates success, and doesn't require an error field.
+        /// </summary>
+        /// <param name="minorVersion">The highest protocol minor version that the server supports.</param>
+        public HandshakeResponseMessage(int minorVersion) : this(minorVersion, null) { }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="HandshakeResponseMessage"/> class.
         /// </summary>
-        /// <param name="error">An optional response error message. A <c>null</c> error message indicates a successful handshake.</param>
-        public HandshakeResponseMessage(string error)
+        /// <param name="error">Error encountered by the server, indicating why the handshake has failed.</param>
+        /// <param name="minorVersion">The highest protocol minor version that the server supports.</param>
+        public HandshakeResponseMessage(int? minorVersion, string error)
         {
-            // Note that a response with an empty string for error in the JSON is considered an errored response
+            // MinorVersion defaults to 0, because old servers don't send a minor version 
+            MinorVersion = minorVersion ?? 0;
             Error = error;
         }
     }

@@ -13,6 +13,7 @@ namespace Microsoft.AspNetCore.Routing
     /// Metadata used during link generation to find the associated endpoint using route values.
     /// </summary>
     [DebuggerDisplay("{DebuggerToString(),nq}")]
+    [Obsolete("Route values are now specified on a RoutePattern.")]
     public sealed class RouteValuesAddressMetadata : IRouteValuesAddressMetadata
     {
         private static readonly IReadOnlyDictionary<string, object> EmptyRouteValues =

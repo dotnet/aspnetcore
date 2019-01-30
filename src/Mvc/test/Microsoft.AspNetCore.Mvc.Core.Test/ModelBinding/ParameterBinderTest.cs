@@ -12,8 +12,6 @@ using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.DataAnnotations;
-using Microsoft.AspNetCore.Mvc.DataAnnotations.Internal;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Testing;
@@ -29,10 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
     public class ParameterBinderTest
     {
-        private static readonly IOptions<MvcOptions> _optionsAccessor = Options.Create(new MvcOptions
-        {
-            AllowValidatingTopLevelNodes = true,
-        });
+        private static readonly IOptions<MvcOptions> _optionsAccessor = Options.Create(new MvcOptions());
 
         public static TheoryData BindModelAsyncData
         {
@@ -214,37 +209,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         [Fact]
-        public async Task BindModelAsync_DoesNotEnforceTopLevelBindRequired_IfNotValidatingTopLevelNodes()
-        {
-            // Arrange
-            var actionContext = GetControllerContext();
-
-            var mockModelMetadata = CreateMockModelMetadata();
-            mockModelMetadata.Setup(o => o.IsBindingRequired).Returns(true);
-
-            // Bind attribute errors are phrased in terms of the model name, not display name
-            mockModelMetadata.Setup(o => o.DisplayName).Returns("Ignored Display Name");
-
-            // Do not set AllowValidatingTopLevelNodes.
-            var optionsAccessor = Options.Create(new MvcOptions());
-            var parameterBinder = CreateParameterBinder(mockModelMetadata.Object, optionsAccessor: optionsAccessor);
-            var modelBindingResult = ModelBindingResult.Failed();
-
-            // Act
-            var result = await parameterBinder.BindModelAsync(
-                actionContext,
-                CreateMockModelBinder(modelBindingResult),
-                CreateMockValueProvider(),
-                new ParameterDescriptor { Name = "myParam", ParameterType = typeof(Person) },
-                mockModelMetadata.Object,
-                "ignoredvalue");
-
-            // Assert
-            Assert.True(actionContext.ModelState.IsValid);
-            Assert.Empty(actionContext.ModelState);
-        }
-
-        [Fact]
         public async Task BindModelAsync_EnforcesTopLevelRequired()
         {
             // Arrange
@@ -280,43 +244,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             Assert.Equal(
                 new RequiredAttribute().FormatErrorMessage("My Display Name"),
                 actionContext.ModelState.Single().Value.Errors.Single().ErrorMessage);
-        }
-
-        [Fact]
-        public async Task BindModelAsync_DoesNotEnforceTopLevelRequired_IfNotValidatingTopLevelNodes()
-        {
-            // Arrange
-            var actionContext = GetControllerContext();
-            var mockModelMetadata = CreateMockModelMetadata();
-            mockModelMetadata.Setup(o => o.IsRequired).Returns(true);
-            mockModelMetadata.Setup(o => o.DisplayName).Returns("My Display Name");
-            mockModelMetadata.Setup(o => o.ValidatorMetadata).Returns(new[]
-            {
-                new RequiredAttribute()
-            });
-
-            var validator = new DataAnnotationsModelValidator(
-                new ValidationAttributeAdapterProvider(),
-                new RequiredAttribute(),
-                stringLocalizer: null);
-
-            // Do not set AllowValidatingTopLevelNodes.
-            var optionsAccessor = Options.Create(new MvcOptions());
-            var parameterBinder = CreateParameterBinder(mockModelMetadata.Object, validator, optionsAccessor);
-            var modelBindingResult = ModelBindingResult.Success(null);
-
-            // Act
-            var result = await parameterBinder.BindModelAsync(
-                actionContext,
-                CreateMockModelBinder(modelBindingResult),
-                CreateMockValueProvider(),
-                new ParameterDescriptor { Name = "myParam", ParameterType = typeof(Person) },
-                mockModelMetadata.Object,
-                "ignoredvalue");
-
-            // Assert
-            Assert.True(actionContext.ModelState.IsValid);
-            Assert.Empty(actionContext.ModelState);
         }
 
         public static TheoryData<RequiredAttribute, ParameterDescriptor, ModelMetadata> EnforcesTopLevelRequiredDataSet

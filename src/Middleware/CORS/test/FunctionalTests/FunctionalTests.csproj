@@ -1,7 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.2;net461</TargetFrameworks>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <TestGroupName>Cors.FunctionalTests</TestGroupName>
   </PropertyGroup>
 
@@ -15,10 +15,10 @@
     <!-- We don't need anything in this assembly, we just want to make sure it's built -->
     <ProjectReference Include="..\..\samples\SampleOrigin\SampleOrigin.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\..\samples\SampleDestination\SampleDestination.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="$(RepositoryRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Server.IntegrationTesting" />
     <Reference Include="Microsoft.Extensions.Logging.Testing" />
   </ItemGroup>
 

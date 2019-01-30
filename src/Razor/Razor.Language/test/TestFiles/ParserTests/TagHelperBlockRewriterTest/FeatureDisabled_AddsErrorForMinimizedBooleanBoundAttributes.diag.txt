@@ -1,2 +1,0 @@
-(1,8): Error RZ2008: Attribute 'boundbool' on tag helper element 'input' requires a value. Tag helper bound attributes of type 'System.Boolean' cannot be empty or contain only whitespace.
-(1,18): Error RZ2008: Attribute 'boundbooldict-key' on tag helper element 'input' requires a value. Tag helper bound attributes of type 'System.Boolean' cannot be empty or contain only whitespace.

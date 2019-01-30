@@ -43,6 +43,8 @@ namespace Microsoft.AspNetCore.TestHost
             _pathBase = pathBase;
         }
 
+        internal bool AllowSynchronousIO { get; set; }
+
         /// <summary>
         /// This adapts HttpRequestMessages to ASP.NET Core requests, dispatches them through the pipeline, and returns the
         /// associated HttpResponseMessage.
@@ -59,7 +61,7 @@ namespace Microsoft.AspNetCore.TestHost
                 throw new ArgumentNullException(nameof(request));
             }
 
-            var contextBuilder = new HttpContextBuilder(_application);
+            var contextBuilder = new HttpContextBuilder(_application, AllowSynchronousIO);
 
             Stream responseBody = null;
             var requestContent = request.Content ?? new StreamContent(Stream.Null);
@@ -72,10 +74,20 @@ namespace Microsoft.AspNetCore.TestHost
                 req.Method = request.Method.ToString();
 
                 req.Scheme = request.RequestUri.Scheme;
-                req.Host = HostString.FromUriComponent(request.RequestUri);
-                if (request.RequestUri.IsDefaultPort)
+
+                foreach (var header in request.Headers)
                 {
-                    req.Host = new HostString(req.Host.Host);
+                    req.Headers.Append(header.Key, header.Value.ToArray());
+                }
+
+                if (!req.Host.HasValue)
+                {
+                    // If Host wasn't explicitly set as a header, let's infer it from the Uri
+                    req.Host = HostString.FromUriComponent(request.RequestUri);
+                    if (request.RequestUri.IsDefaultPort)
+                    {
+                        req.Host = new HostString(req.Host.Host);
+                    }
                 }
 
                 req.Path = PathString.FromUriComponent(request.RequestUri);
@@ -87,10 +99,6 @@ namespace Microsoft.AspNetCore.TestHost
                 }
                 req.QueryString = QueryString.FromUriComponent(request.RequestUri);
 
-                foreach (var header in request.Headers)
-                {
-                    req.Headers.Append(header.Key, header.Value.ToArray());
-                }
                 if (requestContent != null)
                 {
                     foreach (var header in requestContent.Headers)
@@ -104,7 +112,7 @@ namespace Microsoft.AspNetCore.TestHost
                     // This body may have been consumed before, rewind it.
                     body.Seek(0, SeekOrigin.Begin);
                 }
-                req.Body = body;
+                req.Body = new AsyncStreamWrapper(body, () => contextBuilder.AllowSynchronousIO);
 
                 responseBody = context.Response.Body;
             });

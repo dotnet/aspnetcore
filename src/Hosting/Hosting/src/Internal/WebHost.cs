@@ -192,7 +192,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
             if (_startup == null)
             {
-                throw new InvalidOperationException($"No startup configured. Please specify startup via WebHostBuilder.UseStartup, WebHostBuilder.Configure, injecting {nameof(IStartup)} or specifying the startup assembly via {nameof(WebHostDefaults.StartupAssemblyKey)} in the web host configuration.");
+                throw new InvalidOperationException($"No application configured. Please specify startup via IWebHostBuilder.UseStartup, IWebHostBuilder.Configure, injecting {nameof(IStartup)} or specifying the startup assembly via {nameof(WebHostDefaults.StartupAssemblyKey)} in the web host configuration.");
             }
         }
 

@@ -752,18 +752,6 @@
     <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Composite" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.DiaSymReader.Native" Version="[1.7.0, )" />
   </ItemGroup>
-  <!-- Package: Microsoft.AspNetCore.Mvc.Razor.ViewCompilation-->
-  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Razor.ViewCompilation' ">
-    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
-  </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Razor.ViewCompilation' AND '$(TargetFramework)' == 'net461' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting" Version="[2.2.0, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Mvc.RazorPages" Version="[2.2.0, )" />
-  </ItemGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Razor.ViewCompilation' AND '$(TargetFramework)' == 'netcoreapp2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting" Version="[2.2.0, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Mvc.RazorPages" Version="[2.2.0, )" />
-  </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Mvc.RazorPages-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.RazorPages' ">
     <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
@@ -804,16 +792,6 @@
     <BaselinePackageReference Include="Microsoft.AspNetCore.Html.Abstractions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.WebEncoders" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Newtonsoft.Json.Bson" Version="[1.0.1, )" />
-  </ItemGroup>
-  <!-- Package: Microsoft.AspNetCore.Mvc.WebApiCompatShim-->
-  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.WebApiCompatShim' ">
-    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
-  </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.WebApiCompatShim' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="[2.2.0, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Mvc.Formatters.Json" Version="[2.2.0, )" />
-    <BaselinePackageReference Include="Microsoft.AspNet.WebApi.Client" Version="[5.2.6, )" />
-    <BaselinePackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="[2.2.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Mvc-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc' ">

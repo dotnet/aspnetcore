@@ -9,7 +9,6 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
-using Microsoft.AspNetCore.Mvc.TagHelpers.Internal;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
@@ -80,10 +79,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache
 
             while (content == null)
             {
-                Task<IHtmlContent> result;
-
                 // Is there any request already processing the value?
-                if (!_workers.TryGetValue(key, out result))
+                if (!_workers.TryGetValue(key, out var result))
                 {
                     // There is a small race condition here between TryGetValue and TryAdd that might cause the
                     // content to be computed more than once. We don't care about this race as the probability of

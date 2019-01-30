@@ -81,10 +81,10 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
             client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("identity", 0));
             client.DefaultRequestHeaders.Add("Response-Content-Type", "text/event-stream");
-            var messages = "Message1\r\nMessage2\r\n";
+            var messages = "Message1\r\nMessage2\r\n\r\n";
 
             // Send messages with terminator
-            var response = await client.PostAsync("ReadAndWriteEchoLines", new StringContent(messages + "\r\n"));
+            var response = await client.PostAsync("ReadAndWriteEchoLines", new StringContent(messages));
             Assert.Equal(messages, await response.Content.ReadAsStringAsync());
             Assert.True(response.Content.Headers.TryGetValues("Content-Type", out var contentTypes));
             Assert.Single(contentTypes, "text/event-stream");

@@ -17,8 +17,9 @@ namespace HtmlGenerationWebSite
         {
             // Add MVC services to the services container. Change default FormTagHelper.AntiForgery to false. Usually
             // null which is interpreted as true unless element includes an action attribute.
-            services.AddMvc()
+            services.AddMvc(ConfigureMvcOptions)
                 .InitializeTagHelper<FormTagHelper>((helper, _) => helper.Antiforgery = false)
+                .AddNewtonsoftJson()
                 .SetCompatibilityVersion(CompatibilityVersion.Latest);
 
             services.AddSingleton(typeof(ISignalTokenProviderService<>), typeof(SignalTokenProviderService<>));
@@ -59,5 +60,9 @@ namespace HtmlGenerationWebSite
                 .UseStartup<Startup>()
                 .UseKestrel()
                 .UseIISIntegration();
+
+        protected virtual void ConfigureMvcOptions(MvcOptions options)
+        {
+        }
     }
 }

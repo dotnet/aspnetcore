@@ -1,0 +1,121 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+
+<body>
+    <h1> Streaming Parameters </h1>
+    <h1 id="transportName">Unknown Transport</h1>
+
+    <h2>Controls</h2>
+    <div>
+        <button id="connectButton" type="button">Connect</button>
+        <button id="disconnectButton" type="button" disabled>Disconnect</button>
+        <button id="clearButton" type="button">Clear</button>
+    </div>
+
+    <div>
+        <button id="sumButton" name="sum" type="button" disabled>Local Sum</button>
+        <button id="channelButton" name="channel" type="button" disabled>From Channel</button>
+    </div>
+
+    <h2>Results</h2>
+    <ul id="resultsList"></ul>
+
+    <ul id="messages"></ul>
+    <script src="lib/signalr/signalr.js"></script>
+    <script src="utils.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            let resultsList = document.getElementById('resultsList');
+            let channelButton = document.getElementById('channelButton');
+            let sumButton = document.getElementById('sumButton');
+            let clearButton = document.getElementById('clearButton');
+
+            let connectButton = document.getElementById('connectButton');
+            let disconnectButton = document.getElementById('disconnectButton');
+
+            let transportType = signalR.HttpTransportType[getParameterByName('transport')] || signalR.HttpTransportType.WebSockets;
+
+            let invocationCounter = 0;
+
+            document.getElementById('transportName').innerHTML = signalR.HttpTransportType[transportType];
+            let connection = null;
+
+            click('clearButton', function () {
+                resultsList.innerHTML = '';
+            });
+
+            click('disconnectButton', function () {
+                connection.stop();
+            });
+
+            click('connectButton', function () {
+                connection = new signalR.HubConnectionBuilder()
+                    .configureLogging(signalR.LogLevel.Trace)
+                    .withUrl("/uploading", transportType)
+                    .build();
+
+                connection.onclose(function () {
+                    channelButton.disabled = true;
+                    sumButton.disabled = true;
+                    connectButton.disabled = false;
+                    disconnectButton.disabled = true;
+
+                    addLine('resultsList', 'disconnected', 'green');
+                });
+
+                connection.start()
+                    .then(function () {
+                        channelButton.disabled = false;
+                        sumButton.disabled = false;
+                        connectButton.disabled = true;
+                        disconnectButton.disabled = false;
+                        addLine('resultsList', 'connected', 'green');
+                    });
+            });
+
+            click('sumButton', function () {
+                run('Sum');
+            });
+
+            click('channelButton', function () {
+                run('Echo');
+            });
+
+            async function run(method) {
+                if (method == "Echo") {
+                    var promise = connection.invoke(method, "hello?");
+                    promise.then(function (result) {
+                        addLine('resultsList', "received " + result);
+                    });
+                }
+                else if (method == "Sum") {
+                    var subject = new signalR.Subject();
+                    var promise = connection.invoke("UploadWord", subject);
+
+                    subject.next("Z");
+                    subject.next("o");
+                    subject.next("o");
+                    subject.next("p");
+                    subject.next("!");
+                    subject.complete();
+
+                    promise.then(function (result) {
+                        addLine('resultsList', "received " + result);
+                    });
+                }
+                else {
+                    alert("SOMETHING VERY WRONG")
+                }
+
+                //send items
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -197,14 +197,14 @@ namespace Microsoft.Net.Http.Headers
             {
                 AppendValueWithSeparatorIfRequired(sb, MaxAgeString);
                 sb.Append('=');
-                sb.Append(((int)_maxAge.Value.TotalSeconds).ToString(NumberFormatInfo.InvariantInfo));
+                sb.Append(((int)_maxAge.GetValueOrDefault().TotalSeconds).ToString(NumberFormatInfo.InvariantInfo));
             }
 
             if (_sharedMaxAge.HasValue)
             {
                 AppendValueWithSeparatorIfRequired(sb, SharedMaxAgeString);
                 sb.Append('=');
-                sb.Append(((int)_sharedMaxAge.Value.TotalSeconds).ToString(NumberFormatInfo.InvariantInfo));
+                sb.Append(((int)_sharedMaxAge.GetValueOrDefault().TotalSeconds).ToString(NumberFormatInfo.InvariantInfo));
             }
 
             if (_maxStale)
@@ -213,7 +213,7 @@ namespace Microsoft.Net.Http.Headers
                 if (_maxStaleLimit.HasValue)
                 {
                     sb.Append('=');
-                    sb.Append(((int)_maxStaleLimit.Value.TotalSeconds).ToString(NumberFormatInfo.InvariantInfo));
+                    sb.Append(((int)_maxStaleLimit.GetValueOrDefault().TotalSeconds).ToString(NumberFormatInfo.InvariantInfo));
                 }
             }
 
@@ -221,7 +221,7 @@ namespace Microsoft.Net.Http.Headers
             {
                 AppendValueWithSeparatorIfRequired(sb, MinFreshString);
                 sb.Append('=');
-                sb.Append(((int)_minFresh.Value.TotalSeconds).ToString(NumberFormatInfo.InvariantInfo));
+                sb.Append(((int)_minFresh.GetValueOrDefault().TotalSeconds).ToString(NumberFormatInfo.InvariantInfo));
             }
 
             if (_private)
@@ -291,10 +291,10 @@ namespace Microsoft.Net.Http.Headers
 
             // XOR the hashcode of timespan values with different numbers to make sure two instances with the same
             // timespan set on different fields result in different hashcodes.
-            result = result ^ (_maxAge.HasValue ? _maxAge.Value.GetHashCode() ^ 1 : 0) ^
-                (_sharedMaxAge.HasValue ? _sharedMaxAge.Value.GetHashCode() ^ 2 : 0) ^
-                (_maxStaleLimit.HasValue ? _maxStaleLimit.Value.GetHashCode() ^ 4 : 0) ^
-                (_minFresh.HasValue ? _minFresh.Value.GetHashCode() ^ 8 : 0);
+            result = result ^ (_maxAge.HasValue ? _maxAge.GetValueOrDefault().GetHashCode() ^ 1 : 0) ^
+                (_sharedMaxAge.HasValue ? _sharedMaxAge.GetValueOrDefault().GetHashCode() ^ 2 : 0) ^
+                (_maxStaleLimit.HasValue ? _maxStaleLimit.GetValueOrDefault().GetHashCode() ^ 4 : 0) ^
+                (_minFresh.HasValue ? _minFresh.GetValueOrDefault().GetHashCode() ^ 8 : 0);
 
             if ((_noCacheHeaders != null) && (_noCacheHeaders.Count > 0))
             {
@@ -652,7 +652,7 @@ namespace Microsoft.Net.Http.Headers
                     sb.Append(", ");
                 }
 
-                sb.Append(value);
+                sb.Append(value.AsSpan());
             }
         }
 

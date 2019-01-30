@@ -1,0 +1,17 @@
+[
+  {
+    "TypeId": "public static class Microsoft.AspNetCore.SignalR.Protocol.HandshakeProtocol",
+    "MemberId": "public static System.ReadOnlyMemory<System.Byte> SuccessHandshakeData",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public interface Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol",
+    "MemberId": "System.Int32 get_MinorVersion()",
+    "Kind": "Addition"
+  },
+  {
+    "TypeId": "public interface Microsoft.AspNetCore.SignalR.IInvocationBinder",
+    "MemberId": "System.Type GetStreamItemType(System.String streamId)",
+    "Kind": "Addition"
+  }
+]

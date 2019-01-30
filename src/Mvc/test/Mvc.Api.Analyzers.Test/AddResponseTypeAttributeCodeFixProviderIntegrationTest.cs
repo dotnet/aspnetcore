@@ -51,6 +51,9 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         [Fact]
         public Task CodeFixAddsStatusCodesFromObjectInitializer() => RunTest();
 
+        [Fact]
+        public Task CodeFixWorksWhenMultipleIdenticalStatusCodesAreInError() => RunTest();
+
         private async Task RunTest([CallerMemberName] string testMethod = "")
         {
             // Arrange

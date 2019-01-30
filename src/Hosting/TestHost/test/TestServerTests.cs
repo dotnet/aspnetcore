@@ -15,7 +15,9 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DiagnosticAdapter;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace Microsoft.AspNetCore.TestHost
@@ -23,11 +25,72 @@ namespace Microsoft.AspNetCore.TestHost
     public class TestServerTests
     {
         [Fact]
+        public async Task GenericRawCreate()
+        {
+            var server = new TestServer();
+            var host = new HostBuilder()
+                .ConfigureWebHost(webBuilder =>
+                {
+                    webBuilder
+                        .UseServer(server)
+                        .Configure(app => { });
+                })
+                .Build();
+            await host.StartAsync();
+
+            var response = await server.CreateClient().GetAsync("/");
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task GenericCreateAndStartHost_GetTestServer()
+        {
+            var host = await new HostBuilder()
+                .ConfigureWebHost(webBuilder =>
+                {
+                    webBuilder
+                        .UseTestServer()
+                        .Configure(app => { });
+                })
+                .StartAsync();
+
+            var response = await host.GetTestServer().CreateClient().GetAsync("/");
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task GenericCreateAndStartHost_GetTestClient()
+        {
+            var host = await new HostBuilder()
+                .ConfigureWebHost(webBuilder =>
+                {
+                    webBuilder
+                        .UseTestServer()
+                        .Configure(app => { });
+                })
+                .StartAsync();
+
+            var response = await host.GetTestClient().GetAsync("/");
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
         public void CreateWithDelegate()
         {
             // Arrange
             // Act & Assert (Does not throw)
             new TestServer(new WebHostBuilder().Configure(app => { }));
+        }
+
+        [Fact]
+        public void CreateWithDelegate_DI()
+        {
+            var builder = new WebHostBuilder()
+                .Configure(app => { })
+                .UseTestServer();
+
+            var host = builder.Build();
+            host.Start();
         }
 
         [Fact]
@@ -574,6 +637,29 @@ namespace Microsoft.AspNetCore.TestHost
             Assert.Null(listener.EndRequest?.HttpContext);
             Assert.NotNull(listener.UnhandledException?.HttpContext);
             Assert.NotNull(listener.UnhandledException?.Exception);
+        }
+
+        [Theory]
+        [InlineData("http://localhost:12345")]
+        [InlineData("http://localhost:12345/")]
+        [InlineData("http://localhost:12345/hellohellohello")]
+        [InlineData("/isthereanybodyinthere?")]
+        public async Task ManuallySetHostWinsOverInferredHostFromRequestUri(string uri)
+        {
+            RequestDelegate appDelegate = ctx =>
+                ctx.Response.WriteAsync(ctx.Request.Headers[HeaderNames.Host]);
+
+            var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(HttpMethod.Get, uri);
+            request.Headers.Host = "otherhost:5678";
+
+            var response = await client.SendAsync(request);
+            var responseBody = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal("otherhost:5678", responseBody);
         }
 
         public class TestDiagnosticListener

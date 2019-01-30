@@ -13,8 +13,7 @@ using System.Xml;
 using System.Xml.Serialization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters.Xml;
-using Microsoft.AspNetCore.Mvc.Formatters.Xml.Internal;
-using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.WebUtilities;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters
@@ -160,9 +159,19 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             }
             // XmlSerializer wraps actual exceptions (like FormatException or XmlException) into an InvalidOperationException
             // https://github.com/dotnet/corefx/blob/master/src/System.Private.Xml/src/System/Xml/Serialization/XmlSerializer.cs#L652
-            catch (InvalidOperationException exception) when (exception.InnerException is FormatException || exception.InnerException is XmlException)
+            catch (InvalidOperationException exception) when (exception.InnerException != null &&
+                exception.InnerException.InnerException == null &&
+                string.Equals("Microsoft.GeneratedCode", exception.InnerException.Source, StringComparison.InvariantCulture))
             {
-                throw new InputFormatterException(Resources.ErrorDeserializingInputData, exception);
+                // Know this was an XML parsing error because the inner Exception was thrown in the (generated)
+                // assembly the XmlSerializer uses for parsing. The problem did not arise lower in the stack i.e. it's
+                // not (for example) an out-of-memory condition.
+                throw new InputFormatterException(Resources.ErrorDeserializingInputData, exception.InnerException);
+            }
+            catch (InvalidOperationException exception) when (exception.InnerException is FormatException ||
+                exception.InnerException is XmlException)
+            {
+                throw new InputFormatterException(Resources.ErrorDeserializingInputData, exception.InnerException);
             }
         }
 

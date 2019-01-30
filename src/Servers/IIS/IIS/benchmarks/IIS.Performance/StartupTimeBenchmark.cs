@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Performance
         [IterationSetup]
         public void Setup()
         {
-            var deploymentParameters = new DeploymentParameters(Path.Combine(TestPathUtilities.GetSolutionRootDirectory("IISIntegration"), "test/Websites/InProcessWebSite"),
+            var deploymentParameters = new DeploymentParameters(Path.Combine(TestPathUtilities.GetSolutionRootDirectory("IISIntegration"), "test/testassets/InProcessWebSite"),
                 ServerType.IISExpress,
                 RuntimeFlavor.CoreClr,
                 RuntimeArchitecture.x64)

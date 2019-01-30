@@ -5,8 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Mvc.Core;
-using Microsoft.AspNetCore.Mvc.Internal;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
@@ -17,6 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
     /// </summary>
     public class ValidationVisitor
     {
+        private readonly ValidationStack _currentPath;
         private int? _maxValidationDepth;
 
         /// <summary>
@@ -30,9 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         public ValidationVisitor(
             ActionContext actionContext,
             IModelValidatorProvider validatorProvider,
-#pragma warning disable PUB0001 // Pubternal type in public API
             ValidatorCache validatorCache,
-#pragma warning restore PUB0001
             IModelMetadataProvider metadataProvider,
             ValidationStateDictionary validationState)
         {
@@ -59,20 +56,16 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             ValidationState = validationState;
 
             ModelState = actionContext.ModelState;
-            CurrentPath = new ValidationStack();
+            _currentPath = new ValidationStack();
         }
 
         protected IModelValidatorProvider ValidatorProvider { get; }
         protected IModelMetadataProvider MetadataProvider { get; }
-#pragma warning disable PUB0001 // Pubternal type in public API
+
         protected ValidatorCache Cache { get; }
-#pragma warning restore PUB0001
         protected ActionContext Context { get; }
         protected ModelStateDictionary ModelState { get; }
         protected ValidationStateDictionary ValidationState { get; }
-#pragma warning disable PUB0001 // Pubternal type in public API
-        protected ValidationStack CurrentPath { get; }
-#pragma warning restore PUB0001
 
         protected object Container { get; set; }
         protected string Key { get; set; }
@@ -114,7 +107,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         ///  Gets or sets a value that determines if <see cref="ValidationVisitor"/> can short circuit validation when a model
         ///  does not have any associated validators.
         /// </summary>
-        public bool AllowShortCircuitingValidationWhenNoValidatorsArePresent { get; set; }
+        /// <value>The default value is <see langword="true"/>.</value>
+        /// <remarks>This property is currently ignored.</remarks>
+        public bool AllowShortCircuitingValidationWhenNoValidatorsArePresent { get; set; } = true;
 
         /// <summary>
         /// Validates a object.
@@ -221,18 +216,18 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         {
             RuntimeHelpers.EnsureSufficientExecutionStack();
 
-            if (model != null && !CurrentPath.Push(model))
+            if (model != null && !_currentPath.Push(model))
             {
                 // This is a cycle, bail.
                 return true;
             }
 
-            if (MaxValidationDepth != null && CurrentPath.Count > MaxValidationDepth)
+            if (MaxValidationDepth != null && _currentPath.Count > MaxValidationDepth)
             {
                 // Non cyclic but too deep an object graph.
 
                 // Pop the current model to make ValidationStack.Dispose happy
-                CurrentPath.Pop(model);
+                _currentPath.Pop(model);
 
                 string message;
                 switch (metadata.MetadataKind)
@@ -268,14 +263,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             {
                 // Use the key on the entry, because we might not have entries in model state.
                 SuppressValidation(entry.Key);
-                CurrentPath.Pop(model);
+                _currentPath.Pop(model);
                 return true;
             }
             // If the metadata indicates that no validators exist AND the aggregate state for the key says that the model graph
             // is not invalid (i.e. is one of Unvalidated, Valid, or Skipped) we can safely mark the graph as valid.
-            else if (
-                AllowShortCircuitingValidationWhenNoValidatorsArePresent &&
-                metadata.HasValidators == false &&
+            else if (metadata.HasValidators == false &&
                 ModelState.GetFieldValidationState(key) != ModelValidationState.Invalid)
             {
                 // No validators will be created for this graph of objects. Mark it as valid if it wasn't previously validated.
@@ -288,7 +281,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
                     }
                 }
 
-                CurrentPath.Pop(model);
+                _currentPath.Pop(model);
                 return true;
             }
 
@@ -448,7 +441,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
                 _visitor.Model = _model;
                 _visitor.Strategy = _strategy;
 
-                _visitor.CurrentPath.Pop(_newModel);
+                _visitor._currentPath.Pop(_newModel);
             }
         }
     }

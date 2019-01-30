@@ -6,10 +6,15 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Http.Internal
 {
+    /// <summary>
+    /// Default implementation of <see cref="IFormFileCollection"/>.
+    /// </summary>
     public class FormFileCollection : List<IFormFile>, IFormFileCollection
     {
+        /// <inheritdoc />
         public IFormFile this[string name] => GetFile(name);
 
+        /// <inheritdoc />
         public IFormFile GetFile(string name)
         {
             foreach (var file in this)
@@ -23,6 +28,7 @@ namespace Microsoft.AspNetCore.Http.Internal
             return null;
         }
 
+        /// <inheritdoc />
         public IReadOnlyList<IFormFile> GetFiles(string name)
         {
             var files = new List<IFormFile>();

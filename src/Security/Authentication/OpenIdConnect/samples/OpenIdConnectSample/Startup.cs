@@ -63,6 +63,7 @@ namespace OpenIdConnectSample
                 o.ResponseType = OpenIdConnectResponseType.CodeIdToken;
                 o.SaveTokens = true;
                 o.GetClaimsFromUserInfoEndpoint = true;
+                o.AccessDeniedPath = "/access-denied-from-remote";
 
                 o.ClaimActions.MapAllExcept("aud", "iss", "iat", "nbf", "exp", "aio", "c_hash", "uti", "nonce");
 
@@ -122,6 +123,16 @@ namespace OpenIdConnectSample
                     await context.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme, new AuthenticationProperties()
                     {
                         RedirectUri = "/signedout"
+                    });
+                    return;
+                }
+
+                if (context.Request.Path.Equals("/access-denied-from-remote"))
+                {
+                    await WriteHtmlAsync(response, async res =>
+                    {
+                        await res.WriteAsync($"<h1>Access Denied error received from the remote authorization server</h1>");
+                        await res.WriteAsync("<a class=\"btn btn-default\" href=\"/\">Home</a>");
                     });
                     return;
                 }

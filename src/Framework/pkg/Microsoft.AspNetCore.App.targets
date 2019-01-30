@@ -1,0 +1,30 @@
+<Project>
+  <Target Name="EnsureTFMCompatibility" BeforeTargets="_CheckForInvalidConfigurationAndPlatform">
+    <Error
+      Text="This version of Microsoft.AspNetCore.App is only compatible with the netcoreapp3.0 target framework. Please target netcoreapp3.0 or choose a version of Microsoft.AspNetCore.App compatible with $(TargetFramework)."
+      Condition="'$(TargetFramework)' != 'netcoreapp3.0'"/>
+  </Target>
+
+  <!--
+    Adds metadata so the SDK will generate the UserSecretsIdAttribute.
+
+    If GeneratedUserSecretsAttributeFile is set, that means Microsoft.Extensions.Configuration.UserSecrets 2.1
+    or earlier was referenced as a package. This didn't use the AssemblyAttribute item group, so we cannot
+    avoid duplicate AssemblyAttribute items without skipping this target altogether..
+  -->
+  <Target Name="_GetUserSecretsAssemblyAttribute"
+          BeforeTargets="GetAssemblyAttributes"
+          Condition=" '$(UserSecretsId)' != '' AND '$(GenerateUserSecretsAttribute)' != 'false' AND '$(GeneratedUserSecretsAttributeFile)' == '' ">
+
+    <!--
+      If the Microsoft.Extensions.Configuration.UserSecrets package 2.2 or higher is referenced directly,
+      it will also add an AssemblyAttribute item. Since this attribute only allows one per assembly, do not
+      duplicate the item.
+    -->
+     <ItemGroup Condition=" @(AssemblyAttribute->WithMetadataValue('Identity', 'Microsoft.Extensions.Configuration.UserSecrets.UserSecretsIdAttribute')->Count()) == 0 ">
+      <AssemblyAttribute Include="Microsoft.Extensions.Configuration.UserSecrets.UserSecretsIdAttribute">
+        <_Parameter1>$(UserSecretsId.Trim())</_Parameter1>
+      </AssemblyAttribute>
+    </ItemGroup>
+  </Target>
+</Project>

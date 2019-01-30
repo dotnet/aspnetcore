@@ -22,17 +22,17 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
             public string TestProperty { get; set; }
         }
 
-        private RedisHubLifetimeManager<MyHub> CreateLifetimeManager(TestRedisServer server, MessagePackHubProtocolOptions messagePackOptions = null, JsonHubProtocolOptions jsonOptions = null)
+        private RedisHubLifetimeManager<MyHub> CreateLifetimeManager(TestRedisServer server, MessagePackHubProtocolOptions messagePackOptions = null, NewtonsoftJsonHubProtocolOptions jsonOptions = null)
         {
             var options = new RedisOptions() { ConnectionFactory = async (t) => await Task.FromResult(new TestConnectionMultiplexer(server)) };
             messagePackOptions = messagePackOptions ?? new MessagePackHubProtocolOptions();
-            jsonOptions = jsonOptions ?? new JsonHubProtocolOptions();
+            jsonOptions = jsonOptions ?? new NewtonsoftJsonHubProtocolOptions();
             return new RedisHubLifetimeManager<MyHub>(
                 NullLogger<RedisHubLifetimeManager<MyHub>>.Instance,
                 Options.Create(options),
                 new DefaultHubProtocolResolver(new IHubProtocol[]
                 {
-                    new JsonHubProtocol(Options.Create(jsonOptions)),
+                    new NewtonsoftJsonHubProtocol(Options.Create(jsonOptions)),
                     new MessagePackHubProtocol(Options.Create(messagePackOptions)),
                 }, NullLogger<DefaultHubProtocolResolver>.Instance));
         }
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
 
             var messagePackOptions = new MessagePackHubProtocolOptions();
 
-            var jsonOptions = new JsonHubProtocolOptions();
+            var jsonOptions = new NewtonsoftJsonHubProtocolOptions();
             jsonOptions.PayloadSerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
 
             using (var client1 = new TestClient())

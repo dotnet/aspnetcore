@@ -71,9 +71,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return services.BuildServiceProvider();
         }
 
-        public static Connections.ConnectionHandler GetHubConnectionHandler(Type hubType, ILoggerFactory loggerFactory = null)
+        public static Connections.ConnectionHandler GetHubConnectionHandler(Type hubType, Action<ServiceCollection> addServices = null, ILoggerFactory loggerFactory = null)
         {
-            var serviceProvider = CreateServiceProvider(null, loggerFactory);
+            var serviceProvider = CreateServiceProvider(addServices, loggerFactory);
             return (Connections.ConnectionHandler)serviceProvider.GetService(GetConnectionHandlerType(hubType));
         }
     }

@@ -151,10 +151,9 @@ namespace Microsoft.AspNetCore.Routing
             logger = logger ?? new Logger<EndpointRoutingMiddleware>(NullLoggerFactory.Instance);
             matcherFactory = matcherFactory ?? new TestMatcherFactory(true);
 
-            var options = Options.Create(new EndpointOptions());
             var middleware = new EndpointRoutingMiddleware(
                 matcherFactory,
-                new CompositeEndpointDataSource(Array.Empty<EndpointDataSource>()),
+                new DefaultEndpointDataSource(),
                 logger,
                 next);
 

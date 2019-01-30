@@ -13,7 +13,9 @@ namespace Microsoft.AspNetCore.Routing
         [Fact]
         public void DebuggerToString_NoNameAndRequiredValues_ReturnsString()
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             var metadata = new RouteValuesAddressMetadata(null, new Dictionary<string, object>());
+#pragma warning restore CS0618 // Type or member is obsolete
 
             Assert.Equal("Name:  - Required values: ", metadata.DebuggerToString());
         }
@@ -21,11 +23,13 @@ namespace Microsoft.AspNetCore.Routing
         [Fact]
         public void DebuggerToString_HasNameAndRequiredValues_ReturnsString()
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             var metadata = new RouteValuesAddressMetadata("Name!", new Dictionary<string, object>
             {
                 ["requiredValue1"] = "One",
                 ["requiredValue2"] = 2,
             });
+#pragma warning restore CS0618 // Type or member is obsolete
 
             Assert.Equal("Name: Name! - Required values: requiredValue1 = \"One\", requiredValue2 = \"2\"", metadata.DebuggerToString());
         }

@@ -1,0 +1,147 @@
+@using System.Net
+@using System.Net.Http
+@using Microsoft.AspNetCore.Blazor.Http
+@inject HttpClient Http
+
+<h1>HTTP request tester</h1>
+
+<p>
+    <div>URI:</div>
+    <input id="request-uri" bind="@uri" size="60"/>
+</p>
+
+<p>
+    <div>Method:</div>
+    <select id="request-method" bind="@method">
+        <option value="GET">GET</option>
+        <option value="POST">POST</option>
+        <option value="PUT">PUT</option>
+        <option value="DELETE">DELETE</option>
+    </select>
+</p>
+
+<p>
+    <div>Request body:</div>
+    <textarea id="request-body" bind="@requestBody"></textarea>
+</p>
+
+<p>
+    <div>Request headers:</div>
+    @foreach (var header in requestHeaders)
+    {
+        <div class="header-entry">
+            Name: <input bind="@header.Name" />
+            Value: <input bind="@header.Value" />
+            [<a href="#" onclick="@(e => RemoveHeader(header))">remove</a>]
+        </div>
+    }
+    <button id="add-header" onclick="@AddHeader">Add</button>
+</p>
+
+<p>
+    <div>Request referrer:</div>
+    <input id="request-referrer" type="text" bind=@requestReferrer />
+</p>
+
+<button id="send-request" onclick="@DoRequest">Request</button>
+
+@if (responseStatusCode.HasValue)
+{
+    <h2>Response</h2>
+    <p><div>Status:</div><span id="response-status">@responseStatusCode</span></p>
+    <p><div>Body:</div><textarea id="response-body" readonly>@responseBody</textarea></p>
+    <p><div>Headers:</div><textarea id="response-headers" readonly>@responseHeaders</textarea></p>
+}
+
+<style type="text/css">
+    textarea {
+        width: 100%;
+        height: 60px;
+    }
+</style>
+
+@functions {
+    string uri = "http://api.icndb.com/jokes/random";
+    string method = "GET";
+    string requestBody = "";
+    List<RequestHeader> requestHeaders = new List<RequestHeader>();
+    string requestReferrer = "";
+
+    HttpStatusCode? responseStatusCode;
+    string responseBody;
+    string responseHeaders;
+
+    async void DoRequest()
+    {
+        responseStatusCode = null;
+
+        try
+        {
+            var requestMessage = new HttpRequestMessage()
+            {
+                Method = new HttpMethod(method),
+                RequestUri = new Uri(uri),
+                Content = string.IsNullOrEmpty(requestBody)
+                    ? null
+                    : new StringContent(requestBody)
+            };
+
+            foreach (var header in requestHeaders)
+            {
+                // StringContent automatically adds its own Content-Type header with default value "text/plain"
+                // If the developer is trying to specify a content type explicitly, we need to replace the default value,
+                // rather than adding a second Content-Type header.
+                if (header.Name.Equals("Content-Type", StringComparison.OrdinalIgnoreCase) && requestMessage.Content != null)
+                {
+                    requestMessage.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(header.Value);
+                    continue;
+                }
+
+                if (!requestMessage.Headers.TryAddWithoutValidation(header.Name, header.Value))
+                {
+                    requestMessage.Content?.Headers.TryAddWithoutValidation(header.Name, header.Value);
+                }
+            }
+
+            if (!string.IsNullOrEmpty(requestReferrer))
+            {
+                requestMessage.Properties[WebAssemblyHttpMessageHandler.FetchArgs] = new
+                {
+                    referrer = requestReferrer
+                };
+            }
+
+            var response = await Http.SendAsync(requestMessage);
+            responseStatusCode = response.StatusCode;
+            responseBody = await response.Content.ReadAsStringAsync();
+            var allHeaders = response.Headers.Concat(response.Content?.Headers
+                ?? Enumerable.Empty<KeyValuePair<string, IEnumerable<string>>>());
+            responseHeaders = string.Join(
+                Environment.NewLine,
+                allHeaders.Select(pair => $"{pair.Key}: {pair.Value.First()}").ToArray());
+        }
+        catch (Exception ex)
+        {
+            if (ex is AggregateException)
+            {
+                ex = ex.InnerException;
+            }
+            responseStatusCode = HttpStatusCode.SeeOther;
+            responseBody = ex.Message + Environment.NewLine + ex.StackTrace;
+        }
+
+        StateHasChanged();
+    }
+
+    void AddHeader()
+        => requestHeaders.Add(new RequestHeader());
+
+    void RemoveHeader(RequestHeader header)
+        => requestHeaders.Remove(header);
+
+    class RequestHeader
+    {
+        public string Name { get; set; }
+        public string Value { get; set; }
+    }
+}

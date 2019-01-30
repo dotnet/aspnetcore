@@ -16,7 +16,8 @@ namespace BasicWebSite
             services.AddRouting();
 
             services.AddMvc()
-                .SetCompatibilityVersion(CompatibilityVersion.Latest) // this compat version enables endpoint routing
+                .SetCompatibilityVersion(CompatibilityVersion.Latest)
+                .AddNewtonsoftJson()
                 .AddXmlDataContractSerializerFormatters();
 
             services.ConfigureBaseWebSiteAuthPolicies();

@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
         public MethodInfo MethodInfo { get; }
 
-        public Func<Func<IServiceCollection, IServiceProvider>, Func<IServiceCollection, IServiceProvider>> StartupServiceFilters { get; set; }
+        public Func<Func<IServiceCollection, IServiceProvider>, Func<IServiceCollection, IServiceProvider>> StartupServiceFilters { get; set; } = f => f;
 
         public Func<IServiceCollection, IServiceProvider> Build(object instance) => services => Invoke(instance, services);
 

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -66,9 +67,12 @@ ViewWithNestedLayout-Content
         public async Task RazorView_ExecutesPageAndLayout(string actionName, string expected)
         {
             // Arrange & Act
-            var body = await Client.GetStringAsync("http://localhost/ViewEngine/" + actionName);
+            var response = await Client.GetAsync("http://localhost/ViewEngine/" + actionName);
 
             // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+            var body = await response.Content.ReadAsStringAsync();
+
             Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);
         }
 
@@ -240,33 +244,11 @@ ViewWithNestedLayout-Content
         public async Task RazorViewEngine_RendersPartialViews(string actionName, string expected)
         {
             // Arrange & Act
-            var body = await Client.GetStringAsync("http://localhost/PartialViewEngine/" + actionName);
+            var response = await Client.GetAsync("http://localhost/PartialViewEngine/" + actionName);
 
             // Assert
-            Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);
-        }
-
-        [Fact]
-        public Task RazorViewEngine_RendersViewsFromEmbeddedFileProvider_WhenLookedupByName()
-            => RazorViewEngine_RendersIndexViewsFromEmbeddedFileProvider("/EmbeddedViews/LookupByName");
-
-        [Fact]
-        public Task RazorViewEngine_RendersViewsFromEmbeddedFileProvider_WhenLookedupByPath()
-            => RazorViewEngine_RendersIndexViewsFromEmbeddedFileProvider("/EmbeddedViews/LookupByPath");
-
-        private async Task RazorViewEngine_RendersIndexViewsFromEmbeddedFileProvider(string requestPath)
-        {
-            // Arrange
-            var expected =
-@"<embdedded-layout>Hello from EmbeddedShared/_Partial
-Hello from Shared/_EmbeddedPartial
-<a href=""/EmbeddedViews"">Tag Helper Link</a>
-</embdedded-layout>";
-
-            // Act
-            var body = await Client.GetStringAsync(requestPath);
-
-            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+            var body = await response.Content.ReadAsStringAsync();
             Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);
         }
 
@@ -479,7 +461,7 @@ Partial";
             Assert.Equal(expected, responseContent, ignoreLineEndingDifferences: true);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/Mvc/issues/8754")]
         public async Task ViewEngine_ResolvesPathsWithSlashesThatDoNotHaveExtensions()
         {
             // Arrange

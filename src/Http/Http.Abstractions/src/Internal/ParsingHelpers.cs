@@ -103,13 +103,13 @@ namespace Microsoft.AspNetCore.Http.Internal
             {
                 throw new ArgumentNullException(nameof(key));
             }
-            if (!values.HasValue || StringValues.IsNullOrEmpty(values.Value))
+            if (!values.HasValue || StringValues.IsNullOrEmpty(values.GetValueOrDefault()))
             {
                 headers.Remove(key);
             }
             else
             {
-                headers[key] = values.Value;
+                headers[key] = values.GetValueOrDefault();
             }
         }
 

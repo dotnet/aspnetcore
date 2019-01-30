@@ -9,6 +9,8 @@ namespace Microsoft.AspNetCore.Routing
 {
     public class RouteOptions
     {
+        public ICollection<EndpointDataSource> EndpointDataSources { get; internal set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether all generated paths URLs are lower-case. 
         /// Use <see cref="LowercaseQueryStrings" /> to configure the behavior for query strings.

@@ -186,6 +186,9 @@ namespace Microsoft.AspNetCore.SignalR
         {
             var input = connection.Input;
             var protocol = connection.Protocol;
+
+            var binder = new HubConnectionBinder<THub>(_dispatcher, connection);
+
             while (true)
             {
                 var result = await input.ReadAsync();
@@ -202,7 +205,7 @@ namespace Microsoft.AspNetCore.SignalR
                     {
                         connection.ResetClientTimeout();
 
-                        while (protocol.TryParseMessage(ref buffer, _dispatcher, out var message))
+                        while (protocol.TryParseMessage(ref buffer, binder, out var message))
                         {
                             await _dispatcher.DispatchMessageAsync(connection, message);
                         }

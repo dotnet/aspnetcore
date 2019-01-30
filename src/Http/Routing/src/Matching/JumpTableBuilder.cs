@@ -84,11 +84,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 fallback = new DictionaryJumpTable(defaultDestination, exitDestination, pathEntries);
             }
 
-#if IL_EMIT
             return new ILEmitTrieJumpTable(defaultDestination, exitDestination, pathEntries, vectorize: null, fallback);
-#else
-            return fallback;
-#endif
         }
     }
 }

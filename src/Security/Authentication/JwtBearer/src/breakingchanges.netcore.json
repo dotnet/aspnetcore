@@ -1,0 +1,7 @@
+  [
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerHandler : Microsoft.AspNetCore.Authentication.AuthenticationHandler<Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions>",
+      "MemberId": "public .ctor(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions> options, Microsoft.Extensions.Logging.ILoggerFactory logger, System.Text.Encodings.Web.UrlEncoder encoder, Microsoft.AspNetCore.DataProtection.IDataProtectionProvider dataProtection, Microsoft.AspNetCore.Authentication.ISystemClock clock)",
+      "Kind": "Removal"
+    }
+  ]

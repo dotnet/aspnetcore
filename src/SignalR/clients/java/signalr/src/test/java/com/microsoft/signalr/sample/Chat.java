@@ -8,6 +8,7 @@ import java.util.Scanner;
 import com.microsoft.signalr.HubConnection;
 import com.microsoft.signalr.HubConnectionBuilder;
 
+
 public class Chat {
     public static void main(String[] args) {
         System.out.println("Enter the URL of the SignalR Chat you want to join");

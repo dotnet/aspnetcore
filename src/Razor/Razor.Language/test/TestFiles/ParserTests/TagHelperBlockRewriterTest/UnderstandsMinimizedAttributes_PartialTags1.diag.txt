@@ -1,2 +1,0 @@
-(1,2): Error RZ1035: Missing close angle for tag helper 'input'.
-(1,2): Error RZ1034: Found a malformed 'input' tag helper. Tag helpers must have a start and end tag or be self closing.

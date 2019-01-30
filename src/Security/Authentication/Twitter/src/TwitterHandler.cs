@@ -55,12 +55,16 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
 
             var properties = requestToken.Properties;
 
-            // REVIEW: see which of these are really errors
-
             var denied = query["denied"];
             if (!StringValues.IsNullOrEmpty(denied))
             {
-                return HandleRequestResult.Fail("The user denied permissions.", properties);
+                // Note: denied errors are special protocol errors indicating the user didn't
+                // approve the authorization demand requested by the remote authorization server.
+                // Since it's a frequent scenario (that is not caused by incorrect configuration),
+                // denied errors are handled differently using HandleAccessDeniedErrorAsync().
+                var result = await HandleAccessDeniedErrorAsync(properties);
+                return !result.None ? result
+                    : HandleRequestResult.Fail("Access was denied by the resource owner or by the remote server.", properties);
             }
 
             var returnedToken = query["oauth_token"];
@@ -130,7 +134,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         {
             if (string.IsNullOrEmpty(properties.RedirectUri))
             {
-                properties.RedirectUri = CurrentUri;
+                properties.RedirectUri = OriginalPathBase + OriginalPath + Request.QueryString;
             }
 
             // If CallbackConfirmed is false, this will throw

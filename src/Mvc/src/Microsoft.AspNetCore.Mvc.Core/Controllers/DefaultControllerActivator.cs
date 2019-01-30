@@ -3,14 +3,14 @@
 
 using System;
 using Microsoft.AspNetCore.Mvc.Core;
-using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 namespace Microsoft.AspNetCore.Mvc.Controllers
 {
     /// <summary>
     /// <see cref="IControllerActivator"/> that uses type activation to create controllers.
     /// </summary>
-    public class DefaultControllerActivator : IControllerActivator
+    internal class DefaultControllerActivator : IControllerActivator
     {
         private readonly ITypeActivatorCache _typeActivatorCache;
 
@@ -18,9 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
         /// Creates a new <see cref="DefaultControllerActivator"/>.
         /// </summary>
         /// <param name="typeActivatorCache">The <see cref="ITypeActivatorCache"/>.</param>
-#pragma warning disable PUB0001 // Pubternal type in public API
         public DefaultControllerActivator(ITypeActivatorCache typeActivatorCache)
-#pragma warning restore PUB0001
         {
             if (typeActivatorCache == null)
             {
@@ -31,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
         }
 
         /// <inheritdoc />
-        public virtual object Create(ControllerContext controllerContext)
+        public object Create(ControllerContext controllerContext)
         {
             if (controllerContext == null)
             {
@@ -59,7 +57,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
         }
 
         /// <inheritdoc />
-        public virtual void Release(ControllerContext context, object controller)
+        public void Release(ControllerContext context, object controller)
         {
             if (context == null)
             {
@@ -71,8 +69,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
                 throw new ArgumentNullException(nameof(controller));
             }
 
-            var disposable = controller as IDisposable;
-            if (disposable != null)
+            if (controller is IDisposable disposable)
             {
                 disposable.Dispose();
             }

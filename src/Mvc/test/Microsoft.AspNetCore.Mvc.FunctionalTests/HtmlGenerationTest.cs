@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         {
             // Arrange
             var client = Factory
-                 .WithWebHostBuilder(builder => builder.UseStartup<HtmlGenerationWebSite.StartupWith21CompatibilityBehavior>())
+                 .WithWebHostBuilder(builder => builder.UseStartup<HtmlGenerationWebSite.StartupWithoutEndpointRouting>())
                  .CreateDefaultClient();
             var expectedMediaType = MediaTypeHeaderValue.Parse("text/html; charset=utf-8");
             var outputFile = "compiler/resources/HtmlGenerationWebSite.HtmlGeneration_Home.Index21Compat.html";

@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             for (var i = 0; i < protocolCount; i++)
             {
                 yield return ((i % 2) == 0)
-                    ? new WrappedHubProtocol($"json_{i}", new JsonHubProtocol())
+                    ? new WrappedHubProtocol($"json_{i}", new NewtonsoftJsonHubProtocol())
                     : new WrappedHubProtocol($"messagepack_{i}", new MessagePackHubProtocol());
             }
         }
@@ -178,6 +178,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             public string Name => _name;
 
             public int Version => _innerProtocol.Version;
+            public int MinorVersion => _innerProtocol.MinorVersion;
 
             public TransferFormat TransferFormat => _innerProtocol.TransferFormat;
 

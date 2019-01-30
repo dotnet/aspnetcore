@@ -10,12 +10,32 @@ namespace Microsoft.AspNetCore.Razor.Hosting
 {
     public class TestRazorCompiledItem : RazorCompiledItem
     {
+        public static RazorCompiledItem CreateForPage(string identifier, object[] metadata = null)
+        {
+            return CreateForPage(type: null, identifier, metadata);
+        }
+
+        public static RazorCompiledItem CreateForPage(Type type, string identifier, object[] metadata = null)
+        {
+            return new TestRazorCompiledItem(type, "mvc.1.0.razor-page", identifier, metadata);
+        }
+
+        public static RazorCompiledItem CreateForView(string identifier, object[] metadata = null)
+        {
+            return CreateForView(type: null, identifier, metadata);
+        }
+
+        public static RazorCompiledItem CreateForView(Type type, string identifier, object[] metadata = null)
+        {
+            return new TestRazorCompiledItem(type, "mvc.1.0.razor-page", identifier, metadata);
+        }
+
         public TestRazorCompiledItem(Type type, string kind, string identifier, object[] metadata)
         {
             Type = type;
             Kind = kind;
             Identifier = identifier;
-            Metadata = metadata;
+            Metadata = metadata ?? Array.Empty<object>();
         }
 
         public override string Identifier { get; }

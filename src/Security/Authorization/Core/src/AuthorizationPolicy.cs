@@ -120,46 +120,74 @@ namespace Microsoft.AspNetCore.Authorization
                 throw new ArgumentNullException(nameof(authorizeData));
             }
 
-            var policyBuilder = new AuthorizationPolicyBuilder();
-            var any = false;
-            foreach (var authorizeDatum in authorizeData)
+            // Avoid allocating enumerator if the data is known to be empty
+            var skipEnumeratingData = false;
+            if (authorizeData is IList<IAuthorizeData> dataList)
             {
-                any = true;
-                var useDefaultPolicy = true;
-                if (!string.IsNullOrWhiteSpace(authorizeDatum.Policy))
+                skipEnumeratingData = dataList.Count == 0;
+            }
+
+            AuthorizationPolicyBuilder policyBuilder = null;
+            if (!skipEnumeratingData)
+            {
+                foreach (var authorizeDatum in authorizeData)
                 {
-                    var policy = await policyProvider.GetPolicyAsync(authorizeDatum.Policy);
-                    if (policy == null)
+                    if (policyBuilder == null)
                     {
-                        throw new InvalidOperationException(Resources.FormatException_AuthorizationPolicyNotFound(authorizeDatum.Policy));
+                        policyBuilder = new AuthorizationPolicyBuilder();
                     }
-                    policyBuilder.Combine(policy);
-                    useDefaultPolicy = false;
-                }
-                var rolesSplit = authorizeDatum.Roles?.Split(',');
-                if (rolesSplit != null && rolesSplit.Any())
-                {
-                    var trimmedRolesSplit = rolesSplit.Where(r => !string.IsNullOrWhiteSpace(r)).Select(r => r.Trim());
-                    policyBuilder.RequireRole(trimmedRolesSplit);
-                    useDefaultPolicy = false;
-                }
-                var authTypesSplit = authorizeDatum.AuthenticationSchemes?.Split(',');
-                if (authTypesSplit != null && authTypesSplit.Any())
-                {
-                    foreach (var authType in authTypesSplit)
+
+                    var useDefaultPolicy = true;
+                    if (!string.IsNullOrWhiteSpace(authorizeDatum.Policy))
                     {
-                        if (!string.IsNullOrWhiteSpace(authType))
+                        var policy = await policyProvider.GetPolicyAsync(authorizeDatum.Policy);
+                        if (policy == null)
                         {
-                            policyBuilder.AuthenticationSchemes.Add(authType.Trim());
+                            throw new InvalidOperationException(Resources.FormatException_AuthorizationPolicyNotFound(authorizeDatum.Policy));
+                        }
+                        policyBuilder.Combine(policy);
+                        useDefaultPolicy = false;
+                    }
+
+                    var rolesSplit = authorizeDatum.Roles?.Split(',');
+                    if (rolesSplit != null && rolesSplit.Any())
+                    {
+                        var trimmedRolesSplit = rolesSplit.Where(r => !string.IsNullOrWhiteSpace(r)).Select(r => r.Trim());
+                        policyBuilder.RequireRole(trimmedRolesSplit);
+                        useDefaultPolicy = false;
+                    }
+
+                    var authTypesSplit = authorizeDatum.AuthenticationSchemes?.Split(',');
+                    if (authTypesSplit != null && authTypesSplit.Any())
+                    {
+                        foreach (var authType in authTypesSplit)
+                        {
+                            if (!string.IsNullOrWhiteSpace(authType))
+                            {
+                                policyBuilder.AuthenticationSchemes.Add(authType.Trim());
+                            }
                         }
                     }
-                }
-                if (useDefaultPolicy)
-                {
-                    policyBuilder.Combine(await policyProvider.GetDefaultPolicyAsync());
+
+                    if (useDefaultPolicy)
+                    {
+                        policyBuilder.Combine(await policyProvider.GetDefaultPolicyAsync());
+                    }
                 }
             }
-            return any ? policyBuilder.Build() : null;
+
+            var requiredPolicy = await policyProvider.GetRequiredPolicyAsync();
+            if (requiredPolicy != null)
+            {
+                if (policyBuilder == null)
+                {
+                    policyBuilder = new AuthorizationPolicyBuilder();
+                }
+
+                policyBuilder.Combine(requiredPolicy);
+            }
+
+            return policyBuilder?.Build();
         }
     }
 }

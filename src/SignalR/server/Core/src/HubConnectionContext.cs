@@ -32,6 +32,7 @@ namespace Microsoft.AspNetCore.SignalR
         private readonly long _clientTimeoutInterval;
         private readonly SemaphoreSlim _writeLock = new SemaphoreSlim(1);
 
+        private StreamTracker _streamTracker;
         private long _lastSendTimeStamp = DateTime.UtcNow.Ticks;
         private long _lastReceivedTimeStamp = DateTime.UtcNow.Ticks;
         private bool _receivedMessageThisInterval = false;
@@ -55,6 +56,18 @@ namespace Microsoft.AspNetCore.SignalR
             _clientTimeoutInterval = clientTimeoutInterval.Ticks;
         }
 
+        internal StreamTracker StreamTracker
+        {
+            get
+            {
+                // lazy for performance reasons
+                if (_streamTracker == null)
+                {
+                    _streamTracker = new StreamTracker();
+                }
+                return _streamTracker;
+            }
+        }
         /// <summary>
         /// Initializes a new instance of the <see cref="HubConnectionContext"/> class.
         /// </summary>
@@ -302,10 +315,9 @@ namespace Microsoft.AspNetCore.SignalR
 
             try
             {
-                if (message == HandshakeResponseMessage.Empty)
+                if (message.Error == null)
                 {
-                    // success response is always an empty object so send cached data
-                    _connectionContext.Transport.Output.Write(HandshakeProtocol.SuccessHandshakeData.Span);
+                    _connectionContext.Transport.Output.Write(HandshakeProtocol.GetSuccessfulHandshake(Protocol));
                 }
                 else
                 {
@@ -425,7 +437,8 @@ namespace Microsoft.AspNetCore.SignalR
                                     }
 
                                     Log.HandshakeComplete(_logger, Protocol.Name);
-                                    await WriteHandshakeResponseAsync(HandshakeResponseMessage.Empty);
+
+                                    await WriteHandshakeResponseAsync(new HandshakeResponseMessage(Protocol.MinorVersion));
                                     return true;
                                 }
                             }

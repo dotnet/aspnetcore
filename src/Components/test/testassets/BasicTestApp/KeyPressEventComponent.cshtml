@@ -1,0 +1,19 @@
+@using Microsoft.JSInterop
+
+Type here: <input onkeypress=@OnKeyPressed />
+<ul>
+    @foreach (var key in keysPressed)
+    {
+        <li>@key</li>
+    }
+</ul>
+
+@functions {
+    List<string> keysPressed = new List<string>();
+
+    void OnKeyPressed(UIKeyboardEventArgs eventArgs)
+    {
+        Console.WriteLine(Json.Serialize(eventArgs));
+        keysPressed.Add(eventArgs.Key);
+    }
+}

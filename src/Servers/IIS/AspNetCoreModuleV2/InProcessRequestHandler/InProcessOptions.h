@@ -4,8 +4,10 @@
 #pragma once
 
 #include <string>
+#include "BindingInformation.h"
 #include "ConfigurationSource.h"
 #include "WebConfigConfigurationSource.h"
+#include <map>
 
 class InProcessOptions: NonCopyable
 {
@@ -86,17 +88,24 @@ public:
         return m_dwShutdownTimeLimitInMS;
     }
 
-    const std::vector<std::pair<std::wstring, std::wstring>>&
+    const std::map<std::wstring, std::wstring, ignore_case_comparer>&
     QueryEnvironmentVariables() const
     {
         return m_environmentVariables;
     }
 
-    InProcessOptions(const ConfigurationSource &configurationSource);
+    const std::vector<BindingInformation>&
+    QueryBindings() const
+    {
+        return m_bindingInformation;
+    }
+
+    InProcessOptions(const ConfigurationSource &configurationSource, IHttpSite* pSite);
 
     static
     HRESULT InProcessOptions::Create(
         IHttpServer& pServer,
+        IHttpSite* site,
         IHttpApplication& pHttpApplication,
         std::unique_ptr<InProcessOptions>& options);
 
@@ -112,7 +121,8 @@ private:
     bool                           m_fAnonymousAuthEnabled;
     DWORD                          m_dwStartupTimeLimitInMS;
     DWORD                          m_dwShutdownTimeLimitInMS;
-    std::vector<std::pair<std::wstring, std::wstring>> m_environmentVariables;
+    std::map<std::wstring, std::wstring, ignore_case_comparer> m_environmentVariables;
+    std::vector<BindingInformation> m_bindingInformation;
 
 protected:
     InProcessOptions() = default;

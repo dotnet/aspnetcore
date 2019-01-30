@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
 
             // We want to delay reading the form as much as possible, for example in case of large file uploads,
             // request token could be part of the header.
-            StringValues requestToken;
+            StringValues requestToken = default;
             if (_options.HeaderName != null)
             {
                 requestToken = httpContext.Request.Headers[_options.HeaderName];

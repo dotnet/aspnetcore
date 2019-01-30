@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -15,28 +16,48 @@ namespace Microsoft.AspNetCore.TestHost
 {
     public class TestServer : IServer
     {
-        private const string ServerName = nameof(TestServer);
         private IWebHost _hostInstance;
         private bool _disposed = false;
         private IHttpApplication<Context> _application;
 
+        /// <summary>
+        /// For use with IHostBuilder or IWebHostBuilder.
+        /// </summary>
+        public TestServer()
+            : this(new FeatureCollection())
+        {
+        }
+
+        /// <summary>
+        /// For use with IHostBuilder or IWebHostBuilder.
+        /// </summary>
+        /// <param name="featureCollection"></param>
+        public TestServer(IFeatureCollection featureCollection)
+        {
+            Features = featureCollection ?? throw new ArgumentNullException(nameof(featureCollection));
+        }
+
+        /// <summary>
+        /// For use with IWebHostBuilder.
+        /// </summary>
+        /// <param name="builder"></param>
         public TestServer(IWebHostBuilder builder)
             : this(builder, new FeatureCollection())
         {
         }
 
+        /// <summary>
+        /// For use with IWebHostBuilder.
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <param name="featureCollection"></param>
         public TestServer(IWebHostBuilder builder, IFeatureCollection featureCollection)
+            : this(featureCollection)
         {
             if (builder == null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
-            if (featureCollection == null)
-            {
-                throw new ArgumentNullException(nameof(featureCollection));
-            }        
-        
-            Features = featureCollection;
 
             var host = builder.UseServer(this).Build();
             host.StartAsync().GetAwaiter().GetResult();
@@ -49,16 +70,30 @@ namespace Microsoft.AspNetCore.TestHost
         {
             get
             {
-                return _hostInstance;
+                return _hostInstance
+                    ?? throw new InvalidOperationException("The TestServer constructor was not called with a IWebHostBuilder so IWebHost is not available.");
             }
         }
 
         public IFeatureCollection Features { get; }
 
+        /// <summary>
+        /// Gets or sets a value that controls whether synchronous IO is allowed for the <see cref="HttpContext.Request"/> and <see cref="HttpContext.Response"/>
+        /// </summary>
+        /// <remarks>
+        /// Defaults to true.
+        /// </remarks>
+        public bool AllowSynchronousIO { get; set; } = true;
+
+        private IHttpApplication<Context> Application
+        {
+            get => _application ?? throw new InvalidOperationException("The server has not been started or no web application was configured.");
+        }
+
         public HttpMessageHandler CreateHandler()
         {
             var pathBase = BaseAddress == null ? PathString.Empty : PathString.FromUriComponent(BaseAddress);
-            return new ClientHandler(pathBase, _application);
+            return new ClientHandler(pathBase, Application) { AllowSynchronousIO = AllowSynchronousIO };
         }
 
         public HttpClient CreateClient()
@@ -69,7 +104,7 @@ namespace Microsoft.AspNetCore.TestHost
         public WebSocketClient CreateWebSocketClient()
         {
             var pathBase = BaseAddress == null ? PathString.Empty : PathString.FromUriComponent(BaseAddress);
-            return new WebSocketClient(pathBase, _application);
+            return new WebSocketClient(pathBase, Application) { AllowSynchronousIO = AllowSynchronousIO };
         }
 
         /// <summary>
@@ -93,7 +128,7 @@ namespace Microsoft.AspNetCore.TestHost
                 throw new ArgumentNullException(nameof(configureContext));
             }
 
-            var builder = new HttpContextBuilder(_application);
+            var builder = new HttpContextBuilder(Application, AllowSynchronousIO);
             builder.Configure(context =>
             {
                 var request = context.Request;
@@ -111,6 +146,7 @@ namespace Microsoft.AspNetCore.TestHost
                 request.PathBase = pathBase;
             });
             builder.Configure(configureContext);
+            // TODO: Wrap the request body if any?
             return await builder.SendAsync(cancellationToken).ConfigureAwait(false);
         }
 
@@ -119,7 +155,7 @@ namespace Microsoft.AspNetCore.TestHost
             if (!_disposed)
             {
                 _disposed = true;
-                _hostInstance.Dispose();
+                _hostInstance?.Dispose();
             }
         }
 

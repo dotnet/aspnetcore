@@ -1,4 +1,0 @@
-TagHelper span at (0:0,0 [65] ) - ptaghelper
-TagHelper span at (24:0,24 [10] ) - ptaghelper
-TagHelper span at (66:0,66 [65] ) - ptaghelper
-TagHelper span at (90:0,90 [10] ) - ptaghelper

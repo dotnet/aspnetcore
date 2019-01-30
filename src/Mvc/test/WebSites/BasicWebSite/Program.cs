@@ -17,7 +17,6 @@ namespace BasicWebSite
             new WebHostBuilder()
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseStartup<Startup>()
-                .ConfigureServices(s => s.AddSingleton(new TestService { Message = "true" }))
                 .UseKestrel()
                 .UseIISIntegration();
     }

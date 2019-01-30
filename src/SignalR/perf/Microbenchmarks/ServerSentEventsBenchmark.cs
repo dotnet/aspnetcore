@@ -29,12 +29,12 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
 
             if (Protocol == "json")
             {
-                protocol = new JsonHubProtocol();
+                protocol = new NewtonsoftJsonHubProtocol();
             }
             else
             {
                 // New line in result to trigger SSE formatting
-                protocol = new JsonHubProtocol
+                protocol = new NewtonsoftJsonHubProtocol
                 {
                     PayloadSerializer = { Formatting = Formatting.Indented }
                 };

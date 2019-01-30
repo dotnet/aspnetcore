@@ -30,7 +30,8 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
             var additionalAssemblies = new[]
             {
                 // The following assemblies are not reachable from Microsoft.AspNetCore.Mvc
-                "Microsoft.AspNetCore.All",
+                "Microsoft.AspNetCore.App",
+                "Microsoft.AspNetCore.Mvc.NewtonsoftJson",
                 "Microsoft.AspNetCore.Mvc.Formatters.Xml",
             };
 

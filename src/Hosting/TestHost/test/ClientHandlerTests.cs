@@ -29,13 +29,7 @@ namespace Microsoft.AspNetCore.TestHost
             var handler = new ClientHandler(new PathString("/A/Path/"), new DummyApplication(context =>
             {
                 // TODO: Assert.True(context.RequestAborted.CanBeCanceled);
-#if NETCOREAPP2_2
                 Assert.Equal("HTTP/2.0", context.Request.Protocol);
-#elif NET461 || NETCOREAPP2_0
-                Assert.Equal("HTTP/1.1", context.Request.Protocol);
-#else
-    Unspecified Framework
-#endif
                 Assert.Equal("GET", context.Request.Method);
                 Assert.Equal("https", context.Request.Scheme);
                 Assert.Equal("/A/Path", context.Request.PathBase.Value);
@@ -61,13 +55,7 @@ namespace Microsoft.AspNetCore.TestHost
             var handler = new ClientHandler(new PathString("/A/Path/"), new InspectingApplication(features =>
             {
                 // TODO: Assert.True(context.RequestAborted.CanBeCanceled);
-#if NETCOREAPP2_2
                 Assert.Equal("HTTP/2.0", features.Get<IHttpRequestFeature>().Protocol);
-#elif NET461 || NETCOREAPP2_0
-                Assert.Equal("HTTP/1.1", features.Get<IHttpRequestFeature>().Protocol);
-#else
-    Unspecified Framework
-#endif
                 Assert.Equal("GET", features.Get<IHttpRequestFeature>().Method);
                 Assert.Equal("https", features.Get<IHttpRequestFeature>().Scheme);
                 Assert.Equal("/A/Path", features.Get<IHttpRequestFeature>().PathBase);
@@ -104,13 +92,12 @@ namespace Microsoft.AspNetCore.TestHost
         public async Task ResubmitRequestWorks()
         {
             int requestCount = 1;
-            var handler = new ClientHandler(PathString.Empty, new DummyApplication(context =>
+            var handler = new ClientHandler(PathString.Empty, new DummyApplication(async context =>
             {
-                int read = context.Request.Body.Read(new byte[100], 0, 100);
+                int read = await context.Request.Body.ReadAsync(new byte[100], 0, 100);
                 Assert.Equal(11, read);
 
                 context.Response.Headers["TestHeader"] = "TestValue:" + requestCount++;
-                return Task.FromResult(0);
             }));
 
             HttpMessageInvoker invoker = new HttpMessageInvoker(handler);
@@ -268,6 +255,63 @@ namespace Microsoft.AspNetCore.TestHost
             block.SetResult(0);
             var ex = await Assert.ThrowsAsync<HttpRequestException>(() => response.Content.ReadAsStringAsync());
             Assert.IsType<InvalidOperationException>(ex.GetBaseException());
+        }
+
+        [Fact]
+        public Task ExceptionFromOnStartingFirstWriteIsReported()
+        {
+            var handler = new ClientHandler(PathString.Empty, new DummyApplication(context =>
+            {
+                context.Response.OnStarting(() =>
+                {
+                    throw new InvalidOperationException(new string('a', 1024 * 32));
+                });
+                return context.Response.WriteAsync("Hello World");
+            }));
+            var httpClient = new HttpClient(handler);
+            return Assert.ThrowsAsync<InvalidOperationException>(() => httpClient.GetAsync("https://example.com/",
+                HttpCompletionOption.ResponseHeadersRead));
+        }
+
+        [Fact]
+        public Task ExceptionFromOnStartingWithNoWriteIsReported()
+        {
+            var handler = new ClientHandler(PathString.Empty, new DummyApplication(context =>
+            {
+                context.Response.OnStarting(() =>
+                {
+                    throw new InvalidOperationException(new string('a', 1024 * 32));
+                });
+                return Task.CompletedTask;
+            }));
+            var httpClient = new HttpClient(handler);
+            return Assert.ThrowsAsync<InvalidOperationException>(() => httpClient.GetAsync("https://example.com/",
+                HttpCompletionOption.ResponseHeadersRead));
+        }
+
+        [Fact]
+        public Task ExceptionFromOnStartingWithErrorHandlerIsReported()
+        {
+            var handler = new ClientHandler(PathString.Empty, new DummyApplication(async context =>
+            {
+                context.Response.OnStarting(() =>
+                {
+                    throw new InvalidOperationException(new string('a', 1024 * 32));
+                });
+                try
+                {
+                    await context.Response.WriteAsync("Hello World");
+                }
+                catch (Exception ex)
+                {
+                    // This is no longer the first write, so it doesn't trigger OnStarting again.
+                    // The exception is large enough that it fills the pipe and stalls.
+                    await context.Response.WriteAsync(ex.ToString());
+                }
+            }));
+            var httpClient = new HttpClient(handler);
+            return Assert.ThrowsAsync<InvalidOperationException>(() => httpClient.GetAsync("https://example.com/",
+                HttpCompletionOption.ResponseHeadersRead));
         }
 
         private class DummyApplication : IHttpApplication<Context>

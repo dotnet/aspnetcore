@@ -1,2 +1,0 @@
-Markup span at (8:0,8 [5] ) (Accepts:Any) - Parent: Markup block at (8:0,8 [15] )
-Markup span at (13:0,13 [10] ) (Accepts:Any) - Parent: Markup block at (8:0,8 [15] )

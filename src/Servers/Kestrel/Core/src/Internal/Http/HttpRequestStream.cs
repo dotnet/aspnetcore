@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
         {
-            var task = ReadAsync(buffer, offset, count, default(CancellationToken), state);
+            var task = ReadAsync(buffer, offset, count, default, state);
             if (callback != null)
             {
                 task.ContinueWith(t => callback.Invoke(t));
@@ -111,17 +111,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return ReadAsyncInternal(new Memory<byte>(buffer, offset, count), cancellationToken).AsTask();
         }
 
-#if NETCOREAPP2_1
         public override ValueTask<int> ReadAsync(Memory<byte> destination, CancellationToken cancellationToken = default)
         {
             ValidateState(cancellationToken);
 
             return ReadAsyncInternal(destination, cancellationToken);
         }
-#elif NETSTANDARD2_0
-#else
-#error TFMs need to be updated
-#endif
 
         private async ValueTask<int> ReadAsyncInternal(Memory<byte> buffer, CancellationToken cancellationToken)
         {

@@ -83,12 +83,10 @@ build of ASP.NET Core 2.2.x. Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.Mvc.Localization" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Mvc.Razor" Version="2.2.0" />
-  <Package Id="Microsoft.AspNetCore.Mvc.Razor.ViewCompilation" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Mvc.RazorPages" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Mvc.TagHelpers" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Mvc.Testing" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Mvc.ViewFeatures" Version="2.2.0" />
-  <Package Id="Microsoft.AspNetCore.Mvc.WebApiCompatShim" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.NodeServices" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Owin" Version="2.2.0" />

@@ -540,7 +540,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public void ProcessRequestsAsyncEnablesKeepAliveTimeout()
+        public async Task ProcessRequestsAsyncEnablesKeepAliveTimeout()
         {
             var requestProcessingTask = _http1Connection.ProcessRequestsAsync<object>(null);
 
@@ -550,7 +550,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _http1Connection.StopProcessingNextRequest();
             _application.Output.Complete();
 
-            requestProcessingTask.Wait();
+            await requestProcessingTask.DefaultTimeout();
         }
 
         [Fact]
@@ -741,12 +741,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             //Assert.True(originalToken.WaitHandle.WaitOne(TestConstants.DefaultTimeout));
             Assert.True(_http1Connection.RequestAborted.WaitHandle.WaitOne(TestConstants.DefaultTimeout));
 
-#if NETCOREAPP2_2
             Assert.Equal(originalToken, originalRegistration.Token);
-#elif NET461
-#else
-#error Target framework needs to be updated
-#endif
         }
 
         [Fact]

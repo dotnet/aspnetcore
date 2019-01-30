@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.Equal(200, (int)result1.StatusCode);
             Assert.Equal(500, (int)result2.StatusCode);
             StopServer();
-            EventLogHelpers.VerifyEventLogEvent(result, "Only one inprocess application is allowed per IIS application pool");
+            EventLogHelpers.VerifyEventLogEvent(result, EventLogHelpers.OnlyOneAppPerAppPool());
         }
 
         [ConditionalTheory]
@@ -115,18 +115,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             siteElement.Add(newApplication);
 
             // IIS Express requires root application to exist
-            var rootApplicationDirectory = new DirectoryInfo(contentRoot + "rootApp");
-            rootApplicationDirectory.Create();
 
-            _rootApplication = new PublishedApplication(rootApplicationDirectory.FullName, Logger);
-            File.WriteAllText(GetWebConfigLocation(rootApplicationDirectory.FullName), "<configuration></configuration>");
-
-            var rootApplication = new XElement(application);
-            rootApplication.SetAttributeValue("path", "/");
-            rootApplication.RequiredElement("virtualDirectory")
-                .SetAttributeValue("physicalPath", rootApplicationDirectory.FullName);
-
-            siteElement.Add(rootApplication);
+            _rootApplication = new PublishedApplication(Helpers.CreateEmptyApplication(config, contentRoot), Logger);
         }
 
         private static string GetWebConfigLocation(string siteRoot)

@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
             {
                 while (!token.IsCancellationRequested)
                 {
-#if NETCOREAPP2_2
+#if NETCOREAPP3_0
                     // Do a 0 byte read so that idle connections don't allocate a buffer when waiting for a read
                     var result = await socket.ReceiveAsync(Memory<byte>.Empty, token);
 
@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
 #endif
                     var memory = _application.Output.GetMemory();
 
-#if NETCOREAPP2_2
+#if NETCOREAPP3_0
                     var receiveResult = await socket.ReceiveAsync(memory, token);
 #else
                     var isArray = MemoryMarshal.TryGetArray<byte>(memory, out var arraySegment);
@@ -164,7 +164,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
                     // Exceptions are handled above where the send and receive tasks are being run.
                     var receiveResult = await socket.ReceiveAsync(arraySegment, token);
 #endif
-                    // Need to check again for NetCoreApp2.2 because a close can happen between a 0-byte read and the actual read
+                    // Need to check again for netcoreapp3.0 because a close can happen between a 0-byte read and the actual read
                     if (receiveResult.MessageType == WebSocketMessageType.Close)
                     {
                         return;

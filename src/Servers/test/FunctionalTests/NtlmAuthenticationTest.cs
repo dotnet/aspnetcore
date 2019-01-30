@@ -22,8 +22,8 @@ namespace ServerComparison.FunctionalTests
 
         public static TestMatrix TestVariants
             => TestMatrix.ForServers(ServerType.IISExpress, ServerType.HttpSys)
-                .WithTfms(Tfm.NetCoreApp22, Tfm.Net461)
-                .WithAllAncmVersions()
+                .WithTfms(Tfm.NetCoreApp30)
+                .WithAncmVersions(AncmVersion.AspNetCoreModuleV2)
                 .WithAllHostingModels();
 
         [ConditionalTheory]

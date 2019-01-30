@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
                     _hubProtocol = new MessagePackHubProtocol();
                     break;
                 case Protocol.Json:
-                    _hubProtocol = new JsonHubProtocol();
+                    _hubProtocol = new NewtonsoftJsonHubProtocol();
                     break;
             }
 

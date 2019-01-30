@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Builder.Internal;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.IISIntegration.FunctionalTests
@@ -10,6 +12,8 @@ namespace Microsoft.AspNetCore.IISIntegration.FunctionalTests
     {
         public static void Register(IApplicationBuilder app, object startup)
         {
+            var delegates = new Dictionary<string, RequestDelegate>();
+
             var type = startup.GetType();
             foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
             {
@@ -17,22 +21,40 @@ namespace Microsoft.AspNetCore.IISIntegration.FunctionalTests
                 if (method.Name != "Configure" &&
                     parameters.Length == 1)
                 {
-                    Action<IApplicationBuilder> appfunc = null;
+                    RequestDelegate appfunc = null;
+
                     if (parameters[0].ParameterType == typeof(IApplicationBuilder))
                     {
-                        appfunc = innerAppBuilder => method.Invoke(startup, new[] { innerAppBuilder });
+                        var innerAppBuilder = app.New();
+                        method.Invoke(startup, new[] { innerAppBuilder });
+                        appfunc = innerAppBuilder.Build();
                     }
                     else if (parameters[0].ParameterType == typeof(HttpContext))
                     {
-                        appfunc = innerAppBuilder => innerAppBuilder.Run(ctx => (Task)method.Invoke(startup, new[] { ctx }));
+                        appfunc = context => (Task)method.Invoke(startup, new[] { context });
                     }
 
-                    if (appfunc != null)
+                    if (appfunc == null)
                     {
-                        app.Map("/" + method.Name, appfunc);
+                        continue;
                     }
+
+                    delegates.Add("/" + method.Name, appfunc);
                 }
             }
+
+            app.Run(async context => {
+                    foreach (var requestDelegate in delegates)
+                    {
+                        if (context.Request.Path.StartsWithSegments(requestDelegate.Key, out var matchedPath, out var remainingPath))
+                        {
+                            var pathBase = context.Request.PathBase;
+                            context.Request.PathBase = pathBase.Add(matchedPath);
+                            context.Request.Path = remainingPath;
+                            await requestDelegate.Value(context);
+                        }
+                    }
+                });
         }
     }
 }

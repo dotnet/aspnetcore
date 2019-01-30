@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -39,13 +39,9 @@ namespace Microsoft.AspNetCore.ResponseCompression
             _innerSendFileFeature = innerSendFileFeature;
         }
 
-        protected override void Dispose(bool disposing)
+        internal ValueTask FinishCompressionAsync()
         {
-            if (_compressionStream != null)
-            {
-                _compressionStream.Dispose();
-                _compressionStream = null;
-            }
+            return _compressionStream?.DisposeAsync() ?? new ValueTask();
         }
 
         public override bool CanRead => false;

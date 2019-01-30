@@ -31,7 +31,12 @@ try {
 
     Write-Host "Checking that solutions are up to date"
 
-    Get-ChildItem "$repoRoot/*.sln" -Recurse | % {
+    Get-ChildItem "$repoRoot/*.sln" -Recurse `
+        | ? {
+            # This .sln file is used by the templating engine.
+            $_.Name -ne "RazorComponentsWeb-CSharp.sln"
+        } `
+        | % {
         Write-Host "  Checking $(Split-Path -Leaf $_)"
         $slnDir = Split-Path -Parent $_
         $sln = $_

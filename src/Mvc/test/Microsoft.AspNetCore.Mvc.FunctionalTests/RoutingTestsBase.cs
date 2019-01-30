@@ -26,6 +26,28 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
         public HttpClient Client { get; }
 
+        [Theory]
+        [InlineData("http://localhost/Login/Index", "Login", "Index", "http://localhost/Login")]
+        [InlineData("http://localhost/Login/Sso", "Login", "Sso", "http://localhost/Login/Sso")]
+        [InlineData("http://localhost/Contact/Index", "Contact", "Index", "http://localhost/Contact")]
+        [InlineData("http://localhost/Contact/Sso", "Contact", "Sso", "http://localhost/Contact/Sso")]
+        public async Task ConventionalRoutedAction_RouteUrl_AmbientValues(string requestUrl, string controller, string action, string expectedUrl)
+        {
+            // Arrange & Act
+            var response = await Client.GetAsync(requestUrl);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var body = await response.Content.ReadAsStringAsync();
+            var result = JsonConvert.DeserializeObject<RoutingResult>(body);
+
+            Assert.Equal(controller, result.Controller);
+            Assert.Equal(action, result.Action);
+
+            Assert.Equal(expectedUrl, Assert.Single(result.ExpectedUrls));
+        }
+
         [Fact]
         public async Task ConventionalRoutedAction_RouteHasNonParameterConstraint_RouteConstraintRun_Allowed()
         {
@@ -1320,8 +1342,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("/", result.Link);
         }
 
-
-
         [Fact]
         public virtual async Task AttributeRoutedAction_InArea_LinkToConventionalRoutedActionInArea()
         {
@@ -1481,6 +1501,24 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Contains(path, result.ExpectedUrls);
             Assert.Equal("Order", result.Controller);
             Assert.Equal(actionName, result.Action);
+        }
+
+        [Fact]
+        public async Task RazorPage_WithLinks_GeneratesLinksCorrectly()
+        {
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/PageWithLinks");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var document = await response.GetHtmlDocumentAsync();
+
+            var editLink = document.RequiredQuerySelector("#editlink");
+            Assert.Equal("/Edit/10", editLink.GetAttribute("href"));
+
+            var contactLink = document.RequiredQuerySelector("#contactlink");
+            Assert.Equal("/Home/Contact", contactLink.GetAttribute("href"));
         }
 
         [Fact]

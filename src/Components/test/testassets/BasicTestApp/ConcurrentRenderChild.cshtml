@@ -1,0 +1,16 @@
+<span>@(isAfterDelay ? "😊" :"WAITING")</span>
+@functions
+{
+    protected bool isAfterDelay;
+
+    protected override async Task OnInitAsync()
+    {
+        // If there are lots of instances of this component, the following delay
+        // will result in a lot of them triggering a re-render simultaneously
+        // on different threads.
+        // This test is to verify that the renderer correctly accepts all the
+        // simultaneous render requests.
+        await Task.Delay(1000);
+        isAfterDelay = true;
+    }
+}

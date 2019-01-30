@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -154,17 +154,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
         private async Task ProcessReceives()
         {
+            // Resolve `input` PipeWriter via the IDuplexPipe interface prior to loop start for performance.
+            var input = Input;
             while (true)
             {
-                // MacOS blocked on https://github.com/dotnet/corefx/issues/31766
-                if (!IsMacOS)
-                {
-                    // Wait for data before allocating a buffer.
-                    await _receiver.WaitForDataAsync();
-                }
+                // Wait for data before allocating a buffer.
+                await _receiver.WaitForDataAsync();
 
                 // Ensure we have some reasonable amount of buffer space
-                var buffer = Input.GetMemory(MinAllocBufferSize);
+                var buffer = input.GetMemory(MinAllocBufferSize);
 
                 var bytesReceived = await _receiver.ReceiveAsync(buffer);
 
@@ -175,9 +173,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                     break;
                 }
 
-                Input.Advance(bytesReceived);
+                input.Advance(bytesReceived);
 
-                var flushTask = Input.FlushAsync();
+                var flushTask = input.FlushAsync();
 
                 var paused = !flushTask.IsCompleted;
 
@@ -215,7 +213,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                 shutdownReason = new ConnectionResetException(ex.Message, ex);;
                 _trace.ConnectionReset(ConnectionId);
             }
-            catch (Exception ex) 
+            catch (Exception ex)
                 when ((ex is SocketException socketEx && IsConnectionAbortError(socketEx.SocketErrorCode)) ||
                        ex is ObjectDisposedException)
             {
@@ -242,9 +240,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
         private async Task ProcessSends()
         {
+            // Resolve `output` PipeReader via the IDuplexPipe interface prior to loop start for performance.
+            var output = Output;
             while (true)
             {
-                var result = await Output.ReadAsync();
+                var result = await output.ReadAsync();
 
                 if (result.IsCanceled)
                 {
@@ -260,7 +260,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                     await _sender.SendAsync(buffer);
                 }
 
-                Output.AdvanceTo(end);
+                output.AdvanceTo(end);
 
                 if (isCompleted)
                 {

@@ -20,14 +20,4 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 
-  <Target Name="GetArtifactInfo" Returns="@(ArtifactInfo)">
-    <ItemGroup>
-      <ArtifactInfo Include="$(TargetPath)">
-        <ArtifactType>NuGetPackage</ArtifactType>
-        <PackageId>$(PackageId)</PackageId>
-        <Version>$(PackageVersion)</Version>
-      </ArtifactInfo>
-    </ItemGroup>
-  </Target>
-
 </Project>

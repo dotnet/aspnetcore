@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Text;
 using Microsoft.AspNetCore.Internal;
@@ -18,26 +19,31 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
     {
         private const string ProtocolPropertyName = "protocol";
         private const string ProtocolVersionPropertyName = "version";
+        private const string MinorVersionPropertyName = "minorVersion";
         private const string ErrorPropertyName = "error";
         private const string TypePropertyName = "type";
 
-        /// <summary>
-        /// The serialized representation of a success handshake.
-        /// </summary>
-        public static ReadOnlyMemory<byte> SuccessHandshakeData;
+        private static ConcurrentDictionary<IHubProtocol, ReadOnlyMemory<byte>> _messageCache = new ConcurrentDictionary<IHubProtocol, ReadOnlyMemory<byte>>();
 
-        static HandshakeProtocol()
+        public static ReadOnlySpan<byte> GetSuccessfulHandshake(IHubProtocol protocol)
         {
-            var memoryBufferWriter = MemoryBufferWriter.Get();
-            try
+            ReadOnlyMemory<byte> result;
+            if(!_messageCache.TryGetValue(protocol, out result))
             {
-                WriteResponseMessage(HandshakeResponseMessage.Empty, memoryBufferWriter);
-                SuccessHandshakeData = memoryBufferWriter.ToArray();
+                var memoryBufferWriter = MemoryBufferWriter.Get();
+                try
+                {
+                    WriteResponseMessage(new HandshakeResponseMessage(protocol.MinorVersion), memoryBufferWriter);
+                    result = memoryBufferWriter.ToArray();
+                    _messageCache.TryAdd(protocol, result);
+                }
+                finally
+                {
+                    MemoryBufferWriter.Return(memoryBufferWriter);
+                }
             }
-            finally
-            {
-                MemoryBufferWriter.Return(memoryBufferWriter);
-            }
+
+            return result.Span;
         }
 
         /// <summary>
@@ -88,6 +94,9 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                         writer.WriteValue(responseMessage.Error);
                     }
 
+                    writer.WritePropertyName(MinorVersionPropertyName);
+                    writer.WriteValue(responseMessage.MinorVersion);
+
                     writer.WriteEndObject();
                     writer.Flush();
                 }
@@ -123,6 +132,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                     JsonUtils.CheckRead(reader);
                     JsonUtils.EnsureObjectStart(reader);
 
+                    int? minorVersion = null;
                     string error = null;
 
                     var completed = false;
@@ -142,6 +152,9 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                                     case ErrorPropertyName:
                                         error = JsonUtils.ReadAsString(reader, ErrorPropertyName);
                                         break;
+                                    case MinorVersionPropertyName:
+                                        minorVersion = JsonUtils.ReadAsInt32(reader, MinorVersionPropertyName);
+                                        break;
                                     default:
                                         reader.Skip();
                                         break;
@@ -155,7 +168,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                         }
                     };
 
-                    responseMessage = (error != null) ? new HandshakeResponseMessage(error) : HandshakeResponseMessage.Empty;
+                    responseMessage = new HandshakeResponseMessage(minorVersion, error);
                     return true;
                 }
             }

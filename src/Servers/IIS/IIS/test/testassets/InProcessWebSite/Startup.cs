@@ -6,10 +6,12 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.IISIntegration.FunctionalTests;
@@ -266,29 +268,6 @@ namespace TestSite
             }
         }
 
-        private async Task CheckEnvironmentVariable(HttpContext ctx)
-        {
-            var variable = Environment.GetEnvironmentVariable("ASPNETCORE_INPROCESS_TESTING_VALUE");
-            await ctx.Response.WriteAsync(variable);
-        }
-
-        private async Task CheckEnvironmentLongValueVariable(HttpContext ctx)
-        {
-            var variable = Environment.GetEnvironmentVariable("ASPNETCORE_INPROCESS_TESTING_LONG_VALUE");
-            await ctx.Response.WriteAsync(variable);
-        }
-
-        private async Task CheckAppendedEnvironmentVariable(HttpContext ctx)
-        {
-            var variable = Environment.GetEnvironmentVariable("ProgramFiles");
-            await ctx.Response.WriteAsync(variable);
-        }
-
-        private async Task CheckRemoveAuthEnvironmentVariable(HttpContext ctx)
-        {
-            var variable = Environment.GetEnvironmentVariable("ASPNETCORE_IIS_HTTPAUTH");
-            await ctx.Response.WriteAsync(variable);
-        }
         private async Task ReadAndWriteSynchronously(HttpContext ctx)
         {
             var t2 = Task.Run(() => WriteManyTimesToResponseBody(ctx));
@@ -354,10 +333,10 @@ namespace TestSite
             await ctx.Response.Body.FlushAsync();
 
             var reader = new StreamReader(ctx.Request.Body);
-            while (!reader.EndOfStream)
+            while (true)
             {
                 var line = await reader.ReadLineAsync();
-                if (line == "")
+                if (line == null)
                 {
                     return;
                 }
@@ -380,10 +359,10 @@ namespace TestSite
             await ctx.Response.Body.FlushAsync();
 
             var reader = new StreamReader(ctx.Request.Body);
-            while (!reader.EndOfStream)
+            while (true)
             {
                 var line = await reader.ReadLineAsync();
-                if (line == "")
+                if (line == null)
                 {
                     return;
                 }
@@ -461,8 +440,8 @@ namespace TestSite
         private async Task TestReadOffsetWorks(HttpContext ctx)
         {
             var buffer = new byte[11];
-            ctx.Request.Body.Read(buffer, 0, 6);
-            ctx.Request.Body.Read(buffer, 6, 5);
+            await ctx.Request.Body.ReadAsync(buffer, 0, 6);
+            await ctx.Request.Body.ReadAsync(buffer, 6, 5);
 
             await ctx.Response.WriteAsync(Encoding.UTF8.GetString(buffer));
         }
@@ -677,6 +656,22 @@ namespace TestSite
         {
             await ctx.Response.WriteAsync("Shutting down");
             ctx.RequestServices.GetService<IApplicationLifetime>().StopApplication();
+        }
+
+        private async Task ShutdownStopAsync(HttpContext ctx)
+        {
+            await ctx.Response.WriteAsync("Shutting down");
+            var server = ctx.RequestServices.GetService<IServer>();
+            await server.StopAsync(default);
+        }
+
+        private async Task ShutdownStopAsyncWithCancelledToken(HttpContext ctx)
+        {
+            await ctx.Response.WriteAsync("Shutting down");
+            var server = ctx.RequestServices.GetService<IServer>();
+            var cts = new CancellationTokenSource();
+            cts.Cancel();
+            await server.StopAsync(cts.Token);
         }
 
         private async Task GetServerVariableStress(HttpContext ctx)

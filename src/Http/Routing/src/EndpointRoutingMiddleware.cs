@@ -16,14 +16,14 @@ namespace Microsoft.AspNetCore.Routing
     {
         private readonly MatcherFactory _matcherFactory;
         private readonly ILogger _logger;
-        private readonly CompositeEndpointDataSource _endpointDataSource;
+        private readonly EndpointDataSource _endpointDataSource;
         private readonly RequestDelegate _next;
 
         private Task<Matcher> _initializationTask;
 
         public EndpointRoutingMiddleware(
             MatcherFactory matcherFactory,
-            CompositeEndpointDataSource endpointDataSource,
+            EndpointDataSource endpointDataSource,
             ILogger<EndpointRoutingMiddleware> logger,
             RequestDelegate next)
         {

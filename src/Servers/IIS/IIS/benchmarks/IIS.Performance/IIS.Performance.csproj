@@ -4,7 +4,7 @@
     <!-- Using shorter assembly name instead of Microsoft.AspNetCore.Server.Kestrel.Performance because https://github.com/dotnet/BenchmarkDotNet/issues/498 -->
     <AssemblyName>IIS.Performance</AssemblyName>
     <RootNamespace>Microsoft.AspNetCore.Server.IIS.Performance</RootNamespace>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <OutputType>Exe</OutputType>
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -23,7 +23,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" />
     <ProjectReference Include="..\..\test\IISExpress.FunctionalTests\IISExpress.FunctionalTests.csproj" />
     <ProjectReference Include="..\..\test\IIS.Tests\IIS.Tests.csproj" />
     <ProjectReference Include="..\..\test\testassets\InProcessWebSite\InProcessWebSite.csproj">
@@ -35,9 +34,13 @@
     <ProjectReference Include="..\..\test\testassets\StressTestWebSite\StressTestWebSite.csproj">
       <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
     </ProjectReference>
+    <ProjectReference Include="$(RepositoryRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="BenchmarkDotNet" />
     <Reference Include="Microsoft.AspNetCore.BenchmarkRunner.Sources" PrivateAssets="All" />
-    <Reference Include="Microsoft.AspNetCore.Server.IntegrationTesting" />
+    <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" />
   </ItemGroup>
 
 </Project>

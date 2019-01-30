@@ -19,13 +19,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
     public class PublishedSitesFixture : IDisposable
     {
-        public CachingApplicationPublisher InProcessTestSite { get; } = new CachingApplicationPublisher(Helpers.GetInProcessTestSitesPath());
-        public CachingApplicationPublisher OutOfProcessTestSite { get; } = new CachingApplicationPublisher(Helpers.GetOutOfProcessTestSitesPath());
+        public PublishedApplicationPublisher InProcessTestSite { get; } = new PublishedApplicationPublisher(Helpers.GetInProcessTestSitesPath());
+        public PublishedApplicationPublisher OutOfProcessTestSite { get; } = new PublishedApplicationPublisher(Helpers.GetOutOfProcessTestSitesPath());
 
         public void Dispose()
         {
-            InProcessTestSite.Dispose();
-            OutOfProcessTestSite.Dispose();
         }
 
         public IISDeploymentParameters GetBaseDeploymentParameters(HostingModel hostingModel = HostingModel.InProcess, bool publish = false)
@@ -46,7 +44,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 new DeploymentParameters(publisher.ApplicationPath, DeployerSelector.ServerType, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
                 {
                     HostingModel = hostingModel,
-                    TargetFramework = "netcoreapp2.2",
+                    TargetFramework = Tfm.NetCoreApp30,
                     AncmVersion = AncmVersion.AspNetCoreModuleV2
                 },
                 publish);

@@ -51,9 +51,9 @@ namespace EchoApp
         private async Task Echo(HttpContext context, WebSocket webSocket, ILogger logger)
         {
             var buffer = new byte[1024 * 4];
-            var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-            LogFrame(logger, result, buffer);
-            while (!result.CloseStatus.HasValue)
+            var result = await webSocket.ReceiveAsync(buffer.AsMemory(), CancellationToken.None);
+            LogFrame(logger, webSocket, result, buffer);
+            while (result.MessageType != WebSocketMessageType.Close)
             {
                 // If the client send "ServerClose", then they want a server-originated close to occur
                 string content = "<<binary>>";
@@ -75,19 +75,19 @@ namespace EchoApp
                 await webSocket.SendAsync(new ArraySegment<byte>(buffer, 0, result.Count), result.MessageType, result.EndOfMessage, CancellationToken.None);
                 logger.LogDebug($"Sent Frame {result.MessageType}: Len={result.Count}, Fin={result.EndOfMessage}: {content}");
 
-                result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-                LogFrame(logger, result, buffer);
+                result = await webSocket.ReceiveAsync(buffer.AsMemory(), CancellationToken.None);
+                LogFrame(logger, webSocket, result, buffer);
             }
-            await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
+            await webSocket.CloseAsync(webSocket.CloseStatus.Value, webSocket.CloseStatusDescription, CancellationToken.None);
         }
 
-        private void LogFrame(ILogger logger, WebSocketReceiveResult frame, byte[] buffer)
+        private void LogFrame(ILogger logger, WebSocket webSocket, ValueWebSocketReceiveResult frame, byte[] buffer)
         {
-            var close = frame.CloseStatus != null;
+            var close = frame.MessageType == WebSocketMessageType.Close;
             string message;
             if (close)
             {
-                message = $"Close: {frame.CloseStatus.Value} {frame.CloseStatusDescription}";
+                message = $"Close: {webSocket.CloseStatus.Value} {webSocket.CloseStatusDescription}";
             }
             else
             {

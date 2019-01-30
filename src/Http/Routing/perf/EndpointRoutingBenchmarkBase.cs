@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -32,7 +32,6 @@ namespace Microsoft.AspNetCore.Routing
         private protected IServiceProvider CreateServices()
         {
             var services = new ServiceCollection();
-            services.AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
             services.AddLogging();
             services.AddOptions();
             services.AddRouting();
@@ -116,11 +115,14 @@ namespace Microsoft.AspNetCore.Routing
             params object[] metadata)
         {
             var endpointMetadata = new List<object>(metadata ?? Array.Empty<object>());
-            endpointMetadata.Add(new RouteValuesAddressMetadata(routeName, new RouteValueDictionary(requiredValues)));
+            if (routeName != null)
+            {
+                endpointMetadata.Add(new RouteNameMetadata(routeName));
+            }
 
             return new RouteEndpoint(
                 (context) => Task.CompletedTask,
-                RoutePatternFactory.Parse(template, defaults, constraints),
+                RoutePatternFactory.Parse(template, defaults, constraints, requiredValues),
                 order,
                 new EndpointMetadataCollection(endpointMetadata),
                 displayName);
@@ -139,16 +141,13 @@ namespace Microsoft.AspNetCore.Routing
 
         protected void CreateOutboundRouteEntry(TreeRouteBuilder treeRouteBuilder, RouteEndpoint endpoint)
         {
-            var routeValuesAddressMetadata = endpoint.Metadata.GetMetadata<IRouteValuesAddressMetadata>();
-            var requiredValues = routeValuesAddressMetadata?.RequiredValues ?? new RouteValueDictionary();
-
             treeRouteBuilder.MapOutbound(
                 NullRouter.Instance,
                 new RouteTemplate(RoutePatternFactory.Parse(
                     endpoint.RoutePattern.RawText,
                     defaults: endpoint.RoutePattern.Defaults,
                     parameterPolicies: null)),
-                requiredLinkValues: new RouteValueDictionary(requiredValues),
+                requiredLinkValues: new RouteValueDictionary(endpoint.RoutePattern.RequiredValues),
                 routeName: null,
                 order: 0);
         }

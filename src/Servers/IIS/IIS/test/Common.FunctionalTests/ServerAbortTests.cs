@@ -26,12 +26,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             public OutOfProcess(OutOfProcessTestSiteFixture fixture) : base(fixture) { }
         }
 
-        [Collection(OutOfProcessV1TestSiteCollection.Name)]
-        public class OutOfProcessV1: ServerAbortTests
-        {
-            public OutOfProcessV1(OutOfProcessV1TestSiteFixture fixture) : base(fixture) { }
-        }
-
         protected ServerAbortTests(IISTestSiteFixture fixture) : base(fixture)
         {
             _fixture = fixture;

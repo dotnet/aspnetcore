@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             var connection = new DefaultConnectionContext(Guid.NewGuid().ToString(), _pipe, _pipe);
             _hubConnectionContext = new HubConnectionContext(connection, Timeout.InfiniteTimeSpan, NullLoggerFactory.Instance);
 
-            _successHubProtocolResolver = new TestHubProtocolResolver(new JsonHubProtocol());
+            _successHubProtocolResolver = new TestHubProtocolResolver(new NewtonsoftJsonHubProtocol());
             _failureHubProtocolResolver = new TestHubProtocolResolver(null);
             _userIdProvider = new TestUserIdProvider();
             _supportedProtocols = new List<string> { "json" };

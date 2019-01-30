@@ -416,37 +416,6 @@
         }
       ],
       "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.AspNetCore.HttpOverrides.Internal.IPEndPointParser",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "Abstract": true,
-      "Static": true,
-      "Sealed": true,
-      "ImplementedInterfaces": [],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "TryParse",
-          "Parameters": [
-            {
-              "Name": "addressWithPort",
-              "Type": "System.String"
-            },
-            {
-              "Name": "endpoint",
-              "Type": "System.Net.IPEndPoint",
-              "Direction": "Out"
-            }
-          ],
-          "ReturnType": "System.Boolean",
-          "Static": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
     }
   ]
 }

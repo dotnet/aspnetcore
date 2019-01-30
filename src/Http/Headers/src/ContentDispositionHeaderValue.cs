@@ -137,11 +137,11 @@ namespace Microsoft.Net.Http.Headers
                 }
                 else if (sizeParameter != null)
                 {
-                    sizeParameter.Value = value.Value.ToString(CultureInfo.InvariantCulture);
+                    sizeParameter.Value = value.GetValueOrDefault().ToString(CultureInfo.InvariantCulture);
                 }
                 else
                 {
-                    string sizeString = value.Value.ToString(CultureInfo.InvariantCulture);
+                    string sizeString = value.GetValueOrDefault().ToString(CultureInfo.InvariantCulture);
                     _parameters.Add(new NameValueHeaderValue(SizeString, sizeString));
                 }
             }
@@ -324,7 +324,7 @@ namespace Microsoft.Net.Http.Headers
             else
             {
                 // Must always be quoted
-                var dateString = HeaderUtilities.FormatDate(date.Value, quoted: true);
+                var dateString = HeaderUtilities.FormatDate(date.GetValueOrDefault(), quoted: true);
                 if (dateParameter != null)
                 {
                     dateParameter.Value = dateString;

@@ -22,6 +22,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task CheckBackwardsCompatibilityIsUsed()
         {
+
             var response = await _fixture.Client.GetAsync("/HelloWorld");
             var handles = _fixture.DeploymentResult.HostProcess.Modules;
 

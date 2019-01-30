@@ -3,10 +3,15 @@
   <PropertyGroup>
     <Description>ASP.NET Core Azure Active Directory Integration provides components for easily integrating Azure Active Directory authentication within your ASP.NET Core application.</Description>
     <RazorAssemblyDescription>Precompiled views assembly for the ASP.NET Core Azure Active Directory Integration package.</RazorAssemblyDescription>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <PackageTags>aspnetcore;authentication;AzureAD</PackageTags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IsShippingPackage>true</IsShippingPackage>
     <ProvideApplicationPartFactoryAttributeTypeName>Microsoft.AspNetCore.Mvc.ApplicationParts.NullApplicationPartFactory, Microsoft.AspNetCore.Mvc.Core</ProvideApplicationPartFactoryAttributeTypeName>
+
+    <_EnableAllInclusiveRazorSdk>true</_EnableAllInclusiveRazorSdk>
+    <RazorLangVersion>3.0</RazorLangVersion>
+    <RazorDefaultConfiguration>MVC-3.0</RazorDefaultConfiguration>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,6 +19,7 @@
     <Reference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
     <Reference Include="Microsoft.AspNetCore.Authentication.Cookies" />
     <Reference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" />
+    <Reference Include="Microsoft.NET.Sdk.Razor" PrivateAssets="All" />
   </ItemGroup>
 
     <ItemGroup>

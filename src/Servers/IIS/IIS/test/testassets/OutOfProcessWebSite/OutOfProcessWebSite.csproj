@@ -3,8 +3,15 @@
   <Import Project="..\..\..\..\build\testsite.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.2;net461</TargetFrameworks>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
   </PropertyGroup>
+
+  <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
+    <TestAssetPublishProfile Include="Portable" Properties="UseAppHost=false;TargetFramework=netcoreapp3.0" />
+    <TestAssetPublishProfile Include="Standalone-x64" Properties="RuntimeIdentifier=win7-x64;" />
+    <TestAssetPublishProfile Include="Standalone-x86" Properties="RuntimeIdentifier=win7-x86;" />
+  </ItemGroup>
 
   <ItemGroup>
     <Compile Include="..\shared\**\*.cs" />

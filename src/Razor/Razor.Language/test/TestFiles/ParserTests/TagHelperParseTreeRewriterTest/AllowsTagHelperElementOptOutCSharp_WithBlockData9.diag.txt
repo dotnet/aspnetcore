@@ -1,2 +1,0 @@
-(1,14): Error RZ1026: Encountered end tag "p" with no matching start tag.  Are your start/end tags properly balanced?
-(1,14): Error RZ1034: Found a malformed 'p' tag helper. Tag helpers must have a start and end tag or be self closing.

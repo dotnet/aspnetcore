@@ -3,8 +3,10 @@
 
 using System;
 using System.Buffers;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
@@ -27,6 +29,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private async Task PumpAsync()
         {
+            Debug.Assert(!RequestUpgrade, "Upgraded connections should never use this code path!");
+
             Exception error = null;
 
             try
@@ -80,14 +84,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             // response is written after observing the unexpected end of request content instead of just
                             // closing the connection without a response as expected.
                             _context.OnInputOrOutputCompleted();
-
-                            // Treat any FIN from an upgraded request as expected.
-                            // It's up to higher-level consumer (i.e. WebSocket middleware) to determine
-                            // if the end is actually expected based on higher-level framing.
-                            if (RequestUpgrade)
-                            {
-                                break;
-                            }
 
                             BadHttpRequestException.Throw(RequestRejectionReason.UnexpectedEndOfRequestContent);
                         }
@@ -280,21 +276,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 return new ForContentLength(keepAlive, contentLength, context);
             }
 
-            // Avoid slowing down most common case
-            if (!object.ReferenceEquals(context.Method, HttpMethods.Get))
+            // If we got here, request contains no Content-Length or Transfer-Encoding header.
+            // Reject with 411 Length Required.
+            if (context.Method == HttpMethod.Post || context.Method == HttpMethod.Put)
             {
-                // If we got here, request contains no Content-Length or Transfer-Encoding header.
-                // Reject with 411 Length Required.
-                if (context.Method == HttpMethod.Post || context.Method == HttpMethod.Put)
-                {
-                    var requestRejectionReason = httpVersion == HttpVersion.Http11 ? RequestRejectionReason.LengthRequired : RequestRejectionReason.LengthRequiredHttp10;
-                    BadHttpRequestException.Throw(requestRejectionReason, context.Method);
-                }
+                var requestRejectionReason = httpVersion == HttpVersion.Http11 ? RequestRejectionReason.LengthRequired : RequestRejectionReason.LengthRequiredHttp10;
+                BadHttpRequestException.Throw(requestRejectionReason, context.Method);
             }
 
             return keepAlive ? MessageBody.ZeroContentLengthKeepAlive : MessageBody.ZeroContentLengthClose;
         }
 
+        /// <summary>
+        /// The upgrade stream uses the raw connection stream instead of going through the RequestBodyPipe. This
+        /// removes the redundant copy from the transport pipe to the body pipe.
+        /// </summary>
         private class ForUpgrade : Http1MessageBody
         {
             public ForUpgrade(Http1Connection context)
@@ -303,14 +299,87 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 RequestUpgrade = true;
             }
 
+            // This returns IsEmpty so we can avoid draining the body (since it's basically an endless stream)
             public override bool IsEmpty => true;
 
-            protected override bool Read(ReadOnlySequence<byte> readableBuffer, PipeWriter writableBuffer, out SequencePosition consumed, out SequencePosition examined)
+            public override async Task CopyToAsync(Stream destination, CancellationToken cancellationToken = default)
             {
-                Copy(readableBuffer, writableBuffer);
-                consumed = readableBuffer.End;
-                examined = readableBuffer.End;
-                return false;
+                while (true)
+                {
+                    var result = await _context.Input.ReadAsync(cancellationToken);
+                    var readableBuffer = result.Buffer;
+                    var readableBufferLength = readableBuffer.Length;
+
+                    try
+                    {
+                        if (!readableBuffer.IsEmpty)
+                        {
+                            foreach (var memory in readableBuffer)
+                            {
+                                // REVIEW: This *could* be slower if 2 things are true
+                                // - The WriteAsync(ReadOnlyMemory<byte>) isn't overridden on the destination
+                                // - We change the Kestrel Memory Pool to not use pinned arrays but instead use native memory
+                                await destination.WriteAsync(memory, cancellationToken);
+                            }
+                        }
+
+                        if (result.IsCompleted)
+                        {
+                            return;
+                        }
+                    }
+                    finally
+                    {
+                        _context.Input.AdvanceTo(readableBuffer.End);
+                    }
+                }
+            }
+
+            public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+            {
+                while (true)
+                {
+                    var result = await _context.Input.ReadAsync(cancellationToken);
+                    var readableBuffer = result.Buffer;
+                    var readableBufferLength = readableBuffer.Length;
+
+                    var consumed = readableBuffer.End;
+                    var actual = 0;
+
+                    try
+                    {
+                        if (readableBufferLength != 0)
+                        {
+                            // buffer.Length is int
+                            actual = (int)Math.Min(readableBufferLength, buffer.Length);
+
+                            var slice = actual == readableBufferLength ? readableBuffer : readableBuffer.Slice(0, actual);
+                            consumed = slice.End;
+                            slice.CopyTo(buffer.Span);
+
+                            return actual;
+                        }
+
+                        if (result.IsCompleted)
+                        {
+                            return 0;
+                        }
+                    }
+                    finally
+                    {
+                        _context.Input.AdvanceTo(consumed);
+                    }
+                }
+            }
+
+            public override Task ConsumeAsync()
+            {
+                return Task.CompletedTask;
+            }
+
+            public override Task StopAsync()
+            {
+                return Task.CompletedTask;
             }
         }
 

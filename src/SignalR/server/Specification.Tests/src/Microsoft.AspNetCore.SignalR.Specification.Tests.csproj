@@ -2,7 +2,8 @@
 
   <PropertyGroup>
     <Description>Tests for users to verify their own implementations of SignalR types</Description>
-    <TargetFrameworks>netcoreapp2.2;net461</TargetFrameworks>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <IsShippingPackage>true</IsShippingPackage>
     <IsTestProject>false</IsTestProject>
   </PropertyGroup>
 

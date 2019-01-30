@@ -25,16 +25,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Framework\**\Microsoft.AspNetCore.All.shfxproj">
-      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
-      <OutputItemType>_ResolvedFxProjects</OutputItemType>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Framework\**\Microsoft.AspNetCore.App.shfxproj">
+    <ProjectReference Include="..\..\Framework\src\Microsoft.AspNetCore.App.shfxproj">
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
       <OutputItemType>_ResolvedFxProjects</OutputItemType>
     </ProjectReference>
 
-    <InstallerOwnedDirectory Include="$(RpmPackageInstallRoot)shared/Microsoft.AspNetCore.All" />
     <InstallerOwnedDirectory Include="$(RpmPackageInstallRoot)shared/Microsoft.AspNetCore.App" />
     <RpmDependency Include="dotnet-runtime-$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)" Version="$(MicrosoftNETCoreAppPackageVersion.Split('-')[0])" />
   </ItemGroup>

@@ -20,6 +20,8 @@ namespace Microsoft.AspNetCore.Routing.Template
         //       /api/template/{id:int} == 1.12
         public static decimal ComputeInbound(RouteTemplate template)
         {
+            ValidateSegementLength(template.Segments.Count);
+
             // Each precedence digit corresponds to one decimal place. For example, 3 segments with precedences 2, 1,
             // and 4 results in a combined precedence of 2.14 (decimal).
             var precedence = 0m;
@@ -40,13 +42,15 @@ namespace Microsoft.AspNetCore.Routing.Template
         // See description on ComputeInbound(RouteTemplate)
         internal static decimal ComputeInbound(RoutePattern routePattern)
         {
+            ValidateSegementLength(routePattern.PathSegments.Count);
+
             var precedence = 0m;
 
             for (var i = 0; i < routePattern.PathSegments.Count; i++)
             {
                 var segment = routePattern.PathSegments[i];
 
-                var digit = ComputeInboundPrecedenceDigit(segment);
+                var digit = ComputeInboundPrecedenceDigit(routePattern, segment);
                 Debug.Assert(digit >= 0 && digit < 10);
 
                 precedence += decimal.Divide(digit, (decimal)Math.Pow(10, i));
@@ -62,6 +66,8 @@ namespace Microsoft.AspNetCore.Routing.Template
         //       /api/template/{id:int} == 5.54
         public static decimal ComputeOutbound(RouteTemplate template)
         {
+            ValidateSegementLength(template.Segments.Count);
+
             // Each precedence digit corresponds to one decimal place. For example, 3 segments with precedences 2, 1,
             // and 4 results in a combined precedence of 2.14 (decimal).
             var precedence = 0m;
@@ -82,6 +88,8 @@ namespace Microsoft.AspNetCore.Routing.Template
         // see description on ComputeOutbound(RouteTemplate)
         internal static decimal ComputeOutbound(RoutePattern routePattern)
         {
+            ValidateSegementLength(routePattern.PathSegments.Count);
+
             // Each precedence digit corresponds to one decimal place. For example, 3 segments with precedences 2, 1,
             // and 4 results in a combined precedence of 2.14 (decimal).
             var precedence = 0m;
@@ -97,6 +105,15 @@ namespace Microsoft.AspNetCore.Routing.Template
             }
 
             return precedence;
+        }
+
+        private static void ValidateSegementLength(int length)
+        {
+            if (length > 28)
+            {
+                // An OverflowException will be thrown by Math.Pow when greater than 28
+                throw new InvalidOperationException("Route exceeds the maximum number of allowed segments of 28 and is unable to be processed.");
+            }
         }
 
         // Segments have the following order:
@@ -200,7 +217,9 @@ namespace Microsoft.AspNetCore.Routing.Template
         }
 
         // see description on ComputeInboundPrecedenceDigit(TemplateSegment segment)
-        private static int ComputeInboundPrecedenceDigit(RoutePatternPathSegment pathSegment)
+        //
+        // With a RoutePattern, parameters with a required value are treated as a literal segment
+        private static int ComputeInboundPrecedenceDigit(RoutePattern routePattern, RoutePatternPathSegment pathSegment)
         {
             if (pathSegment.Parts.Count > 1)
             {
@@ -216,6 +235,13 @@ namespace Microsoft.AspNetCore.Routing.Template
             }
             else if (part is RoutePatternParameterPart parameterPart)
             {
+                // Parameter with a required value is matched as a literal
+                if (routePattern.RequiredValues.TryGetValue(parameterPart.Name, out var requiredValue) &&
+                    !RouteValueEqualityComparer.Default.Equals(requiredValue, string.Empty))
+                {
+                    return 1;
+                }
+
                 var digit = parameterPart.IsCatchAll ? 5 : 3;
 
                 // If there is a route constraint for the parameter, reduce order by 1

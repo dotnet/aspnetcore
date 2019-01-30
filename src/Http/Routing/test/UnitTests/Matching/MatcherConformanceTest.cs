@@ -21,7 +21,10 @@ namespace Microsoft.AspNetCore.Routing.Matching
             httpContext.Request.Path = path;
             httpContext.RequestServices = CreateServices();
 
-            var context = new EndpointSelectorContext();
+            var context = new EndpointSelectorContext()
+            {
+                RouteValues = new RouteValueDictionary()
+            };
             httpContext.Features.Set<IEndpointFeature>(context);
             httpContext.Features.Set<IRouteValuesFeature>(context);
 

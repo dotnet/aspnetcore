@@ -5,7 +5,6 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -20,7 +19,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     {
         private readonly IModelMetadataProvider _modelMetadataProvider;
         private readonly IModelBinderFactory _modelBinderFactory;
-        private readonly MvcOptions _mvcOptions;
         private readonly IObjectModelValidator _objectModelValidator;
 
         /// <summary>
@@ -56,6 +54,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <param name="validator">The <see cref="IObjectModelValidator"/>.</param>
         /// <param name="mvcOptions">The <see cref="MvcOptions"/> accessor.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+        /// <remarks>The <paramref name="mvcOptions"/> parameter is currently ignored.</remarks>
         public ParameterBinder(
             IModelMetadataProvider modelMetadataProvider,
             IModelBinderFactory modelBinderFactory,
@@ -91,7 +90,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             _modelMetadataProvider = modelMetadataProvider;
             _modelBinderFactory = modelBinderFactory;
             _objectModelValidator = validator;
-            _mvcOptions = mvcOptions.Value;
             Logger = loggerFactory.CreateLogger(GetType());
         }
 
@@ -261,8 +259,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             var modelBindingResult = modelBindingContext.Result;
 
-            if (_mvcOptions.AllowValidatingTopLevelNodes &&
-                _objectModelValidator is ObjectModelValidator baseObjectValidator)
+            if (_objectModelValidator is ObjectModelValidator baseObjectValidator)
             {
                 Logger.AttemptingToValidateParameterOrProperty(parameter, metadata);
 

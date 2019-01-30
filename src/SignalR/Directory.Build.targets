@@ -7,4 +7,5 @@
 
     <RuntimeIdentifier Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">win7-x86</RuntimeIdentifier>
   </PropertyGroup>
+
 </Project>

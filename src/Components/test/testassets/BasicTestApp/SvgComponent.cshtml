@@ -1,0 +1,9 @@
+<svg height="250" width=250>
+    <circle cx="125" cy="125" r=@radius fill="red" stroke="black" stroke-width="3" />
+</svg>
+
+<button onclick=@(() => { radius *= 2; })>Click me</button>
+
+@functions {
+    int radius = 10;
+}

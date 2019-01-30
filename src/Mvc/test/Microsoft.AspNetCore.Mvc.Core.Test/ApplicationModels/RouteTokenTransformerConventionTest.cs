@@ -3,11 +3,10 @@
 
 using System;
 using System.Reflection;
-using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Routing;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.Test.ApplicationModels
+namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
     public class RouteTokenTransformerConventionTest
     {
@@ -28,8 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.Test.ApplicationModels
             convention.Apply(model);
 
             // Assert
-            Assert.True(model.Properties.TryGetValue(typeof(IOutboundParameterTransformer), out var routeTokenTransformer));
-            Assert.Equal(transformer, routeTokenTransformer);
+            Assert.Same(transformer, model.RouteParameterTransformer);
         }
 
         [Fact]
@@ -49,7 +47,7 @@ namespace Microsoft.AspNetCore.Mvc.Test.ApplicationModels
             convention.Apply(model);
 
             // Assert
-            Assert.False(model.Properties.TryGetValue(typeof(IOutboundParameterTransformer), out _));
+            Assert.Null(model.RouteParameterTransformer);
         }
 
         private MethodInfo GetMethodInfo()

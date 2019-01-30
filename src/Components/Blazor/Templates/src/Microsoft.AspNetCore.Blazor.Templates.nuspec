@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>Microsoft.AspNetCore.Blazor.Templates</id>
+    <version>$version$</version>
+    <authors>Microsoft</authors>
+    <description>Templates for ASP.NET Core Blazor</description>
+    <iconUrl>http://go.microsoft.com/fwlink/?LinkID=288859</iconUrl>
+    <language>en-US</language>
+    <projectUrl>https://asp.net/</projectUrl>
+    <repository type="git" url="https://github.com/aspnet/Blazor" commit="$RepositoryCommit$" />
+    <licenseUrl>https://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm</licenseUrl>
+    <copyright>© Microsoft Corporation. All rights reserved.</copyright>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <tags>aspnet templates blazor spa</tags>
+    <packageTypes>
+      <packageType name="Template" />
+    </packageTypes>
+  </metadata>
+  <files>
+    <file
+      src="content/**"
+      exclude="**/bin/**;**/obj/**;**/.template.config.src/**;content/Directory.Build.props;content/Directory.Build.targets;"
+      target="Content" />
+  </files>
+</package>

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TrimmedVersion>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)</TrimmedVersion>
+    <TrimmedVersion>$(VersionPrefix.Substring(0, $(VersionPrefix.LastIndexOf('.'))))</TrimmedVersion>
     <title>ASP.NET Core Extensions</title>
     <Description>This extension enables additional functionality for ASP.NET Core on Azure WebSites, such as enabling Azure logging.</Description>
     <TargetFramework>net461</TargetFramework>
@@ -20,23 +20,22 @@
     <IncludeSymbols>false</IncludeSymbols>
     <IncludeSource>false</IncludeSource>
     <ContentTargetFolders>content</ContentTargetFolders>
-    <IsPackageInThisPatch>true</IsPackageInThisPatch>
   </PropertyGroup>
 
   <ItemGroup>
-    <HostingStartupRuntimeStoreTargets Include="netcoreapp2.2" Runtime="$(SharedFxRid)" />
 
+    <HostingStartupRuntimeStoreTargets Include="netcoreapp3.0" Runtime="$(SharedFxRid)" />
     <HostingStartupPackageReference Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" Version="$(PackageVersion)" />
 
     <PackageReference Include="Internal.AspNetCore.Sdk" PrivateAssets="All" Version="$(InternalAspNetCoreSdkPackageVersion)" />
 
-    <ProjectReference Include="..\..\Framework\Microsoft.AspNetCore.App\pkg\Microsoft.AspNetCore.App.pkgproj">
+    <ProjectReference Include="..\..\Framework\pkg\Microsoft.AspNetCore.App.pkgproj">
       <Targets>Pack</Targets>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
     </ProjectReference>
 
-     <ProjectReference Include="..\..\Framework\Microsoft.AspNetCore.App\src\Microsoft.AspNetCore.App.shfxproj">
+     <ProjectReference Include="..\..\Framework\src\Microsoft.AspNetCore.App.shfxproj">
       <Targets>Pack</Targets>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>

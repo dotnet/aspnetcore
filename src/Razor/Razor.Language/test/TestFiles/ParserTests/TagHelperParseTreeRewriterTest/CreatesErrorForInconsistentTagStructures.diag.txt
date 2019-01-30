@@ -1,1 +1,0 @@
-(1,1): Error RZ2011: Tag helpers 'InputTagHelper1' and 'InputTagHelper2' targeting element 'input' must not expect different TagStructure values.

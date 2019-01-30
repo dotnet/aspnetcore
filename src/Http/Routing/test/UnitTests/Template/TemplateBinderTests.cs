@@ -1304,10 +1304,104 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
             var binder = new TemplateBinder(
                 UrlEncoder.Default,
                 new DefaultObjectPoolProvider().Create(new UriBuilderContextPooledObjectPolicy()),
-                RoutePatternFactory.Parse(template),
+                RoutePatternFactory.Parse(
+                    template,
+                    defaults,
+                    parameterPolicies: null,
+                    requiredValues: new { area = (string)null, action = "Param", controller = "ConventionalTransformer", page = (string)null }),
                 defaults,
                 requiredKeys: defaults.Keys,
                 parameterPolicies: new (string, IParameterPolicy)[] { ("param", new LengthRouteConstraint(500)), ("param", new SlugifyParameterTransformer()), });
+
+            // Act
+            var result = binder.GetValues(ambientValues, explicitValues);
+            var boundTemplate = binder.BindValues(result.AcceptedValues);
+
+            // Assert
+            Assert.Equal(expected, boundTemplate);
+        }
+
+        [Fact]
+        public void BindValues_AmbientAndExplicitValuesDoNotMatch_Success()
+        {
+            // Arrange
+            var expected = "/Travel/Flight";
+
+            var template = "{area}/{controller}/{action}";
+            var defaults = new RouteValueDictionary(new { action = "Index" });
+            var ambientValues = new RouteValueDictionary(new { area = "Travel", controller = "Rail", action = "Index" });
+            var explicitValues = new RouteValueDictionary(new { controller = "Flight", action = "Index" });
+            var binder = new TemplateBinder(
+                UrlEncoder.Default,
+                new DefaultObjectPoolProvider().Create(new UriBuilderContextPooledObjectPolicy()),
+                RoutePatternFactory.Parse(
+                    template,
+                    defaults,
+                    parameterPolicies: null,
+                    requiredValues: new { area = "Travel", action = "SomeAction", controller = "Flight", page = (string)null }),
+                defaults,
+                requiredKeys: new string[] { "area", "action", "controller", "page" },
+                parameterPolicies: null);
+
+            // Act
+            var result = binder.GetValues(ambientValues, explicitValues);
+            var boundTemplate = binder.BindValues(result.AcceptedValues);
+
+            // Assert
+            Assert.Equal(expected, boundTemplate);
+        }
+
+        [Fact]
+        public void BindValues_LinkingFromPageToAController_Success()
+        {
+            // Arrange
+            var expected = "/LG2/SomeAction";
+
+            var template = "{controller=Home}/{action=Index}/{id?}";
+            var defaults = new RouteValueDictionary();
+            var ambientValues = new RouteValueDictionary(new { page = "/LGAnotherPage", id = "17" });
+            var explicitValues = new RouteValueDictionary(new { controller = "LG2", action = "SomeAction" });
+            var binder = new TemplateBinder(
+                UrlEncoder.Default,
+                new DefaultObjectPoolProvider().Create(new UriBuilderContextPooledObjectPolicy()),
+                RoutePatternFactory.Parse(
+                    template,
+                    defaults,
+                    parameterPolicies: null,
+                    requiredValues: new { area = (string)null, action = "SomeAction", controller = "LG2", page = (string)null }),
+                defaults,
+                requiredKeys: new string[] { "area", "action", "controller", "page" },
+                parameterPolicies: null);
+
+            // Act
+            var result = binder.GetValues(ambientValues, explicitValues);
+            var boundTemplate = binder.BindValues(result.AcceptedValues);
+
+            // Assert
+            Assert.Equal(expected, boundTemplate);
+        }
+
+        [Fact]
+        public void BindValues_HasUnmatchingAmbientValues_Discard()
+        {
+            // Arrange
+            var expected = "/Admin/LG3/SomeAction?anothervalue=5";
+
+            var template = "Admin/LG3/SomeAction/{id?}";
+            var defaults = new RouteValueDictionary(new { controller = "LG3", action = "SomeAction", area = "Admin" });
+            var ambientValues = new RouteValueDictionary(new { controller = "LG1", action = "LinkToAnArea", id = "17" });
+            var explicitValues = new RouteValueDictionary(new { controller = "LG3", area = "Admin", action = "SomeAction", anothervalue = "5" });
+            var binder = new TemplateBinder(
+                UrlEncoder.Default,
+                new DefaultObjectPoolProvider().Create(new UriBuilderContextPooledObjectPolicy()),
+                RoutePatternFactory.Parse(
+                    template,
+                    defaults,
+                    parameterPolicies: null,
+                    requiredValues: new { area = "Admin", action = "SomeAction", controller = "LG3", page = (string)null }),
+                defaults,
+                requiredKeys: new string[] { "area", "action", "controller", "page" },
+                parameterPolicies: null);
 
             // Act
             var result = binder.GetValues(ambientValues, explicitValues);

@@ -1,14 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.2;net461</TargetFrameworks>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <DefineConstants>$(DefineConstants);NETCOREAPP2_0_CUSTOM_DEFINE</DefineConstants>
     <IsTestAssetProject>true</IsTestAssetProject>
   </PropertyGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="EmbeddedResources\**" />
-  </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Mvc" />
@@ -19,6 +15,6 @@
     <Reference Include="Microsoft.Extensions.FileProviders.Embedded" />
     <Reference Include="Microsoft.AspNetCore.Diagnostics" />
 
-    <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="$(MicrosoftNETSdkRazorPackageVersion)" PrivateAssets="All" />
+    <Reference Include="Microsoft.NET.Sdk.Razor" PrivateAssets="All" />
   </ItemGroup>
 </Project>

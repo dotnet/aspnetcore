@@ -18,9 +18,10 @@ The requirements that led to this system are:
 
 ## Recommendations for writing a .csproj
 
-* Use `<Reference>`
-* Do not use `<PackageReference>`
-* Only use `<ProjectReference>` in test projects
+* Use `<Reference>`.
+* Do not use `<PackageReference>`.
+* If you need to use a new package, add it to `eng/Dependencies.props` and `eng/Versions.props`.
+* Only use `<ProjectReference>` in test projects.
 * Name the .csproj file to match the assembly name.
 * Run `build.cmd /t:GenerateProjectList` when adding new projects
 * Use [eng/tools/BaseLineGenerator/](/eng/tools/BaselineGenerator/README.md) if you need to update baselines.

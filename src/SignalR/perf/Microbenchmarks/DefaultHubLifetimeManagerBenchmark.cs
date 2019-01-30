@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             _groupNames = new List<string>();
             _userIdentifiers = new List<string>();
 
-            var jsonHubProtocol = new JsonHubProtocol();
+            var jsonHubProtocol = new NewtonsoftJsonHubProtocol();
 
             for (int i = 0; i < 100; i++)
             {

@@ -2,50 +2,132 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
+using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
-    [Collection(IISTestSiteCollection.Name)]
-    public class EnvironmentVariableTests: FixtureLoggedTest
-    {
-        private readonly IISTestSiteFixture _fixture;
+    [Collection(PublishedSitesCollection.Name)]
 
-        public EnvironmentVariableTests(IISTestSiteFixture fixture): base(fixture)
+    public class EnvironmentVariableTests: IISFunctionalTestBase
+    {
+        private readonly PublishedSitesFixture _fixture;
+
+        public EnvironmentVariableTests(PublishedSitesFixture fixture)
         {
             _fixture = fixture;
         }
 
-        [ConditionalFact]
-        public async Task GetUniqueEnvironmentVariable()
+        [ConditionalTheory]
+        [InlineData(HostingModel.InProcess)]
+        [InlineData(HostingModel.OutOfProcess)]
+        public async Task GetLongEnvironmentVariable(HostingModel hostingModel)
         {
-            Assert.Equal("foobar", await _fixture.Client.GetStringAsync("/CheckEnvironmentVariable"));
-        }
+            var expectedValue = "AReallyLongValueThatIsGreaterThan300CharactersToForceResizeInNative" +
+                                "AReallyLongValueThatIsGreaterThan300CharactersToForceResizeInNative" +
+                                "AReallyLongValueThatIsGreaterThan300CharactersToForceResizeInNative" +
+                                "AReallyLongValueThatIsGreaterThan300CharactersToForceResizeInNative" +
+                                "AReallyLongValueThatIsGreaterThan300CharactersToForceResizeInNative" +
+                                "AReallyLongValueThatIsGreaterThan300CharactersToForceResizeInNative";
 
-        [ConditionalFact]
-        public async Task GetLongEnvironmentVariable()
-        {
+
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel, publish: true);
+            deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_INPROCESS_TESTING_LONG_VALUE"] = expectedValue;
+
             Assert.Equal(
-                "AReallyLongValueThatIsGreaterThan300CharactersToForceResizeInNative" +
-                "AReallyLongValueThatIsGreaterThan300CharactersToForceResizeInNative" +
-                "AReallyLongValueThatIsGreaterThan300CharactersToForceResizeInNative" +
-                "AReallyLongValueThatIsGreaterThan300CharactersToForceResizeInNative" +
-                "AReallyLongValueThatIsGreaterThan300CharactersToForceResizeInNative" +
-                "AReallyLongValueThatIsGreaterThan300CharactersToForceResizeInNative",
-                await _fixture.Client.GetStringAsync("/CheckEnvironmentLongValueVariable"));
+                expectedValue,
+                await GetStringAsync(deploymentParameters, "/GetEnvironmentVariable?name=ASPNETCORE_INPROCESS_TESTING_LONG_VALUE"));
         }
 
         [ConditionalFact]
-        public async Task GetExistingEnvironmentVariable()
+        [RequiresNewHandler]
+        public Task AuthHeaderEnvironmentVariableRemoved_InProcess() => AuthHeaderEnvironmentVariableRemoved(HostingModel.InProcess);
+
+        [ConditionalFact]
+        public Task AuthHeaderEnvironmentVariableRemoved_OutOfProcess() => AuthHeaderEnvironmentVariableRemoved(HostingModel.OutOfProcess);
+
+        private async Task AuthHeaderEnvironmentVariableRemoved(HostingModel hostingModel)
         {
-            Assert.Contains(";foobarbaz", await _fixture.Client.GetStringAsync("/CheckAppendedEnvironmentVariable"));
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel, publish: true);
+            deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_IIS_HTTPAUTH"] = "shouldberemoved";
+
+            Assert.DoesNotContain("shouldberemoved", await GetStringAsync(deploymentParameters,"/GetEnvironmentVariable?name=ASPNETCORE_IIS_HTTPAUTH"));
         }
 
         [ConditionalFact]
-        public async Task AuthHeaderEnvironmentVariableRemoved()
+        [RequiresNewHandler]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        public Task WebConfigOverridesGlobalEnvironmentVariables_InProcess() => WebConfigOverridesGlobalEnvironmentVariables(HostingModel.InProcess);
+
+        [ConditionalFact]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        public Task WebConfigOverridesGlobalEnvironmentVariables_OutOfProcess() => WebConfigOverridesGlobalEnvironmentVariables(HostingModel.OutOfProcess);
+
+        private async Task WebConfigOverridesGlobalEnvironmentVariables(HostingModel hostingModel)
         {
-            Assert.DoesNotContain("shouldberemoved", await _fixture.Client.GetStringAsync("/CheckRemoveAuthEnvironmentVariable"));
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel, publish: true);
+            deploymentParameters.EnvironmentVariables["ASPNETCORE_ENVIRONMENT"] = "Development";
+            deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_ENVIRONMENT"] = "Production";
+            Assert.Equal("Production", await GetStringAsync(deploymentParameters, "/GetEnvironmentVariable?name=ASPNETCORE_ENVIRONMENT"));
+        }
+
+        [ConditionalFact]
+        [RequiresNewHandler]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        public Task WebConfigAppendsHostingStartup_InProcess() => WebConfigAppendsHostingStartup(HostingModel.InProcess);
+
+        [ConditionalFact]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        public Task WebConfigAppendsHostingStartup_OutOfProcess() => WebConfigAppendsHostingStartup(HostingModel.OutOfProcess);
+
+        private async Task WebConfigAppendsHostingStartup(HostingModel hostingModel)
+        {
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel, publish: true);
+            deploymentParameters.EnvironmentVariables["ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"] = "Asm1";
+            if (hostingModel == HostingModel.InProcess)
+            {
+                Assert.Equal("Asm1", await GetStringAsync(deploymentParameters, "/GetEnvironmentVariable?name=ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"));
+            }
+            else
+            {
+                Assert.Equal("Asm1;Microsoft.AspNetCore.Server.IISIntegration", await GetStringAsync(deploymentParameters, "/GetEnvironmentVariable?name=ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"));
+            }
+        }
+
+        [ConditionalFact]
+        [RequiresNewHandler]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        public Task WebConfigOverridesHostingStartup_InProcess() => WebConfigOverridesHostingStartup(HostingModel.InProcess);
+
+        [ConditionalFact]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        public Task WebConfigOverridesHostingStartup_OutOfProcess() => WebConfigOverridesHostingStartup(HostingModel.OutOfProcess);
+
+        private async Task WebConfigOverridesHostingStartup(HostingModel hostingModel)
+        {
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel, publish: true);
+            deploymentParameters.EnvironmentVariables["ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"] = "Asm1";
+            deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"] = "Asm2";
+            Assert.Equal("Asm2", await GetStringAsync(deploymentParameters, "/GetEnvironmentVariable?name=ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"));
+        }
+
+        [ConditionalFact]
+        [RequiresNewHandler]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        public Task WebConfigExpandsVariables_InProcess() => WebConfigExpandsVariables(HostingModel.InProcess);
+
+        [ConditionalFact]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        public Task WebConfigExpandsVariables_OutOfProcess() => WebConfigExpandsVariables(HostingModel.OutOfProcess);
+
+        private async Task WebConfigExpandsVariables(HostingModel hostingModel)
+        {
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel, publish: true);
+            deploymentParameters.EnvironmentVariables["TestVariable"] = "World";
+            deploymentParameters.WebConfigBasedEnvironmentVariables["OtherVariable"] = "%TestVariable%;Hello";
+            Assert.Equal("World;Hello", await GetStringAsync(deploymentParameters, "/GetEnvironmentVariable?name=OtherVariable"));
         }
     }
 }

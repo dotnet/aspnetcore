@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -116,11 +119,31 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(5, await response.Content.ReadAsAsync<int>());
         }
 
+        [Fact]
+        public async Task TestingInfrastructure_WorksWithGenericHost()
+        {
+            var factory = new WebApplicationFactory<GenericHostWebSite.Program>()
+                .WithWebHostBuilder(builder =>
+                    builder.ConfigureTestServices(s => s.AddSingleton<GenericHostWebSite.TestGenericService, OverridenGenericService>()));
+
+            var response = await factory.CreateClient().GetStringAsync("Testing/Builder");
+
+            Assert.Equal("GenericTest", response);
+        }
+
         private class OverridenService : TestService
         {
             public OverridenService()
             {
                 Message = "Test";
+            }
+        }
+
+        private class OverridenGenericService : GenericHostWebSite.TestGenericService
+        {
+            public OverridenGenericService()
+            {
+                Message = "GenericTest";
             }
         }
 

@@ -26,9 +26,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         public static TestMatrix TestVariants
             => TestMatrix.ForServers(DeployerSelector.ServerType)
-                .WithTfms(Tfm.NetCoreApp22)
+                .WithTfms(Tfm.NetCoreApp30)
                 .WithApplicationTypes(ApplicationType.Portable)
-                .WithAllAncmVersions()
+                .WithAncmVersions(AncmVersion.AspNetCoreModuleV2)
                 .WithAllHostingModels();
 
         [ConditionalTheory]

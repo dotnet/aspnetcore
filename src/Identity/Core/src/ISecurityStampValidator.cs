@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace Microsoft.AspNetCore.Identity
@@ -17,7 +18,7 @@ namespace Microsoft.AspNetCore.Identity
         /// the identity.
         /// </summary>
         /// <param name="context">The context containing the <see cref="System.Security.Claims.ClaimsPrincipal"/>
-        /// and <see cref="Http.Authentication.AuthenticationProperties"/> to validate.</param>
+        /// and <see cref="AuthenticationProperties"/> to validate.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous validation operation.</returns>
         Task ValidateAsync(CookieValidatePrincipalContext context);
     }

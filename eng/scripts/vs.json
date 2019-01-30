@@ -1,0 +1,30 @@
+{
+    "channelUri": "https://aka.ms/vs/15/release/channel",
+    "channelId": "VisualStudio.15.Release",
+    "includeRecommended": false,
+    "addProductLang": [
+        "en-US"
+    ],
+    "add": [
+        "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
+        "Microsoft.VisualStudio.Component.Windows81SDK",
+        "Microsoft.Net.Component.4.7.2.TargetingPack",
+        "Microsoft.Net.Component.4.7.2.SDK",
+        "Microsoft.Net.Component.4.7.1.TargetingPack",
+        "Microsoft.Net.Component.4.7.TargetingPack",
+        "Microsoft.Net.Component.4.6.2.TargetingPack",
+        "Microsoft.Net.Component.4.6.1.TargetingPack",
+        "Microsoft.Net.Component.4.6.TargetingPack",
+        "Microsoft.Net.Component.4.5.2.TargetingPack",
+        "Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81",
+        "Microsoft.VisualStudio.Component.Azure.Storage.Emulator",
+        "Microsoft.VisualStudio.Component.VC.ATL",
+        "Microsoft.VisualStudio.Component.Windows10SDK.15063.Desktop",
+        "Microsoft.VisualStudio.Component.Windows10SDK.17134",
+        "Microsoft.VisualStudio.Workload.ManagedDesktop",
+        "Microsoft.VisualStudio.Workload.NetWeb",
+        "Microsoft.VisualStudio.Workload.NetCoreTools",
+        "Microsoft.VisualStudio.Workload.NativeDesktop",
+        "Microsoft.VisualStudio.Workload.VisualStudioExtension"
+    ]
+}

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -216,6 +216,104 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                         kvp.Value,
                         c => Assert.IsType<RegexRouteConstraint>(c.ParameterPolicy));
                 });
+        }
+
+        [Fact]
+        public void Pattern_ExtraConstraints_MultipleConstraintsForKey()
+        {
+            // Arrange
+            var template = "{a}/{b}/{c}";
+            var defaults = new { };
+            var constraints = new { d = new object[] { new RegexRouteConstraint("foo"), new RegexRouteConstraint("bar"), "baz" } };
+
+            var original = RoutePatternFactory.Parse(template);
+
+            // Act
+            var actual = RoutePatternFactory.Pattern(
+                original.RawText,
+                defaults,
+                constraints,
+                original.PathSegments);
+
+            // Assert
+            Assert.Collection(
+                actual.ParameterPolicies.OrderBy(kvp => kvp.Key),
+                kvp =>
+                {
+                    Assert.Equal("d", kvp.Key);
+                    Assert.Collection(
+                        kvp.Value,
+                        c => Assert.Equal("foo", Assert.IsType<RegexRouteConstraint>(c.ParameterPolicy).Constraint.ToString()),
+                        c => Assert.Equal("bar", Assert.IsType<RegexRouteConstraint>(c.ParameterPolicy).Constraint.ToString()),
+                        c => Assert.Equal("^(baz)$", Assert.IsType<RegexRouteConstraint>(c.ParameterPolicy).Constraint.ToString()));
+                });
+        }
+
+        [Fact]
+        public void Pattern_ExtraConstraints_MergeMultipleConstraintsForKey()
+        {
+            // Arrange
+            var template = "{a:int}/{b}/{c:int}";
+            var defaults = new { };
+            var constraints = new { b = "fizz", c = new object[] { new RegexRouteConstraint("foo"), new RegexRouteConstraint("bar"), "baz" } };
+
+            var original = RoutePatternFactory.Parse(template);
+
+            // Act
+            var actual = RoutePatternFactory.Pattern(
+                original.RawText,
+                defaults,
+                constraints,
+                original.PathSegments);
+
+            // Assert
+            Assert.Collection(
+                actual.ParameterPolicies.OrderBy(kvp => kvp.Key),
+                kvp =>
+                {
+                    Assert.Equal("a", kvp.Key);
+                    Assert.Collection(
+                        kvp.Value,
+                        c => Assert.Equal("int", c.Content));
+                },
+                kvp =>
+                {
+                    Assert.Equal("b", kvp.Key);
+                    Assert.Collection(
+                        kvp.Value,
+                        c => Assert.Equal("^(fizz)$", Assert.IsType<RegexRouteConstraint>(c.ParameterPolicy).Constraint.ToString()));
+                },
+                kvp =>
+                {
+                    Assert.Equal("c", kvp.Key);
+                    Assert.Collection(
+                        kvp.Value,
+                        c => Assert.Equal("foo", Assert.IsType<RegexRouteConstraint>(c.ParameterPolicy).Constraint.ToString()),
+                        c => Assert.Equal("bar", Assert.IsType<RegexRouteConstraint>(c.ParameterPolicy).Constraint.ToString()),
+                        c => Assert.Equal("^(baz)$", Assert.IsType<RegexRouteConstraint>(c.ParameterPolicy).Constraint.ToString()),
+                        c => Assert.Equal("int", c.Content));
+                });
+        }
+
+        [Fact]
+        public void Pattern_ExtraConstraints_NestedArray_Throws()
+        {
+            // Arrange
+            var template = "{a}/{b}/{c:int}";
+            var defaults = new { };
+            var constraints = new { c = new object[] { new object[0] } };
+
+            var original = RoutePatternFactory.Parse(template);
+
+            // Act & Assert
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                RoutePatternFactory.Pattern(
+                    original.RawText,
+                    defaults,
+                    constraints,
+                    original.PathSegments);
+            });
         }
 
         [Fact]
@@ -441,6 +539,89 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             Assert.Null(paramPartD.Default);
         }
 
+        [Fact]
+        public void Parse_WithRequiredValues()
+        {
+            // Arrange
+            var template = "{controller=Home}/{action=Index}/{id?}";
+            var defaults = new { area = "Admin", };
+            var policies = new { };
+            var requiredValues = new { area = "Admin", controller = "Store", action = "Index", };
+
+            // Act
+            var action = RoutePatternFactory.Parse(template, defaults, policies, requiredValues);
+
+            // Assert
+            Assert.Collection(
+                action.RequiredValues.OrderBy(kvp => kvp.Key),
+                kvp => { Assert.Equal("action", kvp.Key); Assert.Equal("Index", kvp.Value); },
+                kvp => { Assert.Equal("area", kvp.Key); Assert.Equal("Admin", kvp.Value); },
+                kvp => { Assert.Equal("controller", kvp.Key); Assert.Equal("Store", kvp.Value); });
+        }
+
+        [Fact]
+        public void Parse_WithRequiredValues_AllowsNullRequiredValue()
+        {
+            // Arrange
+            var template = "{controller=Home}/{action=Index}/{id?}";
+            var defaults = new { };
+            var policies = new { };
+            var requiredValues = new { area = (string)null, controller = "Store", action = "Index", };
+
+            // Act
+            var action = RoutePatternFactory.Parse(template, defaults, policies, requiredValues);
+
+            // Assert
+            Assert.Collection(
+                action.RequiredValues.OrderBy(kvp => kvp.Key),
+                kvp => { Assert.Equal("action", kvp.Key); Assert.Equal("Index", kvp.Value); },
+                kvp => { Assert.Equal("area", kvp.Key); Assert.Null(kvp.Value); },
+                kvp => { Assert.Equal("controller", kvp.Key); Assert.Equal("Store", kvp.Value); });
+        }
+
+        [Fact]
+        public void Parse_WithRequiredValues_AllowsEmptyRequiredValue()
+        {
+            // Arrange
+            var template = "{controller=Home}/{action=Index}/{id?}";
+            var defaults = new { };
+            var policies = new { };
+            var requiredValues = new { area = "", controller = "Store", action = "Index", };
+
+            // Act
+            var action = RoutePatternFactory.Parse(template, defaults, policies, requiredValues);
+
+            // Assert
+            Assert.Collection(
+                action.RequiredValues.OrderBy(kvp => kvp.Key),
+                kvp => { Assert.Equal("action", kvp.Key); Assert.Equal("Index", kvp.Value); },
+                kvp => { Assert.Equal("area", kvp.Key); Assert.Equal("", kvp.Value); },
+                kvp => { Assert.Equal("controller", kvp.Key); Assert.Equal("Store", kvp.Value); });
+        }
+
+        [Fact]
+        public void Parse_WithRequiredValues_ThrowsForNonParameterNonDefault()
+        {
+            // Arrange
+            var template = "{controller=Home}/{action=Index}/{id?}";
+            var defaults = new { };
+            var policies = new { };
+            var requiredValues = new { area = "Admin", controller = "Store", action = "Index", };
+
+            // Act
+            var exception = Assert.Throws<InvalidOperationException>(() =>
+            {
+                var action = RoutePatternFactory.Parse(template, defaults, policies, requiredValues);
+            });
+
+            // Assert
+            Assert.Equal(
+                "No corresponding parameter or default value could be found for the required value " +
+                "'area=Admin'. A non-null required value must correspond to a route parameter or the " +
+                "route pattern must have a matching default value.", 
+                exception.Message);
+        }
+        
         [Fact]
         public void ParameterPart_ParameterNameAndDefaultAndParameterKindAndArrayOfParameterPolicies_ShouldMakeCopyOfParameterPolicies()
         {

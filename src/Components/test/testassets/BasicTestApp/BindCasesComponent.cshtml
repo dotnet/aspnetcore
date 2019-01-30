@@ -1,0 +1,157 @@
+<h2>Textbox</h2>
+<p>
+    Initially blank:
+    <input id="textbox-initially-blank" bind="textboxInitiallyBlankValue" />
+    <span id="textbox-initially-blank-value">@textboxInitiallyBlankValue</span>
+    <input id="textbox-initially-blank-mirror" bind="textboxInitiallyBlankValue" readonly />
+    <button id="textbox-initially-blank-setnull" onclick="@(() => { textboxInitiallyBlankValue = null; })">Set null</button>
+</p>
+<p>
+    Initially populated:
+    <input id="textbox-initially-populated" bind="textboxInitiallyPopulatedValue" />
+    <span id="textbox-initially-populated-value">@textboxInitiallyPopulatedValue</span>
+    <input id="textbox-initially-populated-mirror" bind="textboxInitiallyPopulatedValue" readonly />
+    <button id="textbox-initially-populated-setnull" onclick="@(() => { textboxInitiallyPopulatedValue = null; })">Set null</button>
+</p>
+
+<h2>Numeric Textboxes</h2>
+<p>
+    int:
+    <input id="textbox-int" bind="textboxIntValue" type="number" />
+    <span id="textbox-int-value">@textboxIntValue</span>
+    <input id="textbox-int-mirror" bind="textboxIntValue" readonly />
+</p>
+<p>
+    Nullable int:
+    <input id="textbox-nullable-int" bind="textboxNullableIntValue" type="number" />
+    <span id="textbox-nullable-int-value">@textboxNullableIntValue</span>
+    <input id="textbox-nullable-int-mirror" bind="textboxNullableIntValue" readonly />
+</p>
+<p>
+    long:
+    <input id="textbox-long" bind="textboxLongValue" type="number" />
+    <span id="textbox-long-value">@textboxLongValue</span>
+    <input id="textbox-long-mirror" bind="textboxLongValue" readonly />
+</p>
+<p>
+    Nullable long:
+    <input id="textbox-nullable-long" bind="textboxNullableLongValue" type="number" />
+    <span id="textbox-nullable-long-value">@textboxNullableLongValue</span>
+    <input id="textbox-nullable-long-mirror" bind="textboxNullableLongValue" readonly />
+</p>
+<p>
+    float:
+    <input id="textbox-float" bind="textboxFloatValue" type="number" />
+    <span id="textbox-float-value">@textboxFloatValue</span>
+    <input id="textbox-float-mirror" bind="textboxFloatValue" readonly />
+</p>
+<p>
+    Nullable float:
+    <input id="textbox-nullable-float" bind="textboxNullableFloatValue" type="number" />
+    <span id="textbox-nullable-float-value">@textboxNullableFloatValue</span>
+    <input id="textbox-nullable-float-mirror" bind="textboxNullableFloatValue" readonly />
+</p>
+<p>
+    double:
+    <input id="textbox-double" bind="textboxDoubleValue" type="number" />
+    <span id="textbox-double-value">@textboxDoubleValue</span>
+    <input id="textbox-double-mirror" bind="textboxDoubleValue" readonly />
+</p>
+<p>
+    Nullable double:
+    <input id="textbox-nullable-double" bind="textboxNullableDoubleValue" type="number" />
+    <span id="textbox-nullable-double-value">@textboxNullableDoubleValue</span>
+    <input id="textbox-nullable-double-mirror" bind="textboxNullableDoubleValue" readonly />
+</p>
+<p>
+    decimal:
+    <input id="textbox-decimal" bind="textboxDecimalValue" type="number" />
+    <span id="textbox-decimal-value">@textboxDecimalValue</span>
+    <input id="textbox-decimal-mirror" bind="textboxDecimalValue" readonly />
+</p>
+<p>
+    Nullable decimal:
+    <input id="textbox-nullable-decimal" bind="textboxNullableDecimalValue" type="number" />
+    <span id="textbox-nullable-decimal-value">@textboxNullableDecimalValue</span>
+    <input id="textbox-nullable-decimal-mirror" bind="textboxNullableDecimalValue" readonly />
+</p>
+
+<h2>Text Area</h2>
+<p>
+    Initially blank:
+    <textarea id="textarea-initially-blank" bind="textAreaInitiallyBlankValue"></textarea>
+    <span id="textarea-initially-blank-value">@textAreaInitiallyBlankValue</span>
+</p>
+<p>
+    Initially populated:
+    <textarea id="textarea-initially-populated" bind="textAreaInitiallyPopulatedValue"></textarea>
+    <span id="textarea-initially-populated-value">@textAreaInitiallyPopulatedValue</span>
+</p>
+
+<h2>Checkbox</h2>
+<p>
+    Initially null:
+    <input id="checkbox-initially-null" bind="checkboxInitiallyNullValue" type="checkbox" />
+    <span id="checkbox-initially-null-value">@checkboxInitiallyNullValue</span>
+    <button id="checkbox-initially-null-invert" onclick="@(() => { checkboxInitiallyNullValue = !checkboxInitiallyNullValue; })">Invert</button>
+</p>
+<p>
+    Initially unchecked:
+    <input id="checkbox-initially-unchecked" bind="checkboxInitiallyUncheckedValue" type="checkbox" />
+    <span id="checkbox-initially-unchecked-value">@checkboxInitiallyUncheckedValue</span>
+    <button id="checkbox-initially-unchecked-invert" onclick="@(() => { checkboxInitiallyUncheckedValue = !checkboxInitiallyUncheckedValue; })">Invert</button>
+</p>
+<p>
+    Initially checked:
+    <input id="checkbox-initially-checked" bind="checkboxInitiallyCheckedValue" type="checkbox" />
+    <span id="checkbox-initially-checked-value">@checkboxInitiallyCheckedValue</span>
+    <button id="checkbox-initially-checked-invert" onclick="@(() => { checkboxInitiallyCheckedValue = !checkboxInitiallyCheckedValue; })">Invert</button>
+</p>
+
+<h2>Select</h2>
+<p>
+    <select id="select-box" bind="@selectValue">
+        <option value=@SelectableValue.First>First choice</option>
+        <option value=@SelectableValue.Second>Second choice</option>
+        <option value=@SelectableValue.Third>Third choice</option>
+        @if (includeFourthOption)
+        {
+        <option value=@SelectableValue.Fourth>Fourth choice</option>
+        }
+    </select>
+    <span id="select-box-value">@selectValue</span>
+    <button id="select-box-add-option" onclick="@AddAndSelectNewSelectOption">Add and select new item</button>
+</p>
+
+@functions {
+    string textboxInitiallyBlankValue = null;
+    string textboxInitiallyPopulatedValue = "Hello";
+
+    string textAreaInitiallyBlankValue = null;
+    string textAreaInitiallyPopulatedValue = "Hello";
+
+    bool? checkboxInitiallyNullValue = null;
+    bool checkboxInitiallyUncheckedValue = false;
+    bool checkboxInitiallyCheckedValue = true;
+
+    int textboxIntValue = -42;
+    int? textboxNullableIntValue = null;
+    long textboxLongValue = 3_000_000_000;
+    long? textboxNullableLongValue = null;
+    float textboxFloatValue = 3.141f;
+    float? textboxNullableFloatValue = null;
+    double textboxDoubleValue = 3.14159265359d;
+    double? textboxNullableDoubleValue = null;
+    decimal textboxDecimalValue = 0.0000000000000000000000000001M;
+    decimal? textboxNullableDecimalValue = null;
+
+    bool includeFourthOption = false;
+    enum SelectableValue { First, Second, Third, Fourth }
+    SelectableValue selectValue = SelectableValue.Second;
+
+    void AddAndSelectNewSelectOption()
+    {
+        includeFourthOption = true;
+        selectValue = SelectableValue.Fourth;
+    }
+}

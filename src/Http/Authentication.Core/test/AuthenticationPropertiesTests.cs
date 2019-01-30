@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Xunit;
 
@@ -72,6 +73,10 @@ namespace Microsoft.AspNetCore.Authentication.Core.Test
 
             props.SetString("foo", null);
             Assert.Null(props.GetString("foo"));
+            Assert.Equal(1, props.Items.Count);
+
+            props.SetString("doesntexist", null);
+            Assert.False(props.Items.ContainsKey("doesntexist"));
             Assert.Equal(1, props.Items.Count);
         }
 
@@ -202,6 +207,95 @@ namespace Microsoft.AspNetCore.Authentication.Core.Test
 
             props.Items.Clear();
             Assert.Null(props.AllowRefresh);
+        }
+
+        [Fact]
+        public void SetDateTimeOffset()
+        {
+            var props = new MyAuthenticationProperties();
+
+            props.SetDateTimeOffset("foo", new DateTimeOffset(new DateTime(2018, 03, 19, 12, 34, 56, DateTimeKind.Utc)));
+            Assert.Equal("Mon, 19 Mar 2018 12:34:56 GMT", props.Items["foo"]);
+
+            props.SetDateTimeOffset("foo", null);
+            Assert.False(props.Items.ContainsKey("foo"));
+
+            props.SetDateTimeOffset("doesnotexist", null);
+            Assert.False(props.Items.ContainsKey("doesnotexist"));
+        }
+
+        [Fact]
+        public void GetDateTimeOffset()
+        {
+            var props = new MyAuthenticationProperties();
+            var dateTimeOffset = new DateTimeOffset(new DateTime(2018, 03, 19, 12, 34, 56, DateTimeKind.Utc));
+
+            props.Items["foo"] = dateTimeOffset.ToString("r", CultureInfo.InvariantCulture);
+            Assert.Equal(dateTimeOffset, props.GetDateTimeOffset("foo"));
+
+            props.Items.Remove("foo");
+            Assert.Null(props.GetDateTimeOffset("foo"));
+
+            props.Items["foo"] = "BAR";
+            Assert.Null(props.GetDateTimeOffset("foo"));
+            Assert.Equal("BAR", props.Items["foo"]);
+        }
+
+        [Fact]
+        public void SetBool()
+        {
+            var props = new MyAuthenticationProperties();
+
+            props.SetBool("foo", true);
+            Assert.Equal(true.ToString(), props.Items["foo"]);
+
+            props.SetBool("foo", false);
+            Assert.Equal(false.ToString(), props.Items["foo"]);
+
+            props.SetBool("foo", null);
+            Assert.False(props.Items.ContainsKey("foo"));
+        }
+
+        [Fact]
+        public void GetBool()
+        {
+            var props = new MyAuthenticationProperties();
+
+            props.Items["foo"] = true.ToString();
+            Assert.True(props.GetBool("foo"));
+
+            props.Items["foo"] = false.ToString();
+            Assert.False(props.GetBool("foo"));
+
+            props.Items["foo"] = null;
+            Assert.Null(props.GetBool("foo"));
+
+            props.Items["foo"] = "BAR";
+            Assert.Null(props.GetBool("foo"));
+            Assert.Equal("BAR", props.Items["foo"]);
+        }
+
+        public class MyAuthenticationProperties : AuthenticationProperties
+        {
+            public new DateTimeOffset? GetDateTimeOffset(string key)
+            {
+                return base.GetDateTimeOffset(key);
+            }
+
+            public new void SetDateTimeOffset(string key, DateTimeOffset? value)
+            {
+                base.SetDateTimeOffset(key, value);
+            }
+
+            public new void SetBool(string key, bool? value)
+            {
+                base.SetBool(key, value);
+            }
+
+            public new bool? GetBool(string key)
+            {
+                return base.GetBool(key);
+            }
         }
     }
 }

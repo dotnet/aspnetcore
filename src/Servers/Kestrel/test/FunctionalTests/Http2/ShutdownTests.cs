@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if NETCOREAPP2_2
-
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
@@ -58,13 +56,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
                 .Setup(m => m.Http2ConnectionClosing(It.IsAny<string>()))
                 .Callback(() => requestStopping.SetResult(null));
 
+            var testContext = new TestServiceContext(LoggerFactory, mockKestrelTrace.Object);
+
+            testContext.InitializeHeartbeat();
+
             using (var server = new TestServer(async context =>
             {
                 requestStarted.SetResult(null);
                 await requestUnblocked.Task.DefaultTimeout();
                 await context.Response.WriteAsync("hello world " + context.Request.Protocol);
             },
-            new TestServiceContext(LoggerFactory, mockKestrelTrace.Object),
+            testContext,
             kestrelOptions =>
             {
                 kestrelOptions.Listen(IPAddress.Loopback, 0, listenOptions =>
@@ -132,7 +134,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
                 Assert.False(requestTask.IsCompleted);
                 await requestStarted.Task.DefaultTimeout();
 
-                await server.StopAsync(new CancellationToken(true)).DefaultTimeout();
+                // Wait for the graceful shutdown log before canceling the token passed to StopAsync and triggering an ungraceful shutdown.
+                // Otherwise, graceful shutdown might be skipped causing there to be no corresponding log. https://github.com/aspnet/AspNetCore/issues/6556
+                var closingMessageTask = TestApplicationErrorLogger.WaitForMessage(m => m.Message.Contains("is closing.")).DefaultTimeout();
+
+                var cts = new CancellationTokenSource();
+                var stopServerTask = server.StopAsync(cts.Token).DefaultTimeout();
+
+                await closingMessageTask;
+                cts.Cancel();
+                await stopServerTask;
             }
 
             Assert.Contains(TestApplicationErrorLogger.Messages, m => m.Message.Contains("is closing."));
@@ -146,7 +157,3 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
         }
     }
 }
-#elif NET461 // No ALPN support
-#else
-#error TFMs need updating
-#endif

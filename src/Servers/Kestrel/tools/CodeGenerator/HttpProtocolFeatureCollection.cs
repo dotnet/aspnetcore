@@ -40,6 +40,7 @@ namespace CodeGenerator
                 "IHttpMinRequestBodyDataRateFeature",
                 "IHttpMinResponseDataRateFeature",
                 "IHttpBodyControlFeature",
+                "IHttpResponseStartFeature"
             };
 
             var rareFeatures = new[]
@@ -65,6 +66,7 @@ namespace CodeGenerator
                 "IHttpConnectionFeature",
                 "IHttpMaxRequestBodySizeFeature",
                 "IHttpBodyControlFeature",
+                "IHttpResponseStartFeature"
             };
 
             var usings = $@"

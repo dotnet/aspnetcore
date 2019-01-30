@@ -6,9 +6,12 @@ using System.Linq;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.IIS;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace NativeIISSample
 {
@@ -88,6 +91,13 @@ namespace NativeIISSample
                 else
                 {
                     await context.Response.WriteAsync("Websocket feature is disabled.");
+                }
+
+                await context.Response.WriteAsync(Environment.NewLine);
+                var addresses = context.RequestServices.GetService<IServer>().Features.Get<IServerAddressesFeature>();
+                foreach (var key in addresses.Addresses)
+                {
+                    await context.Response.WriteAsync(key + Environment.NewLine);
                 }
             });
         }

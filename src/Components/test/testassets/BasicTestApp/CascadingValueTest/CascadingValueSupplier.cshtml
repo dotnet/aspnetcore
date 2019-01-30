@@ -1,0 +1,33 @@
+@implements ICanDecrement
+
+@*
+    While it looks somewhat ridiculous to nest so many CascadingValue components,
+    it simplifies the E2E test and is not intended as a representative use case.
+    Each of the CascadingValue components here is configured differently for the test.
+*@
+
+<CascadingValue Value=this IsFixed=true>
+    <CascadingValue Value=counterState>
+        <CascadingValue Name="TestFlag1" Value="currentFlagValue1">
+            <CascadingValue Name="TestFlag2" Value="currentFlagValue2">
+                <CascadingValueIntermediary />
+            </CascadingValue>
+        </CascadingValue>
+    </CascadingValue>
+</CascadingValue>
+
+<p><button id="increment-count" onclick=@counterState.IncrementCount>Increment</button></p>
+<p><label><input type="checkbox" id="toggle-flag-1" bind=currentFlagValue1 /> Flag 1</label></p>
+<p><label><input type="checkbox" id="toggle-flag-2" bind=currentFlagValue2 /> Flag 2</label></p>
+
+@functions {
+    CounterDTO counterState = new CounterDTO { NumClicks = 100 };
+    bool currentFlagValue1;
+    bool currentFlagValue2;
+
+    public void DecrementCount()
+    {
+        counterState.NumClicks--;
+        StateHasChanged();
+    }
+}

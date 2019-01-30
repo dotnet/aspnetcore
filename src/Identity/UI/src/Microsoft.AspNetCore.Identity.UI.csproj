@@ -3,15 +3,20 @@
   <PropertyGroup>
     <Description>ASP.NET Core Identity UI is the default Razor Pages built-in UI for the ASP.NET Core Identity framework.</Description>
     <RazorAssemblyDescription>Compiled Razor views assembly for the ASP.NET Core Identity UI package.</RazorAssemblyDescription>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;identity;membership;razorpages</PackageTags>
+    <IsShippingPackage>true</IsShippingPackage>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
     <ProvideApplicationPartFactoryAttributeTypeName>Microsoft.AspNetCore.Mvc.ApplicationParts.NullApplicationPartFactory, Microsoft.AspNetCore.Mvc.Core</ProvideApplicationPartFactoryAttributeTypeName>
     <RazorCompileOnBuild>false</RazorCompileOnBuild>
     <RazorCompileOnPublish>false</RazorCompileOnPublish>
     <EnableDefaultRazorGenerateItems>false</EnableDefaultRazorGenerateItems>
     <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
+
+    <_EnableAllInclusiveRazorSdk>true</_EnableAllInclusiveRazorSdk>
+    <RazorLangVersion>3.0</RazorLangVersion>
+    <RazorDefaultConfiguration>MVC-3.0</RazorDefaultConfiguration>
   </PropertyGroup>
 
   <ItemGroup>
@@ -29,6 +34,7 @@
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
     <Reference Include="Microsoft.Extensions.FileProviders.Embedded" />
     <Reference Include="Microsoft.Extensions.Identity.Stores" />
+    <Reference Include="Microsoft.NET.Sdk.Razor" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
@@ -54,7 +60,7 @@
     <UIFrameworkVersionMoniker Include="V4" />
   </ItemGroup>
 
-  <Target Name="BuildRazorViews" AfterTargets="Build">
+  <Target Name="BuildRazorViews" DependsOnTargets="Compile" BeforeTargets="Build">
     <Message Text="Building razor views assemblies" Importance="High" />
     <MSbuild Projects="$(MSBuildThisFile)"
              Targets="BuildForUI"
@@ -62,7 +68,7 @@
              BuildProjectReferences=false;
              RazorCompileOnBuild=true;
              UIFrameworkVersion=%(UIFrameworkVersionMoniker.Identity);
-             IntermediateOutputPath=$(IntermediateOutputPath)%(UIFrameworkVersionMoniker.Identity)\" />
+             IntermediateOutputPath=$(IntermediateOutputPath)%(UIFrameworkVersionMoniker.Identity)\;" />
 
     <Copy
       SourceFiles="$(IntermediateOutputPath)%(UIFrameworkVersionMoniker.Identity)\$(TargetName).Views.%(UIFrameworkVersionMoniker.Identity).dll"

@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc
             }
         }
 
-        public JsonResult Generate(params string[] expectedUrls)
+        public ActionResult Generate(params string[] expectedUrls)
         {
             var link = (string)null;
             var query = _actionContext.HttpContext.Request.Query;
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Mvc
 
             var attributeRoutingInfo = _actionContext.ActionDescriptor.AttributeRouteInfo;
 
-            return new JsonResult(new
+            return new OkObjectResult(new
             {
                 expectedUrls = expectedUrls,
                 actualUrl = _actionContext.HttpContext.Request.Path.Value,

@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 1L) != 0)
                 {
                     value = _headers._CacheControl;
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 2L) != 0)
                 {
                     value = _headers._Connection;
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 4L) != 0)
                 {
                     value = _headers._Date;
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 8L) != 0)
                 {
                     value = _headers._KeepAlive;
@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 16L) != 0)
                 {
                     value = _headers._Pragma;
@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 32L) != 0)
                 {
                     value = _headers._Trailer;
@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 64L) != 0)
                 {
                     value = _headers._TransferEncoding;
@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 128L) != 0)
                 {
                     value = _headers._Upgrade;
@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 256L) != 0)
                 {
                     value = _headers._Via;
@@ -180,7 +180,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 512L) != 0)
                 {
                     value = _headers._Warning;
@@ -197,7 +197,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 1024L) != 0)
                 {
                     value = _headers._Allow;
@@ -214,7 +214,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 2048L) != 0)
                 {
                     value = _headers._ContentType;
@@ -231,7 +231,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 4096L) != 0)
                 {
                     value = _headers._ContentEncoding;
@@ -248,7 +248,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 8192L) != 0)
                 {
                     value = _headers._ContentLanguage;
@@ -265,7 +265,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 16384L) != 0)
                 {
                     value = _headers._ContentLocation;
@@ -282,7 +282,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 32768L) != 0)
                 {
                     value = _headers._ContentMD5;
@@ -299,7 +299,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 65536L) != 0)
                 {
                     value = _headers._ContentRange;
@@ -316,7 +316,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 131072L) != 0)
                 {
                     value = _headers._Expires;
@@ -333,7 +333,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 262144L) != 0)
                 {
                     value = _headers._LastModified;
@@ -350,7 +350,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 524288L) != 0)
                 {
                     value = _headers._Accept;
@@ -367,7 +367,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 1048576L) != 0)
                 {
                     value = _headers._AcceptCharset;
@@ -384,7 +384,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 2097152L) != 0)
                 {
                     value = _headers._AcceptEncoding;
@@ -401,7 +401,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 4194304L) != 0)
                 {
                     value = _headers._AcceptLanguage;
@@ -418,7 +418,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 8388608L) != 0)
                 {
                     value = _headers._Authorization;
@@ -435,7 +435,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 16777216L) != 0)
                 {
                     value = _headers._Cookie;
@@ -452,7 +452,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 33554432L) != 0)
                 {
                     value = _headers._Expect;
@@ -469,7 +469,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 67108864L) != 0)
                 {
                     value = _headers._From;
@@ -486,7 +486,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 134217728L) != 0)
                 {
                     value = _headers._Host;
@@ -503,7 +503,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 268435456L) != 0)
                 {
                     value = _headers._IfMatch;
@@ -520,7 +520,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 536870912L) != 0)
                 {
                     value = _headers._IfModifiedSince;
@@ -537,7 +537,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 1073741824L) != 0)
                 {
                     value = _headers._IfNoneMatch;
@@ -554,7 +554,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 2147483648L) != 0)
                 {
                     value = _headers._IfRange;
@@ -571,7 +571,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 4294967296L) != 0)
                 {
                     value = _headers._IfUnmodifiedSince;
@@ -588,7 +588,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 8589934592L) != 0)
                 {
                     value = _headers._MaxForwards;
@@ -605,7 +605,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 17179869184L) != 0)
                 {
                     value = _headers._ProxyAuthorization;
@@ -622,7 +622,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 34359738368L) != 0)
                 {
                     value = _headers._Referer;
@@ -639,7 +639,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 68719476736L) != 0)
                 {
                     value = _headers._Range;
@@ -656,7 +656,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 137438953472L) != 0)
                 {
                     value = _headers._TE;
@@ -673,7 +673,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 274877906944L) != 0)
                 {
                     value = _headers._Translate;
@@ -690,7 +690,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 549755813888L) != 0)
                 {
                     value = _headers._UserAgent;
@@ -707,7 +707,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 1099511627776L) != 0)
                 {
                     value = _headers._Origin;
@@ -724,7 +724,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 2199023255552L) != 0)
                 {
                     value = _headers._AccessControlRequestMethod;
@@ -741,7 +741,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 4398046511104L) != 0)
                 {
                     value = _headers._AccessControlRequestHeaders;
@@ -758,7 +758,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if (_contentLength.HasValue)
                 {
                     value = new StringValues(HeaderUtilities.FormatNonNegativeInt64(_contentLength.Value));
@@ -778,6 +778,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected override bool TryGetValueFast(string key, out StringValues value)
         {
+            value = default;
             switch (key.Length)
             {
                 case 13:
@@ -4810,7 +4811,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 1L) != 0)
                 {
                     value = _headers._CacheControl;
@@ -4827,7 +4828,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 2L) != 0)
                 {
                     value = _headers._Connection;
@@ -4845,7 +4846,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 4L) != 0)
                 {
                     value = _headers._Date;
@@ -4863,7 +4864,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 8L) != 0)
                 {
                     value = _headers._KeepAlive;
@@ -4880,7 +4881,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 16L) != 0)
                 {
                     value = _headers._Pragma;
@@ -4897,7 +4898,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 32L) != 0)
                 {
                     value = _headers._Trailer;
@@ -4914,7 +4915,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 64L) != 0)
                 {
                     value = _headers._TransferEncoding;
@@ -4932,7 +4933,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 128L) != 0)
                 {
                     value = _headers._Upgrade;
@@ -4949,7 +4950,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 256L) != 0)
                 {
                     value = _headers._Via;
@@ -4966,7 +4967,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 512L) != 0)
                 {
                     value = _headers._Warning;
@@ -4983,7 +4984,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 1024L) != 0)
                 {
                     value = _headers._Allow;
@@ -5000,7 +5001,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 2048L) != 0)
                 {
                     value = _headers._ContentType;
@@ -5017,7 +5018,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 4096L) != 0)
                 {
                     value = _headers._ContentEncoding;
@@ -5034,7 +5035,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 8192L) != 0)
                 {
                     value = _headers._ContentLanguage;
@@ -5051,7 +5052,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 16384L) != 0)
                 {
                     value = _headers._ContentLocation;
@@ -5068,7 +5069,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 32768L) != 0)
                 {
                     value = _headers._ContentMD5;
@@ -5085,7 +5086,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 65536L) != 0)
                 {
                     value = _headers._ContentRange;
@@ -5102,7 +5103,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 131072L) != 0)
                 {
                     value = _headers._Expires;
@@ -5119,7 +5120,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 262144L) != 0)
                 {
                     value = _headers._LastModified;
@@ -5136,7 +5137,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 524288L) != 0)
                 {
                     value = _headers._AcceptRanges;
@@ -5153,7 +5154,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 1048576L) != 0)
                 {
                     value = _headers._Age;
@@ -5170,7 +5171,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 2097152L) != 0)
                 {
                     value = _headers._ETag;
@@ -5187,7 +5188,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 4194304L) != 0)
                 {
                     value = _headers._Location;
@@ -5204,7 +5205,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 8388608L) != 0)
                 {
                     value = _headers._ProxyAuthenticate;
@@ -5221,7 +5222,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 16777216L) != 0)
                 {
                     value = _headers._RetryAfter;
@@ -5238,7 +5239,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 33554432L) != 0)
                 {
                     value = _headers._Server;
@@ -5256,7 +5257,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 67108864L) != 0)
                 {
                     value = _headers._SetCookie;
@@ -5273,7 +5274,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 134217728L) != 0)
                 {
                     value = _headers._Vary;
@@ -5290,7 +5291,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 268435456L) != 0)
                 {
                     value = _headers._WWWAuthenticate;
@@ -5307,7 +5308,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 536870912L) != 0)
                 {
                     value = _headers._AccessControlAllowCredentials;
@@ -5324,7 +5325,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 1073741824L) != 0)
                 {
                     value = _headers._AccessControlAllowHeaders;
@@ -5341,7 +5342,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 2147483648L) != 0)
                 {
                     value = _headers._AccessControlAllowMethods;
@@ -5358,7 +5359,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 4294967296L) != 0)
                 {
                     value = _headers._AccessControlAllowOrigin;
@@ -5375,7 +5376,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 8589934592L) != 0)
                 {
                     value = _headers._AccessControlExposeHeaders;
@@ -5392,7 +5393,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 17179869184L) != 0)
                 {
                     value = _headers._AccessControlMaxAge;
@@ -5409,7 +5410,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if (_contentLength.HasValue)
                 {
                     value = new StringValues(HeaderUtilities.FormatNonNegativeInt64(_contentLength.Value));
@@ -5453,6 +5454,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected override bool TryGetValueFast(string key, out StringValues value)
         {
+            value = default;
             switch (key.Length)
             {
                 case 13:
@@ -7784,7 +7786,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             if (value != null)
                             {
                                 output.Write(new ReadOnlySpan<byte>(_headerBytes, 17, 14));
-                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -7810,7 +7812,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             if (value != null)
                             {
                                 output.Write(new ReadOnlySpan<byte>(_headerBytes, 31, 8));
-                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -7831,7 +7833,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             if (value != null)
                             {
                                 output.Write(new ReadOnlySpan<byte>(_headerBytes, 133, 16));
-                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -7857,7 +7859,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             if (value != null)
                             {
                                 output.Write(new ReadOnlySpan<byte>(_headerBytes, 350, 10));
-                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -7871,7 +7873,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 if ((tempBits & -9223372036854775808L) != 0)
                 {
                     output.Write(new ReadOnlySpan<byte>(_headerBytes, 592, 18));
-                    PipelineExtensions.WriteNumeric(ref output, (ulong)ContentLength.Value);
+                    output.WriteNumeric((ulong)ContentLength.Value);
 
                     if((tempBits & ~-9223372036854775808L) == 0)
                     {
@@ -7889,7 +7891,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             if (value != null)
                             {
                                 output.Write(new ReadOnlySpan<byte>(_headerBytes, 0, 17));
-                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -7910,7 +7912,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             if (value != null)
                             {
                                 output.Write(new ReadOnlySpan<byte>(_headerBytes, 39, 14));
-                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -7931,7 +7933,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             if (value != null)
                             {
                                 output.Write(new ReadOnlySpan<byte>(_headerBytes, 53, 10));
-                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -7952,7 +7954,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             if (value != null)
                             {
                                 output.Write(new ReadOnlySpan<byte>(_headerBytes, 63, 11));
-                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -7978,7 +7980,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             if (value != null)
                             {
                                 output.Write(new ReadOnlySpan<byte>(_headerBytes, 74, 21));
-                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -7999,7 +8001,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             if (value != null)
                             {
                                 output.Write(new ReadOnlySpan<byte>(_headerBytes, 95, 11));
-                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8020,7 +8022,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             if (value != null)
                             {
                                 output.Write(new ReadOnlySpan<byte>(_headerBytes, 106, 7));
-                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8041,7 +8043,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             if (value != null)
                             {
                                 output.Write(new ReadOnlySpan<byte>(_headerBytes, 113, 11));
-                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8062,7 +8064,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             if (value != null)
                             {
                                 output.Write(new ReadOnlySpan<byte>(_headerBytes, 124, 9));
-                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8083,7 +8085,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             if (value != null)
                             {
                                 output.Write(new ReadOnlySpan<byte>(_headerBytes, 149, 20));
-                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8104,7 +8106,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             if (value != null)
                             {
                                 output.Write(new ReadOnlySpan<byte>(_headerBytes, 169, 20));
-                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8125,7 +8127,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             if (value != null)
                             {
                                 output.Write(new ReadOnlySpan<byte>(_headerBytes, 189, 20));
-                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8146,7 +8148,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             if (value != null)
                             {
                                 output.Write(new ReadOnlySpan<byte>(_headerBytes, 209, 15));
-                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8167,7 +8169,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             if (value != null)
                             {
                                 output.Write(new ReadOnlySpan<byte>(_headerBytes, 224, 17));
-                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8188,7 +8190,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             if (value != null)
                             {
                                 output.Write(new ReadOnlySpan<byte>(_headerBytes, 241, 11));
-                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8209,7 +8211,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             if (value != null)
                             {
                                 output.Write(new ReadOnlySpan<byte>(_headerBytes, 252, 17));
-                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8230,7 +8232,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             if (value != null)
                             {
                                 output.Write(new ReadOnlySpan<byte>(_headerBytes, 269, 17));
-                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8251,7 +8253,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             if (value != null)
                             {
                                 output.Write(new ReadOnlySpan<byte>(_headerBytes, 286, 7));
-                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8272,7 +8274,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             if (value != null)
                             {
                                 output.Write(new ReadOnlySpan<byte>(_headerBytes, 293, 8));
-                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8293,7 +8295,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             if (value != null)
                             {
                                 output.Write(new ReadOnlySpan<byte>(_headerBytes, 301, 12));
-                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8314,7 +8316,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             if (value != null)
                             {
                                 output.Write(new ReadOnlySpan<byte>(_headerBytes, 313, 22));
-                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8335,7 +8337,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             if (value != null)
                             {
                                 output.Write(new ReadOnlySpan<byte>(_headerBytes, 335, 15));
-                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8356,7 +8358,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             if (value != null)
                             {
                                 output.Write(new ReadOnlySpan<byte>(_headerBytes, 360, 14));
-                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8377,7 +8379,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             if (value != null)
                             {
                                 output.Write(new ReadOnlySpan<byte>(_headerBytes, 374, 8));
-                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8398,7 +8400,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             if (value != null)
                             {
                                 output.Write(new ReadOnlySpan<byte>(_headerBytes, 382, 20));
-                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8419,7 +8421,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             if (value != null)
                             {
                                 output.Write(new ReadOnlySpan<byte>(_headerBytes, 402, 36));
-                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8440,7 +8442,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             if (value != null)
                             {
                                 output.Write(new ReadOnlySpan<byte>(_headerBytes, 438, 32));
-                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8461,7 +8463,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             if (value != null)
                             {
                                 output.Write(new ReadOnlySpan<byte>(_headerBytes, 470, 32));
-                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8482,7 +8484,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             if (value != null)
                             {
                                 output.Write(new ReadOnlySpan<byte>(_headerBytes, 502, 31));
-                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8503,7 +8505,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             if (value != null)
                             {
                                 output.Write(new ReadOnlySpan<byte>(_headerBytes, 533, 33));
-                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -8524,7 +8526,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             if (value != null)
                             {
                                 output.Write(new ReadOnlySpan<byte>(_headerBytes, 566, 26));
-                                PipelineExtensions.WriteAsciiNoValidation(ref output, value);
+                                output.WriteAsciiNoValidation(value);
                             }
                         }
                     }
@@ -9015,7 +9017,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                StringValues value;
+                StringValues value = default;
                 if ((_bits & 1L) != 0)
                 {
                     value = _headers._ETag;
@@ -9036,6 +9038,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected override bool TryGetValueFast(string key, out StringValues value)
         {
+            value = default;
             switch (key.Length)
             {
                 case 4:

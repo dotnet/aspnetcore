@@ -4,6 +4,7 @@
 #pragma once
 
 #include <random>
+#include <map>
 
 #define MIN_PORT                                    1025
 #define MAX_PORT                                    48000
@@ -33,13 +34,14 @@ public:
         _In_ BOOL                  fWindowsAuthEnabled,
         _In_ BOOL                  fBasicAuthEnabled,
         _In_ BOOL                  fAnonymousAuthEnabled,
-        _In_ ENVIRONMENT_VAR_HASH* pEnvironmentVariables,
+        _In_ std::map<std::wstring, std::wstring, ignore_case_comparer>& pEnvironmentVariables,
         _In_ BOOL                  fStdoutLogEnabled,
         _In_ BOOL                  fWebSocketSupported,
         _In_ STRU                 *pstruStdoutLogFile,
         _In_ STRU                 *pszAppPhysicalPath,
         _In_ STRU                 *pszAppPath,
-        _In_ STRU                 *pszAppVirtualPath
+        _In_ STRU                 *pszAppVirtualPath,
+        _In_ STRU                 *pszHttpsPort
         );
 
     HRESULT
@@ -98,7 +100,7 @@ public:
         }
     }
 
-    virtual 
+    virtual
     ~SERVER_PROCESS();
 
     static
@@ -129,7 +131,7 @@ public:
     };
 
     VOID
-    SendSignal( 
+    SendSignal(
         VOID
     );
 
@@ -142,7 +144,7 @@ private:
        VOID
     );
 
-    BOOL 
+    BOOL
     IsDebuggerIsAttached(
         VOID
     );
@@ -164,13 +166,13 @@ private:
         _Out_ BOOL      * pfReady
     );
 
-    HRESULT 
+    HRESULT
     RegisterProcessWait(
         _In_ PHANDLE phWaitHandle,
         _In_ HANDLE  hProcessToWaitOn
     );
 
-    HRESULT 
+    HRESULT
     GetChildProcessHandles(
         VOID
     );
@@ -252,6 +254,7 @@ private:
     STRU                    m_struAppVirtualPath;  // e.g., '/' for site
     STRU                    m_struAppFullPath;     // e.g.,  /LM/W3SVC/4/ROOT/Inproc
     STRU                    m_struPhysicalPath;    // e.g., c:/test/mysite
+    STRU                    m_struHttpsPort;     // e.g.,  /LM/W3SVC/4/ROOT/Inproc
     STRU                    m_struPort;
     STRU                    m_struCommandLine;
 
@@ -281,12 +284,12 @@ private:
     HANDLE                  m_hProcessWaitHandle;
     HANDLE                  m_hShutdownHandle;
     //
-    // m_hChildProcessHandle is the handle to process created by 
+    // m_hChildProcessHandle is the handle to process created by
     // m_hProcessHandle process if it does.
     //
     HANDLE                  m_hChildProcessHandles[MAX_ACTIVE_CHILD_PROCESSES];
     HANDLE                  m_hChildProcessWaitHandles[MAX_ACTIVE_CHILD_PROCESSES];
 
     PROCESS_MANAGER         *m_pProcessManager;
-    ENVIRONMENT_VAR_HASH    *m_pEnvironmentVarTable ;
+    std::map<std::wstring, std::wstring, ignore_case_comparer> m_pEnvironmentVarTable;
 };

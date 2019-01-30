@@ -9,6 +9,9 @@
     <RpmPackageVendor>.NET Foundation</RpmPackageVendor>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
     <NeutralLanguage>en-US</NeutralLanguage>
+
+    <!-- Package settings -->
+
     <PackageLicenseUrl>https://raw.githubusercontent.com/aspnet/AspNetCore/2.0.0/LICENSE.txt</PackageLicenseUrl>
     <!-- The SPDX name for the source license. See https://spdx.org/licenses/. -->
     <PackageLicenseType>Apache-2.0</PackageLicenseType>
@@ -28,19 +31,28 @@
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <Serviceable>true</Serviceable>
 
-    <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
-    <RepositoryUrl>https://github.com/aspnet/AspNetCore</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
+    <IncludeSource>false</IncludeSource>
+    <IncludeSymbols>true</IncludeSymbols>
 
     <SharedFxProductName>$(Product) $(PackageVersion) Shared Framework</SharedFxProductName>
     <SharedFxDescription>Shared Framework for hosting of Microsoft ASP.NET Core applications. It is open source, cross-platform and is supported by Microsoft. We hope you enjoy using it! If you do, please consider joining the active community of developers that are contributing to the project on GitHub ($(RepositoryUrl)). We happily accept issues and PRs.</SharedFxDescription>
   </PropertyGroup>
 
-  <!-- Compilation options -->
+  <!-- Source code settings -->
+  <PropertyGroup>
+    <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
+    <RepositoryUrl>https://github.com/aspnet/AspNetCore</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <SharedSourceRoot>$(MSBuildThisFileDirectory)src\Shared\</SharedSourceRoot>
+    <GoogleTestSubmoduleRoot>$(RepositoryRoot)src\submodules\googletest\</GoogleTestSubmoduleRoot>
+  </PropertyGroup>
+
+  <!-- Compilation options which apply to all languages. Language-specific options should be set in eng/targets/$(lang).Common.props -->
   <PropertyGroup>
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)eng\AspNetCore.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
 
     <!-- Instructs the compiler to use SHA256 instead of SHA1 when adding file hashes to PDBs. -->
     <ChecksumAlgorithm>SHA256</ChecksumAlgorithm>
@@ -49,51 +61,59 @@
 
     <!-- Fixes a common error in targets implementing a NoBuild mode. -->
     <BuildProjectReferences Condition=" '$(NoBuild)' == 'true' ">false</BuildProjectReferences>
+    
+    <!-- Enables Strict mode for Roslyn compiler -->
+    <Features>strict</Features>
   </PropertyGroup>
 
-  <!-- Certificate names used for Authenticode signing. -->
-  <PropertyGroup Condition=" '$(DisableCodeSigning)' != 'true' ">
-    <AssemblySigningCertName>Microsoft400</AssemblySigningCertName>
-    <AssemblySigning3rdPartyCertName>3PartySHA2</AssemblySigning3rdPartyCertName>
-    <PowerShellSigningCertName>Microsoft400</PowerShellSigningCertName>
-    <PackageSigningCertName>NuGet</PackageSigningCertName>
-    <VsixSigningCertName>VsixSHA2</VsixSigningCertName>
-    <JarSigningCertName>MicrosoftJAR</JarSigningCertName>
-  </PropertyGroup>
-
-  <Import Project="build\external-dependencies.props" />
+  <Import Project="eng\Versions.props" />
   <Import Project="build\sources.props" />
 
-  <!-- Folder layout -->
+  <!-- Artifacts layout -->
   <PropertyGroup>
-    <ArtifactsDir Condition="'$(ArtifactsDir)' == ''">$(RepositoryRoot)artifacts\</ArtifactsDir>
+    <ArtifactsDir>$(MSBuildThisFileDirectory)artifacts\</ArtifactsDir>
     <ArtifactsObjDir>$(ArtifactsDir)obj\</ArtifactsObjDir>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <ArtifactsConfigurationDir>$(ArtifactsDir)$(Configuration)\</ArtifactsConfigurationDir>
-    <ArtifactsBinDir>$(ArtifactsConfigurationDir)bin\</ArtifactsBinDir>
-    <InstallersOutputPath>$(ArtifactsConfigurationDir)installers\</InstallersOutputPath>
-    <PackageOutputPath>$(ArtifactsDir)build\</PackageOutputPath>
+    <ArtifactsPackagesDir>$(ArtifactsDir)packages\$(Configuration)\</ArtifactsPackagesDir>
+    <ArtifactsShippingPackagesDir>$(ArtifactsPackagesDir)Shipping\</ArtifactsShippingPackagesDir>
+    <ArtifactsNonShippingPackagesDir>$(ArtifactsPackagesDir)NonShipping\</ArtifactsNonShippingPackagesDir>
+    <InstallersOutputPath>$(ArtifactsDir)installers\$(Configuration)\</InstallersOutputPath>
+    <VisualStudioSetupOutputPath>$(ArtifactsDir)VSSetup\$(Configuration)\</VisualStudioSetupOutputPath>
+  </PropertyGroup>
 
+  <!-- Ensure these output paths exist. -->
+  <ItemGroup>
+    <CreateDirectory Include="$(ArtifactsShippingPackagesDir)" />
+    <CreateDirectory Include="$(ArtifactsNonShippingPackagesDir)" />
+    <CreateDirectory Include="$(InstallersOutputPath)" />
+    <CreateDirectory Include="$(VisualStudioSetupOutputPath)" />
+  </ItemGroup>
+
+  <PropertyGroup Condition=" '$(OutputInRepoRoot)' == 'true' ">
+    <BaseOutputPath>$(RepositoryRoot)bin\$(Configuration)\$(MSBuildProjectName)\</BaseOutputPath>
+    <OutputPath>$(BaseOutputPath)</OutputPath>
+    <BaseIntermediateOutputPath>$(RepositoryRoot)obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(Configuration)\</IntermediateOutputPath>
+    <OutputPath Condition=" '$(AppendPlatformToOutputPath)' == 'true' AND '$(Platform)' != '' AND '$(Platform)' != 'AnyCPU' ">$(OutputPath)$(Platform)\</OutputPath>
+    <IntermediateOutputPath Condition=" '$(AppendPlatformToOutputPath)' == 'true' AND '$(Platform)' != '' AND '$(Platform)' != 'AnyCPU' ">$(IntermediateOutputPath)$(Platform)\</IntermediateOutputPath>
+  </PropertyGroup>
+
+  <!-- Defines project type conventions. -->
+  <PropertyGroup>
     <RepoRelativeProjectDir>$([MSBuild]::MakeRelative($(RepositoryRoot), $(MSBuildProjectDirectory)))</RepoRelativeProjectDir>
 
     <IsBenchmarkProject Condition="$(MSBuildProjectName.EndsWith('.Performance')) OR $(RepoRelativeProjectDir.Contains('perf'))">true</IsBenchmarkProject>
     <IsTestProject Condition="$(MSBuildProjectName.EndsWith('Tests')) OR $(MSBuildProjectName.EndsWith('.Test'))">true</IsTestProject>
     <IsTestAssetProject Condition="$(RepoRelativeProjectDir.Contains('testassets'))">true</IsTestAssetProject>
     <IsSampleProject Condition="$(RepoRelativeProjectDir.Contains('sample'))">true</IsSampleProject>
-
-    <IncludeSource>false</IncludeSource>
-    <IncludeSymbols>true</IncludeSymbols>
-
-    <SharedSourceRoot>$(MSBuildThisFileDirectory)src\Shared\</SharedSourceRoot>
-    <GoogleTestSubmoduleRoot>$(RepositoryRoot)src\submodules\googletest\</GoogleTestSubmoduleRoot>
-
-    <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
     <DisableDeterministicSourceRoot Condition="'$(IsSampleProject)' == 'true' OR '$(IsTestAssetProject)' == 'true'">true</DisableDeterministicSourceRoot>
   </PropertyGroup>
 
+  <Import Project="build\tasks\RepoTasks.tasks" Condition="'$(MSBuildProjectName)' != 'RepoTasks' AND '$(DesignTimeBuild)' != 'true'" />
+
   <PropertyGroup>
     <!-- Projects which reference Microsoft.AspNetCore.Mvc.Testing should import this targets file to ensure dependency .deps.json files are copied into test output. -->
-    <MvcTestingTargets>$(MSBuildThisFileDirectory)src\Mvc\src\Microsoft.AspNetCore.Mvc.Testing\build\netstandard2.0\Microsoft.AspNetCore.Mvc.Testing.targets</MvcTestingTargets>
+    <MvcTestingTargets>$(MSBuildThisFileDirectory)src\Mvc\src\Microsoft.AspNetCore.Mvc.Testing\Microsoft.AspNetCore.Mvc.Testing.targets</MvcTestingTargets>
   </PropertyGroup>
 
   <Import Project="eng\Dependencies.props" />
@@ -102,7 +122,6 @@
   <Import Project="eng\targets\RuntimeIdentifiers.props" />
   <Import Project="eng\targets\Cpp.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.vcxproj'" />
   <Import Project="eng\targets\CSharp.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.csproj'" />
-  <Import Project="eng\targets\SharedFx.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.shfxproj'" />
   <Import Project="eng\targets\Wix.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.wixproj'" />
   <Import Project="eng\targets\Npm.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.npmproj'" />
 

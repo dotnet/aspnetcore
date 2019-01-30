@@ -1,0 +1,21 @@
+@*
+    This component is to show that:
+
+    1. We can match a cascading parameter based on interface
+    2. Since the supplied value is fixed (see CascadingValueSupplier.cshtml),
+       ancestor renders don't trigger descendant renders even though the
+       supplied value type is mutable.
+*@
+
+@{ numRenders++; }
+<p>
+    @(nameof(CascadingValueReceiveFixedByInterface)) render count:
+    <strong id="receive-by-interface-num-renders">@numRenders</strong>
+    <button id="decrement-count" onclick=@Ancestor.DecrementCount>Decrement</button>
+</p>
+
+@functions {
+    int numRenders = 0;
+
+    [CascadingParameter] ICanDecrement Ancestor { get; set; }
+}

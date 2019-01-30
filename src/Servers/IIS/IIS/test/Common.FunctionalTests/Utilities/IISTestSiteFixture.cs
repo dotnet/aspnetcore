@@ -113,13 +113,15 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 RuntimeFlavor.CoreClr,
                 RuntimeArchitecture.x64)
             {
-                TargetFramework = Tfm.NetCoreApp22,
+                TargetFramework = Tfm.NetCoreApp30,
                 AncmVersion = AncmVersion.AspNetCoreModuleV2,
                 HostingModel = HostingModel.InProcess,
-                PublishApplicationBeforeDeployment = true,
+                PublishApplicationBeforeDeployment = true
             };
 
             _configure(deploymentParameters);
+
+            deploymentParameters.ApplicationPublisher = new PublishedApplicationPublisher(deploymentParameters.ApplicationPath);
 
             _deployer = IISApplicationDeployerFactory.Create(deploymentParameters, _loggerFactory);
             _deploymentResult = (IISDeploymentResult)_deployer.DeployAsync().Result;

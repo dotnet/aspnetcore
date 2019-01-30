@@ -1,0 +1,7 @@
+[
+    {
+        "TypeId": "public class Microsoft.AspNetCore.Server.IISIntegration.IISDefaults",
+        "MemberId": "public static readonly System.String AuthenticationScheme",
+        "Kind": "Removal"
+    }
+]

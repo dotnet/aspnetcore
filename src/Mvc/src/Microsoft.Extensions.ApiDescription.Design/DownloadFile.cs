@@ -177,6 +177,8 @@ namespace Microsoft.Extensions.ApiDescription.Tasks
                             using (var outStream = File.Create(destinationPath))
                             {
                                 await responseStream.CopyToAsync(outStream);
+
+                                await outStream.FlushAsync();
                             }
                         }
                     }

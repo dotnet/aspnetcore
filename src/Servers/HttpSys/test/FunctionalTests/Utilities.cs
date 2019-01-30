@@ -3,12 +3,14 @@
 
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -23,6 +25,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private const int MaxPort = 8000;
         private static int NextPort = BasePort;
         private static object PortLock = new object();
+        internal static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(15);
+        internal static readonly int WriteRetryLimit = 1000;
+
         // Minimum support for Windows 7 is assumed.
         internal static readonly bool IsWin8orLater;
 
@@ -38,7 +43,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             return CreateDynamicHttpServer(string.Empty, out root, out baseAddress, options => { }, app);
         }
 
-        internal static IServer CreateHttpServer(out string baseAddress, Action<HttpSysOptions> configureOptions, RequestDelegate app)
+        internal static IServer CreateHttpServer(out string baseAddress, RequestDelegate app, Action<HttpSysOptions> configureOptions)
         {
             string root;
             return CreateDynamicHttpServer(string.Empty, out root, out baseAddress, configureOptions, app);
@@ -67,6 +72,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 options.Authentication.Schemes = authType;
                 options.Authentication.AllowAnonymous = allowAnonymous;
             }, app);
+        }
+
+        internal static IWebHost CreateDynamicHost(out string baseAddress, Action<HttpSysOptions> configureOptions, RequestDelegate app)
+        {
+            return CreateDynamicHost(string.Empty, out var root, out baseAddress, configureOptions, app);
         }
 
         internal static IWebHost CreateDynamicHost(string basePath, out string root, out string baseAddress, Action<HttpSysOptions> configureOptions, RequestDelegate app)
@@ -150,5 +160,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             server.StartAsync(new DummyApplication(app), CancellationToken.None).Wait();
             return server;
         }
+
+        internal static Task WithTimeout(this Task task) => task.TimeoutAfter(DefaultTimeout);
+
+        internal static Task<T> WithTimeout<T>(this Task<T> task) => task.TimeoutAfter(DefaultTimeout);
     }
 }

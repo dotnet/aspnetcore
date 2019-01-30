@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return WriteAsync(Constants.EmptyData, cancellationToken);
         }
 
-        public Task WriteAsync<T>(Func<PipeWriter, T, long> callback, T state, CancellationToken cancellationToken)
+        public Task WriteChunkAsync(ReadOnlySpan<byte> buffer, CancellationToken cancellationToken)
         {
             lock (_contextLock)
             {
@@ -80,9 +80,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     return Task.CompletedTask;
                 }
 
-                var buffer = _pipeWriter;
-                var bytesCommitted = callback(buffer, state);
-                _unflushedBytes += bytesCommitted;
+                if (buffer.Length > 0)
+                {
+                    var writer = new BufferWriter<PipeWriter>(_pipeWriter);
+
+                    writer.WriteBeginChunkBytes(buffer.Length);
+                    writer.Write(buffer);
+                    writer.WriteEndChunkBytes();
+                    writer.Commit();
+
+                    _unflushedBytes += writer.BytesCommitted;
+                }
             }
 
             return FlushAsync(cancellationToken);

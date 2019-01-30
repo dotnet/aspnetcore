@@ -128,6 +128,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             return response;
         }
 
+        public static Task Retry(Func<Task> func, TimeSpan maxTime)
+        {
+            return Retry(func, (int)(maxTime.TotalMilliseconds / 200), 200);
+        }
+
         public static async Task Retry(Func<Task> func, int attempts, int msDelay)
         {
             var exceptions = new List<Exception>();
@@ -236,6 +241,31 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 }
                 throw ex;
             }
+        }
+
+        public static string CreateEmptyApplication(XElement config, string contentRoot)
+        {
+            var siteElement = config
+                .RequiredElement("system.applicationHost")
+                .RequiredElement("sites")
+                .RequiredElement("site");
+
+            var application = siteElement
+                .RequiredElement("application");
+
+            var rootApplicationDirectory = new DirectoryInfo(contentRoot + "rootApp");
+            rootApplicationDirectory.Create();
+
+            File.WriteAllText(Path.Combine(rootApplicationDirectory.FullName, "web.config"), "<configuration></configuration>");
+
+            var rootApplication = new XElement(application);
+            rootApplication.SetAttributeValue("path", "/");
+            rootApplication.RequiredElement("virtualDirectory")
+                .SetAttributeValue("physicalPath", rootApplicationDirectory.FullName);
+
+            siteElement.Add(rootApplication);
+
+            return rootApplicationDirectory.FullName;
         }
     }
 }

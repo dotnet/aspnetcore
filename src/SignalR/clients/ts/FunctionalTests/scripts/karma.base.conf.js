@@ -31,6 +31,7 @@ try {
                 // Log browser messages to a file, not the terminal.
                 browserConsoleLogOptions: {
                     level: "debug",
+                    format: "[%b] %T: %m",
                     terminal: false
                 },
 

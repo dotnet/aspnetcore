@@ -10,15 +10,8 @@ $platforms = @(
         VCPlatform = "Win32";
     }
 );
-$srcDir = "`$(MSBuildThisFileDirectory)..\src";
+$srcDir = "`$(MSBuildThisFileDirectory)..";
 $projects = @(
-    @{
-        ProjectDirectory = "$srcDir\AspNetCoreModuleV1\AspNetCore";
-        ProjectName = "AspNetCore.vcxproj";
-        NativeAsset = "aspnetcore";
-        BaseOutputPath = "AspNetCoreModuleV1"
-        PropetyName = "AspNetCoreModuleV1Shim"
-     },
      @{
         ProjectDirectory = "$srcDir\AspNetCoreModuleV2\AspNetCore";
         ProjectName = "`AspNetCore.vcxproj";

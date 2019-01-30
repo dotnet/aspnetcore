@@ -25,11 +25,13 @@ namespace FunctionalTests
 
         public ITestOutputHelper Output { get; }
 
-        [Fact]
-        public async Task RunClientTests()
+        [Theory]
+        [InlineData("Startup")]
+        [InlineData("StartupWithoutEndpointRouting")]
+        public async Task RunClientTests(string startup)
         {
             using (StartLog(out var loggerFactory))
-            using (var deploymentResult = await CreateDeployments(loggerFactory))
+            using (var deploymentResult = await CreateDeployments(loggerFactory, startup))
             {
                 ProcessStartInfo processStartInfo;
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -58,12 +60,9 @@ namespace FunctionalTests
             }
         }
 
-        private static async Task<SamplesDeploymentResult> CreateDeployments(ILoggerFactory loggerFactory)
+        private static async Task<SamplesDeploymentResult> CreateDeployments(ILoggerFactory loggerFactory, string startup)
         {
             var solutionPath = TestPathUtilities.GetSolutionRootDirectory("Middleware");
-
-            var runtimeFlavor = GetRuntimeFlavor();
-            var applicationType = runtimeFlavor == RuntimeFlavor.Clr ? ApplicationType.Standalone : ApplicationType.Portable;
 
             var configuration =
 #if RELEASE
@@ -74,12 +73,17 @@ namespace FunctionalTests
 
             var destinationParameters = new DeploymentParameters
             {
-                RuntimeFlavor = runtimeFlavor,
+                TargetFramework = "netcoreapp3.0",
+                RuntimeFlavor = RuntimeFlavor.CoreClr,
                 ServerType = ServerType.Kestrel,
                 ApplicationPath = Path.Combine(solutionPath, "CORS", "samples", "SampleDestination"),
                 PublishApplicationBeforeDeployment = false,
-                ApplicationType = applicationType,
+                ApplicationType = ApplicationType.Portable,
                 Configuration = configuration,
+                EnvironmentVariables =
+                {
+                    ["CORS_STARTUP"] = startup
+                }
             };
 
             var destinationFactory = ApplicationDeployerFactory.Create(destinationParameters, loggerFactory);
@@ -87,11 +91,12 @@ namespace FunctionalTests
 
             var originParameters = new DeploymentParameters
             {
-                RuntimeFlavor = runtimeFlavor,
+                TargetFramework = "netcoreapp3.0",
+                RuntimeFlavor = RuntimeFlavor.CoreClr,
                 ServerType = ServerType.Kestrel,
                 ApplicationPath = Path.Combine(solutionPath, "CORS", "samples", "SampleOrigin"),
                 PublishApplicationBeforeDeployment = false,
-                ApplicationType = applicationType,
+                ApplicationType = ApplicationType.Portable,
                 Configuration = configuration,
             };
 
@@ -99,17 +104,6 @@ namespace FunctionalTests
             var originDeployment = await originFactory.DeployAsync();
 
             return new SamplesDeploymentResult(originFactory, originDeployment, destinationFactory, destinationDeployment);
-        }
-
-        private static RuntimeFlavor GetRuntimeFlavor()
-        {
-#if NET461
-                return RuntimeFlavor.Clr;
-#elif NETCOREAPP2_2
-            return RuntimeFlavor.CoreClr;
-#else
-#error Target frameworks need to be updated
-#endif
         }
 
         private readonly struct SamplesDeploymentResult : IDisposable

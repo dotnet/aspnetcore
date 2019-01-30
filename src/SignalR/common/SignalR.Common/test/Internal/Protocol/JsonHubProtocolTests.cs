@@ -40,6 +40,9 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             new JsonProtocolTestData("InvocationMessage_HasCustomArgumentWithNullValueIgnore", new InvocationMessage(null, "Target", new object[] { new CustomObject() }), true, NullValueHandling.Ignore, "{\"type\":1,\"target\":\"Target\",\"arguments\":[{\"stringProp\":\"SignalR!\",\"doubleProp\":6.2831853071,\"intProp\":42,\"dateTimeProp\":\"2017-04-11T00:00:00Z\",\"byteArrProp\":\"AQID\"}]}"),
             new JsonProtocolTestData("InvocationMessage_HasCustomArgumentWithNullValueIgnoreAndNoCamelCase", new InvocationMessage(null, "Target", new object[] { new CustomObject() }), false, NullValueHandling.Include, "{\"type\":1,\"target\":\"Target\",\"arguments\":[{\"StringProp\":\"SignalR!\",\"DoubleProp\":6.2831853071,\"IntProp\":42,\"DateTimeProp\":\"2017-04-11T00:00:00Z\",\"NullProp\":null,\"ByteArrProp\":\"AQID\"}]}"),
             new JsonProtocolTestData("InvocationMessage_HasCustomArgumentWithNullValueInclude", new InvocationMessage(null, "Target", new object[] { new CustomObject() }), true, NullValueHandling.Include, "{\"type\":1,\"target\":\"Target\",\"arguments\":[{\"stringProp\":\"SignalR!\",\"doubleProp\":6.2831853071,\"intProp\":42,\"dateTimeProp\":\"2017-04-11T00:00:00Z\",\"nullProp\":null,\"byteArrProp\":\"AQID\"}]}"),
+            new JsonProtocolTestData("InvocationMessage_HasStreamArgument", new InvocationMessage(null, "Target", Array.Empty<object>(), new string[] { "__test_id__" }), true, NullValueHandling.Ignore, "{\"type\":1,\"target\":\"Target\",\"arguments\":[],\"streamIds\":[\"__test_id__\"]}"),
+            new JsonProtocolTestData("InvocationMessage_HasStreamAndNormalArgument", new InvocationMessage(null, "Target", new object[] { 42 }, new string[] { "__test_id__" }), true, NullValueHandling.Ignore, "{\"type\":1,\"target\":\"Target\",\"arguments\":[42],\"streamIds\":[\"__test_id__\"]}"),
+            new JsonProtocolTestData("InvocationMessage_HasMultipleStreams", new InvocationMessage(null, "Target", Array.Empty<object>(), new string[] { "__test_id__", "__test_id2__" }), true, NullValueHandling.Ignore, "{\"type\":1,\"target\":\"Target\",\"arguments\":[],\"streamIds\":[\"__test_id__\",\"__test_id2__\"]}"),
             new JsonProtocolTestData("InvocationMessage_HasHeaders", AddHeaders(TestHeaders, new InvocationMessage("123", "Target", new object[] { 1, "Foo", 2.0f })), true, NullValueHandling.Ignore, "{\"type\":1," + SerializedHeaders + ",\"invocationId\":\"123\",\"target\":\"Target\",\"arguments\":[1,\"Foo\",2.0]}"),
             new JsonProtocolTestData("InvocationMessage_StringIsoDateArgument", new InvocationMessage("Method", new object[] { "2016-05-10T13:51:20+12:34" }), true, NullValueHandling.Ignore, "{\"type\":1,\"target\":\"Method\",\"arguments\":[\"2016-05-10T13:51:20+12:34\"]}"),
             new JsonProtocolTestData("InvocationMessage_DateTimeOffsetArgument", new InvocationMessage("Method", new object[] { DateTimeOffset.Parse("2016-05-10T13:51:20+12:34") }), true, NullValueHandling.Ignore, "{\"type\":1,\"target\":\"Method\",\"arguments\":[\"2016-05-10T13:51:20+12:34\"]}"),
@@ -55,7 +58,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             new JsonProtocolTestData("StreamItemMessage_HasCustomItemWithNullValueInclude", new StreamItemMessage("123", new CustomObject()), true, NullValueHandling.Include, "{\"type\":2,\"invocationId\":\"123\",\"item\":{\"stringProp\":\"SignalR!\",\"doubleProp\":6.2831853071,\"intProp\":42,\"dateTimeProp\":\"2017-04-11T00:00:00Z\",\"nullProp\":null,\"byteArrProp\":\"AQID\"}}"),
             new JsonProtocolTestData("StreamItemMessage_HasHeaders", AddHeaders(TestHeaders, new StreamItemMessage("123", new CustomObject())), true, NullValueHandling.Include, "{\"type\":2," + SerializedHeaders + ",\"invocationId\":\"123\",\"item\":{\"stringProp\":\"SignalR!\",\"doubleProp\":6.2831853071,\"intProp\":42,\"dateTimeProp\":\"2017-04-11T00:00:00Z\",\"nullProp\":null,\"byteArrProp\":\"AQID\"}}"),
 
-            new JsonProtocolTestData("CompletionMessage_HasIntergerResult", CompletionMessage.WithResult("123", 1), true, NullValueHandling.Ignore, "{\"type\":3,\"invocationId\":\"123\",\"result\":1}"),
+            new JsonProtocolTestData("CompletionMessage_HasIntegerResult", CompletionMessage.WithResult("123", 1), true, NullValueHandling.Ignore, "{\"type\":3,\"invocationId\":\"123\",\"result\":1}"),
             new JsonProtocolTestData("CompletionMessage_HasStringResult", CompletionMessage.WithResult("123", "Foo"), true, NullValueHandling.Ignore, "{\"type\":3,\"invocationId\":\"123\",\"result\":\"Foo\"}"),
             new JsonProtocolTestData("CompletionMessage_HasFloatResult", CompletionMessage.WithResult("123", 2.0f), true, NullValueHandling.Ignore, "{\"type\":3,\"invocationId\":\"123\",\"result\":2.0}"),
             new JsonProtocolTestData("CompletionMessage_HasBoolResult", CompletionMessage.WithResult("123", true), true, NullValueHandling.Ignore, "{\"type\":3,\"invocationId\":\"123\",\"result\":true}"),
@@ -74,6 +77,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             new JsonProtocolTestData("StreamInvocationMessage_HasFloatArgument", new StreamInvocationMessage("123", "Target", new object[] { 1, "Foo", 2.0f }), true, NullValueHandling.Ignore, "{\"type\":4,\"invocationId\":\"123\",\"target\":\"Target\",\"arguments\":[1,\"Foo\",2.0]}"),
             new JsonProtocolTestData("StreamInvocationMessage_HasBoolArgument", new StreamInvocationMessage("123", "Target", new object[] { true }), true, NullValueHandling.Ignore, "{\"type\":4,\"invocationId\":\"123\",\"target\":\"Target\",\"arguments\":[true]}"),
             new JsonProtocolTestData("StreamInvocationMessage_HasNullArgument", new StreamInvocationMessage("123", "Target", new object[] { null }), true, NullValueHandling.Ignore, "{\"type\":4,\"invocationId\":\"123\",\"target\":\"Target\",\"arguments\":[null]}"),
+            new JsonProtocolTestData("StreamInvocationMessage_HasStreamArgument", new StreamInvocationMessage("123", "Target", Array.Empty<object>(), new string[] { "__test_id__" }), true, NullValueHandling.Ignore, "{\"type\":4,\"invocationId\":\"123\",\"target\":\"Target\",\"arguments\":[],\"streamIds\":[\"__test_id__\"]}"),
             new JsonProtocolTestData("StreamInvocationMessage_HasCustomArgumentWithNoCamelCase", new StreamInvocationMessage("123", "Target", new object[] { new CustomObject() }), false, NullValueHandling.Ignore, "{\"type\":4,\"invocationId\":\"123\",\"target\":\"Target\",\"arguments\":[{\"StringProp\":\"SignalR!\",\"DoubleProp\":6.2831853071,\"IntProp\":42,\"DateTimeProp\":\"2017-04-11T00:00:00Z\",\"ByteArrProp\":\"AQID\"}]}"),
             new JsonProtocolTestData("StreamInvocationMessage_HasCustomArgumentWithNullValueIgnore", new StreamInvocationMessage("123", "Target", new object[] { new CustomObject() }), true, NullValueHandling.Ignore, "{\"type\":4,\"invocationId\":\"123\",\"target\":\"Target\",\"arguments\":[{\"stringProp\":\"SignalR!\",\"doubleProp\":6.2831853071,\"intProp\":42,\"dateTimeProp\":\"2017-04-11T00:00:00Z\",\"byteArrProp\":\"AQID\"}]}"),
             new JsonProtocolTestData("StreamInvocationMessage_HasCustomArgumentWithNullValueIgnoreAndNoCamelCase", new StreamInvocationMessage("123", "Target", new object[] { new CustomObject() }), false, NullValueHandling.Include, "{\"type\":4,\"invocationId\":\"123\",\"target\":\"Target\",\"arguments\":[{\"StringProp\":\"SignalR!\",\"DoubleProp\":6.2831853071,\"IntProp\":42,\"DateTimeProp\":\"2017-04-11T00:00:00Z\",\"NullProp\":null,\"ByteArrProp\":\"AQID\"}]}"),
@@ -88,7 +92,8 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             new JsonProtocolTestData("CloseMessage", CloseMessage.Empty, false, NullValueHandling.Ignore, "{\"type\":7}"),
             new JsonProtocolTestData("CloseMessage_HasError", new CloseMessage("Error!"), false, NullValueHandling.Ignore, "{\"type\":7,\"error\":\"Error!\"}"),
             new JsonProtocolTestData("CloseMessage_HasErrorWithCamelCase", new CloseMessage("Error!"), true, NullValueHandling.Ignore, "{\"type\":7,\"error\":\"Error!\"}"),
-            new JsonProtocolTestData("CloseMessage_HasErrorEmptyString", new CloseMessage(""), false, NullValueHandling.Ignore, "{\"type\":7,\"error\":\"\"}")
+            new JsonProtocolTestData("CloseMessage_HasErrorEmptyString", new CloseMessage(""), false, NullValueHandling.Ignore, "{\"type\":7,\"error\":\"\"}"),
+
         }.ToDictionary(t => t.Name);
 
         public static IEnumerable<object[]> ProtocolTestDataNames => ProtocolTestData.Keys.Select(name => new object[] { name });
@@ -101,6 +106,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             new JsonProtocolTestData("StreamInvocationMessage_IntegerArrayArgumentFirst", new StreamInvocationMessage("3", "Method", new object[] { 1, 2 }), false, NullValueHandling.Ignore, "{ \"type\":4, \"arguments\": [1,2], \"target\": \"Method\", \"invocationId\": \"3\" }"),
             new JsonProtocolTestData("CompletionMessage_ResultFirst", new CompletionMessage("15", null, 10, hasResult: true), false, NullValueHandling.Ignore, "{ \"type\":3, \"result\": 10, \"invocationId\": \"15\" }"),
             new JsonProtocolTestData("StreamItemMessage_ItemFirst", new StreamItemMessage("1a", "foo"), false, NullValueHandling.Ignore, "{ \"item\": \"foo\", \"invocationId\": \"1a\", \"type\":2 }")
+
         }.ToDictionary(t => t.Name);
 
         public static IEnumerable<object[]> OutOfOrderJsonTestDataNames => OutOfOrderJsonTestData.Keys.Select(name => new object[] { name });
@@ -113,7 +119,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 
             var expectedOutput = Frame(testData.Json);
 
-            var protocolOptions = new JsonHubProtocolOptions
+            var protocolOptions = new NewtonsoftJsonHubProtocolOptions
             {
                 PayloadSerializerSettings = new JsonSerializerSettings()
                 {
@@ -122,7 +128,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
                 }
             };
 
-            var protocol = new JsonHubProtocol(Options.Create(protocolOptions));
+            var protocol = new NewtonsoftJsonHubProtocol(Options.Create(protocolOptions));
 
             var writer = MemoryBufferWriter.Get();
             try
@@ -146,7 +152,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 
             var input = Frame(testData.Json);
 
-            var protocolOptions = new JsonHubProtocolOptions
+            var protocolOptions = new NewtonsoftJsonHubProtocolOptions
             {
                 PayloadSerializerSettings = new JsonSerializerSettings
                 {
@@ -156,7 +162,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             };
 
             var binder = new TestBinder(testData.Message);
-            var protocol = new JsonHubProtocol(Options.Create(protocolOptions));
+            var protocol = new NewtonsoftJsonHubProtocol(Options.Create(protocolOptions));
             var data = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(input));
             protocol.TryParseMessage(ref data, binder, out var message);
 
@@ -206,7 +212,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             input = Frame(input);
 
             var binder = new TestBinder(Array.Empty<Type>(), typeof(object));
-            var protocol = new JsonHubProtocol();
+            var protocol = new NewtonsoftJsonHubProtocol();
             var data = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(input));
             var ex = Assert.Throws<InvalidDataException>(() => protocol.TryParseMessage(ref data, binder, out var _));
             Assert.Equal(expectedMessage, ex.Message);
@@ -221,7 +227,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             var input = Frame(testData.Json);
 
             var binder = new TestBinder(testData.Message);
-            var protocol = new JsonHubProtocol();
+            var protocol = new NewtonsoftJsonHubProtocol();
             var data = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(input));
             protocol.TryParseMessage(ref data, binder, out var message);
 
@@ -235,7 +241,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             input = Frame(input);
 
             var binder = new TestBinder(paramTypes: new[] { typeof(int), typeof(string) }, returnType: typeof(bool));
-            var protocol = new JsonHubProtocol();
+            var protocol = new NewtonsoftJsonHubProtocol();
             var data = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(input));
             Assert.True(protocol.TryParseMessage(ref data, binder, out var message));
             Assert.NotNull(message);
@@ -256,7 +262,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             input = Frame(input);
 
             var binder = new TestBinder(paramTypes: new[] { typeof(int), typeof(string) }, returnType: typeof(bool));
-            var protocol = new JsonHubProtocol();
+            var protocol = new NewtonsoftJsonHubProtocol();
             var data = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(input));
             protocol.TryParseMessage(ref data, binder, out var message);
             var bindingFailure = Assert.IsType<InvocationBindingFailureMessage>(message);
@@ -269,7 +275,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         public void DateTimeArgumentPreservesUtcKind(string input)
         {
             var binder = new TestBinder(new[] { typeof(DateTime) });
-            var protocol = new JsonHubProtocol();
+            var protocol = new NewtonsoftJsonHubProtocol();
             var data = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(Frame(input)));
             protocol.TryParseMessage(ref data, binder, out var message);
             var invocationMessage = Assert.IsType<InvocationMessage>(message);
@@ -285,7 +291,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         public void DateTimeReturnValuePreservesUtcKind(string input)
         {
             var binder = new TestBinder(typeof(DateTime));
-            var protocol = new JsonHubProtocol();
+            var protocol = new NewtonsoftJsonHubProtocol();
             var data = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(Frame(input)));
             protocol.TryParseMessage(ref data, binder, out var message);
             var invocationMessage = Assert.IsType<CompletionMessage>(message);
@@ -298,7 +304,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         public void ReadToEndOfArgumentArrayOnError()
         {
             var binder = new TestBinder(new[] { typeof(string) });
-            var protocol = new JsonHubProtocol();
+            var protocol = new NewtonsoftJsonHubProtocol();
             var data = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(Frame("{'type':1,'invocationId':'42','target':'foo','arguments':[[],{'target':'foo2'}]}")));
             protocol.TryParseMessage(ref data, binder, out var message);
             var bindingFailure = Assert.IsType<InvocationBindingFailureMessage>(message);

@@ -1,0 +1,32 @@
+<TemplatedTable Items="@Items" Context="row">
+    <Header><tr><th>Col1</th><th>Col2</th><th>Col3</th></tr></Header>
+    <Footer>
+        @if (ShowFooter)
+        {
+            <tr><td>The</td><td></td><td>End</td></tr>
+        }
+    </Footer>
+    <ItemTemplate>
+        <tr><td>@row.Col1</td><td>@row.Col2</td><td>@row.Col3</td></tr>
+    </ItemTemplate>
+</TemplatedTable>
+
+Toggle: <input type="checkbox" bind="ShowFooter" id="toggle"/>
+
+@functions {
+    List<Item> Items { get; } = new List<Item>()
+    {
+        new Item(){ Col1 = "a0", Col2 = "b0", Col3 = "c0", },
+        new Item(){ Col1 = "a1", Col2 = "b1", Col3 = "c1", },
+        new Item(){ Col1 = "a2", Col2 = "b2", Col3 = "c2", },
+    };
+
+    bool ShowFooter;
+
+    public class Item
+    {
+        public string Col1 { get; set; }
+        public string Col2 { get; set; }
+        public string Col3 { get; set; }
+    }
+}

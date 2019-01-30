@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -42,6 +42,17 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                     HasSyntheticArguments = true;
                     return false;
                 }
+                else if (ReflectionHelper.IsStreamingType(p.ParameterType, mustBeDirectType: true))
+                {
+                    if (StreamingParameters == null)
+                    {
+                        StreamingParameters = new List<Type>();
+                    }
+
+                    StreamingParameters.Add(p.ParameterType.GetGenericArguments()[0]);
+                    HasSyntheticArguments = true;
+                    return false;
+                }
                 return true;
             }).Select(p => p.ParameterType).ToArray();
 
@@ -52,6 +63,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
             Policies = policies.ToArray();
         }
+
+        public List<Type> StreamingParameters { get; private set; }
 
         private Func<object, CancellationToken, IAsyncEnumerator<object>> _convertToEnumerator;
 

@@ -1705,7 +1705,8 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task FromBody_JToken_ExcludedFromValidation()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(new TestMvcOptions().Value);
+            var options = new TestMvcOptions().Value;
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(options);
             var parameter = new ParameterDescriptor
             {
                 Name = "Parameter1",
@@ -1718,11 +1719,12 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             };
 
             var testContext = ModelBindingTestHelper.GetTestContext(
-                request =>
+                updateRequest: request =>
                 {
                     request.Body = new MemoryStream(Encoding.UTF8.GetBytes("{ message: \"Hello\" }"));
                     request.ContentType = "application/json";
-                });
+                },
+                mvcOptions: options);
 
             var httpContext = testContext.HttpContext;
             var modelState = testContext.ModelState;

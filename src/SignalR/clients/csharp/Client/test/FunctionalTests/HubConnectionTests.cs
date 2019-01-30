@@ -337,9 +337,46 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     await connection.StartAsync().OrTimeout();
 
                     var channel = await connection.StreamAsChannelAsync<int>("Stream", 5).OrTimeout();
-                    var results = await channel.ReadAllAsync().OrTimeout();
+                    var results = await channel.ReadAndCollectAllAsync().OrTimeout();
 
                     Assert.Equal(new[] { 0, 1, 2, 3, 4 }, results.ToArray());
+                }
+                catch (Exception ex)
+                {
+                    LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                    throw;
+                }
+                finally
+                {
+                    await connection.DisposeAsync().OrTimeout();
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
+        [LogLevel(LogLevel.Trace)]
+        public async Task CanStreamToAndFromClientInSameInvocation(string protocolName, HttpTransportType transportType, string path)
+        {
+            var protocol = HubProtocols[protocolName];
+            using (StartServer<Startup>(out var server))
+            {
+                var connection = CreateHubConnection(server.Url, path, transportType, protocol, LoggerFactory);
+                try
+                {
+                    await connection.StartAsync().OrTimeout();
+
+                    var channelWriter = Channel.CreateBounded<string>(5);
+                    var channel = await connection.StreamAsChannelAsync<string>("StreamEcho", channelWriter.Reader).OrTimeout();
+
+                    await channelWriter.Writer.WriteAsync("1").AsTask().OrTimeout();
+                    Assert.Equal("1", await channel.ReadAsync().AsTask().OrTimeout());
+                    await channelWriter.Writer.WriteAsync("2").AsTask().OrTimeout();
+                    Assert.Equal("2", await channel.ReadAsync().AsTask().OrTimeout());
+                    channelWriter.Writer.Complete();
+
+                    var results = await channel.ReadAndCollectAllAsync().OrTimeout();
+                    Assert.Empty(results);
                 }
                 catch (Exception ex)
                 {
@@ -383,7 +420,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
                     cts.Cancel();
 
-                    var results = await channel.ReadAllAsync(suppressExceptions: true).OrTimeout();
+                    var results = await channel.ReadAndCollectAllAsync(suppressExceptions: true).OrTimeout();
 
                     Assert.True(results.Count > 0 && results.Count < 1000);
 
@@ -451,7 +488,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     await connection.StartAsync().OrTimeout();
                     var channel = await connection.StreamAsChannelAsync<int>("StreamException").OrTimeout();
 
-                    var ex = await Assert.ThrowsAsync<HubException>(() => channel.ReadAllAsync().OrTimeout());
+                    var ex = await Assert.ThrowsAsync<HubException>(() => channel.ReadAndCollectAllAsync().OrTimeout());
                     Assert.Equal("An unexpected error occurred invoking 'StreamException' on the server. InvalidOperationException: Error occurred while streaming.", ex.Message);
                 }
                 catch (Exception ex)
@@ -617,7 +654,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     await connection.StartAsync().OrTimeout();
 
                     var channel = await connection.StreamAsChannelAsync<int>("!@#$%");
-                    var ex = await Assert.ThrowsAsync<HubException>(() => channel.ReadAllAsync().OrTimeout());
+                    var ex = await Assert.ThrowsAsync<HubException>(() => channel.ReadAndCollectAllAsync().OrTimeout());
                     Assert.Equal("Failed to invoke '!@#$%' due to an error on the server. HubException: Method does not exist.", ex.Message);
                 }
                 catch (Exception ex)
@@ -651,7 +688,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     await connection.StartAsync().OrTimeout();
 
                     var channel = await connection.StreamAsChannelAsync<int>("Stream", 42, 42);
-                    var ex = await Assert.ThrowsAsync<HubException>(() => channel.ReadAllAsync().OrTimeout());
+                    var ex = await Assert.ThrowsAsync<HubException>(() => channel.ReadAndCollectAllAsync().OrTimeout());
                     Assert.Equal("Failed to invoke 'Stream' due to an error on the server. InvalidDataException: Invocation provides 2 argument(s) but target expects 1.", ex.Message);
                 }
                 catch (Exception ex)
@@ -685,7 +722,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     await connection.StartAsync().OrTimeout();
 
                     var channel = await connection.StreamAsChannelAsync<int>("Stream", "xyz");
-                    var ex = await Assert.ThrowsAsync<HubException>(() => channel.ReadAllAsync().OrTimeout());
+                    var ex = await Assert.ThrowsAsync<HubException>(() => channel.ReadAndCollectAllAsync().OrTimeout());
                     Assert.Equal("Failed to invoke 'Stream' due to an error on the server. InvalidDataException: Error binding arguments. Make sure that the types of the provided values match the types of the hub method being invoked.", ex.Message);
                 }
                 catch (Exception ex)
@@ -718,7 +755,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 {
                     await connection.StartAsync().OrTimeout();
                     var channel = await connection.StreamAsChannelAsync<int>("HelloWorld").OrTimeout();
-                    var ex = await Assert.ThrowsAsync<HubException>(() => channel.ReadAllAsync()).OrTimeout();
+                    var ex = await Assert.ThrowsAsync<HubException>(() => channel.ReadAndCollectAllAsync()).OrTimeout();
                     Assert.Equal("The client attempted to invoke the non-streaming 'HelloWorld' method with a streaming invocation.", ex.Message);
                 }
                 catch (Exception ex)
@@ -784,7 +821,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 {
                     await connection.StartAsync().OrTimeout();
                     var channel = await connection.StreamAsChannelAsync<int>("StreamBroken").OrTimeout();
-                    var ex = await Assert.ThrowsAsync<HubException>(() => channel.ReadAllAsync()).OrTimeout();
+                    var ex = await Assert.ThrowsAsync<HubException>(() => channel.ReadAndCollectAllAsync()).OrTimeout();
                     Assert.Equal("The value returned by the streaming method 'StreamBroken' is not a ChannelReader<>.", ex.Message);
                 }
                 catch (Exception ex)
@@ -796,6 +833,31 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 {
                     await connection.DisposeAsync().OrTimeout();
                 }
+            }
+        }
+
+        [Fact]
+        public async Task RandomGenericIsNotTreatedAsStream()
+        {
+            bool ExpectedErrors(WriteContext writeContext)
+            {
+                return "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" == writeContext.LoggerName &&
+                    "FailedInvokingHubMethod" == writeContext.EventId.Name;
+            }
+            var hubPath = HubPaths[0];
+            var hubProtocol = HubProtocols.First().Value;
+            var transportType = TransportTypes().First().Cast<HttpTransportType>().First();
+
+            using (StartServer<Startup>(out var server, ExpectedErrors))
+            {
+                var connection = CreateHubConnection(server.Url, hubPath, transportType, hubProtocol, LoggerFactory);
+                await connection.StartAsync().OrTimeout();
+                // List<T> will be looked at to replace with a StreamPlaceholder and should be skipped, so an error will be thrown from the
+                // protocol on the server when it tries to match List<T> with a StreamPlaceholder
+                var hubException = await Assert.ThrowsAsync<HubException>(() => connection.InvokeAsync<int>("StreamEcho", new List<string> { "1", "2" }).OrTimeout());
+                Assert.Equal("Failed to invoke 'StreamEcho' due to an error on the server. InvalidDataException: Invocation provides 1 argument(s) but target expects 0.",
+                    hubException.Message);
+                await connection.DisposeAsync().OrTimeout();
             }
         }
 
@@ -882,8 +944,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 try
                 {
                     await hubConnection.StartAsync().OrTimeout();
-                    var headerValues = await hubConnection.InvokeAsync<string[]>(nameof(TestHub.GetHeaderValues), new[] {"X-test", "X-42"}).OrTimeout();
-                    Assert.Equal(new[] {"42", "test"}, headerValues);
+                    var headerValues = await hubConnection.InvokeAsync<string[]>(nameof(TestHub.GetHeaderValues), new[] { "X-test", "X-42" }).OrTimeout();
+                    Assert.Equal(new[] { "42", "test" }, headerValues);
                 }
                 catch (Exception ex)
                 {
@@ -946,8 +1008,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     await hubConnection.StartAsync().OrTimeout();
 
                     var features = await hubConnection.InvokeAsync<object[]>(nameof(TestHub.GetIHttpConnectionFeatureProperties)).OrTimeout();
-                    var localPort = (Int64)features[0];
-                    var remotePort = (Int64)features[1];
+                    var localPort = (long)features[0];
+                    var remotePort = (long)features[1];
                     var localIP = (string)features[2];
                     var remoteIP = (string)features[3];
 
@@ -1116,7 +1178,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         public static Dictionary<string, IHubProtocol> HubProtocols =>
             new Dictionary<string, IHubProtocol>
             {
-                { "json", new JsonHubProtocol() },
+                { "json", new NewtonsoftJsonHubProtocol() },
                 { "messagepack", new MessagePackHubProtocol() },
             };
 

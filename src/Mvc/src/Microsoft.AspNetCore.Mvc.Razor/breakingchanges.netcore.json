@@ -1,0 +1,67 @@
+[
+  {
+    "TypeId": "public abstract class Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorReferenceManager",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.Razor.Compilation.CompilationFailedException : System.Exception, Microsoft.AspNetCore.Diagnostics.ICompilationException",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.Razor.Compilation.MetadataReferenceFeature",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.Razor.Compilation.MetadataReferenceFeatureProvider : Microsoft.AspNetCore.Mvc.ApplicationParts.IApplicationFeatureProvider<Microsoft.AspNetCore.Mvc.Razor.Compilation.MetadataReferenceFeature>",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.Razor.Compilation.RoslynCompilationContext",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.Razor.RazorViewEngine : Microsoft.AspNetCore.Mvc.Razor.IRazorViewEngine",
+    "MemberId": "public .ctor(Microsoft.AspNetCore.Mvc.Razor.IRazorPageFactoryProvider pageFactory, Microsoft.AspNetCore.Mvc.Razor.IRazorPageActivator pageActivator, System.Text.Encodings.Web.HtmlEncoder htmlEncoder, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.Razor.RazorViewEngineOptions> optionsAccessor, Microsoft.AspNetCore.Razor.Language.RazorProject razorProject, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, System.Diagnostics.DiagnosticSource diagnosticSource)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.Razor.RazorViewEngine : Microsoft.AspNetCore.Mvc.Razor.IRazorViewEngine",
+    "MemberId": "public .ctor(Microsoft.AspNetCore.Mvc.Razor.IRazorPageFactoryProvider pageFactory, Microsoft.AspNetCore.Mvc.Razor.IRazorPageActivator pageActivator, System.Text.Encodings.Web.HtmlEncoder htmlEncoder, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.Razor.RazorViewEngineOptions> optionsAccessor, Microsoft.AspNetCore.Razor.Language.RazorProjectFileSystem razorFileSystem, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, System.Diagnostics.DiagnosticSource diagnosticSource)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.Razor.RazorView : Microsoft.AspNetCore.Mvc.ViewEngines.IView",
+    "MemberId": "public .ctor(Microsoft.AspNetCore.Mvc.Razor.IRazorViewEngine viewEngine, Microsoft.AspNetCore.Mvc.Razor.IRazorPageActivator pageActivator, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.Razor.IRazorPage> viewStartPages, Microsoft.AspNetCore.Mvc.Razor.IRazorPage razorPage, System.Text.Encodings.Web.HtmlEncoder htmlEncoder, System.Diagnostics.DiagnosticSource diagnosticSource)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.Razor.RazorViewEngineOptions",
+    "MemberId": "public System.Action<Microsoft.AspNetCore.Mvc.Razor.Compilation.RoslynCompilationContext> get_CompilationCallback()",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.Razor.RazorViewEngineOptions",
+    "MemberId": "public System.Collections.Generic.IList<Microsoft.CodeAnalysis.MetadataReference> get_AdditionalCompilationReferences()",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.Razor.RazorViewEngineOptions",
+    "MemberId": "public System.Void set_CompilationCallback(System.Action<Microsoft.AspNetCore.Mvc.Razor.Compilation.RoslynCompilationContext> value)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.Razor.RazorViewEngineOptions",
+    "MemberId": "public System.Collections.Generic.IList<Microsoft.Extensions.FileProviders.IFileProvider> get_FileProviders()",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.Razor.Compilation.CompiledViewDescriptor",
+    "MemberId": "public System.Boolean get_IsPrecompiled()",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.Razor.Compilation.CompiledViewDescriptor",
+    "MemberId": "public System.Void set_IsPrecompiled(System.Boolean value)",
+    "Kind": "Removal"
+  }
+]

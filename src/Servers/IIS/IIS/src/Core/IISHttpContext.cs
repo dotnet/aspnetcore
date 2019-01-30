@@ -25,7 +25,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core
 {
-    internal abstract partial class IISHttpContext : NativeRequestContext, IDisposable
+    internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPoolWorkItem, IDisposable
     {
         private const int MinAllocBufferSize = 2048;
         private const int PauseWriterThreshold = 65536;
@@ -82,6 +82,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             _options = options;
             _server = server;
             _logger = logger;
+
+            ((IHttpBodyControlFeature)this).AllowSynchronousIO = _options.AllowSynchronousIO;
         }
 
         public Version HttpVersion { get; set; }
@@ -180,9 +182,16 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         private string GetOriginalPath()
         {
-            // applicationInitialization request might have trailing \0 character included in the length
-            // check and skip it
             var rawUrlInBytes = GetRawUrlInBytes();
+
+            // Pre Windows 10 RS2 applicationInitialization request might not have pRawUrl set, fallback to cocked url
+            if (rawUrlInBytes == null)
+            {
+                return GetCookedUrl().GetAbsPath();
+            }
+
+            // ApplicationInitialization request might have trailing \0 character included in the length
+            // check and skip it
             if (rawUrlInBytes.Length > 0 && rawUrlInBytes[rawUrlInBytes.Length - 1] == 0)
             {
                 var newRawUrlInBytes = new byte[rawUrlInBytes.Length - 1];
@@ -530,6 +539,40 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 }
             }
             return null;
+        }
+
+        // Invoked by the thread pool
+        public void Execute()
+        {
+            _ = HandleRequest();
+        }
+
+        private async Task HandleRequest()
+        {
+            bool successfulRequest = false;
+            try
+            {
+                successfulRequest = await ProcessRequestAsync();
+            }
+            catch (Exception ex)
+            {
+               _logger.LogError(0, ex, $"Unexpected exception in {nameof(IISHttpContext)}.{nameof(HandleRequest)}.");
+            }
+            finally
+            {
+                // Post completion after completing the request to resume the state machine
+                PostCompletion(ConvertRequestCompletionResults(successfulRequest));
+
+
+                // Dispose the context
+                Dispose();
+            }
+        }
+
+        private static NativeMethods.REQUEST_NOTIFICATION_STATUS ConvertRequestCompletionResults(bool success)
+        {
+            return success ? NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_CONTINUE
+                           : NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_FINISH_REQUEST;
         }
     }
 }

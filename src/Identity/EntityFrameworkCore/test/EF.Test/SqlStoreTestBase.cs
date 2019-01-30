@@ -180,7 +180,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             IdentityResultAssert.IsSuccess(await roleMgr.DeleteAsync(role));
             Assert.Null(await roleMgr.FindByNameAsync(roleName));
             Assert.False(await roleMgr.RoleExistsAsync(roleName));
-            // REVIEW: We should throw if deleteing a non empty role?
+            // REVIEW: We should throw if deleting a non empty role?
             roles = await userMgr.GetRolesAsync(user);
 
             Assert.Empty(roles);

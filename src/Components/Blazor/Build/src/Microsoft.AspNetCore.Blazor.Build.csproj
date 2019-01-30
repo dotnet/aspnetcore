@@ -1,0 +1,46 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <Description>Build mechanism for ASP.NET Core Blazor applications.</Description>
+    <OutputType>Exe</OutputType>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <IsShippingPackage>true</IsShippingPackage>
+  </PropertyGroup>
+
+  <!-- Pack settings -->
+  <PropertyGroup>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <NuspecFile>Microsoft.AspNetCore.Blazor.Build.nuspec</NuspecFile>
+    <IntermediatePackDir>obj\publish\</IntermediatePackDir>
+    <PublishDir>$(IntermediatePackDir)$(TargetFramework)/</PublishDir>
+  </PropertyGroup>
+
+  <!-- Executes /t:Publish for all target frameworks before packing-->
+  <Target Name="PublishAll" BeforeTargets="_IntermediatePack">
+    <PropertyGroup>
+      <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+      <NuspecProperties>
+      version=$(PackageVersion);
+      publishDir=$([MSBuild]::NormalizeDirectory($(IntermediatePackDir)));
+      componentsversion=$(ComponentsPackageVersion);
+      razorversion=$(MicrosoftAspNetCoreRazorDesignPackageVersion);
+      blazormonoversion=$(MicrosoftAspNetCoreBlazorMonoPackageVersion);
+      repositorycommit=$(RepositoryCommit);</NuspecProperties>
+    </PropertyGroup>
+    <ItemGroup>
+      <_TargetFramework Include="$(TargetFramework)" />
+    </ItemGroup>
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" Properties="TargetFramework=%(_TargetFramework.Identity)" />
+  </Target>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Components.Browser.JS" />
+    <Reference Include="Microsoft.AspNetCore.Components" />
+    <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" PrivateAssets="All" />
+    <Reference Include="Microsoft.Extensions.FileProviders.Composite" />
+    <Reference Include="Microsoft.Extensions.FileProviders.Physical" />
+    <Reference Include="Mono.Cecil" />
+    <Reference Include="System.CodeDom" />
+  </ItemGroup>
+</Project>

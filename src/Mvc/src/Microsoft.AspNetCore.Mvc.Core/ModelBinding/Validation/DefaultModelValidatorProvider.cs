@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
     /// The <see cref="DefaultModelValidatorProvider"/> provides validators from <see cref="IModelValidator"/>
     /// instances in <see cref="ModelBinding.ModelMetadata.ValidatorMetadata"/>.
     /// </remarks>
-    internal sealed class DefaultModelValidatorProvider : IMetadataBasedModelValidatorProvider
+    internal class DefaultModelValidatorProvider : IMetadataBasedModelValidatorProvider
     {
         /// <inheritdoc />
         public void CreateValidators(ModelValidatorProviderContext context)

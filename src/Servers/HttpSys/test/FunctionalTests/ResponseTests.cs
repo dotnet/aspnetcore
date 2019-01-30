@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
@@ -123,21 +124,21 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         [ConditionalFact]
         public async Task Response_Empty_CallsOnStartingAndOnCompleted()
         {
-            var onStartingCalled = new ManualResetEvent(false);
-            var onCompletedCalled = new ManualResetEvent(false);
-            string address;
-            using (Utilities.CreateHttpServer(out address, httpContext =>
+            var onStartingCalled = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var onCompletedCalled = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            using (Utilities.CreateHttpServer(out var address, httpContext =>
             {
                 httpContext.Response.OnStarting(state =>
                 {
                     Assert.Same(state, httpContext);
-                    onStartingCalled.Set();
+                    onStartingCalled.SetResult(0);
                     return Task.FromResult(0);
                 }, httpContext);
                 httpContext.Response.OnCompleted(state =>
                 {
                     Assert.Same(state, httpContext);
-                    onCompletedCalled.Set();
+                    onCompletedCalled.SetResult(0);
                     return Task.FromResult(0);
                 }, httpContext);
                 return Task.FromResult(0);
@@ -145,29 +146,28 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 var response = await SendRequestAsync(address);
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                Assert.True(onStartingCalled.WaitOne(0));
+                await onStartingCalled.Task.TimeoutAfter(TimeSpan.FromSeconds(1));
                 // Fires after the response completes
-                Assert.True(onCompletedCalled.WaitOne(TimeSpan.FromSeconds(5)));
+                await onCompletedCalled.Task.TimeoutAfter(TimeSpan.FromSeconds(5));
             }
         }
 
         [ConditionalFact]
         public async Task Response_OnStartingThrows_StillCallsOnCompleted()
         {
-            var onStartingCalled = new ManualResetEvent(false);
-            var onCompletedCalled = new ManualResetEvent(false);
-            string address;
-            using (Utilities.CreateHttpServer(out address, httpContext =>
+            var onStartingCalled = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var onCompletedCalled = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            using (Utilities.CreateHttpServer(out var address, httpContext =>
             {
                 httpContext.Response.OnStarting(state =>
                 {
-                    onStartingCalled.Set();
+                    onStartingCalled.SetResult(0);
                     throw new Exception("Failed OnStarting");
                 }, httpContext);
                 httpContext.Response.OnCompleted(state =>
                 {
                     Assert.Same(state, httpContext);
-                    onCompletedCalled.Set();
+                    onCompletedCalled.SetResult(0);
                     return Task.FromResult(0);
                 }, httpContext);
                 return Task.FromResult(0);
@@ -175,29 +175,28 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 var response = await SendRequestAsync(address);
                 Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
-                Assert.True(onStartingCalled.WaitOne(0));
+                await onStartingCalled.Task.TimeoutAfter(TimeSpan.FromSeconds(1));
                 // Fires after the response completes
-                Assert.True(onCompletedCalled.WaitOne(TimeSpan.FromSeconds(5)));
+                await onCompletedCalled.Task.TimeoutAfter(TimeSpan.FromSeconds(5));
             }
         }
 
         [ConditionalFact]
         public async Task Response_OnStartingThrowsAfterWrite_WriteThrowsAndStillCallsOnCompleted()
         {
-            var onStartingCalled = new ManualResetEvent(false);
-            var onCompletedCalled = new ManualResetEvent(false);
-            string address;
-            using (Utilities.CreateHttpServer(out address, httpContext =>
+            var onStartingCalled = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var onCompletedCalled = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            using (Utilities.CreateHttpServer(out var address, httpContext =>
             {
                 httpContext.Response.OnStarting(state =>
                 {
-                    onStartingCalled.Set();
+                    onStartingCalled.SetResult(0);
                     throw new InvalidTimeZoneException("Failed OnStarting");
                 }, httpContext);
                 httpContext.Response.OnCompleted(state =>
                 {
                     Assert.Same(state, httpContext);
-                    onCompletedCalled.Set();
+                    onCompletedCalled.SetResult(0);
                     return Task.FromResult(0);
                 }, httpContext);
                 Assert.Throws<InvalidTimeZoneException>(() => httpContext.Response.Body.Write(new byte[10], 0, 10));
@@ -206,9 +205,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 var response = await SendRequestAsync(address);
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                Assert.True(onStartingCalled.WaitOne(0));
+                await onStartingCalled.Task.TimeoutAfter(TimeSpan.FromSeconds(1));
                 // Fires after the response completes
-                Assert.True(onCompletedCalled.WaitOne(TimeSpan.FromSeconds(5)));
+                await onCompletedCalled.Task.TimeoutAfter(TimeSpan.FromSeconds(5));
             }
         }
 

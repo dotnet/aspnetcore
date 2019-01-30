@@ -1,0 +1,29 @@
+@using Microsoft.AspNetCore.Components.Routing
+@inject Microsoft.AspNetCore.Components.Services.IUriHelper uriHelper
+<style type="text/css">a.active { background-color: yellow; font-weight: bold; }</style>
+<ul>
+    <li><NavLink href="/subdir/" Match=NavLinkMatch.All>Default (matches all)</NavLink></li>
+    <li><NavLink href="" Match=NavLinkMatch.All>Default with base-relative URL (matches all)</NavLink></li>
+    <li><NavLink href="/subdir/?abc=123">Default with query</NavLink></li>
+    <li><NavLink href="/subdir/#blah">Default with hash</NavLink></li>
+    <li><NavLink href="/subdir/Other">Other</NavLink></li>
+    <li><NavLink href="Other" Match=NavLinkMatch.All>Other with base-relative URL (matches all)</NavLink></li>
+    <li><NavLink href="/subdir/Other?abc=123">Other with query</NavLink></li>
+    <li><NavLink href="/subdir/Other#blah">Other with hash</NavLink></li>
+    <li><NavLink href="/subdir/WithParameters/Name/Abc">With parameters</NavLink></li>
+    <li><NavLink href="/subdir/WithParameters/Name/Abc/LastName/McDef">With more parameters</NavLink></li>
+</ul>
+
+<button id="do-navigation" onclick=@(x => uriHelper.NavigateTo("Other"))>
+    Programmatic navigation
+</button>
+
+<button id="do-navigation-forced" onclick=@(x => uriHelper.NavigateTo("Other", true))>
+    Programmatic navigation with force-load
+</button>
+
+<a id="anchor-with-no-href">
+    Anchor tag with no href attribute
+</a>
+
+<a href="/" target="_blank">Target (_blank)</a>

@@ -29,15 +29,21 @@ namespace Microsoft.AspNetCore.Hosting
 
             var startupAssemblyName = configureApp.GetMethodInfo().DeclaringType.GetTypeInfo().Assembly.GetName().Name;
 
-            return hostBuilder
-                .UseSetting(WebHostDefaults.ApplicationKey, startupAssemblyName)
-                .ConfigureServices(services =>
+            hostBuilder.UseSetting(WebHostDefaults.ApplicationKey, startupAssemblyName);
+
+            // Light up the ISupportsStartup implementation
+            if (hostBuilder is ISupportsStartup supportsStartup)
+            {
+                return supportsStartup.Configure(configureApp);
+            }
+
+            return hostBuilder.ConfigureServices(services =>
+            {
+                services.AddSingleton<IStartup>(sp =>
                 {
-                    services.AddSingleton<IStartup>(sp =>
-                    {
-                        return new DelegateStartup(sp.GetRequiredService<IServiceProviderFactory<IServiceCollection>>(), configureApp);
-                    });
+                    return new DelegateStartup(sp.GetRequiredService<IServiceProviderFactory<IServiceCollection>>(), configureApp);
                 });
+            });
         }
 
 
@@ -51,8 +57,15 @@ namespace Microsoft.AspNetCore.Hosting
         {
             var startupAssemblyName = startupType.GetTypeInfo().Assembly.GetName().Name;
 
+            hostBuilder.UseSetting(WebHostDefaults.ApplicationKey, startupAssemblyName);
+
+            // Light up the GenericWebHostBuilder implementation
+            if (hostBuilder is ISupportsStartup supportsStartup)
+            {
+                return supportsStartup.UseStartup(startupType);
+            }
+
             return hostBuilder
-                .UseSetting(WebHostDefaults.ApplicationKey, startupAssemblyName)
                 .ConfigureServices(services =>
                 {
                     if (typeof(IStartup).GetTypeInfo().IsAssignableFrom(startupType.GetTypeInfo()))
@@ -100,6 +113,12 @@ namespace Microsoft.AspNetCore.Hosting
         /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
         public static IWebHostBuilder UseDefaultServiceProvider(this IWebHostBuilder hostBuilder, Action<WebHostBuilderContext, ServiceProviderOptions> configure)
         {
+            // Light up the GenericWebHostBuilder implementation
+            if (hostBuilder is ISupportsUseDefaultServiceProvider supportsDefaultServiceProvider)
+            {
+                return supportsDefaultServiceProvider.UseDefaultServiceProvider(configure);
+            }
+
             return hostBuilder.ConfigureServices((context, services) =>
             {
                 var options = new ServiceProviderOptions();

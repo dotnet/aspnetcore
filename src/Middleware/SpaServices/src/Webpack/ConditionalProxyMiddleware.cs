@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Http;
 namespace Microsoft.AspNetCore.SpaServices.Webpack
 {
     /// <summary>
-    /// Based on https://github.com/aspnet/Proxy/blob/dev/src/Microsoft.AspNetCore.Proxy/ProxyMiddleware.cs
+    /// Based on ProxyMiddleware from https://github.com/aspnet/Proxy/.
     /// Differs in that, if the proxied request returns a 404, we pass through to the next middleware in the chain
     /// This is useful for Webpack middleware, because it lets you fall back on prebuilt files on disk for
     /// chunks not exposed by the current Webpack config (e.g., DLL/vendor chunks).

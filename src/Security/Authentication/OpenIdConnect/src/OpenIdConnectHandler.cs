@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
@@ -122,10 +123,9 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             // If the identifier cannot be found, bypass the session identifier checks: this may indicate that the
             // authentication cookie was already cleared, that the session identifier was lost because of a lossy
             // external/application cookie conversion or that the identity provider doesn't support sessions.
-            var sid = (await Context.AuthenticateAsync(Options.SignOutScheme))
-                          ?.Principal
-                          ?.FindFirst(JwtRegisteredClaimNames.Sid)
-                          ?.Value;
+            var principal = (await Context.AuthenticateAsync(Options.SignOutScheme))?.Principal;
+
+            var sid = principal?.FindFirst(JwtRegisteredClaimNames.Sid)?.Value;
             if (!string.IsNullOrEmpty(sid))
             {
                 // Ensure a 'sid' parameter was sent by the identity provider.
@@ -138,6 +138,23 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 if (!string.Equals(sid, message.Sid, StringComparison.Ordinal))
                 {
                     Logger.RemoteSignOutSessionIdInvalid();
+                    return true;
+                }
+            }
+
+            var iss = principal?.FindFirst(JwtRegisteredClaimNames.Iss)?.Value;
+            if (!string.IsNullOrEmpty(iss))
+            {
+                // Ensure a 'iss' parameter was sent by the identity provider.
+                if (string.IsNullOrEmpty(message.Iss))
+                {
+                    Logger.RemoteSignOutIssuerMissing();
+                    return true;
+                }
+                // Ensure the 'iss' parameter corresponds to the 'iss' stored in the authentication ticket.
+                if (!string.Equals(iss, message.Iss, StringComparison.Ordinal))
+                {
+                    Logger.RemoteSignOutIssuerInvalid();
                     return true;
                 }
             }
@@ -186,7 +203,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 properties.RedirectUri = BuildRedirectUriIfRelative(Options.SignedOutRedirectUri);
                 if (string.IsNullOrWhiteSpace(properties.RedirectUri))
                 {
-                    properties.RedirectUri = CurrentUri;
+                    properties.RedirectUri = OriginalPathBase + OriginalPath + Request.QueryString;
                 }
             }
             Logger.PostSignOutRedirect(properties.RedirectUri);
@@ -250,7 +267,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 throw new NotImplementedException($"An unsupported authentication method has been configured: {Options.AuthenticationMethod}");
             }
 
-            Logger.SignedOut(Scheme.Name);
+            Logger.AuthenticationSchemeSignedOut(Scheme.Name);
         }
 
         /// <summary>
@@ -276,12 +293,12 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             {
                 if (signOut.Result.Handled)
                 {
-                    Logger.SignoutCallbackRedirectHandledResponse();
+                    Logger.SignOutCallbackRedirectHandledResponse();
                     return true;
                 }
                 if (signOut.Result.Skipped)
                 {
-                    Logger.SignoutCallbackRedirectSkipped();
+                    Logger.SignOutCallbackRedirectSkipped();
                     return false;
                 }
                 if (signOut.Result.Failure != null)
@@ -305,6 +322,22 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// <returns></returns>
         protected override async Task HandleChallengeAsync(AuthenticationProperties properties)
         {
+            await HandleChallengeAsyncInternal(properties);
+            var location = Context.Response.Headers[HeaderNames.Location];
+            if (location == StringValues.Empty)
+            {
+                location = "(not set)";
+            }
+            var cookie = Context.Response.Headers[HeaderNames.SetCookie];
+            if (cookie == StringValues.Empty)
+            {
+                cookie = "(not set)";
+            }
+            Logger.HandleChallenge(location, cookie);
+        }
+
+        private async Task HandleChallengeAsyncInternal(AuthenticationProperties properties)
+        {
             Logger.EnteringOpenIdAuthenticationHandlerHandleUnauthorizedAsync(GetType().FullName);
 
             // order for local RedirectUri
@@ -312,7 +345,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             // 2. CurrentUri if RedirectUri is not set)
             if (string.IsNullOrEmpty(properties.RedirectUri))
             {
-                properties.RedirectUri = CurrentUri;
+                properties.RedirectUri = OriginalPathBase + OriginalPath + Request.QueryString;
             }
             Logger.PostAuthenticationLocalRedirect(properties.RedirectUri);
 
@@ -520,6 +553,20 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 // if any of the error fields are set, throw error null
                 if (!string.IsNullOrEmpty(authorizationResponse.Error))
                 {
+                    // Note: access_denied errors are special protocol errors indicating the user didn't
+                    // approve the authorization demand requested by the remote authorization server.
+                    // Since it's a frequent scenario (that is not caused by incorrect configuration),
+                    // denied errors are handled differently using HandleAccessDeniedErrorAsync().
+                    // Visit https://tools.ietf.org/html/rfc6749#section-4.1.2.1 for more information.
+                    if (string.Equals(authorizationResponse.Error, "access_denied", StringComparison.Ordinal))
+                    {
+                        var result = await HandleAccessDeniedErrorAsync(properties);
+                        if (!result.None)
+                        {
+                            return result;
+                        }
+                    }
+
                     return HandleRequestResult.Fail(CreateOpenIdConnectProtocolException(authorizationResponse, response: null), properties);
                 }
 

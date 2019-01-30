@@ -1,7 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.2;net461</TargetFrameworks>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <!-- Mitigation for long path issues -->
     <AssemblyName>Diagnostics.EFCore.FunctionalTests</AssemblyName>
   </PropertyGroup>

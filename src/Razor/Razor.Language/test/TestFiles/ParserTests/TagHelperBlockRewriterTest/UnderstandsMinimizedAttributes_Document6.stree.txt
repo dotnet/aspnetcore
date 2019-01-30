@@ -1,4 +1,0 @@
-Markup block - Gen<None> - 23 - (0:0,0)
-    Tag block - Gen<TagHelper> - 23 - (0:0,0) - input - InputTagHelper3
-        SelfClosing - <input int-dictionary/>
-        int-dictionary - Minimized

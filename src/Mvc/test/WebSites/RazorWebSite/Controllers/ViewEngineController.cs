@@ -15,7 +15,7 @@ namespace RazorWebSite.Controllers
 
         public IActionResult ViewWithFullPath()
         {
-            return View("/Views/ViewEngine/ViewWithFullPath.rzr");
+            return View("/Views/ViewEngine/ViewWithFullPath.cshtml");
         }
 
         public IActionResult ViewWithRelativePath()

@@ -19,7 +19,7 @@
     </RuntimeInstallers>
   </ItemGroup>
 
-  <Target Name="FetchDependencies" BeforeTargets="Restore">
+  <Target Name="FetchDependencies" BeforeTargets="Restore;CollectPackageReferences">
     <PropertyGroup>
       <DotNetAssetRootUrl Condition=" '$(DotNetAssetRootUrl)' == '' ">https://dotnetcli.azureedge.net/dotnet/</DotNetAssetRootUrl>
       <DotNetAssetRootUrl Condition=" ! $(DotNetAssetRootUrl.EndsWith('/'))">$(DotNetAssetRootUrl)/</DotNetAssetRootUrl>
@@ -36,17 +36,11 @@
 
     <MakeDir Directories="$(DepsPath)" />
 
-    <Exec Condition=" ! Exists('$(DepsPath)%(RemoteAsset.TargetFileName)') "
-          Command="powershell.exe -noprofile -NoLogo -ExecutionPolicy unrestricted -Command &quot;iwr -usebasicparsing -uri %(RemoteAsset.Identity) -outfile $(DepsPath)/%(RemoteAsset.TargetFileName)&quot;" />
-
-    <!-- Requires MSBuild 15.8 -->
-    <!-- <DownloadFile Condition=" ! Exists('$(DepsPath)%(RemoteAsset.TargetFileName)') "
-                  SourceUrl="%(RemoteAsset.Identity)" DestinationFolder="$(DepsPath)" DestinationFileName="%(RemoteAsset.TargetFileName)" /> -->
+    <DownloadFile Condition=" ! Exists('$(DepsPath)%(RemoteAsset.TargetFileName)') "
+                  SourceUrl="%(RemoteAsset.Identity)" DestinationFolder="$(DepsPath)" DestinationFileName="%(RemoteAsset.TargetFileName)" />
   </Target>
 
-  <UsingTask AssemblyFile="$(OutputPath)..\InstallerTasks\InstallerTasks.dll" TaskName="RepoTasks.GetMsiProperty" />
-
-  <Target Name="ExtractPropertiesFromDotNetMsi" BeforeTargets="BeforeBuild">
+  <Target Name="ExtractPropertiesFromDotNetMsi" DependsOnTargets="FetchDependencies" BeforeTargets="BeforeBuild">
     <!-- Create properties that holds the executable name. These are passed to the bundles so we can reference them as variables
              from inside the ExePackage authoring. -->
     <CreateProperty Value="%(RuntimeInstallers.Filename)%(Extension)">

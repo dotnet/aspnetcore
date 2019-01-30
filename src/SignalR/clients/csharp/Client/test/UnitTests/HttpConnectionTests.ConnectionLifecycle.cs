@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 using Microsoft.AspNetCore.SignalR.Tests;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
@@ -153,8 +154,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                             transport: new TestTransport(onTransportStart: OnTransportStart)),
                         async (connection) =>
                         {
-                            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => connection.StartAsync(TransferFormat.Text));
-                            Assert.Equal("Unable to connect to the server with any of the available transports.", ex.Message);
+                            var ex = await Assert.ThrowsAsync<AggregateException>(() => connection.StartAsync(TransferFormat.Text));
+                            Assert.Equal("Unable to connect to the server with any of the available transports. " +
+                                "(WebSockets failed: Transport failed to start) (ServerSentEvents failed: Transport failed to start) (LongPolling failed: Transport failed to start)",
+                                ex.Message);
 
                             // If websockets aren't supported then we expect one less attmept to start.
                             if (!TestHelpers.IsWebSocketsSupported())
@@ -321,23 +324,31 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             [Fact]
             public async Task SSEWontStartIfSuccessfulConnectionIsNotEstablished()
             {
-                // TODO: Add logging https://github.com/aspnet/SignalR/issues/2879
-                var httpHandler = new TestHttpMessageHandler();
-
-                httpHandler.OnGet("/?id=00000000-0000-0000-0000-000000000000", (_, __) =>
+                bool ExpectedErrors(WriteContext writeContext)
                 {
-                    return Task.FromResult(ResponseUtils.CreateResponse(HttpStatusCode.InternalServerError));
-                });
+                    return writeContext.LoggerName == typeof(HttpConnection).FullName &&
+                           writeContext.EventId.Name == "ErrorStartingTransport";
+                }
 
-                var sse = new ServerSentEventsTransport(new HttpClient(httpHandler));
+                using (StartVerifiableLog(expectedErrorsFilter: ExpectedErrors))
+                {
+                    var httpHandler = new TestHttpMessageHandler();
 
-                await WithConnectionAsync(
-                    CreateConnection(httpHandler, transport: sse),
-                    async (connection) =>
+                    httpHandler.OnGet("/?id=00000000-0000-0000-0000-000000000000", (_, __) =>
                     {
-                        await Assert.ThrowsAsync<InvalidOperationException>(
-                            () => connection.StartAsync(TransferFormat.Text).OrTimeout());
+                        return Task.FromResult(ResponseUtils.CreateResponse(HttpStatusCode.InternalServerError));
                     });
+
+                    var sse = new ServerSentEventsTransport(new HttpClient(httpHandler), LoggerFactory);
+
+                    await WithConnectionAsync(
+                        CreateConnection(httpHandler, loggerFactory: LoggerFactory, transport: sse),
+                        async (connection) =>
+                        {
+                            await Assert.ThrowsAsync<AggregateException>(
+                                () => connection.StartAsync(TransferFormat.Text).OrTimeout());
+                        });
+                }
             }
 
             [Fact]
@@ -354,7 +365,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         return ResponseUtils.CreateResponse(HttpStatusCode.Accepted);
                     });
 
-                    var sse = new ServerSentEventsTransport(new HttpClient(httpHandler));
+                    var sse = new ServerSentEventsTransport(new HttpClient(httpHandler), LoggerFactory);
 
                     await WithConnectionAsync(
                         CreateConnection(httpHandler, loggerFactory: LoggerFactory, transport: sse),

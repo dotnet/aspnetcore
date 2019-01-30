@@ -53,34 +53,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task AuthorizationPoliciesDoNotCombine_WithV2_0()
-        {
-            // Arrange & Act
-            var client = Factory
-                .WithWebHostBuilder(builder => builder.UseStartup<SecurityWebSite.StartupWith20CompatAndGlobalDenyAnonymousFilter>())
-                .CreateDefaultClient();
-            var response = await client.PostAsync("http://localhost/Administration/SignInCookie2", null);
-
-            // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.True(response.Headers.Contains("Set-Cookie"));
-
-            var cookie2 = response.Headers.GetValues("Set-Cookie").SingleOrDefault();
-
-            var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Administration/EitherCookie");
-            request.Headers.Add("Cookie", cookie2);
-
-            // Will fail because default cookie is not sent so [Authorize] fails.
-            response = await client.SendAsync(request);
-            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
-            Assert.NotNull(response.Headers.Location);
-            Assert.Equal(
-                "http://localhost/Home/Login?ReturnUrl=%2FAdministration%2FEitherCookie",
-                response.Headers.Location.ToString());
-        }
-
-        [Fact]
-        public async Task AuthorizationPoliciesCombine_WithV2_1()
+        public async Task AuthorizationPoliciesCombine()
         {
             // Arrange & Act 1
             var response = await Client.PostAsync("http://localhost/Administration/SignInCookie2", null);
@@ -94,7 +67,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Administration/EitherCookie");
             request.Headers.Add("Cookie", cookie2);
 
-            // Act 2: Will succeed because, with AllowCombiningAuthorizeFilters true, [Authorize] allows either cookie.
+            // Act 2: Will succeed because [Authorize] allows either cookie.
             response = await Client.SendAsync(request);
 
             // Assert 2

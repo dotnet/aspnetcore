@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>Microsoft.AspNetCore.Blazor.Cli</id>
+    <version>$blazorversion$</version>
+    <authors>Microsoft</authors>
+    <owners>Microsoft</owners>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <licenseUrl>https://raw.githubusercontent.com/aspnet/AspNetCore/2.0.0/LICENSE.txt</licenseUrl>
+    <projectUrl>https://asp.net/</projectUrl>
+    <iconUrl>https://go.microsoft.com/fwlink/?LinkID=288859</iconUrl>
+    <description>Development server for use when building Blazor applications.
+
+This package was built from the source code at https://github.com/aspnet/AspNetCore/tree/$repositorycommit$</description>
+    <copyright>© Microsoft Corporation. All rights reserved.</copyright>
+    <tags>aspnetcore components</tags>
+    <serviceable>true</serviceable>
+    <repository type="git" url="https://github.com/aspnet/AspNetCore" commit="$repositorycommit$" />
+    <dependencies>
+      <group targetFramework=".NETCoreApp3.0">
+        <dependency id="Microsoft.AspNetCore.Blazor.Server" version="$blazorversion$" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.AspNetCore.Components.Server" version="$aspnetcoreversion$" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.AspNetCore.SpaServices.Extensions" version="$aspnetcoreversion$" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="$outdir$temporaryruntimeconfig.out.json" target="lib\netcoreapp3.0\dotnet-blazor.runtimeconfig.json" />
+    <file src="$outdir$dotnet-blazor.dll" target="lib\netcoreapp3.0\dotnet-blazor.dll" />
+    <file src="$componentsrootdir$THIRD-PARTY-NOTICES.txt" target=".\THIRD-PARTY-NOTICES.txt" />
+  </files>
+</package>

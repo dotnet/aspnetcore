@@ -43,6 +43,11 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 {
                     parameters += $" --runtime {GetRuntimeIdentifier(deploymentParameters)}";
                 }
+                else
+                {
+                    // Workaround for https://github.com/aspnet/websdk/issues/422
+                    parameters += " -p:UseAppHost=false";
+                }
 
                 parameters += $" {deploymentParameters.AdditionalPublishParameters}";
 

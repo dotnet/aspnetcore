@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
@@ -193,13 +192,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
         private bool ShouldHandleException(IInputFormatter formatter)
         {
-            var policy = _options.InputFormatterExceptionPolicy;
-
-            // Any explicit policy on the formatters takes precedence over the global policy on MvcOptions
-            if (formatter is IInputFormatterExceptionPolicy exceptionPolicy)
-            {
-                policy = exceptionPolicy.ExceptionPolicy;
-            }
+            // Any explicit policy on the formatters overrides the default.
+            var policy = (formatter as IInputFormatterExceptionPolicy)?.ExceptionPolicy ??
+                InputFormatterExceptionPolicy.MalformedInputExceptions;
 
             return policy == InputFormatterExceptionPolicy.AllExceptions;
         }

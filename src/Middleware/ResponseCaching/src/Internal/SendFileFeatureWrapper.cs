@@ -19,10 +19,10 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
         }
 
         // Flush and disable the buffer if anyone tries to call the SendFile feature.
-        public Task SendFileAsync(string path, long offset, long? length, CancellationToken cancellation)
+        public Task SendFileAsync(string path, long offset, long? count, CancellationToken cancellation)
         {
             _responseCachingStream.DisableBuffering();
-            return _originalSendFileFeature.SendFileAsync(path, offset, length, cancellation);
+            return _originalSendFileFeature.SendFileAsync(path, offset, count, cancellation);
         }
     }
 }

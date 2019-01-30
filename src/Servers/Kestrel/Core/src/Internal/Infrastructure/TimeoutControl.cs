@@ -40,9 +40,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         internal IDebugger Debugger { get; set; } = DebuggerWrapper.Singleton;
 
-        public void Initialize(DateTimeOffset now)
+        internal void Initialize(long nowTicks)
         {
-            _lastTimestamp = now.Ticks;
+            _lastTimestamp = nowTicks;
         }
 
         public void Tick(DateTimeOffset now)

@@ -4,16 +4,15 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Security.Principal;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.IISIntegration.FunctionalTests;
 using Microsoft.AspNetCore.Server.IISIntegration;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -21,13 +20,9 @@ namespace TestSite
 {
     public partial class Startup
     {
-        private IServerAddressesFeature _serverAddresses;
-
         public void Configure(IApplicationBuilder app)
         {
             TestStartup.Register(app, this);
-
-            _serverAddresses = app.ServerFeatures.Get<IServerAddressesFeature>();
         }
 
         public Task Path(HttpContext ctx) => ctx.Response.WriteAsync(ctx.Request.Path.Value);
@@ -35,7 +30,6 @@ namespace TestSite
         public Task Query(HttpContext ctx) => ctx.Response.WriteAsync(ctx.Request.QueryString.Value);
 
         public Task BodyLimit(HttpContext ctx) => ctx.Response.WriteAsync(ctx.Features.Get<IHttpMaxRequestBodySizeFeature>()?.MaxRequestBodySize?.ToString() ?? "null");
-
 
         public Task HelloWorld(HttpContext ctx) => ctx.Response.WriteAsync("Hello World");
 
@@ -97,9 +91,11 @@ namespace TestSite
             await context.Response.WriteAsync(Process.GetCurrentProcess().Id.ToString());
         }
 
-        private async Task ServerAddresses(HttpContext context)
+        public async Task HTTPS_PORT(HttpContext context)
         {
-            await context.Response.WriteAsync(string.Join(",", _serverAddresses.Addresses));
+            var httpsPort = context.RequestServices.GetService<IConfiguration>().GetValue<int?>("HTTPS_PORT");
+
+            await context.Response.WriteAsync(httpsPort.HasValue ? httpsPort.Value.ToString() : "NOVALUE");
         }
     }
 }

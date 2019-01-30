@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -158,67 +158,75 @@ namespace Microsoft.AspNetCore
                 builder.UseConfiguration(new ConfigurationBuilder().AddCommandLine(args).Build());
             }
 
-            builder.UseKestrel((builderContext, options) =>
-                {
-                    options.Configure(builderContext.Configuration.GetSection("Kestrel"));
-                })
-                .ConfigureAppConfiguration((hostingContext, config) =>
-                {
-                    var env = hostingContext.HostingEnvironment;
+            builder.ConfigureAppConfiguration((hostingContext, config) =>
+            {
+                var env = hostingContext.HostingEnvironment;
 
-                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                          .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
+                config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                      .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
 
-                    if (env.IsDevelopment())
+                if (env.IsDevelopment())
+                {
+                    var appAssembly = Assembly.Load(new AssemblyName(env.ApplicationName));
+                    if (appAssembly != null)
                     {
-                        var appAssembly = Assembly.Load(new AssemblyName(env.ApplicationName));
-                        if (appAssembly != null)
-                        {
-                            config.AddUserSecrets(appAssembly, optional: true);
-                        }
+                        config.AddUserSecrets(appAssembly, optional: true);
                     }
+                }
 
-                    config.AddEnvironmentVariables();
+                config.AddEnvironmentVariables();
 
-                    if (args != null)
-                    {
-                        config.AddCommandLine(args);
-                    }
-                })
-                .ConfigureLogging((hostingContext, logging) =>
+                if (args != null)
                 {
-                    logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
-                    logging.AddConsole();
-                    logging.AddDebug();
-                    logging.AddEventSourceLogger();
-                })
-                .ConfigureServices((hostingContext, services) =>
-                {
-                    // Fallback
-                    services.PostConfigure<HostFilteringOptions>(options =>
-                    {
-                        if (options.AllowedHosts == null || options.AllowedHosts.Count == 0)
-                        {
-                            // "AllowedHosts": "localhost;127.0.0.1;[::1]"
-                            var hosts = hostingContext.Configuration["AllowedHosts"]?.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
-                            // Fall back to "*" to disable.
-                            options.AllowedHosts = (hosts?.Length > 0 ? hosts : new[] { "*" });
-                        }
-                    });
-                    // Change notification
-                    services.AddSingleton<IOptionsChangeTokenSource<HostFilteringOptions>>(
-                        new ConfigurationChangeTokenSource<HostFilteringOptions>(hostingContext.Configuration));
+                    config.AddCommandLine(args);
+                }
+            })
+            .ConfigureLogging((hostingContext, logging) =>
+            {
+                logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
+                logging.AddConsole();
+                logging.AddDebug();
+                logging.AddEventSourceLogger();
+            }).
+            UseDefaultServiceProvider((context, options) =>
+            {
+                options.ValidateScopes = context.HostingEnvironment.IsDevelopment();
+            });
 
-                    services.AddTransient<IStartupFilter, HostFilteringStartupFilter>();
-                })
-                .UseIIS()
-                .UseIISIntegration()
-                .UseDefaultServiceProvider((context, options) =>
-                {
-                    options.ValidateScopes = context.HostingEnvironment.IsDevelopment();
-                });
+            ConfigureWebDefaults(builder);
 
             return builder;
+        }
+
+        internal static void ConfigureWebDefaults(IWebHostBuilder builder)
+        {
+            builder.UseKestrel((builderContext, options) =>
+            {
+                options.Configure(builderContext.Configuration.GetSection("Kestrel"));
+            })
+            .ConfigureServices((hostingContext, services) =>
+            {
+                // Fallback
+                services.PostConfigure<HostFilteringOptions>(options =>
+                {
+                    if (options.AllowedHosts == null || options.AllowedHosts.Count == 0)
+                    {
+                        // "AllowedHosts": "localhost;127.0.0.1;[::1]"
+                        var hosts = hostingContext.Configuration["AllowedHosts"]?.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+                        // Fall back to "*" to disable.
+                        options.AllowedHosts = (hosts?.Length > 0 ? hosts : new[] { "*" });
+                    }
+                });
+                // Change notification
+                services.AddSingleton<IOptionsChangeTokenSource<HostFilteringOptions>>(
+                            new ConfigurationChangeTokenSource<HostFilteringOptions>(hostingContext.Configuration));
+
+                services.AddTransient<IStartupFilter, HostFilteringStartupFilter>();
+
+                services.AddRouting();
+            })
+            .UseIIS()
+            .UseIISIntegration();
         }
 
         /// <summary>

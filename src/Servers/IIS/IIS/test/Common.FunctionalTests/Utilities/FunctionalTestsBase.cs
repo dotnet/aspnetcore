@@ -45,6 +45,12 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             return result;
         }
 
+        protected virtual async Task<string> GetStringAsync(IISDeploymentParameters parameters, string path)
+        {
+            var result = await DeployAsync(parameters);
+            return await result.HttpClient.GetStringAsync(path);
+        }
+
         public override void Dispose()
         {
             StopServer(false);

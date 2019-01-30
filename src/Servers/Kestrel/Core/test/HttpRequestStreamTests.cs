@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -84,18 +84,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
             await Assert.ThrowsAsync<NotSupportedException>(() => stream.WriteAsync(new byte[1], 0, 1));
         }
-
-#if NET461
-        [Fact]
-        public void BeginWriteThrows()
-        {
-            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
-            Assert.Throws<NotSupportedException>(() => stream.BeginWrite(new byte[1], 0, 1, null, null));
-        }
-#elif NETCOREAPP2_2
-#else
-#error Target framework needs to be updated
-#endif
 
         [Fact]
         // Read-only streams should support Flush according to https://github.com/dotnet/corefx/pull/27327#pullrequestreview-98384813

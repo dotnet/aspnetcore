@@ -16,7 +16,7 @@
         "IIS_SITE_PATH": "$(MSBuildThisFileDirectory)",
         "ANCM_PATH": "$(AspNetCoreModuleV1ShimDll)",
         "ANCMV2_PATH": "$(AspNetCoreModuleV2ShimDll)",
-        "ANCM_OUTOFPROCESS_HANDLER": "$(AspNetCoreModuleV2OutOfProcessHandlerDll)",
+        "ASPNETCORE_MODULE_OUTOFPROCESS_HANDLER": "$(AspNetCoreModuleV2OutOfProcessHandlerDll)",
         "LAUNCHER_ARGS": "$(TargetPath)",
         "ASPNETCORE_ENVIRONMENT": "Development",
         "LAUNCHER_PATH": "$(DotNetPath)",

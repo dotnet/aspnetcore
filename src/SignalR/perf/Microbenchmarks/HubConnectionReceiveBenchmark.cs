@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             var hubConnectionBuilder = new HubConnectionBuilder();
             if (Protocol == "json")
             {
-                hubProtocol = new JsonHubProtocol();
+                hubProtocol = new NewtonsoftJsonHubProtocol();
             }
             else
             {

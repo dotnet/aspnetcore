@@ -1,0 +1,41 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <DefineConstants>$(DefineConstants);XPLAT</DefineConstants>
+    <!-- WebDriver is not strong-named, so this test project cannot be strong named either. -->
+    <SignAssembly>false</SignAssembly>
+
+    <!-- Workaround until https://github.com/aspnet/AspNetCore/issues/4321 is resolved. -->
+    <SkipTests Condition="'$(RunTemplateTests)' != 'true'">true</SkipTests>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="template-baselines.json" />
+    <Compile Include="$(SharedSourceRoot)Process\*.cs" />
+    <Compile Include="$(SharedSourceRoot)CertificateGeneration\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="AngleSharp" />
+    <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" PrivateAssets="All" />
+    <Reference Include="Selenium.Support" />
+    <Reference Include="Selenium.WebDriver.MicrosoftDriver" />
+    <Reference Include="Selenium.WebDriver" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../testassets/DotNetToolsInstaller/DotNetToolsInstaller.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="../Web.Client.ItemTemplates/Microsoft.DotNet.Web.Client.ItemTemplates.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="../Web.ItemTemplates/Microsoft.DotNet.Web.ItemTemplates.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="../Web.ProjectTemplates/Microsoft.DotNet.Web.ProjectTemplates.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="../Web.Spa.ProjectTemplates/Microsoft.DotNet.Web.Spa.ProjectTemplates.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>DotNetEfFullPath</_Parameter1>
+      <_Parameter2>$([MSBuild]::EnsureTrailingSlash('$(NuGetPackageRoot)'))dotnet-ef/$(DotnetEfPackageVersion)/tools/netcoreapp3.0/any/dotnet-ef.dll</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+</Project>

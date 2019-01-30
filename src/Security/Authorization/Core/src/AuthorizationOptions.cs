@@ -20,12 +20,24 @@ namespace Microsoft.AspNetCore.Authorization
         public bool InvokeHandlersAfterFailure { get; set; } = true;
 
         /// <summary>
-        /// Gets or sets the default authorization policy.
+        /// Gets or sets the default authorization policy. Defaults to require authenticated users.
         /// </summary>
         /// <remarks>
-        /// The default policy is to require any authenticated user.
+        /// The default policy used when evaluating <see cref="IAuthorizeData"/> with no policy name specified.
         /// </remarks>
         public AuthorizationPolicy DefaultPolicy { get; set; } = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
+
+        /// <summary>
+        /// Gets or sets the required authorization policy. Defaults to null.
+        /// </summary>
+        /// <remarks>
+        /// By default the required policy is null.
+        /// 
+        /// If a required policy has been specified then it is always evaluated, even if there are no
+        /// <see cref="IAuthorizeData"/> instances for a resource. If a resource has <see cref="IAuthorizeData"/>
+        /// then they are evaluated together with the required policy.
+        /// </remarks>
+        public AuthorizationPolicy RequiredPolicy { get; set; }
 
         /// <summary>
         /// Add an authorization policy with the provided name.

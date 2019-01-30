@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 using (connectionLifetimeNotificationFeature?.ConnectionClosedRequested.Register(state => ((HttpConnection)state).StopProcessingNextRequest(), this))
                 {
                     // Ensure TimeoutControl._lastTimestamp is initialized before anything that could set timeouts runs.
-                    _timeoutControl.Initialize(_systemClock.UtcNow);
+                    _timeoutControl.Initialize(_systemClock.UtcNowTicks);
 
                     _context.ConnectionFeatures.Set<IConnectionTimeoutFeature>(_timeoutControl);
 
@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                                     break;
                                 case HttpProtocols.None:
                                     // An error was already logged in SelectProtocol(), but we should close the connection.
-                                    Abort(ex: null);
+                                    Abort(new ConnectionAbortedException(CoreStrings.ProtocolSelectionFailed));
                                     break;
                                 default:
                                     // SelectProtocol() only returns Http1, Http2 or None.
@@ -222,7 +222,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 switch (_protocolSelectionState)
                 {
                     case ProtocolSelectionState.Initializing:
-                        CloseUninitializedConnection(abortReason: null);
+                        CloseUninitializedConnection(new ConnectionAbortedException(CoreStrings.ServerShutdownDuringConnectionInitialization));
                         _protocolSelectionState = ProtocolSelectionState.Aborted;
                         break;
                     case ProtocolSelectionState.Selected:
@@ -241,7 +241,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 switch (_protocolSelectionState)
                 {
                     case ProtocolSelectionState.Initializing:
-                        CloseUninitializedConnection(abortReason: null);
+                        // OnReader/WriterCompleted callbacks are not wired until after leaving the Initializing state.
+                        Debug.Assert(false);
+
+                        CloseUninitializedConnection(new ConnectionAbortedException("HttpConnection.OnInputOrOutputCompleted() called while in the ProtocolSelectionState.Initializing state!?"));
                         _protocolSelectionState = ProtocolSelectionState.Aborted;
                         break;
                     case ProtocolSelectionState.Selected:
@@ -356,7 +359,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 return;
             }
 
-            var now = _systemClock.UtcNow;
+            // It's safe to use UtcNowUnsynchronized since Tick is called by the Heartbeat.
+            var now = _systemClock.UtcNowUnsynchronized;
             _timeoutControl.Tick(now);
             _requestProcessor?.Tick(now);
         }

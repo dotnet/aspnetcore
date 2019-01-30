@@ -1,0 +1,10 @@
+@using System;
+@using Microsoft.AspNetCore.Html
+@model System.String
+@{
+    var SomeHelper = this.Helper((string s) => @<text>@item</text>);
+}
+@for (var i = 0; i < 100; i++)
+{
+    @SomeHelper(Model + i.ToString())
+}

@@ -15,17 +15,9 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.WebSockets.Test
 {
-#if NET461
-    // ClientWebSocket does not support WebSockets on these platforms and OS. Kestrel does support it.
-    [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, SkipReason = "No WebSockets Client for this platform")]
-#elif NETCOREAPP2_2
-    // ClientWebSocket has added support for WebSockets on Win7.
-#else
-#error Unknown TFM
-#endif
     public class WebSocketMiddlewareTests : LoggedTest
     {
-        [ConditionalFact]
+        [Fact]
         public async Task Connect_Success()
         {
             using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
@@ -41,7 +33,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
             }
         }
 
-        [ConditionalFact]
+        [Fact]
         public async Task NegotiateSubProtocol_Success()
         {
             using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
@@ -69,7 +61,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
             }
         }
 
-        [ConditionalFact]
+        [Fact]
         public async Task SendEmptyData_Success()
         {
             using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, async context =>
@@ -93,7 +85,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
             }
         }
 
-        [ConditionalFact]
+        [Fact]
         public async Task SendShortData_Success()
         {
             var orriginalData = Encoding.UTF8.GetBytes("Hello World");
@@ -118,7 +110,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
             }
         }
 
-        [ConditionalFact]
+        [Fact]
         public async Task SendMediumData_Success()
         {
             var orriginalData = Encoding.UTF8.GetBytes(new string('a', 130));
@@ -143,7 +135,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
             }
         }
 
-        [ConditionalFact]
+        [Fact]
         public async Task SendLongData_Success()
         {
             var orriginalData = Encoding.UTF8.GetBytes(new string('a', 0x1FFFF));
@@ -180,7 +172,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
             }
         }
 
-        [ConditionalFact]
+        [Fact]
         public async Task SendFragmentedData_Success()
         {
             var orriginalData = Encoding.UTF8.GetBytes("Hello World");
@@ -223,7 +215,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
             }
         }
 
-        [ConditionalFact]
+        [Fact]
         public async Task ReceiveShortData_Success()
         {
             var orriginalData = Encoding.UTF8.GetBytes("Hello World");
@@ -248,7 +240,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
             }
         }
 
-        [ConditionalFact]
+        [Fact]
         public async Task ReceiveMediumData_Success()
         {
             var orriginalData = Encoding.UTF8.GetBytes(new string('a', 130));
@@ -273,7 +265,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
             }
         }
 
-        [ConditionalFact]
+        [Fact]
         public async Task ReceiveLongData()
         {
             var orriginalData = Encoding.UTF8.GetBytes(new string('a', 0x1FFFF));
@@ -306,7 +298,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
             }
         }
 
-        [ConditionalFact]
+        [Fact]
         public async Task ReceiveFragmentedData_Success()
         {
             var orriginalData = Encoding.UTF8.GetBytes("Hello World");
@@ -349,7 +341,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
             }
         }
 
-        [ConditionalFact]
+        [Fact]
         public async Task SendClose_Success()
         {
             string closeDescription = "Test Closed";
@@ -377,7 +369,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
             }
         }
 
-        [ConditionalFact]
+        [Fact]
         public async Task ReceiveClose_Success()
         {
             string closeDescription = "Test Closed";
@@ -405,7 +397,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
             }
         }
 
-        [ConditionalFact]
+        [Fact]
         public async Task CloseFromOpen_Success()
         {
             string closeDescription = "Test Closed";
@@ -435,7 +427,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
             }
         }
 
-        [ConditionalFact]
+        [Fact]
         public async Task CloseFromCloseSent_Success()
         {
             string closeDescription = "Test Closed";
@@ -467,7 +459,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
             }
         }
 
-        [ConditionalFact]
+        [Fact]
         public async Task CloseFromCloseReceived_Success()
         {
             string closeDescription = "Test Closed";

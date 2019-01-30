@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
 
             if (!initMatchResults.Success)
             {
-                context.Logger?.UrlRewriteDidNotMatchRule(Name);
+                context.Logger?.UrlRewriteNotMatchedRule(Name);
                 return;
             }
 
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
                 condResult = ConditionEvaluator.Evaluate(Conditions, context, initMatchResults.BackReferences);
                 if (!condResult.Success)
                 {
-                    context.Logger?.UrlRewriteDidNotMatchRule(Name);
+                    context.Logger?.UrlRewriteNotMatchedRule(Name);
                     return;
                 }
             }

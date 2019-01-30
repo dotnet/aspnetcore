@@ -25,11 +25,11 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint1 = CreateEndpoint(
                 "About/{id}",
                 defaults: new { page = "/About", },
-                metadata: new[] { new RouteValuesAddressMetadata(routeName: null, new RouteValueDictionary(new { page = "/About", })) });
+                requiredValues:new { page = "/About", });
             var endpoint2 = CreateEndpoint(
                 "Admin/ManageUsers/{handler?}",
                 defaults: new { page = "/Admin/ManageUsers", },
-                metadata: new[] { new RouteValuesAddressMetadata(routeName: null, new RouteValueDictionary(new { page = "/Admin/ManageUsers", })) });
+                requiredValues:new { page = "/Admin/ManageUsers", });
 
             var linkGenerator = CreateLinkGenerator(endpoint1, endpoint2);
 
@@ -54,11 +54,11 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint1 = CreateEndpoint(
                 "About/{id}",
                 defaults: new { page = "/About", },
-                metadata: new[] { new RouteValuesAddressMetadata(routeName: null, new RouteValueDictionary(new { page = "/About", })) });
+                requiredValues:new { page = "/About", });
             var endpoint2 = CreateEndpoint(
                 "Admin/ManageUsers/{handler?}",
                 defaults: new { page = "/Admin/ManageUsers", },
-                metadata: new[] { new RouteValuesAddressMetadata(routeName: null, new RouteValueDictionary(new { page = "/Admin/ManageUsers", })) });
+                requiredValues:new { page = "/Admin/ManageUsers", });
 
             var linkGenerator = CreateLinkGenerator(endpoint1, endpoint2);
 
@@ -82,11 +82,11 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint1 = CreateEndpoint(
                 "About/{id}",
                 defaults: new { page = "/About", },
-                metadata: new[] { new RouteValuesAddressMetadata(routeName: null, new RouteValueDictionary(new { page = "/About", })) });
+                requiredValues:new { page = "/About", });
             var endpoint2 = CreateEndpoint(
                 "Admin/ManageUsers",
                 defaults: new { page = "/Admin/ManageUsers", },
-                metadata: new[] { new RouteValuesAddressMetadata(routeName: null, new RouteValueDictionary(new { page = "/Admin/ManageUsers", })) });
+                requiredValues:new { page = "/Admin/ManageUsers", });
 
             var linkGenerator = CreateLinkGenerator(endpoint1, endpoint2);
 
@@ -112,11 +112,11 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint1 = CreateEndpoint(
                 "About/{id}",
                 defaults: new { page = "/About", },
-                metadata: new[] { new RouteValuesAddressMetadata(routeName: null, new RouteValueDictionary(new { page = "/About", })) });
+                requiredValues:new { page = "/About", });
             var endpoint2 = CreateEndpoint(
                 "Admin/ManageUsers",
                 defaults: new { page = "/Admin/ManageUsers", },
-                metadata: new[] { new RouteValuesAddressMetadata(routeName: null, new RouteValueDictionary(new { page = "/Admin/ManageUsers", })) });
+                requiredValues:new { page = "/Admin/ManageUsers", });
 
             var linkGenerator = CreateLinkGenerator(endpoint1, endpoint2);
 
@@ -142,11 +142,11 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint1 = CreateEndpoint(
                 "About/{id}",
                 defaults: new { page = "/About", },
-                metadata: new[] { new RouteValuesAddressMetadata(routeName: null, new RouteValueDictionary(new { page = "/About", })) });
+                requiredValues:new { page = "/About", });
             var endpoint2 = CreateEndpoint(
                 "Admin/ManageUsers",
                 defaults: new { page = "/Admin/ManageUsers", },
-                metadata: new[] { new RouteValuesAddressMetadata(routeName: null, new RouteValueDictionary(new { page = "/Admin/ManageUsers", })) });
+                requiredValues:new { page = "/Admin/ManageUsers", });
 
             var linkGenerator = CreateLinkGenerator(endpoint1, endpoint2);
 
@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.Routing
         {
             return new RouteEndpoint(
                 (httpContext) => Task.CompletedTask,
-                RoutePatternFactory.Parse(template, defaults, parameterPolicies: null),
+                RoutePatternFactory.Parse(template, defaults, parameterPolicies: null, requiredValues),
                 order,
                 new EndpointMetadataCollection(metadata ?? Array.Empty<object>()),
                 null);
@@ -193,7 +193,6 @@ namespace Microsoft.AspNetCore.Routing
             services.AddLogging();
             services.AddRouting();
             services
-                .AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>()
                 .AddSingleton<UrlEncoder>(UrlEncoder.Default);
             services.TryAddEnumerable(ServiceDescriptor.Singleton<EndpointDataSource>(new DefaultEndpointDataSource(endpoints)));
             return services.BuildServiceProvider();

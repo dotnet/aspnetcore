@@ -66,9 +66,13 @@ namespace Microsoft.Extensions.RazorViews
             Context = context;
             Request = Context.Request;
             Response = Context.Response;
-            Output = new StreamWriter(Response.Body, UTF8NoBOM, 4096, leaveOpen: true);
+            var buffer = new MemoryStream();
+            Output = new StreamWriter(buffer, UTF8NoBOM, 4096, leaveOpen: true);
             await ExecuteAsync();
+            await Output.FlushAsync();
             Output.Dispose();
+            buffer.Seek(0, SeekOrigin.Begin);
+            await buffer.CopyToAsync(Response.Body);
         }
 
         /// <summary>

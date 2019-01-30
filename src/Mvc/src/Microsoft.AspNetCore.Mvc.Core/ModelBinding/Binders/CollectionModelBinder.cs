@@ -9,8 +9,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.Internal;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -44,12 +42,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         /// </summary>
         /// <param name="elementBinder">The <see cref="IModelBinder"/> for binding elements.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
-        /// <remarks>
-        /// The binder will not add an error for an unbound top-level model even if
-        /// <see cref="ModelMetadata.IsBindingRequired"/> is <see langword="true"/>.
-        /// </remarks>
         public CollectionModelBinder(IModelBinder elementBinder, ILoggerFactory loggerFactory)
-            : this(elementBinder, loggerFactory, allowValidatingTopLevelNodes: false)
+            : this(elementBinder, loggerFactory, allowValidatingTopLevelNodes: true)
         {
         }
 
@@ -198,16 +192,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         /// </summary>
         /// <param name="bindingContext">The <see cref="ModelBindingContext"/>.</param>
         /// <remarks>
-        /// <para>
-        /// This method should be called only when <see cref="MvcOptions.AllowValidatingTopLevelNodes" /> is
-        /// <see langword="true" /> and a top-level model was not bound.
-        /// </para>
-        /// <para>
         /// For back-compatibility reasons, <see cref="ModelBindingContext.Result" /> must have
         /// <see cref="ModelBindingResult.IsModelSet" /> equal to <see langword="true" /> when a
         /// top-level model is not bound. Therefore, ParameterBinder can not detect a
         /// <see cref="ModelMetadata.IsBindingRequired" /> failure for collections. Add the error here.
-        /// </para>
         /// </remarks>
         protected void AddErrorIfBindingRequired(ModelBindingContext bindingContext)
         {
@@ -460,17 +448,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
         private static IEnumerable<string> GetIndexNamesFromValueProviderResult(ValueProviderResult valueProviderResult)
         {
-            IEnumerable<string> indexNames = null;
-            if (valueProviderResult != null)
-            {
-                var indexes = (string[])valueProviderResult;
-                if (indexes != null && indexes.Length > 0)
-                {
-                    indexNames = indexes;
-                }
-            }
-
-            return indexNames;
+            var indexes = (string[])valueProviderResult;
+            return (indexes == null || indexes.Length == 0) ? null : indexes;
         }
     }
 }

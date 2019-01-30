@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var mockSystemClock = _serviceContext.MockSystemClock;
             var limits = _serviceContext.ServerOptions.Limits;
 
-            _timeoutControl.Initialize(mockSystemClock.UtcNow);
+            _timeoutControl.Initialize(mockSystemClock.UtcNow.Ticks);
 
             CreateConnection();
 
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var mockSystemClock = _serviceContext.MockSystemClock;
             var limits = _serviceContext.ServerOptions.Limits;
 
-            _timeoutControl.Initialize(mockSystemClock.UtcNow);
+            _timeoutControl.Initialize(mockSystemClock.UtcNow.Ticks);
 
             await InitializeConnectionAsync(_noopApplication);
 
@@ -73,9 +73,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var mockSystemClock = _serviceContext.MockSystemClock;
             var limits = _serviceContext.ServerOptions.Limits;
 
-            _timeoutControl.Initialize(mockSystemClock.UtcNow);
+            _timeoutControl.Initialize(mockSystemClock.UtcNow.Ticks);
 
             await InitializeConnectionAsync(_noopApplication);
+
+            StartHeartbeat();
 
             AdvanceClock(limits.KeepAliveTimeout + Heartbeat.Interval);
 
@@ -128,7 +130,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var mockSystemClock = _serviceContext.MockSystemClock;
             var limits = _serviceContext.ServerOptions.Limits;;
 
-            _timeoutControl.Initialize(mockSystemClock.UtcNow);
+            _timeoutControl.Initialize(mockSystemClock.UtcNow.Ticks);
 
             await InitializeConnectionAsync(_noopApplication);
 
@@ -148,7 +150,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await WaitForConnectionErrorAsync<BadHttpRequestException>(
                 ignoreNonGoAwayFrames: false,
-                expectedLastStreamId: 1,
+                expectedLastStreamId: int.MaxValue,
                 Http2ErrorCode.INTERNAL_ERROR,
                 CoreStrings.BadRequest_RequestHeadersTimeout);
 
@@ -165,7 +167,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var mockSystemClock = _serviceContext.MockSystemClock;
             var limits = _serviceContext.ServerOptions.Limits;
 
-            _timeoutControl.Initialize(mockSystemClock.UtcNow);
+            _timeoutControl.Initialize(mockSystemClock.UtcNow.Ticks);
 
             await InitializeConnectionAsync(_noopApplication);
 
@@ -192,7 +194,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         [Theory]
         [InlineData(Http2FrameType.DATA)]
-        [InlineData(Http2FrameType.CONTINUATION, Skip = "https://github.com/aspnet/KestrelHttpServer/issues/3077")]
+        [InlineData(Http2FrameType.CONTINUATION)]
         public async Task AbortedStream_ResetsAndDrainsRequest_RefusesFramesAfterCooldownExpires(Http2FrameType finalFrameType)
         {
             var mockSystemClock = _serviceContext.MockSystemClock;
@@ -216,6 +218,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 if (finalFrameType == Http2FrameType.CONTINUATION)
                 {
                     await SendHeadersAsync(1, Http2HeadersFrameFlags.END_STREAM, new byte[0]);
+                    await SendContinuationAsync(1, Http2ContinuationFrameFlags.NONE, new byte[0]);
                 }
 
                 // There's a race when the appfunc is exiting about how soon it unregisters the stream, so retry until success.
@@ -223,7 +226,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 {
                     // Just past the timeout
                     mockSystemClock.UtcNow += Constants.RequestBodyDrainTimeout + TimeSpan.FromTicks(1);
-                    (_connection as IRequestProcessor).Tick(mockSystemClock.UtcNow);
 
                     // Send an extra frame to make it fail
                     switch (finalFrameType)
@@ -272,7 +274,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // Disable response buffering so "socket" backpressure is observed immediately.
             limits.MaxResponseBufferSize = 0;
 
-            _timeoutControl.Initialize(mockSystemClock.UtcNow);
+            _timeoutControl.Initialize(mockSystemClock.UtcNow.Ticks);
 
             await InitializeConnectionAsync(_echoApplication);
             
@@ -305,7 +307,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await WaitForConnectionErrorAsync<ConnectionAbortedException>(
                 ignoreNonGoAwayFrames: false,
-                expectedLastStreamId: 1,
+                expectedLastStreamId: int.MaxValue,
                 Http2ErrorCode.INTERNAL_ERROR,
                 null);
 
@@ -328,7 +330,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // Disable response buffering so "socket" backpressure is observed immediately.
             limits.MaxResponseBufferSize = 0;
 
-            _timeoutControl.Initialize(mockSystemClock.UtcNow);
+            _timeoutControl.Initialize(mockSystemClock.UtcNow.Ticks);
 
             await InitializeConnectionAsync(_echoApplication);
 
@@ -363,7 +365,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await WaitForConnectionErrorAsync<ConnectionAbortedException>(
                 ignoreNonGoAwayFrames: false,
-                expectedLastStreamId: 1,
+                expectedLastStreamId: int.MaxValue,
                 Http2ErrorCode.INTERNAL_ERROR,
                 null);
 
@@ -386,7 +388,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // This only affects the stream windows. The connection-level window is always initialized at 64KiB.
             _clientSettings.InitialWindowSize = 6;
 
-            _timeoutControl.Initialize(mockSystemClock.UtcNow);
+            _timeoutControl.Initialize(mockSystemClock.UtcNow.Ticks);
 
             await InitializeConnectionAsync(_echoApplication);
 
@@ -417,7 +419,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await WaitForConnectionErrorAsync<ConnectionAbortedException>(
                 ignoreNonGoAwayFrames: false,
-                expectedLastStreamId: 1,
+                expectedLastStreamId: int.MaxValue,
                 Http2ErrorCode.INTERNAL_ERROR,
                 null);
 
@@ -440,7 +442,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // This only affects the stream windows. The connection-level window is always initialized at 64KiB.
             _clientSettings.InitialWindowSize = (uint)_maxData.Length - 1;
 
-            _timeoutControl.Initialize(mockSystemClock.UtcNow);
+            _timeoutControl.Initialize(mockSystemClock.UtcNow.Ticks);
 
             await InitializeConnectionAsync(_echoApplication);
 
@@ -473,7 +475,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await WaitForConnectionErrorAsync<ConnectionAbortedException>(
                 ignoreNonGoAwayFrames: false,
-                expectedLastStreamId: 1,
+                expectedLastStreamId: int.MaxValue,
                 Http2ErrorCode.INTERNAL_ERROR,
                 null);
 
@@ -496,7 +498,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // This only affects the stream windows. The connection-level window is always initialized at 64KiB.
             _clientSettings.InitialWindowSize = (uint)_maxData.Length - 1;
 
-            _timeoutControl.Initialize(mockSystemClock.UtcNow);
+            _timeoutControl.Initialize(mockSystemClock.UtcNow.Ticks);
 
             await InitializeConnectionAsync(_echoApplication);
 
@@ -541,7 +543,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await WaitForConnectionErrorAsync<ConnectionAbortedException>(
                 ignoreNonGoAwayFrames: false,
-                expectedLastStreamId: 3,
+                expectedLastStreamId: int.MaxValue,
                 Http2ErrorCode.INTERNAL_ERROR,
                 null);
 
@@ -561,7 +563,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // Use non-default value to ensure the min request and response rates aren't mixed up.
             limits.MinRequestBodyDataRate = new MinDataRate(480, TimeSpan.FromSeconds(2.5));
 
-            _timeoutControl.Initialize(mockSystemClock.UtcNow);
+            _timeoutControl.Initialize(mockSystemClock.UtcNow.Ticks);
 
             await InitializeConnectionAsync(_readRateApplication);
 
@@ -590,7 +592,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await WaitForConnectionErrorAsync<ConnectionAbortedException>(
                 ignoreNonGoAwayFrames: false,
-                expectedLastStreamId: 1,
+                expectedLastStreamId: int.MaxValue,
                 Http2ErrorCode.INTERNAL_ERROR,
                 null);
 
@@ -610,7 +612,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // Use non-default value to ensure the min request and response rates aren't mixed up.
             limits.MinRequestBodyDataRate = new MinDataRate(480, TimeSpan.FromSeconds(2.5));
 
-            _timeoutControl.Initialize(mockSystemClock.UtcNow);
+            _timeoutControl.Initialize(mockSystemClock.UtcNow.Ticks);
 
             await InitializeConnectionAsync(_readRateApplication);
 
@@ -643,7 +645,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await WaitForConnectionErrorAsync<ConnectionAbortedException>(
                 ignoreNonGoAwayFrames: false,
-                expectedLastStreamId: 1,
+                expectedLastStreamId: int.MaxValue,
                 Http2ErrorCode.INTERNAL_ERROR,
                 null);
 
@@ -663,7 +665,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // Use non-default value to ensure the min request and response rates aren't mixed up.
             limits.MinRequestBodyDataRate = new MinDataRate(480, TimeSpan.FromSeconds(2.5));
 
-            _timeoutControl.Initialize(mockSystemClock.UtcNow);
+            _timeoutControl.Initialize(mockSystemClock.UtcNow.Ticks);
 
             await InitializeConnectionAsync(_readRateApplication);
 
@@ -712,7 +714,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await WaitForConnectionErrorAsync<ConnectionAbortedException>(
                 ignoreNonGoAwayFrames: false,
-                expectedLastStreamId: 3,
+                expectedLastStreamId: int.MaxValue,
                 Http2ErrorCode.INTERNAL_ERROR,
                 null);
 
@@ -732,7 +734,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // Use non-default value to ensure the min request and response rates aren't mixed up.
             limits.MinRequestBodyDataRate = new MinDataRate(480, TimeSpan.FromSeconds(2.5));
 
-            _timeoutControl.Initialize(mockSystemClock.UtcNow);
+            _timeoutControl.Initialize(mockSystemClock.UtcNow.Ticks);
 
             await InitializeConnectionAsync(_readRateApplication);
 
@@ -782,7 +784,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await WaitForConnectionErrorAsync<ConnectionAbortedException>(
                 ignoreNonGoAwayFrames: false,
-                expectedLastStreamId: 3,
+                expectedLastStreamId: int.MaxValue,
                 Http2ErrorCode.INTERNAL_ERROR,
                 null);
 
@@ -807,7 +809,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // Use non-default value to ensure the min request and response rates aren't mixed up.
             limits.MinRequestBodyDataRate = new MinDataRate(480, TimeSpan.FromSeconds(2.5));
 
-            _timeoutControl.Initialize(mockSystemClock.UtcNow);
+            _timeoutControl.Initialize(mockSystemClock.UtcNow.Ticks);
 
             await InitializeConnectionAsync(async context =>
             {
@@ -877,7 +879,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await WaitForConnectionErrorAsync<ConnectionAbortedException>(
                 ignoreNonGoAwayFrames: false,
-                expectedLastStreamId: 3,
+                expectedLastStreamId: int.MaxValue,
                 Http2ErrorCode.INTERNAL_ERROR,
                 null);
 

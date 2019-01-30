@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -178,6 +179,99 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
 
             public SelfRef Self;
+        }
+
+        public async Task<string> StreamingConcat(ChannelReader<string> source)
+        {
+            var sb = new StringBuilder();
+
+            while (await source.WaitToReadAsync())
+            {
+                while (source.TryRead(out var item))
+                {
+                    sb.Append(item);
+                }
+            }
+
+            return sb.ToString();
+        }
+
+        public async Task<int> StreamingSum(ChannelReader<int> source)
+        {
+            var total = 0;
+            while (await source.WaitToReadAsync())
+            {
+                while (source.TryRead(out var item))
+                {
+                    total += item;
+                }
+            }
+            return total;
+        }
+
+        public async Task<List<object>> UploadArray(ChannelReader<object> source)
+        {
+            var results = new List<object>();
+
+            while (await source.WaitToReadAsync())
+            {
+                while (source.TryRead(out var item))
+                {
+                    results.Add(item);
+                }
+            }
+
+            return results;
+        }
+
+        public async Task<string> TestTypeCastingErrors(ChannelReader<int> source)
+        {
+            try
+            {
+                await source.WaitToReadAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                return "error identified and caught";
+            }
+
+            return "wrong type accepted, this is bad";
+        }
+
+        public async Task<bool> TestCustomErrorPassing(ChannelReader<int> source)
+        {
+            try
+            {
+                await source.WaitToReadAsync();
+            }
+            catch (Exception ex)
+            {
+                return ex.Message == HubConnectionHandlerTests.CustomErrorMessage;
+            }
+
+            return false;
+        }
+
+        public Task UploadIgnoreItems(ChannelReader<string> source)
+        {
+            // Wait for an item to appear first then return from the hub method to end the invocation
+            return source.WaitToReadAsync().AsTask();
+        }
+
+        public ChannelReader<string> StreamAndUploadIgnoreItems(ChannelReader<string> source)
+        {
+            var channel = Channel.CreateUnbounded<string>();
+            _ = ChannelFunc(channel.Writer, source);
+
+            return channel.Reader;
+
+            async Task ChannelFunc(ChannelWriter<string> output, ChannelReader<string> input)
+            {
+                // Wait for an item to appear first then return from the hub method to end the invocation
+                await input.WaitToReadAsync();
+                output.Complete();
+            }
         }
     }
 
@@ -497,6 +591,26 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public int NonStream()
         {
             return 42;
+        }
+
+        public ChannelReader<string> StreamEcho(ChannelReader<string> source)
+        {
+            Channel<string> output = Channel.CreateUnbounded<string>();
+
+            _ = Task.Run(async () =>
+            {
+                while (await source.WaitToReadAsync())
+                {
+                    while (source.TryRead(out string item))
+                    {
+                        await output.Writer.WriteAsync("echo:" + item);
+                    }
+                }
+
+                output.Writer.TryComplete();
+            });
+
+            return output.Reader;
         }
     }
 

@@ -7,7 +7,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
-using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
@@ -51,7 +50,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
                         ExpirationTokens = Array.Empty<IChangeToken>(),
                         RelativePath = relativePath,
                         ViewAttribute = attribute,
-                        IsPrecompiled = true,
                     };
 
                     feature.ViewDescriptors.Add(viewDescriptor);

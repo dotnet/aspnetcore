@@ -17,5 +17,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         public bool fWindowsAuthEnabled;
         public bool fBasicAuthEnabled;
         public bool fAnonymousAuthEnable;
+        [MarshalAs(UnmanagedType.BStr)]
+        public string pwzBindings;
     }
 }

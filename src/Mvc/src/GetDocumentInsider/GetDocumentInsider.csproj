@@ -6,6 +6,9 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>Microsoft.Extensions.ApiDescription.Tool</RootNamespace>
     <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
+    <VerifyVersion>false</VerifyVersion>
+    <VersionPrefix>$(ExperimentalVersionPrefix)</VersionPrefix>
+    <VersionSuffix>$(ExperimentalVersionSuffix)</VersionSuffix>
     <IsImplementationProject>false</IsImplementationProject>
   </PropertyGroup>
 
@@ -14,7 +17,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
+    <!-- Hard-coded to 2.0 because this project currently targets netcoreapp2.0 -->
+    <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.0.0">
+      <AllowExplicitReference>true</AllowExplicitReference>
+    </PackageReference>
   </ItemGroup>
 
   <Target Name="BuildX86" AfterTargets="Build" Condition=" '$(TargetFramework)' == 'net461' And '$(Platform)' != 'x86' ">

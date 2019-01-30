@@ -1,7 +1,3 @@
-#
-# This script requires internal-only access to the code which generates ANCM installers.
-#
-
 #requires -version 5
 [cmdletbinding()]
 param(
@@ -14,22 +10,19 @@ param(
     [string]$Runtime64Zip,
     [string]$BuildNumber = 't000',
     [switch]$IsFinalBuild,
-    [string]$SignType = '',
-    [string]$PackageVersionPropsUrl = $null,
-    [string]$AccessTokenSuffix = $null,
-    [string]$AssetRootUrl = $null,
-    [switch]$clean
+    [string]$SignType = ''
 )
 
 $ErrorActionPreference = 'Stop'
 $repoRoot = Resolve-Path "$PSScriptRoot/../../../"
-Import-Module -Scope Local "$repoRoot/scripts/common.psm1" -Force
-$msbuild = Get-MSBuildPath -Prerelease -requires 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64'
+Import-Module -Scope Local "$repoRoot/eng/scripts/common.psm1" -Force
 
 $harvestRoot = "$repoRoot/obj/sfx/"
 if ($clean) {
     Remove-Item -Recurse -Force $harvestRoot -ErrorAction Ignore | Out-Null
 }
+
+# TODO: harvest shared frameworks from a project reference
 
 New-Item "$harvestRoot/x86", "$harvestRoot/x64" -ItemType Directory -ErrorAction Ignore | Out-Null
 
@@ -43,57 +36,14 @@ if (-not (Test-Path "$harvestRoot/x64/shared/")) {
 
 Push-Location $PSScriptRoot
 try {
-    Invoke-Block { & $msbuild `
-            tasks/InstallerTasks.csproj `
-            -nologo `
-            -m `
-            -v:m `
-            -nodeReuse:false `
-            -restore `
-            -t:Build `
-            "-p:Configuration=$Configuration"
-    }
-
-    [string[]] $msbuildArgs = @()
-
-    if ($clean) {
-        $msbuildArgs += '-t:Clean'
-    }
-
-    if ($AssetRootUrl) {
-        $msbuildArgs += "-p:DotNetAssetRootUrl=$AssetRootUrl"
-    }
-
-    if ($AccessTokenSuffix) {
-        $msbuildArgs += "-p:DotNetAccessTokenSuffix=$AccessTokenSuffix"
-    }
-
-    if ($PackageVersionPropsUrl) {
-        $IntermediateDir = Join-Path $PSScriptRoot 'obj'
-        $PropsFilePath = Join-Path $IntermediateDir 'external-dependencies.props'
-        New-Item -ItemType Directory $IntermediateDir -ErrorAction Ignore | Out-Null
-        Get-RemoteFile "${PackageVersionPropsUrl}${AccessTokenSuffix}" $PropsFilePath
-        $msbuildArgs += "-p:DotNetPackageVersionPropsPath=$PropsFilePath"
-    }
-
-    $msbuildArgs += '-t:Build'
-
-    Invoke-Block { & $msbuild `
-            WindowsInstallers.proj `
-            -restore `
-            -nologo `
-            -m `
-            -v:m `
-            -nodeReuse:false `
-            -clp:Summary `
+    & $repoRoot/build.ps1 `
+            -Installers `
             "-p:SharedFrameworkHarvestRootPath=$repoRoot/obj/sfx/" `
             "-p:Configuration=$Configuration" `
-            "-p:BuildNumber=$BuildNumber" `
+            "-p:BuildNumberSuffix=$BuildNumber" `
             "-p:SignType=$SignType" `
             "-p:IsFinalBuild=$IsFinalBuild" `
-            "-bl:$repoRoot/artifacts/logs/installers.msbuild.binlog" `
-            @msbuildArgs
-    }
+            "-bl:$repoRoot/artifacts/logs/installers.msbuild.binlog"
 }
 finally {
     Pop-Location

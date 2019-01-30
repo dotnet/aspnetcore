@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -210,9 +209,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         private static IModelExpressionProvider CreateModelExpressionProvider()
         {
             var provider = new EmptyModelMetadataProvider();
-            var modelExpressionProvider = new ModelExpressionProvider(
-                provider,
-                new ExpressionTextCache());
+            var modelExpressionProvider = new ModelExpressionProvider(provider);
 
             return modelExpressionProvider;
         }
@@ -223,7 +220,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             var viewData = new ViewDataDictionary<RazorPageCreateModelExpressionModel>(provider, new ModelStateDictionary());
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton<IModelMetadataProvider>(provider);
-            serviceCollection.AddSingleton<ExpressionTextCache, ExpressionTextCache>();
 
             var httpContext = new DefaultHttpContext
             {

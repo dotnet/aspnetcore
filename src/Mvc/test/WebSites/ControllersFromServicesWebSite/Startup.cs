@@ -32,7 +32,13 @@ namespace ControllersFromServicesWebSite
                       typeof(ComponentFromServicesViewComponent),
                       typeof(InServicesTagHelper)));
 
-                    manager.FeatureProviders.Add(new AssemblyMetadataReferenceFeatureProvider());
+                    var relatedAssenbly = RelatedAssemblyAttribute
+                        .GetRelatedAssemblies(GetType().Assembly, throwOnError: true)
+                        .SingleOrDefault();
+                    foreach (var part in CompiledRazorAssemblyApplicationPartFactory.GetDefaultApplicationParts(relatedAssenbly))
+                    {
+                        manager.ApplicationParts.Add(part);
+                    }
                 })
                 .AddControllersAsServices()
                 .AddViewComponentsAsServices()

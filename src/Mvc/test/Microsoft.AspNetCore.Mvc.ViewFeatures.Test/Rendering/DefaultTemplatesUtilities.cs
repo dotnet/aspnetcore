@@ -12,12 +12,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.DataAnnotations;
-using Microsoft.AspNetCore.Mvc.DataAnnotations.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
@@ -253,8 +252,6 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
                 .Setup(f => f.GetUrlHelper(It.IsAny<ActionContext>()))
                 .Returns(urlHelper);
 
-            var expressionTextCache = new ExpressionTextCache();
-
             if (htmlGenerator == null)
             {
                 htmlGenerator = HtmlGeneratorUtilities.GetHtmlGenerator(provider, urlHelperFactory.Object, options);
@@ -291,7 +288,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
                 new TestViewBufferScope(),
                 new HtmlTestEncoder(),
                 UrlEncoder.Default,
-                expressionTextCache);
+                new ModelExpressionProvider(provider));
 
             var viewContext = new ViewContext(
                 actionContext,

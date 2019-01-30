@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
 #else
             expectedContent = string.Format(expectedContent, forgeryToken);
-            Assert.Equal(expectedContent, responseContent.Trim(), ignoreLineEndingDifferences: true);
+            Assert.Equal(expectedContent, responseContent, ignoreLineEndingDifferences: true);
 #endif
         }
 
@@ -1190,11 +1190,11 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCore.InjectedPa
         public async Task AuthFiltersAppliedToPageModel_AreExecuted()
         {
             // Act
-            var response = await Client.GetAsync("/ModelWithAuthFilter");
+            var response = await Client.GetAsync("/Pages/ModelWithAuthFilter");
 
             // Assert
             Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
-            Assert.Equal("/Login?ReturnUrl=%2FModelWithAuthFilter", response.Headers.Location.PathAndQuery);
+            Assert.Equal("/Login?ReturnUrl=%2FPages%2FModelWithAuthFilter", response.Headers.Location.PathAndQuery);
         }
 
         [Fact]

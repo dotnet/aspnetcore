@@ -145,15 +145,10 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             return _requestStream.ReadAsync(buffer, offset, count, cancellationToken);
         }
 
-#if NETCOREAPP2_1
         public override ValueTask<int> ReadAsync(Memory<byte> destination, CancellationToken cancellationToken = default)
         {
             return _requestStream.ReadAsync(destination, cancellationToken);
         }
-#elif NETSTANDARD2_0
-#else
-#error TFMs need to be updated
-#endif
 
         public override Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
         {
@@ -165,15 +160,10 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             return _responseStream.WriteAsync(buffer, offset, count, cancellationToken);
         }
 
-#if NETCOREAPP2_1
         public override ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
         {
             return _responseStream.WriteAsync(source, cancellationToken);
         }
-#elif NETSTANDARD2_0
-#else
-#error TFMs need to be updated
-#endif
 
         public override long Seek(long offset, SeekOrigin origin)
         {

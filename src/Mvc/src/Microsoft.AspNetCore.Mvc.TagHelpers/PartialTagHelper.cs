@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 
 namespace Microsoft.AspNetCore.Mvc.TagHelpers
@@ -34,10 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
         public PartialTagHelper(
             ICompositeViewEngine viewEngine,
-#pragma warning disable PUB0001 // Pubternal type in public API
-            IViewBufferScope viewBufferScope
-#pragma warning restore PUB0001
-            )
+            IViewBufferScope viewBufferScope)
         {
             _viewEngine = viewEngine ?? throw new ArgumentNullException(nameof(viewEngine));
             _viewBufferScope = viewBufferScope ?? throw new ArgumentNullException(nameof(viewBufferScope));

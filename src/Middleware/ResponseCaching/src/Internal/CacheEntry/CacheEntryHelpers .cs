@@ -7,7 +7,6 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
 {
     internal static class CacheEntryHelpers
     {
-
         internal static long EstimateCachedResponseSize(CachedResponse cachedResponse)
         {
             if (cachedResponse == null)
@@ -25,7 +24,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
                 {
                     foreach (var item in cachedResponse.Headers)
                     {
-                        size += item.Key.Length * sizeof(char) + EstimateStringValuesSize(item.Value);
+                        size += (item.Key.Length * sizeof(char)) + EstimateStringValuesSize(item.Value);
                     }
                 }
 

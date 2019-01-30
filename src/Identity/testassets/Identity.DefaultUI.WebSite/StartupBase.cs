@@ -12,7 +12,7 @@ using Microsoft.Extensions.FileProviders;
 
 namespace Identity.DefaultUI.WebSite
 {
-    public class StartupBase<TUser,TContext> 
+    public class StartupBase<TUser,TContext>
         where TUser : class
         where TContext : DbContext
     {
@@ -46,13 +46,7 @@ namespace Identity.DefaultUI.WebSite
                 .AddEntityFrameworkStores<TContext>();
 
             services.AddMvc()
-                .AddRazorOptions(ro =>
-                {
-                    // We do this to avoid file descriptor exhaustion in our functional tests
-                    // due to Razor Pages using a file watcher.
-                    ro.FileProviders.Clear();
-                    ro.FileProviders.Add(new CompositeFileProvider(new[] { new NullFileProvider() }));
-                });
+                .AddNewtonsoftJson();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

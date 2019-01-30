@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing.xunit;
-using Newtonsoft.Json;
+using Microsoft.Win32;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             StopServer();
 
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult, $@"Application '{Regex.Escape(deploymentResult.ContentRoot)}\\' wasn't able to start. {subError}");
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.UnableToStart(deploymentResult, subError));
 
             Assert.Contains("HTTP Error 500.0 - ANCM In-Process Handler Load Failure", await response.Content.ReadAsStringAsync());
         }
@@ -107,9 +107,71 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.Equal(1, TestSink.Writes.Count(w => w.Message.Contains("Invoking where.exe to find dotnet.exe")));
         }
 
+        [ConditionalTheory]
+        [InlineData(RuntimeArchitecture.x64)]
+        [InlineData(RuntimeArchitecture.x86)]
+        [SkipIfNotAdmin]
+        [RequiresNewShim]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        public async Task StartsWithDotnetInstallLocation(RuntimeArchitecture runtimeArchitecture)
+        {
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
+            deploymentParameters.RuntimeArchitecture = runtimeArchitecture;
+
+            // IIS doesn't allow empty PATH
+            deploymentParameters.EnvironmentVariables["PATH"] = ".";
+            deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("processPath", "dotnet"));
+
+            // Key is always in 32bit view
+            using (var localMachine = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32))
+            {
+                var installDir = DotNetCommands.GetDotNetInstallDir(runtimeArchitecture);
+                using (new TestRegistryKey(
+                    localMachine,
+                    "SOFTWARE\\dotnet\\Setup\\InstalledVersions\\" + runtimeArchitecture + "\\sdk",
+                    "InstallLocation",
+                    installDir))
+                {
+                    var deploymentResult = await DeployAsync(deploymentParameters);
+                    await deploymentResult.AssertStarts();
+                    StopServer();
+                    // Verify that in this scenario dotnet.exe was found using InstallLocation lookup
+                    // I would've liked to make a copy of dotnet directory in this test and use it for verification
+                    // but dotnet roots are usually very large on dev machines so this test would take disproportionally long time and disk space
+                    Assert.Equal(1, TestSink.Writes.Count(w => w.Message.Contains($"Found dotnet.exe in InstallLocation at '{installDir}\\dotnet.exe'")));
+                }
+            }
+        }
+
+        [ConditionalFact(Skip = "https://github.com/aspnet/AspNetCore/issues/6615")]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        public async Task DoesNotStartIfDisabled()
+        {
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
+
+            using (new TestRegistryKey(
+                Registry.LocalMachine,
+                "SOFTWARE\\Microsoft\\IIS Extensions\\IIS AspNetCore Module V2\\Parameters",
+                "DisableANCM",
+                1))
+            {
+                var deploymentResult = await DeployAsync(deploymentParameters);
+                // Disabling ANCM produces no log files
+                deploymentResult.AllowNoLogs();
+
+                var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
+
+                Assert.False(response.IsSuccessStatusCode);
+
+                StopServer();
+
+                EventLogHelpers.VerifyEventLogEvent(deploymentResult, "AspNetCore Module is disabled");
+            }
+        }
+
         public static TestMatrix TestVariants
             => TestMatrix.ForServers(DeployerSelector.ServerType)
-                .WithTfms(Tfm.NetCoreApp22)
+                .WithTfms(Tfm.NetCoreApp30)
                 .WithAllApplicationTypes()
                 .WithAncmV2InProcess();
 
@@ -128,11 +190,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite, publish: true);
             // We need the right dotnet on the path in IIS
             deploymentParameters.EnvironmentVariables["PATH"] = Path.GetDirectoryName(DotNetCommands.GetDotNetExecutable(deploymentParameters.RuntimeArchitecture));
-
-            // rest publisher as it doesn't support additional parameters
-            deploymentParameters.ApplicationPublisher = null;
             // ReferenceTestTasks is workaround for https://github.com/dotnet/sdk/issues/2482
-            deploymentParameters.AdditionalPublishParameters = "-p:RuntimeIdentifier=win7-x64 -p:UseAppHost=true -p:SelfContained=false -p:ReferenceTestTasks=false";
+            deploymentParameters.AdditionalPublishParameters = "AppHost";
             var deploymentResult = await DeployAsync(deploymentParameters);
 
             Assert.True(File.Exists(Path.Combine(deploymentResult.ContentRoot, "InProcessWebSite.exe")));
@@ -195,7 +254,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalFact]
-        public async Task RemoveHostfxrFromApp_InProcessHostfxrInvalid()
+        public async Task RemoveHostfxrFromApp_InProcessHostfxrAPIAbsent()
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite, publish: true);
             deploymentParameters.ApplicationType = ApplicationType.Standalone;
@@ -208,6 +267,21 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult);
 
             EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessHostfxrInvalid(deploymentResult), Logger);
+        }
+
+        [ConditionalFact]
+        [RequiresNewShim]
+        public async Task RemoveHostfxrFromApp_InProcessHostfxrLoadFailure()
+        {
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite, publish: true);
+            deploymentParameters.ApplicationType = ApplicationType.Standalone;
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            // We don't distinguish between load failure types so making dll empty should be enough
+            File.WriteAllText(Path.Combine(deploymentResult.ContentRoot, "hostfxr.dll"), "");
+            await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult);
+
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessHostfxrUnableToLoad(deploymentResult), Logger);
         }
 
         [ConditionalFact]
@@ -261,25 +335,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             EventLogHelpers.VerifyEventLogEvents(deploymentResult,
                 EventLogHelpers.InProcessFailedToStart(deploymentResult, "Managed server didn't initialize after 1000 ms.")
                 );
-        }
-
-        [ConditionalFact]
-        public async Task ShutdownTimeoutIsApplied()
-        {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite, publish: true);
-            deploymentParameters.TransformArguments((a, _) => $"{a} HangOnStop");
-            deploymentParameters.WebConfigActionList.Add(
-                WebConfigHelpers.AddOrModifyAspNetCoreSection("shutdownTimeLimit", "1"));
-
-            var deploymentResult = await DeployAsync(deploymentParameters);
-
-            Assert.Equal("Hello World", await deploymentResult.HttpClient.GetStringAsync("/HelloWorld"));
-
-            StopServer();
-
-            EventLogHelpers.VerifyEventLogEvents(deploymentResult,
-                EventLogHelpers.InProcessStarted(deploymentResult),
-                EventLogHelpers.InProcessFailedToStop(deploymentResult, ""));
         }
 
         [ConditionalFact]

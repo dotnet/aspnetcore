@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Matching;
 
@@ -68,7 +67,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     {
                         // This one is OK, we implement this in endpoint routing.
                     }
-                    else if (actionConstraint.GetType().FullName == "Microsoft.AspNetCore.Mvc.Cors.Internal.CorsHttpMethodActionConstraint")
+                    else if (actionConstraint.GetType().FullName == "Microsoft.AspNetCore.Mvc.Cors.CorsHttpMethodActionConstraint")
                     {
                         // This one is OK, we implement this in endpoint routing.
                     }

@@ -5,7 +5,6 @@ using System;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -168,19 +167,6 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                 new EmptyModelMetadataProvider(),
                 Mock.Of<IClientErrorFactory>(),
                 loggerFactory);
-        }
-
-        private static ApplicationModelProviderContext GetContext(
-            Type type,
-            IModelMetadataProvider modelMetadataProvider = null)
-        {
-            var context = new ApplicationModelProviderContext(new[] { type.GetTypeInfo() });
-            var mvcOptions = Options.Create(new MvcOptions { AllowValidatingTopLevelNodes = true });
-            modelMetadataProvider = modelMetadataProvider ?? new EmptyModelMetadataProvider();
-            var provider = new DefaultApplicationModelProvider(mvcOptions, modelMetadataProvider);
-            provider.OnProvidersExecuting(context);
-
-            return context;
         }
 
         private class TestApiController : ControllerBase

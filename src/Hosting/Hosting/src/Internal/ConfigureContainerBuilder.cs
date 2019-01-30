@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
         public MethodInfo MethodInfo { get; }
 
-        public Func<Action<object>, Action<object>> ConfigureContainerFilters { get; set; }
+        public Func<Action<object>, Action<object>> ConfigureContainerFilters { get; set; } = f => f;
 
         public Action<object> Build(object instance) => container => Invoke(instance, container);
 
