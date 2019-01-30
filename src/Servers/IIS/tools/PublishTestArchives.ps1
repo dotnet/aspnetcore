@@ -1,5 +1,7 @@
 param ($Configuration, $TargetDirectory)
 
+$env:PATH = "$PSScriptRoot\..\..\..\..\.dotnet\x64;$env:PATH"
+
 $testDir = "$PSScriptRoot\..\IIS\test";
 $tempDir = "$PSScriptRoot\..\obj";
 
@@ -27,5 +29,5 @@ foreach ($project in $projects)
     $targetArchive = "$TargetDirectory\$projectName.zip";
 
     Remove-Item $tempDir -Recurse -Force -ErrorAction SilentlyContinue;
-    Compress-Archive -Path "$tempDir\$projectName\*" -DestinationPath;
+    Compress-Archive -Path "$tempDir\$projectName\*" -DestinationPath $TargetDirectory;
 }
