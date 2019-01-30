@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Components
 
         private readonly RenderFragment _renderFragment;
         private RenderHandle _renderHandle;
-        private bool _hasCalledInit;
+        private bool _initialized;
         private bool _hasNeverRendered = true;
         private bool _hasPendingQueuedRender;
 
@@ -177,155 +177,75 @@ namespace Microsoft.AspNetCore.Components
         public virtual Task SetParametersAsync(ParameterCollection parameters)
         {
             parameters.SetParameterProperties(this);
-            if (!_hasCalledInit)
+            if (!_initialized)
             {
-                return RunInitAndSetParameters();
+                _initialized = true;
+
+                return RunInitAndSetParametersAsync();
             }
             else
             {
-                OnParametersSet();
-                // If you override OnInitAsync or OnParametersSetAsync and return a noncompleted task,
-                // then by default we automatically re-render once each of those tasks completes.
-                var isAsync = false;
-                Task parametersTask = null;
-                (isAsync, parametersTask) = ProcessLifeCycletask(OnParametersSetAsync());
-                StateHasChanged();
-                // We call StateHasChanged here so that we render after OnParametersSet and after the
-                // synchronous part of OnParametersSetAsync has run, and in case there is async work
-                // we trigger another render.
-                if (isAsync)
-                {
-                    return parametersTask;
-                }
-
-                return Task.CompletedTask;
+                return SetParametersAsyncCore();
             }
         }
 
-        private async Task RunInitAndSetParameters()
+        private async Task RunInitAndSetParametersAsync()
         {
-            _hasCalledInit = true;
-            var initIsAsync = false;
-
             OnInit();
-            Task initTask = null;
-            (initIsAsync, initTask) = ProcessLifeCycletask(OnInitAsync());
-            if (initIsAsync)
+            var task = OnInitAsync();
+
+            if (task.Status != TaskStatus.RanToCompletion && task.Status != TaskStatus.Canceled)
             {
                 // Call state has changed here so that we render after the sync part of OnInitAsync has run
                 // and wait for it to finish before we continue. If no async work has been done yet, we want
                 // to defer calling StateHasChanged up until the first bit of async code happens or until
-                // the end.
+                // the end. Additionally, we want to avoid calling StateHasChanged if no
+                // async work is to be performed.
                 StateHasChanged();
-                await initTask;
+
+                await ProcessLifecycleTaskAsync(task);
             }
 
-            OnParametersSet();
-            Task parametersTask = null;
-            var setParametersIsAsync = false;
-            (setParametersIsAsync, parametersTask) = ProcessLifeCycletask(OnParametersSetAsync());
-            // We always call StateHasChanged here as we want to trigger a rerender after OnParametersSet and
-            // the synchronous part of OnParametersSetAsync has run, triggering another re-render in case there
-            // is additional async work.
-            StateHasChanged();
-            if (setParametersIsAsync)
-            {
-                await parametersTask;
-            }
+            await SetParametersAsyncCore();
         }
 
-        private (bool isAsync, Task asyncTask) ProcessLifeCycletask(Task task)
+        private Task SetParametersAsyncCore()
         {
-            if (task == null)
-            {
-                throw new ArgumentNullException(nameof(task));
-            }
+            OnParametersSet();
+            var task = OnParametersSetAsync();
+            // If no aync work is to be performed, i.e. the task has already ran to completion
+            // or was canceled by the time we got to inspect it, avoid going async and re-invoking
+            // StateHasChanged at the culmination of the async work.
+            var shouldAwaitTask = task.Status != TaskStatus.RanToCompletion &&
+                task.Status != TaskStatus.Canceled;
 
-            switch (task.Status)
-            {
-                // If it's already completed synchronously, no need to await and no
-                // need to issue a further render (we already rerender synchronously).
-                // Just need to make sure we propagate any errors.
-                case TaskStatus.RanToCompletion:
-                case TaskStatus.Canceled:
-                    return (false, null);
-                case TaskStatus.Faulted:
-                    HandleException(task.Exception);
-                    return (false, null);
-                // For incomplete tasks, automatically re-render on successful completion
-                default:
-                    return (true, ReRenderAsyncTask(task));
-            }
+            // We always call StateHasChanged here as we want to trigger a rerender after OnParametersSet and
+            // the synchronous part of OnParametersSetAsync has run.
+            StateHasChanged();
+
+            return shouldAwaitTask ?
+                ProcessLifecycleTaskAsync(task) :
+                Task.CompletedTask;
         }
 
-        private async Task ReRenderAsyncTask(Task task)
+        private async Task ProcessLifecycleTaskAsync(Task task)
         {
             try
             {
                 await task;
-                StateHasChanged();
             }
-            catch (Exception ex)
+            catch when (task.IsCanceled)
             {
-                // Either the task failed, or it was cancelled, or StateHasChanged threw.
-                // We want to report task failure or StateHasChanged exceptions only.
-                if (!task.IsCanceled)
-                {
-                    HandleException(ex);
-                }
+                // Ignore task cancelation but don't bother issuing a state change.
+                return;
             }
+
+            StateHasChanged();
         }
 
-        private async void ContinueAfterLifecycleTask(Task task)
+        async Task IHandleEvent.HandleEventAsync(EventHandlerInvoker binding, UIEventArgs args)
         {
-            switch (task == null ? TaskStatus.RanToCompletion : task.Status)
-            {
-                // If it's already completed synchronously, no need to await and no
-                // need to issue a further render (we already rerender synchronously).
-                // Just need to make sure we propagate any errors.
-                case TaskStatus.RanToCompletion:
-                case TaskStatus.Canceled:
-                    break;
-                case TaskStatus.Faulted:
-                    HandleException(task.Exception);
-                    break;
-
-                // For incomplete tasks, automatically re-render on successful completion
-                default:
-                    try
-                    {
-                        await task;
-                        StateHasChanged();
-                    }
-                    catch (Exception ex)
-                    {
-                        // Either the task failed, or it was cancelled, or StateHasChanged threw.
-                        // We want to report task failure or StateHasChanged exceptions only.
-                        if (!task.IsCanceled)
-                        {
-                            HandleException(ex);
-                        }
-                    }
-
-                    break;
-            }
-        }
-
-        private static void HandleException(Exception ex)
-        {
-            if (ex is AggregateException && ex.InnerException != null)
-            {
-                ex = ex.InnerException; // It's more useful
-            }
-
-            // TODO: Need better global exception handling
-            Console.Error.WriteLine($"[{ex.GetType().FullName}] {ex.Message}\n{ex.StackTrace}");
-        }
-
-        void IHandleEvent.HandleEvent(EventHandlerInvoker binding, UIEventArgs args)
-        {
-            var task = binding.Invoke(args);
-            ContinueAfterLifecycleTask(task);
+            await binding.Invoke(args);
 
             // After each event, we synchronously re-render (unless !ShouldRender())
             // This just saves the developer the trouble of putting "StateHasChanged();"
@@ -333,32 +253,17 @@ namespace Microsoft.AspNetCore.Components
             StateHasChanged();
         }
 
-        void IHandleAfterRender.OnAfterRender()
+        Task IHandleAfterRender.OnAfterRenderAsync()
         {
             OnAfterRender();
 
-            var onAfterRenderTask = OnAfterRenderAsync();
-            if (onAfterRenderTask != null && onAfterRenderTask.Status != TaskStatus.RanToCompletion)
-            {
-                // Note that we don't call StateHasChanged to trigger a render after
-                // handling this, because that would be an infinite loop. The only
-                // reason we have OnAfterRenderAsync is so that the developer doesn't
-                // have to use "async void" and do their own exception handling in
-                // the case where they want to start an async task.
-                var taskWithHandledException = HandleAfterRenderException(onAfterRenderTask);
-            }
-        }
+            return OnAfterRenderAsync();
 
-        private async Task HandleAfterRenderException(Task parentTask)
-        {
-            try
-            {
-                await parentTask;
-            }
-            catch (Exception e)
-            {
-                HandleException(e);
-            }
+            // Note that we don't call StateHasChanged to trigger a render after
+            // handling this, because that would be an infinite loop. The only
+            // reason we have OnAfterRenderAsync is so that the developer doesn't
+            // have to use "async void" and do their own exception handling in
+            // the case where they want to start an async task.
         }
     }
 }

@@ -7,8 +7,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using MessagePack;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Browser.Rendering
@@ -25,6 +27,7 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
         private readonly RendererRegistry _rendererRegistry;
         private readonly ConcurrentDictionary<long, AutoCancelTaskCompletionSource<object>> _pendingRenders
             = new ConcurrentDictionary<long, AutoCancelTaskCompletionSource<object>>();
+        private readonly ILogger _logger;
         private long _nextRenderId = 1;
 
         /// <summary>
@@ -45,7 +48,8 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
             RendererRegistry rendererRegistry,
             IJSRuntime jsRuntime,
             IClientProxy client,
-            IDispatcher dispatcher)
+            IDispatcher dispatcher,
+            ILogger logger)
             : base(serviceProvider, dispatcher)
         {
             _rendererRegistry = rendererRegistry;
@@ -53,6 +57,7 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
             _client = client;
 
             _id = _rendererRegistry.Add(this);
+            _logger = logger;
         }
 
         /// <summary>
@@ -86,6 +91,24 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
             CaptureAsyncExceptions(attachComponentTask);
 
             RenderRootComponent(componentId);
+        }
+
+        /// <inheritdoc />
+        protected override bool HandleException(int componentId, IComponent component, Exception exception)
+        {
+            if (exception is AggregateException aggregateException)
+            {
+                foreach (var innerException in aggregateException.Flatten().InnerExceptions)
+                {
+                    _logger.UnhandledExceptionRenderingComponent(component.GetType(), componentId, innerException);
+                }
+            }
+            else
+            {
+                _logger.UnhandledExceptionRenderingComponent(component.GetType(), componentId, exception);
+            }
+
+            return true;
         }
 
         /// <inheritdoc />

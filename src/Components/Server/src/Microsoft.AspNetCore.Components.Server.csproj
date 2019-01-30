@@ -25,6 +25,7 @@
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
     <Reference Include="Microsoft.AspNetCore.SpaServices.Extensions" />
     <Reference Include="Microsoft.Extensions.FileProviders.Embedded" />
+    <Reference Include="Microsoft.Extensions.TypeNameHelper.Sources" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(BuildNodeJS)' != 'false'">

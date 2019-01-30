@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
@@ -18,7 +19,7 @@ namespace Microsoft.AspNetCore.Components.Test
             var renderer = new TestRenderer();
             var component = new TestComponent();
 
-            int onInitRuns = 0;
+            var onInitRuns = 0;
             component.OnInitLogic = c => onInitRuns++;
 
             // Act
@@ -36,7 +37,7 @@ namespace Microsoft.AspNetCore.Components.Test
             var renderer = new TestRenderer();
             var component = new TestComponent();
 
-            int onInitAsyncRuns = 0;
+            var onInitAsyncRuns = 0;
             component.RunsBaseOnInitAsync = false;
             component.OnInitAsyncLogic = c =>
             {
@@ -60,7 +61,7 @@ namespace Microsoft.AspNetCore.Components.Test
             var renderer = new TestRenderer();
             var component = new TestComponent();
 
-            int onInitAsyncRuns = 0;
+            var onInitAsyncRuns = 0;
             component.RunsBaseOnInitAsync = true;
             component.OnInitAsyncLogic = c =>
             {
@@ -84,7 +85,7 @@ namespace Microsoft.AspNetCore.Components.Test
             var renderer = new TestRenderer();
             var component = new TestComponent();
 
-            int onParametersSetRuns = 0;
+            var onParametersSetRuns = 0;
             component.OnParametersSetLogic = c => onParametersSetRuns++;
 
             // Act
@@ -103,7 +104,7 @@ namespace Microsoft.AspNetCore.Components.Test
             var renderer = new TestRenderer();
             var component = new TestComponent();
 
-            int onParametersSetAsyncRuns = 0;
+            var onParametersSetAsyncRuns = 0;
             component.RunsBaseOnParametersSetAsync = false;
             component.OnParametersSetAsyncLogic = c =>
             {
@@ -127,7 +128,7 @@ namespace Microsoft.AspNetCore.Components.Test
             var renderer = new TestRenderer();
             var component = new TestComponent();
 
-            int onParametersSetAsyncRuns = 0;
+            var onParametersSetAsyncRuns = 0;
             component.RunsBaseOnParametersSetAsync = true;
             component.OnParametersSetAsyncLogic = c =>
             {
@@ -233,11 +234,35 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Component should only be rendered again due to
             // the call to StateHasChanged after SetParametersAsync
-            Assert.Equal(2,renderer.Batches.Count);
+            Assert.Equal(2, renderer.Batches.Count);
         }
 
         [Fact]
-        public void DoesNotRenderAfterOnParametersSetAsyncTaskIsCancelled()
+        public async Task DoesNotRenderAfterOnInitAsyncTaskIsCancelledUsingCancellationToken()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var component = new TestComponent() { Counter = 1 };
+
+            var cts = new CancellationTokenSource();
+            cts.Cancel();
+            component.OnInitAsyncLogic = async _ =>
+            {
+                await Task.Yield();
+                cts.Token.ThrowIfCancellationRequested();
+            };
+
+            // Act
+            var componentId = renderer.AssignRootComponentId(component);
+            await renderer.RenderRootComponentAsync(componentId);
+
+            // Assert
+            // At least one call to StateHasChanged depending on how OnInitAsyncLogic gets scheduled.
+            Assert.NotEmpty(renderer.Batches);
+        }
+
+        [Fact]
+        public void DoesNotRenderAfterOnParametersSetAsyncTaskIsCanceled()
         {
             // Arrange
             var renderer = new TestRenderer();
@@ -258,6 +283,70 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Component should not be rendered again
             Assert.Single(renderer.Batches);
+        }
+
+        [Fact]
+        public async Task RenderRootComponentAsync_ReportsErrorDuringOnInit()
+        {
+            // Arrange
+            var expected = new TimeZoneNotFoundException();
+            var renderer = new TestRenderer();
+            var component = new TestComponent { OnInitLogic = _ => throw expected };
+
+            // Act & Assert
+            var componentId = renderer.AssignRootComponentId(component);
+            var actual = await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => renderer.RenderRootComponentAsync(componentId));
+
+            // Assert
+            Assert.Same(expected, actual);
+        }
+
+        [Fact]
+        public async Task RenderRootComponentAsync_ReportsErrorDuringOnInitAsync()
+        {
+            // Arrange
+            var expected = new TimeZoneNotFoundException();
+            var renderer = new TestRenderer();
+            var component = new TestComponent { OnInitAsyncLogic = _ => Task.FromException(expected) };
+
+            // Act & Assert
+            var componentId = renderer.AssignRootComponentId(component);
+            var actual = await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => renderer.RenderRootComponentAsync(componentId));
+
+            // Assert
+            Assert.Same(expected, actual);
+        }
+
+        [Fact]
+        public async Task RenderRootComponentAsync_ReportsErrorDuringOnParameterSet()
+        {
+            // Arrange
+            var expected = new TimeZoneNotFoundException();
+            var renderer = new TestRenderer();
+            var component = new TestComponent { OnParametersSetLogic = _ => throw expected };
+
+            // Act & Assert
+            var componentId = renderer.AssignRootComponentId(component);
+            var actual = await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => renderer.RenderRootComponentAsync(componentId));
+
+            // Assert
+            Assert.Same(expected, actual);
+        }
+
+        [Fact]
+        public async Task RenderRootComponentAsync_ReportsErrorDuringOnParameterSetAsync()
+        {
+            // Arrange
+            var expected = new TimeZoneNotFoundException();
+            var renderer = new TestRenderer();
+            var component = new TestComponent { OnParametersSetAsyncLogic = _ => Task.FromException(expected) };
+
+            // Act & Assert
+            var componentId = renderer.AssignRootComponentId(component);
+            var actual = await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => renderer.RenderRootComponentAsync(componentId));
+
+            // Assert
+            Assert.Same(expected, actual);
         }
 
         private class TestComponent : ComponentBase
@@ -305,7 +394,10 @@ namespace Microsoft.AspNetCore.Components.Test
                     await base.OnInitAsync();
                 }
 
-                await OnInitAsyncLogic?.Invoke(this);
+                if (OnInitAsyncLogic != null)
+                {
+                    await OnInitAsyncLogic.Invoke(this);
+                }
             }
 
             protected override void OnParametersSet()
@@ -325,7 +417,10 @@ namespace Microsoft.AspNetCore.Components.Test
                     await base.OnParametersSetAsync();
                 }
 
-                await OnParametersSetAsyncLogic?.Invoke(this);
+                if (OnParametersSetAsyncLogic != null)
+                {
+                    await OnParametersSetAsyncLogic(this);
+                }
             }
         }
     }

@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.RenderTree;
 
 namespace Microsoft.AspNetCore.Components.Rendering
@@ -16,21 +15,12 @@ namespace Microsoft.AspNetCore.Components.Rendering
     /// </summary>
     internal class ComponentState
     {
-        private readonly int _componentId; // TODO: Change the type to 'long' when the Mono runtime has more complete support for passing longs in .NET->JS calls
-        private readonly ComponentState _parentComponentState;
-        private readonly IComponent _component;
         private readonly Renderer _renderer;
         private readonly IReadOnlyList<CascadingParameterState> _cascadingParameters;
         private readonly bool _hasAnyCascadingParameterSubscriptions;
-        private RenderTreeBuilder _renderTreeBuilderCurrent;
         private RenderTreeBuilder _renderTreeBuilderPrevious;
         private ArrayBuilder<RenderTreeFrame> _latestDirectParametersSnapshot; // Lazily instantiated
         private bool _componentWasDisposed;
-
-        public int ComponentId => _componentId;
-        public IComponent Component => _component;
-        public ComponentState ParentComponentState => _parentComponentState;
-        public RenderTreeBuilder CurrrentRenderTree => _renderTreeBuilderCurrent;
 
         /// <summary>
         /// Constructs an instance of <see cref="ComponentState"/>.
@@ -41,12 +31,12 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="parentComponentState">The <see cref="ComponentState"/> for the parent component, or null if this is a root component.</param>
         public ComponentState(Renderer renderer, int componentId, IComponent component, ComponentState parentComponentState)
         {
-            _componentId = componentId;
-            _parentComponentState = parentComponentState;
-            _component = component ?? throw new ArgumentNullException(nameof(component));
+            ComponentId = componentId;
+            ParentComponentState = parentComponentState;
+            Component = component ?? throw new ArgumentNullException(nameof(component));
             _renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
             _cascadingParameters = CascadingParameterState.FindCascadingParameters(this);
-            _renderTreeBuilderCurrent = new RenderTreeBuilder(renderer);
+            CurrrentRenderTree = new RenderTreeBuilder(renderer);
             _renderTreeBuilderPrevious = new RenderTreeBuilder(renderer);
 
             if (_cascadingParameters != null)
@@ -54,6 +44,12 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 _hasAnyCascadingParameterSubscriptions = AddCascadingParameterSubscriptions();
             }
         }
+
+        // TODO: Change the type to 'long' when the Mono runtime has more complete support for passing longs in .NET->JS calls
+        public int ComponentId { get; }
+        public IComponent Component { get; }
+        public ComponentState ParentComponentState { get; }
+        public RenderTreeBuilder CurrrentRenderTree { get; private set; }
 
         public void RenderIntoBatch(RenderBatchBuilder batchBuilder, RenderFragment renderFragment)
         {
@@ -65,31 +61,31 @@ namespace Microsoft.AspNetCore.Components.Rendering
             }
 
             // Swap the old and new tree builders
-            (_renderTreeBuilderCurrent, _renderTreeBuilderPrevious) = (_renderTreeBuilderPrevious, _renderTreeBuilderCurrent);
+            (CurrrentRenderTree, _renderTreeBuilderPrevious) = (_renderTreeBuilderPrevious, CurrrentRenderTree);
 
-            _renderTreeBuilderCurrent.Clear();
-            renderFragment(_renderTreeBuilderCurrent);
+            CurrrentRenderTree.Clear();
+            renderFragment(CurrrentRenderTree);
 
             var diff = RenderTreeDiffBuilder.ComputeDiff(
                 _renderer,
                 batchBuilder,
-                _componentId,
+                ComponentId,
                 _renderTreeBuilderPrevious.GetFrames(),
-                _renderTreeBuilderCurrent.GetFrames());
+                CurrrentRenderTree.GetFrames());
             batchBuilder.UpdatedComponentDiffs.Append(diff);
         }
 
         public void DisposeInBatch(RenderBatchBuilder batchBuilder)
         {
             _componentWasDisposed = true;
- 
+
             // TODO: Handle components throwing during dispose. Shouldn't break the whole render batch.
-            if (_component is IDisposable disposable)
+            if (Component is IDisposable disposable)
             {
                 disposable.Dispose();
             }
 
-            RenderTreeDiffBuilder.DisposeFrames(batchBuilder, _renderTreeBuilderCurrent.GetFrames());
+            RenderTreeDiffBuilder.DisposeFrames(batchBuilder, CurrrentRenderTree.GetFrames());
 
             if (_hasAnyCascadingParameterSubscriptions)
             {
@@ -97,22 +93,29 @@ namespace Microsoft.AspNetCore.Components.Rendering
             }
         }
 
-        public void DispatchEvent(EventHandlerInvoker binding, UIEventArgs eventArgs)
+        public Task DispatchEventAsync(EventHandlerInvoker binding, UIEventArgs eventArgs)
         {
-            if (_component is IHandleEvent handleEventComponent)
+            if (Component is IHandleEvent handleEventComponent)
             {
-                handleEventComponent.HandleEvent(binding, eventArgs);
+                return handleEventComponent.HandleEventAsync(binding, eventArgs);
             }
             else
             {
                 throw new InvalidOperationException(
-                    $"The component of type {_component.GetType().FullName} cannot receive " +
+                    $"The component of type {Component.GetType().FullName} cannot receive " +
                     $"events because it does not implement {typeof(IHandleEvent).FullName}.");
             }
         }
 
-        public void NotifyRenderCompleted()
-            => (_component as IHandleAfterRender)?.OnAfterRender();
+        public Task NotifyRenderCompletedAsync()
+        {
+            if (Component is IHandleAfterRender handlerAfterRender)
+            {
+                return handlerAfterRender.OnAfterRenderAsync();
+            }
+
+            return Task.CompletedTask;
+        }
 
         public void SetDirectParameters(ParameterCollection parameters)
         {
@@ -140,7 +143,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 parameters = parameters.WithCascadingParameters(_cascadingParameters);
             }
 
-            _renderer.AddToPendingTasks(Component.SetParametersAsync(parameters));
+            _renderer.AddToPendingTasks(ComponentId, Component, Component.SetParametersAsync(parameters));
         }
 
         public void NotifyCascadingValueChanged()
@@ -150,7 +153,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 : ParameterCollection.Empty;
             var allParams = directParams.WithCascadingParameters(_cascadingParameters);
             var task = Component.SetParametersAsync(allParams);
-            _renderer.AddToPendingTasks(task);
+            _renderer.AddToPendingTasks(ComponentId, Component, task);
         }
 
         private bool AddCascadingParameterSubscriptions()
@@ -167,7 +170,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
                     hasSubscription = true;
                 }
             }
-            
+
             return hasSubscription;
         }
 

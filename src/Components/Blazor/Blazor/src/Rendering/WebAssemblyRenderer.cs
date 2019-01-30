@@ -1,14 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Browser;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.JSInterop;
 using Mono.WebAssembly.Interop;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Blazor.Rendering
 {
@@ -92,6 +91,25 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
                 // This renderer is not used for server-side Blazor.
                 throw new NotImplementedException($"{nameof(WebAssemblyRenderer)} is supported only with in-process JS runtimes.");
             }
+        }
+
+        /// <inheritdoc />
+        protected override bool HandleException(int componentId, IComponent component, Exception exception)
+        {
+            Console.Error.WriteLine($"Unhandled exception executing component {component.GetType().FullName} ({componentId})");
+            if (exception is AggregateException aggregateException)
+            {
+                foreach (var innerException in aggregateException.Flatten().InnerExceptions)
+                {
+                    Console.Error.WriteLine(innerException);
+    }
+            }
+            else
+            {
+                Console.Error.WriteLine(exception);
+            }
+
+            return true;
         }
     }
 }

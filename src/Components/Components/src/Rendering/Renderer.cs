@@ -118,61 +118,21 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// </summary>
         /// <param name="componentId">The ID returned by <see cref="AssignRootComponentId(IComponent)"/>.</param>
         /// <param name="initialParameters">The <see cref="ParameterCollection"/>with the initial parameters to use for rendering.</param>
-        protected void RenderRootComponent(int componentId, ParameterCollection initialParameters)
+        protected async void RenderRootComponent(int componentId, ParameterCollection initialParameters)
         {
-            ReportAsyncExceptions(RenderRootComponentAsync(componentId, initialParameters));
+            await RenderRootComponentAsync(componentId, initialParameters);
         }
 
-        private async void ReportAsyncExceptions(Task task)
-        {
-            switch (task.Status)
-            {
-                // If it's already completed synchronously, no need to await and no
-                // need to issue a further render (we already rerender synchronously).
-                // Just need to make sure we propagate any errors.
-                case TaskStatus.RanToCompletion:
-                case TaskStatus.Canceled:
-                    _pendingTasks = null;
-                    break;
-                case TaskStatus.Faulted:
-                    _pendingTasks = null;
-                    HandleException(task.Exception);
-                    break;
-
-                default:
-                    try
-                    {
-                        await task;
-                    }
-                    catch (Exception ex)
-                    {
-                        // Either the task failed, or it was cancelled.
-                        // We want to report task failure exceptions only.
-                        if (!task.IsCanceled)
-                        {
-                            HandleException(ex);
-                        }
-                    }
-                    finally
-                    {
-                        // Clear the list after we are done rendering the root component or an async exception has ocurred.
-                        _pendingTasks = null;
-                    }
-
-                    break;
-            }
-        }
-
-        private static void HandleException(Exception ex)
-        {
-            if (ex is AggregateException && ex.InnerException != null)
-            {
-                ex = ex.InnerException; // It's more useful
-            }
-
-            // TODO: Need better global exception handling
-            Console.Error.WriteLine($"[{ex.GetType().FullName}] {ex.Message}\n{ex.StackTrace}");
-        }
+        /// <summary>
+        /// Allows derived types to handle exceptions during rendering. When unhandled, the exception is rethrown.
+        /// </summary>
+        /// <param name="componentId">The component Id.</param>
+        /// <param name="component">The <see cref="IComponent"/> instance.</param>
+        /// <param name="exception">The <see cref="Exception"/>.</param>
+        /// <returns>
+        /// <see langword="true"/> if <paramref name="exception"/> was handled, otherwise <see langword="false"/>.
+        /// </returns>
+        protected virtual bool HandleException(int componentId, IComponent component, Exception exception) => false;
 
         /// <summary>
         /// Performs the first render for a root component, waiting for this component and all
@@ -198,11 +158,11 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="initialParameters">The <see cref="ParameterCollection"/>with the initial parameters to use for rendering.</param>
         protected async Task RenderRootComponentAsync(int componentId, ParameterCollection initialParameters)
         {
-            if (_pendingTasks != null)
+            if (Interlocked.CompareExchange(ref _pendingTasks, new List<Task>(), null) != null)
             {
                 throw new InvalidOperationException("There is an ongoing rendering in progress.");
             }
-            _pendingTasks = new List<Task>();
+
             // During the rendering process we keep a list of components performing work in _pendingTasks.
             // _renderer.AddToPendingTasks will be called by ComponentState.SetDirectParameters to add the
             // the Task produced by Component.SetParametersAsync to _pendingTasks in order to track the
@@ -211,12 +171,12 @@ namespace Microsoft.AspNetCore.Components.Rendering
             // work to finish as it will simply trigger new renders that will be handled afterwards.
             // During the asynchronous rendering process we want to wait up untill al components have
             // finished rendering so that we can produce the complete output.
-            GetRequiredComponentState(componentId)
-                .SetDirectParameters(initialParameters);
+            var componentState = GetRequiredComponentState(componentId);
+            componentState.SetDirectParameters(initialParameters);
 
             try
             {
-                await ProcessAsynchronousWork();
+                await ProcessAsynchronousWork(componentState);
                 Debug.Assert(_pendingTasks.Count == 0);
             }
             finally
@@ -225,7 +185,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             }
         }
 
-        private async Task ProcessAsynchronousWork()
+        private async Task ProcessAsynchronousWork(ComponentState componentState)
         {
             // Child components SetParametersAsync are stored in the queue of pending tasks,
             // which might trigger further renders.
@@ -240,8 +200,19 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
                 // new work might be added before we check again as a result of waiting for all
                 // the child components to finish executing SetParametersAsync
+
+                try
+                {
                 await pendingWork;
-            };
+        }
+                catch when (!pendingWork.IsCanceled || HandleException(componentState.ComponentId, componentState.Component, pendingWork.Exception))
+                {
+                    // await will unwrap an AggregateException and return exactly one inner exception.
+                    // We'll do our best to handle all inner exception instances.
+                    // Note that the componentId is the root component Id which may be different than the
+                    // component that produced the error.
+                }
+            }
         }
 
         private ComponentState AttachAndInitComponent(IComponent component, int parentComponentId)
@@ -267,7 +238,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="componentId">The unique identifier for the component within the scope of this <see cref="Renderer"/>.</param>
         /// <param name="eventHandlerId">The <see cref="RenderTreeFrame.AttributeEventHandlerId"/> value from the original event attribute.</param>
         /// <param name="eventArgs">Arguments to be passed to the event handler.</param>
-        public void DispatchEvent(int componentId, int eventHandlerId, UIEventArgs eventArgs)
+        /// <returns>A <see cref="Task"/> representing the asynchronous execution operation.</returns>
+        public async Task DispatchEventAsync(int componentId, int eventHandlerId, UIEventArgs eventArgs)
         {
             EnsureSynchronizationContext();
 
@@ -275,10 +247,17 @@ namespace Microsoft.AspNetCore.Components.Rendering
             {
                 // The event handler might request multiple renders in sequence. Capture them
                 // all in a single batch.
+                var componentState = GetRequiredComponentState(componentId);
+                Task task = null;
                 try
                 {
                     _isBatchInProgress = true;
-                    GetRequiredComponentState(componentId).DispatchEvent(binding, eventArgs);
+                    task = componentState.DispatchEventAsync(binding, eventArgs);
+                    await task;
+                }
+                catch (Exception ex) when (task.IsCanceled || HandleException(componentId, componentState.Component, ex))
+                {
+                    // Exception was a result of a canceled task or was handled
                 }
                 finally
                 {
@@ -362,7 +341,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             frame = frame.WithComponent(newComponentState);
         }
 
-        internal void AddToPendingTasks(Task task)
+        internal void AddToPendingTasks(int componentId, IComponent component, Task task)
         {
             switch (task == null ? TaskStatus.RanToCompletion : task.Status)
             {
@@ -373,12 +352,15 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 case TaskStatus.Canceled:
                     break;
                 case TaskStatus.Faulted:
+                    if (!HandleException(componentId, component, task.Exception.GetBaseException()))
+                    {
                     // We want to throw immediately if the task failed synchronously instead of
                     // waiting for it to throw later. This can happen if the task is produced by
                     // an 'async' state machine (the ones generated using async/await) where even
                     // the synchronous exceptions will get captured and converted into a faulted
                     // task.
-                    ExceptionDispatchInfo.Capture(task.Exception.InnerException).Throw();
+                        ExceptionDispatchInfo.Capture(task.Exception.GetBaseException()).Throw();
+                    }
                     break;
                 default:
                     // We are not in rendering the root component.
@@ -482,14 +464,39 @@ namespace Microsoft.AspNetCore.Components.Rendering
             }
         }
 
-        private void InvokeRenderCompletedCalls(ArrayRange<RenderTreeDiff> updatedComponents)
+        private async void InvokeRenderCompletedCalls(ArrayRange<RenderTreeDiff> updatedComponents)
         {
+            List<Task> batch = null;
             var array = updatedComponents.Array;
             for (var i = 0; i < updatedComponents.Count; i++)
             {
+                var componentState = GetOptionalComponentState(array[i].ComponentId);
+                if (componentState != null)
+                {
                 // The component might be rendered and disposed in the same batch (if its parent
                 // was rendered later in the batch, and removed the child from the tree).
-                GetOptionalComponentState(array[i].ComponentId)?.NotifyRenderCompleted();
+                    batch = batch ?? new List<Task>();
+                    batch.Add(NotifyRenderCompletedAsync(componentState));
+            }
+        }
+
+            if (batch != null)
+            {
+                await Task.WhenAll(batch);
+            }
+
+            async Task NotifyRenderCompletedAsync(ComponentState componentState)
+            {
+                Task task = null;
+                try
+                {
+                    task = componentState.NotifyRenderCompletedAsync();
+                    await task;
+                }
+                catch (Exception ex) when (task.IsCanceled || HandleException(componentState.ComponentId, componentState.Component, ex))
+                {
+                    // Exception was a result of a canceled task or was handled
+                }
             }
         }
 
@@ -552,8 +559,9 @@ namespace Microsoft.AspNetCore.Components.Rendering
                     {
                         disposable.Dispose();
                     }
-                    catch (Exception exception)
+                    catch (Exception exception) when (!HandleException(componentState.ComponentId, componentState.Component, exception))
                     {
+                        // Unhandled exception. Accumulate exceptions from all components and rethrow an aggregate.
                         // Capture exceptions thrown by individual components and rethrow as an aggregate.
                         exceptions = exceptions ?? new List<Exception>();
                         exceptions.Add(exception);

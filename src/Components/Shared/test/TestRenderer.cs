@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Xunit;
 
@@ -31,6 +30,11 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
         public List<CapturedBatch> Batches { get; }
             = new List<CapturedBatch>();
 
+        public List<(int componentId, Exception exception)> HandledExceptions { get; }
+            = new List<(int, Exception)>();
+
+        public bool ShouldHandleExceptions { get; set; }
+
         public new int AssignRootComponentId(IComponent component)
             => base.AssignRootComponentId(component);
 
@@ -43,7 +47,7 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
         public new Task RenderRootComponentAsync(int componentId, ParameterCollection parameters)
             => InvokeAsync(() => base.RenderRootComponentAsync(componentId, parameters));
 
-        public new void DispatchEvent(int componentId, int eventHandlerId, UIEventArgs args)
+        public new Task DispatchEventAsync(int componentId, int eventHandlerId, UIEventArgs args)
         {
             var t = Invoke(() => base.DispatchEvent(componentId, eventHandlerId, args));
             // This should always be run synchronously
@@ -61,6 +65,16 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
 
         public T InstantiateComponent<T>() where T : IComponent
             => (T)InstantiateComponent(typeof(T));
+
+        protected override bool HandleException(int componentId, IComponent component, Exception exception)
+        {
+            if (ShouldHandleExceptions)
+            {
+                HandledExceptions.Add((componentId, exception));
+            }
+
+            return ShouldHandleExceptions;
+        }
 
         protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
         {
