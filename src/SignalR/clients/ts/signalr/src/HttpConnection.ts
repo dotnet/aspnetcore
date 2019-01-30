@@ -381,6 +381,7 @@ export class HttpConnection implements IConnection {
         if (url.lastIndexOf("https://", 0) === 0 || url.lastIndexOf("http://", 0) === 0) {
             return url;
         }
+
         if (!Platform.isBrowser || !window.document) {
             throw new Error(`Cannot resolve '${url}'.`);
         }

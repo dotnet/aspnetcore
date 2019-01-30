@@ -37,7 +37,6 @@ export class Platform {
     public static get isNode(): boolean {
         return !this.isBrowser && !this.isWebWorker;
     }
-
 }
 
 /** @private */
