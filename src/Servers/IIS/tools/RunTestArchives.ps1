@@ -1,6 +1,6 @@
 $archivesDirectory = ".\artifacts\testarchives"
 
-$env:PATH = "$PSScriptRoot\..\..\..\..\.dotnet\x64;$env:PATH"
+$env:PATH = "$PSScriptRoot\..\..\..\..\.dotnet\x64\;$env:PATH"
 
 foreach ($archive in Get-ChildItem "$archivesDirectory\*.zip")
 {

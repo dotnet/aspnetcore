@@ -1,6 +1,10 @@
 param ($Configuration, $TargetDirectory)
 
-$env:PATH = "$PSScriptRoot\..\..\..\..\.dotnet\x64;$env:PATH"
+$env:PATH = "$PSScriptRoot\..\..\..\..\.dotnet\x64\;$env:PATH"
+
+dotnet --info
+
+Write-Host $env:PATH
 
 $testDir = "$PSScriptRoot\..\IIS\test";
 $tempDir = "$PSScriptRoot\..\obj";
