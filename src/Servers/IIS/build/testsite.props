@@ -10,6 +10,10 @@
     <!-- Work around until we get a new WebSdk -->
     <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
     <BuildProjectReferences Condition="'$(_InsidePublishTestsAssets)' == 'True'">False</BuildProjectReferences>
+    <!-- Not publishable withouth profile name -->
+    <IsPublishable Condition="'$(TestAssetProfile)' == ''">false</IsPublishable>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <IsTransformWebConfigDisabled Condition="'$(TestAssetProfile)' == ''">true</IsTransformWebConfigDisabled>
   </PropertyGroup>
 
   <Import Project="assets.props" />
@@ -79,7 +83,13 @@
     <Exec Command="$(InjectDepsApp) &quot;$(PublishDepsFilePath)&quot; $(RuntimeIdentifier) " />
   </Target>
 
-  <Target Name="PublishTestsAssets" AfterTargets="Build" Condition="'$(_InsidePublishTestsAssets)' != 'true' AND '@(TestAssetPublishProfile->Count())' != '0'">
+  <Target Name="SetPublishDir" BeforeTargets="PrepareForPublish">
+    <PropertyGroup>
+      <PublishDir>$(PublishDir)\$(MSBuildProjectName)-$(TestAssetProfile)</PublishDir>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="PublishTestsAssets" AfterTargets="Build;Publish" Condition="'$(TestAssetProfile)' == '' AND '@(TestAssetPublishProfile->Count())' != '0'">
 
     <!--
       _InsidePublishTestsAssets is to avoid invoking this target recursively
@@ -87,6 +97,6 @@
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="Publish"
              RemoveProperties="Platform;PlatformTarget"
-             Properties="ReferenceTestTasks=false;_InsidePublishTestsAssets=True;PublishDir=$(PublishDir)%(TestAssetPublishProfile.Identity)/;%(TestAssetPublishProfile.Properties)" />
+             Properties="TestAssetProfile=%(TestAssetPublishProfile.Identity);ReferenceTestTasks=false;%(TestAssetPublishProfile.Properties)" />
   </Target>
 </Project>

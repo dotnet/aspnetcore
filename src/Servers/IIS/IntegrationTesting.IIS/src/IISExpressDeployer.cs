@@ -54,7 +54,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 // For an unpublished application the dllroot points pre-built dlls like projectdir/bin/debug/netcoreapp3.0/
                 // and contentRoot points to the project directory so you get things like static assets.
                 // For a published app both point to the publish directory.
-                var dllRoot = CheckIfPublishIsRequired();
                 var contentRoot = string.Empty;
                 if (DeploymentParameters.PublishApplicationBeforeDeployment)
                 {
@@ -68,7 +67,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                     contentRoot = DeploymentParameters.ApplicationPath;
 
                     var executableExtension = DeploymentParameters.ApplicationType == ApplicationType.Portable ? ".dll" : ".exe";
-                    var entryPoint = Path.Combine(dllRoot, DeploymentParameters.ApplicationName + executableExtension);
+                    var entryPoint = Path.Combine(CheckIfPublishIsRequired(), DeploymentParameters.ApplicationName + executableExtension);
 
                     var executableName = string.Empty;
                     var executableArgs = string.Empty;

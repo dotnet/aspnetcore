@@ -29,7 +29,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             // fails due to not modifying the apphost.config file.
             return UpgradeFeatureDetectionDeployer(
                 disableWebSocket: true,
-                Helpers.GetInProcessTestSitesPath(),
                 "Disabled", HostingModel.InProcess);
         }
 
@@ -38,7 +37,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             return UpgradeFeatureDetectionDeployer(
                 disableWebSocket: false,
-                Helpers.GetInProcessTestSitesPath(),
                 _isWebsocketsSupported, HostingModel.InProcess);
         }
 
@@ -47,7 +45,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             return UpgradeFeatureDetectionDeployer(
                 disableWebSocket: true,
-                Helpers.GetOutOfProcessTestSitesPath(),
                 "Disabled", HostingModel.OutOfProcess);
         }
 
@@ -56,13 +53,12 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             return UpgradeFeatureDetectionDeployer(
                 disableWebSocket: false,
-                Helpers.GetOutOfProcessTestSitesPath(),
                 _isWebsocketsSupported, HostingModel.OutOfProcess);
         }
 
-        private async Task UpgradeFeatureDetectionDeployer(bool disableWebSocket, string sitePath, string expected, HostingModel hostingModel)
+        private async Task UpgradeFeatureDetectionDeployer(bool disableWebSocket, string expected, HostingModel hostingModel)
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel, publish: true);
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel);
 
             if (disableWebSocket)
             {
