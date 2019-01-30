@@ -25,23 +25,19 @@
 
     <PropertyGroup>
       <_RestoreGraphProjectInput>@(FxProjectToBuild)</_RestoreGraphProjectInput>
-      <SharedFxBuildProperties>
-        $(BuildProperties);
-        PackageVersion=$(PackageVersion)
-      </SharedFxBuildProperties>
     </PropertyGroup>
 
     <MSBuild Projects="$(NuGetRestoreTargets)"
              Targets="Restore"
-             Properties="$(SharedFxBuildProperties);RestoreGraphProjectInput=$(_RestoreGraphProjectInput);_DummyTarget=Restore" />
+             Properties="$(BuildProperties);RestoreGraphProjectInput=$(_RestoreGraphProjectInput);_DummyTarget=Restore" />
 
     <MSBuild Projects="@(FxProjectToBuild)"
-             Properties="$(SharedFxBuildProperties)"
+             Properties="$(BuildProperties)"
              BuildInParallel="true" />
     <!-- BuildInParallel="false" because dotnet store runs during site extension build and is failing if packages are being currently generated -->
     <MSBuild Projects="@(FxProjectToBuild)"
              Targets="Pack"
-             Properties="$(SharedFxBuildProperties);NoBuild=true"
+             Properties="$(BuildProperties);NoBuild=true"
              BuildInParallel="false"
              SkipNonexistentTargets="true" />
   </Target>

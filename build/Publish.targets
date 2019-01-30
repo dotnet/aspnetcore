@@ -7,9 +7,10 @@
   </Target>
 
   <Target Name="GenerateBuildAssetManifest" DependsOnTargets="RestorePublishProject">
+    <!-- Generate build manifests without building them remotely. These manifests are used by Maestro and the Build Asset Registry to flow dependencies to other repos. -->
     <MSBuild Projects="$(MSBuildThisFileDirectory)publish\Publish.csproj"
              Targets="GenerateBuildAssetManifest"
-             Properties="$(BuildProperties);KoreBuildTasksDll=$(KoreBuildTasksDll);__DummyTarget=Publish" />
+             Properties="$(BuildProperties);KoreBuildTasksDll=$(KoreBuildTasksDll);__DummyTarget=GenerateBuildAssetManifest" />
   </Target>
 
   <Target Name="Publish" DependsOnTargets="RestorePublishProject">
