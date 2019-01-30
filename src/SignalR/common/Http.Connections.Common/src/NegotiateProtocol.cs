@@ -199,12 +199,8 @@ namespace Microsoft.AspNetCore.Http.Connections
         /// </para>
         /// </summary>
         [Obsolete("This method is obsolete and will be removed in a future version. The recommended alternative is ParseResponse(ReadOnlySpan{byte}).")]
-        public static NegotiationResponse ParseResponse(Stream content)
-        {
-            var buffer = new byte[content.Length];
-            content.Read(buffer, 0, buffer.Length);
-            return ParseResponse(buffer);
-        }
+        public static NegotiationResponse ParseResponse(Stream content) =>
+            throw new NotSupportedException("This method is obsolete and will be removed in a future version. The recommended alternative is ParseResponse(ReadOnlySpan{byte}).");
 
         private static AvailableTransport ParseAvailableTransport(ref Utf8JsonReader reader)
         {
