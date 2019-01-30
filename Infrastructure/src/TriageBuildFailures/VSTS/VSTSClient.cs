@@ -71,9 +71,10 @@ namespace TriageBuildFailures.VSTS
         {
             var vstsBuild = (VSTSBuild)build;
             var logs = await MakeVSTSRequest<VSTSArray<VSTSBuildLog>>(HttpMethod.Get, $"{vstsBuild.Project}/_apis/build/builds/{build.Id}/logs");
+            var validationResults = GetBuildLogFromValidationResult(vstsBuild);
             if (logs == null)
             {
-                return GetBuildLogFromValidationResult(vstsBuild);
+                return validationResults;
             }
             else
             {
@@ -87,7 +88,16 @@ namespace TriageBuildFailures.VSTS
                     }
                 }
 
-                return builder.ToString();
+                var result = builder.ToString();
+
+                if (string.IsNullOrEmpty(result))
+                {
+                    return validationResults;
+                }
+                else
+                {
+                    return result;
+                }
             }
         }
 
