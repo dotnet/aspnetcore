@@ -90,13 +90,11 @@ namespace System.IO.Pipelines.Tests
         }
 
         [Fact]
-        public void CanGetNewSpanWhenNoAdvanceWhenSizeTooLarge()
+        public void GetSpanWithZeroSizeHintReturnsMaxBufferSizeOfPool()
         {
             var span = Writer.GetSpan(0);
 
-            var secondSpan = Writer.GetSpan(10000);
-
-            Assert.False(span.SequenceEqual(secondSpan));
+            Assert.Equal(4096, span.Length);
         }
 
         [Fact]
