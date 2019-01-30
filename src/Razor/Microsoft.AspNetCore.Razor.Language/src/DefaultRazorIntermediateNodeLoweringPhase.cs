@@ -992,7 +992,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                 IReadOnlyList<SyntaxNode> children = node.ChildNodes();
                 var position = node.Position;
-                if (children.First() is MarkupBlockSyntax markupBlock &&
+                if (children.FirstOrDefault() is MarkupBlockSyntax markupBlock &&
                     markupBlock.Children.Count == 2 &&
                     markupBlock.Children[0] is MarkupTextLiteralSyntax &&
                     markupBlock.Children[1] is MarkupEphemeralTextLiteralSyntax)
@@ -1709,7 +1709,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                 IReadOnlyList<SyntaxNode> children = node.ChildNodes();
                 var position = node.Position;
-                if (children.First() is MarkupBlockSyntax markupBlock &&
+                if (children.FirstOrDefault() is MarkupBlockSyntax markupBlock &&
                     markupBlock.Children.Count == 2 &&
                     markupBlock.Children[0] is MarkupTextLiteralSyntax &&
                     markupBlock.Children[1] is MarkupEphemeralTextLiteralSyntax)
