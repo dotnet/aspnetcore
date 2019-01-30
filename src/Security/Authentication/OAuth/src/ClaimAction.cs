@@ -37,6 +37,6 @@ namespace Microsoft.AspNetCore.Authentication.OAuth.Claims
         /// <param name="userData">The source data to examine. This value may be null.</param>
         /// <param name="identity">The identity to add Claims to.</param>
         /// <param name="issuer">The value to use for Claim.Issuer when creating a Claim.</param>
-        public abstract void Run(JsonDocument userData, ClaimsIdentity identity, string issuer);
+        public abstract void Run(JsonElement userData, ClaimsIdentity identity, string issuer);
     }
 }

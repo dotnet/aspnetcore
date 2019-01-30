@@ -712,10 +712,13 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 }
                 else
                 {
-                    var identity = (ClaimsIdentity)user.Identity;
-                    foreach (var action in Options.ClaimActions)
+                    using (var payload = JsonDocument.Parse("{}"))
                     {
-                        action.Run(null, identity, ClaimsIssuer);
+                        var identity = (ClaimsIdentity)user.Identity;
+                        foreach (var action in Options.ClaimActions)
+                        {
+                            action.Run(payload.RootElement, identity, ClaimsIssuer);
+                        }
                     }
                 }
 
@@ -890,7 +893,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
 
                     foreach (var action in Options.ClaimActions)
                     {
-                        action.Run(user, identity, ClaimsIssuer);
+                        action.Run(user.RootElement, identity, ClaimsIssuer);
                     }
                 }
             }

@@ -703,7 +703,6 @@ namespace Microsoft.AspNetCore.Authentication.Google
                 {
                     OnCreatingTicket = context =>
                     {
-                        Assert.NotNull(context.User);
                         Assert.Equal("Test Access Token", context.AccessToken);
                         Assert.Equal("Test Refresh Token", context.RefreshToken);
                         Assert.Equal(TimeSpan.FromSeconds(3600), context.ExpiresIn);

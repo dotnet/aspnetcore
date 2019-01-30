@@ -30,9 +30,9 @@ namespace Microsoft.AspNetCore.Authentication.OAuth.Claims
         public string JsonKey { get; }
 
         /// <inheritdoc />
-        public override void Run(JsonDocument userData, ClaimsIdentity identity, string issuer)
+        public override void Run(JsonElement userData, ClaimsIdentity identity, string issuer)
         {
-            if (userData == null || !userData.RootElement.TryGetProperty(JsonKey, out var value))
+            if (!userData.TryGetProperty(JsonKey, out var value))
             {
                 return;
             }

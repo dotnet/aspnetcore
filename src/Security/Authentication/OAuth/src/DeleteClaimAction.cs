@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth.Claims
         }
 
         /// <inheritdoc />
-        public override void Run(JsonDocument userData, ClaimsIdentity identity, string issuer)
+        public override void Run(JsonElement userData, ClaimsIdentity identity, string issuer)
         {
             foreach (var claim in identity.FindAll(ClaimType).ToList())
             {

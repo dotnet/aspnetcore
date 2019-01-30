@@ -99,27 +99,33 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             },
             ClaimsIssuer);
 
-            JsonDocument user = null;
+            JsonDocument user;
             if (Options.RetrieveUserDetails)
             {
                 user = await RetrieveUserDetailsAsync(accessToken, identity);
             }
-
-            if (Options.SaveTokens)
+            else
             {
-                properties.StoreTokens(new [] {
-                    new AuthenticationToken { Name = "access_token", Value = accessToken.Token },
-                    new AuthenticationToken { Name = "access_token_secret", Value = accessToken.TokenSecret }
-                });
+                user = JsonDocument.Parse("{}");
             }
 
-            var ticket = await CreateTicketAsync(identity, properties, accessToken, user);
-            user?.Dispose();
-            return HandleRequestResult.Success(ticket);
+            using (user)
+            {
+                if (Options.SaveTokens)
+                {
+                    properties.StoreTokens(new[] {
+                    new AuthenticationToken { Name = "access_token", Value = accessToken.Token },
+                    new AuthenticationToken { Name = "access_token_secret", Value = accessToken.TokenSecret }
+                    });
+                }
+
+                var ticket = await CreateTicketAsync(identity, properties, accessToken, user.RootElement);
+                return HandleRequestResult.Success(ticket);
+            }
         }
 
         protected virtual async Task<AuthenticationTicket> CreateTicketAsync(
-            ClaimsIdentity identity, AuthenticationProperties properties, AccessToken token, JsonDocument user)
+            ClaimsIdentity identity, AuthenticationProperties properties, AccessToken token, JsonElement user)
         {
             foreach (var action in Options.ClaimActions)
             {

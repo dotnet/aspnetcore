@@ -35,14 +35,14 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             string screenName,
             string accessToken,
             string accessTokenSecret,
-            JsonDocument user)
+            JsonElement user)
             : base(context, scheme, options)
         {
             UserId = userId;
             ScreenName = screenName;
             AccessToken = accessToken;
             AccessTokenSecret = accessTokenSecret;
-            User = user ?? JsonDocument.Parse("{}");
+            User = user;
             Principal = principal;
             Properties = properties;
         }
@@ -69,8 +69,8 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
 
         /// <summary>
         /// Gets the JSON-serialized user or an empty
-        /// <see cref="JsonDocument"/> if it is not available.
+        /// <see cref="JsonElement"/> if it is not available.
         /// </summary>
-        public JsonDocument User { get; }
+        public JsonElement User { get; }
     }
 }

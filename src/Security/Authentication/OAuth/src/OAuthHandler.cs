@@ -201,7 +201,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         {
             using (var user = JsonDocument.Parse("{}"))
             {
-                var context = new OAuthCreatingTicketContext(new ClaimsPrincipal(identity), properties, Context, Scheme, Options, Backchannel, tokens, user);
+                var context = new OAuthCreatingTicketContext(new ClaimsPrincipal(identity), properties, Context, Scheme, Options, Backchannel, tokens, user.RootElement);
                 await Events.CreatingTicket(context);
                 return new AuthenticationTicket(context.Principal, context.Properties, Scheme.Name);
             }

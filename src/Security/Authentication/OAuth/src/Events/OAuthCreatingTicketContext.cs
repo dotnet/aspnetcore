@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             OAuthOptions options,
             HttpClient backchannel,
             OAuthTokenResponse tokens,
-            JsonDocument user)
+            JsonElement user)
             : base(context, scheme, options)
         {
             if (backchannel == null)
@@ -47,11 +47,6 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                 throw new ArgumentNullException(nameof(tokens));
             }
 
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
-
             TokenResponse = tokens;
             Backchannel = backchannel;
             User = user;
@@ -61,9 +56,9 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
 
         /// <summary>
         /// Gets the JSON-serialized user or an empty
-        /// <see cref="JsonDocument"/> if it is not available.
+        /// <see cref="JsonElement"/> if it is not available.
         /// </summary>
-        public JsonDocument User { get; }
+        public JsonElement User { get; }
 
         /// <summary>
         /// Gets the token response returned by the authentication service.
@@ -115,13 +110,8 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
 
         public void RunClaimActions() => RunClaimActions(User);
 
-        public void RunClaimActions(JsonDocument userData)
+        public void RunClaimActions(JsonElement userData)
         {
-            if (userData == null)
-            {
-                throw new ArgumentNullException(nameof(userData));
-            }
-
             foreach (var action in Options.ClaimActions)
             {
                 action.Run(userData, Identity, Options.ClaimsIssuer ?? Scheme.Name);

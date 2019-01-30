@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth.Claims
         /// <param name="claimType">The value to use for Claim.Type when creating a Claim.</param>
         /// <param name="valueType">The value to use for Claim.ValueType when creating a Claim.</param>
         /// <param name="resolver">The Func that will be called to select value from the given json user data.</param>
-        public CustomJsonClaimAction(string claimType, string valueType, Func<JsonDocument, string> resolver)
+        public CustomJsonClaimAction(string claimType, string valueType, Func<JsonElement, string> resolver)
             : base(claimType, valueType)
         {
             Resolver = resolver;
@@ -27,15 +27,11 @@ namespace Microsoft.AspNetCore.Authentication.OAuth.Claims
         /// <summary>
         /// The Func that will be called to select value from the given json user data.
         /// </summary>
-        public Func<JsonDocument, string> Resolver { get; }
+        public Func<JsonElement, string> Resolver { get; }
 
         /// <inheritdoc />
-        public override void Run(JsonDocument userData, ClaimsIdentity identity, string issuer)
+        public override void Run(JsonElement userData, ClaimsIdentity identity, string issuer)
         {
-            if (userData == null)
-            {
-                return;
-            }
             var value = Resolver(userData);
             if (!string.IsNullOrEmpty(value))
             {

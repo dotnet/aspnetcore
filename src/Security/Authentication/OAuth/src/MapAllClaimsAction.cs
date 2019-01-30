@@ -17,13 +17,9 @@ namespace Microsoft.AspNetCore.Authentication.OAuth.Claims
         {
         }
 
-        public override void Run(JsonDocument userData, ClaimsIdentity identity, string issuer)
+        public override void Run(JsonElement userData, ClaimsIdentity identity, string issuer)
         {
-            if (userData == null)
-            {
-                return;
-            }
-            foreach (var pair in userData.RootElement.EnumerateObject())
+            foreach (var pair in userData.EnumerateObject())
             {
                 var claimValue = userData.GetString(pair.Name);
 

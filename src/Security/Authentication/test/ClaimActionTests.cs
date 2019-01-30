@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Authentication
             var identity = new ClaimsIdentity();
 
             var action = new JsonKeyClaimAction("name", "name", "name");
-            action.Run(userData, identity, "iss");
+            action.Run(userData.RootElement, identity, "iss");
 
             Assert.Equal("name", identity.FindFirst("name").Type);
             Assert.Equal("test", identity.FindFirst("name").Value);
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Authentication
             var identity = new ClaimsIdentity();
 
             var action = new JsonKeyClaimAction("role", "role", "role");
-            action.Run(userData, identity, "iss");
+            action.Run(userData.RootElement, identity, "iss");
 
             var roleClaims = identity.FindAll("role").ToList();
             Assert.Equal(2, roleClaims.Count);
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Authentication
 
             var identity = new ClaimsIdentity();
             var action = new MapAllClaimsAction();
-            action.Run(userData, identity, "iss");
+            action.Run(userData.RootElement, identity, "iss");
 
             Assert.Equal("name0", identity.FindFirst("name0").Type);
             Assert.Equal("value0", identity.FindFirst("name0").Value);
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Authentication
             identity.AddClaim(new Claim("name0", "value2"));
             identity.AddClaim(new Claim("name1", "value3"));
             var action = new MapAllClaimsAction();
-            action.Run(userData, identity, "iss");
+            action.Run(userData.RootElement, identity, "iss");
 
             Assert.Equal(2, identity.FindAll("name0").Count());
             Assert.Equal(2, identity.FindAll("name1").Count());
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Authentication
             identity.AddClaim(new Claim("name0", "value0"));
             identity.AddClaim(new Claim("name1", "value1"));
             var action = new MapAllClaimsAction();
-            action.Run(userData, identity, "iss");
+            action.Run(userData.RootElement, identity, "iss");
 
             Assert.Single(identity.FindAll("name0"));
             Assert.Single(identity.FindAll("name1"));

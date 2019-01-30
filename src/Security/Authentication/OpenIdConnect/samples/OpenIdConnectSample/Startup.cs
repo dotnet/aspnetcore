@@ -210,7 +210,6 @@ namespace OpenIdConnectSample
 
                     using (var payload = JsonDocument.Parse(await tokenResponse.Content.ReadAsStringAsync()))
                     {
-
                         // Persist the new acess token
                         props.UpdateTokenValue("access_token", payload.GetString("access_token"));
                         props.UpdateTokenValue("refresh_token", payload.GetString("refresh_token"));

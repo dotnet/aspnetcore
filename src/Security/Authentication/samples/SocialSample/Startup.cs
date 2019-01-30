@@ -209,7 +209,7 @@ namespace SocialSample
 
                         using (var user = JsonDocument.Parse(await response.Content.ReadAsStringAsync()))
                         {
-                            context.RunClaimActions(user);
+                            context.RunClaimActions(user.RootElement);
                         }
                     }
                 };

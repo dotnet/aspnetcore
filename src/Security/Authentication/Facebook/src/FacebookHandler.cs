@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
 
             using (var payload = JsonDocument.Parse(await response.Content.ReadAsStringAsync()))
             {
-                var context = new OAuthCreatingTicketContext(new ClaimsPrincipal(identity), properties, Context, Scheme, Options, Backchannel, tokens, payload);
+                var context = new OAuthCreatingTicketContext(new ClaimsPrincipal(identity), properties, Context, Scheme, Options, Backchannel, tokens, payload.RootElement);
                 context.RunClaimActions();
                 await Events.CreatingTicket(context);
                 return new AuthenticationTicket(context.Principal, context.Properties, Scheme.Name);

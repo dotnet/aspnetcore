@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth.Claims
         public string SubKey { get; }
 
         /// <inheritdoc />
-        public override void Run(JsonDocument userData, ClaimsIdentity identity, string issuer)
+        public override void Run(JsonElement userData, ClaimsIdentity identity, string issuer)
         {
             var value = GetValue(userData, JsonKey, SubKey);
             if (!string.IsNullOrEmpty(value))
@@ -42,9 +42,9 @@ namespace Microsoft.AspNetCore.Authentication.OAuth.Claims
         }
 
         // Get the given subProperty from a property.
-        private static string GetValue(JsonDocument userData, string propertyName, string subProperty)
+        private static string GetValue(JsonElement userData, string propertyName, string subProperty)
         {
-            if (userData != null && userData.RootElement.TryGetProperty(propertyName, out var value)
+            if (userData.TryGetProperty(propertyName, out var value)
                 && value.Type == JsonValueType.Object && value.TryGetProperty(subProperty, out value))
             {
                 return value.ToString();
