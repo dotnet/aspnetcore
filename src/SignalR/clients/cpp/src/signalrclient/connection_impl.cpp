@@ -307,6 +307,7 @@ namespace signalr
                         }
                         m_handshakeReceived = true;
                         connect_request_tce.set();
+                        return;
                     }
                 }
 
