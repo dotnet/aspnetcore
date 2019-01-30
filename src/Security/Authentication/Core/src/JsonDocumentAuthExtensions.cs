@@ -7,9 +7,6 @@ namespace Microsoft.AspNetCore.Authentication
 {
     public static class JsonDocumentAuthExtensions
     {
-        public static string GetString(this JsonDocument document, string key) =>
-            document.RootElement.GetString(key);
-
         public static string GetString(this JsonElement element, string key) =>
             element.TryGetProperty(key, out var property)
                 ? property.ToString() : null;

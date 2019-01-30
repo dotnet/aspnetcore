@@ -337,8 +337,8 @@ namespace SocialSample
                         {
 
                             // Persist the new acess token
-                            authProperties.UpdateTokenValue("access_token", payload.GetString("access_token"));
-                            refreshToken = payload.GetString("refresh_token");
+                            authProperties.UpdateTokenValue("access_token", payload.RootElement.GetString("access_token"));
+                            refreshToken = payload.RootElement.GetString("refresh_token");
                             if (!string.IsNullOrEmpty(refreshToken))
                             {
                                 authProperties.UpdateTokenValue("refresh_token", refreshToken);
@@ -372,7 +372,7 @@ namespace SocialSample
                         var refreshResponse = await options.Backchannel.GetStringAsync(options.TokenEndpoint + query);
                         using (var payload = JsonDocument.Parse(refreshResponse))
                         {
-                            authProperties.UpdateTokenValue("access_token", payload.GetString("access_token"));
+                            authProperties.UpdateTokenValue("access_token", payload.RootElement.GetString("access_token"));
                             if (payload.RootElement.TryGetProperty("expires_in", out var property) && property.TryGetInt32(out var seconds))
                             {
                                 var expiresAt = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(seconds);

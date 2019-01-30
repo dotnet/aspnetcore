@@ -211,8 +211,8 @@ namespace OpenIdConnectSample
                     using (var payload = JsonDocument.Parse(await tokenResponse.Content.ReadAsStringAsync()))
                     {
                         // Persist the new acess token
-                        props.UpdateTokenValue("access_token", payload.GetString("access_token"));
-                        props.UpdateTokenValue("refresh_token", payload.GetString("refresh_token"));
+                        props.UpdateTokenValue("access_token", payload.RootElement.GetString("access_token"));
+                        props.UpdateTokenValue("refresh_token", payload.RootElement.GetString("refresh_token"));
                         if (payload.RootElement.TryGetProperty("expires_in", out var property) && property.TryGetInt32(out var seconds))
                         {
                             var expiresAt = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(seconds);

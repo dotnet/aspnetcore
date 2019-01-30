@@ -11,10 +11,11 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         private OAuthTokenResponse(JsonDocument response)
         {
             Response = response;
-            AccessToken = response.GetString("access_token");
-            TokenType = response.GetString("token_type");
-            RefreshToken = response.GetString("refresh_token");
-            ExpiresIn = response.GetString("expires_in");
+            var root = response.RootElement;
+            AccessToken = root.GetString("access_token");
+            TokenType = root.GetString("token_type");
+            RefreshToken = root.GetString("refresh_token");
+            ExpiresIn = root.GetString("expires_in");
         }
 
         private OAuthTokenResponse(Exception error)
