@@ -2,6 +2,7 @@ content/sdk/*/AppHostTemplate/apphost.exe;AspNetCoreRuntime.*.nupkg; Exclude the
 *.js;Microsoft.DotNet.Web.Spa.ProjectTemplates.*.nupkg; Exclude JavaScript files from codesigning in project templates
 *.js;Microsoft.DotNet.Web.ProjectTemplates.*.nupkg; Exclude JavaScript files from codesigning in project templates
 *.js;Microsoft.AspNetCore.Blazor.Templates.*.nupkg; Exclude JavaScript files from codesigning in project templates
+*.js;Microsoft.VisualStudio.BlazorExtension.vsix; Exclude JavaScript files from codesigning in project templates which are embedded in the Blazor VSIX
 *.js;Microsoft.AspNetCore.Blazor.Build.*.nupkg; Exclude JavaScript files required to make Blazor build tooling work
 *.js;signalr-*-javadoc.jar; Exclude JavaScript files in the generated javadocs
 *.binlog;; Exclude msbuild log files
