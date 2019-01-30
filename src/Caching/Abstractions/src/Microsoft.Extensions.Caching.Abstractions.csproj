@@ -9,6 +9,7 @@ Microsoft.Extensions.Caching.Memory.IMemoryCache</Description>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>cache;memorycache;distributedcache</PackageTags>
+    <IsShipping>true</IsShipping>
   </PropertyGroup>
 
   <ItemGroup>
