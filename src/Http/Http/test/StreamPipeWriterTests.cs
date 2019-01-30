@@ -350,6 +350,44 @@ namespace System.IO.Pipelines.Tests
             Assert.Throws<ArgumentOutOfRangeException>(() => Writer.GetSpan(-1));
         }
 
+        [Fact]
+        public async Task GetMemorySlicesCorrectly()
+        {
+            var expectedString = "abcdef";
+            var memory = Writer.GetMemory();
+
+            Encoding.ASCII.GetBytes("abc").CopyTo(memory);
+            Writer.Advance(3);
+            memory = Writer.GetMemory();
+            Encoding.ASCII.GetBytes("def").CopyTo(memory);
+            Writer.Advance(3);
+
+            await Writer.FlushAsync();
+            Assert.Equal(expectedString, ReadAsString());
+        }
+
+        [Fact]
+        public async Task GetSpanSlicesCorrectly()
+        {
+            var expectedString = "abcdef";
+
+            void NonAsyncMethod()
+            {
+                var span = Writer.GetSpan();
+
+                Encoding.ASCII.GetBytes("abc").CopyTo(span);
+                Writer.Advance(3);
+                span = Writer.GetSpan();
+                Encoding.ASCII.GetBytes("def").CopyTo(span);
+                Writer.Advance(3);
+            }
+
+            NonAsyncMethod();
+
+            await Writer.FlushAsync();
+            Assert.Equal(expectedString, ReadAsString());
+        }
+
         private void WriteStringToStream(string input)
         {
             var buffer = Encoding.ASCII.GetBytes(input);
