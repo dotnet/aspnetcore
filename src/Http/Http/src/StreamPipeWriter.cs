@@ -119,6 +119,7 @@ namespace System.IO.Pipelines
             }
 
             _isCompleted = true;
+
             if (exception != null)
             {
                 _exceptionInfo = ExceptionDispatchInfo.Capture(exception);
@@ -135,6 +136,12 @@ namespace System.IO.Pipelines
             }
 
             _currentSegmentOwner?.Dispose();
+
+            // We still want to cleanup segments before throwing an exception.
+            if (_bytesWritten > 0)
+            {
+                ThrowHelper.ThrowInvalidOperationException_DataNotAllFlushed();
+            }
         }
 
         /// <inheritdoc />

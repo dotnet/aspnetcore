@@ -31,5 +31,10 @@ namespace System.IO.Pipelines
         public static void ThrowInvalidOperationException_SynchronousFlushesDisallowed() => throw CreateInvalidOperationException_SynchronousFlushesDisallowed();
         [MethodImpl(MethodImplOptions.NoInlining)]
         public static Exception CreateInvalidOperationException_SynchronousFlushesDisallowed() => new InvalidOperationException("Synchronous operations are disallowed. Call FlushAsync or set allowSynchronousIO to true instead.");
+
+        public static void ThrowInvalidOperationException_DataNotAllFlushed() => throw CreateInvalidOperationException_DataNotAllFlushed();
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public static Exception CreateInvalidOperationException_DataNotAllFlushed() => new InvalidOperationException("Complete called without flushing the StreamPipeWriter. Call FlushAsync() before calling Complete().");
+
     }
 }

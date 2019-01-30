@@ -316,6 +316,15 @@ namespace System.IO.Pipelines.Tests
             Assert.Equal(expectedString, ReadAsString());
         }
 
+        [Fact]
+        public void CallCompleteWithoutFlush_ThrowsInvalidOperationException()
+        {
+            var memory = Writer.GetMemory();
+            Writer.Advance(memory.Length);
+            var ex = Assert.Throws<InvalidOperationException>(() => Writer.Complete());
+            Assert.Equal(ThrowHelper.CreateInvalidOperationException_DataNotAllFlushed().Message, ex.Message);
+        }
+
         private void WriteStringToStream(string input)
         {
             var buffer = Encoding.ASCII.GetBytes(input);
