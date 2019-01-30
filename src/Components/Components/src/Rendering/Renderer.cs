@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.ExceptionServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
 
@@ -26,12 +27,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         private int _lastEventHandlerId = 0;
         private List<Task> _pendingTasks;
 
-        // We need to introduce locking as we don't know if we are executing
-        // under a synchronization context that limits the ammount of concurrency
-        // that can happen when async callbacks are executed.
-        // As a result, we have to protect the _pendingTask list and the
-        // _batchBuilder render queue from concurrent modifications.
-        private object _asyncWorkLock = new object();
+        public RendererSynchronizationContext SyncContext { get; } = new RendererSynchronizationContext();
 
         /// <summary>
         /// Constructs an instance of <see cref="Renderer"/>.
@@ -162,7 +158,19 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// </summary>
         /// <param name="componentId">The ID returned by <see cref="AssignRootComponentId(IComponent)"/>.</param>
         /// <param name="initialParameters">The <see cref="ParameterCollection"/>with the initial parameters to use for rendering.</param>
-        protected async Task RenderRootComponentAsync(int componentId, ParameterCollection initialParameters)
+        protected Task RenderRootComponentAsync(int componentId, ParameterCollection initialParameters)
+        {
+            if (SynchronizationContext.Current != null)
+            {
+                return RenderRootComponentCoreAsync(componentId, initialParameters);
+            }
+            else
+            {
+                return SyncContext.InvokeAsync(() => RenderRootComponentCoreAsync(componentId, initialParameters));
+            }
+        }
+
+        private async Task RenderRootComponentCoreAsync(int componentId, ParameterCollection initialParameters)
         {
             if (_pendingTasks != null)
             {
@@ -198,14 +206,11 @@ namespace Microsoft.AspNetCore.Components.Rendering
             while (_pendingTasks.Count > 0)
             {
                 Task pendingWork;
-                lock (_asyncWorkLock)
-                {
-                    // Create a Task that represents the remaining ongoing work for the rendering process
-                    pendingWork = Task.WhenAll(_pendingTasks);
+                // Create a Task that represents the remaining ongoing work for the rendering process
+                pendingWork = Task.WhenAll(_pendingTasks);
 
-                    // Clear all pending work.
-                    _pendingTasks.Clear();
-                }
+                // Clear all pending work.
+                _pendingTasks.Clear();
 
                 // new work might be added before we check again as a result of waiting for all
                 // the child components to finish executing SetParametersAsync
@@ -238,6 +243,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="eventArgs">Arguments to be passed to the event handler.</param>
         public void DispatchEvent(int componentId, int eventHandlerId, UIEventArgs eventArgs)
         {
+            EnsureSynchronizationContext();
+
             if (_eventBindings.TryGetValue(eventHandlerId, out var binding))
             {
                 // The event handler might request multiple renders in sequence. Capture them
@@ -266,9 +273,17 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="workItem">The work item to execute.</param>
         public virtual Task Invoke(Action workItem)
         {
-            // Base renderer has nothing to dispatch to, so execute directly
-            workItem();
-            return Task.CompletedTask;
+            if (SynchronizationContext.Current == SyncContext)
+            {
+                // No need to dispatch. Avoid deadlock by invoking directly.
+                workItem();
+                return Task.CompletedTask;
+            }
+            else
+            {
+                var syncContext = SyncContext;
+                return syncContext.Invoke(workItem);
+            }
         }
 
         /// <summary>
@@ -278,8 +293,15 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="workItem">The work item to execute.</param>
         public virtual Task InvokeAsync(Func<Task> workItem)
         {
-            // Base renderer has nothing to dispatch to, so execute directly
-            return workItem();
+            if (SynchronizationContext.Current == SyncContext)
+            {
+                // No need to dispatch. Avoid deadlock by invoking directly.
+                return workItem();
+            }
+            else
+            {
+                return SyncContext.InvokeAsync(workItem);
+            }
         }
 
         internal void InstantiateChildComponentOnFrame(ref RenderTreeFrame frame, int parentComponentId)
@@ -323,10 +345,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
                     {
                         return;
                     }
-                    lock (_asyncWorkLock)
-                    {
-                        _pendingTasks.Add(task);
-                    }
+                    _pendingTasks.Add(task);
                     break;
             }
         }
@@ -351,6 +370,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="renderFragment">A <see cref="RenderFragment"/> that will supply the updated UI contents.</param>
         protected internal virtual void AddToRenderQueue(int componentId, RenderFragment renderFragment)
         {
+            EnsureSynchronizationContext();
+
             var componentState = GetOptionalComponentState(componentId);
             if (componentState == null)
             {
@@ -359,15 +380,27 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 return;
             }
 
-            lock (_asyncWorkLock)
-            {
-                _batchBuilder.ComponentRenderQueue.Enqueue(
-                    new RenderQueueEntry(componentState, renderFragment));
-            }
+            _batchBuilder.ComponentRenderQueue.Enqueue(
+                new RenderQueueEntry(componentState, renderFragment));
 
             if (!_isBatchInProgress)
             {
                 ProcessRenderQueue();
+            }
+        }
+
+        private void EnsureSynchronizationContext()
+        {
+            // Render operations are not thread-safe, so they need to be serialized.
+            // Plus, any other logic that mutates state accessed during rendering also
+            // needs not to run concurrently with rendering so should be dispatched to
+            // the renderer's sync context.
+            if (SynchronizationContext.Current != SyncContext)
+            {
+                throw new InvalidOperationException(
+                    "The current thread is not associated with the renderer's synchronization context. " +
+                    "Use Invoke() or InvokeAsync() to switch execution to the renderer's synchronization " +
+                    "context when triggering rendering or modifying any state accessed during rendering.");
             }
         }
 
@@ -408,18 +441,15 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
         private bool TryDequeueRenderQueueEntry(out RenderQueueEntry entry)
         {
-            lock (_asyncWorkLock)
+            if (_batchBuilder.ComponentRenderQueue.Count > 0)
             {
-                if (_batchBuilder.ComponentRenderQueue.Count > 0)
-                {
-                    entry = _batchBuilder.ComponentRenderQueue.Dequeue();
-                    return true;
-                }
-                else
-                {
-                    entry = default;
-                    return false;
-                }
+                entry = _batchBuilder.ComponentRenderQueue.Dequeue();
+                return true;
+            }
+            else
+            {
+                entry = default;
+                return false;
             }
         }
 

@@ -23,7 +23,6 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
         private readonly IClientProxy _client;
         private readonly IJSRuntime _jsRuntime;
         private readonly RendererRegistry _rendererRegistry;
-        private readonly SynchronizationContext _syncContext;
         private readonly ConcurrentDictionary<long, AutoCancelTaskCompletionSource<object>> _pendingRenders
             = new ConcurrentDictionary<long, AutoCancelTaskCompletionSource<object>>();
         private long _nextRenderId = 1;
@@ -45,14 +44,12 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
             IServiceProvider serviceProvider,
             RendererRegistry rendererRegistry,
             IJSRuntime jsRuntime,
-            IClientProxy client,
-            SynchronizationContext syncContext)
+            IClientProxy client)
             : base(serviceProvider)
         {
             _rendererRegistry = rendererRegistry;
             _jsRuntime = jsRuntime;
             _client = client;
-            _syncContext = syncContext ?? throw new ArgumentNullException(nameof(syncContext));
 
             _id = _rendererRegistry.Add(this);
         }
@@ -90,34 +87,32 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
             RenderRootComponent(componentId);
         }
 
-        /// <inheritdoc />
-        public override Task Invoke(Action workItem)
+        /// <summary>
+        /// Associates the <see cref="IComponent"/> with the <see cref="RemoteRenderer"/>,
+        /// causing it to be displayed in the specified DOM element.
+        /// </summary>
+        /// <param name="componentType">The type of the component.</param>
+        /// <param name="domElementSelector">A CSS selector that uniquely identifies a DOM element.</param>
+        public async Task AddComponentAsync(Type componentType, string domElementSelector)
         {
-            if (SynchronizationContext.Current == _syncContext)
-            {
-                // No need to dispatch. Avoid deadlock by invoking directly.
-                return base.Invoke(workItem);
-            }
-            else
-            {
-                var syncContext = (CircuitSynchronizationContext)_syncContext;
-                return syncContext.Invoke(workItem);
-            }
-        }
+            var component = InstantiateComponent(componentType);
+            var componentId = AssignRootComponentId(component);
 
-        /// <inheritdoc />
-        public override Task InvokeAsync(Func<Task> workItem)
-        {
-            if (SynchronizationContext.Current == _syncContext)
+            try
             {
-                // No need to dispatch. Avoid deadlock by invoking directly.
-                return base.InvokeAsync(workItem);
+                await _jsRuntime.InvokeAsync<object>(
+                    "Blazor._internal.attachRootComponentToElement",
+                    _id,
+                    domElementSelector,
+                    componentId);
             }
-            else
+            catch (Exception e)
             {
-                var syncContext = (CircuitSynchronizationContext)_syncContext;
-                return syncContext.InvokeAsync(workItem);
+                UnhandledException?.Invoke(this, e);
+                throw;
             }
+
+            await RenderRootComponentAsync(componentId);
         }
 
         /// <inheritdoc />
@@ -125,23 +120,6 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
         {
             base.Dispose(true);
             _rendererRegistry.TryRemove(_id);
-        }
-
-        protected override void AddToRenderQueue(int componentId, RenderFragment renderFragment)
-        {
-            // Render operations are not thread-safe, so they need to be serialized.
-            // Plus, any other logic that mutates state accessed during rendering also
-            // needs not to run concurrently with rendering so should be dispatched to
-            // the renderer's sync context.
-            if (SynchronizationContext.Current != _syncContext)
-            {
-                throw new RemoteRendererException(
-                    "The current thread is not associated with the renderer's synchronization context. " +
-                    "Use Invoke() or InvokeAsync() to switch execution to the renderer's synchronization " +
-                    "context when triggering rendering or modifying any state accessed during rendering.");
-            }
-
-            base.AddToRenderQueue(componentId, renderFragment);
         }
 
         /// <inheritdoc />

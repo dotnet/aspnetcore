@@ -41,8 +41,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var scope = _scopeFactory.CreateScope();
             var jsRuntime = new RemoteJSRuntime(client);
             var rendererRegistry = new RendererRegistry();
-            var synchronizationContext = new CircuitSynchronizationContext();
-            var renderer = new RemoteRenderer(scope.ServiceProvider, rendererRegistry, jsRuntime, client, synchronizationContext);
+            var renderer = new RemoteRenderer(scope.ServiceProvider, rendererRegistry, jsRuntime, client);
 
             var circuitHandlers = scope.ServiceProvider.GetServices<CircuitHandler>()
                 .OrderBy(h => h.Order)
@@ -55,7 +54,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 renderer,
                 config,
                 jsRuntime,
-                synchronizationContext,
                 circuitHandlers);
 
             // Initialize per-circuit data that services need
