@@ -1,8 +1,9 @@
 ﻿<Project>
   <PropertyGroup>
     <!-- Priority: LoggingTestingDisableFileLogging > LoggingTestingFileLoggingDirectory > ASPNETCORE_TEST_LOG_DIR > Default location -->
+    <RepoRoot Condition="'$(RepoRoot)' == ''">$(RepositoryRoot)</RepoRoot>
     <LoggingTestingFileLoggingDirectory Condition="'$(LoggingTestingFileLoggingDirectory)' == ''">$(ASPNETCORE_TEST_LOG_DIR)</LoggingTestingFileLoggingDirectory>
-    <LoggingTestingFileLoggingDirectory Condition="'$(LoggingTestingFileLoggingDirectory)' == '' AND '$(RepositoryRoot)' != ''">$(RepositoryRoot)artifacts\logs\</LoggingTestingFileLoggingDirectory>
+    <LoggingTestingFileLoggingDirectory Condition="'$(LoggingTestingFileLoggingDirectory)' == '' AND '$(RepoRoot)' != ''">$(RepoRoot)artifacts\log\</LoggingTestingFileLoggingDirectory>
   </PropertyGroup>
 
   <Target Name="SetLoggingTestingAssemblyAttributes"

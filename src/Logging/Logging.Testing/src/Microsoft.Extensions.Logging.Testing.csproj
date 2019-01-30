@@ -5,8 +5,9 @@
     <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <PackageTags>$(PackageTags);testing</PackageTags>
-    <EnableApiCheck>false</EnableApiCheck>
+    <!-- This is an internal package for testing purposes only. -->
     <IsPackable>true</IsPackable>
+    <IsShipping>false</IsShipping>
   </PropertyGroup>
 
   <ItemGroup>
