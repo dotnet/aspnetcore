@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private long _unflushedBytes;
         private bool _autoChunk;
         private readonly PipeWriter _pipeWriter;
-
+        private const int MemorySizeThreshold = 1024;
         private const int BeginChunkLengthMax = 5;
         private const int EndChunkLength = 2;
 
@@ -140,7 +140,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public void CancelPendingFlush()
         {
-            // TODO we may not want to support this.
             _pipeWriter.CancelPendingFlush();
         }
 
@@ -269,6 +268,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 var bytesWritten = _unflushedBytes;
                 _unflushedBytes = 0;
+                _currentChunkMemory = default;
 
                 return _flusher.FlushAsync(
                     _minResponseDataRateFeature.MinDataRate,
@@ -291,7 +291,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             var memoryMaxLength = _currentChunkMemory.Length - BeginChunkLengthMax - EndChunkLength;
-            if (_advancedBytesForChunk == memoryMaxLength)
+            if (_advancedBytesForChunk > memoryMaxLength - MemorySizeThreshold)
             {
                 // Chunk is completely written, commit it to the pipe so GetMemory will return a new chunk of memory.
                 CommitChunkToPipe();
@@ -301,6 +301,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             var actualMemory = _currentChunkMemory.Slice(
                 BeginChunkLengthMax + _advancedBytesForChunk,
                 memoryMaxLength - _advancedBytesForChunk);
+
+            Debug.Assert(actualMemory.Length <= 4089);
 
             return actualMemory;
         }
@@ -314,6 +316,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (_advancedBytesForChunk > 0)
             {
                 var bytesWritten = writer.WriteBeginChunkBytes(_advancedBytesForChunk);
+
+                Debug.Assert(bytesWritten <= BeginChunkLengthMax);
+
                 if (bytesWritten < BeginChunkLengthMax)
                 {
                     // If the current chunk of memory isn't completely utilized, we need to copy the contents forwards.
@@ -322,7 +327,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     _currentChunkMemory.Slice(BeginChunkLengthMax, _advancedBytesForChunk).CopyTo(_currentChunkMemory.Slice(bytesWritten));
                 }
 
-                writer.Write(_currentChunkMemory.Slice(bytesWritten, _advancedBytesForChunk).Span);
+                writer.Advance(_advancedBytesForChunk);
                 writer.WriteEndChunkBytes();
                 writer.Commit();
                 _advancedBytesForChunk = 0;

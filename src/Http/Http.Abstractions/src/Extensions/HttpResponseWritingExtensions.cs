@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO.Pipelines;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -60,8 +61,42 @@ namespace Microsoft.AspNetCore.Http
                 throw new ArgumentNullException(nameof(encoding));
             }
 
-            byte[] data = encoding.GetBytes(text);
-            return response.BodyPipe.WriteAsync(new Memory<byte>(data, 0, data.Length), cancellationToken).AsTask();
+            if (!response.HasStarted)
+            {
+                return StartAndFlushAsyncAwaited(response, text, encoding, cancellationToken);
+            }
+
+            WriteDataToPipe(response.BodyPipe, text, encoding);
+
+            var flushTask = response.BodyPipe.FlushAsync(cancellationToken);
+
+            if (flushTask.IsCompleted)
+            {
+                return Task.CompletedTask;
+            }
+
+            return FlushTaskAwaited(flushTask);
         }
+
+        private static void WriteDataToPipe(PipeWriter responsePipeWriter, string text, Encoding encoding)
+        {
+            byte[] data = encoding.GetBytes(text);
+            var memory = responsePipeWriter.GetMemory(data.Length);
+            data.CopyTo(memory);
+            responsePipeWriter.Advance(data.Length);
+        }
+
+        private static async Task FlushTaskAwaited(ValueTask<FlushResult> flushTask)
+        {
+            await flushTask;
+        }
+
+        private static async Task StartAndFlushAsyncAwaited(HttpResponse response, string text, Encoding encoding, CancellationToken cancellationToken)
+        {
+            await response.StartAsync(cancellationToken);
+            WriteDataToPipe(response.BodyPipe, text, encoding);
+            await response.BodyPipe.FlushAsync(cancellationToken);
+        }
+
     }
 }

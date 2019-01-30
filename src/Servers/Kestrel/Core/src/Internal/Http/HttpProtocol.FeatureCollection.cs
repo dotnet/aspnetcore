@@ -314,6 +314,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 return Task.CompletedTask;
             }
 
+            cancellationToken.ThrowIfCancellationRequested();
+
             return InitializeResponseAsync(0);
         }
     }
