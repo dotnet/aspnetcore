@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Runtime.CompilerServices;
 
 namespace System.IO.Pipelines
@@ -36,5 +35,12 @@ namespace System.IO.Pipelines
         [MethodImpl(MethodImplOptions.NoInlining)]
         public static Exception CreateInvalidOperationException_DataNotAllFlushed() => new InvalidOperationException("Complete called without flushing the StreamPipeWriter. Call FlushAsync() before calling Complete().");
 
+        public static void ThrowInvalidOperationException_NoWritingAllowed() => throw CreateInvalidOperationException_NoWritingAllowed();
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public static Exception CreateInvalidOperationException_NoWritingAllowed() => new InvalidOperationException("Writing is not allowed after writer was completed.");
+
+        public static void ThrowArgumentOutOfRangeException(string argument) => throw CreateArgumentOutOfRangeException(argument);
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public static Exception CreateArgumentOutOfRangeException(string argument) => new ArgumentOutOfRangeException(argument);
     }
 }
