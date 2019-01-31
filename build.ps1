@@ -108,7 +108,7 @@ param(
     [switch]$BuildJava,
     [switch]$BuildInstallers,
 
-    # Inverse of the previous switches because specifying '-switch:$false' is no intuitive for most command line users
+    # Inverse of the previous switches because specifying '-switch:$false' is not intuitive for most command line users
     [switch]$NoBuildManaged,
     [switch]$NoBuildNative,
     [switch]$NoBuildNodeJS,
