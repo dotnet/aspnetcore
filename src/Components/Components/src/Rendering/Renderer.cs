@@ -205,7 +205,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 {
                 await pendingWork;
         }
-                catch when (!pendingWork.IsCanceled || HandleException(componentState.ComponentId, componentState.Component, pendingWork.Exception))
+                catch when (pendingWork.IsCanceled || HandleException(componentState.ComponentId, componentState.Component, pendingWork.Exception))
                 {
                     // await will unwrap an AggregateException and return exactly one inner exception.
                     // We'll do our best to handle all inner exception instances.

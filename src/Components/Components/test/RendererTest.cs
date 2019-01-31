@@ -1498,7 +1498,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 },
                 [nameof(NestedAsyncComponent.WhatToRender)] = new Dictionary<int, Func<NestedAsyncComponent, RenderFragment>>
                 {
-                    [0] = CreateRenderFactory(new[] { 1, 2 }),
+                    [0] = CreateRenderFactory(new[] { 1, 2, }),
                     [1] = CreateRenderFactory(Array.Empty<int>()),
                     [2] = CreateRenderFactory(Array.Empty<int>()),
                 },
