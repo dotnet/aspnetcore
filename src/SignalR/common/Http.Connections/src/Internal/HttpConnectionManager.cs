@@ -31,6 +31,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         private readonly ILogger<HttpConnectionManager> _logger;
         private readonly ILogger<HttpConnectionContext> _connectionLogger;
 
+        public int DisconnectTimeout { get; set; }
+
         public HttpConnectionManager(ILoggerFactory loggerFactory, IApplicationLifetime appLifetime)
         {
             _logger = loggerFactory.CreateLogger<HttpConnectionManager>();
@@ -155,7 +157,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
                 // Once the decision has been made to dispose we don't check the status again
                 // But don't clean up connections while the debugger is attached.
-                if (!Debugger.IsAttached && status == HttpConnectionStatus.Inactive && (DateTimeOffset.UtcNow - lastSeenUtc).TotalSeconds > 15)
+                if (!Debugger.IsAttached && status == HttpConnectionStatus.Inactive && (DateTimeOffset.UtcNow - lastSeenUtc).TotalSeconds > DisconnectTimeout)
                 {
                     Log.ConnectionTimedOut(_logger, connection.ConnectionId);
                     HttpConnectionsEventSource.Log.ConnectionTimedOut(connection.ConnectionId);

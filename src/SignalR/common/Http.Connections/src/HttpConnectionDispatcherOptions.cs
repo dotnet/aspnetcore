@@ -15,6 +15,8 @@ namespace Microsoft.AspNetCore.Http.Connections
         // There maybe the opportunity for performance gains by tuning this default.
         private const int DefaultPipeBufferSize = 32768;
 
+        private const int DefaultDisconnectTimeout = 15;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpConnectionDispatcherOptions"/> class.
         /// </summary>
@@ -26,6 +28,8 @@ namespace Microsoft.AspNetCore.Http.Connections
             LongPolling = new LongPollingOptions();
             TransportMaxBufferSize = DefaultPipeBufferSize;
             ApplicationMaxBufferSize = DefaultPipeBufferSize;
+            DisconnectTimeout = DefaultDisconnectTimeout;
+
         }
 
         /// <summary>
@@ -57,5 +61,10 @@ namespace Microsoft.AspNetCore.Http.Connections
         /// Gets or sets the maximum buffer size of the application writer.
         /// </summary>
         public long ApplicationMaxBufferSize { get; set; }
+
+        /// <summary>
+        /// Gets or sets the allowed duration in seconds that a client can not send messages before being removed by the server.
+        /// </summary>
+        public int DisconnectTimeout { get; set; }
     }
 }
