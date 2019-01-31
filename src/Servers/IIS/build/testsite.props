@@ -9,11 +9,6 @@
     <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
     <!-- Work around until we get a new WebSdk -->
     <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
-    <BuildProjectReferences Condition="'$(_InsidePublishTestsAssets)' == 'True'">False</BuildProjectReferences>
-    <!-- Not publishable withouth profile name -->
-    <IsPublishable Condition="'$(TestAssetProfile)' == ''">false</IsPublishable>
-    <IsTransformWebConfigDisabled Condition="'$(TestAssetProfile)' == ''">true</IsTransformWebConfigDisabled>
-    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
   </PropertyGroup>
 
   <Import Project="assets.props" />
@@ -28,14 +23,6 @@
     <IISExpressPath>$(ProgramW6432)\IIS Express\iisexpress.exe</IISExpressPath>
     <IISPath>$(SystemRoot)\System32\inetsrv\w3wp.exe</IISPath>
     <NativeFolder>x64</NativeFolder>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <!-- For standalone publish, all dlls are flattened to the same folder.
-         Set the base path to the request handler
-    -->
-    <BasePathForRequestHandler Condition="'$(RuntimeIdentifier)' == ''">$(NativePlatform)\</BasePathForRequestHandler>
-
   </PropertyGroup>
 
   <PropertyGroup>
@@ -68,7 +55,6 @@
     </PropertyGroup>
   </Target>
 
-
   <Target Name="InjectRequestHandler"
           Condition=" '$(InProcessTestSite)' == 'true' AND '$(OS)' == 'Windows_NT' AND '$(TargetFrameworkIdentifier)' != '.NETFramework'"
           AfterTargets="GenerateBuildDependencyFile"
@@ -83,9 +69,19 @@
     <Exec Command="$(InjectDepsApp) &quot;$(PublishDepsFilePath)&quot; $(RuntimeIdentifier) " />
   </Target>
 
-  <Target Name="SetPublishDir" BeforeTargets="PrepareForPublish">
+  <Target Name="PrepareForTestAssetPublish" BeforeTargets="PrepareForPublish" Condition="'@(TestAssetPublishProfile->Count())' != '0'">
     <PropertyGroup>
-      <PublishDir>$(OutputPath)$(PublishDirName)\$(MSBuildProjectName)-$(TestAssetProfile)</PublishDir>
+      <HasTestAssetProfile Condition="'$(TestAssetProfile)' != ''">True</HasTestAssetProfile>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(HasTestAssetProfile)' == 'True'">
+      <BuildProjectReferences>false</BuildProjectReferences>
+      <PublishDir>$(OutputPath)$(PublishDirName)\$(MSBuildProjectName)-$(TestAssetProfile)\</PublishDir>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(HasTestAssetProfile)' != 'True'">
+      <IsPublishable>false</IsPublishable>
+      <IsTransformWebConfigDisabled>true</IsTransformWebConfigDisabled>
     </PropertyGroup>
   </Target>
 
