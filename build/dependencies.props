@@ -75,6 +75,16 @@
     <MicrosoftExtensionsValueStopwatchSourcesPackageVersion>2.1.1</MicrosoftExtensionsValueStopwatchSourcesPackageVersion>
     <MicrosoftExtensionsWebEncodersPackageVersion>2.1.1</MicrosoftExtensionsWebEncodersPackageVersion>
 
+    <!-- Packages that come from aspnet/Scaffolding. (Used only in the 2.1.x package archives.) -->
+    <MicrosoftVisualStudioWebCodeGenerationContractsPackageVersion>2.1.7</MicrosoftVisualStudioWebCodeGenerationContractsPackageVersion>
+    <MicrosoftVisualStudioWebCodeGenerationCorePackageVersion>2.1.7</MicrosoftVisualStudioWebCodeGenerationCorePackageVersion>
+    <MicrosoftVisualStudioWebCodeGenerationDesignPackageVersion>2.1.7</MicrosoftVisualStudioWebCodeGenerationDesignPackageVersion>
+    <MicrosoftVisualStudioWebCodeGenerationEntityFrameworkCorePackageVersion>2.1.7</MicrosoftVisualStudioWebCodeGenerationEntityFrameworkCorePackageVersion>
+    <MicrosoftVisualStudioWebCodeGenerationPackageVersion>2.1.7</MicrosoftVisualStudioWebCodeGenerationPackageVersion>
+    <MicrosoftVisualStudioWebCodeGenerationTemplatingPackageVersion>2.1.7</MicrosoftVisualStudioWebCodeGenerationTemplatingPackageVersion>
+    <MicrosoftVisualStudioWebCodeGenerationUtilsPackageVersion>2.1.7</MicrosoftVisualStudioWebCodeGenerationUtilsPackageVersion>
+    <MicrosoftVisualStudioWebCodeGeneratorsMvcPackageVersion>2.1.7</MicrosoftVisualStudioWebCodeGeneratorsMvcPackageVersion>
+
     <!-- These dependencies are required to build. The need to be used as explicit package references -->
     <MicrosoftAspNetCoreRazorDesignPackageVersion>2.1.1</MicrosoftAspNetCoreRazorDesignPackageVersion>
     <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>2.1.1</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
