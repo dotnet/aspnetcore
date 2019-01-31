@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -16,11 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
         public override void Schedule(Action<object> action, object state)
         {
-            var work = new Work
-            {
-                Callback = action,
-                State = state
-            };
+            var work = new Work(action, state);
 
             _workItems.Enqueue(work);
 
@@ -54,10 +50,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             }
         }
 
-        private struct Work
+        private readonly struct Work
         {
-            public Action<object> Callback;
-            public object State;
+            public readonly Action<object> Callback;
+            public readonly object State;
+
+            public Work(Action<object> callback, object state)
+            {
+                Callback = callback;
+                State = state;
+            }
         }
     }
 }

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Routing.Tree;
 
 namespace Microsoft.AspNetCore.Routing.Internal
 {
-    public struct OutboundMatchResult
+    public readonly struct OutboundMatchResult
     {
         public OutboundMatchResult(OutboundMatch match, bool isFallbackMatch)
         {

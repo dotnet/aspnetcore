@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Routing.Internal
 {
-    public struct BufferValue
+    public readonly struct BufferValue
     {
         public BufferValue(string value, bool requiresEncoding)
         {
