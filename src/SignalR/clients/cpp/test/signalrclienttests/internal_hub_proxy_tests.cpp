@@ -107,7 +107,7 @@ TEST(invoke_json, invoke_throws_when_the_underlying_connection_is_not_valid)
     }
     catch (const signalr_exception& e)
     {
-        ASSERT_STREQ("the connection for which this hub proxy was created is no longer valid - it was either destroyed or went out of scope", e.what());
+        ASSERT_STREQ("cannot send data when the connection is not in the connected state. current connection state: disconnected", e.what());
     }
 }
 
@@ -122,6 +122,6 @@ TEST(invoke_void, send_throws_when_the_underlying_connection_is_not_valid)
     }
     catch (const signalr_exception& e)
     {
-        ASSERT_STREQ("the connection for which this hub proxy was created is no longer valid - it was either destroyed or went out of scope", e.what());
+        ASSERT_STREQ("cannot send data when the connection is not in the connected state. current connection state: disconnected", e.what());
     }
 }
