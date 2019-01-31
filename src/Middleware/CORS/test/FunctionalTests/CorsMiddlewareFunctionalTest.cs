@@ -48,6 +48,8 @@ namespace FunctionalTests
                         Arguments = "test --no-watchman",
                     };
                 }
+                // Disallow the test from downloading \ installing chromium.
+                processStartInfo.Environment["PUPPETEER_SKIP_CHROMIUM_DOWNLOAD"] = "true";
 
                 // Act
                 var result = await ProcessManager.RunProcessAsync(processStartInfo, loggerFactory.CreateLogger("ProcessManager"));
