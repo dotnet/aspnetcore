@@ -12,11 +12,11 @@
   <PropertyGroup>
     <!-- Lists the versions of dependencies not built in this repo. Packages produced from this repo should be listed as a PackageVersionVariableReference.  -->
     <GeneratedContentProperties>
+      MicrosoftAspNetCoreMvcRazorRuntimeCompilationPackageVersion=$(MicrosoftAspNetCoreMvcRazorRuntimeCompilationPackageVersion);
       MicrosoftEntityFrameworkCoreSqlitePackageVersion=$(MicrosoftEntityFrameworkCoreSqlitePackageVersion);
       MicrosoftEntityFrameworkCoreSqlServerPackageVersion=$(MicrosoftEntityFrameworkCoreSqlServerPackageVersion);
       MicrosoftEntityFrameworkCoreToolsPackageVersion=$(MicrosoftEntityFrameworkCoreToolsPackageVersion);
       MicrosoftNETCoreAppPackageVersion=$(MicrosoftNETCoreAppPackageVersion);
-      MicrosoftNETSdkRazorPackageVersion=$(MicrosoftNETSdkRazorPackageVersion);
     </GeneratedContentProperties>
   </PropertyGroup>
 
@@ -31,6 +31,7 @@
     <PackageVersionVariableReference Include="$(RepositoryRoot)src\Identity\UI\src\Microsoft.AspNetCore.Identity.UI.csproj" />
     <PackageVersionVariableReference Include="$(RepositoryRoot)src\Middleware\Diagnostics.EntityFrameworkCore\src\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.csproj" />
     <PackageVersionVariableReference Include="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.NewtonsoftJson\Microsoft.AspNetCore.Mvc.NewtonsoftJson.csproj" />
+    <PackageVersionVariableReference Include="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation\Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.csproj" />
   </ItemGroup>
 
   <ItemGroup>
