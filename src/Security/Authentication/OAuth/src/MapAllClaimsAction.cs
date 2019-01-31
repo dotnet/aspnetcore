@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth.Claims
         {
             foreach (var pair in userData.EnumerateObject())
             {
-                var claimValue = userData.GetString(pair.Name);
+                var claimValue = pair.Value.ToString();
 
                 // Avoid adding a claim if there's a duplicate name and value. This often happens in OIDC when claims are
                 // retrieved both from the id_token and from the user-info endpoint.
