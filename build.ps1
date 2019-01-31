@@ -258,7 +258,7 @@ elseif ($Projects) {
     $MSBuildArguments += "/p:Projects=$Projects"
 }
 # When adding new sub-group build flags, add them to this check.
-elseif((-not $BuildNative) -and (-not $BuildManaged) -and (-not $BuildNodeJS) -and (-not $BuildInstallers)) {
+elseif((-not $BuildNative) -and (-not $BuildManaged) -and (-not $BuildNodeJS) -and (-not $BuildInstallers) -and (-not $BuildJava)) {
     Write-Warning "No default group of projects was specified, so building the 'managed' and 'native' subsets of projects. Run ``build.cmd -help`` for more details."
 
     # This goal of this is to pick a sensible default for `build.cmd` with zero arguments.

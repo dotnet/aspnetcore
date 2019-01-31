@@ -295,7 +295,7 @@ if [ "$build_all" = true ]; then
     msbuild_args[${#msbuild_args[*]}]="-p:BuildAllProjects=true"
 elif [ ! -z "$build_projects" ]; then
     msbuild_args[${#msbuild_args[*]}]="-p:Projects=$build_projects"
-elif [ -z "$build_managed" ] && [ -z "$build_nodejs" ] && [ -z "$build_java" ]; then
+elif [ -z "$build_managed" ] && [ -z "$build_nodejs" ] && [ -z "$build_java" ] && [ -z "$build_native" ]; then
     # This goal of this is to pick a sensible default for `build.sh` with zero arguments.
     # We believe the most common thing our contributors will work on is C#, so if no other build group was picked, build the C# projects.
     __warn "No default group of projects was specified, so building the 'managed' subset of projects. Run ``build.sh -help`` for more details."
