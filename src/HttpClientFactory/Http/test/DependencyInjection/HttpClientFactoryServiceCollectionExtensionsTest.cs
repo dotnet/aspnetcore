@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,6 +11,7 @@ using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Http.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
+using Moq.Protected;
 using Xunit;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -777,8 +779,24 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             // Arrange
             var serviceCollection = new ServiceCollection();
-            // TODO: mocked HttpMessageHandler never hangs
-            serviceCollection.AddHttpClient("example.com");
+            serviceCollection.AddHttpClient("example.com")
+                .ConfigurePrimaryHttpMessageHandler(() =>
+                {
+                    var mockHandler = new Mock<HttpMessageHandler>();
+                    mockHandler
+                    .Protected()
+                    .Setup<Task<HttpResponseMessage>>(
+                        "SendAsync",
+                        ItExpr.IsAny<HttpRequestMessage>(),
+                        ItExpr.IsAny<CancellationToken>()
+                    )
+                    .Returns(async () =>
+                    {
+                        await Task.Delay(1).ConfigureAwait(false);
+                        return new HttpResponseMessage(HttpStatusCode.OK);
+                    });
+                    return mockHandler.Object;
+                });
 
             var services = serviceCollection.BuildServiceProvider();
             var factory = services.GetRequiredService<IHttpClientFactory>();
