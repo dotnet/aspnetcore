@@ -65,37 +65,6 @@ TEST(on, cannot_register_handler_if_connection_not_in_disconnected_state)
     }
 }
 
-//TEST(invoke_event, invoke_event_invokes_event_and_passes_arguments)
-//{
-//    const auto payload = _XPLATSTR("{\"Contents\":\"My message\"}");
-//
-//    hub_connection hub_connection{ _XPLATSTR("") };
-//
-//    auto handler_invoked = false;
-//    hub_connection.on(_XPLATSTR("message"), [&handler_invoked, payload](const json::value& arguments)
-//    {
-//        handler_invoked = true;
-//        ASSERT_EQ(payload, arguments.serialize());
-//    });
-//
-//    hub_connection.invoke_event(_XPLATSTR("message"), json::value::parse(payload));
-//
-//    ASSERT_TRUE(handler_invoked);
-//}
-
-//TEST(invoke_event, logs_if_no_handler_for_an_event)
-//{
-//    std::shared_ptr<log_writer> writer(std::make_shared<memory_log_writer>());
-//    internal_hub_proxy hub_proxy{ std::weak_ptr<hub_connection_impl>(), _XPLATSTR("hub"),
-//        logger{ writer, trace_level::info } };
-//    hub_proxy.invoke_event(_XPLATSTR("message"), json::value::parse(_XPLATSTR("{}")));
-//
-//    auto log_entries = std::dynamic_pointer_cast<memory_log_writer>(writer)->get_log_entries();
-//    ASSERT_FALSE(log_entries.empty());
-//    auto entry = remove_date_from_log_entry(log_entries[0]);
-//    ASSERT_EQ(_XPLATSTR("[info        ] no handler found for event. hub name: hub, event name: message\n"), entry);
-//}
-
 TEST(invoke_json, invoke_throws_when_the_underlying_connection_is_not_valid)
 {
     hub_connection hub_connection{ _XPLATSTR("") };

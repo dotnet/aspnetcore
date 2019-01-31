@@ -472,7 +472,7 @@ TEST(invoke_void, invoke_logs_if_callback_for_given_id_not_found)
     ASSERT_EQ(_XPLATSTR("[info        ] no callback found for id: 0\n"), entry);
 }
 
-// Flaky until hub_connection.start waits for handshake response
+// TODO Flaky until hub_connection.start waits for handshake response
 //TEST(invoke_void, invoke_propagates_errors_from_server_as_exceptions)
 //{
 //    auto callback_registered_event = std::make_shared<event>();
@@ -517,7 +517,7 @@ TEST(invoke_void, invoke_logs_if_callback_for_given_id_not_found)
 //    }
 //}
 
-// Flaky until hub_connection.start waits for handshake response
+// TODO Flaky until hub_connection.start waits for handshake response
 //TEST(invoke_void, invoke_propagates_hub_errors_from_server_as_hub_exceptions)
 //{
 //    auto callback_registered_event = std::make_shared<event>();
@@ -562,7 +562,7 @@ TEST(invoke_void, invoke_logs_if_callback_for_given_id_not_found)
 //    }
 //}
 
-// Flaky until hub_connection.start waits for handshake response
+// TODO Flaky until hub_connection.start waits for handshake response
 //TEST(invoke_void, invoke_creates_hub_exception_even_if_no_error_data)
 //{
 //    auto callback_registered_event = std::make_shared<event>();
@@ -607,7 +607,7 @@ TEST(invoke_void, invoke_logs_if_callback_for_given_id_not_found)
 //    }
 //}
 
-// Flaky until hub_connection.start waits for handshake response
+// TODO Flaky until hub_connection.start waits for handshake response
 //TEST(invoke_void, invoke_creates_runtime_error_when_hub_exception_indicator_false)
 //{
 //    auto callback_registered_event = std::make_shared<event>();
@@ -653,6 +653,7 @@ TEST(invoke_void, invoke_logs_if_callback_for_given_id_not_found)
 //    }
 //}
 
+// TODO Flaky until hub_connection.start waits for handshake response
 //TEST(invoke_void, invoke_creates_runtime_error)
 //{
 //    auto callback_registered_event = std::make_shared<event>();

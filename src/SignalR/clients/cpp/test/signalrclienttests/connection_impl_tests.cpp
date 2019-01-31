@@ -1029,7 +1029,7 @@ TEST(connection_impl_config, custom_headers_set_in_requests)
         request->on_get_response = [](web_request_stub& request)
         {
             auto http_headers = request.m_signalr_client_config.get_http_headers();
-            ASSERT_EQ(1, http_headers.size());
+            ASSERT_EQ(1U, http_headers.size());
             ASSERT_EQ(_XPLATSTR("42"), http_headers[_XPLATSTR("Answer")]);
         };
 
