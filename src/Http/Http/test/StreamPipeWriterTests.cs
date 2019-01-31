@@ -48,15 +48,6 @@ namespace System.IO.Pipelines.Tests
         }
 
         [Fact]
-        public async Task ThrowsOnCompleteAndWrite()
-        {
-            Writer.Complete(new InvalidOperationException("Whoops"));
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await Writer.FlushAsync());
-
-            Assert.Equal("Whoops", exception.Message);
-        }
-
-        [Fact]
         public async Task WriteCanBeCancelledViaProvidedCancellationToken()
         {
             var pipeWriter = new StreamPipeWriter(new HangingStream());
@@ -117,17 +108,17 @@ namespace System.IO.Pipelines.Tests
         }
 
         [Fact]
-        public void FlushAsyncReturnsCanceledIfCanceledBeforeFlush()
+        public async Task FlushAsyncReturnsCanceledIfCanceledBeforeFlush()
         {
-            CheckCanceledFlush();
+            await CheckCanceledFlush();
         }
 
         [Fact]
-        public void FlushAsyncReturnsCanceledIfCanceledBeforeFlushMultipleTimes()
+        public async Task FlushAsyncReturnsCanceledIfCanceledBeforeFlushMultipleTimes()
         {
             for (var i = 0; i < 10; i++)
             {
-                CheckCanceledFlush();
+                await CheckCanceledFlush();
             }
         }
 
@@ -136,7 +127,7 @@ namespace System.IO.Pipelines.Tests
         {
             for (var i = 0; i < 5; i++)
             {
-                CheckCanceledFlush();
+                await CheckCanceledFlush();
                 await CheckWriteIsNotCanceled();
             }
         }
@@ -316,6 +307,87 @@ namespace System.IO.Pipelines.Tests
             Assert.Equal(expectedString, ReadAsString());
         }
 
+        [Fact]
+        public void CallCompleteWithoutFlush_ThrowsInvalidOperationException()
+        {
+            var memory = Writer.GetMemory();
+            Writer.Advance(memory.Length);
+            var ex = Assert.Throws<InvalidOperationException>(() => Writer.Complete());
+            Assert.Equal(ThrowHelper.CreateInvalidOperationException_DataNotAllFlushed().Message, ex.Message);
+        }
+
+        [Fact]
+        public void CallCompleteWithoutFlushAndException_DoesNotThrowInvalidOperationException()
+        {
+            var memory = Writer.GetMemory();
+            Writer.Advance(memory.Length);
+            Writer.Complete(new Exception());
+        }
+
+        [Fact]
+        public void CallComplete_GetMemoryThrows()
+        {
+            Writer.Complete();
+            Assert.Throws<InvalidOperationException>(() => Writer.GetMemory());
+        }
+
+        [Fact]
+        public void CallComplete_GetSpanThrows()
+        {
+            Writer.Complete();
+            Assert.Throws<InvalidOperationException>(() => Writer.GetSpan());
+        }
+
+        [Fact]
+        public void CallGetMemoryWithNegativeSizeHint_ThrowsArgException()
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => Writer.GetMemory(-1));
+        }
+
+        [Fact]
+        public void CallGetSpanWithNegativeSizeHint_ThrowsArgException()
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => Writer.GetSpan(-1));
+        }
+
+        [Fact]
+        public async Task GetMemorySlicesCorrectly()
+        {
+            var expectedString = "abcdef";
+            var memory = Writer.GetMemory();
+
+            Encoding.ASCII.GetBytes("abc").CopyTo(memory);
+            Writer.Advance(3);
+            memory = Writer.GetMemory();
+            Encoding.ASCII.GetBytes("def").CopyTo(memory);
+            Writer.Advance(3);
+
+            await Writer.FlushAsync();
+            Assert.Equal(expectedString, ReadAsString());
+        }
+
+        [Fact]
+        public async Task GetSpanSlicesCorrectly()
+        {
+            var expectedString = "abcdef";
+
+            void NonAsyncMethod()
+            {
+                var span = Writer.GetSpan();
+
+                Encoding.ASCII.GetBytes("abc").CopyTo(span);
+                Writer.Advance(3);
+                span = Writer.GetSpan();
+                Encoding.ASCII.GetBytes("def").CopyTo(span);
+                Writer.Advance(3);
+            }
+
+            NonAsyncMethod();
+
+            await Writer.FlushAsync();
+            Assert.Equal(expectedString, ReadAsString());
+        }
+
         private void WriteStringToStream(string input)
         {
             var buffer = Encoding.ASCII.GetBytes(input);
@@ -333,7 +405,7 @@ namespace System.IO.Pipelines.Tests
             Assert.False(flushResult.IsCanceled);
         }
 
-        private void CheckCanceledFlush()
+        private async Task CheckCanceledFlush()
         {
             PipeWriter writableBuffer = Writer.WriteEmpty(MaximumSizeHigh);
 
@@ -344,6 +416,7 @@ namespace System.IO.Pipelines.Tests
             Assert.True(flushAsync.IsCompleted);
             FlushResult flushResult = flushAsync.GetAwaiter().GetResult();
             Assert.True(flushResult.IsCanceled);
+            await writableBuffer.FlushAsync();
         }
     }
 
