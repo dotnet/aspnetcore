@@ -72,6 +72,7 @@
   <Target Name="PrepareForTestAssetPublish" BeforeTargets="PrepareForPublish" Condition="'@(TestAssetPublishProfile->Count())' != '0'">
     <PropertyGroup>
       <HasTestAssetProfile Condition="'$(TestAssetProfile)' != ''">True</HasTestAssetProfile>
+      <AppendRuntimeIdentifierToOutputPath>False</AppendRuntimeIdentifierToOutputPath>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(HasTestAssetProfile)' == 'True'">
