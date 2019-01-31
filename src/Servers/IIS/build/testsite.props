@@ -12,8 +12,8 @@
     <BuildProjectReferences Condition="'$(_InsidePublishTestsAssets)' == 'True'">False</BuildProjectReferences>
     <!-- Not publishable withouth profile name -->
     <IsPublishable Condition="'$(TestAssetProfile)' == ''">false</IsPublishable>
-    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <IsTransformWebConfigDisabled Condition="'$(TestAssetProfile)' == ''">true</IsTransformWebConfigDisabled>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
   </PropertyGroup>
 
   <Import Project="assets.props" />
@@ -85,7 +85,7 @@
 
   <Target Name="SetPublishDir" BeforeTargets="PrepareForPublish">
     <PropertyGroup>
-      <PublishDir>$(PublishDir)\$(MSBuildProjectName)-$(TestAssetProfile)</PublishDir>
+      <PublishDir>$(OutputPath)$(PublishDirName)\$(MSBuildProjectName)-$(TestAssetProfile)</PublishDir>
     </PropertyGroup>
   </Target>
 
