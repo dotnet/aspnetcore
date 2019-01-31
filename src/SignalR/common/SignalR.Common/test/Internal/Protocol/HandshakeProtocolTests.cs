@@ -25,6 +25,17 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             Assert.Equal(version, deserializedMessage.Version);
         }
 
+        [Fact]
+        public void ParsingHandshakeRequestMessageSuccessForValidMessageWithMultipleSegments()
+        {
+            var message = ReadOnlySequenceFactory.SegmentPerByteFactory.CreateWithContent("{\"protocol\":\"json\",\"version\":1}\u001e");
+
+            Assert.True(HandshakeProtocol.TryParseRequestMessage(ref message, out var deserializedMessage));
+
+            Assert.Equal("json", deserializedMessage.Protocol);
+            Assert.Equal(1, deserializedMessage.Version);
+        }
+
         [Theory]
         [InlineData("{\"error\":\"dummy\"}\u001e", "dummy")]
         [InlineData("{\"error\":\"\"}\u001e", "")]
@@ -36,6 +47,16 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 
             Assert.True(HandshakeProtocol.TryParseResponseMessage(ref message, out var response));
             Assert.Equal(error, response.Error);
+        }
+
+        [Fact]
+        public void ParsingHandshakeResponseMessageSuccessForValidMessageWithMultipleSegments()
+        {
+            var message = ReadOnlySequenceFactory.SegmentPerByteFactory.CreateWithContent("{\"error\":\"dummy\"}\u001e");
+
+            Assert.True(HandshakeProtocol.TryParseResponseMessage(ref message, out var response));
+
+            Assert.Equal("dummy", response.Error);
         }
 
         [Theory]
@@ -58,7 +79,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         }
 
         [Theory]
-        [InlineData("42\u001e", "Unexpected JSON Token Type 'Integer'. Expected a JSON Object.")]
+        [InlineData("42\u001e", "Unexpected JSON Token Type 'Number'. Expected a JSON Object.")]
         [InlineData("\"42\"\u001e", "Unexpected JSON Token Type 'String'. Expected a JSON Object.")]
         [InlineData("null\u001e", "Unexpected JSON Token Type 'Null'. Expected a JSON Object.")]
         [InlineData("{}\u001e", "Missing required property 'protocol'. Message content: {}")]
@@ -66,7 +87,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         [InlineData("{\"protocol\":\"json\"}\u001e", "Missing required property 'version'. Message content: {\"protocol\":\"json\"}")]
         [InlineData("{\"version\":1}\u001e", "Missing required property 'protocol'. Message content: {\"version\":1}")]
         [InlineData("{\"type\":4,\"invocationId\":\"42\",\"target\":\"foo\",\"arguments\":{}}\u001e", "Missing required property 'protocol'. Message content: {\"type\":4,\"invocationId\":\"42\",\"target\":\"foo\",\"arguments\":{}}")]
-        [InlineData("{\"version\":\"123\"}\u001e", "Expected 'version' to be of type Integer.")]
+        [InlineData("{\"version\":\"123\"}\u001e", "Expected 'version' to be of type Number.")]
         [InlineData("{\"protocol\":null,\"version\":123}\u001e", "Expected 'protocol' to be of type String.")]
         public void ParsingHandshakeRequestMessageThrowsForInvalidMessages(string payload, string expectedMessage)
         {
@@ -79,7 +100,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         }
 
         [Theory]
-        [InlineData("42\u001e", "Unexpected JSON Token Type 'Integer'. Expected a JSON Object.")]
+        [InlineData("42\u001e", "Unexpected JSON Token Type 'Number'. Expected a JSON Object.")]
         [InlineData("\"42\"\u001e", "Unexpected JSON Token Type 'String'. Expected a JSON Object.")]
         [InlineData("null\u001e", "Unexpected JSON Token Type 'Null'. Expected a JSON Object.")]
         [InlineData("[]\u001e", "Unexpected JSON Token Type 'Array'. Expected a JSON Object.")]

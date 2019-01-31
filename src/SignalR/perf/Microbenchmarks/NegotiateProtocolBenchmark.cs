@@ -70,22 +70,22 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
 
         [Benchmark]
         public void ParsingNegotiateResponseMessageSuccessForValid1()
-            => NegotiateProtocol.ParseResponse(new MemoryStream(_responseData1));
+            => NegotiateProtocol.ParseResponse(_responseData1);
 
         [Benchmark]
         public void ParsingNegotiateResponseMessageSuccessForValid2()
-            => NegotiateProtocol.ParseResponse(new MemoryStream(_responseData2));
+            => NegotiateProtocol.ParseResponse(_responseData2);
 
         [Benchmark]
         public void ParsingNegotiateResponseMessageSuccessForValid3()
-            => NegotiateProtocol.ParseResponse(new MemoryStream(_responseData3));
+            => NegotiateProtocol.ParseResponse(_responseData3);
 
         [Benchmark]
         public void ParsingNegotiateResponseMessageSuccessForValid4()
-            => NegotiateProtocol.ParseResponse(new MemoryStream(_responseData4));
+            => NegotiateProtocol.ParseResponse(_responseData4);
 
         [Benchmark]
         public void ParsingNegotiateResponseMessageSuccessForValid5()
-            => NegotiateProtocol.ParseResponse(new MemoryStream(_responseData5));
+            => NegotiateProtocol.ParseResponse(_responseData5);
     }
 }
