@@ -1,5 +1,5 @@
 <Project>
 
-  <Import Project="$(MSBuildThisFileDirectory)..\..\..\..\..\build\sources.props" />
+  <Import Project="$(MSBuildThisFileDirectory)..\..\..\..\build\sources.props" />
 
 </Project>
