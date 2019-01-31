@@ -280,12 +280,18 @@ if ($NoBuildNative) { $MSBuildArguments += "/p:BuildNative=false" }
 if ($NoBuildNodeJS) { $MSBuildArguments += "/p:BuildNodeJS=false" }
 if ($NoBuildJava) { $MSBuildArguments += "/p:BuildJava=false" }
 
-# -NoBuild implies -NoRestore
-if ($NoBuild -and (-not $Restore)) { $NoRestore = $true }
+$RunBuild = if ($NoBuild) { $false } else { $true }
+
+# Run restore by default unless -NoRestore is set.
+# -NoBuild implies -NoRestore, unless -Restore is explicitly set (as in restore.cmd)
+$RunRestore = if ($NoRestore) { $false }
+    elseif ($Restore) { $true }
+    elseif ($NoBuild) { $false }
+    else { $true }
 
 # Target selection
-$MSBuildArguments += "/p:_RunRestore=$(-not $NoRestore)"
-$MSBuildArguments += "/p:_RunBuild=$(-not $NoBuild)"
+$MSBuildArguments += "/p:_RunRestore=$RunRestore"
+$MSBuildArguments += "/p:_RunBuild=$RunBuild"
 $MSBuildArguments += "/p:_RunPack=$Pack"
 $MSBuildArguments += "/p:_RunTests=$Test"
 $MSBuildArguments += "/p:_RunSign=$Sign"
