@@ -54,7 +54,7 @@
     <ProjectToExclude Include="
                       $(RepositoryRoot)src\Tools\dotnet-watch\test\TestProjects\**\*.csproj;
                       $(RepositoryRoot)src\Razor\Razor.Design\test\testassets\**\*.*proj;
-                      $(RepositoryRoot)src\SignalR\clients\cpp\**\samples\**\*.*proj;
+                      $(RepositoryRoot)src\SignalR\clients\cpp\**\*.*proj;
                       $(RepositoryRoot)src\SignalR\clients\cpp\test\signalrclient-testhost\**\samples\**\*.*proj;
                       $(RepositoryRoot)src\SignalR\clients\ts\**\node_modules\**\*.*proj;
                       $(RepositoryRoot)src\Components\Blazor\Templates\src\content\**\*.*proj;
