@@ -1,0 +1,7 @@
+Markup block - Gen<None> - 30 - (0:0,0)
+    Tag block - Gen<TagHelper> - 30 - (0:0,0) - ul - CatchAllTagHelper
+        StartTagAndEndTag - <ul bound [item]='items'> ... </ul>
+        bound - Minimized
+        [item] - SingleQuotes
+            Code span - Gen<Expr> - [items] - ImplicitExpressionEditHandler;Accepts:AnyExceptNewline;ImplicitExpression[ATD];K14 - (18:0,18) - Tokens:1
+                HtmlTokenType.Text;[items];

@@ -393,7 +393,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         [Theory]
         [MemberData(nameof(IndexerExpressions))]
         [MemberData(nameof(UnsupportedExpressions))]
-        public void GetExpressionText_DoesNotCacheIndexerOrUnspportedExpression(LambdaExpression expression)
+        public void GetExpressionText_DoesNotCacheIndexerOrUnsupportedExpression(LambdaExpression expression)
         {
             // Act - 1
             var text1 = ExpressionHelper.GetExpressionText(expression, _expressionTextCache);

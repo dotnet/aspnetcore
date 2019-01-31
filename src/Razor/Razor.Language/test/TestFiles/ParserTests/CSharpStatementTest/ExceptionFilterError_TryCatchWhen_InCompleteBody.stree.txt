@@ -1,0 +1,27 @@
+Statement block - Gen<None> - 53 - (0:0,0)
+    Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
+        CSharpTokenType.Transition;[@];
+    Code span - Gen<Stmt> - [try { someMethod(); } catch(Exception) when (true) {] - SpanEditHandler;Accepts:Any - (1:0,1) - Tokens:23
+        CSharpTokenType.Keyword;[try];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.LeftBrace;[{];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Identifier;[someMethod];
+        CSharpTokenType.LeftParenthesis;[(];
+        CSharpTokenType.RightParenthesis;[)];
+        CSharpTokenType.Semicolon;[;];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.RightBrace;[}];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Keyword;[catch];
+        CSharpTokenType.LeftParenthesis;[(];
+        CSharpTokenType.Identifier;[Exception];
+        CSharpTokenType.RightParenthesis;[)];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Keyword;[when];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.LeftParenthesis;[(];
+        CSharpTokenType.Keyword;[true];
+        CSharpTokenType.RightParenthesis;[)];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.LeftBrace;[{];

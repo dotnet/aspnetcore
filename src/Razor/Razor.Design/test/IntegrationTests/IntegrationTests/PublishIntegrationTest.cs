@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using System.Reflection;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -400,6 +401,46 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, PublishOutputPath, "ClassLibrary2.pdb");
             Assert.FileExists(result, PublishOutputPath, "ClassLibrary2.Views.dll");
             Assert.FileExists(result, PublishOutputPath, "ClassLibrary2.Views.pdb");
+        }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
+        public async Task Publish_WithNoBuild_FailsWithoutBuild()
+        {
+            // Publish without building shouldn't succeed.
+            var result = await DotnetMSBuild("Publish", "/p:NoBuild=true");
+
+            Assert.BuildFailed(result);
+            Assert.BuildError(result, "MSB3030"); // Could not copy the file "obj/Debug/netcoreapp2.2/SimpleMvc.dll because it couldn't be found.
+
+            Assert.FileDoesNotExist(result, PublishOutputPath, "SimpleMvc.dll");
+            Assert.FileDoesNotExist(result, PublishOutputPath, "SimpleMvc.Views.dll");
+        }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
+        public async Task Publish_WithNoBuild_CopiesAlreadyCompiledViews()
+        {
+            // Build
+            var result = await DotnetMSBuild("Build", "/p:AssemblyVersion=1.1.1.1");
+
+            Assert.BuildPassed(result);
+            var assemblyPath = Assert.FileExists(result, OutputPath, "SimpleMvc.dll");
+            var viewsAssemblyPath = Assert.FileExists(result, OutputPath, "SimpleMvc.Views.dll");
+            var assemblyVersion = AssemblyName.GetAssemblyName(assemblyPath).Version;
+            var viewsAssemblyVersion = AssemblyName.GetAssemblyName(viewsAssemblyPath).Version;
+
+            // Publish should copy dlls from OutputPath
+            result = await DotnetMSBuild("Publish", "/p:NoBuild=true");
+
+            Assert.BuildPassed(result);
+            var publishAssemblyPath = Assert.FileExists(result, PublishOutputPath, "SimpleMvc.dll");
+            var publishViewsAssemblyPath = Assert.FileExists(result, PublishOutputPath, "SimpleMvc.Views.dll");
+            var publishAssemblyVersion = AssemblyName.GetAssemblyName(publishAssemblyPath).Version;
+            var publishViewsAssemblyVersion = AssemblyName.GetAssemblyName(publishViewsAssemblyPath).Version;
+
+            Assert.Equal(assemblyVersion, publishAssemblyVersion);
+            Assert.Equal(viewsAssemblyVersion, publishViewsAssemblyVersion);
         }
     }
 }

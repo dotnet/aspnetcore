@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Routing
             };
             var sink = SetUpMatch(constraints, loggerEnabled: true);
             var expectedMessage = "Route value 'value' with key 'b' did not match the constraint " +
-                $"'{typeof(FailConstraint).FullName}'.";
+                $"'{typeof(FailConstraint).FullName}'";
 
             // Assert
             Assert.Empty(sink.Scopes);

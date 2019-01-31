@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.SignalR
         /// <summary>
         /// Gets the user ID for the specified connection.
         /// </summary>
-        /// <param name="connection">The connection get get the user ID for.</param>
+        /// <param name="connection">The connection to get the user ID for.</param>
         /// <returns>The user ID for the specified connection.</returns>
         string GetUserId(HubConnectionContext connection);
     }

@@ -30,11 +30,6 @@
     <!-- Override this to hijack the tasks and targets. Used by tests. -->
     <_RazorMSBuildRoot Condition="'$(_RazorMSBuildRoot)'==''">$(MSBuildThisFileDirectory)..\..\</_RazorMSBuildRoot>
     
-    <_RazorTaskFolder Condition=" '$(MSBuildRuntimeType)' == 'Core' ">netstandard2.0</_RazorTaskFolder>
-    <_RazorTaskFolder Condition=" '$(MSBuildRuntimeType)' != 'Core' ">net46</_RazorTaskFolder>
-    
-    <_RazorTaskAssembly Condition="'$(_RazorTaskAssembly)'==''">$(_RazorMSBuildRoot)\tasks\$(_RazorTaskFolder)\Microsoft.AspNetCore.Razor.Tasks.dll</_RazorTaskAssembly>
-
     <!-- Used to locate our tools -->
     <_RazorToolAssembly Condition="'$(_RazorToolAssembly)'==''">$(_RazorMSBuildRoot)tools\rzc.dll</_RazorToolAssembly>
   </PropertyGroup>
@@ -47,6 +42,4 @@
     <ProjectCapability Include="DotNetCoreRazorConfiguration"/>
   </ItemGroup>
 
-  <UsingTask TaskName="Microsoft.AspNetCore.Razor.Tasks.RazorGenerate" AssemblyFile="$(_RazorTaskAssembly)" />
-  <UsingTask TaskName="Microsoft.AspNetCore.Razor.Tasks.RazorTagHelper" AssemblyFile="$(_RazorTaskAssembly)" />
 </Project>

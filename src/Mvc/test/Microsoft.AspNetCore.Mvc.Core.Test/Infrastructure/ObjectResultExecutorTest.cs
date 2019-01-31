@@ -2,18 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
-using Microsoft.AspNetCore.Mvc.Internal;
-using Microsoft.AspNetCore.Mvc.TestCommon;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -21,6 +17,32 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
     public class ObjectResultExecutorTest
     {
+        [Fact]
+        public async Task ExecuteAsync_UsesSpecifiedContentType()
+        {
+            // Arrange
+            var executor = CreateExecutor();
+
+            var httpContext = new DefaultHttpContext();
+            var actionContext = new ActionContext() { HttpContext = httpContext };
+            httpContext.Request.Headers[HeaderNames.Accept] = "application/xml"; // This will not be used
+            httpContext.Response.ContentType = "text/json";
+
+            var result = new ObjectResult("input")
+            {
+                ContentTypes = { "text/xml", },
+            };
+            result.Formatters.Add(new TestXmlOutputFormatter());
+            result.Formatters.Add(new TestJsonOutputFormatter());
+            result.Formatters.Add(new TestStringOutputFormatter()); // This will be chosen based on the content type
+
+            // Act
+            await executor.ExecuteAsync(actionContext, result);
+
+            // Assert
+            MediaTypeAssert.Equal("text/xml; charset=utf-8", httpContext.Response.ContentType);
+        }
+
         // For this test case probably the most common use case is when there is a format mapping based
         // content type selected but the developer had set the content type on the Response.ContentType
         [Fact]
@@ -87,6 +109,74 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             // Assert
             Assert.Equal(406, httpContext.Response.StatusCode);
+        }
+
+        [Fact]
+        public async Task ExecuteAsync_ForProblemDetailsValue_UsesSpecifiedContentType()
+        {
+            // Arrange
+            var executor = CreateExecutor();
+
+            var httpContext = new DefaultHttpContext();
+            var actionContext = new ActionContext() { HttpContext = httpContext };
+            httpContext.Response.ContentType = "application/json";
+
+            var result = new ObjectResult(new ProblemDetails())
+            {
+                ContentTypes = { "text/plain" },
+            };
+            result.Formatters.Add(new TestXmlOutputFormatter());
+            result.Formatters.Add(new TestJsonOutputFormatter());
+            result.Formatters.Add(new TestStringOutputFormatter()); // This will be chosen based on the content type
+
+            // Act
+            await executor.ExecuteAsync(actionContext, result);
+
+            // Assert
+            MediaTypeAssert.Equal("text/plain; charset=utf-8", httpContext.Response.ContentType);
+        }
+
+        [Fact]
+        public async Task ExecuteAsync_ForProblemDetailsValue_UsesResponseContentType()
+        {
+            // Arrange
+            var executor = CreateExecutor();
+
+            var httpContext = new DefaultHttpContext();
+            var actionContext = new ActionContext() { HttpContext = httpContext };
+            httpContext.Response.ContentType = "application/json";
+
+            var result = new ObjectResult(new ProblemDetails());
+            result.Formatters.Add(new TestXmlOutputFormatter());
+            result.Formatters.Add(new TestJsonOutputFormatter());  // This will be chosen based on the response content type
+            result.Formatters.Add(new TestStringOutputFormatter());
+
+            // Act
+            await executor.ExecuteAsync(actionContext, result);
+
+            // Assert
+            MediaTypeAssert.Equal("application/json; charset=utf-8", httpContext.Response.ContentType);
+        }
+
+        [Fact]
+        public async Task ExecuteAsync_NoContentTypeProvidedForProblemDetails_UsesDefaultContentTypes()
+        {
+            // Arrange
+            var executor = CreateExecutor();
+
+            var httpContext = new DefaultHttpContext();
+            var actionContext = new ActionContext() { HttpContext = httpContext };
+
+            var result = new ObjectResult(new ProblemDetails());
+            result.Formatters.Add(new TestXmlOutputFormatter());  // This will be chosen based on the implicitly added content type
+            result.Formatters.Add(new TestJsonOutputFormatter());
+            result.Formatters.Add(new TestStringOutputFormatter());
+
+            // Act
+            await executor.ExecuteAsync(actionContext, result);
+
+            // Assert
+            MediaTypeAssert.Equal("application/problem+xml; charset=utf-8", httpContext.Response.ContentType);
         }
 
         [Fact]
@@ -314,6 +404,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             {
                 SupportedMediaTypes.Add(new MediaTypeHeaderValue("application/json"));
                 SupportedMediaTypes.Add(new MediaTypeHeaderValue("text/json"));
+                SupportedMediaTypes.Add(new MediaTypeHeaderValue("application/*+json"));
 
                 SupportedEncodings.Add(Encoding.UTF8);
             }
@@ -330,6 +421,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             {
                 SupportedMediaTypes.Add(new MediaTypeHeaderValue("application/xml"));
                 SupportedMediaTypes.Add(new MediaTypeHeaderValue("text/xml"));
+                SupportedMediaTypes.Add(new MediaTypeHeaderValue("application/*+xml"));
 
                 SupportedEncodings.Add(Encoding.UTF8);
             }

@@ -23,14 +23,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel
 {
     public class KestrelConfigurationLoader
     {
+        private bool _loaded = false;
+
         internal KestrelConfigurationLoader(KestrelServerOptions options, IConfiguration configuration)
         {
             Options = options ?? throw new ArgumentNullException(nameof(options));
             Configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            ConfigurationReader = new ConfigurationReader(Configuration);
         }
 
         public KestrelServerOptions Options { get; }
         public IConfiguration Configuration { get; }
+        internal ConfigurationReader ConfigurationReader { get; }
         private IDictionary<string, Action<EndpointConfiguration>> EndpointConfigurations { get; }
             = new Dictionary<string, Action<EndpointConfiguration>>(0, StringComparer.OrdinalIgnoreCase);
         // Actions that will be delayed until Load so that they aren't applied if the configuration loader is replaced.
@@ -197,23 +201,38 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             return this;
         }
 
+        // Called from ApplyEndpointDefaults so it applies to even explicit Listen endpoints.
+        // Does not require a call to Load.
+        internal void ApplyConfigurationDefaults(ListenOptions listenOptions)
+        {
+            var defaults = ConfigurationReader.EndpointDefaults;
+
+            if (defaults.Protocols.HasValue)
+            {
+                listenOptions.Protocols = defaults.Protocols.Value;
+            }
+        }
+
         public void Load()
         {
-            if (Options.ConfigurationLoader == null)
+            if (_loaded)
             {
                 // The loader has already been run.
                 return;
             }
-            Options.ConfigurationLoader = null;
+            _loaded = true;
 
-            var configReader = new ConfigurationReader(Configuration);
+            LoadDefaultCert(ConfigurationReader);
 
-            LoadDefaultCert(configReader);
-
-            foreach (var endpoint in configReader.Endpoints)
+            foreach (var endpoint in ConfigurationReader.Endpoints)
             {
                 var listenOptions = AddressBinder.ParseAddress(endpoint.Url, out var https);
                 Options.ApplyEndpointDefaults(listenOptions);
+
+                if (endpoint.Protocols.HasValue)
+                {
+                    listenOptions.Protocols = endpoint.Protocols.Value;
+                }
 
                 // Compare to UseHttps(httpsOptions => { })
                 var httpsOptions = new HttpsConnectionAdapterOptions();

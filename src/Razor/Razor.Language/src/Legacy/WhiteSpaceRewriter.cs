@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             {
                 // Add this node to the parent
                 var builder = new SpanBuilder(ws);
-                builder.ClearSymbols();
+                builder.ClearTokens();
                 FillSpan(builder, ws.Start, ws.Content);
                 parent.Children.Add(builder.Build());
 

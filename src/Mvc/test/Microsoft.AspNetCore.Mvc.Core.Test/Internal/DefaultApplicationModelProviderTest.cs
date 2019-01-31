@@ -40,7 +40,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public void OnProvidersExecuting_AddsControllerProperties()
         {
             // Arrange
-            var builder = new TestApplicationModelProvider();
+            var builder = new TestApplicationModelProvider(
+                new MvcOptions { AllowValidatingTopLevelNodes = true },
+                TestModelMetadataProvider.CreateDefaultProvider());
             var typeInfo = typeof(ModelBinderController).GetTypeInfo();
 
             var context = new ApplicationModelProviderContext(new[] { typeInfo });
@@ -84,7 +86,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var detailsProvider = new BindingSourceMetadataProvider(typeof(string), BindingSource.Services);
             var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider(new[] { detailsProvider });
             var typeInfo = typeof(ModelBinderController).GetTypeInfo();
-            var provider = new TestApplicationModelProvider(Options.Create(new MvcOptions()), modelMetadataProvider);
+            var provider = new TestApplicationModelProvider(new MvcOptions(), modelMetadataProvider);
 
             var context = new ApplicationModelProviderContext(new[] { typeInfo });
 
@@ -124,7 +126,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public void OnProvidersExecuting_AddsBindingSources_ForActionParameters()
         {
             // Arrange
-            var builder = new TestApplicationModelProvider();
+            var builder = new TestApplicationModelProvider(
+                new MvcOptions { AllowValidatingTopLevelNodes = true },
+                TestModelMetadataProvider.CreateDefaultProvider());
             var typeInfo = typeof(ModelBinderController).GetTypeInfo();
 
             var context = new ApplicationModelProviderContext(new[] { typeInfo });
@@ -166,9 +170,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public void OnProvidersExecuting_AddsBindingSources_ForActionParameters_WithLegacyValidationBehavior()
         {
             // Arrange
-            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
-            var options = Options.Create(new MvcOptions { AllowValidatingTopLevelNodes = false });
-            var builder = new TestApplicationModelProvider(options, modelMetadataProvider);
+            var builder = new TestApplicationModelProvider(
+                new MvcOptions(),
+                TestModelMetadataProvider.CreateDefaultProvider());
             var typeInfo = typeof(ModelBinderController).GetTypeInfo();
 
             var context = new ApplicationModelProviderContext(new[] { typeInfo });
@@ -208,6 +212,52 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
+        public void OnProvidersExecuting_InfersFormFileSourceForTypesAssignableFromIEnumerableOfFormFiles()
+        {
+            // Arrange
+            var builder = new TestApplicationModelProvider(
+                new MvcOptions { AllowValidatingTopLevelNodes = true },
+                TestModelMetadataProvider.CreateDefaultProvider());
+            var typeInfo = typeof(ModelBinderController).GetTypeInfo();
+
+            var context = new ApplicationModelProviderContext(new[] { typeInfo });
+
+            // Act
+            builder.OnProvidersExecuting(context);
+
+            // Assert
+            var controllerModel = Assert.Single(context.Result.Controllers);
+            var action = Assert.Single(controllerModel.Actions, a => a.ActionMethod.Name == nameof(ModelBinderController.FormFilesSequences));
+            Assert.Collection(
+                action.Parameters,
+                parameter =>
+                {
+                    Assert.Equal("formFileEnumerable", parameter.ParameterName);
+                    Assert.Equal(BindingSource.FormFile, parameter.BindingInfo.BindingSource);
+                },
+                parameter =>
+                {
+                    Assert.Equal("formFileCollection", parameter.ParameterName);
+                    Assert.Equal(BindingSource.FormFile, parameter.BindingInfo.BindingSource);
+                },
+                parameter =>
+                {
+                    Assert.Equal("formFileIList", parameter.ParameterName);
+                    Assert.Equal(BindingSource.FormFile, parameter.BindingInfo.BindingSource);
+                },
+                parameter =>
+                {
+                    Assert.Equal("formFileList", parameter.ParameterName);
+                    Assert.Equal(BindingSource.FormFile, parameter.BindingInfo.BindingSource);
+                },
+                parameter =>
+                {
+                    Assert.Equal("formFileArray", parameter.ParameterName);
+                    Assert.Equal(BindingSource.FormFile, parameter.BindingInfo.BindingSource);
+                });
+        }
+
+        [Fact]
         public void OnProvidersExecuting_AddsBindingSources_ForActionParameters_ReadFromModelMetadata()
         {
             // Arrange
@@ -215,7 +265,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var detailsProvider = new BindingSourceMetadataProvider(typeof(Guid), BindingSource.Special);
             var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider(new[] { detailsProvider });
 
-            var provider = new TestApplicationModelProvider(Options.Create(options), modelMetadataProvider);
+            var provider = new TestApplicationModelProvider(options, modelMetadataProvider);
             var typeInfo = typeof(ModelBinderController).GetTypeInfo();
 
             var context = new ApplicationModelProviderContext(new[] { typeInfo });
@@ -243,7 +293,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var detailsProvider = new BindingSourceMetadataProvider(typeof(Guid), BindingSource.Special);
             var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider(new[] { detailsProvider });
 
-            var provider = new TestApplicationModelProvider(Options.Create(options), modelMetadataProvider);
+            var provider = new TestApplicationModelProvider(options, modelMetadataProvider);
             var typeInfo = typeof(ModelBinderController).GetTypeInfo();
 
             var context = new ApplicationModelProviderContext(new[] { typeInfo });
@@ -819,7 +869,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public void CreateActionModel_AttributeRouteOnAction_CreatesOneActionInforPerRouteTemplate()
+        public void CreateActionModel_AttributeRouteOnAction_CreatesOneActionInfoPerRouteTemplate()
         {
             // Arrange
             var builder = new TestApplicationModelProvider();
@@ -901,7 +951,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         [Theory]
         [InlineData(typeof(SingleRouteAttributeController))]
         [InlineData(typeof(MultipleRouteAttributeController))]
-        public void CreateActionModel_RouteOnController_CreatesOneActionInforPerRouteTemplateOnAction(Type controller)
+        public void CreateActionModel_RouteOnController_CreatesOneActionInfoPerRouteTemplateOnAction(Type controller)
         {
             // Arrange
             var builder = new TestApplicationModelProvider();
@@ -1239,7 +1289,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         private class DerivedFromControllerAndExplicitIDisposableImplementationController
-            : Mvc.Controller, IDisposable
+            : ViewFeaturesController, IDisposable
         {
             void IDisposable.Dispose()
             {
@@ -1247,11 +1297,18 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
         }
 
-        private class DerivedFromControllerAndHidesBaseDisposeMethodController : Mvc.Controller
+        private class DerivedFromControllerAndHidesBaseDisposeMethodController : ViewFeaturesController
         {
             public new void Dispose()
             {
                 throw new NotImplementedException();
+            }
+        }
+
+        private class ViewFeaturesController : ControllerBase, IDisposable
+        {
+            public virtual void Dispose()
+            {
             }
         }
 
@@ -1614,6 +1671,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             public IActionResult PostAction([FromQuery] string fromQuery, IFormFileCollection formFileCollection, string unbound) => null;
 
+            public IActionResult FormFilesSequences(
+                IEnumerable<IFormFile> formFileEnumerable,
+                ICollection<IFormFile> formFileCollection,
+                IList<IFormFile> formFileIList,
+                List<IFormFile> formFileList,
+                IFormFile[] formFileArray) => null;
+
             public IActionResult PostAction1(Guid guid) => null;
 
             public IActionResult PostAction2([FromQuery] Guid fromQuery) => null;
@@ -1658,14 +1722,16 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private class TestApplicationModelProvider : DefaultApplicationModelProvider
         {
             public TestApplicationModelProvider()
-                : this(Options.Create(new MvcOptions { AllowValidatingTopLevelNodes = true }), TestModelMetadataProvider.CreateDefaultProvider())
+                : this(
+                    new MvcOptions { AllowValidatingTopLevelNodes = true },
+                    new EmptyModelMetadataProvider())
             {
             }
 
             public TestApplicationModelProvider(
-                IOptions<MvcOptions> options,
+                MvcOptions options,
                 IModelMetadataProvider modelMetadataProvider)
-                : base(options, modelMetadataProvider)
+                : base(Options.Create(options), modelMetadataProvider)
             {
             }
 

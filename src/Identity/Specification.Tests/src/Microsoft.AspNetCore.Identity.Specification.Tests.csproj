@@ -5,7 +5,6 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;identity;membership</PackageTags>
-    <IsPackable>true</IsPackable>
     <IsTestProject>false</IsTestProject>
   </PropertyGroup>
 
@@ -14,7 +13,9 @@
     <Reference Include="Microsoft.Extensions.Configuration" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
     <Reference Include="Microsoft.Extensions.Logging" />
-    <Reference Include="xunit" />
+    <Reference Include="xunit.assert" />
+    <Reference Include="xunit.extensibility.core" />
+    <Reference Include="xunit.analyzers" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>

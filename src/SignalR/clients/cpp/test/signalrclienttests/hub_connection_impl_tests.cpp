@@ -178,7 +178,7 @@ TEST(stop, connection_stopped_when_going_out_of_scope)
     }
 
     auto log_entries = memory_writer->get_log_entries();
-    ASSERT_EQ(4, log_entries.size());
+    ASSERT_EQ(4U, log_entries.size());
     ASSERT_EQ(_XPLATSTR("[state change] disconnected -> connecting\n"), remove_date_from_log_entry(log_entries[0]));
     ASSERT_EQ(_XPLATSTR("[state change] connecting -> connected\n"), remove_date_from_log_entry(log_entries[1]));
     ASSERT_EQ(_XPLATSTR("[state change] connected -> disconnecting\n"), remove_date_from_log_entry(log_entries[2]));

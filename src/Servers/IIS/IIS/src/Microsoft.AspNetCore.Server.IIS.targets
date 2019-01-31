@@ -1,0 +1,13 @@
+<Project>
+  <!--
+    Capability that enables Visual Studio support for hosting Asp.Net Core applications in the IIS process
+  -->
+  <ItemGroup>
+    <ProjectCapability Include="AspNetCoreInProcessHosting" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <AspNetCoreModuleName Condition=" '$(AspNetCoreModuleName)' == '' ">AspNetCoreModuleV2</AspNetCoreModuleName>
+  </PropertyGroup>
+
+</Project>

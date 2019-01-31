@@ -88,5 +88,15 @@ namespace FunctionalTests
         {
             return Context.GetHttpContext().Request.Headers["Content-Type"];
         }
+
+        public string GetCookie(string cookieName)
+        {
+            var cookies = Context.GetHttpContext().Request.Cookies;
+            if (cookies.TryGetValue(cookieName, out var cookieValue))
+            {
+                return cookieValue;
+            }
+            return null;
+        }
     }
 }

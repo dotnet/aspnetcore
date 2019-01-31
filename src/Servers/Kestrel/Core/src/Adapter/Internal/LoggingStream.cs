@@ -90,6 +90,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
             Log("Read", destination.Slice(0, read));
             return read;
         }
+#elif NETSTANDARD2_0
+#else
+#error TFMs need to be updated
 #endif
 
         public async override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
@@ -106,6 +109,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
             Log("ReadAsync", destination.Span.Slice(0, read));
             return read;
         }
+#elif NETSTANDARD2_0
+#else
+#error TFMs need to be updated
 #endif
 
         public override long Seek(long offset, SeekOrigin origin)
@@ -130,6 +136,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
             Log("Write", source);
             _inner.Write(source);
         }
+#elif NETSTANDARD2_0
+#else
+#error TFMs need to be updated
 #endif
 
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
@@ -144,10 +153,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
             Log("WriteAsync", source.Span);
             return _inner.WriteAsync(source, cancellationToken);
         }
+#elif NETSTANDARD2_0
+#else
+#error TFMs need to be updated
 #endif
 
         private void Log(string method, ReadOnlySpan<byte> buffer)
         {
+            if (!_logger.IsEnabled(LogLevel.Debug))
+            {
+                return;
+            }
+
             var builder = new StringBuilder($"{method}[{buffer.Length}] ");
 
             // Write the hex
@@ -157,13 +174,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
                 builder.Append(" ");
             }
             builder.AppendLine();
+            builder.Append("{0}");
+
+            var rawDataBuilder = new StringBuilder();
             // Write the bytes as if they were ASCII
             for (int i = 0; i < buffer.Length; i++)
             {
-                builder.Append((char)buffer[i]);
+                rawDataBuilder.Append((char)buffer[i]);
             }
 
-            _logger.LogDebug(builder.ToString());
+            _logger.LogDebug(builder.ToString(), rawDataBuilder.ToString());
         }
 
         // The below APM methods call the underlying Read/WriteAsync methods which will still be logged.

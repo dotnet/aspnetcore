@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Buffers;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -91,12 +90,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 HttpParser = new HttpParser<Http1ParsingHandler>()
             };
 
-            var http1Connection = new Http1Connection(new Http1ConnectionContext
+            var http1Connection = new Http1Connection(new HttpConnectionContext
             {
                 ServiceContext = serviceContext,
                 ConnectionFeatures = new FeatureCollection(),
                 MemoryPool = memoryPool,
-                Application = pair.Application,
                 Transport = pair.Transport
             });
 

@@ -6,9 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
@@ -58,11 +56,9 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task AuthorizationPoliciesDoNotCombine_WithV2_0()
         {
             // Arrange & Act
-            var factory = Factory.WithWebHostBuilder(
-                builder => builder.ConfigureServices(
-                    services => services.Configure<MvcCompatibilityOptions>(
-                        options => options.CompatibilityVersion = CompatibilityVersion.Version_2_0)));
-            var client = factory.CreateDefaultClient();
+            var client = Factory
+                .WithWebHostBuilder(builder => builder.UseStartup<SecurityWebSite.StartupWith20CompatAndGlobalDenyAnonymousFilter>())
+                .CreateDefaultClient();
             var response = await client.PostAsync("http://localhost/Administration/SignInCookie2", null);
 
             // Assert

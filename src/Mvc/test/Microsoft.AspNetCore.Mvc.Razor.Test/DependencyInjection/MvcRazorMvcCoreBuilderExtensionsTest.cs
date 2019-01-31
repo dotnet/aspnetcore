@@ -66,7 +66,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test.DependencyInjection
             builder.AddRazorViewEngine();
 
             // Assert
+#pragma warning disable CS0618 // Type or member is obsolete
             Assert.Single(builder.PartManager.FeatureProviders.OfType<MetadataReferenceFeatureProvider>());
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         [Fact]
@@ -83,7 +85,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test.DependencyInjection
             builder.AddRazorViewEngine();
 
             // Assert
+#pragma warning disable CS0618 // Type or member is obsolete
             Assert.Single(builder.PartManager.FeatureProviders.OfType<MetadataReferenceFeatureProvider>());
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         [Fact]
@@ -92,7 +96,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test.DependencyInjection
             // Arrange
             var services = new ServiceCollection();
             var builder = services.AddMvcCore();
+#pragma warning disable CS0618 // Type or member is obsolete
             var metadataReferenceFeatureProvider = new MetadataReferenceFeatureProvider();
+#pragma warning restore CS0618 // Type or member is obsolete
             builder.PartManager.FeatureProviders.Add(metadataReferenceFeatureProvider);
 
             // Act
@@ -100,7 +106,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test.DependencyInjection
 
             // Assert
             var actual = Assert.Single(
-                builder.PartManager.FeatureProviders.OfType<MetadataReferenceFeatureProvider>());
+#pragma warning disable CS0618 // Type or member is obsolete
+                collection: builder.PartManager.FeatureProviders.OfType<MetadataReferenceFeatureProvider>());
+#pragma warning restore CS0618 // Type or member is obsolete
             Assert.Same(metadataReferenceFeatureProvider, actual);
         }
 

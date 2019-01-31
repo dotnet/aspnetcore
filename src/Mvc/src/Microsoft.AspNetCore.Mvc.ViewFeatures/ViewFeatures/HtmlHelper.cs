@@ -43,7 +43,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             IHtmlGenerator htmlGenerator,
             ICompositeViewEngine viewEngine,
             IModelMetadataProvider metadataProvider,
+#pragma warning disable PUB0001 // Pubternal type in public API
             IViewBufferScope bufferScope,
+#pragma warning restore PUB0001
             HtmlEncoder htmlEncoder,
             UrlEncoder urlEncoder)
         {

@@ -26,6 +26,7 @@
   </Target>
 
   <Target Name="_BuildRepositories" DependsOnTargets="GetRepoBatches" Condition=" @(RepositoryBuildOrder->Count()) != 0 ">
+
     <MSBuild
       Projects="@(BatchedRepository)"
       BuildInParallel="true"
@@ -34,6 +35,7 @@
       Properties="BuildGroup=%(BatchedRepository.BuildGroup);BuildNumber=$(BuildNumber);IsFinalBuild=$(IsFinalBuild);Configuration=$(Configuration)" />
 
     <PropertyGroup>
+      <_ReposWereBuilt>true</_ReposWereBuilt>
       <_NoBuildRepos>true</_NoBuildRepos>
     </PropertyGroup>
   </Target>
@@ -73,13 +75,15 @@
       <SkipTestsDueToMissingSharedFx Condition="'$(InstallSharedRuntimeFromPreviousBuild)' != 'true' And '$(TestsRequiredTheSharedRuntime)' == 'true' ">true</SkipTestsDueToMissingSharedFx>
 
       <RepositoryBuildArguments Condition="'$(CI)'== 'true'">$(RepositoryBuildArguments) -ci</RepositoryBuildArguments>
-      <RepositoryBuildArguments Condition="'$(CI)'== 'true' AND '$(OS)' != 'Windows_NT'">$(RepositoryBuildArguments) --dotnet-home '$(DOTNET_HOME)'</RepositoryBuildArguments>
-      <RepositoryBuildArguments Condition="'$(CI)'== 'true' AND '$(OS)' == 'Windows_NT'">$(RepositoryBuildArguments) -DotNetHome '$(DOTNET_HOME)'</RepositoryBuildArguments>
+      <RepositoryBuildArguments Condition="'$(CI)'== 'true'">$(RepositoryBuildArguments) -DotNetHome '$(DOTNET_HOME)'</RepositoryBuildArguments>
       <!-- Should reduce allowable package feeds to only nuget.org. -->
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:AspNetUniverseBuildOffline=true</RepositoryBuildArguments>
+      <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:IsUniverseBuild=true</RepositoryBuildArguments>
       <!-- If there are duplicate properties, the properties which are defined later in the order would override the earlier ones -->
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath)</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath)</RepositoryBuildArguments>
+      <!-- Unset 'SignType' because we collect all outputs from repo builds and sign them at the end. -->
+      <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:SignType=</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:BuildNumber=$(BuildNumber)</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:Configuration=$(Configuration)</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:IsFinalBuild=$(IsFinalBuild)</RepositoryBuildArguments>
@@ -92,6 +96,8 @@
       <SourceLockFile>$(RepositoryRoot)korebuild-lock.txt</SourceLockFile>
       <RepoLockFile>$(BuildRepositoryRoot)korebuild-lock.txt</RepoLockFile>
       <BackupRepoLockFile>$(IntermediateDir)$(RepositoryToBuild)-korebuild-lock.txt</BackupRepoLockFile>
+      <RepoGlobalJsonFile>$(BuildRepositoryRoot)global.json</RepoGlobalJsonFile>
+      <BackupRepoGlobalJsonFile>$(IntermediateDir)$(RepositoryToBuild)-global.json</BackupRepoGlobalJsonFile>
     </PropertyGroup>
   </Target>
 
@@ -99,6 +105,7 @@
     <!-- Copy Korebuild lock file to individual repos to align version if the repo doesn't already have one -->
     <Message Text="Copying KoreBuild lockfile from repo to submodule $(BuildRepositoryRoot)"/>
     <Move SourceFiles="$(RepoLockFile)" DestinationFiles="$(BackupRepoLockFile)" Condition="Exists($(RepoLockFile))" />
+    <Move SourceFiles="$(RepoGlobalJsonFile)" DestinationFiles="$(BackupRepoGlobalJsonFile)" Condition="Exists($(RepoGlobalJsonFile))" />
     <Copy SourceFiles="$(SourceLockFile)" DestinationFiles="$(RepoLockFile)" />
   </Target>
 
@@ -106,15 +113,16 @@
     <!-- Restore original Korebuild lock file -->
     <Delete Files="$(RepoLockFile)" ContinueOnError="true" />
     <Move SourceFiles="$(BackupRepoLockFile)" DestinationFiles="$(RepoLockFile)" Condition="Exists($(BackupRepoLockFile))"  />
+    <Move SourceFiles="$(BackupRepoGlobalJsonFile)" DestinationFiles="$(RepoGlobalJsonFile)" Condition="Exists($(BackupRepoGlobalJsonFile))"  />
   </Target>
 
   <Target Name="_BuildRepository" DependsOnTargets="GetRepoBuildProps;_UpdateRepoLockFile">
     <PropertyGroup>
       <BuildArguments>/t:CleanArtifacts /t:Build /p:SkipTests=true $(RepositoryBuildArguments)</BuildArguments>
       <BuildArguments Condition="'$(ProduceRepoBinLog)' == 'true'">$(BuildArguments) /bl:$(LogOutputDir)$(RepositoryToBuild).build.binlog</BuildArguments>
-      <RepositoryArtifactsRoot>$(BuildRepositoryRoot)artifacts</RepositoryArtifactsRoot>
-      <RepositoryArtifactsBuildDirectory>$(RepositoryArtifactsRoot)\build\</RepositoryArtifactsBuildDirectory>
-      <RepositoryArtifactsMSBuildDirectory>$(RepositoryArtifactsRoot)\msbuild\</RepositoryArtifactsMSBuildDirectory>
+      <RepositoryArtifactsRoot>$(BuildRepositoryRoot)artifacts\</RepositoryArtifactsRoot>
+      <RepositoryArtifactsBuildDirectory>$(RepositoryArtifactsRoot)build\</RepositoryArtifactsBuildDirectory>
+      <RepositoryArtifactsMSBuildDirectory>$(RepositoryArtifactsRoot)msbuild\</RepositoryArtifactsMSBuildDirectory>
     </PropertyGroup>
 
     <Message Text="============ Building $(RepositoryToBuild) ============" Importance="High" />

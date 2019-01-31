@@ -16,16 +16,11 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
 {
     public partial class HttpConnectionTests : VerifiableLoggedTest
     {
-        public HttpConnectionTests(ITestOutputHelper output) : base(output)
-        {
-        }
-
         [Fact]
         public void CannotCreateConnectionWithNullUrl()
         {

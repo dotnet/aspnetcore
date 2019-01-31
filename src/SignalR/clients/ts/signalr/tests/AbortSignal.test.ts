@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 import { AbortController } from "../src/AbortController";
+import { registerUnhandledRejectionHandler } from "./Utils";
+
+registerUnhandledRejectionHandler();
 
 describe("AbortSignal", () => {
     describe("aborted", () => {

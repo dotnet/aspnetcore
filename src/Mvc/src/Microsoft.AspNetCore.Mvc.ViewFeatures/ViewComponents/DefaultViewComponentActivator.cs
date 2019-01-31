@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
     /// <remarks>
     /// The <see cref="DefaultViewComponentActivator"/> can provide the current instance of
     /// <see cref="ViewComponentContext"/> to a public property of a view component marked
-    /// with <see cref="ViewComponentContextAttribute"/>. 
+    /// with <see cref="ViewComponentContextAttribute"/>.
     /// </remarks>
     public class DefaultViewComponentActivator : IViewComponentActivator
     {
@@ -25,7 +25,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
         /// <param name="typeActivatorCache">
         /// The <see cref="ITypeActivatorCache"/> used to create new view component instances.
         /// </param>
+#pragma warning disable PUB0001 // Pubternal type in public API
         public DefaultViewComponentActivator(ITypeActivatorCache typeActivatorCache)
+#pragma warning restore PUB0001
         {
             if (typeActivatorCache == null)
             {
@@ -44,7 +46,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             }
 
             var componentType = context.ViewComponentDescriptor.TypeInfo;
-            
+
             if (componentType == null)
             {
                 throw new ArgumentException(Resources.FormatPropertyOfTypeCannotBeNull(

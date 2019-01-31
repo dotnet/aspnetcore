@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Routing.Logging
                 LogLevel.Debug,
                 1,
                 "Route value '{RouteValue}' with key '{RouteKey}' did not match " +
-                            "the constraint '{RouteConstraint}'.");
+                            "the constraint '{RouteConstraint}'");
         }
 
         public static void RouteValueDoesNotMatchConstraint(

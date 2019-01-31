@@ -15,7 +15,7 @@
 }
 
 <div class="row">
-    @Html.Partial(partialViewName: "LackModel.cshtml")
+    @(await Html.PartialAsync(partialViewName: "LackModel.cshtml"))
 </div>
 <div class="row">
     @(await Component.InvokeAsync<CheckViewData___LackModel>())

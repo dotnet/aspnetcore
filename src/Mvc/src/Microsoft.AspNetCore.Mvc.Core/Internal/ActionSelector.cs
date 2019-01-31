@@ -4,15 +4,16 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
-using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
+using Resources = Microsoft.AspNetCore.Mvc.Core.Resources;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
 {
@@ -81,11 +82,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var values = new string[keys.Length];
             for (var i = 0; i < keys.Length; i++)
             {
-                context.RouteData.Values.TryGetValue(keys[i], out object value);
-
+                context.RouteData.Values.TryGetValue(keys[i], out var value);
                 if (value != null)
                 {
-                    values[i] = value as string ?? Convert.ToString(value);
+                    values[i] = value as string ?? Convert.ToString(value, CultureInfo.InvariantCulture);
                 }
             }
 
@@ -220,9 +220,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var actionsWithConstraint = new List<ActionSelectorCandidate>();
             var actionsWithoutConstraint = new List<ActionSelectorCandidate>();
 
-            var constraintContext = new ActionConstraintContext();
-            constraintContext.Candidates = candidates;
-            constraintContext.RouteContext = context;
+            var constraintContext = new ActionConstraintContext
+            {
+                Candidates = candidates,
+                RouteContext = context
+            };
 
             // Perf: Avoid allocations
             for (var i = 0; i < candidates.Count; i++)
@@ -294,7 +296,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         // canonical entries. When you don't hit a case-sensitive match it will try the case-insensitive dictionary
         // so you still get correct behaviors.
         //
-        // The difference here is because while MVC is case-insensitive, doing a case-sensitive comparison is much 
+        // The difference here is because while MVC is case-insensitive, doing a case-sensitive comparison is much
         // faster. We also expect that most of the URLs we process are canonically-cased because they were generated
         // by Url.Action or another routing api.
         //
@@ -316,7 +318,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 OrdinalEntries = new Dictionary<string[], List<ActionDescriptor>>(StringArrayComparer.Ordinal);
                 OrdinalIgnoreCaseEntries = new Dictionary<string[], List<ActionDescriptor>>(StringArrayComparer.OrdinalIgnoreCase);
 
-                // We need to first identify of the keys that action selection will look at (in route data). 
+                // We need to first identify of the keys that action selection will look at (in route data).
                 // We want to only consider conventionally routed actions here.
                 var routeKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 for (var i = 0; i < actions.Items.Count; i++)
@@ -365,7 +367,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
                     // We also want to add the same (as in reference equality) list of actions to the ordinal entries.
                     // We'll keep updating `entries` to include all of the actions in the same equivalence class -
-                    // meaning, all conventionally routed actions for which the route values are equalignoring case.
+                    // meaning, all conventionally routed actions for which the route values are equal ignoring case.
                     //
                     // `entries` will appear in `OrdinalIgnoreCaseEntries` exactly once and in `OrdinalEntries` once
                     // for each variation of casing that we've seen.
