@@ -29,7 +29,6 @@ namespace Microsoft.AspNetCore.Http.Connections
             TransportMaxBufferSize = DefaultPipeBufferSize;
             ApplicationMaxBufferSize = DefaultPipeBufferSize;
             DisconnectTimeout = DefaultDisconnectTimeout;
-
         }
 
         /// <summary>
