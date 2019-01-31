@@ -13,14 +13,17 @@
     <IncludeSymbols>false</IncludeSymbols>
     <IncludeSource>false</IncludeSource>
     <ContentTargetFolders>content</ContentTargetFolders>
-
+    <RestoreSources>
+      $(RestoreSources);
+      $(ArtifactsNonShippingPackagesDir)
+    </RestoreSources>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.2.1" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension21PackageVersion)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.2.2" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension22PackageVersion)" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.0.x86" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension30PackageVersion)" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.0.x64" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension30PackageVersion)" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.0.x86" Version="$(PackageVersion)" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.0.x64" Version="$(PackageVersion)" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
