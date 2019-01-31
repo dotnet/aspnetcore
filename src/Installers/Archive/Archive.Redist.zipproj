@@ -9,18 +9,18 @@
   <PropertyGroup>
     <!-- Use a short folder name to avoid MAX_PATH issues on Windows -->
     <BaseIntermediateOutputPath>$(RepositoryRoot)obj\ar\</BaseIntermediateOutputPath>
-    <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(SharedFxRid)\</IntermediateOutputPath>
-    <OutputFileName>$(RuntimeInstallerBaseName)-$(PackageVersion)-$(SharedFxRid)$(ArchiveExtension)</OutputFileName>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(TargetRuntimeIdentifier)\</IntermediateOutputPath>
+    <OutputFileName>$(RuntimeInstallerBaseName)-$(PackageVersion)-$(TargetRuntimeIdentifier)$(ArchiveExtension)</OutputFileName>
     <OutputPath>$(InstallersOutputPath)</OutputPath>
     <TargetPath>$(InstallersOutputPath)$(OutputFileName)</TargetPath>
-    <DotNetRuntimeArchiveFileName>dotnet-runtime-$(MicrosoftNETCoreAppPackageVersion)-$(SharedFxRid)$(ArchiveExtension)</DotNetRuntimeArchiveFileName>
+    <DotNetRuntimeArchiveFileName>dotnet-runtime-$(MicrosoftNETCoreAppPackageVersion)-$(TargetRuntimeIdentifier)$(ArchiveExtension)</DotNetRuntimeArchiveFileName>
     <DotNetRuntimeDownloadUrl>$(DotNetAssetRootUrl)Runtime/$(MicrosoftNETCoreAppPackageVersion)/$(DotNetRuntimeArchiveFileName)</DotNetRuntimeDownloadUrl>
     <DotNetRuntimeArchive>$(BaseIntermediateOutputPath)$(DotNetRuntimeArchiveFileName)</DotNetRuntimeArchive>
     <!-- This file is used by the dotnet/core-sdk to determine if our shared framework aligns with the version they pull. -->
     <BaseRuntimeVersionFileName>aspnetcore_base_runtime.version</BaseRuntimeVersionFileName>
     <BaseRuntimeVersionFileOutputPath>$(OutputPath)$(BaseRuntimeVersionFileName)</BaseRuntimeVersionFileOutputPath>
     <!-- This file can be used in READMEs or other webpages -->
-    <SvgBadgeFileName>aspnetcore-runtime-$(SharedFxRid)-version-badge.svg</SvgBadgeFileName>
+    <SvgBadgeFileName>aspnetcore-runtime-$(TargetRuntimeIdentifier)-version-badge.svg</SvgBadgeFileName>
     <SvgBadgeOutputPath>$(OutputPath)$(SvgBadgeFileName)</SvgBadgeOutputPath>
   </PropertyGroup>
 

@@ -66,14 +66,14 @@
 
 
   <Target Name="InjectRequestHandler"
-          Condition=" '$(InProcessTestSite)' == 'true' AND '$(OS)' == 'Windows_NT' AND '$(TargetFrameworkIdentifier)' != '.NETFramework'"
+          Condition=" '$(InProcessTestSite)' == 'true' AND '$(BuildIisNativeProjects)' == 'true' AND '$(TargetFrameworkIdentifier)' != '.NETFramework'"
           AfterTargets="GenerateBuildDependencyFile"
           DependsOnTargets="PrepareInjectionApp">
     <Exec Command="$(InjectDepsApp) &quot;$(ProjectDepsFilePath)&quot; $(RuntimeIdentifier) " />
   </Target>
 
   <Target Name="InjectRequestHandlerOnPublish"
-          Condition=" '$(InProcessTestSite)' == 'true' AND '$(OS)' == 'Windows_NT' AND '$(TargetFrameworkIdentifier)' != '.NETFramework'"
+          Condition=" '$(InProcessTestSite)' == 'true' AND '$(BuildIisNativeProjects)' == 'true' AND '$(TargetFrameworkIdentifier)' != '.NETFramework'"
           AfterTargets="GeneratePublishDependencyFile"
           DependsOnTargets="PrepareInjectionApp">
     <Exec Command="$(InjectDepsApp) &quot;$(PublishDepsFilePath)&quot; $(RuntimeIdentifier) " />

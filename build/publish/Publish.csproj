@@ -8,6 +8,7 @@
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
     <ManifestsPath>$(ArtifactsDir)manifests\</ManifestsPath>
     <MaestroApiEndpoint Condition="'$(MaestroApiEndpoint)' == ''">https://maestro-prod.westus2.cloudapp.azure.com</MaestroApiEndpoint>
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
   </PropertyGroup>
 
   <ItemGroup>
@@ -156,9 +157,8 @@
 
     <GenerateBuildManifest
       Artifacts="@(PackageToPublish);@(FilesToPublish)"
-      OutputPath="$(ManifestsPath)aspnetcore-$(SharedFxRid)-$(PackageVersion).xml"
+      OutputPath="$(ManifestsPath)aspnetcore-$(TargetRuntimeIdentifier)-$(PackageVersion).xml"
       BuildId="$(PackageVersion)"
-      BuildData="Location=https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json"
       RepoUri="$(RepositoryUrl)"
       RepoBranch="$(RepositoryBranch)"
       RepoCommit="$(RepositoryCommit)" />

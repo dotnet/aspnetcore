@@ -13,10 +13,13 @@ build projects, run tests, and generate code.
 Sets up CI specific settings and variables.
 
 .PARAMETER Restore
-Run restore on projects.
+Run restore.
 
-.PARAMETER Build
-Compile projects.
+.PARAMETER NoRestore
+Suppress running restore on projects.
+
+.PARAMETER NoBuild
+Suppress re-compile projects. (Implies -NoRestore)
 
 .PARAMETER Pack
 Produce packages.
@@ -27,23 +30,34 @@ Run tests.
 .PARAMETER Sign
 Run code signing.
 
+.PARAMETER Architecture
+The CPU architecture to build for (x64, x86, arm). Default=x64
+
 .PARAMETER Projects
 A list of projects to build. Globbing patterns are supported, such as "$(pwd)/**/*.csproj"
 
 .PARAMETER All
 Build all project types.
 
-.PARAMETER Managed
+.PARAMETER BuildManaged
 Build managed projects (C#, F#, VB).
+You can also use -NoBuildManaged to suppress this project type.
 
-.PARAMETER Native
+.PARAMETER BuildNative
 Build native projects (C++).
+You can also use -NoBuildNative to suppress this project type.
 
-.PARAMETER NodeJS
+.PARAMETER BuildNodeJS
 Build NodeJS projects (TypeScript, JS).
+You can also use -NoBuildNodeJS to suppress this project type.
 
-.PARAMETER Installers
+.PARAMETER BuildJava
+Build Java projects.
+You can also use -NoBuildJava to suppress this project type.
+
+.PARAMETER BuildInstallers
 Build Windows Installers. Required .NET 3.5 to be installed (WiX toolset requirement).
+You can also use -NoBuildInstallers to suppress this project type.
 
 .PARAMETER MSBuildArguments
 Additional MSBuild arguments to be passed through.
@@ -51,7 +65,7 @@ Additional MSBuild arguments to be passed through.
 .EXAMPLE
 Building both native and managed projects.
 
-    build.ps1 -managed -native
+    build.ps1 -BuildManaged -BuildNative
 
 .EXAMPLE
 Building a subfolder of code.
@@ -71,29 +85,35 @@ param(
     [switch]$CI,
 
     # Build lifecycle options
-    [switch]$Restore = $True, # Run tests
-    [switch]$Build = $True, # Compile
+    [switch]$Restore,
+    [switch]$NoRestore, # Suppress restore
+    [switch]$NoBuild, # Suppress compiling
     [switch]$Pack, # Produce packages
     [switch]$Test, # Run tests
     [switch]$Sign, # Code sign
 
-    # Project selection
-    [Parameter(ParameterSetName = 'All')]
-    [switch]$All,  # Build everything
+    [ValidateSet('x64', 'x86', 'arm')]
+    $Architecture = 'x64',
 
     # A list of projects which should be built.
-    [Parameter(ParameterSetName = 'Projects')]
     [string]$Projects,
 
+    # Project selection
+    [switch]$All,  # Build everything
+
     # Build a specified set of project groups
-    [Parameter(ParameterSetName = 'Groups')]
-    [switch]$Managed,
-    [Parameter(ParameterSetName = 'Groups')]
-    [switch]$Native,
-    [Parameter(ParameterSetName = 'Groups')]
-    [switch]$NodeJS,
-    [Parameter(ParameterSetName = 'Groups')]
-    [switch]$Installers,
+    [switch]$BuildManaged,
+    [switch]$BuildNative,
+    [switch]$BuildNodeJS,
+    [switch]$BuildJava,
+    [switch]$BuildInstallers,
+
+    # Inverse of the previous switches because specifying '-switch:$false' is not intuitive for most command line users
+    [switch]$NoBuildManaged,
+    [switch]$NoBuildNative,
+    [switch]$NoBuildNodeJS,
+    [switch]$NoBuildJava,
+    [switch]$NoBuildInstallers,
 
     # By default, Windows builds will use MSBuild.exe. Passing this will force the build to run on
     # dotnet.exe instead, which may cause issues if you invoke build on a project unsupported by
@@ -237,30 +257,47 @@ elseif ($Projects) {
     }
     $MSBuildArguments += "/p:Projects=$Projects"
 }
-else {
-    # When adding new sub-group build flags, add them to this check.
-    if((-not $Native) -and (-not $Managed) -and (-not $NodeJS) -and (-not $Installers)) {
-        Write-Warning "No default group of projects was specified, so building the 'managed' and 'native' subsets of projects. Run ``build.cmd -help`` for more details."
+# When adding new sub-group build flags, add them to this check.
+elseif((-not $BuildNative) -and (-not $BuildManaged) -and (-not $BuildNodeJS) -and (-not $BuildInstallers) -and (-not $BuildJava)) {
+    Write-Warning "No default group of projects was specified, so building the 'managed' and 'native' subsets of projects. Run ``build.cmd -help`` for more details."
 
-        # This goal of this is to pick a sensible default for `build.cmd` with zero arguments.
-        # Now that we support subfolder invokations of build.cmd, we will be pushing to have build.cmd build everything (-all) by default
+    # This goal of this is to pick a sensible default for `build.cmd` with zero arguments.
+    # Now that we support subfolder invokations of build.cmd, we will be pushing to have build.cmd build everything (-all) by default
 
-        $Managed = $true
-        $Native = $true
-    }
-
-    $MSBuildArguments += "/p:BuildManaged=$Managed"
-    $MSBuildArguments += "/p:BuildNative=$Native"
-    $MSBuildArguments += "/p:BuildNodeJS=$NodeJS"
-    $MSBuildArguments += "/p:BuildWindowsInstallers=$Installers"
+    $BuildManaged = $true
+    $BuildNative = $true
 }
 
+if ($BuildInstallers) { $MSBuildArguments += "/p:BuildInstallers=true" }
+if ($BuildManaged) { $MSBuildArguments += "/p:BuildManaged=true" }
+if ($BuildNative) { $MSBuildArguments += "/p:BuildNative=true" }
+if ($BuildNodeJS) { $MSBuildArguments += "/p:BuildNodeJS=true" }
+if ($BuildJava) { $MSBuildArguments += "/p:BuildJava=true" }
+
+if ($NoBuildInstallers) { $MSBuildArguments += "/p:BuildInstallers=false" }
+if ($NoBuildManaged) { $MSBuildArguments += "/p:BuildManaged=false" }
+if ($NoBuildNative) { $MSBuildArguments += "/p:BuildNative=false" }
+if ($NoBuildNodeJS) { $MSBuildArguments += "/p:BuildNodeJS=false" }
+if ($NoBuildJava) { $MSBuildArguments += "/p:BuildJava=false" }
+
+$RunBuild = if ($NoBuild) { $false } else { $true }
+
+# Run restore by default unless -NoRestore is set.
+# -NoBuild implies -NoRestore, unless -Restore is explicitly set (as in restore.cmd)
+$RunRestore = if ($NoRestore) { $false }
+    elseif ($Restore) { $true }
+    elseif ($NoBuild) { $false }
+    else { $true }
+
 # Target selection
-$MSBuildArguments += "/p:_RunRestore=$Restore"
-$MSBuildArguments += "/p:_RunBuild=$Build"
+$MSBuildArguments += "/p:_RunRestore=$RunRestore"
+$MSBuildArguments += "/p:_RunBuild=$RunBuild"
 $MSBuildArguments += "/p:_RunPack=$Pack"
 $MSBuildArguments += "/p:_RunTests=$Test"
 $MSBuildArguments += "/p:_RunSign=$Sign"
+
+$MSBuildArguments += "/p:TargetArchitecture=$Architecture"
+$MSBuildArguments += "/p:TargetOsName=win"
 
 Import-Module -Force -Scope Local (Join-Path $korebuildPath 'KoreBuild.psd1')
 

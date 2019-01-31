@@ -1,12 +1,22 @@
 <Project>
 
   <ItemGroup>
-    <!-- Use the PublicKeyToken of .NET assemblies to determine 'Microsoft' assemblies. -->
-    <AssemblyToSign Include="AspNetCore" PublicKeyToken="adb9793829ddae60" CertificateName="Microsoft400" />
-    <AssemblyToSign Include="MsSharedLib72" PublicKeyToken="31bf3856ad364e35" CertificateName="Microsoft400" />
-    <AssemblyToSign Include="MsftStrongName" PublicKeyToken="b03f5f7f11d50a3a" CertificateName="Microsoft400" />
-    <AssemblyToSign Include="MsftStrongName2" PublicKeyToken="b77a5c561934e089" CertificateName="Microsoft400" />
-    <AssemblyToSign Include="MsftOpenStrongName" PublicKeyToken="cc7b13ffcd2ddd51" CertificateName="Microsoft400" />
+    <!--
+      Use the PublicKeyToken of .NET assemblies to determine with authenticode cert to use.
+      'None' is required to ensure code signing does not attempt to re-sign them or submit
+      to ESPR for strong-naming signing. We don't delay sign, so we only need to authenticode sign.
+      See https://github.com/dotnet/arcade/issues/1911 for context.
+    -->
+    <!-- The AspNetCore strong name. -->
+    <AssemblyToSign Include="None" PublicKeyToken="adb9793829ddae60" CertificateName="Microsoft400" />
+    <!-- The MsSharedLib72 strong name. -->
+    <AssemblyToSign Include="None" PublicKeyToken="31bf3856ad364e35" CertificateName="Microsoft400" />
+    <!-- The MsftStrongName strong name. -->
+    <AssemblyToSign Include="None" PublicKeyToken="b03f5f7f11d50a3a" CertificateName="Microsoft400" />
+    <!-- The MsftStrongName2 strong name. -->
+    <AssemblyToSign Include="None" PublicKeyToken="b77a5c561934e089" CertificateName="Microsoft400" />
+    <!-- The MsftOpenStrongName strong name. -->
+    <AssemblyToSign Include="None" PublicKeyToken="cc7b13ffcd2ddd51" CertificateName="Microsoft400" />
 
     <!-- Native .dll's. These don't have a public key token, but are from Microsoft and should be signed. -->
     <FileNamesToSign Include="aspnetcore.dll" CertificateName="Microsoft400" />

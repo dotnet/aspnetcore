@@ -1,13 +1,16 @@
 <Project>
-  <Import Project="..\eng\targets\RuntimeIdentifiers.props" />
   <Import Project="SharedFrameworkOnly.props" />
+
+  <PropertyGroup>
+    <TargetRuntimeIdentifier Condition="'$(TargetRuntimeIdentifier)' == ''">$(TargetOsName)-$(TargetArchitecture)</TargetRuntimeIdentifier>
+  </PropertyGroup>
 
   <PropertyGroup>
     <!-- This repo does not have solutions to build -->
     <DisableDefaultTargets>true</DisableDefaultTargets>
     <DisableDefaultItems>true</DisableDefaultItems>
     <BuildSolutions>false</BuildSolutions>
-    <BuildSiteExtensions Condition="'$(SharedFxRid)' == 'win-x64' OR '$(SharedFxRid)' == 'win-x86'">true</BuildSiteExtensions>
+    <BuildSiteExtensions Condition="'$(TargetRuntimeIdentifier)' == 'win-x64' OR '$(TargetRuntimeIdentifier)' == 'win-x86'">true</BuildSiteExtensions>
 
     <OverridePackageOutputPath>false</OverridePackageOutputPath>
 
@@ -69,10 +72,10 @@
       </ItemGroup>
     </When>
     <Otherwise>
-      <ItemGroup Condition=" '$(BuildWindowsInstallers)' == 'true' ">
+      <ItemGroup Condition=" '$(BuildInstallers)' == 'true' AND '$(TargetOsName)' == 'win' ">
         <!-- Build the ANCM custom action -->
         <ProjectToBuild Include="$(RepositoryRoot)src\Installers\Windows\AspNetCoreModule-Setup\CustomAction\aspnetcoreCA.vcxproj" AdditionalProperties="Platform=x64" />
-        <ProjectToBuild Include="$(RepositoryRoot)src\Installers\Windows\AspNetCoreModule-Setup\CustomAction\aspnetcoreCA.vcxproj" AdditionalProperties="Platform=x86" />
+        <ProjectToBuild Include="$(RepositoryRoot)src\Installers\Windows\AspNetCoreModule-Setup\CustomAction\aspnetcoreCA.vcxproj" AdditionalProperties="Platform=Win32" />
 
         <!-- Build the ANCM msis -->
         <ProjectToBuild Include="$(RepositoryRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMIISExpressV2\AncmIISExpressV2.wixproj" AdditionalProperties="Platform=x64" />
@@ -93,36 +96,40 @@
       </ItemGroup>
 
       <ItemGroup>
-        <ProjectToBuild Condition=" '$(OS)' == 'Windows_NT' AND '$(BuildNative)' == 'true' " Include="$(RepositoryRoot)src\Servers\**\*.vcxproj">
-          <!-- Required to prevent triggering double-builds. See src\Servers\IIS\ResolveIisReferences.targets for details. -->
-          <AdditionalProperties Condition="'$(SharedFxRid)' == 'win-x64'">Platform=x64</AdditionalProperties>
-          <AdditionalProperties Condition="'$(SharedFxRid)' == 'win-x86'">Platform=x86</AdditionalProperties>
-        </ProjectToBuild>
-
         <ProjectToBuild Include="$(RepositoryRoot)src\Servers\**\*.pkgproj" Condition=" '$(_RunPack)' == 'true' OR '$(BuildAllProjects)' == 'true' "/>
 
-        <ProjectToBuild Condition="'$(BuildNodeJS)' == 'true'"
-                        Include="
+        <NativeProjects Condition=" '$(TargetOsName)' == 'win' AND ('$(TargetArchitecture)' == 'x86' OR '$(TargetArchitecture)' == 'x64') "
+                        Include="$(RepositoryRoot)src\Servers\**\*.vcxproj">
+          <!-- Required to prevent triggering double-builds. See src\Servers\IIS\ResolveIisReferences.targets for details. -->
+          <AdditionalProperties Condition="'$(TargetArchitecture)' == 'x64'">Platform=x64</AdditionalProperties>
+          <AdditionalProperties Condition="'$(TargetArchitecture)' == 'x86'">Platform=Win32</AdditionalProperties>
+        </NativeProjects>
+
+        <ProjectToBuild Condition=" '$(BuildNative)' == 'true'" Include="@(NativeProjects)" Exclude="@(ProjectToExclude)" />
+        <ProjectToExclude Condition=" '$(BuildNative)' != 'true'" Include="@(NativeProjects)" />
+
+        <NodeJsProjects Include="
                           $(RepositoryRoot)src\SignalR\**\*.npmproj;
                           $(RepositoryRoot)src\Middleware\**\*.npmproj;
+                          $(RepositoryRoot)src\Components\Browser.JS\**\*.npmproj;
                           "
                         RestoreInParallel="false"
-                        Exclude="
-                          @(ProjectToBuild);
-                          @(ProjectToExclude)" />
+                        Exclude="@(ProjectToExclude)" />
 
-        <ProjectToBuild Condition="'$(BuildJava)' == 'true'"
-                        Include="$(RepositoryRoot)src\SignalR\**\*.javaproj"
-                        Exclude="
-                          @(ProjectToBuild);
-                          @(ProjectToExclude);" />
+        <ProjectToBuild Condition=" '$(BuildNodeJS)' == 'true'" Include="@(NodeJsProjects)" Exclude="@(ProjectToExclude)" />
+        <ProjectToExclude Condition=" '$(BuildNodeJS)' != 'true'" Include="@(NodeJsProjects)" />
+
+        <JavaProjects Include="$(RepositoryRoot)src\SignalR\**\*.javaproj"
+                      Exclude="@(ProjectToExclude)" />
+
+        <ProjectToBuild Condition=" '$(BuildJava)' == 'true'" Include="@(JavaProjects)" Exclude="@(ProjectToExclude)" />
+        <ProjectToExclude Condition=" '$(BuildJava)' != 'true'" Include="@(JavaProjects)" />
 
         <!--
           Use caution to avoid deep recursion. If the globbing pattern picks up something which exceeds MAX_PATH,
           the entire pattern will silently fail to evaluate correctly.
         -->
-        <ProjectToBuild Condition=" '$(BuildManaged)' == 'true' "
-                        Include="
+        <DotNetProjects Include="
                           $(RepositoryRoot)src\DefaultBuilder\**\*.*proj;
                           $(RepositoryRoot)src\Features\JsonPatch\**\*.*proj;
                           $(RepositoryRoot)src\DataProtection\**\*.*proj;
@@ -152,6 +159,9 @@
                           $(RepositoryRoot)**\node_modules\**\*;
                           $(RepositoryRoot)**\bin\**\*;
                           $(RepositoryRoot)**\obj\**\*;" />
+
+        <ProjectToBuild Condition=" '$(BuildManaged)' == 'true'" Include="@(DotNetProjects)" Exclude="@(ProjectToExclude)" />
+        <ProjectToExclude Condition=" '$(BuildManaged)' != 'true'" Include="@(DotNetProjects)" />
       </ItemGroup>
     </Otherwise>
   </Choose>

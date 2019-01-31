@@ -14,7 +14,7 @@
     <HarvestDirectoryAutoGenerateGuids>true</HarvestDirectoryAutoGenerateGuids>
     <HarvestDirectorySuppressSpecificWarnings>5150;5151</HarvestDirectorySuppressSpecificWarnings>
     <HarvestDirectorySuppressRegistry>true</HarvestDirectorySuppressRegistry>
-    <HarvestSource>$(SharedFrameworkHarvestRootPath)\$(Platform)\</HarvestSource>
+    <HarvestSource>$(IntermediateOutputPath)fx\</HarvestSource>
     <DefineConstants>$(DefineConstants);AspNetCoreSharedFrameworkSource=$(HarvestSource)</DefineConstants>
     <NamespaceGuid>$(SharedFrameworkNamespaceGuid)</NamespaceGuid>
     <SchemaVersion>2.0</SchemaVersion>
@@ -53,6 +53,21 @@
       <PreprocessorVariable>var.AspNetCoreSharedFrameworkSource</PreprocessorVariable>
     </HarvestDirectory>
   </ItemGroup>
+
+  <!-- TODO: harvest shared frameworks from a project reference -->
+  <Target Name="ExtractIntermediateSharedFx" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <SharedFrameworkX64HarvestRootPath Condition="'$(SharedFrameworkX64HarvestRootPath)' == ''">$(InstallersOutputPath)</SharedFrameworkX64HarvestRootPath>
+      <SharedFrameworkX86HarvestRootPath Condition="'$(SharedFrameworkX86HarvestRootPath)' == ''">$(InstallersOutputPath)</SharedFrameworkX86HarvestRootPath>
+      <IntermediateX64SharedFxZip>$(SharedFrameworkX64HarvestRootPath)aspnetcore-runtime-internal-$(PackageVersion)-win-x64.zip</IntermediateX64SharedFxZip>
+      <IntermediateX86SharedFxZip>$(SharedFrameworkX86HarvestRootPath)aspnetcore-runtime-internal-$(PackageVersion)-win-x86.zip</IntermediateX86SharedFxZip>
+    </PropertyGroup>
+
+    <Unzip Condition="'$(Platform)' == 'x64'"
+           SourceFiles="$(IntermediateX64SharedFxZip)" DestinationFolder="$(HarvestSource)" />
+    <Unzip Condition="'$(Platform)' == 'x86'"
+           SourceFiles="$(IntermediateX86SharedFxZip)" DestinationFolder="$(HarvestSource)" />
+  </Target>
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
 </Project>

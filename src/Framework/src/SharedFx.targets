@@ -49,26 +49,16 @@ This targets file should only be imported by .shfxproj files.
     <!-- The name of the shared framework. -->
     <SharedFxName Condition=" '$(SharedFxName)' == '' ">$(MSBuildProjectName)</SharedFxName>
 
-    <!--
-      Defines the base RID for a vertical of related runtimes, e.g. Windows, macOS, Linux.
-      This is used during runtime graph generation to determine which RIDs to include in the .deps.json file.
-    -->
-    <BaseSharedFxRid Condition="$(SharedFxRid.StartsWith('win'))">win</BaseSharedFxRid>
-    <BaseSharedFxRid Condition="$(SharedFxRid.StartsWith('osx'))">osx</BaseSharedFxRid>
-    <BaseSharedFxRid Condition="$(SharedFxRid.StartsWith('linux')) AND ! $(SharedFxRid.StartsWith('linux-musl')) ">linux</BaseSharedFxRid>
-    <BaseSharedFxRid Condition="$(SharedFxRid.StartsWith('linux-musl'))">linux-musl</BaseSharedFxRid>
-    <BaseSharedFxRid Condition="'$(BaseSharedFxRid)' == '' ">unix</BaseSharedFxRid>
-
-    <LibPrefix Condition=" '$(BaseSharedFxRid)' != 'win' ">lib</LibPrefix>
+    <LibPrefix Condition=" '$(TargetOsName)' != 'win' ">lib</LibPrefix>
     <LibExtension>.so</LibExtension>
-    <LibExtension Condition=" '$(BaseSharedFxRid)' == 'win' ">.dll</LibExtension>
-    <LibExtension Condition=" '$(BaseSharedFxRid)' == 'osx' ">.dylib</LibExtension>
-    <ExeExtension Condition=" '$(BaseSharedFxRid)' == 'win' ">.exe</ExeExtension>
+    <LibExtension Condition=" '$(TargetOsName)' == 'win' ">.dll</LibExtension>
+    <LibExtension Condition=" '$(TargetOsName)' == 'osx' ">.dylib</LibExtension>
+    <ExeExtension Condition=" '$(TargetOsName)' == 'win' ">.exe</ExeExtension>
     <!-- 3B = semicolon in ASCII -->
     <PathSeparator Condition="'$(PathSeparator)' == ''">:</PathSeparator>
-    <PathSeparator Condition=" '$(BaseSharedFxRid)' == 'win' ">%3B</PathSeparator>
+    <PathSeparator Condition=" '$(TargetOsName)' == 'win' ">%3B</PathSeparator>
 
-    <IntermediateOutputPath>$(IntermediateOutputPath)$(SharedFxRid)\</IntermediateOutputPath>
+    <IntermediateOutputPath>$(IntermediateOutputPath)$(TargetRuntimeIdentifier)\</IntermediateOutputPath>
 
     <!-- Override the SDK Default for this location for copying published output. -->
     <PublishDir>$(IntermediateOutputPath)u\</PublishDir>
@@ -85,13 +75,13 @@ This targets file should only be imported by .shfxproj files.
     <CrossGenToolDir>$(IntermediateOutputPath)crossgen\</CrossGenToolDir>
     <!-- Crossgen executable name -->
     <CrossGenExecutable>crossgen</CrossGenExecutable>
-    <CrossGenExecutable Condition=" '$(BaseSharedFxRid)' == 'win' ">$(CrossGenExecutable).exe</CrossGenExecutable>
+    <CrossGenExecutable Condition=" '$(TargetOsName)' == 'win' ">$(CrossGenExecutable).exe</CrossGenExecutable>
     <!-- Default crossgen executable relative path -->
     <CrossGenTool>$(CrossGenExecutable)</CrossGenTool>
     <!-- Disambiguated RID-specific crossgen executable relative path -->
-    <CrossGenTool Condition=" '$(SharedFxRid)' == 'linux-arm' ">x64_arm\$(CrossGenTool)</CrossGenTool>
-    <CrossGenTool Condition=" '$(SharedFxRid)' == 'linux-arm64' ">x64_arm64\$(CrossGenTool)</CrossGenTool>
-    <CrossGenTool Condition=" '$(SharedFxRid)' == 'win-arm' ">x86_arm\$(CrossGenTool)</CrossGenTool>
+    <CrossGenTool Condition=" '$(TargetRuntimeIdentifier)' == 'linux-arm' ">x64_arm\$(CrossGenTool)</CrossGenTool>
+    <CrossGenTool Condition=" '$(TargetRuntimeIdentifier)' == 'linux-arm64' ">x64_arm64\$(CrossGenTool)</CrossGenTool>
+    <CrossGenTool Condition=" '$(TargetRuntimeIdentifier)' == 'win-arm' ">x86_arm\$(CrossGenTool)</CrossGenTool>
 
     <!-- Map BaseSharedFrameworkName into properties used by the SDK to determine publish output trimming and deps.json generation -->
     <MicrosoftNETPlatformLibrary>$(BaseSharedFrameworkName)</MicrosoftNETPlatformLibrary>
@@ -150,18 +140,18 @@ This targets file should only be imported by .shfxproj files.
     <Error Condition=" '$(BaseSharedFrameworkName)' == '' "
            Text="Missing required property: BaseSharedFrameworkName. Shared frameworks must specify which framework is used at the base." />
 
-    <Error Condition=" '$(SharedFxRid)' == '' "
-           Text="Missing required property: SharedFxRid. Shared frameworks are rid-specific, so this must be set." />
+    <Error Condition=" '$(TargetRuntimeIdentifier)' == '' "
+           Text="Missing required property: TargetRuntimeIdentifier. Shared frameworks are rid-specific, so this must be set." />
 
     <ItemGroup>
       <_UnknownRid Remove="@(_UnknownRid)" />
-      <_UnknownRid Include="$(SharedFxRid)" Exclude="$(SupportedRuntimeIdentifiers)" />
+      <_UnknownRid Include="$(TargetRuntimeIdentifier)" Exclude="$(SupportedRuntimeIdentifiers)" />
     </ItemGroup>
 
     <Error Condition=" '@(_UnknownRid)' != '' "
-           Text="&quot;$(SharedFxRid)&quot; not acceptable runtime identifier. Please specify an acceptable value: {$(SupportedRuntimeIdentifiers)}." />
+           Text="&quot;$(TargetRuntimeIdentifier)&quot; not acceptable runtime identifier. Please specify an acceptable value: {$(SupportedRuntimeIdentifiers)}." />
 
-    <Message Importance="High" Text="Building $(SharedFxName) (fx: $(SharedFxRid))" />
+    <Message Importance="High" Text="Building $(SharedFxName) (fx: $(TargetRuntimeIdentifier))" />
   </Target>
 
   <Target Name="PrepareOutputPaths">
@@ -193,12 +183,12 @@ This targets file should only be imported by .shfxproj files.
       DepsFilePath="$(PublishDepsFilePath)"
       DepsFileOutputPath="$(SharedFxDepsFilePath)"
       PlatformManifestOutputPath="$(PlatformManifestOutputPath)"
-      BaseRuntimeIdentifier="$(BaseSharedFxRid)" />
+      BaseRuntimeIdentifier="$(TargetOsName)" />
   </Target>
 
   <!-- Optimizes shared framework output -->
   <Target Name="CollectSharedFxOutput" DependsOnTargets="$(CollectOutputSharedFxDependsOn)">
-    <Message Importance="High" Text="$(SharedFxName) (fx: $(SharedFxRid)) -> $(OutputPath)" />
+    <Message Importance="High" Text="$(SharedFxName) (fx: $(TargetRuntimeIdentifier)) -> $(OutputPath)" />
   </Target>
 
   <!-- Prepare the project to run crossgen. -->
@@ -229,7 +219,7 @@ This targets file should only be imported by .shfxproj files.
       <RuntimePackage Include="@(PackageDefinitions)" Condition="$([System.String]::new('%(PackageDefinitions.Name)').Contains('runtime')) AND $([System.String]::new('%(PackageDefinitions.Name)').Contains('$(RuntimePackageName)'))" />
     </ItemGroup>
 
-    <Error Text="Could not identify the crossgen package for $(SharedFxRid)" Condition="@(RuntimePackage->Count()) == 0" />
+    <Error Text="Could not identify the crossgen package for $(TargetRuntimeIdentifier)" Condition="@(RuntimePackage->Count()) == 0" />
 
     <ItemGroup>
       <RuntimePackageFiles Include="%(RuntimePackage.ResolvedPath)\runtimes\**\*" />
@@ -339,7 +329,7 @@ This targets file should only be imported by .shfxproj files.
         id=$(PackageId);
         version=$(PackageVersion);
         authors=$(Authors);
-        rid=$(SharedFxRid);
+        rid=$(TargetRuntimeIdentifier);
         description=$(PackageDescription);
         tags=$(PackageTags.Replace(';', ' '));
         licenseUrl=$(PackageLicenseUrl);

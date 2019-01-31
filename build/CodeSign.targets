@@ -7,7 +7,7 @@
   <Target Name="CollectFileSignInfo">
     <PropertyGroup>
       <BaseRedistNetCorePath>$(IntermediateDir)ar\</BaseRedistNetCorePath>
-      <RedistNetCorePath>$(BaseRedistNetCorePath)$(SharedFxRid)\</RedistNetCorePath>
+      <RedistNetCorePath>$(BaseRedistNetCorePath)$(TargetRuntimeIdentifier)\</RedistNetCorePath>
     </PropertyGroup>
 
     <ItemGroup>

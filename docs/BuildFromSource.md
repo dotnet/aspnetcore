@@ -167,7 +167,8 @@ Property                 | Description
 -------------------------|-------------------------------------------------------------------------------------------------------------
 BuildNumberSuffix        | (string). A specific build number, typically from a CI counter, which is appended to the pre-release label.
 Configuration            | `Debug` or `Release`. Default = `Debug`.
-SharedFxRID              | The runtime identifier of the shared framework.
+TargetArchitecture       | The CPU architecture to build for (x64, x86, arm, arm64).
+TargetOsName             | The base runtime identifier to build for (win, linux, osx, linux-musl).
 
 ## Use the result of your build
 

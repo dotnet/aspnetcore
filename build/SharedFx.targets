@@ -12,8 +12,8 @@
     <FxProjectToBuild Include="$(UnitTestFxProject)" />
     <FxProjectToBuild Condition=" '$(BuildRuntimeArchive)' != 'false' " Include="$(RepositoryRoot)src\Installers\Archive\*.*proj" />
 
-    <FxProjectToBuild Condition=" '$(SharedFxRid)' == 'linux-x64' AND '$(LinuxInstallerType)' == 'deb' " Include="$(RepositoryRoot)src\Installers\Debian\*.*proj" />
-    <FxProjectToBuild Condition=" '$(SharedFxRid)' == 'linux-x64' AND '$(LinuxInstallerType)' == 'rpm' " Include="$(RepositoryRoot)src\Installers\Rpm\*.*proj" />
+    <FxProjectToBuild Condition=" '$(TargetRuntimeIdentifier)' == 'linux-x64' AND '$(LinuxInstallerType)' == 'deb' " Include="$(RepositoryRoot)src\Installers\Debian\*.*proj" />
+    <FxProjectToBuild Condition=" '$(TargetRuntimeIdentifier)' == 'linux-x64' AND '$(LinuxInstallerType)' == 'rpm' " Include="$(RepositoryRoot)src\Installers\Rpm\*.*proj" />
 
     <FxProjectToBuild Condition=" '$(BuildSiteExtensions)' == 'true' " Include="$(RepositoryRoot)src\SiteExtensions\Runtime\Microsoft.AspNetCore.Runtime.SiteExtension.pkgproj" />
     <FxProjectToBuild Condition=" '$(BuildSiteExtensions)' == 'true' " Include="$(RepositoryRoot)src\SiteExtensions\LoggingBranch\LoggingBranch.csproj" />
@@ -25,25 +25,19 @@
 
     <PropertyGroup>
       <_RestoreGraphProjectInput>@(FxProjectToBuild)</_RestoreGraphProjectInput>
-      <SharedFxBuildProperties>
-        $(BuildProperties);
-        SharedFxRid=$(SharedFxRid);
-        SharedFxArchitecture=$(SharedFxArchitecture);
-        PackageVersion=$(PackageVersion)
-      </SharedFxBuildProperties>
     </PropertyGroup>
 
     <MSBuild Projects="$(NuGetRestoreTargets)"
              Targets="Restore"
-             Properties="$(SharedFxBuildProperties);RestoreGraphProjectInput=$(_RestoreGraphProjectInput);_DummyTarget=Restore" />
+             Properties="$(BuildProperties);RestoreGraphProjectInput=$(_RestoreGraphProjectInput);_DummyTarget=Restore" />
 
     <MSBuild Projects="@(FxProjectToBuild)"
-             Properties="$(SharedFxBuildProperties)"
+             Properties="$(BuildProperties)"
              BuildInParallel="true" />
     <!-- BuildInParallel="false" because dotnet store runs during site extension build and is failing if packages are being currently generated -->
     <MSBuild Projects="@(FxProjectToBuild)"
              Targets="Pack"
-             Properties="$(SharedFxBuildProperties);NoBuild=true"
+             Properties="$(BuildProperties);NoBuild=true"
              BuildInParallel="false"
              SkipNonexistentTargets="true" />
   </Target>
@@ -52,7 +46,7 @@
 
     <PropertyGroup>
       <!-- The file path to the log file, from within the container -->
-      <UnitTestFxTrxLogFile>$(LogOutputDir)SharedFx-UnitTests-$(Version).trx</UnitTestFxTrxLogFile>
+      <UnitTestFxTrxLogFile>$(LogOutputDir)SharedFx-UnitTests-$(PackageVersion)-$(TargetRuntimeIdentifier).trx</UnitTestFxTrxLogFile>
       <!-- The trx file path from the perspective of the TeamCity agent -->
       <UnitTestFxTrxPhysicalFilePath>$(UnitTestFxTrxLogFile)</UnitTestFxTrxPhysicalFilePath>
       <UnitTestFxTrxPhysicalFilePath Condition="'$(HostMachineRepositoryRoot)' != ''">$(HostMachineRepositoryRoot)/artifacts/logs/SharedFx-UnitTests.trx</UnitTestFxTrxPhysicalFilePath>
