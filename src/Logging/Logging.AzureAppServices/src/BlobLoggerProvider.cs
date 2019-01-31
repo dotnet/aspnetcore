@@ -28,7 +28,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
         /// Creates a new instance of <see cref="BlobLoggerProvider"/>
         /// </summary>
         /// <param name="options"></param>
-        internal BlobLoggerProvider(IOptionsMonitor<AzureBlobLoggerOptions> options)
+        public BlobLoggerProvider(IOptionsMonitor<AzureBlobLoggerOptions> options)
             : this(options, null)
         {
             _blobReferenceFactory = name => new BlobAppendReferenceWrapper(

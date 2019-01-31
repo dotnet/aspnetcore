@@ -35,6 +35,8 @@ namespace Microsoft.Extensions.Logging
                 return builder;
             }
 
+            builder.AddConfiguration();
+
             var config = SiteConfigurationProvider.GetAzureLoggingConfiguration(context);
             var services = builder.Services;
 

@@ -64,5 +64,15 @@ namespace Microsoft.Extensions.Logging.AzureAppServices.Test
 
             Assert.Equal(4, serviceCollection.Count(d => d.ServiceType == typeof(IConfigureOptions<LoggerFilterOptions>)));
         }
+
+        [Fact]
+        public void LoggerProviderIsResolvable()
+        {
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddLogging(builder => builder.AddAzureWebAppDiagnostics(_appContext));
+
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+            var loggerFactory = serviceProvider.GetService<ILoggerProvider>();
+        }
     }
 }

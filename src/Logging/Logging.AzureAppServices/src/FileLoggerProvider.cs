@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
         private readonly int? _maxFileSize;
         private readonly int? _maxRetainedFiles;
 
-        internal FileLoggerProvider(IOptionsMonitor<AzureFileLoggerOptions> options) : base(options)
+        public FileLoggerProvider(IOptionsMonitor<AzureFileLoggerOptions> options) : base(options)
         {
             var loggerOptions = options.CurrentValue;
             _path = loggerOptions.LogDirectory;
