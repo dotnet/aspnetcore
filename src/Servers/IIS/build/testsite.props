@@ -10,6 +10,7 @@
     <!-- Work around until we get a new WebSdk -->
     <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
     <AppendRuntimeIdentifierToOutputPath>False</AppendRuntimeIdentifierToOutputPath>
+    <HasTestAssetProfile Condition="'$(TestAssetProfile)' != ''">True</HasTestAssetProfile>
   </PropertyGroup>
 
   <Import Project="assets.props" />
@@ -70,13 +71,14 @@
     <Exec Command="$(InjectDepsApp) &quot;$(PublishDepsFilePath)&quot; $(RuntimeIdentifier) " />
   </Target>
 
-  <Target Name="PrepareForTestAssetPublish" BeforeTargets="PrepareForPublish" Condition="'@(TestAssetPublishProfile->Count())' != '0'">
+  <Target Name="PreventProjectReferencesFromBuilding" BeforeTargets="BeforeResolveReferences" Condition="'@(TestAssetPublishProfile->Count())' != '0'">
     <PropertyGroup>
-      <HasTestAssetProfile Condition="'$(TestAssetProfile)' != ''">True</HasTestAssetProfile>
+      <BuildProjectReferences Condition="'$(HasTestAssetProfile)' == 'True'">false</BuildProjectReferences>
     </PropertyGroup>
+  </Target>
 
+  <Target Name="PrepareForTestAssetPublish" BeforeTargets="PrepareForPublish" Condition="'@(TestAssetPublishProfile->Count())' != '0'">
     <PropertyGroup Condition="'$(HasTestAssetProfile)' == 'True'">
-      <BuildProjectReferences>false</BuildProjectReferences>
       <PublishDir>$(OutputPath)$(PublishDirName)\$(MSBuildProjectName)-$(TestAssetProfile)\</PublishDir>
     </PropertyGroup>
 
