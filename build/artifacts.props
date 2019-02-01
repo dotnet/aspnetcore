@@ -13,7 +13,6 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
-    <PackageArtifact Include="dotnet-aspnet-codegenerator" Category="ship" />
     <PackageArtifact Include="dotnet-dev-certs" Category="ship" />
     <PackageArtifact Include="dotnet-ef" Category="ship" />
     <PackageArtifact Include="dotnet-sql-cache" Category="ship" />
@@ -177,14 +176,6 @@
     <PackageArtifact Include="Microsoft.Net.Http.Headers" Category="ship" />
     <PackageArtifact Include="Microsoft.NET.Sdk.Razor" Category="ship" />
     <PackageArtifact Include="Microsoft.Owin.Security.Interop" Category="noship" />
-    <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration.Contracts" Category="ship" />
-    <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration.Core" Category="ship" />
-    <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Category="ship" />
-    <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration.EntityFrameworkCore" Category="ship" />
-    <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration.Templating" Category="ship" />
-    <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration.Utils" Category="ship" />
-    <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration" Category="ship" />
-    <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGenerators.Mvc" Category="ship" />
 
     <PackageArtifact Include="Internal.WebHostBuilderFactory.Sources" Category="noship"/>
   </ItemGroup>

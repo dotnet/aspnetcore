@@ -36,7 +36,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Repository Include="Scaffolding" PatchPolicy="AlwaysUpdate" />
     <Repository Include="Templating" RootPath="$(RepositoryRoot)src\Templating\" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
     <Repository Include="EntityFrameworkCore" />
   </ItemGroup>
