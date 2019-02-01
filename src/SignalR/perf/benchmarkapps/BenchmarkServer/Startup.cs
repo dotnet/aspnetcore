@@ -23,6 +23,7 @@ namespace BenchmarkServer
             {
                 o.EnableDetailedErrors = true;
             })
+            .AddJsonProtocol()
             .AddMessagePackProtocol();
 
             var redisConnectionString = _config["SignalRRedis"];
