@@ -577,10 +577,8 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 }
                 using (var doc = JsonDocument.Parse(sb.ToString()))
                 {
-                    
+                    writer.WriteElementValue(doc.RootElement);
                 }
-                var tmp = Encoding.UTF8.GetBytes(sb.ToString());
-                stream.Write(tmp);
             }
             writer.WriteEndArray();
         }

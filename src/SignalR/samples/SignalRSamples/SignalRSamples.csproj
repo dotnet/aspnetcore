@@ -20,6 +20,7 @@
     <Reference Include="Microsoft.Extensions.Logging.Console" />
     <Reference Include="Newtonsoft.Json" />
     <Reference Include="System.Reactive.Linq" />
+    <ProjectReference Include="..\..\common\Protocols.Json\src\Microsoft.AspNetCore.SignalR.Protocols.Json.csproj" />
   </ItemGroup>
 
   <Target Name="CopyTSClient" BeforeTargets="AfterBuild">

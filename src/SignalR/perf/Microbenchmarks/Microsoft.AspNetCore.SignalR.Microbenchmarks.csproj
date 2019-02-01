@@ -34,5 +34,10 @@
     <Reference Include="System.Reactive.Linq" />
     <Reference Include="System.Threading.Channels" />
     <Reference Include="System.Threading.Tasks.Extensions" />
+    <PackageReference Include="Microsoft.Private.CoreFx.NETCoreApp" Version="4.6.0-dev.19101.1" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <PackageConflictPreferredPackages>Microsoft.Private.CoreFx.NETCoreApp;runtime.win-x64.Microsoft.Private.CoreFx.NETCoreApp;$(PackageConflictPreferredPackages)</PackageConflictPreferredPackages>
+  </PropertyGroup>
 </Project>
