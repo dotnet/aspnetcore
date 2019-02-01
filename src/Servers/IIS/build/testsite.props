@@ -11,6 +11,7 @@
     <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
     <HasTestAssetProfile Condition="'$(TestAssetProfile)' != ''">True</HasTestAssetProfile>
     <AppendRuntimeIdentifierToOutputPath Condition="'$(HasTestAssetProfile)' == 'True'">False</AppendRuntimeIdentifierToOutputPath>
+    <TestAssetOutputName Condition="'$(TestAssetOutputName)' == ''">$(MSBuildProjectName)</TestAssetOutputName>
   </PropertyGroup>
 
   <Import Project="assets.props" />
@@ -79,7 +80,7 @@
 
   <Target Name="PrepareForTestAssetPublish" BeforeTargets="PrepareForPublish" Condition="'@(TestAssetPublishProfile->Count())' != '0'">
     <PropertyGroup Condition="'$(HasTestAssetProfile)' == 'True'">
-      <PublishDir>$(OutputPath)$(PublishDirName)\$(MSBuildProjectName)-$(TestAssetProfile)\</PublishDir>
+      <PublishDir>$(OutputPath)$(PublishDirName)\$(TestAssetOutputName)-$(TestAssetProfile)\</PublishDir>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(HasTestAssetProfile)' != 'True'">
