@@ -115,11 +115,12 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
         private string CheckIfPublishIsRequired()
         {
+            string dllRoot = null;
             var targetFramework = DeploymentParameters.TargetFramework;
             if (!string.IsNullOrEmpty(DeploymentParameters.ApplicationPath))
             {
                 // IISIntegration uses this layout
-                var dllRoot = Path.Combine(DeploymentParameters.ApplicationPath, "bin", DeploymentParameters.RuntimeArchitecture.ToString(),
+                dllRoot = Path.Combine(DeploymentParameters.ApplicationPath, "bin", DeploymentParameters.RuntimeArchitecture.ToString(),
                     DeploymentParameters.Configuration, targetFramework);
 
                 if (!Directory.Exists(dllRoot))
@@ -139,8 +140,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                         DeploymentParameters.PublishApplicationBeforeDeployment = true;
                     }
                 }
-
-                return dllRoot;
             }
 
             if (DeploymentParameters.RuntimeFlavor == RuntimeFlavor.CoreClr
@@ -150,7 +149,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 DeploymentParameters.PublishApplicationBeforeDeployment = true;
             }
 
-            return null;
+            return dllRoot;
         }
 
         private async Task<(Uri url, CancellationToken hostExitToken)> StartIISExpressAsync(Uri uri, string contentRoot)

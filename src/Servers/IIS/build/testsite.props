@@ -6,11 +6,11 @@
     <IISExpressAppHostConfig>$(MSBuildThisFileDirectory)applicationhost.config</IISExpressAppHostConfig>
     <IISAppHostConfig>$(MSBuildThisFileDirectory)applicationhost.iis.config</IISAppHostConfig>
     <PreserveCompilationContext>false</PreserveCompilationContext>
-    <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
+    <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
     <!-- Work around until we get a new WebSdk -->
     <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
-    <HasTestAssetProfile Condition="'$(TestAssetProfile)' != ''">True</HasTestAssetProfile>
-    <AppendRuntimeIdentifierToOutputPath Condition="'$(HasTestAssetProfile)' == 'True'">False</AppendRuntimeIdentifierToOutputPath>
+    <HasTestAssetProfile Condition="'$(TestAssetProfile)' != ''">true</HasTestAssetProfile>
+    <AppendRuntimeIdentifierToOutputPath Condition="'$(HasTestAssetProfile)' == 'true'">false</AppendRuntimeIdentifierToOutputPath>
     <TestAssetOutputName Condition="'$(TestAssetOutputName)' == ''">$(MSBuildProjectName)</TestAssetOutputName>
   </PropertyGroup>
 
@@ -44,7 +44,7 @@
   <!-- Deps file injection-->
   <ItemGroup Condition="('$(InProcessTestSite)' == 'true') AND ('$(ReferenceTestTasks)' != 'false')">
     <ProjectReference Include="$(MSBuildThisFileDirectory)..\IIS\test\testassets\TestTasks\TestTasks.csproj">
-      <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
   </ItemGroup>
 
@@ -74,16 +74,16 @@
 
   <Target Name="PreventProjectReferencesFromBuilding" BeforeTargets="BeforeResolveReferences" Condition="'@(TestAssetPublishProfile->Count())' != '0'">
     <PropertyGroup>
-      <BuildProjectReferences Condition="'$(HasTestAssetProfile)' == 'True'">false</BuildProjectReferences>
+      <BuildProjectReferences Condition="'$(HasTestAssetProfile)' == 'true'">false</BuildProjectReferences>
     </PropertyGroup>
   </Target>
 
   <Target Name="PrepareForTestAssetPublish" BeforeTargets="PrepareForPublish" Condition="'@(TestAssetPublishProfile->Count())' != '0'">
-    <PropertyGroup Condition="'$(HasTestAssetProfile)' == 'True'">
+    <PropertyGroup Condition="'$(HasTestAssetProfile)' == 'true'">
       <PublishDir>$(OutputPath)$(PublishDirName)\$(TestAssetOutputName)-$(TestAssetProfile)\</PublishDir>
     </PropertyGroup>
 
-    <PropertyGroup Condition="'$(HasTestAssetProfile)' != 'True'">
+    <PropertyGroup Condition="'$(HasTestAssetProfile)' != 'true'">
       <IsPublishable>false</IsPublishable>
       <IsTransformWebConfigDisabled>true</IsTransformWebConfigDisabled>
     </PropertyGroup>
