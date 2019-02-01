@@ -9,6 +9,10 @@
       <Uri>https://github.com/aspnet/AspNetCore-Tooling</Uri>
       <Sha>259e6173e40659de0aee27d6b2146fc27286d514</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.Bcl.Json.Sources" Version="4.6.0-preview.19080.5">
+      <Uri>https://github.com/dotnet/corefx</Uri>
+      <Sha>9e074e4a3f3626fa953f36ab79e3cd3e6db1c9de</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.CodeAnalysis.Razor" Version="3.0.0-preview-19080-02">
       <Uri>https://github.com/aspnet/AspNetCore-Tooling</Uri>
       <Sha>259e6173e40659de0aee27d6b2146fc27286d514</Sha>
