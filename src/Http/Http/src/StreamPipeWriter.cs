@@ -1,14 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.IO;
-using System.IO.Pipelines;
-using System.Runtime.CompilerServices;
-using System.Runtime.ExceptionServices;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -31,7 +25,6 @@ namespace System.IO.Pipelines
 
         private CancellationTokenSource _internalTokenSource;
         private bool _isCompleted;
-        private ExceptionDispatchInfo _exceptionInfo;
         private object _lockObject = new object();
 
         private CancellationTokenSource InternalTokenSource
@@ -91,14 +84,32 @@ namespace System.IO.Pipelines
         /// <inheritdoc />
         public override Memory<byte> GetMemory(int sizeHint = 0)
         {
+            if (_isCompleted)
+            {
+                ThrowHelper.ThrowInvalidOperationException_NoWritingAllowed();
+            }
+            if (sizeHint < 0)
+            {
+                ThrowHelper.ThrowArgumentOutOfRangeException(nameof(sizeHint));
+            }
+
             EnsureCapacity(sizeHint);
 
-            return _currentSegment;
+            return _currentSegment.Slice(_position);
         }
 
         /// <inheritdoc />
         public override Span<byte> GetSpan(int sizeHint = 0)
         {
+            if (_isCompleted)
+            {
+                ThrowHelper.ThrowInvalidOperationException_NoWritingAllowed();
+            }
+            if (sizeHint < 0)
+            {
+                ThrowHelper.ThrowArgumentOutOfRangeException(nameof(sizeHint));
+            }
+
             EnsureCapacity(sizeHint);
 
             return _currentSegment.Span.Slice(_position);
@@ -119,10 +130,6 @@ namespace System.IO.Pipelines
             }
 
             _isCompleted = true;
-            if (exception != null)
-            {
-                _exceptionInfo = ExceptionDispatchInfo.Capture(exception);
-            }
 
             _internalTokenSource?.Dispose();
 
@@ -135,6 +142,12 @@ namespace System.IO.Pipelines
             }
 
             _currentSegmentOwner?.Dispose();
+
+            // We still want to cleanup segments before throwing an exception.
+            if (_bytesWritten > 0 && exception == null)
+            {
+                ThrowHelper.ThrowInvalidOperationException_DataNotAllFlushed();
+            }
         }
 
         /// <inheritdoc />
@@ -148,7 +161,7 @@ namespace System.IO.Pipelines
         {
             if (_bytesWritten == 0)
             {
-                return new ValueTask<FlushResult>(new FlushResult(isCanceled: false, IsCompletedOrThrow()));
+                return new ValueTask<FlushResult>(new FlushResult(isCanceled: false, _isCompleted));
             }
 
             return FlushAsyncInternal(cancellationToken);
@@ -209,7 +222,7 @@ namespace System.IO.Pipelines
 
                     await _writingStream.FlushAsync(localToken);
 
-                    return new FlushResult(isCanceled: false, IsCompletedOrThrow());
+                    return new FlushResult(isCanceled: false, _isCompleted);
                 }
                 catch (OperationCanceledException)
                 {
@@ -226,7 +239,7 @@ namespace System.IO.Pipelines
                     }
 
                     // Catch any cancellation and translate it into setting isCanceled = true
-                    return new FlushResult(isCanceled: true, IsCompletedOrThrow());
+                    return new FlushResult(isCanceled: true, _isCompleted);
                 }
             }
         }
@@ -268,28 +281,6 @@ namespace System.IO.Pipelines
             _currentSegmentOwner = _pool.Rent(Math.Max(_minimumSegmentSize, sizeHint));
             _currentSegment = _currentSegmentOwner.Memory;
             _position = 0;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool IsCompletedOrThrow()
-        {
-            if (!_isCompleted)
-            {
-                return false;
-            }
-
-            if (_exceptionInfo != null)
-            {
-                ThrowLatchedException();
-            }
-
-            return true;
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private void ThrowLatchedException()
-        {
-            _exceptionInfo.Throw();
         }
 
         public void Dispose()

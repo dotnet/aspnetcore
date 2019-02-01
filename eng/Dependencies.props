@@ -35,8 +35,11 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.AspNetCore.Blazor.Mono" Version="$(MicrosoftAspNetCoreBlazorMonoPackageVersion)" />
     <LatestPackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="$(MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion)" />
     <LatestPackageReference Include="Microsoft.AspNetCore.Razor.Language" Version="$(MicrosoftAspNetCoreRazorLanguagePackageVersion)" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="$(MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.Razor.Language" Version="$(MicrosoftAspNetCoreRazorLanguagePackageVersion)" />
     <LatestPackageReference Include="Microsoft.AspNetCore.Testing" Version="$(MicrosoftAspNetCoreTestingPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Azure.KeyVault" Version="$(MicrosoftAzureKeyVaultPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Bcl.Json.Sources" Version="$(MicrosoftBclJsonSourcesPacakgeVersion)" />
     <LatestPackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildFrameworkPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCorePackageVersion)" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.Common" Version="$(MicrosoftCodeAnalysisCommonPackageVersion)" />
@@ -76,9 +79,9 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="$(MicrosoftExtensionsFileProvidersPhysicalPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="$(MicrosoftExtensionsFileSystemGlobbingPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" Version="$(MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.HostFactoryResolver.Sources" Version="$(MicrosoftExtensionsHostFactoryResolverSourcesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="$(MicrosoftExtensionsHostingAbstractionsPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Hosting" Version="$(MicrosoftExtensionsHostingPackageVersion)" />
-    <LatestPackageReference Include="Microsoft.Extensions.HostFactoryResolver.Sources" Version="$(MicrosoftExtensionsHostFactoryResolverSourcesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Localization.Abstractions" Version="$(MicrosoftExtensionsLocalizationAbstractionsPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Localization" Version="$(MicrosoftExtensionsLocalizationPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="$(MicrosoftExtensionsLoggingAbstractionsPackageVersion)" />
@@ -108,6 +111,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.Owin.Security.Cookies" Version="$(MicrosoftOwinSecurityCookiesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Owin.Testing" Version="$(MicrosoftOwinTestingPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Web.Administration" Version="$(MicrosoftWebAdministrationPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Web.Xdt" Version="$(MicrosoftWebXdtPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Win32.Registry" Version="$(MicrosoftWin32RegistryPackageVersion)" />
     <LatestPackageReference Include="Mono.Cecil" Version="$(MonoCecilPackageVersion)" />
     <LatestPackageReference Include="Mono.WebAssembly.Interop" Version="$(MonoWebAssemblyInteropPackageVersion)" />
@@ -131,6 +135,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="System.IO.Pipelines" Version="$(SystemIOPipelinesPackageVersion)" />
     <LatestPackageReference Include="System.Memory" Version="$(SystemMemoryPackageVersion)" />
     <LatestPackageReference Include="System.Net.Http.WinHttpHandler" Version="$(SystemNetHttpWinHttpHandlerPackageVersion)" />
+    <LatestPackageReference Include="System.Net.Http" Version="$(SystemNetHttpPackageVersion)" />
     <LatestPackageReference Include="System.Net.WebSockets.WebSocketProtocol" Version="$(SystemNetWebSocketsWebSocketProtocolPackageVersion)" />
     <LatestPackageReference Include="System.Numerics.Vectors" Version="$(SystemNumericsVectorsPackageVersion)" />
     <LatestPackageReference Include="System.Reactive.Linq" Version="$(SystemReactiveLinqPackageVersion)" />

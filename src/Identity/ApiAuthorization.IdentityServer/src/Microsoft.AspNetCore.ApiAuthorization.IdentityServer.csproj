@@ -6,6 +6,8 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;apiauth;identity</PackageTags>
     <EnableApiCheck>false</EnableApiCheck>
+    <!-- Experimental package which is not ready for production yet -->
+    <IsShippingPackage>false</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>

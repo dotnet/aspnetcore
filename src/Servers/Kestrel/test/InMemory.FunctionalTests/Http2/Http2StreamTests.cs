@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -1022,6 +1023,388 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
             Assert.Equal("500", _decodedHeaders[HeaderNames.Status]);
             Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
+        }
+
+        [Fact]
+        public async Task StartAsync_Response_NoBytesWritten_Sends200()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            };
+            await InitializeConnectionAsync(async context =>
+            {
+                await context.Response.StartAsync();
+            });
+
+            await StartStreamAsync(1, headers, endStream: true);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 37,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
+
+            Assert.Equal(2, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        }
+
+        [Fact]
+        public async Task StartAsync_ContentLength_Response_NoBytesWritten_Sends200()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            };
+            await InitializeConnectionAsync(async context =>
+            {
+                context.Response.ContentLength = 0;
+                await context.Response.StartAsync();
+            });
+
+            await StartStreamAsync(1, headers, endStream: true);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 55,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
+
+            Assert.Equal(3, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+            Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
+        }
+
+        [Fact]
+        public async Task StartAsync_OnStartingThrowsAfterStartAsyncIsCalled()
+        {
+            InvalidOperationException ex = null;
+
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            };
+            await InitializeConnectionAsync(async context =>
+            {
+                await context.Response.StartAsync();
+                ex = Assert.Throws<InvalidOperationException>(() => context.Response.OnStarting(_ => Task.CompletedTask, null));
+            });
+
+            await StartStreamAsync(1, headers, endStream: true);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 37,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            Assert.NotNull(ex);
+
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
+
+            Assert.Equal(2, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        }
+
+        [Fact]
+        public async Task StartAsync_StartsResponse()
+        {
+
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            };
+            await InitializeConnectionAsync(async context =>
+            {
+                await context.Response.StartAsync();
+                Assert.True(context.Response.HasStarted);
+            });
+
+            await StartStreamAsync(1, headers, endStream: true);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 37,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
+
+            Assert.Equal(2, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        }
+
+        [Fact]
+        public async Task StartAsync_WithoutFinalFlushDoesNotFlushUntilResponseEnd()
+        {
+            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            };
+            await InitializeConnectionAsync(async context =>
+            {
+                await context.Response.StartAsync();
+
+                // Verify that the response isn't flushed by verifying the TCS isn't set
+                var res = await Task.WhenAny(tcs.Task, Task.Delay(1000)) == tcs.Task;
+                await context.Response.WriteAsync("hello, world");
+            });
+
+            await StartStreamAsync(1, headers, endStream: true);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 37,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+
+            var dataFrame = await ExpectAsync(Http2FrameType.DATA,
+                withLength: 12,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+
+            tcs.SetResult(null);
+
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
+
+            Assert.Equal(2, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+
+            Assert.True(_helloWorldBytes.AsSpan().SequenceEqual(dataFrame.PayloadSequence.ToArray()));
+        }
+
+        [Fact]
+        public async Task StartAsync_FlushStillFlushesBody()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            };
+            await InitializeConnectionAsync(async context =>
+            {
+                await context.Response.StartAsync();
+
+                // Verify that the response isn't flushed by verifying the TCS isn't set
+                await context.Response.Body.FlushAsync();
+            });
+
+            await StartStreamAsync(1, headers, endStream: true);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 37,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
+
+            Assert.Equal(2, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+        }
+
+        [Fact]
+        public async Task StartAsync_WithContentLengthAndEmptyWriteCallsFinalFlush()
+        {
+
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            };
+            await InitializeConnectionAsync(async context =>
+            {
+                context.Response.ContentLength = 0;
+                await context.Response.StartAsync();
+                await context.Response.WriteAsync("");
+            });
+
+            await StartStreamAsync(1, headers, endStream: true);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 55,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
+
+            Assert.Equal(3, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+            Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
+        }
+
+        [Fact]
+        public async Task StartAsync_SingleWriteCallsFinalFlush()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            };
+            await InitializeConnectionAsync(async context =>
+            {
+                await context.Response.StartAsync();
+                await context.Response.WriteAsync("hello, world");
+            });
+
+            await StartStreamAsync(1, headers, endStream: true);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 37,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+
+            var dataFrame = await ExpectAsync(Http2FrameType.DATA,
+                withLength: 12,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
+
+            Assert.Equal(2, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+
+            Assert.True(_helloWorldBytes.AsSpan().SequenceEqual(dataFrame.PayloadSequence.ToArray()));
+        }
+
+        [Fact]
+        public async Task StartAsync_ContentLength_ThrowsException_DataIsFlushed_ConnectionReset()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            };
+            await InitializeConnectionAsync(async context =>
+            {
+                context.Response.ContentLength = 11;
+                await context.Response.StartAsync();
+                throw new Exception();
+            });
+
+            await StartStreamAsync(1, headers, endStream: true);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 56,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+
+            await WaitForStreamErrorAsync(1, Http2ErrorCode.INTERNAL_ERROR, "");
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
+
+            Assert.Equal(3, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+            Assert.Equal("11", _decodedHeaders[HeaderNames.ContentLength]);
+        }
+
+        [Fact]
+        public async Task StartAsync_ThrowsException_DataIsFlushed()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            };
+            await InitializeConnectionAsync(async context =>
+            {
+                await context.Response.StartAsync();
+                throw new Exception();
+            });
+
+            await StartStreamAsync(1, headers, endStream: true);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 37,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+
+            await WaitForStreamErrorAsync(1, Http2ErrorCode.INTERNAL_ERROR, "");
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
+
+            Assert.Equal(2, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
         }
 
         [Fact]

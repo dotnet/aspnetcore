@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
@@ -21,7 +22,6 @@ namespace Microsoft.AspNetCore.Builder
         private static readonly string[] PutVerb = new[] { "PUT" };
         private static readonly string[] DeleteVerb = new[] { "DELETE" };
 
-        #region MapVerbs
         /// <summary>
         /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP GET requests
         /// for the specified pattern.
@@ -227,9 +227,7 @@ namespace Microsoft.AspNetCore.Builder
 
             return Map(builder, pattern, displayName ?? $"{pattern} HTTP: {string.Join(", ", httpMethods)}", requestDelegate, metadata: resolvedMetadata.ToArray());
         }
-        #endregion
 
-        #region Map
         /// <summary>
         /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP requests
         /// for the specified pattern.
@@ -323,8 +321,17 @@ namespace Microsoft.AspNetCore.Builder
             var routeEndpointBuilder = new RouteEndpointBuilder(
                 requestDelegate,
                 pattern,
-                defaultOrder);
-            routeEndpointBuilder.DisplayName = displayName;
+                defaultOrder)
+            {
+                DisplayName = displayName
+            };
+
+            // Add delegate attributes as metadata
+            foreach (var attribute in requestDelegate.Method.GetCustomAttributes())
+            {
+                routeEndpointBuilder.Metadata.Add(attribute);
+            }
+
             if (metadata != null)
             {
                 foreach (var item in metadata)
@@ -343,6 +350,5 @@ namespace Microsoft.AspNetCore.Builder
 
             return modelEndpointDataSource.AddEndpointBuilder(routeEndpointBuilder);
         }
-        #endregion
     }
 }

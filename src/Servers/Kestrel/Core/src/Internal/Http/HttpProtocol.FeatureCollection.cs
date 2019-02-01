@@ -20,7 +20,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                                         IHttpRequestLifetimeFeature,
                                         IHttpRequestIdentifierFeature,
                                         IHttpBodyControlFeature,
-                                        IHttpMaxRequestBodySizeFeature
+                                        IHttpMaxRequestBodySizeFeature,
+                                        IHttpResponseStartFeature
     {
         // NOTE: When feature interfaces are added to or removed from this HttpProtocol class implementation,
         // then the list of `implementedFeatures` in the generated code project MUST also be updated.
@@ -250,5 +251,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         protected abstract void ApplicationAbort();
+
+        Task IHttpResponseStartFeature.StartAsync(CancellationToken cancellationToken)
+        {
+            if (HasResponseStarted)
+            {
+                return Task.CompletedTask;
+            }
+
+            return InitializeResponseAsync(0);
+        }
     }
 }

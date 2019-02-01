@@ -4,7 +4,8 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <TestGroupName>Interop.FunctionalTests</TestGroupName>
-    <WarningsNotAsErrors>CS8002;$(WarningsNotAsErrors)</WarningsNotAsErrors>
+    <!-- WebDriver is not strong named, so this test assembly cannot be strong-named either. -->
+    <SignAssembly>false</SignAssembly>
   </PropertyGroup>
 
   <ItemGroup>

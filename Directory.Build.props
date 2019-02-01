@@ -53,6 +53,23 @@
     <SignAssembly>true</SignAssembly>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <TargetOsName Condition=" '$(TargetOsName)' == '' AND $([MSBuild]::IsOSPlatform('Windows'))">win</TargetOsName>
+    <TargetOsName Condition=" '$(TargetOsName)' == '' AND $([MSBuild]::IsOSPlatform('OSX'))">osx</TargetOsName>
+    <TargetOsName Condition=" '$(TargetOsName)' == '' AND $([MSBuild]::IsOSPlatform('Linux'))">linux</TargetOsName>
+    <TargetArchitecture Condition="'$(TargetArchitecture)' == ''">x64</TargetArchitecture>
+    <TargetRuntimeIdentifier>$(TargetOsName)-$(TargetArchitecture)</TargetRuntimeIdentifier>
+
+    <!-- This defines the list of RIDs supported by the ASP.NET Core shared framework. -->
+    <SupportedRuntimeIdentifiers>
+      win-x64;
+      win-x86;
+      win-arm;
+      osx-x64;
+      linux-musl-x64;
+      linux-x64;
+      linux-arm;
+      linux-arm64
+    </SupportedRuntimeIdentifiers>
 
     <!-- Instructs the compiler to use SHA256 instead of SHA1 when adding file hashes to PDBs. -->
     <ChecksumAlgorithm>SHA256</ChecksumAlgorithm>
@@ -61,19 +78,12 @@
 
     <!-- Fixes a common error in targets implementing a NoBuild mode. -->
     <BuildProjectReferences Condition=" '$(NoBuild)' == 'true' ">false</BuildProjectReferences>
+
+    <!-- Enables Strict mode for Roslyn compiler -->
+    <Features>strict</Features>
   </PropertyGroup>
 
-  <!-- Certificate names used for Authenticode signing. -->
-  <PropertyGroup Condition=" '$(DisableCodeSigning)' != 'true' ">
-    <AssemblySigningCertName>Microsoft400</AssemblySigningCertName>
-    <AssemblySigning3rdPartyCertName>3PartySHA2</AssemblySigning3rdPartyCertName>
-    <PowerShellSigningCertName>Microsoft400</PowerShellSigningCertName>
-    <PackageSigningCertName>NuGet</PackageSigningCertName>
-    <VsixSigningCertName>VsixSHA2</VsixSigningCertName>
-    <JarSigningCertName>MicrosoftJAR</JarSigningCertName>
-  </PropertyGroup>
-
-  <Import Project="build\external-dependencies.props" />
+  <Import Project="eng\Versions.props" />
   <Import Project="build\sources.props" />
 
   <!-- Artifacts layout -->
@@ -85,6 +95,7 @@
     <ArtifactsShippingPackagesDir>$(ArtifactsPackagesDir)Shipping\</ArtifactsShippingPackagesDir>
     <ArtifactsNonShippingPackagesDir>$(ArtifactsPackagesDir)NonShipping\</ArtifactsNonShippingPackagesDir>
     <InstallersOutputPath>$(ArtifactsDir)installers\$(Configuration)\</InstallersOutputPath>
+    <VisualStudioSetupOutputPath>$(ArtifactsDir)VSSetup\$(Configuration)\</VisualStudioSetupOutputPath>
   </PropertyGroup>
 
   <!-- Ensure these output paths exist. -->
@@ -92,6 +103,7 @@
     <CreateDirectory Include="$(ArtifactsShippingPackagesDir)" />
     <CreateDirectory Include="$(ArtifactsNonShippingPackagesDir)" />
     <CreateDirectory Include="$(InstallersOutputPath)" />
+    <CreateDirectory Include="$(VisualStudioSetupOutputPath)" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(OutputInRepoRoot)' == 'true' ">
@@ -119,12 +131,13 @@
   <PropertyGroup>
     <!-- Projects which reference Microsoft.AspNetCore.Mvc.Testing should import this targets file to ensure dependency .deps.json files are copied into test output. -->
     <MvcTestingTargets>$(MSBuildThisFileDirectory)src\Mvc\src\Microsoft.AspNetCore.Mvc.Testing\Microsoft.AspNetCore.Mvc.Testing.targets</MvcTestingTargets>
+    <!-- IIS native projects can only be built on Windows for x86 and x64. -->
+    <BuildIisNativeProjects Condition="'$(BuildNative)' != 'false' AND '$(TargetOsName)' == 'win' AND ('$(TargetArchitecture)' == 'x86' OR '$(TargetArchitecture)' == 'x64')">true</BuildIisNativeProjects>
   </PropertyGroup>
 
   <Import Project="eng\Dependencies.props" />
   <Import Project="eng\PatchConfig.props" />
   <Import Project="eng\ProjectReferences.props" />
-  <Import Project="eng\targets\RuntimeIdentifiers.props" />
   <Import Project="eng\targets\Cpp.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.vcxproj'" />
   <Import Project="eng\targets\CSharp.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.csproj'" />
   <Import Project="eng\targets\Wix.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.wixproj'" />

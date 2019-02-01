@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             await deploymentResult.AssertRecycledAsync(() => AssertAppOffline(deploymentResult));
         }
 
-        [ConditionalFact(Skip = "https://github.com/aspnet/AspNetCore/issues/6555")]
+        [ConditionalFact]
         [RequiresIIS(IISCapability.ShutdownToken)]
         public async Task AppOfflineDroppedWhileSiteStarting_SiteShutsDown_InProcess()
         {

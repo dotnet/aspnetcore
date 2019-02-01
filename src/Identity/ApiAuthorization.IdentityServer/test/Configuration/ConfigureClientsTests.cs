@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using IdentityServer4;
@@ -58,13 +58,12 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Configuration
             Assert.Equal("MyClient", client.ClientId);
             Assert.Equal("MyClient", client.ClientName);
             Assert.True(client.AllowAccessTokensViaBrowser);
-            Assert.Equal(new[] { "" }, client.RedirectUris.ToArray());
-            Assert.Equal(new[] { "" }, client.PostLogoutRedirectUris.ToArray());
+            Assert.Equal(new[] { "/authentication/login-callback" }, client.RedirectUris.ToArray());
+            Assert.Equal(new[] { "/authentication/logout-callback" }, client.PostLogoutRedirectUris.ToArray());
             Assert.Empty(client.AllowedCorsOrigins);
             Assert.False(client.RequireConsent);
             Assert.Empty(client.ClientSecrets);
             Assert.Equal(GrantTypes.Implicit.ToArray(), client.AllowedGrantTypes.ToArray());
-            //Assert.Equal(expectedScopes, client.AllowedScopes.ToArray());
         }
 
         [Fact]
@@ -101,7 +100,6 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Configuration
             Assert.Equal(GrantTypes.Code.ToArray(), client.AllowedGrantTypes.ToArray());
             Assert.True(client.RequirePkce);
             Assert.False(client.AllowPlainTextPkce);
-            //Assert.Equal(expectedScopes, client.AllowedScopes.ToArray());
         }
 
         [Fact]
@@ -142,43 +140,6 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Configuration
             Assert.False(client.RequireConsent);
             Assert.Empty(client.ClientSecrets);
             Assert.Equal(GrantTypes.Implicit.ToArray(), client.AllowedGrantTypes.ToArray());
-            //Assert.Equal(expectedScopes, client.AllowedScopes.ToArray());
-        }
-
-        [Fact]
-        public void GetClients_ReadsWebAppFromConfiguration()
-        {
-            // Arrange
-            
-var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string>
-            {
-                ["MyClient:Profile"] = "IdentityServerSPA"
-            }).Build();
-
-            var resources = Array.Empty<ApiResource>();
-            var expectedScopes = new[]
-            {
-                IdentityServerConstants.StandardScopes.OpenId,
-                IdentityServerConstants.StandardScopes.Profile
-            };
-
-            var clientLoader = new ConfigureClients(config, new TestLogger<ConfigureClients>());
-
-            // Act
-            var clients = clientLoader.GetClients();
-
-            // Assert
-            var client = Assert.Single(clients);
-            Assert.Equal("MyClient", client.ClientId);
-            Assert.Equal("MyClient", client.ClientName);
-            Assert.True(client.AllowAccessTokensViaBrowser);
-            Assert.Equal(new[] { "" }, client.RedirectUris.ToArray());
-            Assert.Equal(new[] { "" }, client.PostLogoutRedirectUris.ToArray());
-            Assert.Empty(client.AllowedCorsOrigins);
-            Assert.False(client.RequireConsent);
-            Assert.Empty(client.ClientSecrets);
-            Assert.Equal(GrantTypes.Implicit.ToArray(), client.AllowedGrantTypes.ToArray());
-            //Assert.Equal(expectedScopes, client.AllowedScopes.ToArray());
         }
 
         [Fact]
@@ -209,8 +170,8 @@ var config = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<str
             Assert.Equal("MyClient", client.ClientId);
             Assert.Equal("MyClient", client.ClientName);
             Assert.True(client.AllowAccessTokensViaBrowser);
-            Assert.Equal(new[] { "" }, client.RedirectUris.ToArray());
-            Assert.Equal(new[] { "" }, client.PostLogoutRedirectUris.ToArray());
+            Assert.Equal(new[] { "/authentication/login-callback" }, client.RedirectUris.ToArray());
+            Assert.Equal(new[] { "/authentication/logout-callback" }, client.PostLogoutRedirectUris.ToArray());
             Assert.Empty(client.AllowedCorsOrigins);
             Assert.False(client.RequireConsent);
             Assert.Empty(client.ClientSecrets);

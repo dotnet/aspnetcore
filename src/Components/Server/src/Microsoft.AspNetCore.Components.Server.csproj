@@ -7,6 +7,12 @@
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
   </PropertyGroup>
 
+  <!-- Producing this package requires building with NodeJS enabled. -->
+  <PropertyGroup Condition="'$(BuildNodeJS)' == 'false'">
+    <IsPackable>false</IsPackable>
+    <GenerateEmbeddedFilesManifest>false</GenerateEmbeddedFilesManifest>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Include="$(ComponentsSharedSourceRoot)\src\ConventionBasedStartup.cs" Link="Hosting\ConventionBasedStartup.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)\src\IBlazorStartup.cs" Link="Hosting\IBlazorStartup.cs" />
@@ -21,9 +27,9 @@
     <Reference Include="Microsoft.Extensions.FileProviders.Embedded" />
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(BuildNodeJS)' != 'false'">
     <!-- We need .Browser.JS to build first so we can embed its .js output -->
-    <ProjectReference Include="..\..\Browser.JS\src\Microsoft.AspNetCore.Components.Browser.JS.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\Browser.JS\src\Microsoft.AspNetCore.Components.Browser.JS.npmproj" ReferenceOutputAssembly="false" />
     <EmbeddedResource Include="..\..\Browser.JS\src\dist\components.server.js" LogicalName="frameworkFiles\%(Filename)%(Extension)" />
   </ItemGroup>
 

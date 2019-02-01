@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -443,33 +444,98 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
         private class WindowsNativeMethods
         {
-            [DllImport("user32.dll")]
-            internal static extern IntPtr GetTopWindow(IntPtr hWnd);
-            [DllImport("user32.dll")]
-            internal static extern IntPtr GetWindow(IntPtr hWnd, uint uCmd);
+            internal delegate bool EnumWindowProc(IntPtr hwnd, IntPtr lParam);
             [DllImport("user32.dll")]
             internal static extern uint GetWindowThreadProcessId(IntPtr hwnd, out uint lpdwProcessId);
             [DllImport("user32.dll")]
             internal static extern bool PostMessage(HandleRef hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+            [DllImport("user32.dll")]
+            internal static extern bool EnumWindows(EnumWindowProc callback, IntPtr lParam);
+            [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+            internal static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName,int nMaxCount);
+            [DllImport("kernel32.dll")]
+            internal static extern IntPtr CreateRemoteThread(IntPtr hProcess, IntPtr lpThreadAttributes, uint dwStackSize, IntPtr lpStartAddress, IntPtr lpParameter, uint dwCreationFlags, IntPtr lpThreadId);
+
         }
 
         private void SendStopMessageToProcess(int pid)
         {
-            Logger.LogInformation($"Sending shutdown request to {pid}");
-            for (var ptr = WindowsNativeMethods.GetTopWindow(IntPtr.Zero); ptr != IntPtr.Zero; ptr = WindowsNativeMethods.GetWindow(ptr, 2))
+            var found = false;
+            var extraLogging = false;
+            var retryCount = 5;
+
+            while (!found && retryCount > 0)
             {
-                WindowsNativeMethods.GetWindowThreadProcessId(ptr, out var windowProcessId);
-                if (pid == windowProcessId)
-                {
-                    var hWnd = new HandleRef(null, ptr);
-                    if (!WindowsNativeMethods.PostMessage(hWnd, 0x12, IntPtr.Zero, IntPtr.Zero))
+                Logger.LogInformation($"Sending shutdown request to {pid}");
+
+                WindowsNativeMethods.EnumWindows((ptr, param) => {
+                    WindowsNativeMethods.GetWindowThreadProcessId(ptr, out var windowProcessId);
+                    if (extraLogging)
                     {
-                        throw new InvalidOperationException($"Unable to PostMessage to process {pid}. LastError: {Marshal.GetLastWin32Error()}");
+                        Logger.LogDebug($"EnumWindow returned {ptr} belonging to {windowProcessId}");
                     }
-                    return;
+
+                    if (pid == windowProcessId)
+                    {
+                        // 256 is the max length
+                        var className = new StringBuilder(256);
+
+                        if (WindowsNativeMethods.GetClassName(ptr, className, className.Capacity) == 0)
+                        {
+                            throw new InvalidOperationException($"Unable to get window class name: {Marshal.GetLastWin32Error()}");
+                        }
+
+                        if (!string.Equals(className.ToString(), "IISEXPRESS", StringComparison.OrdinalIgnoreCase))
+                        {
+                            Logger.LogDebug($"Skipping window {ptr} with class name {className}");
+                            // skip windows without IISEXPRESS class
+                            return true;
+                        }
+
+                        var hWnd = new HandleRef(null, ptr);
+                        if (!WindowsNativeMethods.PostMessage(hWnd, 0x12, IntPtr.Zero, IntPtr.Zero))
+                        {
+                            throw new InvalidOperationException($"Unable to PostMessage to process {pid}. LastError: {Marshal.GetLastWin32Error()}");
+                        }
+
+                        found = true;
+                        return false;
+                    }
+
+                    return true;
+                }, IntPtr.Zero);
+
+                if (!found)
+                {
+                    Thread.Sleep(100);
                 }
+
+                // Add extra logging if first try was unsuccessful
+                extraLogging = true;
+                retryCount--;
             }
-            throw new InvalidOperationException($"Unable to find main window for process {pid}");
+
+            if (!found)
+            {
+                TriggerCrash(pid);
+
+                throw new InvalidOperationException($"Unable to find main window for process {pid}");
+            }
+        }
+
+        private void TriggerCrash(int pid)
+        {
+            try
+            {
+                Logger.LogInformation($"Trying to crash the process {pid}");
+                var process = Process.GetProcessById(pid);
+                // Calling CreateRemoteThread as 0x1 as thread function pointer should cause a crash
+                WindowsNativeMethods.CreateRemoteThread(process.Handle, IntPtr.Zero, 0, (IntPtr)1, IntPtr.Zero, 0, IntPtr.Zero);
+            }
+            catch (Exception e)
+            {
+                Logger.LogInformation(e, "Exception while trying to crash the process");
+            }
         }
 
         private void GracefullyShutdownProcess(Process hostProcess)
@@ -490,6 +556,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 if (hostProcess.ExitCode != 0)
                 {
                     Logger.LogWarning($"IISExpress exit code is non-zero after graceful shutdown. Exit code: {hostProcess.ExitCode}");
+                    throw new InvalidOperationException($"IISExpress exit code is non-zero after graceful shutdown. Exit code: {hostProcess.ExitCode}.");
                 }
             }
             else

@@ -22,13 +22,12 @@
   <ItemGroup Condition="'$(DirectoryToSign)' != ''">
     <SymbolsPackages Include="$([MSBuild]::NormalizeDirectory($(DirectoryToSign)))**\*.symbols.nupkg" />
     <FilesToSign Include="$([MSBuild]::NormalizeDirectory($(DirectoryToSign)))**\*.nupkg">
-      <Authenticode>$(PackageSigningCertName)</Authenticode>
+      <Authenticode>NuGet</Authenticode>
     </FilesToSign>
   </ItemGroup>
 
   <Target Name="CheckForRequiredProperties">
     <Error Text="Missing required property: DirectoryToSign" Condition="'$(DirectoryToSign)' == ''"/>
-    <Error Text="Missing required property: PackageSigningCertName" Condition="'$(PackageSigningCertName)' == ''"/>
     <Error Text="Could not find any packages to sign in $(DirectoryToSign)" Condition="@(FilesToSign->Count()) == 0"/>
   </Target>
 

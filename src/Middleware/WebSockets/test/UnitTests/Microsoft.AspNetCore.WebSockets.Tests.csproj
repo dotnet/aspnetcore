@@ -5,7 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Server.IntegrationTesting" />
+    <ProjectReference Include="$(RepositoryRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
+
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.AspNetCore.WebSockets" />
     <Reference Include="Microsoft.Extensions.Logging.Testing" />

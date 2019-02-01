@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 {
-    public struct HeaderField
+    public readonly struct HeaderField
     {
         // http://httpwg.org/specs/rfc7541.html#rfc.section.4.1
         public const int RfcOverhead = 32;

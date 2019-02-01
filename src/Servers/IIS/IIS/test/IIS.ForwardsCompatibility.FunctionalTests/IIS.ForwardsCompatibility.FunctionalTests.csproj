@@ -13,9 +13,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Common.Tests\Common.Tests.csproj" />
-    <ProjectReference Include="..\WebSites\**\*.csproj">
+    <ProjectReference Include="..\testassets\**\*.csproj">
       <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
     </ProjectReference>
+    <ProjectReference Include="$(RepositoryRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -24,7 +25,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Server.IntegrationTesting" />
     <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.Extensions.Logging" />
     <Reference Include="Microsoft.Extensions.Logging.Testing" />

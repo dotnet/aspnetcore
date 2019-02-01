@@ -12,4 +12,4 @@ IF "%DirToSign%"=="" (
 SET RepoRoot=%~dp0..\..\..
 SET Project=%~dp0\XplatPackageSigner.proj
 
-%RepoRoot%\build.cmd "-restore:$false" -projects %project% /p:DirectoryToSign=%DirToSign% /bl:%RepoRoot%\artifacts\logs\XplatSign.binlog
+%RepoRoot%\build.cmd -NoRestore -projects %project% /p:DirectoryToSign=%DirToSign% /bl:%RepoRoot%\artifacts\logs\XplatSign.binlog

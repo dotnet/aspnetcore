@@ -3,11 +3,15 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
 
-  <Import Project="$(RepositoryRoot)Versions.props" />
-
   <PropertyGroup Label="Package Versions">
-    <MicrosoftAspNetCoreAzureAppServicesSiteExtension21PackageVersion>2.1.1-rtm-31076</MicrosoftAspNetCoreAzureAppServicesSiteExtension21PackageVersion>
-    <MicrosoftAspNetCoreAzureAppServicesSiteExtension22PackageVersion>2.2.0-rtm-35515</MicrosoftAspNetCoreAzureAppServicesSiteExtension22PackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>2.2.1-build-20181213.2</InternalAspNetCoreSdkPackageVersion>
+    <MicrosoftAspNetCoreAzureAppServicesSiteExtension21PackageVersion>2.1.1</MicrosoftAspNetCoreAzureAppServicesSiteExtension21PackageVersion>
+    <MicrosoftAspNetCoreAzureAppServicesSiteExtension22PackageVersion>2.2.0</MicrosoftAspNetCoreAzureAppServicesSiteExtension22PackageVersion>
+    <MicrosoftAspNetCoreAzureAppServicesSiteExtension30PackageVersion>3.0.0-preview-19075-0444</MicrosoftAspNetCoreAzureAppServicesSiteExtension30PackageVersion>
+    <MicrosoftNETTestSdkPackageVersion>15.6.1</MicrosoftNETTestSdkPackageVersion>
+    <MicrosoftWebXdtPackageVersion>1.4.0</MicrosoftWebXdtPackageVersion>
+    <XunitPackageVersion>2.4.0</XunitPackageVersion>
+    <XunitRunnerVisualStudioPackageVersion>2.4.0</XunitRunnerVisualStudioPackageVersion>
   </PropertyGroup>
 
 </Project>

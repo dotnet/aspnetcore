@@ -6,9 +6,9 @@ using System.Buffers;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Text;
+using System.Text.Json;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Internal;
-using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.SignalR.Protocol
 {
@@ -18,17 +18,22 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
     public static class HandshakeProtocol
     {
         private const string ProtocolPropertyName = "protocol";
+        private static readonly byte[] ProtocolPropertyNameBytes = Encoding.UTF8.GetBytes(ProtocolPropertyName);
         private const string ProtocolVersionPropertyName = "version";
+        private static readonly byte[] ProtocolVersionPropertyNameBytes = Encoding.UTF8.GetBytes(ProtocolVersionPropertyName);
         private const string MinorVersionPropertyName = "minorVersion";
+        private static readonly byte[] MinorVersionPropertyNameBytes = Encoding.UTF8.GetBytes(MinorVersionPropertyName);
         private const string ErrorPropertyName = "error";
+        private static readonly byte[] ErrorPropertyNameBytes = Encoding.UTF8.GetBytes(ErrorPropertyName);
         private const string TypePropertyName = "type";
+        private static readonly byte[] TypePropertyNameBytes = Encoding.UTF8.GetBytes(TypePropertyName);
 
         private static ConcurrentDictionary<IHubProtocol, ReadOnlyMemory<byte>> _messageCache = new ConcurrentDictionary<IHubProtocol, ReadOnlyMemory<byte>>();
 
         public static ReadOnlySpan<byte> GetSuccessfulHandshake(IHubProtocol protocol)
         {
             ReadOnlyMemory<byte> result;
-            if(!_messageCache.TryGetValue(protocol, out result))
+            if (!_messageCache.TryGetValue(protocol, out result))
             {
                 var memoryBufferWriter = MemoryBufferWriter.Get();
                 try
@@ -53,24 +58,13 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         /// <param name="output">The output writer.</param>
         public static void WriteRequestMessage(HandshakeRequestMessage requestMessage, IBufferWriter<byte> output)
         {
-            var textWriter = Utf8BufferTextWriter.Get(output);
-            try
-            {
-                using (var writer = JsonUtils.CreateJsonTextWriter(textWriter))
-                {
-                    writer.WriteStartObject();
-                    writer.WritePropertyName(ProtocolPropertyName);
-                    writer.WriteValue(requestMessage.Protocol);
-                    writer.WritePropertyName(ProtocolVersionPropertyName);
-                    writer.WriteValue(requestMessage.Version);
-                    writer.WriteEndObject();
-                    writer.Flush();
-                }
-            }
-            finally
-            {
-                Utf8BufferTextWriter.Return(textWriter);
-            }
+            var writer = new Utf8JsonWriter(output, new JsonWriterState(new JsonWriterOptions() { SkipValidation = true }));
+
+            writer.WriteStartObject();
+            writer.WriteString(ProtocolPropertyNameBytes, requestMessage.Protocol, escape: false);
+            writer.WriteNumber(ProtocolVersionPropertyNameBytes, requestMessage.Version, escape: false);
+            writer.WriteEndObject();
+            writer.Flush(isFinalBlock: true);
 
             TextMessageFormatter.WriteRecordSeparator(output);
         }
@@ -82,29 +76,18 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         /// <param name="output">The output writer.</param>
         public static void WriteResponseMessage(HandshakeResponseMessage responseMessage, IBufferWriter<byte> output)
         {
-            var textWriter = Utf8BufferTextWriter.Get(output);
-            try
-            {
-                using (var writer = JsonUtils.CreateJsonTextWriter(textWriter))
-                {
-                    writer.WriteStartObject();
-                    if (!string.IsNullOrEmpty(responseMessage.Error))
-                    {
-                        writer.WritePropertyName(ErrorPropertyName);
-                        writer.WriteValue(responseMessage.Error);
-                    }
+            var writer = new Utf8JsonWriter(output, new JsonWriterState(new JsonWriterOptions() { SkipValidation = true }));
 
-                    writer.WritePropertyName(MinorVersionPropertyName);
-                    writer.WriteValue(responseMessage.MinorVersion);
-
-                    writer.WriteEndObject();
-                    writer.Flush();
-                }
-            }
-            finally
+            writer.WriteStartObject();
+            if (!string.IsNullOrEmpty(responseMessage.Error))
             {
-                Utf8BufferTextWriter.Return(textWriter);
+                writer.WriteString(ErrorPropertyNameBytes, responseMessage.Error);
             }
+
+            writer.WriteNumber(MinorVersionPropertyNameBytes, responseMessage.MinorVersion, escape: false);
+
+            writer.WriteEndObject();
+            writer.Flush(isFinalBlock: true);
 
             TextMessageFormatter.WriteRecordSeparator(output);
         }
@@ -123,59 +106,51 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 return false;
             }
 
-            var textReader = Utf8BufferTextReader.Get(payload);
+            var reader = new Utf8JsonReader(in payload, isFinalBlock: true, state: default);
 
-            try
+            reader.CheckRead();
+            reader.EnsureObjectStart();
+
+            int? minorVersion = null;
+            string error = null;
+
+            while (reader.CheckRead())
             {
-                using (var reader = JsonUtils.CreateJsonTextReader(textReader))
+                if (reader.TokenType == JsonTokenType.PropertyName)
                 {
-                    JsonUtils.CheckRead(reader);
-                    JsonUtils.EnsureObjectStart(reader);
+                    var memberName = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
 
-                    int? minorVersion = null;
-                    string error = null;
-
-                    var completed = false;
-                    while (!completed && JsonUtils.CheckRead(reader))
+                    if (memberName.SequenceEqual(TypePropertyNameBytes))
                     {
-                        switch (reader.TokenType)
-                        {
-                            case JsonToken.PropertyName:
-                                var memberName = reader.Value.ToString();
-
-                                switch (memberName)
-                                {
-                                    case TypePropertyName:
-                                        // a handshake response does not have a type
-                                        // check the incoming message was not any other type of message
-                                        throw new InvalidDataException("Expected a handshake response from the server.");
-                                    case ErrorPropertyName:
-                                        error = JsonUtils.ReadAsString(reader, ErrorPropertyName);
-                                        break;
-                                    case MinorVersionPropertyName:
-                                        minorVersion = JsonUtils.ReadAsInt32(reader, MinorVersionPropertyName);
-                                        break;
-                                    default:
-                                        reader.Skip();
-                                        break;
-                                }
-                                break;
-                            case JsonToken.EndObject:
-                                completed = true;
-                                break;
-                            default:
-                                throw new InvalidDataException($"Unexpected token '{reader.TokenType}' when reading handshake response JSON.");
-                        }
-                    };
-
-                    responseMessage = new HandshakeResponseMessage(minorVersion, error);
-                    return true;
+                        // a handshake response does not have a type
+                        // check the incoming message was not any other type of message
+                        throw new InvalidDataException("Expected a handshake response from the server.");
+                    }
+                    else if (memberName.SequenceEqual(ErrorPropertyNameBytes))
+                    {
+                        error = reader.ReadAsString(ErrorPropertyNameBytes);
+                    }
+                    else if (memberName.SequenceEqual(MinorVersionPropertyNameBytes))
+                    {
+                        minorVersion = reader.ReadAsInt32(MinorVersionPropertyNameBytes);
+                    }
+                    else
+                    {
+                        reader.Skip();
+                    }
                 }
-            }
-            finally
-            {
-                Utf8BufferTextReader.Return(textReader);
-            }
+                else if (reader.TokenType == JsonTokenType.EndObject)
+                {
+                    break;
+                }
+                else
+                {
+                    throw new InvalidDataException($"Unexpected token '{reader.TokenType}' when reading handshake response JSON.");
+                }
+            };
+
+            responseMessage = new HandshakeResponseMessage(minorVersion, error);
+            return true;
         }
 
         /// <summary>
@@ -192,62 +167,53 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 return false;
             }
 
-            var textReader = Utf8BufferTextReader.Get(payload);
-            try
+            var reader = new Utf8JsonReader(in payload, isFinalBlock: true, state: default);
+
+            reader.CheckRead();
+            reader.EnsureObjectStart();
+
+            string protocol = null;
+            int? protocolVersion = null;
+
+            while (reader.CheckRead())
             {
-                using (var reader = JsonUtils.CreateJsonTextReader(textReader))
+                if (reader.TokenType == JsonTokenType.PropertyName)
                 {
-                    JsonUtils.CheckRead(reader);
-                    JsonUtils.EnsureObjectStart(reader);
+                    var memberName = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
 
-                    string protocol = null;
-                    int? protocolVersion = null;
-
-                    var completed = false;
-                    while (!completed && JsonUtils.CheckRead(reader))
+                    if (memberName.SequenceEqual(ProtocolPropertyNameBytes))
                     {
-                        switch (reader.TokenType)
-                        {
-                            case JsonToken.PropertyName:
-                                var memberName = reader.Value.ToString();
-
-                                switch (memberName)
-                                {
-                                    case ProtocolPropertyName:
-                                        protocol = JsonUtils.ReadAsString(reader, ProtocolPropertyName);
-                                        break;
-                                    case ProtocolVersionPropertyName:
-                                        protocolVersion = JsonUtils.ReadAsInt32(reader, ProtocolVersionPropertyName);
-                                        break;
-                                    default:
-                                        reader.Skip();
-                                        break;
-                                }
-                                break;
-                            case JsonToken.EndObject:
-                                completed = true;
-                                break;
-                            default:
-                                throw new InvalidDataException($"Unexpected token '{reader.TokenType}' when reading handshake request JSON. Message content: {GetPayloadAsString()}");
-                        }
+                        protocol = reader.ReadAsString(ProtocolPropertyNameBytes);
                     }
-
-                    if (protocol == null)
+                    else if (memberName.SequenceEqual(ProtocolVersionPropertyNameBytes))
                     {
-                        throw new InvalidDataException($"Missing required property '{ProtocolPropertyName}'. Message content: {GetPayloadAsString()}");
+                        protocolVersion = reader.ReadAsInt32(ProtocolVersionPropertyNameBytes);
                     }
-                    if (protocolVersion == null)
+                    else
                     {
-                        throw new InvalidDataException($"Missing required property '{ProtocolVersionPropertyName}'. Message content: {GetPayloadAsString()}");
+                        reader.Skip();
                     }
-
-                    requestMessage = new HandshakeRequestMessage(protocol, protocolVersion.Value);
+                }
+                else if (reader.TokenType == JsonTokenType.EndObject)
+                {
+                    break;
+                }
+                else
+                {
+                    throw new InvalidDataException($"Unexpected token '{reader.TokenType}' when reading handshake request JSON. Message content: {GetPayloadAsString()}");
                 }
             }
-            finally
+
+            if (protocol == null)
             {
-                Utf8BufferTextReader.Return(textReader);
+                throw new InvalidDataException($"Missing required property '{ProtocolPropertyName}'. Message content: {GetPayloadAsString()}");
             }
+            if (protocolVersion == null)
+            {
+                throw new InvalidDataException($"Missing required property '{ProtocolVersionPropertyName}'. Message content: {GetPayloadAsString()}");
+            }
+
+            requestMessage = new HandshakeRequestMessage(protocol, protocolVersion.Value);
 
             // For error messages, we want to print the payload as text
             string GetPayloadAsString()

@@ -18,8 +18,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         private static readonly Action<ILogger, string, string, Exception> _handlerMethodExecuted;
         private static readonly Action<ILogger, string, Exception> _implicitHandlerMethodExecuted;
         private static readonly Action<ILogger, object, Exception> _pageFilterShortCircuit;
-        private static readonly Action<ILogger, string, string[], Exception> _malformedPageDirective;
-        private static readonly Action<ILogger, string, Exception> _unsupportedAreaPath;
         private static readonly Action<ILogger, Type, Exception> _notMostEffectiveFilter;
         private static readonly Action<ILogger, string, string, string, Exception> _beforeExecutingMethodOnFilter;
         private static readonly Action<ILogger, string, string, string, Exception> _afterExecutingMethodOnFilter;
@@ -53,11 +51,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
                 new EventId(3, "PageFilterShortCircuited"),
                "Request was short circuited at page filter '{PageFilter}'.");
 
-            _malformedPageDirective = LoggerMessage.Define<string, string[]>(
-                LogLevel.Warning,
-                new EventId(104, "MalformedPageDirective"),
-                "The page directive at '{FilePath}' is malformed. Please fix the following issues: {Diagnostics}");
-
             _notMostEffectiveFilter = LoggerMessage.Define<Type>(
                LogLevel.Debug,
                 new EventId(1, "NotMostEffectiveFilter"),
@@ -72,11 +65,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
                 LogLevel.Trace,
                 new EventId(2, "AfterExecutingMethodOnFilter"),
                 "{FilterType}: After executing {Method} on filter {Filter}.");
-
-            _unsupportedAreaPath = LoggerMessage.Define<string>(
-                LogLevel.Warning,
-                new EventId(1, "UnsupportedAreaPath"),
-                "The page at '{FilePath}' is located under the area root directory '/Areas/' but does not follow the path format '/Areas/AreaName/Pages/Directory/FileName.cshtml");
         }
 
         public static void ExecutingHandlerMethod(this ILogger logger, PageContext context, HandlerMethodDescriptor handler, object[] arguments)
@@ -152,14 +140,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         public static void NotMostEffectiveFilter(this ILogger logger, Type policyType)
         {
             _notMostEffectiveFilter(logger, policyType, null);
-        }
-
-        public static void UnsupportedAreaPath(this ILogger logger, string filePath)
-        {
-            if (logger.IsEnabled(LogLevel.Warning))
-            {
-                _unsupportedAreaPath(logger, filePath, null);
-            }
         }
     }
 }

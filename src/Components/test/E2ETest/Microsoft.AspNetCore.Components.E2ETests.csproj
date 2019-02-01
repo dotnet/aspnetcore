@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
-    <DefaultItemExcludes>${DefaultItemExcludes};node_modules\**</DefaultItemExcludes>
+    <DefaultItemExcludes>$(DefaultItemExcludes);node_modules\**</DefaultItemExcludes>
     <!-- WebDriver is not strong-named signed -->
     <SignAssembly>false</SignAssembly>
 

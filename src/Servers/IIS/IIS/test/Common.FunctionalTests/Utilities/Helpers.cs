@@ -128,6 +128,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             return response;
         }
 
+        public static Task Retry(Func<Task> func, TimeSpan maxTime)
+        {
+            return Retry(func, (int)(maxTime.TotalMilliseconds / 200), 200);
+        }
+
         public static async Task Retry(Func<Task> func, int attempts, int msDelay)
         {
             var exceptions = new List<Exception>();

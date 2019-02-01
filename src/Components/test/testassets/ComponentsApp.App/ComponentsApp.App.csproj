@@ -1,8 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
+  <!-- Reference targets and props from Components.Build package -->
+  <Import Project="..\..\..\Build\src\ReferenceFromSource.props" />
+
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <ReferenceBlazorBuildLocally>true</ReferenceBlazorBuildLocally>
   </PropertyGroup>
 
   <ItemGroup>

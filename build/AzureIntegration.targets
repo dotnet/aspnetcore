@@ -3,13 +3,11 @@
     <AzureIntegrationProjectRoot>$(MSBuildThisFileDirectory)..\src\AzureIntegration\</AzureIntegrationProjectRoot>
   </PropertyGroup>
 
-  <Target Name="BuildAzureIntegration" DependsOnTargets="PrepareOutputPaths;GeneratePropsFiles">
+  <Target Name="BuildAzureIntegration">
     <PropertyGroup>
       <AzureIntegrationProjProperties>
         AspNetUniverseBuildOffline=true;
         RepositoryRoot=$(AzureIntegrationProjectRoot);
-        DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath);
-        DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath);
         VersionSuffix=$(VersionSuffix);
         BuildNumberSuffix=$(BuildNumberSuffix);
         Configuration=$(Configuration);
