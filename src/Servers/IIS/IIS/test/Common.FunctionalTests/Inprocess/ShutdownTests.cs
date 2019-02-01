@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task ShutdownTimeoutIsApplied()
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite, publish: true);
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite);
             deploymentParameters.TransformArguments((a, _) => $"{a} HangOnStop");
             deploymentParameters.WebConfigActionList.Add(
                 WebConfigHelpers.AddOrModifyAspNetCoreSection("shutdownTimeLimit", "1"));
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             // Canceled token doesn't affect shutdown, in-proc doesn't handle ungraceful shutdown
             // IIS's ShutdownTimeLimit will handle that.
-            var parameters = _fixture.GetBaseDeploymentParameters(publish: true);
+            var parameters = _fixture.GetBaseDeploymentParameters();
             var deploymentResult = await DeployAsync(parameters);
             try
             {

@@ -184,7 +184,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         private IISDeploymentParameters GetGlobalVersionBaseDeploymentParameters()
         {
-            return _fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess, publish: true);
+            return _fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
         }
 
         private void CopyDirectory(string from, string to)

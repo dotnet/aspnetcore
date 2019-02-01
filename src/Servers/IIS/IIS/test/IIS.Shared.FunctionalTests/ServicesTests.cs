@@ -35,7 +35,7 @@ namespace IIS.FunctionalTests
             // This test often hits a memory leak in warmup.dll module, it has been reported to IIS team
             using (AppVerifier.Disable(DeployerSelector.ServerType, 0x900))
             {
-                var baseDeploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel, publish: true);
+                var baseDeploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel);
                 baseDeploymentParameters.TransformArguments(
                     (args, contentRoot) => $"{args} CreateFile \"{Path.Combine(contentRoot, "Started.txt")}\"");
                 EnablePreload(baseDeploymentParameters);
@@ -58,7 +58,7 @@ namespace IIS.FunctionalTests
             // This test often hits a memory leak in warmup.dll module, it has been reported to IIS team
             using (AppVerifier.Disable(DeployerSelector.ServerType, 0x900))
             {
-                var baseDeploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel, publish: true);
+                var baseDeploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel);
                 EnablePreload(baseDeploymentParameters);
 
                 baseDeploymentParameters.ServerConfigActionList.Add(

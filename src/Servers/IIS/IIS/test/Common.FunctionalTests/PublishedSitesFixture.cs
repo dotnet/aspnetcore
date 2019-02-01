@@ -19,44 +19,46 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
     public class PublishedSitesFixture : IDisposable
     {
-        public PublishedApplicationPublisher InProcessTestSite { get; } = new PublishedApplicationPublisher(Helpers.GetInProcessTestSitesPath());
-        public PublishedApplicationPublisher OutOfProcessTestSite { get; } = new PublishedApplicationPublisher(Helpers.GetOutOfProcessTestSitesPath());
+        public PublishedApplicationPublisher InProcessTestSite { get; } = new PublishedApplicationPublisher(Helpers.GetInProcessTestSitesName());
+        public PublishedApplicationPublisher OutOfProcessTestSite { get; } = new PublishedApplicationPublisher(Helpers.GetOutOfProcessTestSitesName());
 
         public void Dispose()
         {
         }
 
-        public IISDeploymentParameters GetBaseDeploymentParameters(HostingModel hostingModel = HostingModel.InProcess, bool publish = false)
+        public IISDeploymentParameters GetBaseDeploymentParameters(HostingModel hostingModel = HostingModel.InProcess)
         {
             var publisher = hostingModel == HostingModel.InProcess ? InProcessTestSite : OutOfProcessTestSite;
-            return GetBaseDeploymentParameters(publisher, hostingModel, publish);
-        }
-        public IISDeploymentParameters GetBaseDeploymentParameters(TestVariant variant, bool publish = false)
-        {
-            var publisher = variant.HostingModel == HostingModel.InProcess ? InProcessTestSite : OutOfProcessTestSite;
-            return GetBaseDeploymentParameters(publisher, new DeploymentParameters(variant), publish);
+            return GetBaseDeploymentParameters(publisher, hostingModel);
         }
 
-        public IISDeploymentParameters GetBaseDeploymentParameters(ApplicationPublisher publisher, HostingModel hostingModel = HostingModel.InProcess, bool publish = false)
+        public IISDeploymentParameters GetBaseDeploymentParameters(TestVariant variant)
+        {
+            var publisher = variant.HostingModel == HostingModel.InProcess ? InProcessTestSite : OutOfProcessTestSite;
+            return GetBaseDeploymentParameters(publisher, new DeploymentParameters(variant));
+        }
+
+        public IISDeploymentParameters GetBaseDeploymentParameters(ApplicationPublisher publisher, HostingModel hostingModel = HostingModel.InProcess)
         {
             return GetBaseDeploymentParameters(
                 publisher,
-                new DeploymentParameters(publisher.ApplicationPath, DeployerSelector.ServerType, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
+                new DeploymentParameters()
                 {
+                    ServerType = DeployerSelector.ServerType,
+                    RuntimeFlavor = RuntimeFlavor.CoreClr,
+                    RuntimeArchitecture = RuntimeArchitecture.x64,
                     HostingModel = hostingModel,
                     TargetFramework = Tfm.NetCoreApp30,
                     AncmVersion = AncmVersion.AspNetCoreModuleV2
-                },
-                publish);
+                });
         }
 
-        public IISDeploymentParameters GetBaseDeploymentParameters(ApplicationPublisher publisher, DeploymentParameters baseParameters, bool publish = false)
+        public IISDeploymentParameters GetBaseDeploymentParameters(ApplicationPublisher publisher, DeploymentParameters baseParameters)
         {
             return new IISDeploymentParameters(baseParameters)
             {
                 ApplicationPublisher = publisher,
-                ApplicationPath =  publisher.ApplicationPath,
-                PublishApplicationBeforeDeployment = publish
+                PublishApplicationBeforeDeployment = true
             };
         }
     }

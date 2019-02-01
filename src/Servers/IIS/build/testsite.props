@@ -6,10 +6,12 @@
     <IISExpressAppHostConfig>$(MSBuildThisFileDirectory)applicationhost.config</IISExpressAppHostConfig>
     <IISAppHostConfig>$(MSBuildThisFileDirectory)applicationhost.iis.config</IISAppHostConfig>
     <PreserveCompilationContext>false</PreserveCompilationContext>
-    <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
+    <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
     <!-- Work around until we get a new WebSdk -->
     <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
-    <BuildProjectReferences Condition="'$(_InsidePublishTestsAssets)' == 'True'">False</BuildProjectReferences>
+    <HasTestAssetProfile Condition="'$(TestAssetProfile)' != ''">true</HasTestAssetProfile>
+    <AppendRuntimeIdentifierToOutputPath Condition="'$(HasTestAssetProfile)' == 'true'">false</AppendRuntimeIdentifierToOutputPath>
+    <TestAssetOutputName Condition="'$(TestAssetOutputName)' == ''">$(MSBuildProjectName)</TestAssetOutputName>
   </PropertyGroup>
 
   <Import Project="assets.props" />
@@ -24,14 +26,6 @@
     <IISExpressPath>$(ProgramW6432)\IIS Express\iisexpress.exe</IISExpressPath>
     <IISPath>$(SystemRoot)\System32\inetsrv\w3wp.exe</IISPath>
     <NativeFolder>x64</NativeFolder>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <!-- For standalone publish, all dlls are flattened to the same folder.
-         Set the base path to the request handler
-    -->
-    <BasePathForRequestHandler Condition="'$(RuntimeIdentifier)' == ''">$(NativePlatform)\</BasePathForRequestHandler>
-
   </PropertyGroup>
 
   <PropertyGroup>
@@ -50,7 +44,7 @@
   <!-- Deps file injection-->
   <ItemGroup Condition="('$(InProcessTestSite)' == 'true') AND ('$(ReferenceTestTasks)' != 'false')">
     <ProjectReference Include="$(MSBuildThisFileDirectory)..\IIS\test\testassets\TestTasks\TestTasks.csproj">
-      <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
   </ItemGroup>
 
@@ -63,7 +57,6 @@
       <InjectDepsApp>dotnet $(InjectDepsAssembly).dll</InjectDepsApp>
     </PropertyGroup>
   </Target>
-
 
   <Target Name="InjectRequestHandler"
           Condition=" '$(InProcessTestSite)' == 'true' AND '$(BuildIisNativeProjects)' == 'true' AND '$(TargetFrameworkIdentifier)' != '.NETFramework'"
@@ -79,7 +72,24 @@
     <Exec Command="$(InjectDepsApp) &quot;$(PublishDepsFilePath)&quot; $(RuntimeIdentifier) " />
   </Target>
 
-  <Target Name="PublishTestsAssets" AfterTargets="Build" Condition="'$(_InsidePublishTestsAssets)' != 'true' AND '@(TestAssetPublishProfile->Count())' != '0'">
+  <Target Name="PreventProjectReferencesFromBuilding" BeforeTargets="BeforeResolveReferences" Condition="'@(TestAssetPublishProfile->Count())' != '0'">
+    <PropertyGroup>
+      <BuildProjectReferences Condition="'$(HasTestAssetProfile)' == 'true'">false</BuildProjectReferences>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="PrepareForTestAssetPublish" BeforeTargets="PrepareForPublish" Condition="'@(TestAssetPublishProfile->Count())' != '0'">
+    <PropertyGroup Condition="'$(HasTestAssetProfile)' == 'true'">
+      <PublishDir>$(OutputPath)$(PublishDirName)\$(TestAssetOutputName)-$(TestAssetProfile)\</PublishDir>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(HasTestAssetProfile)' != 'true'">
+      <IsPublishable>false</IsPublishable>
+      <IsTransformWebConfigDisabled>true</IsTransformWebConfigDisabled>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="PublishTestsAssets" AfterTargets="Build;Publish" Condition="'$(TestAssetProfile)' == '' AND '@(TestAssetPublishProfile->Count())' != '0'">
 
     <!--
       _InsidePublishTestsAssets is to avoid invoking this target recursively
@@ -87,6 +97,6 @@
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="Publish"
              RemoveProperties="Platform;PlatformTarget"
-             Properties="ReferenceTestTasks=false;_InsidePublishTestsAssets=True;PublishDir=$(PublishDir)%(TestAssetPublishProfile.Identity)/;%(TestAssetPublishProfile.Properties)" />
+             Properties="TestAssetProfile=%(TestAssetPublishProfile.Identity);ReferenceTestTasks=false;%(TestAssetPublishProfile.Properties)" />
   </Target>
 </Project>
