@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 16
+# Visual Studio Version 16
 VisualStudioVersion = 16.0.0.0
 MinimumVisualStudioVersion = 16.0.0.0
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServerComparison.FunctionalTests", "test\FunctionalTests\ServerComparison.FunctionalTests.csproj", "{78018310-02F8-4BB8-A8E2-E88AF7A7F51E}"

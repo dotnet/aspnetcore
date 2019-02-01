@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 16
+# Visual Studio Version 16
 VisualStudioVersion = 16.0.0.0
 MinimumVisualStudioVersion = 16.0.0.0
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "aspnetcoreCA", "AspNetCoreModule-Setup\CustomAction\aspnetcoreCA.vcxproj", "{7C27E72F-54D0-4820-8CFA-5E4BE640974B}"

@@ -1,5 +1,5 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 16
+# Visual Studio Version 16
 VisualStudioVersion = 16.0.0.0
 MinimumVisualStudioVersion = 16.0.0.0
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RazorComponentsWeb-CSharp.Server", "RazorComponentsWeb-CSharp.Server\RazorComponentsWeb-CSharp.Server.csproj", "{650B3CE7-2E93-4CC4-9F46-466686815EAA}"
