@@ -324,11 +324,11 @@ TEST(websocket_transport_receive_loop, receive_loop_logs_websocket_exceptions)
         trace_level::errors);
 }
 
-TEST(websocket_transport_receive_loop, receive_loop_logs_if_receive_task_cancelled)
+TEST(websocket_transport_receive_loop, receive_loop_logs_if_receive_task_canceled)
 {
     receive_loop_logs_exception_runner(
-        pplx::task_canceled("cancelled"),
-        _XPLATSTR("[info        ] [websocket transport] receive task cancelled.\n"),
+        pplx::task_canceled("canceled"),
+        _XPLATSTR("[info        ] [websocket transport] receive task canceled.\n"),
         trace_level::info);
 }
 

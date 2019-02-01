@@ -762,7 +762,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             public bool Suppressed { get; set; }
         }
 
-        private struct TagHelperScopeInfo
+        private readonly struct TagHelperScopeInfo
         {
             public TagHelperScopeInfo(ViewBuffer buffer, HtmlEncoder encoder, TextWriter writer)
             {

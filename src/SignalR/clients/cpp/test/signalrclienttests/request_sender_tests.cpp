@@ -17,9 +17,8 @@ TEST(request_sender_negotiate, request_created_with_correct_url)
     auto request_factory = test_web_request_factory([&requested_url](const web::uri &url) -> std::unique_ptr<web_request>
     {
         utility::string_t response_body(
-            _XPLATSTR("{\"Url\":\"/signalr\", \"ConnectionToken\" : \"A==\", \"ConnectionId\" : \"f7707523-307d-4cba-9abf-3eef701241e8\", ")
-            _XPLATSTR("\"KeepAliveTimeout\" : 20.0, \"DisconnectTimeout\" : 30.0, \"ConnectionTimeout\" : 110.0, \"TryWebSockets\" : true, ")
-            _XPLATSTR("\"ProtocolVersion\" : \"1.4\", \"TransportConnectTimeout\" : 5.0, \"LongPollDelay\" : 0.0}"));
+            _XPLATSTR("{ \"connectionId\" : \"f7707523-307d-4cba-9abf-3eef701241e8\", ")
+            _XPLATSTR("\"availableTransports\" : [] }"));
 
         requested_url = url;
         return std::unique_ptr<web_request>(new web_request_stub((unsigned short)200, _XPLATSTR("OK"), response_body));
@@ -27,7 +26,7 @@ TEST(request_sender_negotiate, request_created_with_correct_url)
 
     request_sender::negotiate(request_factory, web::uri{ _XPLATSTR("http://fake/signalr") }, _XPLATSTR("")).get();
 
-    ASSERT_EQ(web::uri(_XPLATSTR("http://fake/signalr/negotiate?clientProtocol=1.4&connectionData=data")), requested_url);
+    ASSERT_EQ(web::uri(_XPLATSTR("http://fake/signalr/negotiate")), requested_url);
 }
 
 TEST(request_sender_negotiate, negotiation_request_sent_and_response_serialized)
@@ -35,9 +34,8 @@ TEST(request_sender_negotiate, negotiation_request_sent_and_response_serialized)
     auto request_factory = test_web_request_factory([](const web::uri&) -> std::unique_ptr<web_request>
     {
         utility::string_t response_body(
-            _XPLATSTR("{\"Invocation\" : \"f7707523-307d-4cba-9abf-3eef701241e8\", ")
-            _XPLATSTR("\"KeepAliveTimeout\" : 20.0, \"DisconnectTimeout\" : 30.0, \"ConnectionTimeout\" : 110.0, \"TryWebSockets\" : true, ")
-            _XPLATSTR("\"ProtocolVersion\" : \"1.4\", \"TransportConnectTimeout\" : 5.5, \"LongPollDelay\" : 0.0}"));
+            _XPLATSTR("{\"connectionId\" : \"f7707523-307d-4cba-9abf-3eef701241e8\", ")
+            _XPLATSTR("\"availableTransports\" : [] }"));
 
         return std::unique_ptr<web_request>(new web_request_stub((unsigned short)200, _XPLATSTR("OK"), response_body));
     });
