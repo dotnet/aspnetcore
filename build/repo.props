@@ -60,9 +60,9 @@
 
     <!-- Exclude the benchmarks because they use <PackageReference>. -->
     <ProjectToExclude Include="
-                      $(RepositoryRoot)src\Servers\Kestrel\perf\PlatformBenchmarks\**\*.csproj
-                      $(RepositoryRoot)src\SignalR\perf\benchmarkapps\**\*.csproj
-                      $(RepositoryRoot)src\Mvc\benchmarkapps\**\*.csproj
+                      $(RepositoryRoot)src\Servers\Kestrel\perf\PlatformBenchmarks\**\*.csproj;
+                      $(RepositoryRoot)src\SignalR\perf\benchmarkapps\**\*.csproj;
+                      $(RepositoryRoot)src\Mvc\benchmarkapps\**\*.csproj;
                       " />
 
   </ItemGroup>
