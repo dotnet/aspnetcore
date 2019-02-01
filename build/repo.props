@@ -93,9 +93,6 @@
 
         <!-- Windows hosting bundled -->
         <ProjectToBuild Include="$(RepositoryRoot)src\Installers\Windows\WindowsHostingBundle\WindowsHostingBundle.wixproj" AdditionalProperties="Platform=x86" />
-
-        <!-- SiteExtension -->
-        <ProjectToBuild Include="$(RepositoryRoot)src\SiteExtensions\LoggingAggregate\src\Microsoft.AspNetCore.AzureAppServices.SiteExtension\Microsoft.AspNetCore.AzureAppServices.SiteExtension.csproj" />
       </ItemGroup>
 
       <ItemGroup>
@@ -143,6 +140,7 @@
                           $(RepositoryRoot)src\Identity\**\*.*proj;
                           $(RepositoryRoot)src\Servers\**\*.csproj;
                           $(RepositoryRoot)src\Security\**\*.*proj;
+                          $(RepositoryRoot)src\SiteExtensions\Microsoft.Web.Xdt.Extensions\**\*.csproj;
                           $(RepositoryRoot)src\Shared\**\*.*proj;
                           $(RepositoryRoot)src\Tools\**\*.*proj;
                           $(RepositoryRoot)src\Middleware\**\*.csproj;
