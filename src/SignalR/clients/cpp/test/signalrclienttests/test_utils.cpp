@@ -36,10 +36,9 @@ std::unique_ptr<web_request_factory> create_test_web_request_factory()
     return std::make_unique<test_web_request_factory>([](const web::uri& url)
     {
         auto response_body =
-            url.path() == _XPLATSTR("/negotiate") || url.path() == _XPLATSTR("/signalr/negotiate")
-            ? _XPLATSTR("{\"Url\":\"/signalr\", \"ConnectionToken\" : \"A==\", \"ConnectionId\" : \"f7707523-307d-4cba-9abf-3eef701241e8\", ")
-            _XPLATSTR("\"KeepAliveTimeout\" : 20.0, \"DisconnectTimeout\" : 10.0, \"ConnectionTimeout\" : 110.0, \"TryWebSockets\" : true, ")
-            _XPLATSTR("\"ProtocolVersion\" : \"1.4\", \"TransportConnectTimeout\" : 5.0, \"LongPollDelay\" : 0.0}")
+            url.path() == _XPLATSTR("/negotiate")
+            ? _XPLATSTR("{\"connectionId\" : \"f7707523-307d-4cba-9abf-3eef701241e8\", ")
+            _XPLATSTR("\"availableTransports\" : [] }")
             : url.path() == _XPLATSTR("/start") || url.path() == _XPLATSTR("/signalr/start")
                 ? _XPLATSTR("{\"Response\":\"started\" }")
                 : _XPLATSTR("");

@@ -23,7 +23,7 @@ namespace signalr
         typedef std::function<void __cdecl (const web::json::value&)> method_invoked_handler;
 
         SIGNALRCLIENT_API explicit hub_connection(const utility::string_t& url, const utility::string_t& query_string = _XPLATSTR(""),
-            trace_level trace_level = trace_level::all, std::shared_ptr<log_writer> log_writer = nullptr, bool use_default_url = true);
+            trace_level trace_level = trace_level::all, std::shared_ptr<log_writer> log_writer = nullptr);
 
         SIGNALRCLIENT_API ~hub_connection();
 
@@ -37,8 +37,6 @@ namespace signalr
         SIGNALRCLIENT_API connection_state __cdecl get_connection_state() const;
         SIGNALRCLIENT_API utility::string_t __cdecl get_connection_id() const;
 
-        SIGNALRCLIENT_API void __cdecl set_reconnecting(const std::function<void __cdecl()>& reconnecting_callback);
-        SIGNALRCLIENT_API void __cdecl set_reconnected(const std::function<void __cdecl()>& reconnected_callback);
         SIGNALRCLIENT_API void __cdecl set_disconnected(const std::function<void __cdecl()>& disconnected_callback);
 
         SIGNALRCLIENT_API void __cdecl set_client_config(const signalr_client_config& config);

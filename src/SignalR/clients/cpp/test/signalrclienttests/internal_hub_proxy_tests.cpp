@@ -48,9 +48,9 @@ TEST(on, cannot_register_handler_if_connection_not_in_disconnected_state)
     try
     {
         auto websocket_client = create_test_websocket_client(
-            /* receive function */ []() { return pplx::task_from_result(std::string("{ \"C\":\"x\", \"S\":1, \"M\":[] }")); });
+            /* receive function */ []() { return pplx::task_from_result(std::string("{ }\x1e")); });
         auto hub_connection = hub_connection_impl::create(_XPLATSTR("http://fakeuri"), _XPLATSTR(""), trace_level::all,
-            std::make_shared<trace_log_writer>(), /*use_default_url*/true, create_test_web_request_factory(),
+            std::make_shared<trace_log_writer>(), create_test_web_request_factory(),
             std::make_unique<test_transport_factory>(websocket_client));
 
         hub_connection->start().get();
@@ -102,7 +102,7 @@ TEST(invoke_json, invoke_throws_when_the_underlying_connection_is_not_valid)
 
     try
     {
-        hub_connection.invoke(_XPLATSTR("method"), web::json::value()).get();
+        hub_connection.invoke(_XPLATSTR("method")).get();
         ASSERT_TRUE(true); // exception expected but not thrown
     }
     catch (const signalr_exception& e)
@@ -117,7 +117,7 @@ TEST(invoke_void, send_throws_when_the_underlying_connection_is_not_valid)
 
     try
     {
-        hub_connection.send(_XPLATSTR("method"), web::json::value()).get();
+        hub_connection.send(_XPLATSTR("method")).get();
         ASSERT_TRUE(true); // exception expected but not thrown
     }
     catch (const signalr_exception& e)

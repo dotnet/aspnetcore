@@ -9,8 +9,8 @@
 namespace signalr
 {
     hub_connection::hub_connection(const utility::string_t& url, const utility::string_t& query_string,
-        trace_level trace_level, std::shared_ptr<log_writer> log_writer, bool use_default_url)
-        : m_pImpl(hub_connection_impl::create(url, query_string, trace_level, std::move(log_writer), use_default_url))
+        trace_level trace_level, std::shared_ptr<log_writer> log_writer)
+        : m_pImpl(hub_connection_impl::create(url, query_string, trace_level, std::move(log_writer)))
     {}
 
     // Do NOT remove this destructor. Letting the compiler generate and inline the default dtor may lead to
@@ -65,16 +65,6 @@ namespace signalr
     utility::string_t hub_connection::get_connection_id() const
     {
         return m_pImpl->get_connection_id();
-    }
-
-    void hub_connection::set_reconnecting(const std::function<void()>& reconnecting_callback)
-    {
-        m_pImpl->set_reconnecting(reconnecting_callback);
-    }
-
-    void hub_connection::set_reconnected(const std::function<void()>& reconnected_callback)
-    {
-        m_pImpl->set_reconnected(reconnected_callback);
     }
 
     void hub_connection::set_disconnected(const std::function<void()>& disconnected_callback)
