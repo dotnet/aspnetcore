@@ -89,10 +89,12 @@ namespace System.IO.Pipelines.Tests
             Assert.Equal(memory, secondMemory);
         }
 
-        [Fact]
-        public void GetSpanWithZeroSizeHintReturnsMaxBufferSizeOfPool()
+        [Theory]
+        [InlineData(0)]
+        [InlineData(2048)]
+        public void GetSpanWithZeroSizeHintReturnsMaxBufferSizeOfPool(int sizeHint)
         {
-            var span = Writer.GetSpan(0);
+            var span = Writer.GetSpan(sizeHint);
 
             Assert.Equal(4096, span.Length);
         }

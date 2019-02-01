@@ -279,7 +279,7 @@ namespace System.IO.Pipelines
 
             // Get a new buffer using the minimum segment size, unless the size hint is larger than a single segment.
             // Also, the size cannot be larger than the MaxBufferSize of the MemoryPool
-            _currentSegmentOwner = _pool.Rent(Math.Min(Math.Max(_minimumSegmentSize, sizeHint), _pool.MaxBufferSize));
+            _currentSegmentOwner = _pool.Rent(Math.Clamp(sizeHint, _minimumSegmentSize, _pool.MaxBufferSize));
             _currentSegment = _currentSegmentOwner.Memory;
             _position = 0;
         }
