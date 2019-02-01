@@ -5,7 +5,9 @@ param(
     [Alias("x86")]
     [string]$sharedfx86harvestroot,
     [Alias("x64")]
-    [string]$sharedfx64harvestroot
+    [string]$sharedfx64harvestroot,
+    [Parameter(ValueFromRemainingArguments = $true)]
+    [string[]]$AdditionalArgs
 )
 
 $ErrorActionPreference = 'Stop'
@@ -37,7 +39,8 @@ try {
             -sign `
             -BuildInstallers `
             "-bl:$repoRoot/artifacts/logs/installers.msbuild.binlog" `
-            @msbuildargs
+            @msbuildargs `
+            @AdditionalArgs
 }
 finally {
     Pop-Location
