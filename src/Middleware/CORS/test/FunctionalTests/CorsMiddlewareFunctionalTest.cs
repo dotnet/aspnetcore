@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -25,7 +26,8 @@ namespace FunctionalTests
 
         public ITestOutputHelper Output { get; }
 
-        [Theory]
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Disabling this test on OSX until we have a resolution for https://github.com/aspnet/AspNetCore-Internal/issues/1619")]
         [InlineData("Startup")]
         [InlineData("StartupWithoutEndpointRouting")]
         public async Task RunClientTests(string startup)
@@ -50,6 +52,8 @@ namespace FunctionalTests
                         Arguments = "test --no-watchman",
                     };
                 }
+                // Disallow the test from downloading \ installing chromium.
+                processStartInfo.Environment["PUPPETEER_SKIP_CHROMIUM_DOWNLOAD"] = "true";
 
                 // Act
                 var result = await ProcessManager.RunProcessAsync(processStartInfo, loggerFactory.CreateLogger("ProcessManager"));
