@@ -23,11 +23,6 @@
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
     <PackageReference Include="System.Text.JsonLab.Serialization" Version="0.1.1-e190201-1" />
-    <PackageReference Include="Microsoft.Private.CoreFx.NETCoreApp" Version="4.6.0-dev.19101.1" />
   </ItemGroup>
-
-  <PropertyGroup>
-    <PackageConflictPreferredPackages>Microsoft.Private.CoreFx.NETCoreApp;runtime.win-x64.Microsoft.Private.CoreFx.NETCoreApp;$(PackageConflictPreferredPackages)</PackageConflictPreferredPackages>
-  </PropertyGroup>
 
 </Project>

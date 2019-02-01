@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         private const string ArgumentsPropertyName = "arguments";
         private const string HeadersPropertyName = "headers";
 
-        private static readonly string ProtocolName = "json";
+        private static readonly string ProtocolName = "j1son";
         private static readonly int ProtocolVersion = 1;
         private static readonly int ProtocolMinorVersion = 0;
 
