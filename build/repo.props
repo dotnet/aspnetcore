@@ -140,6 +140,7 @@
                           $(RepositoryRoot)src\Identity\**\*.*proj;
                           $(RepositoryRoot)src\Servers\**\*.csproj;
                           $(RepositoryRoot)src\Security\**\*.*proj;
+                          $(RepositoryRoot)src\SiteExtensions\Microsoft.Web.Xdt.Extensions\**\*.csproj;
                           $(RepositoryRoot)src\Shared\**\*.*proj;
                           $(RepositoryRoot)src\Tools\**\*.*proj;
                           $(RepositoryRoot)src\Middleware\**\*.csproj;

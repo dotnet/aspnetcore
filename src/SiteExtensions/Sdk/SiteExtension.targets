@@ -50,7 +50,7 @@
         Project="$(_DepsOutputDirectory)%(HostingStartupPackageReference.Identity)\HostingStartup.csproj"
         DepsFile="$(_DepsOutputDirectory)%(HostingStartupPackageReference.Identity)\p\HostingStartup.deps.json"
         TrimmedDepsFile="$(_DepsOutputDirectory)%(HostingStartupPackageReference.Identity)\%(HostingStartupPackageReference.Identity).deps.json"
-        PackagePath="$(_BasePackagePath)%(HostingStartupPackageReference.Identity)\shared\Microsoft.AspNetCore.App\$(MicrosoftAspNetCoreAppPackageVersion)\"
+        PackagePath="$(_BasePackagePath)\shared\Microsoft.AspNetCore.App\$(MicrosoftAspNetCoreAppPackageVersion)\"
          />
     </ItemGroup>
     <MakeDir Directories="$(_DepsOutputDirectory)" />
