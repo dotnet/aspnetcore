@@ -799,20 +799,20 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                     if (paramIndex < paramCount)
                     {
                         var bytes = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
-                        if (reader.TokenType == JsonTokenType.String)
-                        {
-                            var b = new byte[bytes.Length + 2];
-                            b[0] = 34;
-                            bytes.CopyTo(b.AsSpan().Slice(1, bytes.Length));
-                            b[bytes.Length + 1] = 34;
-                            bytes = b.AsSpan();
-                        }
                         if (paramTypes[paramIndex] == typeof(DateTime))
                         {
                             arguments[paramIndex] = DateTime.Parse(Encoding.UTF8.GetString(bytes));
                         }
                         else
                         {
+                            if (reader.TokenType == JsonTokenType.String)
+                            {
+                                var b = new byte[bytes.Length + 2];
+                                b[0] = 34;
+                                bytes.CopyTo(b.AsSpan().Slice(1, bytes.Length));
+                                b[bytes.Length + 1] = 34;
+                                bytes = b.AsSpan();
+                            }
                             arguments[paramIndex] = STJ.Serialization.JsonConverter.FromJson(bytes, paramTypes[paramIndex]);
                         }
                     }
