@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
             if (!string.IsNullOrEmpty(result.RedirectUrl))
             {
                 // It's a redirection
-                var permanentRedirect = renderResult.StatusCode.GetValueOrDefault() == 301;
+                var permanentRedirect = result.StatusCode.GetValueOrDefault() == 301;
                 ViewContext.HttpContext.Response.Redirect(result.RedirectUrl, permanentRedirect);
                 return;
             }
