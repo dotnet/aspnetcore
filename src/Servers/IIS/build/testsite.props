@@ -11,6 +11,7 @@
     <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
     <AppendRuntimeIdentifierToOutputPath>False</AppendRuntimeIdentifierToOutputPath>
     <HasTestAssetProfile Condition="'$(TestAssetProfile)' != ''">True</HasTestAssetProfile>
+    <TestAssetOutputName Condition="'$(TestAssetOutputName)' == ''">$(MSBuildProjectName)</TestAssetOutputName>
   </PropertyGroup>
 
   <Import Project="assets.props" />
@@ -71,15 +72,9 @@
     <Exec Command="$(InjectDepsApp) &quot;$(PublishDepsFilePath)&quot; $(RuntimeIdentifier) " />
   </Target>
 
-  <Target Name="PreventProjectReferencesFromBuilding" BeforeTargets="BeforeResolveReferences" Condition="'@(TestAssetPublishProfile->Count())' != '0'">
-    <PropertyGroup>
-      <BuildProjectReferences Condition="'$(HasTestAssetProfile)' == 'True'">false</BuildProjectReferences>
-    </PropertyGroup>
-  </Target>
-
   <Target Name="PrepareForTestAssetPublish" BeforeTargets="PrepareForPublish" Condition="'@(TestAssetPublishProfile->Count())' != '0'">
     <PropertyGroup Condition="'$(HasTestAssetProfile)' == 'True'">
-      <PublishDir>$(OutputPath)$(PublishDirName)\$(MSBuildProjectName)-$(TestAssetProfile)\</PublishDir>
+      <PublishDir>$(OutputPath)$(PublishDirName)\$(TestAssetOutputName)-$(TestAssetProfile)\</PublishDir>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(HasTestAssetProfile)' != 'True'">
@@ -96,6 +91,6 @@
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="Publish"
              RemoveProperties="Platform;PlatformTarget"
-             Properties="TestAssetProfile=%(TestAssetPublishProfile.Identity);ReferenceTestTasks=false;%(TestAssetPublishProfile.Properties)" />
+             Properties="NoBuild=true;TestAssetProfile=%(TestAssetPublishProfile.Identity);ReferenceTestTasks=false;%(TestAssetPublishProfile.Properties)" />
   </Target>
 </Project>
