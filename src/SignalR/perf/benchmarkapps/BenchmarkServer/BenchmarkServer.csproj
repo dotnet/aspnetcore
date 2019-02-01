@@ -23,6 +23,7 @@
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
     <ProjectReference Include="..\..\..\common\Protocols.Json\src\Microsoft.AspNetCore.SignalR.Protocols.Json.csproj" />
+    <ProjectReference Include="..\..\..\common\Protocols.NewtonsoftJson\src\Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson.csproj" />
 
     <KnownFrameworkReference Update="Microsoft.AspNetCore.App"
       DefaultRuntimeFrameworkVersion="$(BenchmarksAspNetCoreVersion)"
