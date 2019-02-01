@@ -148,6 +148,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="System.Security.Principal.Windows" Version="$(SystemSecurityPrincipalWindowsPackageVersion)" />
     <LatestPackageReference Include="System.ServiceProcess.ServiceController" Version="$(SystemServiceProcessServiceControllerPackageVersion)" />
     <LatestPackageReference Include="System.Text.Encodings.Web" Version="$(SystemTextEncodingsWebPackageVersion)" />
+    <LatestPackageReference Include="System.Text.JsonLab.Serialization" Version="0.1.1-e190201-1" />
     <LatestPackageReference Include="System.Threading.Channels" Version="$(SystemThreadingChannelsPackageVersion)" />
     <LatestPackageReference Include="System.Threading.Tasks.Extensions" Version="$(SystemThreadingTasksExtensionsPackageVersion)" />
     <LatestPackageReference Include="Utf8Json" Version="$(Utf8JsonPackageVersion)" />

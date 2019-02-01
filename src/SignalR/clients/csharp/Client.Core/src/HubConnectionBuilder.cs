@@ -3,7 +3,9 @@
 
 using System;
 using System.ComponentModel;
+using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.AspNetCore.SignalR.Client
 {
@@ -26,6 +28,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             Services.AddSingleton<HubConnection>();
             Services.AddLogging();
             this.AddNewtonsoftJsonProtocol();
+            Services.TryAddEnumerable(ServiceDescriptor.Singleton<IHubProtocol, NewtonsoftJsonHubProtocol>());
         }
 
         /// <inheritdoc />

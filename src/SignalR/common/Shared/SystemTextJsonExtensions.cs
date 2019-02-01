@@ -23,13 +23,13 @@ namespace Microsoft.AspNetCore.Internal
         {
             if (reader.TokenType != JsonTokenType.StartObject)
             {
-                throw new InvalidDataException($"Unexpected JSON Token Type '{GetTokenString(reader.TokenType)}'. Expected a JSON Object.");
+                throw new InvalidDataException($"Unexpected JSON Token Type '{reader.GetTokenString()}'. Expected a JSON Object.");
             }
         }
 
-        public static string GetTokenString(JsonTokenType tokenType)
+        public static string GetTokenString(this ref Utf8JsonReader reader)
         {
-            switch (tokenType)
+            switch (reader.TokenType)
             {
                 case JsonTokenType.None:
                     break;
@@ -42,14 +42,14 @@ namespace Microsoft.AspNetCore.Internal
                 default:
                     break;
             }
-            return tokenType.ToString();
+            return reader.TokenType.ToString();
         }
 
         public static void EnsureArrayStart(this ref Utf8JsonReader reader)
         {
             if (reader.TokenType != JsonTokenType.StartArray)
             {
-                throw new InvalidDataException($"Unexpected JSON Token Type '{GetTokenString(reader.TokenType)}'. Expected a JSON Array.");
+                throw new InvalidDataException($"Unexpected JSON Token Type '{reader.GetTokenString()}'. Expected a JSON Array.");
             }
         }
 
