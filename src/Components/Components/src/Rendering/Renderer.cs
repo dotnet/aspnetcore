@@ -21,13 +21,23 @@ namespace Microsoft.AspNetCore.Components.Rendering
         private readonly Dictionary<int, ComponentState> _componentStateById = new Dictionary<int, ComponentState>();
         private readonly RenderBatchBuilder _batchBuilder = new RenderBatchBuilder();
         private readonly Dictionary<int, EventHandlerInvoker> _eventBindings = new Dictionary<int, EventHandlerInvoker>();
+        private RendererSynchronizationContext _synchronizationContext = new RendererSynchronizationContext();
 
         private int _nextComponentId = 0; // TODO: change to 'long' when Mono .NET->JS interop supports it
         private bool _isBatchInProgress;
         private int _lastEventHandlerId = 0;
         private List<Task> _pendingTasks;
 
-        public RendererSynchronizationContext SyncContext { get; } = new RendererSynchronizationContext();
+        public event UnhandledExceptionEventHandler UnhandledSynchronizationException {
+            add
+            {
+                _synchronizationContext.UnhandledException += value;
+            }
+            remove
+            {
+                _synchronizationContext.UnhandledException -= value;
+            }
+        }
 
         /// <summary>
         /// Constructs an instance of <see cref="Renderer"/>.
@@ -166,7 +176,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             }
             else
             {
-                return SyncContext.InvokeAsync(() => RenderRootComponentCoreAsync(componentId, initialParameters));
+                return _synchronizationContext.InvokeAsync(() => RenderRootComponentCoreAsync(componentId, initialParameters));
             }
         }
 
@@ -273,7 +283,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="workItem">The work item to execute.</param>
         public virtual Task Invoke(Action workItem)
         {
-            if (SynchronizationContext.Current == SyncContext)
+            if (SynchronizationContext.Current == _synchronizationContext)
             {
                 // No need to dispatch. Avoid deadlock by invoking directly.
                 workItem();
@@ -281,7 +291,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             }
             else
             {
-                var syncContext = SyncContext;
+                var syncContext = _synchronizationContext;
                 return syncContext.Invoke(workItem);
             }
         }
@@ -293,14 +303,14 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="workItem">The work item to execute.</param>
         public virtual Task InvokeAsync(Func<Task> workItem)
         {
-            if (SynchronizationContext.Current == SyncContext)
+            if (SynchronizationContext.Current == _synchronizationContext)
             {
                 // No need to dispatch. Avoid deadlock by invoking directly.
                 return workItem();
             }
             else
             {
-                return SyncContext.InvokeAsync(workItem);
+                return _synchronizationContext.InvokeAsync(workItem);
             }
         }
 
@@ -395,7 +405,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             // Plus, any other logic that mutates state accessed during rendering also
             // needs not to run concurrently with rendering so should be dispatched to
             // the renderer's sync context.
-            if (SynchronizationContext.Current != SyncContext)
+            if (SynchronizationContext.Current != _synchronizationContext)
             {
                 throw new InvalidOperationException(
                     "The current thread is not associated with the renderer's synchronization context. " +

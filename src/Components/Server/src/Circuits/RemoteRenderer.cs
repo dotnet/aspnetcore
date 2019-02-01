@@ -87,34 +87,6 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
             RenderRootComponent(componentId);
         }
 
-        /// <summary>
-        /// Associates the <see cref="IComponent"/> with the <see cref="RemoteRenderer"/>,
-        /// causing it to be displayed in the specified DOM element.
-        /// </summary>
-        /// <param name="componentType">The type of the component.</param>
-        /// <param name="domElementSelector">A CSS selector that uniquely identifies a DOM element.</param>
-        public async Task AddComponentAsync(Type componentType, string domElementSelector)
-        {
-            var component = InstantiateComponent(componentType);
-            var componentId = AssignRootComponentId(component);
-
-            try
-            {
-                await _jsRuntime.InvokeAsync<object>(
-                    "Blazor._internal.attachRootComponentToElement",
-                    _id,
-                    domElementSelector,
-                    componentId);
-            }
-            catch (Exception e)
-            {
-                UnhandledException?.Invoke(this, e);
-                throw;
-            }
-
-            await RenderRootComponentAsync(componentId);
-        }
-
         /// <inheritdoc />
         protected override void Dispose(bool disposing)
         {
