@@ -9,8 +9,8 @@
     <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
     <!-- Work around until we get a new WebSdk -->
     <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
-    <AppendRuntimeIdentifierToOutputPath>False</AppendRuntimeIdentifierToOutputPath>
     <HasTestAssetProfile Condition="'$(TestAssetProfile)' != ''">True</HasTestAssetProfile>
+    <AppendRuntimeIdentifierToOutputPath Condition="'$(HasTestAssetProfile)' == 'True'">False</AppendRuntimeIdentifierToOutputPath>
   </PropertyGroup>
 
   <Import Project="assets.props" />
