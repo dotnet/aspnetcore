@@ -21,7 +21,7 @@
     <!-- <Reference Include="Microsoft.AspNetCore.SignalR.Common" />
     <Reference Include="Newtonsoft.Json" /> -->
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
-    <PackageReference Include="Newtonsoft.Json" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
     <PackageReference Include="System.Text.JsonLab.Serialization" Version="0.1.1-e190201-1" />
     <PackageReference Include="Microsoft.Private.CoreFx.NETCoreApp" Version="4.6.0-dev.19101.1" />
   </ItemGroup>
