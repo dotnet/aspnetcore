@@ -5,7 +5,7 @@
   Note: because Authenticode signing of .dll's is not something Linux and macOS can verify anyways, this signing
   process only code-signs the .nupkg itself, not the contents.
 -->
-<Project DefaultTargets="AfterBuild" InitialTargets="CheckForRequiredProperties">
+<Project DefaultTargets="Build" InitialTargets="CheckForRequiredProperties">
   <PropertyGroup>
     <SignType>$([MSBuild]::ValueOrDefault($(SignType),'real'))</SignType>
   </PropertyGroup>
@@ -14,14 +14,14 @@
   <Import Project="..\..\targets\MicroBuild.Plugin.props" Condition="'$(MicroBuildSentinelFile)' == ''" />
   <Import Project="$(MicroBuildPluginDirectory)\MicroBuild.Plugins.*\**\build\MicroBuild.Plugins.*.props" Condition=" '$(MicroBuildPluginDirectory)' != ''" />
 
-  <PropertyGroup>
-    <OutDir>$(RepositoryRoot)bin\$(MSBuildProjectName)\</OutDir>
+  <PropertyGroup Condition="'$(DirectoryToSign)' != ''">
+    <OutDir>$([MSBuild]::NormalizeDirectory($(DirectoryToSign)))</OutDir>
     <IntermediateOutputPath>$(RepositoryRoot)obj\$(MSBuildProjectName)\</IntermediateOutputPath>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(DirectoryToSign)' != ''">
-    <SymbolsPackages Include="$([MSBuild]::NormalizeDirectory($(DirectoryToSign)))**\*.symbols.nupkg" />
-    <FilesToSign Include="$([MSBuild]::NormalizeDirectory($(DirectoryToSign)))**\*.nupkg">
+  <ItemGroup Condition="'$(OutDir)' != ''">
+    <SymbolsPackages Include="$(OutDir)**\*.symbols.nupkg" />
+    <FilesToSign Include="$(OutDir)**\*.nupkg">
       <Authenticode>NuGet</Authenticode>
     </FilesToSign>
   </ItemGroup>
@@ -33,5 +33,6 @@
 
   <!-- MicroBuild code-signing chains onto this target. -->
   <Target Name="AfterBuild" />
+  <Target Name="Build" DependsOnTargets="AfterBuild" />
   <Import Project="$(MicroBuildPluginDirectory)\MicroBuild.Plugins.*\**\build\MicroBuild.Plugins.*.targets" Condition=" '$(MicroBuildPluginDirectory)' != ''" />
 </Project>

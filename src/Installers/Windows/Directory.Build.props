@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <OutputInRepoRoot>true</OutputInRepoRoot>
-    <AppendPlatformToOutputPath>true</AppendPlatformToOutputPath>
   </PropertyGroup>
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
