@@ -48,12 +48,6 @@ namespace Microsoft.AspNetCore.WebSockets
             // TODO: validate options.
         }
 
-        [Obsolete("This constructor has been replaced with an equivalent constructor which requires an ILoggerFactory.")]
-        public WebSocketMiddleware(RequestDelegate next, IOptions<WebSocketOptions> options)
-            : this(next, options, NullLoggerFactory.Instance)
-        {
-        }
-
         public Task Invoke(HttpContext context)
         {
             // Detect if an opaque upgrade is available. If so, add a websocket upgrade.

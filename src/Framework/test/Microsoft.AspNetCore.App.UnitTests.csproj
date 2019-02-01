@@ -13,8 +13,8 @@
       <_Parameter2>$(PackageVersion)</_Parameter2>
     </AssemblyAttribute>
     <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
-      <_Parameter1>SharedFxRid</_Parameter1>
-      <_Parameter2>$(SharedFxRid)</_Parameter2>
+      <_Parameter1>TargetRuntimeIdentifier</_Parameter1>
+      <_Parameter2>$(TargetRuntimeIdentifier)</_Parameter2>
     </AssemblyAttribute>
     <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
       <_Parameter1>RepositoryCommit</_Parameter1>

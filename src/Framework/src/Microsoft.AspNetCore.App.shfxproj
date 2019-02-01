@@ -1,25 +1,26 @@
 <Project>
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <OutputPath>$(RepositoryRoot)bin\fx\$(TargetOsName)\$(TargetArchitecture)\$(MSBuildProjectName)\</OutputPath>
+    <BaseIntermediateOutputPath>$(RepositoryRoot)obj\fx\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+  </PropertyGroup>
+
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <RuntimeIdentifier>$(TargetRuntimeIdentifier)</RuntimeIdentifier>
+    <TargetFramework>netcoreapp$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)</TargetFramework>
     <BaseSharedFrameworkName>Microsoft.NETCore.App</BaseSharedFrameworkName>
     <RuntimeFrameworkVersion>$(MicrosoftNETCoreAppPackageVersion)</RuntimeFrameworkVersion>
 
-    <OutputPath>$(RepositoryRoot)bin\fx\$(SharedFxRid)\$(MSBuildProjectName)\</OutputPath>
-    <BaseIntermediateOutputPath>$(RepositoryRoot)obj\fx\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
-
     <!-- shfxproj must be explicit about its dependencies. -->
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
-
-    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">$(SharedFxRID)</RuntimeIdentifier>
-    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">$(HostRid)</RuntimeIdentifier>
-    <SharedFxRid Condition="'$(SharedFxRid)' == ''">$(RuntimeIdentifier)</SharedFxRid>
 
     <!-- Optimize the framework using the crossgen tool -->
     <CrossgenOutput>true</CrossgenOutput>
 
     <!-- Produce crossgen symbols when running the crossgen tool -->
     <CrossgenSymbolsOutput>true</CrossgenSymbolsOutput>
-    <CrossgenSymbolsOutput Condition=" '$(CrossgenOutput)' == 'false' OR '$(SharedFxRid)' == 'osx-x64'">false</CrossgenSymbolsOutput>
+    <CrossgenSymbolsOutput Condition=" '$(CrossgenOutput)' == 'false' OR '$(TargetOsName)' == 'osx'">false</CrossgenSymbolsOutput>
 
     <!-- Always generated, even though output type == Library -->
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
@@ -35,13 +36,9 @@
     <CopyBuildOutputToPublishDirectory>false</CopyBuildOutputToPublishDirectory>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <IncludeMainProjectInDepsFile>false</IncludeMainProjectInDepsFile>
-  </PropertyGroup>
 
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
-
-  <PropertyGroup>
     <!-- The runtime Package ID is for self-contained assets. -->
-    <PackageId>runtime.$(SharedFxRid).$(MSBuildProjectName)</PackageId>
+    <PackageId>runtime.$(TargetRuntimeIdentifier).$(MSBuildProjectName)</PackageId>
     <PackageDescription>This package provides assets used for self-contained deployments of an ASP.NET Core application. It is an internal implementation package not meant for direct consumption. Please do not reference directly.
 
 $(MSBuildProjectName) provides a default set of APIs for building an ASP.NET Core application.

@@ -7,7 +7,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{0ED05384-4F6
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.AzureAppServices.SiteExtension", "src\Microsoft.AspNetCore.AzureAppServices.SiteExtension\Microsoft.AspNetCore.AzureAppServices.SiteExtension.csproj", "{69E22952-302D-4C56-B2BE-7C086EB05C79}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Web.Xdt.Extensions", "src\Microsoft.Web.Xdt.Extensions\Microsoft.Web.Xdt.Extensions.csproj", "{637E1D65-7F1C-476B-AD0A-30B295DF5414}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Web.Xdt.Extensions", "..\Microsoft.Web.Xdt.Extensions\src\Microsoft.Web.Xdt.Extensions.csproj", "{637E1D65-7F1C-476B-AD0A-30B295DF5414}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{6C71D9CD-271C-41CB-ACCD-9EABED6C9E80}"
 EndProject

@@ -6,12 +6,12 @@
     <ContentTargetFolders>content</ContentTargetFolders>
 
     <TrimmedVersion>$(VersionPrefix.Substring(0, $(VersionPrefix.LastIndexOf('.'))))</TrimmedVersion>
-    <Title>ASP.NET Core $(TrimmedVersion) ($(SharedFxArchitecture)) Runtime </Title>
+    <Title>ASP.NET Core $(TrimmedVersion) ($(TargetArchitecture)) Runtime </Title>
     <Description>This site extension installs Microsoft.AspNetCore.All, Microsoft.AspNetCore.App and Microsoft.NetCore.App shared runtimes.</Description>
     <PackageTags>aspnetcore;AzureSiteExtension</PackageTags>
-    <PackageId>AspNetCoreRuntime.$(TrimmedVersion).$(SharedFxArchitecture)</PackageId>
+    <PackageId>AspNetCoreRuntime.$(TrimmedVersion).$(TargetArchitecture)</PackageId>
     <NoPackageAnalysis>true</NoPackageAnalysis>
-    <DotNetUnpackFolder>$(RepositoryRoot)obj\ar\$(SharedFxRid)\</DotNetUnpackFolder>
+    <DotNetUnpackFolder>$(RepositoryRoot)obj\ar\$(TargetRuntimeIdentifier)\</DotNetUnpackFolder>
     <IsShippingPackage>true</IsShippingPackage>
   </PropertyGroup>
 
@@ -27,8 +27,8 @@
     <!-- Make sure redist folder is built and ready -->
     <ProjectReference Include="..\..\Installers\Archive\Archive.Redist.zipproj" PrivateAssets="All" ReferenceOutputAssembly="False" />
 
-    <NativeProjectReference Include="$(RepositoryRoot)src\Servers\IIS\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj" Platform="$(SharedFxArchitecture)" />
-    <NativeProjectReference Include="$(RepositoryRoot)src\Servers\IIS\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" HandlerPath="2.0.0" Platform="$(SharedFxArchitecture)" />
+    <NativeProjectReference Include="$(RepositoryRoot)src\Servers\IIS\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj" Platform="$(TargetArchitecture)" />
+    <NativeProjectReference Include="$(RepositoryRoot)src\Servers\IIS\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" HandlerPath="2.0.0" Platform="$(TargetArchitecture)" />
 
   </ItemGroup>
 

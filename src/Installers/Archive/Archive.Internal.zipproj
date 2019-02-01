@@ -9,8 +9,8 @@
 
   <PropertyGroup>
     <!-- Use a short folder name to avoid MAX_PATH issues on Windows -->
-    <IntermediateOutputPath>$(RepositoryRoot)obj\ai\$(SharedFxRid)\</IntermediateOutputPath>
-    <OutputFileName>$(InternalInstallerBaseName)-$(PackageVersion)-$(SharedFxRid)$(ArchiveExtension)</OutputFileName>
+    <IntermediateOutputPath>$(RepositoryRoot)obj\ai\$(TargetRuntimeIdentifier)\</IntermediateOutputPath>
+    <OutputFileName>$(InternalInstallerBaseName)-$(PackageVersion)-$(TargetRuntimeIdentifier)$(ArchiveExtension)</OutputFileName>
     <OutputPath>$(InstallersOutputPath)</OutputPath>
     <TargetPath>$(InstallersOutputPath)$(OutputFileName)</TargetPath>
   </PropertyGroup>

@@ -26,7 +26,7 @@ try {
     #
 
     if ($ci) {
-        & $repoRoot/build.cmd /t:InstallDotNet
+        & $repoRoot/build.ps1 -ci /t:InstallDotNet
     }
 
     Write-Host "Checking that solutions are up to date"
@@ -56,13 +56,9 @@ try {
 
     Write-Host "Re-running code generation"
 
-    Write-Host "Re-generating ProjectReference.props"
+    Write-Host "Re-generating project lists"
     Invoke-Block {
-        [string[]] $generateArgs = @()
-        if ($ci) {
-            $generateArgs += '-ci'
-        }
-        & $repoRoot/build.cmd /t:GenerateProjectList @generateArgs
+        & $PSScriptRoot\GenerateProjectList.ps1 -ci:$ci
     }
 
     Write-Host "Re-generating package baselines"

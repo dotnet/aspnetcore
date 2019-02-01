@@ -10,7 +10,7 @@
   <!-- Output paths -->
   <PropertyGroup>
     <BaseIntermediateOutputPath>$(RepositoryRoot)obj\Debian\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
-    <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(SharedFxRid)\</IntermediateOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(TargetRuntimeIdentifier)\</IntermediateOutputPath>
     <!-- Must be named "package_root/". This is expected by the build.sh script in this project. -->
     <IntermediatePackageRoot>$(IntermediateOutputPath)package_root\</IntermediatePackageRoot>
     <OutputFileName>$(RuntimeInstallerBaseName)-$(SharedFxVersion)-x64.deb</OutputFileName>
@@ -51,7 +51,7 @@
   <Target Name="GetTargetPath" Returns="$(TargetPath)" />
 
   <Target Name="PrepareForBuild">
-    <Error Text="Currently only linux-x64 is supported by Debian installers." Condition=" '$(SharedFxRid)' != 'linux-x64' " />
+    <Error Text="Currently only linux-x64 is supported by Debian installers." Condition=" '$(TargetRuntimeIdentifier)' != 'linux-x64' " />
 
     <MakeDir Directories="$(IntermediateOutputPath);$(IntermediatePackageRoot);$(OutputPath)" />
   </Target>
@@ -96,8 +96,7 @@
     <Exec Command="./build.sh -i '$(IntermediateOutputPath)' -o '$(IntermediateOutputPath)out/'" />
 
     <PropertyGroup>
-      <!-- Map our RIDs to the arch names used by debuild. -->
-      <DebArch Condition=" '$(SharedFxRid)' == 'linux-x64' ">amd64</DebArch>
+      <DebArch Condition=" '$(TargetArchitecture)' == 'x64' ">amd64</DebArch>
       <BuildScriptOutputFileName>$(PackageId)_$(PackageVersion)-$(PackageRevision)_$(DebArch).deb</BuildScriptOutputFileName>
     </PropertyGroup>
 
