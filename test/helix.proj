@@ -9,7 +9,7 @@
     </ItemGroup>
     <MSBuild Projects="@(ProjectsToTest)"
               Targets="CreateHelixPayload"
-              BuildInParallel="false">
+              BuildInParallel="true">
       <Output TaskParameter="TargetOutputs" ItemName="HelixPayload" />
     </MSBuild>
     <ItemGroup>
