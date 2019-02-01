@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Razor.Performance
                 this._tagHelpers = tagHelpers;
             }
 
-            public override Task<TagHelperResolutionResult> GetTagHelpersAsync(ProjectSnapshot project, CancellationToken cancellationToken = default)
+            public override Task<TagHelperResolutionResult> GetTagHelpersAsync(Project project, ProjectSnapshot projectSnapshot, CancellationToken cancellationToken = default)
             {
                 return Task.FromResult(new TagHelperResolutionResult(_tagHelpers, Array.Empty<RazorDiagnostic>()));
             }

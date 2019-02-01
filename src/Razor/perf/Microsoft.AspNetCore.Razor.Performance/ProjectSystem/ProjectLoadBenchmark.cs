@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Razor.Performance
         [Benchmark(Description = "Initializes a project and 100 files", OperationsPerInvoke = 100)]
         public void ProjectLoad_AddProjectAnd100Files()
         {
-            SnapshotManager.HostProjectAdded(HostProject);
+            SnapshotManager.ProjectAdded(HostProject);
 
             for (var i= 0; i < Documents.Length; i++)
             {
