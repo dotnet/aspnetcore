@@ -2,7 +2,10 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <IsPackable>false</IsPackable>
+    <Description>Abstractions and features for interop between Mono WebAssembly and JavaScript code.</Description>
+    <PackageTags>wasm;javascript;interop</PackageTags>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IsShipping>true</IsShipping>
   </PropertyGroup>
 
   <ItemGroup>

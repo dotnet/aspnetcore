@@ -1,25 +1,31 @@
 {
   "name": "@dotnet/jsinterop",
-  "version": "0.1.1",
+  "version": "3.0.0-dev",
   "description": "Provides abstractions and features for interop between .NET and JavaScript code.",
   "main": "dist/Microsoft.JSInterop.js",
   "types": "dist/Microsoft.JSInterop.d.js",
   "scripts": {
-    "prepublish": "rimraf dist && dotnet build && echo 'Finished building NPM package \"@dotnet/jsinterop\"'"
-  },
-  "files": [
-    "dist/**"
-  ],
-  "author": "Microsoft",
-  "license": "Apache-2.0",
-  "bugs": {
-    "url": "https://github.com/dotnet/jsinterop/issues"
+    "clean": "node node_modules/rimraf/bin.js ./dist",
+    "build": "npm run clean && npm run build:esm",
+    "build:lint": "node node_modules/tslint/bin/tslint -p ./tsconfig.json",
+    "build:esm": "node node_modules/typescript/bin/tsc --project ./tsconfig.json"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/dotnet/jsinterop.git"
+    "url": "git+https://github.com/aspnet/AspNetCore.git"
   },
+  "author": "Microsoft",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/aspnet/AspNetCore/issues"
+  },
+  "homepage": "https://github.com/aspnet/Extensions/tree/master/src/JSInterop#readme",
+  "files": [
+    "dist/**"
+  ],
   "devDependencies": {
-    "rimraf": "^2.5.4"
+    "rimraf": "^2.5.4",
+    "tslint": "^5.9.1",
+    "typescript": "^2.7.1"
   }
 }
