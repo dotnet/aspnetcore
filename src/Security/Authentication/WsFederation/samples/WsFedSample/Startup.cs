@@ -133,7 +133,7 @@ namespace WsFedSample
 
         private static async Task WriteHtmlAsync(HttpResponse response, Func<HttpResponse, Task> writeContent)
         {
-            var bootstrap = "<link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css\" integrity=\"sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u\" crossorigin=\"anonymous\">";
+            var bootstrap = "<link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css\" integrity=\"sha384-PmY9l28YgO4JwMKbTvgaS7XNZJ30MK9FAZjjzXtlqyZCqBY6X6bXIkM++IkyinN+\" crossorigin=\"anonymous\">";
 
             response.ContentType = "text/html";
             await response.WriteAsync($"<html><head>{bootstrap}</head><body><div class=\"container\">");
