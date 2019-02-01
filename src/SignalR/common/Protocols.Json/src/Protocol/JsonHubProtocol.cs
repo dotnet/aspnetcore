@@ -807,7 +807,14 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                             b[bytes.Length + 1] = 34;
                             bytes = b.AsSpan();
                         }
-                        arguments[paramIndex] = STJ.Serialization.JsonConverter.FromJson(bytes, paramTypes[paramIndex]);
+                        if (paramTypes[paramIndex] == typeof(DateTime))
+                        {
+                            arguments[paramIndex] = DateTime.Parse(Encoding.UTF8.GetString(bytes));
+                        }
+                        else
+                        {
+                            arguments[paramIndex] = STJ.Serialization.JsonConverter.FromJson(bytes, paramTypes[paramIndex]);
+                        }
                     }
                     else
                     {
