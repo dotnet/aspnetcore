@@ -8,7 +8,7 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.Extensions.Internal
 {
-    internal struct AwaitableInfo
+    internal readonly struct AwaitableInfo
     {
         public Type AwaiterType { get; }
         public PropertyInfo AwaiterIsCompletedProperty { get; }

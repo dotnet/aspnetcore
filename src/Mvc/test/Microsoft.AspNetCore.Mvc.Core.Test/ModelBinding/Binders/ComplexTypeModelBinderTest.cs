@@ -1277,13 +1277,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             public PointStruct Point { get; set; }
         }
 
-        private struct PointStruct
+        private readonly struct PointStruct
         {
             public PointStruct(double x, double y)
             {
                 X = x;
                 Y = y;
             }
+
             public double X { get; }
             public double Y { get; }
         }
