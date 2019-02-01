@@ -26,11 +26,11 @@ namespace BenchmarkServer
             .AddJsonProtocol()
             .AddMessagePackProtocol();
 
-            var redisConnectionString = _config["SignalRRedis"];
-            if (!string.IsNullOrEmpty(redisConnectionString))
-            {
-                signalrBuilder.AddStackExchangeRedis(redisConnectionString);
-            }
+            // var redisConnectionString = _config["SignalRRedis"];
+            // if (!string.IsNullOrEmpty(redisConnectionString))
+            // {
+            //     signalrBuilder.AddStackExchangeRedis(redisConnectionString);
+            // }
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
