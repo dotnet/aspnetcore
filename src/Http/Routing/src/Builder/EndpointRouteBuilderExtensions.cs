@@ -327,9 +327,15 @@ namespace Microsoft.AspNetCore.Builder
             };
 
             // Add delegate attributes as metadata
-            foreach (var attribute in requestDelegate.Method.GetCustomAttributes())
+            var attributes = requestDelegate.Method.GetCustomAttributes();
+
+            // This can be null if the delegate is a dynamic method or compiled from an expression tree
+            if (attributes != null)
             {
-                routeEndpointBuilder.Metadata.Add(attribute);
+                foreach (var attribute in attributes)
+                {
+                    routeEndpointBuilder.Metadata.Add(attribute);
+                }
             }
 
             if (metadata != null)

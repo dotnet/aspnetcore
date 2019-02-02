@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -131,6 +132,25 @@ namespace Microsoft.AspNetCore.Builder
             Assert.IsType<Attribute1>(endpointBuilder1.Metadata[0]);
             Assert.IsType<Attribute2>(endpointBuilder1.Metadata[1]);
             Assert.IsType<Metadata>(endpointBuilder1.Metadata[2]);
+        }
+
+        [Fact]
+        public void MapEndpoint_GeneratedDelegateWorks()
+        {
+            // Arrange
+            var builder = new DefaultEndpointRouteBuilder();
+
+            Expression<RequestDelegate> handler = context => Task.CompletedTask;
+
+            // Act
+            var endpointBuilder = builder.Map(RoutePatternFactory.Parse("/"), "Display name!", handler.Compile(), new Metadata());
+
+            // Assert
+            var endpointBuilder1 = GetRouteEndpointBuilder(builder);
+            Assert.Equal("Display name!", endpointBuilder1.DisplayName);
+            Assert.Equal("/", endpointBuilder1.RoutePattern.RawText);
+            Assert.Equal(1, endpointBuilder1.Metadata.Count);
+            Assert.IsType<Metadata>(endpointBuilder1.Metadata[0]);
         }
 
         [Attribute1]
