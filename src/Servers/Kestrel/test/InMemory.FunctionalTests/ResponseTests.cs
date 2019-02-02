@@ -563,8 +563,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
 
 
-                    var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => responseWriteTcs.Task);
-
+                    var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => responseWriteTcs.Task).DefaultTimeout();
                     Assert.Equal(CoreStrings.FormatWritingToResponseBodyNotSupported(statusCode), ex.Message);
 
                     await connection.Receive(
@@ -608,8 +607,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
 
 
-                    var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => responseWriteTcs.Task);
-
+                    var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => responseWriteTcs.Task).DefaultTimeout();
                     Assert.Equal(CoreStrings.FormatWritingToResponseBodyNotSupported(205), ex.Message);
 
                     await connection.Receive(
