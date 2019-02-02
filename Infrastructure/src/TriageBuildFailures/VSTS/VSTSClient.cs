@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -288,7 +289,22 @@ namespace TriageBuildFailures.VSTS
                 }
                 else
                 {
-                    throw new HttpRequestException(await response.Content.ReadAsStringAsync());
+                    var content = await response.Content.ReadAsStringAsync();
+                    if(response.StatusCode == HttpStatusCode.InternalServerError && content.Contains("TF400714"))
+                    {
+                        //The log is missing. This is VSTS's fault, nothing we can do.
+                        var stream = new MemoryStream();
+                        var writer = new StreamWriter(stream);
+                        writer.Write("");
+                        writer.Flush();
+                        stream.Position = 0;
+
+                        return stream;
+                    }
+                    else
+                    {
+                        throw new HttpRequestException(content);
+                    }
                 }
             }
         }
