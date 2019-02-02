@@ -53,6 +53,8 @@
     <SignAssembly>true</SignAssembly>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <PlatformName Condition=" '$(PlatformName)' == '' ">$(Platform)</PlatformName>
     <TargetOsName Condition=" '$(TargetOsName)' == '' AND $([MSBuild]::IsOSPlatform('Windows'))">win</TargetOsName>
     <TargetOsName Condition=" '$(TargetOsName)' == '' AND $([MSBuild]::IsOSPlatform('OSX'))">osx</TargetOsName>
     <TargetOsName Condition=" '$(TargetOsName)' == '' AND $([MSBuild]::IsOSPlatform('Linux'))">linux</TargetOsName>
@@ -107,12 +109,13 @@
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(OutputInRepoRoot)' == 'true' ">
-    <BaseOutputPath>$(RepositoryRoot)bin\$(Configuration)\$(MSBuildProjectName)\</BaseOutputPath>
-    <OutputPath>$(BaseOutputPath)</OutputPath>
+    <BaseOutputPath>$(RepositoryRoot)bin\$(MSBuildProjectName)\</BaseOutputPath>
+    <OutputPath Condition=" '$(PlatformName)' == 'AnyCPU' ">$(BaseOutputPath)$(Configuration)\</OutputPath>
+    <OutputPath Condition=" '$(PlatformName)' != 'AnyCPU' ">$(BaseOutputPath)$(PlatformName)\$(Configuration)\</OutputPath>
+
     <BaseIntermediateOutputPath>$(RepositoryRoot)obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
-    <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(Configuration)\</IntermediateOutputPath>
-    <OutputPath Condition=" '$(AppendPlatformToOutputPath)' == 'true' AND '$(Platform)' != '' AND '$(Platform)' != 'AnyCPU' ">$(OutputPath)$(Platform)\</OutputPath>
-    <IntermediateOutputPath Condition=" '$(AppendPlatformToOutputPath)' == 'true' AND '$(Platform)' != '' AND '$(Platform)' != 'AnyCPU' ">$(IntermediateOutputPath)$(Platform)\</IntermediateOutputPath>
+    <IntermediateOutputPath Condition=" '$(PlatformName)' == 'AnyCPU' ">$(BaseIntermediateOutputPath)$(Configuration)\</IntermediateOutputPath>
+    <IntermediateOutputPath Condition=" '$(PlatformName)' != 'AnyCPU' ">$(BaseIntermediateOutputPath)$(PlatformName)\$(Configuration)\</IntermediateOutputPath>
   </PropertyGroup>
 
   <!-- Defines project type conventions. -->

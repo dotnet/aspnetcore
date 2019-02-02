@@ -13,24 +13,29 @@
     <IncludeSymbols>false</IncludeSymbols>
     <IncludeSource>false</IncludeSource>
     <ContentTargetFolders>content</ContentTargetFolders>
-
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+    <RestoreSources>
+      $(RestoreSources);
+      $(ArtifactsNonShippingPackagesDir)
+    </RestoreSources>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.2.1" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension21PackageVersion)" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.2.2" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension22PackageVersion)" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.0.x86" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension30PackageVersion)" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.0.x64" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension30PackageVersion)" PrivateAssets="All" />
+    <Reference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.2.1" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension21PackageVersion)" PrivateAssets="All" />
+    <Reference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.2.2" Version="$(MicrosoftAspNetCoreAzureAppServicesSiteExtension22PackageVersion)" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.0.x86" Version="$(PackageVersion)" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension.3.0.x64" Version="$(PackageVersion)" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="applicationHost.xdt" />
     <Content Include="scmApplicationHost.xdt" />
-    <Content Include="bin\$(Configuration)\$(TargetFramework)\Microsoft.Web.Xdt.Extensions.dll" PackagePath="content" />
+    <Content Include="$(OutputPath)\Microsoft.Web.Xdt.Extensions.dll" PackagePath="content" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Microsoft.Web.Xdt.Extensions\src\Microsoft.Web.Xdt.Extensions.csproj" PrivateAssets="All" />
+    <Reference Include="Microsoft.Web.Xdt.Extensions" PrivateAssets="All" />
   </ItemGroup>
 
   <Target Name="AddContent" BeforeTargets="_GetPackageFiles">

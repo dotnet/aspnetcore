@@ -8,10 +8,7 @@ using namespace signalr;
 
 TEST(hub_exception_initialization, hub_exception_initialized_correctly)
 {
-    auto error_data = web::json::value::parse(_XPLATSTR("{\"SomeData\" : 42 }"));
-
-    auto e = hub_exception{ _XPLATSTR("error"), error_data };
+    auto e = hub_exception{ _XPLATSTR("error") };
 
     ASSERT_STREQ("error", e.what());
-    ASSERT_EQ(error_data.serialize(), e.error_data().serialize());
 }

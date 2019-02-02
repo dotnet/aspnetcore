@@ -80,7 +80,7 @@ namespace signalr
             const utility::string_t& connection_data, const utility::string_t& query_string,
             const utility::string_t& last_message_id = _XPLATSTR(""), const utility::string_t& groups_token = _XPLATSTR(""))
         {
-            _ASSERTE(command == _XPLATSTR("reconnect") || (last_message_id.length() == 0 && groups_token.length() == 0));
+            _ASSERTE(last_message_id.length() == 0 && groups_token.length() == 0);
 
             web::uri_builder builder(base_url);
             builder.append_path(command);
@@ -111,13 +111,6 @@ namespace signalr
             return convert_to_websocket_url(builder, transport).to_uri();
             //auto builder = build_uri(base_url, _XPLATSTR("connect"), transport, connection_data, query_string);
             //return convert_to_websocket_url(builder, transport).to_uri();
-        }
-
-        web::uri build_reconnect(const web::uri& base_url, transport_type transport, const utility::string_t& last_message_id, const utility::string_t& groups_token,
-            const utility::string_t& query_string)
-        {
-            auto builder = build_uri(base_url, _XPLATSTR("reconnect"), transport, query_string, last_message_id, groups_token);
-            return convert_to_websocket_url(builder, transport).to_uri();
         }
 
         web::uri build_start(const web::uri &base_url, const utility::string_t &query_string)

@@ -231,6 +231,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             var state = TemplateParserState.Plaintext;
 
             int? tokenStart = null;
+            var scope = 0;
 
             // We'll run the loop one extra time with 'null' to detect the end of the string.
             for (var i = 0; i <= template.Length; i++)
@@ -241,6 +242,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                     case TemplateParserState.Plaintext:
                         if (c == '[')
                         {
+                            scope++;
                             state = TemplateParserState.SeenLeft;
                             break;
                         }
@@ -321,6 +323,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                         }
                         else if (c == ']')
                         {
+                            --scope;
                             state = TemplateParserState.InsideToken | TemplateParserState.SeenRight;
                             break;
                         }
@@ -353,7 +356,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                             throw new InvalidOperationException(message);
                         }
                     case TemplateParserState.InsideToken | TemplateParserState.SeenRight:
-                        if (c == ']')
+                        if (c == ']' && scope == 0)
                         {
                             // This is an escaped right-bracket
                             state = TemplateParserState.InsideToken;
@@ -402,6 +405,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                                 state = TemplateParserState.Plaintext;
                             }
 
+                            scope = 0;
                             tokenStart = null;
                             break;
                         }

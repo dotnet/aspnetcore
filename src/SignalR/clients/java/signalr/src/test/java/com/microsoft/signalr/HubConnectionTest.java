@@ -1288,7 +1288,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void connectionTimesOutIfServerDoesNotSendMessage() throws InterruptedException, ExecutionException, TimeoutException {
+    public void connectionTimesOutIfServerDoesNotSendMessage() {
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com");
         hubConnection.setServerTimeout(1);
         hubConnection.setTickRate(1);
@@ -1373,7 +1373,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void hubConnectionCanBeStartedAfterBeingStopped() throws Exception {
+    public void hubConnectionCanBeStartedAfterBeingStopped() {
         MockTransport transport = new MockTransport();
         HubConnection hubConnection = HubConnectionBuilder
                 .create("http://example.com")

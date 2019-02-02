@@ -115,27 +115,30 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
         private string CheckIfPublishIsRequired()
         {
+            string dllRoot = null;
             var targetFramework = DeploymentParameters.TargetFramework;
-
-            // IISIntegration uses this layout
-            var dllRoot = Path.Combine(DeploymentParameters.ApplicationPath, "bin", DeploymentParameters.RuntimeArchitecture.ToString(),
-                DeploymentParameters.Configuration, targetFramework);
-
-            if (!Directory.Exists(dllRoot))
+            if (!string.IsNullOrEmpty(DeploymentParameters.ApplicationPath))
             {
-                // Most repos use this layout
-                dllRoot = Path.Combine(DeploymentParameters.ApplicationPath, "bin", DeploymentParameters.Configuration, targetFramework);
+                // IISIntegration uses this layout
+                dllRoot = Path.Combine(DeploymentParameters.ApplicationPath, "bin", DeploymentParameters.RuntimeArchitecture.ToString(),
+                    DeploymentParameters.Configuration, targetFramework);
 
                 if (!Directory.Exists(dllRoot))
                 {
-                    // The bits we need weren't pre-compiled, compile on publish
-                    DeploymentParameters.PublishApplicationBeforeDeployment = true;
-                }
-                else if (DeploymentParameters.RuntimeFlavor == RuntimeFlavor.Clr
-                    && DeploymentParameters.RuntimeArchitecture == RuntimeArchitecture.x86)
-                {
-                    // x64 is the default. Publish to rebuild for the right bitness
-                    DeploymentParameters.PublishApplicationBeforeDeployment = true;
+                    // Most repos use this layout
+                    dllRoot = Path.Combine(DeploymentParameters.ApplicationPath, "bin", DeploymentParameters.Configuration, targetFramework);
+
+                    if (!Directory.Exists(dllRoot))
+                    {
+                        // The bits we need weren't pre-compiled, compile on publish
+                        DeploymentParameters.PublishApplicationBeforeDeployment = true;
+                    }
+                    else if (DeploymentParameters.RuntimeFlavor == RuntimeFlavor.Clr
+                             && DeploymentParameters.RuntimeArchitecture == RuntimeArchitecture.x86)
+                    {
+                        // x64 is the default. Publish to rebuild for the right bitness
+                        DeploymentParameters.PublishApplicationBeforeDeployment = true;
+                    }
                 }
             }
 

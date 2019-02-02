@@ -60,6 +60,14 @@
                       $(RepositoryRoot)src\ProjectTemplates\Web.ProjectTemplates\content\**\*.csproj;
                       $(RepositoryRoot)src\ProjectTemplates\Web.Spa.ProjectTemplates\content\**\*.csproj;
                       " />
+
+    <!-- Exclude the benchmarks because they use <PackageReference>. -->
+    <ProjectToExclude Include="
+                      $(RepositoryRoot)src\Mvc\benchmarkapps\**\*.csproj;
+                      $(RepositoryRoot)src\Servers\Kestrel\perf\PlatformBenchmarks\**\*.csproj;
+                      $(RepositoryRoot)src\SignalR\perf\benchmarkapps\**\*.csproj;
+                      " />
+
   </ItemGroup>
 
   <Choose>
@@ -140,6 +148,7 @@
                           $(RepositoryRoot)src\Identity\**\*.*proj;
                           $(RepositoryRoot)src\Servers\**\*.csproj;
                           $(RepositoryRoot)src\Security\**\*.*proj;
+                          $(RepositoryRoot)src\SiteExtensions\Microsoft.Web.Xdt.Extensions\**\*.csproj;
                           $(RepositoryRoot)src\Shared\**\*.*proj;
                           $(RepositoryRoot)src\Tools\**\*.*proj;
                           $(RepositoryRoot)src\Middleware\**\*.csproj;

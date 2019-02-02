@@ -35,8 +35,6 @@ namespace signalr
         SIGNALRCLIENT_API pplx::task<void> __cdecl send(const utility::string_t& data);
 
         SIGNALRCLIENT_API void __cdecl set_message_received(const message_received_handler& message_received_callback);
-        SIGNALRCLIENT_API void __cdecl set_reconnecting(const std::function<void __cdecl()>& reconnecting_callback);
-        SIGNALRCLIENT_API void __cdecl set_reconnected(const std::function<void __cdecl()>& reconnected_callback);
         SIGNALRCLIENT_API void __cdecl set_disconnected(const std::function<void __cdecl()>& disconnected_callback);
 
         SIGNALRCLIENT_API void __cdecl set_client_config(const signalr_client_config& config);

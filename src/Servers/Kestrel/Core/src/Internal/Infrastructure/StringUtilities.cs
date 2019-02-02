@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -94,8 +94,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                     var vector = Unsafe.AsRef<Vector<sbyte>>(input);
                     isValid &= CheckBytesInAsciiRange(vector);
                     Vector.Widen(
-                        vector, 
-                        out Unsafe.AsRef<Vector<short>>(output), 
+                        vector,
+                        out Unsafe.AsRef<Vector<short>>(output),
                         out Unsafe.AsRef<Vector<short>>(output + Vector<short>.Count));
 
                     input += Vector<sbyte>.Count;
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             return isValid;
         }
 
-        private static readonly string _encode16Chars = "0123456789ABCDEF";
+        private static readonly char[] s_encode16Chars = "0123456789ABCDEF".ToCharArray();
 
         /// <summary>
         /// A faster version of String.Concat(<paramref name="str"/>, <paramref name="separator"/>, <paramref name="number"/>.ToString("X8"))
@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         /// <param name="separator"></param>
         /// <param name="number"></param>
         /// <returns></returns>
-        public static unsafe string ConcatAsHexSuffix(string str, char separator, uint number)
+        public static string ConcatAsHexSuffix(string str, char separator, uint number)
         {
             var length = 1 + 8;
             if (str != null)
@@ -126,31 +126,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 length += str.Length;
             }
 
-            // stackalloc to allocate array on stack rather than heap
-            char* charBuffer = stackalloc char[length];
-
-            var i = 0;
-            if (str != null)
+            return string.Create(length, (str, separator, number), (buffer, tuple) =>
             {
-                for (i = 0; i < str.Length; i++)
+                var (tupleStr, tupleSeparator, tupleNumber) = tuple;
+                char[] encode16Chars = s_encode16Chars;
+
+                var i = 0;
+                if (tupleStr != null)
                 {
-                    charBuffer[i] = str[i];
+                    tupleStr.AsSpan().CopyTo(buffer);
+                    i = tupleStr.Length;
                 }
-            }
 
-            charBuffer[i] = separator;
-
-            charBuffer[i + 1] = _encode16Chars[(int)(number >> 28) & 0xF];
-            charBuffer[i + 2] = _encode16Chars[(int)(number >> 24) & 0xF];
-            charBuffer[i + 3] = _encode16Chars[(int)(number >> 20) & 0xF];
-            charBuffer[i + 4] = _encode16Chars[(int)(number >> 16) & 0xF];
-            charBuffer[i + 5] = _encode16Chars[(int)(number >> 12) & 0xF];
-            charBuffer[i + 6] = _encode16Chars[(int)(number >> 8) & 0xF];
-            charBuffer[i + 7] = _encode16Chars[(int)(number >> 4) & 0xF];
-            charBuffer[i + 8] = _encode16Chars[(int)number & 0xF];
-
-            // string ctor overload that takes char*
-            return new string(charBuffer, 0, length);
+                buffer[i + 8] = encode16Chars[tupleNumber & 0xF];
+                buffer[i + 7] = encode16Chars[(tupleNumber >> 4) & 0xF];
+                buffer[i + 6] = encode16Chars[(tupleNumber >> 8) & 0xF];
+                buffer[i + 5] = encode16Chars[(tupleNumber >> 12) & 0xF];
+                buffer[i + 4] = encode16Chars[(tupleNumber >> 16) & 0xF];
+                buffer[i + 3] = encode16Chars[(tupleNumber >> 20) & 0xF];
+                buffer[i + 2] = encode16Chars[(tupleNumber >> 24) & 0xF];
+                buffer[i + 1] = encode16Chars[(tupleNumber >> 28) & 0xF];
+                buffer[i] = tupleSeparator;
+            });
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)] // Needs a push
