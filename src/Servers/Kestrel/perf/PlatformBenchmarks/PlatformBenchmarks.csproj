@@ -9,12 +9,9 @@
     <IsTestAssetProject>true</IsTestAssetProject>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Reference Include="Utf8Json" />
-  </ItemGroup>
-
   <!-- These references are used when running locally -->
   <ItemGroup Condition="'$(BenchmarksTargetFramework)' == ''">
+    <Reference Include="Utf8Json" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" />
 
@@ -23,7 +20,8 @@
 
   <!-- These references are used when running on the Benchmarks Server -->
   <ItemGroup Condition="'$(BenchmarksTargetFramework)' != ''">
-    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" version="2.2.0" />
+    <PackageReference Include="Utf8Json" Version="1.3.7" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" Version="2.2.0" />
     <KnownFrameworkReference
       Update="Microsoft.AspNetCore.App"
       DefaultRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)"
