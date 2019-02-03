@@ -778,39 +778,44 @@ namespace Microsoft.Extensions.DependencyInjection
         public void AddHttpClient_GetAwaiterAndResult_InSingleThreadedSynchronizationContext_ShouldNotHangs()
         {
             // Arrange
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddHttpClient("example.com")
-                .ConfigurePrimaryHttpMessageHandler(() =>
-                {
-                    var mockHandler = new Mock<HttpMessageHandler>();
-                    mockHandler
-                    .Protected()
-                    .Setup<Task<HttpResponseMessage>>(
-                        "SendAsync",
-                        ItExpr.IsAny<HttpRequestMessage>(),
-                        ItExpr.IsAny<CancellationToken>()
-                    )
-                    .Returns(async () =>
+            using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10)))
+            {
+                var token = cts.Token;
+                token.Register(() => throw new OperationCanceledException(token));
+                var serviceCollection = new ServiceCollection();
+                serviceCollection.AddHttpClient("example.com")
+                    .ConfigurePrimaryHttpMessageHandler(() =>
                     {
-                        await Task.Delay(1).ConfigureAwait(false);
-                        return new HttpResponseMessage(HttpStatusCode.OK);
+                        var mockHandler = new Mock<HttpMessageHandler>();
+                        mockHandler
+                        .Protected()
+                        .Setup<Task<HttpResponseMessage>>(
+                            "SendAsync",
+                            ItExpr.IsAny<HttpRequestMessage>(),
+                            ItExpr.IsAny<CancellationToken>()
+                        )
+                        .Returns(async () =>
+                        {
+                            await Task.Delay(1).ConfigureAwait(false);
+                            return new HttpResponseMessage(HttpStatusCode.OK);
+                        });
+                        return mockHandler.Object;
                     });
-                    return mockHandler.Object;
+
+                var services = serviceCollection.BuildServiceProvider();
+                var factory = services.GetRequiredService<IHttpClientFactory>();
+                var client = factory.CreateClient("example.com");
+                var hangs = true;
+                SingleThreadedSynchronizationContext.Run(() =>
+                {
+                    // Act
+                    client.GetAsync("http://example.com", token).GetAwaiter().GetResult();
+                    hangs = false;
                 });
 
-            var services = serviceCollection.BuildServiceProvider();
-            var factory = services.GetRequiredService<IHttpClientFactory>();
-            var client = factory.CreateClient("example.com");
-            var hangs = true;
-            SingleThreadedSynchronizationContext.Run(() =>
-            {
-                // Act
-                client.GetAsync("http://example.com").GetAwaiter().GetResult();
-                hangs = false;
-            });
-
-            // Assert
-            Assert.False(hangs);
+                // Assert
+                Assert.False(hangs);
+            }
         }
 
         [Fact]
