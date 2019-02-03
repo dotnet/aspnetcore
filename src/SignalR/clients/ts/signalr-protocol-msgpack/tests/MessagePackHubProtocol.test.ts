@@ -207,7 +207,7 @@ describe("MessagePackHubProtocol", () => {
         const payload = new Uint8Array([
             0x07, // length prefix
             0x93, // message array length = 1 (fixarray)
-            0x05, // type = 6 = Ping (fixnum)
+            0x05, // type = 5 = CancelInvocation (fixnum)
             0x80, // headers
             0xa3, // invocationID = string length 3
             0x61, // a
