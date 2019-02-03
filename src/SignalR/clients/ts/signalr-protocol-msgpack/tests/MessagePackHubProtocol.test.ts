@@ -202,4 +202,19 @@ describe("MessagePackHubProtocol", () => {
         const buffer = new MessagePackHubProtocol().writeMessage({ type: MessageType.Ping });
         expect(new Uint8Array(buffer)).toEqual(payload);
     });
+
+    it("can write cancel message", () => {
+        const payload = new Uint8Array([
+            0x07, // length prefix
+            0x93, // message array length = 1 (fixarray)
+            0x05, // type = 6 = Ping (fixnum)
+            0x80, // headers
+            0xa3, // invocationID = string length 3
+            0x61, // a
+            0x62, // b
+            0x63, // c
+        ]);
+        const buffer = new MessagePackHubProtocol().writeMessage({ type: MessageType.CancelInvocation, invocationId: "abc" });
+        expect(new Uint8Array(buffer)).toEqual(payload);
+    });
 });
