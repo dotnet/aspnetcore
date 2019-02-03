@@ -225,7 +225,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // If CanCreateModel could not find data for non-greedy properties, failures indicate greedy binders were
             // unsuccessful. For example, user may submit file attachments [0].File and [1].File but not [2].File for
             // a collection of a complex type containing an IFormFile property. In that case, we have exhausted the
-            // attached files and checking for [2].File would be pointless. (And, if it had a point, would we stop
+            // attached files and checking for [3].File is likely be pointless. (And, if it had a point, would we stop
             // after 10 failures, 100, or more -- all adding redundant errors to ModelState?) Inform higher-level
             // binders of the failure.
             //
