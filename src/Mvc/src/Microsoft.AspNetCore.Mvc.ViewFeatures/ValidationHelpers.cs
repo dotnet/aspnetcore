@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             {
                 var propertyMetadata = metadata.Properties[i];
                 var propertyModelStateEntry = modelStateEntry.GetModelStateForProperty(propertyMetadata.PropertyName);
-                if (propertyModelStateEntry != null)
+                if (propertyModelStateEntry != null && !orderedModelStateEntries.Contains(propertyModelStateEntry))
                 {
                     Visit(propertyModelStateEntry, propertyMetadata, orderedModelStateEntries);
                 }
