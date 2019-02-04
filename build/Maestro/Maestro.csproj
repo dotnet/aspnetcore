@@ -14,19 +14,9 @@
 
   <Target Name="GetFilesToPublish">
     <ItemGroup>
-      <PackageToPublish Include="$(ArtifactsShippingPackagesDir)*.symbols.nupkg" IsSymbolsPackage="true" />
-      <PackageToPublish Include="$(ArtifactsShippingPackagesDir)*.nupkg" Exclude="@(PackageToPublish)" />
-    </ItemGroup>
-
-    <!--
-      'Internal' packages are used to transfer bits to partner teams, and should not be used by customers.
-      Publishing these can be disabled.
-    -->
-    <ItemGroup>
-      <PackageToPublish Include="$(ArtifactsNonShippingPackagesDir)*.symbols.nupkg" IsSymbolsPackage="true">
-        <ManifestArtifactData>NonShipping=true</ManifestArtifactData>
-      </PackageToPublish>
-      <PackageToPublish Include="$(ArtifactsNonShippingPackagesDir)*.nupkg" Exclude="@(PackageToPublish)">
+      <PackageToPublish Include="$(ArtifactsShippingPackagesDir)*.nupkg" />
+      <PackageToPublish Include="$(ArtifactsNonShippingPackagesDir)*.nupkg">
+        <!-- 'NonShipping' packages are used to transfer bits to partner teams, and should not be used by customers. -->
         <ManifestArtifactData>NonShipping=true</ManifestArtifactData>
       </PackageToPublish>
     </ItemGroup>
