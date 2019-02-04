@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\..\..\Build\SignalRClient.Build.Settings" />
   <PropertyGroup Label="Globals">
@@ -84,10 +84,20 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <PackageReference Include="cpprestsdk" Version="2.9.1.1" />
+    <PackageReference Include="cpprestsdk.v120.winapp.msvcstl.dyn.rt-dyn" Version="2.9.1" />
+    <PackageReference Include="cpprestsdk.v120.windesktop.msvcstl.dyn.rt-dyn" Version="2.9.1" />
+    <PackageReference Include="cpprestsdk.v120.winphone.msvcstl.dyn.rt-dyn" Version="2.9.1" />
+    <PackageReference Include="cpprestsdk.v120.winphonesl.msvcstl.dyn.rt-dyn" Version="2.9.1" />
+    <PackageReference Include="cpprestsdk.v120.winxp.msvcstl.dyn.rt-dyn" Version="2.9.1" />
+    <PackageReference Include="cpprestsdk.v140.winapp.msvcstl.dyn.rt-dyn" Version="2.9.1" />
+    <PackageReference Include="cpprestsdk.v140.windesktop.msvcstl.dyn.rt-dyn" Version="2.9.1" />
   </ItemGroup>
+  <!--<ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>-->
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
+  <!--<ImportGroup Label="ExtensionTargets">
     <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
     <Import Project="..\..\..\..\packages\cpprestsdk.v120.winapp.msvcstl.dyn.rt-dyn.2.9.1\build\native\cpprestsdk.v120.winapp.msvcstl.dyn.rt-dyn.targets" Condition="Exists('..\..\..\..\packages\cpprestsdk.v120.winapp.msvcstl.dyn.rt-dyn.2.9.1\build\native\cpprestsdk.v120.winapp.msvcstl.dyn.rt-dyn.targets')" />
     <Import Project="..\..\..\..\packages\cpprestsdk.v120.windesktop.msvcstl.dyn.rt-dyn.2.9.1\build\native\cpprestsdk.v120.windesktop.msvcstl.dyn.rt-dyn.targets" Condition="Exists('..\..\..\..\packages\cpprestsdk.v120.windesktop.msvcstl.dyn.rt-dyn.2.9.1\build\native\cpprestsdk.v120.windesktop.msvcstl.dyn.rt-dyn.targets')" />
@@ -109,7 +119,7 @@
     <Error Condition="!Exists('..\..\..\..\packages\cpprestsdk.v120.winxp.msvcstl.dyn.rt-dyn.2.9.1\build\native\cpprestsdk.v120.winxp.msvcstl.dyn.rt-dyn.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\cpprestsdk.v120.winxp.msvcstl.dyn.rt-dyn.2.9.1\build\native\cpprestsdk.v120.winxp.msvcstl.dyn.rt-dyn.targets'))" />
     <Error Condition="!Exists('..\..\..\..\packages\cpprestsdk.v140.winapp.msvcstl.dyn.rt-dyn.2.9.1\build\native\cpprestsdk.v140.winapp.msvcstl.dyn.rt-dyn.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\cpprestsdk.v140.winapp.msvcstl.dyn.rt-dyn.2.9.1\build\native\cpprestsdk.v140.winapp.msvcstl.dyn.rt-dyn.targets'))" />
     <Error Condition="!Exists('..\..\..\..\packages\cpprestsdk.v140.windesktop.msvcstl.dyn.rt-dyn.2.9.1\build\native\cpprestsdk.v140.windesktop.msvcstl.dyn.rt-dyn.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\..\packages\cpprestsdk.v140.windesktop.msvcstl.dyn.rt-dyn.2.9.1\build\native\cpprestsdk.v140.windesktop.msvcstl.dyn.rt-dyn.targets'))" />
-  </Target>
+  </Target>-->
   <Target Name="AfterBuild">
     <Exec Command="copy /y &quot;$(SolutionDir)bin\Desktop\$(Platform)\$(Configuration)\dll\$(SignalrClientTargetName).dll&quot; &quot;$(SolutionDir)bin\Desktop\$(Platform)\$(Configuration)\$(SignalrClientTargetName).dll&quot;" />
   </Target>
