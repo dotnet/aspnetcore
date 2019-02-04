@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 
 namespace PlaintextApp
 {
@@ -18,24 +19,34 @@ namespace PlaintextApp
 
         public void Configure(IApplicationBuilder app)
         {
-            app.Run(async (httpContext) =>
-            {
-                var response = httpContext.Response;
-                response.StatusCode = 200;
-                response.ContentType = "text/plain";
-                response.ContentLength = _helloWorldBytes.Length;
-
-                var pipe = response.BodyPipe;
-                Write(pipe, _helloWorldBytes);
-                await pipe.FlushAsync();
-            });
+            app.Run(Plaintext);
         }
 
-        private static void Write(PipeWriter pipe, byte[] payload)
+        private static Task Plaintext(HttpContext httpContext)
         {
-            var span = pipe.GetSpan(sizeHint: payload.Length);
-            payload.CopyTo(span);
-            pipe.Advance(payload.Length);
+            var payload = _helloWorldBytes;
+            var response = httpContext.Response;
+
+            response.StatusCode = 200;
+            response.ContentType = "text/plain";
+            response.ContentLength = payload.Length;
+
+            var vt = response.BodyPipe.WriteAsync(payload);
+            if (vt.IsCompletedSuccessfully)
+            {
+                // Signal consumption to the IValueTaskSource
+                vt.GetAwaiter().GetResult();
+                return Task.CompletedTask;
+            }
+            else
+            {
+                return AwaitResult(vt);
+            }
+
+            async Task AwaitResult(ValueTask<FlushResult> flushResult)
+            {
+                await flushResult;
+            }
         }
 
         public static Task Main(string[] args)
