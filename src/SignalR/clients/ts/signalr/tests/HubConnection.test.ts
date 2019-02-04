@@ -1075,6 +1075,8 @@ describe("HubConnection", () => {
                     // Observer should no longer receive messages
                     expect(observer.itemsReceived).toEqual([1]);
 
+                    // Close message sent asynchronously so we need to wait
+                    await delay(50);
                     // Verify the cancel is sent (+ handshake)
                     expect(connection.sentData.length).toBe(3);
                     expect(JSON.parse(connection.sentData[2])).toEqual({
