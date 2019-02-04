@@ -688,8 +688,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         $"Date: {testContext.DateHeaderValue}",
                         "Transfer-Encoding: chunked",
                         "",
-                        "c",
-                        "Hello World!",
+                        "6",
+                        "Hello ",
+                        "6",
+                        "World!",
                         "0",
                         "",
                         "");

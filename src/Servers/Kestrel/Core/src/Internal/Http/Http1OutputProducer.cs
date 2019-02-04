@@ -46,6 +46,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         // and append the end terminator.
         private int _advancedBytesForChunk;
         private Memory<byte> _currentChunkMemory;
+        private bool _currentChunkMemoryUpdated;
 
         public Http1OutputProducer(
             PipeWriter pipeWriter,
@@ -264,7 +265,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 var bytesWritten = _unflushedBytes;
                 _unflushedBytes = 0;
-                _currentChunkMemory = default;
+                _currentChunkMemoryUpdated = false;
 
                 return _flusher.FlushAsync(
                     _minResponseDataRateFeature.MinDataRate,
@@ -281,18 +282,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // minus 5 for the max chunked prefix size and minus 2 for the chunked ending, leaving a total of
             // 4089.
 
-            if (_currentChunkMemory.Length == 0)
+            if (!_currentChunkMemoryUpdated)
             {
                 // First time calling GetMemory
                 _currentChunkMemory = _pipeWriter.GetMemory(sizeHint);
+                _currentChunkMemoryUpdated = true;
             }
 
             var memoryMaxLength = _currentChunkMemory.Length - BeginChunkLengthMax - EndChunkLength;
-            if (_advancedBytesForChunk > memoryMaxLength - Math.Min(MemorySizeThreshold, sizeHint))
+            if (_advancedBytesForChunk >= memoryMaxLength - Math.Min(MemorySizeThreshold, sizeHint))
             {
                 // Chunk is completely written, commit it to the pipe so GetMemory will return a new chunk of memory.
                 WriteCurrentMemoryToPipeWriter();
                 _currentChunkMemory = _pipeWriter.GetMemory(sizeHint);
+                _currentChunkMemoryUpdated = true;
             }
 
             var actualMemory = _currentChunkMemory.Slice(
