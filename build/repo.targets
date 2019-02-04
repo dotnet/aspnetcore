@@ -16,6 +16,9 @@
     <SkipTests Condition=" '$(_RunTests)' != 'true' ">true</SkipTests>
     <DisableCodeSigning Condition=" '$(_RunSign)' != 'true' OR '$(OS)' != 'Windows_NT' ">true</DisableCodeSigning>
 
+    <!-- Enabling *only* Components tests in this branch, since that's all we'd ship -->
+    <SkipTests>true</SkipTests>
+
     <CleanDependsOn>$(CleanDependsOn);CleanArtifacts</CleanDependsOn>
 
     <RestoreDependsOn>$(RestoreDependsOn);InstallDotNet;RestoreProjects</RestoreDependsOn>
