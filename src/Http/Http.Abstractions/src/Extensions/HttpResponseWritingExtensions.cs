@@ -61,42 +61,21 @@ namespace Microsoft.AspNetCore.Http
                 throw new ArgumentNullException(nameof(encoding));
             }
 
-            if (!response.HasStarted)
+            byte[] data = encoding.GetBytes(text);
+            var writeTask = response.BodyPipe.WriteAsync(data, cancellationToken);
+
+            if (writeTask.IsCompleted)
             {
-                return StartAndFlushAsyncAwaited(response, text, encoding, cancellationToken);
-            }
-
-            WriteDataToPipe(response.BodyPipe, text, encoding);
-
-            var flushTask = response.BodyPipe.FlushAsync(cancellationToken);
-
-            if (flushTask.IsCompleted)
-            {
+                writeTask.GetAwaiter().GetResult();
                 return Task.CompletedTask;
             }
 
-            return FlushTaskAwaited(flushTask);
+            return WriteTaskAwaited(writeTask);
         }
 
-        private static void WriteDataToPipe(PipeWriter responsePipeWriter, string text, Encoding encoding)
-        {
-            byte[] data = encoding.GetBytes(text);
-            var memory = responsePipeWriter.GetMemory(data.Length);
-            data.CopyTo(memory);
-            responsePipeWriter.Advance(data.Length);
-        }
-
-        private static async Task FlushTaskAwaited(ValueTask<FlushResult> flushTask)
+        private static async Task WriteTaskAwaited(ValueTask<FlushResult> flushTask)
         {
             await flushTask;
         }
-
-        private static async Task StartAndFlushAsyncAwaited(HttpResponse response, string text, Encoding encoding, CancellationToken cancellationToken)
-        {
-            await response.StartAsync(cancellationToken);
-            WriteDataToPipe(response.BodyPipe, text, encoding);
-            await response.BodyPipe.FlushAsync(cancellationToken);
-        }
-
     }
 }
