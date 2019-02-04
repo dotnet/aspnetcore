@@ -32,6 +32,7 @@ namespace System.IO.Pipelines.Tests
         [InlineData(8000, 8000)]
         public async Task CanAdvanceWithPartialConsumptionOfFirstSegment(int firstWriteLength, int secondWriteLength)
         {
+            Writer = new StreamPipeWriter(MemoryStream, MinimumSegmentSize, new TestMemoryPool(maxBufferSize: 20000));
             await Writer.WriteAsync(Encoding.ASCII.GetBytes("a"));
 
             var expectedLength = firstWriteLength + secondWriteLength + 1;
