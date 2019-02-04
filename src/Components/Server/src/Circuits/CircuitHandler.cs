@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         /// Invoked when a new circuit was established.
         /// </summary>
         /// <param name="circuit">The <see cref="Circuit"/>.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
+        /// <param name="cancellationToken">A <see cref="CancellationToken"/> that notifies when the client connection is aborted.</param>
         /// <returns><see cref="Task"/> that represents the asynchronous execution operation.</returns>
         public virtual Task OnCircuitOpenedAsync(Circuit circuit, CancellationToken cancellationToken) => Task.CompletedTask;
 
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         /// </para>
         /// </summary>
         /// <param name="circuit">The <see cref="Circuit"/>.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
+        /// <param name="cancellationToken">A <see cref="CancellationToken"/> that notifies when the client connection is aborted.</param>
         /// <returns><see cref="Task"/> that represents the asynchronous execution operation.</returns>
         public virtual Task OnConnectionUpAsync(Circuit circuit, CancellationToken cancellationToken) => Task.CompletedTask;
 

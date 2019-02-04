@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.AspNetCore.Components.Server
 {
     /// <summary>
-    /// A SignalR hub that accepts connections to a ASP.NET Core Components WebApp.
+    /// A SignalR hub that accepts connections to an ASP.NET Core Components application.
     /// </summary>
     public sealed class ComponentsHub : Hub
     {
