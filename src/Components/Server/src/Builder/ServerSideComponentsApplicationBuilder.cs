@@ -7,9 +7,9 @@ using Microsoft.AspNetCore.Components.Builder;
 
 namespace Microsoft.AspNetCore.Components.Hosting
 {
-    internal class ServerSideBlazorApplicationBuilder : IComponentsApplicationBuilder
+    internal class ServerSideComponentsApplicationBuilder : IComponentsApplicationBuilder
     {
-        public ServerSideBlazorApplicationBuilder(IServiceProvider services)
+        public ServerSideComponentsApplicationBuilder(IServiceProvider services)
         {
             Services = services;
             Entries = new List<(Type componentType, string domElementSelector)>();

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using Microsoft.AspNetCore.Components.Browser;
 using Microsoft.AspNetCore.Components.Browser.Rendering;
 using Microsoft.AspNetCore.Http;
@@ -33,7 +34,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         {
             if (!_options.StartupActions.TryGetValue(httpContext.Request.Path, out var config))
             {
-                var message = $"Could not find a Blazor startup action for request path {httpContext.Request.Path}";
+                var message = $"Could not find an ASP.NET Core Components startup action for request path '{httpContext.Request.Path}'.";
                 throw new InvalidOperationException(message);
             }
 
@@ -43,6 +44,10 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var synchronizationContext = new CircuitSynchronizationContext();
             var renderer = new RemoteRenderer(scope.ServiceProvider, rendererRegistry, jsRuntime, client, synchronizationContext);
 
+            var circuitHandlers = scope.ServiceProvider.GetServices<CircuitHandler>()
+                .OrderBy(h => h.Order)
+                .ToArray();
+
             var circuitHost = new CircuitHost(
                 scope,
                 client,
@@ -50,7 +55,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 renderer,
                 config,
                 jsRuntime,
-                synchronizationContext);
+                synchronizationContext,
+                circuitHandlers);
 
             // Initialize per-circuit data that services need
             (circuitHost.Services.GetRequiredService<IJSRuntimeAccessor>() as DefaultJSRuntimeAccessor).JSRuntime = jsRuntime;

@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         [JSInvokable(nameof(NotifyLocationChanged))]
         public static void NotifyLocationChanged(string uriAbsolute)
         {
-            var circuit = Circuit.Current;
+            var circuit = CircuitHost.Current;
             if (circuit == null)
             {
                 var message = $"{nameof(NotifyLocationChanged)} called without a circuit.";

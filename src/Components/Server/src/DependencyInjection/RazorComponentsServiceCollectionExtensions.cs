@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Components.Services;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.JSInterop;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -74,7 +73,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 // TStartup's Configure method".
                 services.Configure<DefaultCircuitFactoryOptions>(circuitFactoryOptions =>
                 {
-                    var endpoint = BlazorHub.DefaultPath; // TODO: allow configuring this
+                    var endpoint = ComponentsHub.DefaultPath; // TODO: allow configuring this
                     if (circuitFactoryOptions.StartupActions.ContainsKey(endpoint))
                     {
                         throw new InvalidOperationException(
@@ -99,9 +98,9 @@ namespace Microsoft.Extensions.DependencyInjection
             // Components entrypoints, this lot is the same and repeated registrations are a no-op.
             services.TryAddSingleton<CircuitFactory, DefaultCircuitFactory>();
             services.TryAddScoped<ICircuitAccessor, DefaultCircuitAccessor>();
-            services.TryAddScoped<Circuit>(s => s.GetRequiredService<ICircuitAccessor>().Circuit);
+            services.TryAddScoped(s => s.GetRequiredService<ICircuitAccessor>().Circuit);
             services.TryAddScoped<IJSRuntimeAccessor, DefaultJSRuntimeAccessor>();
-            services.TryAddScoped<IJSRuntime>(s => s.GetRequiredService<IJSRuntimeAccessor>().JSRuntime);
+            services.TryAddScoped(s => s.GetRequiredService<IJSRuntimeAccessor>().JSRuntime);
             services.TryAddScoped<IUriHelper, RemoteUriHelper>();
 
             // We've discussed with the SignalR team and believe it's OK to have repeated
