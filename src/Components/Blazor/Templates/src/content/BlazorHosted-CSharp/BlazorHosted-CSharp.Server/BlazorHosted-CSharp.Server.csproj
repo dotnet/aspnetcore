@@ -12,6 +12,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Blazor.Server" Version="$(TemplateBlazorPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Server" Version="$(TemplateComponentsPackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="$(TemplateComponentsPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>
