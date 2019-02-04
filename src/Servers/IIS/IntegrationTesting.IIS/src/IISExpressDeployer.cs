@@ -456,9 +456,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             internal static extern bool EnumWindows(EnumWindowProc callback, IntPtr lParam);
             [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
             internal static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName,int nMaxCount);
-            [DllImport("kernel32.dll")]
-            internal static extern IntPtr CreateRemoteThread(IntPtr hProcess, IntPtr lpThreadAttributes, uint dwStackSize, IntPtr lpStartAddress, IntPtr lpParameter, uint dwCreationFlags, IntPtr lpThreadId);
-
         }
 
         private void SendStopMessageToProcess(int pid)
@@ -520,24 +517,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
             if (!found)
             {
-                TriggerCrash(pid);
-
                 throw new InvalidOperationException($"Unable to find main window for process {pid}");
-            }
-        }
-
-        private void TriggerCrash(int pid)
-        {
-            try
-            {
-                Logger.LogInformation($"Trying to crash the process {pid}");
-                var process = Process.GetProcessById(pid);
-                // Calling CreateRemoteThread as 0x1 as thread function pointer should cause a crash
-                WindowsNativeMethods.CreateRemoteThread(process.Handle, IntPtr.Zero, 0, (IntPtr)1, IntPtr.Zero, 0, IntPtr.Zero);
-            }
-            catch (Exception e)
-            {
-                Logger.LogInformation(e, "Exception while trying to crash the process");
             }
         }
 
