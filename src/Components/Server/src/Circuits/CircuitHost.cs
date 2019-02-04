@@ -14,9 +14,14 @@ using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
-    internal class CircuitHost : IDisposable
+    internal class CircuitHost : IAsyncDisposable
     {
         private static readonly AsyncLocal<CircuitHost> _current = new AsyncLocal<CircuitHost>();
+        private readonly IServiceScope _scope;
+        private readonly CircuitHandler[] _circuitHandlers;
+        private bool _initialized;
+
+        private Action<IComponentsApplicationBuilder> _configure;
 
         /// <summary>
         /// Gets the current <see cref="Circuit"/>, if any.
@@ -37,14 +42,11 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         {
             _current.Value = circuitHost ?? throw new ArgumentNullException(nameof(circuitHost));
 
-            Microsoft.JSInterop.JSRuntime.SetCurrentJSRuntime(circuitHost.JSRuntime);
+            JSInterop.JSRuntime.SetCurrentJSRuntime(circuitHost.JSRuntime);
             RendererRegistry.SetCurrentRendererRegistry(circuitHost.RendererRegistry);
         }
 
         public event UnhandledExceptionEventHandler UnhandledException;
-
-        private bool _isInitialized;
-        private Action<IComponentsApplicationBuilder> _configure;
 
         public CircuitHost(
             IServiceScope scope,
@@ -53,9 +55,10 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             RemoteRenderer renderer,
             Action<IComponentsApplicationBuilder> configure,
             IJSRuntime jsRuntime,
-            CircuitSynchronizationContext synchronizationContext)
+            CircuitSynchronizationContext synchronizationContext,
+            CircuitHandler[] circuitHandlers)
         {
-            Scope = scope ?? throw new ArgumentNullException(nameof(scope));
+            _scope = scope ?? throw new ArgumentNullException(nameof(scope));
             Client = client ?? throw new ArgumentNullException(nameof(client));
             RendererRegistry = rendererRegistry ?? throw new ArgumentNullException(nameof(rendererRegistry));
             Renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
@@ -66,10 +69,13 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             Services = scope.ServiceProvider;
 
             Circuit = new Circuit(this);
+            _circuitHandlers = circuitHandlers;
 
             Renderer.UnhandledException += Renderer_UnhandledException;
             SynchronizationContext.UnhandledException += SynchronizationContext_UnhandledException;
         }
+
+        public string CircuitId { get; } = Guid.NewGuid().ToString();
 
         public Circuit Circuit { get; }
 
@@ -81,30 +87,38 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         public RendererRegistry RendererRegistry { get; }
 
-        public IServiceScope Scope { get; }
-
         public IServiceProvider Services { get; }
 
         public CircuitSynchronizationContext SynchronizationContext { get; }
 
-        public async Task InitializeAsync()
+        public async Task InitializeAsync(CancellationToken cancellationToken)
         {
-            await SynchronizationContext.Invoke(() =>
+            await SynchronizationContext.InvokeAsync(async () =>
             {
                 SetCurrentCircuitHost(this);
 
-                var builder = new ServerSideBlazorApplicationBuilder(Services);
+                var builder = new ServerSideComponentsApplicationBuilder(Services);
 
                 _configure(builder);
 
                 for (var i = 0; i < builder.Entries.Count; i++)
                 {
-                    var entry = builder.Entries[i];
-                    Renderer.AddComponent(entry.componentType, entry.domElementSelector);
+                    var (componentType, domElementSelector) = builder.Entries[i];
+                    Renderer.AddComponent(componentType, domElementSelector);
+                }
+
+                for (var i = 0; i < _circuitHandlers.Length; i++)
+                {
+                    await _circuitHandlers[i].OnCircuitOpenedAsync(Circuit, cancellationToken);
+                }
+
+                for (var i = 0; i < _circuitHandlers.Length; i++)
+                {
+                    await _circuitHandlers[i].OnConnectionUpAsync(Circuit, cancellationToken);
                 }
             });
 
-            _isInitialized = true;
+            _initialized = true;
         }
 
         public async void BeginInvokeDotNetFromJS(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson)
@@ -126,15 +140,28 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
         }
 
-        public void Dispose()
+        public async ValueTask DisposeAsync()
         {
-            Scope.Dispose();
+            await SynchronizationContext.InvokeAsync(async () =>
+            {
+                for (var i = 0; i < _circuitHandlers.Length; i++)
+                {
+                    await _circuitHandlers[i].OnConnectionDownAsync(Circuit, default);
+                }
+
+                for (var i = 0; i < _circuitHandlers.Length; i++)
+                {
+                    await _circuitHandlers[i].OnCircuitClosedAsync(Circuit, default);
+                }
+            });
+
+            _scope.Dispose();
             Renderer.Dispose();
         }
 
         private void AssertInitialized()
         {
-            if (!_isInitialized)
+            if (!_initialized)
             {
                 throw new InvalidOperationException("Something is calling into the circuit before Initialize() completes");
             }

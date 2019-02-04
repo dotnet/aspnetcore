@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Microsoft.AspNetCore.Http
 {
-    public interface IHttpContextContainer
+    public interface IDefaultHttpContextContainer
     {
         DefaultHttpContext HttpContext { get; }
     }

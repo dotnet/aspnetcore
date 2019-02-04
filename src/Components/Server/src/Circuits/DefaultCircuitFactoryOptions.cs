@@ -6,17 +6,13 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Components.Builder;
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Components.Server.Circuits
+namespace Microsoft.AspNetCore.Components.Server
 {
     internal class DefaultCircuitFactoryOptions
     {
         // During the DI configuration phase, we use Configure<DefaultCircuitFactoryOptions>(...)
         // callbacks to build up this dictionary mapping paths to startup actions
-        public Dictionary<PathString, Action<IComponentsApplicationBuilder>> StartupActions { get; }
-
-        public DefaultCircuitFactoryOptions()
-        {
-            StartupActions = new Dictionary<PathString, Action<IComponentsApplicationBuilder>>();
-        }
+        internal Dictionary<PathString, Action<IComponentsApplicationBuilder>> StartupActions { get; }
+            = new Dictionary<PathString, Action<IComponentsApplicationBuilder>>();
     }
 }
