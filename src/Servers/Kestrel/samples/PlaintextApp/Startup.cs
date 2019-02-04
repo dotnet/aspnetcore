@@ -1,7 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
+using System.IO.Pipelines;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,16 +18,24 @@ namespace PlaintextApp
 
         public void Configure(IApplicationBuilder app)
         {
-            app.Run((httpContext) =>
+            app.Run(async (httpContext) =>
             {
                 var response = httpContext.Response;
                 response.StatusCode = 200;
                 response.ContentType = "text/plain";
+                response.ContentLength = _helloWorldBytes.Length;
 
-                var helloWorld = _helloWorldBytes;
-                response.ContentLength = helloWorld.Length;
-                return response.Body.WriteAsync(helloWorld, 0, helloWorld.Length);
+                var pipe = response.BodyPipe;
+                Write(pipe, _helloWorldBytes);
+                await pipe.FlushAsync();
             });
+        }
+
+        private static void Write(PipeWriter pipe, byte[] payload)
+        {
+            var span = pipe.GetSpan(sizeHint: payload.Length);
+            payload.CopyTo(span);
+            pipe.Advance(payload.Length);
         }
 
         public static Task Main(string[] args)
