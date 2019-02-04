@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Hosting
                 await AssertResponseContains(server.RequestDelegate, "Exception from constructor");
             }
         }
-        
+
         [Theory]
         [MemberData(nameof(DefaultWebHostBuildersWithConfig))]
         public async Task StartupConfigureServicesThrows_Fallback(IWebHostBuilder builder)
@@ -137,6 +137,30 @@ namespace Microsoft.AspNetCore.Hosting
                 await host.StartAsync();
                 await AssertResponseContains(server.RequestDelegate, "Exception from Configure");
             }
+        }
+
+        [Theory]
+        [MemberData(nameof(DefaultWebHostBuilders))]
+        public async Task StartupConfigureThrowsDoesNotThrowTargetInvocationException(IWebHostBuilder builder)
+        {
+            var server = new TestServer();
+            var host = builder.UseServer(server).UseStartup<StartupConfigureThrows>().Build();
+            using (host)
+            {
+                var exception = await Assert.ThrowsAsync<Exception>(() => host.StartAsync());
+                Assert.Equal("Exception from Configure", exception.Message);
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(DefaultWebHostBuilders))]
+        public void StartupConfigureServicesThrowsDoesNotThrowTargetInvocationException(IWebHostBuilder builder)
+        {
+            var server = new TestServer();
+            var hostBuilder = builder.UseServer(server).UseStartup<StartupConfigureServicesThrows>();
+
+            var exception = Assert.Throws<Exception>(() => hostBuilder.Build());
+            Assert.Equal("Exception from ConfigureServices", exception.Message);
         }
 
         [Theory]
@@ -967,7 +991,8 @@ namespace Microsoft.AspNetCore.Hosting
         {
             builder = builder
                 .CaptureStartupErrors(false)
-                .ConfigureAppConfiguration((context, configurationBuilder) => {
+                .ConfigureAppConfiguration((context, configurationBuilder) =>
+                {
                     configurationBuilder.AddInMemoryCollection(
                         new[]
                         {

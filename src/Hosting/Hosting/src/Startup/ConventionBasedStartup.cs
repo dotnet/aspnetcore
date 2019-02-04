@@ -18,39 +18,15 @@ namespace Microsoft.AspNetCore.Hosting
         {
             _methods = methods;
         }
-        
+
         public void Configure(IApplicationBuilder app)
         {
-            try
-            {
-                _methods.ConfigureDelegate(app);
-            }
-            catch (Exception ex)
-            {
-                if (ex is TargetInvocationException)
-                {
-                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
-                }
-
-                throw;
-            }
+            _methods.ConfigureDelegate(app);
         }
 
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
-            try
-            {
-                return _methods.ConfigureServicesDelegate(services);
-            }
-            catch (Exception ex)
-            {
-                if (ex is TargetInvocationException)
-                {
-                    ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
-                }
-
-                throw;
-            }
+            return _methods.ConfigureServicesDelegate(services);
         }
     }
 }

@@ -499,8 +499,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             var app = new ApplicationBuilder(services);
             app.ApplicationServices = startup.ConfigureServicesDelegate(serviceCollection);
 
-            var ex = Assert.Throws<TargetInvocationException>(() => startup.ConfigureDelegate(app));
-            Assert.IsAssignableFrom<InvalidOperationException>(ex.InnerException);
+            var ex = Assert.Throws<InvalidOperationException>(() => startup.ConfigureDelegate(app));
         }
 
         [Fact]
