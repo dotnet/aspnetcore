@@ -9,4 +9,4 @@
 #define FileVersionStr "1.0.0.0\0"
 #define ProductVersion 1,0,0,0
 #define ProductVersionStr "1.0.0-alpha0\0"
-#define PlatformToolset "v140\0"
+#define PlatformToolset "v141\0"
