@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
@@ -518,6 +519,40 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.Equal(Path.GetDirectoryName(deploymentResult.HostProcess.MainModule.FileName), await deploymentResult.HttpClient.GetStringAsync("/CurrentDirectory"));
             Assert.Equal(deploymentResult.ContentRoot + "\\", await deploymentResult.HttpClient.GetStringAsync("/BaseDirectory"));
             Assert.Equal(deploymentResult.ContentRoot + "\\", await deploymentResult.HttpClient.GetStringAsync("/ASPNETCORE_IIS_PHYSICAL_PATH"));
+        }
+
+        [ConditionalFact]
+        [RequiresNewShim]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        public async Task StartupIsSuspendedWhenEventIsUsed()
+        {
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters();
+            deploymentParameters.ApplicationType = ApplicationType.Standalone;
+            deploymentParameters.EnvironmentVariables["ASPNETCORE_STARTUP_SUSPEND_EVENT"] = "ANCM_TestEvent";
+
+            var eventWaitHandle = new  EventWaitHandle(false, EventResetMode.ManualReset, "ANCM_TestEvent");
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            var request = deploymentResult.HttpClient.GetAsync("/HelloWorld");
+
+            // didn't figure out a better way to check that ANCM is waiting to start
+            var applicationDll = Path.Combine(deploymentResult.ContentRoot, "InProcessWebSite.dll");
+            var handlerDll = Path.Combine(deploymentResult.ContentRoot, "aspnetcorev2_inprocess.dll");
+            for (int i = 0; i < 10; i++)
+            {
+                // Make sure application dll is not locked
+                File.WriteAllBytes(applicationDll, File.ReadAllBytes(applicationDll));
+                // Make sure handler dll is not locked
+                File.WriteAllBytes(handlerDll, File.ReadAllBytes(handlerDll));
+                // Make sure request is not completed
+                Assert.False(request.IsCompleted);
+                await Task.Delay(100);
+            }
+
+            eventWaitHandle.Set();
+
+            await request;
         }
 
         private static void MoveApplication(
