@@ -2,9 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
+using System.Threading.Tasks;   
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -587,7 +588,70 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 expectedMessage);
         }
 
-        private static ViewContext CreateViewContext()
+        [Fact]
+        public async Task ProcessAsync_GeneratesExpectedOutput_WithModelErrorForIEnumerable()
+        {
+            // Arrange
+            var expectedError = "Something went wrong.";
+            var expectedTagName = "not-div";
+            var expectedAttributes = new TagHelperAttributeList
+            {
+                new TagHelperAttribute("class", "form-control validation-summary-errors"),
+                new TagHelperAttribute("data-valmsg-summary", "true"),
+            };
+
+            var metadataProvider = new TestModelMetadataProvider();
+            var htmlGenerator = new TestableHtmlGenerator(metadataProvider);
+            var validationSummaryTagHelper = new ValidationSummaryTagHelper(htmlGenerator)
+            {
+                ValidationSummary = ValidationSummary.All,
+            };
+
+            var expectedPreContent = "original pre-content";
+            var expectedContent = "original content";
+            var tagHelperContext = new TagHelperContext(
+                tagName: "not-div",
+                allAttributes: new TagHelperAttributeList(),
+                items: new Dictionary<object, object>(),
+                uniqueId: "test");
+            var output = new TagHelperOutput(
+                expectedTagName,
+                attributes: new TagHelperAttributeList
+                {
+                    { "class", "form-control" }
+                },
+                getChildContentAsync: (useCachedResult, encoder) =>
+                {
+                    var tagHelperContent = new DefaultTagHelperContent();
+                    tagHelperContent.SetContent("Something");
+                    return Task.FromResult<TagHelperContent>(tagHelperContent);
+                });
+            output.PreContent.SetContent(expectedPreContent);
+            output.Content.SetContent(expectedContent);
+            output.PostContent.SetContent("Custom Content");
+
+            var model = new FormMetadata();
+            var viewContext = TestableHtmlGenerator.GetViewContext(model, htmlGenerator, metadataProvider);
+            validationSummaryTagHelper.ViewContext = viewContext;
+
+            var modelState = viewContext.ModelState;
+            SetValidModelState(modelState);
+            modelState.AddModelError(key: $"{nameof(Model.Strings)}[0]", errorMessage: expectedError);
+
+            // Act
+            await validationSummaryTagHelper.ProcessAsync(tagHelperContext, output);
+
+            // Assert
+            Assert.Equal(expectedAttributes, output.Attributes, CaseSensitiveTagHelperAttributeComparer.Default);
+            Assert.Equal(expectedPreContent, output.PreContent.GetContent());
+            Assert.Equal(expectedContent, output.Content.GetContent());
+            Assert.Equal(
+                $"Custom Content<ul><li>{expectedError}</li>{Environment.NewLine}</ul>",
+                output.PostContent.GetContent());
+            Assert.Equal(expectedTagName, output.TagName);
+        }
+
+            private static ViewContext CreateViewContext()
         {
             var actionContext = new ActionContext(
                 new DefaultHttpContext(),
@@ -612,6 +676,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             modelState.SetModelValue(key: $"{nameof(Model.Strings)}[1]", rawValue: null, attemptedValue: null);
             modelState.SetModelValue(key: $"{nameof(Model.Strings)}[2]", rawValue: null, attemptedValue: null);
             modelState.SetModelValue(key: nameof(Model.Text), rawValue: null, attemptedValue: null);
+            modelState.SetModelValue(key: nameof(FormMetadata.ID), rawValue: null, attemptedValue: null);
 
             foreach (var key in modelState.Keys)
             {
@@ -628,6 +693,23 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // Exists to ensure #4989 does not regress. Issue specific to case where collection has a ModelStateEntry
             // but no element does.
             public byte[] Empty { get; set; }
+        }
+
+        private class FormMetadata : IEnumerable<Model>
+        {
+            private List<Model> _fields = new List<Model>();
+
+            public int ID { get; set; }
+
+            public IEnumerator<Model> GetEnumerator()
+            {
+                return _fields.GetEnumerator();
+            }
+
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return _fields.GetEnumerator();
+            }
         }
     }
 }
