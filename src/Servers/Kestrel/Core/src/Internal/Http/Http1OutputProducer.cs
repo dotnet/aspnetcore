@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _pipeWriter.CancelPendingFlush();
         }
 
-        // This method is for chunked http responses
+        // This method is for chunked http responses that directly call response.WriteAsync
         public ValueTask<FlushResult> WriteChunkAsync(ReadOnlySpan<byte> buffer, CancellationToken cancellationToken)
         {
             lock (_contextLock)
@@ -153,7 +153,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     return default;
                 }
 
-                CommitChunkToPipe();
+                // Make sure any memory used with GetMemory/Advance is written before the chunk
+                // passed in.
+                WriteCurrentMemoryToPipeWriter();
 
                 if (buffer.Length > 0)
                 {
@@ -254,7 +256,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     // If there is data that was chunked before writing (ex someone did GetMemory->Advance->WriteAsync)
                     // make sure to write whatever was advanced first
-                    CommitChunkToPipe();
+                    WriteCurrentMemoryToPipeWriter();
                 }
 
                 var writer = new BufferWriter<PipeWriter>(_pipeWriter);
@@ -294,7 +296,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (_advancedBytesForChunk > memoryMaxLength - Math.Min(MemorySizeThreshold, sizeHint))
             {
                 // Chunk is completely written, commit it to the pipe so GetMemory will return a new chunk of memory.
-                CommitChunkToPipe();
+                WriteCurrentMemoryToPipeWriter();
                 _currentChunkMemory = _pipeWriter.GetMemory(sizeHint);
             }
 
@@ -307,7 +309,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return actualMemory;
         }
 
-        private void CommitChunkToPipe()
+        // This method is for chunked http responses that use GetMemory/Advance
+        private void WriteCurrentMemoryToPipeWriter()
         {
             var writer = new BufferWriter<PipeWriter>(_pipeWriter);
 
@@ -331,6 +334,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 writer.WriteEndChunkBytes();
                 writer.Commit();
                 _advancedBytesForChunk = 0;
+                _unflushedBytes += writer.BytesCommitted;
             }
         }
     }
