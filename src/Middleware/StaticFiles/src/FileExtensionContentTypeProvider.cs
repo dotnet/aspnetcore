@@ -37,6 +37,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 { ".aif", "audio/x-aiff" },
                 { ".aifc", "audio/aiff" },
                 { ".aiff", "audio/aiff" },
+                { ".apng", "image/apng" },
                 { ".appcache", "text/cache-manifest" },
                 { ".application", "application/x-ms-application" },
                 { ".art", "image/x-jg" },
