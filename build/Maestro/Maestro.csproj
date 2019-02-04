@@ -1,0 +1,49 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- TFM doesn't matter. These settings are required to make NuGet happy so we can restore required MSBuild packages. -->
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+    <ManifestsPath>$(ArtifactsDir)manifests\</ManifestsPath>
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.DotNet.Maestro.Tasks" Version="1.1.0-beta.19065.2" />
+  </ItemGroup>
+
+  <Target Name="GetFilesToPublish">
+    <ItemGroup>
+      <PackageToPublish Include="$(ArtifactsShippingPackagesDir)*.symbols.nupkg" IsSymbolsPackage="true" />
+      <PackageToPublish Include="$(ArtifactsShippingPackagesDir)*.nupkg" Exclude="@(PackageToPublish)" />
+    </ItemGroup>
+
+    <!--
+      'Internal' packages are used to transfer bits to partner teams, and should not be used by customers.
+      Publishing these can be disabled.
+    -->
+    <ItemGroup>
+      <PackageToPublish Include="$(ArtifactsNonShippingPackagesDir)*.symbols.nupkg" IsSymbolsPackage="true">
+        <ManifestArtifactData>NonShipping=true</ManifestArtifactData>
+      </PackageToPublish>
+      <PackageToPublish Include="$(ArtifactsNonShippingPackagesDir)*.nupkg" Exclude="@(PackageToPublish)">
+        <ManifestArtifactData>NonShipping=true</ManifestArtifactData>
+      </PackageToPublish>
+    </ItemGroup>
+  </Target>
+
+  <UsingTask TaskName="GenerateBuildManifest" AssemblyFile="$(PkgMicrosoft_DotNet_Maestro_Tasks)\tools\netcoreapp2.1\Microsoft.DotNet.Maestro.Tasks.dll"/>
+
+  <Target Name="GenerateBuildAssetManifest"
+          DependsOnTargets="GetFilesToPublish;ResolveRepositoryBranch;ResolveCommitHash">
+
+    <GenerateBuildManifest
+      Artifacts="@(PackageToPublish)"
+      OutputPath="$(ManifestsPath)aspnetcore-$(TargetRuntimeIdentifier)-$(PackageVersion).xml"
+      BuildId="$(PackageVersion)"
+      RepoUri="$(RepositoryUrl)"
+      RepoBranch="$(RepositoryBranch)"
+      RepoCommit="$(RepositoryCommit)" />
+  </Target>
+
+</Project>
