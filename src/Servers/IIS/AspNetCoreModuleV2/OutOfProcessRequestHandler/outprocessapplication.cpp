@@ -87,7 +87,7 @@ OUT_OF_PROCESS_APPLICATION::SetWebsocketStatus(
     PCWSTR pszTempWebsocketValue;
     DWORD cbLength;
 
-    if (FAILED_LOG(pHttpContext->GetServerVariable("WEBSOCKET_VERSION", &pszTempWebsocketValue, &cbLength)))
+    if (pHttpContext->GetServerVariable("WEBSOCKET_VERSION", &pszTempWebsocketValue, &cbLength))
     {
         m_fWebSocketSupported = WEBSOCKET_STATUS::WEBSOCKET_NOT_SUPPORTED;
     }
