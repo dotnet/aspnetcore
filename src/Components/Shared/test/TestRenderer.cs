@@ -30,16 +30,12 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
         public List<CapturedBatch> Batches { get; }
             = new List<CapturedBatch>();
 
-        public List<(int componentId, Exception exception)> HandledExceptions { get; }
-            = new List<(int, Exception)>();
+        public List<Exception> HandledExceptions { get; } = new List<Exception>();
 
         public bool ShouldHandleExceptions { get; set; }
 
         public new int AssignRootComponentId(IComponent component)
             => base.AssignRootComponentId(component);
-
-        public new void RenderRootComponent(int componentId)
-            => Invoke(() => base.RenderRootComponent(componentId));
 
         public new Task RenderRootComponentAsync(int componentId)
             => InvokeAsync(() => base.RenderRootComponentAsync(componentId));
@@ -66,14 +62,14 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
         public T InstantiateComponent<T>() where T : IComponent
             => (T)InstantiateComponent(typeof(T));
 
-        protected override bool HandleException(int componentId, IComponent component, Exception exception)
+        protected override void HandleException(Exception exception)
         {
-            if (ShouldHandleExceptions)
+            if (!ShouldHandleExceptions)
             {
-                HandledExceptions.Add((componentId, exception));
+                throw exception;
             }
 
-            return ShouldHandleExceptions;
+            HandledExceptions.Add(exception);
         }
 
         protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)

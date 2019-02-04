@@ -93,8 +93,6 @@ namespace Microsoft.Extensions.DependencyInjection
 
         private static void AddStandardRazorComponentsServices(IServiceCollection services)
         {
-            services.AddLogging();
-
             // Here we add a bunch of services that don't vary in any way based on the
             // user's configuration. So even if the user has multiple independent server-side
             // Components entrypoints, this lot is the same and repeated registrations are a no-op.

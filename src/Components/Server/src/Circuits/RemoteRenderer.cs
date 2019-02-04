@@ -94,18 +94,18 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
         }
 
         /// <inheritdoc />
-        protected override bool HandleException(int componentId, IComponent component, Exception exception)
+        protected override bool HandleException(Exception exception)
         {
             if (exception is AggregateException aggregateException)
             {
                 foreach (var innerException in aggregateException.Flatten().InnerExceptions)
                 {
-                    _logger.UnhandledExceptionRenderingComponent(component.GetType(), componentId, innerException);
+                    _logger.UnhandledExceptionRenderingComponent(innerException);
                 }
             }
             else
             {
-                _logger.UnhandledExceptionRenderingComponent(component.GetType(), componentId, exception);
+                _logger.UnhandledExceptionRenderingComponent(exception);
             }
 
             return true;

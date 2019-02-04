@@ -94,9 +94,9 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         }
 
         /// <inheritdoc />
-        protected override bool HandleException(int componentId, IComponent component, Exception exception)
+        protected override bool HandleException(Exception exception)
         {
-            Console.Error.WriteLine($"Unhandled exception executing component {component.GetType().FullName} ({componentId})");
+            Console.Error.WriteLine($"Unhandled exception rendering component:");
             if (exception is AggregateException aggregateException)
             {
                 foreach (var innerException in aggregateException.Flatten().InnerExceptions)

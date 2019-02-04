@@ -1691,6 +1691,9 @@ namespace Microsoft.AspNetCore.Components.Test
             public new int AssignRootComponentId(IComponent component)
                 => base.AssignRootComponentId(component);
 
+            protected override void HandleException(Exception exception)
+                => throw new NotImplementedException();
+
             protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
                 => Task.CompletedTask;
         }

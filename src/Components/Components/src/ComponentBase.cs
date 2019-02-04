@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.Components
             }
             else
             {
-                return SetParametersAsyncCore();
+                return CallOnParametersSetAsync();
             }
         }
 
@@ -206,14 +206,14 @@ namespace Microsoft.AspNetCore.Components
                 await ProcessLifecycleTaskAsync(task);
             }
 
-            await SetParametersAsyncCore();
+            await CallOnParametersSetAsync();
         }
 
-        private Task SetParametersAsyncCore()
+        private Task CallOnParametersSetAsync()
         {
             OnParametersSet();
             var task = OnParametersSetAsync();
-            // If no aync work is to be performed, i.e. the task has already ran to completion
+            // If no async work is to be performed, i.e. the task has already ran to completion
             // or was canceled by the time we got to inspect it, avoid going async and re-invoking
             // StateHasChanged at the culmination of the async work.
             var shouldAwaitTask = task.Status != TaskStatus.RanToCompletion &&
@@ -243,14 +243,20 @@ namespace Microsoft.AspNetCore.Components
             StateHasChanged();
         }
 
-        async Task IHandleEvent.HandleEventAsync(EventHandlerInvoker binding, UIEventArgs args)
+        Task IHandleEvent.HandleEventAsync(EventHandlerInvoker binding, UIEventArgs args)
         {
-            await binding.Invoke(args);
+            var task = binding.Invoke(args);
+            var shouldAwaitTask = task.Status != TaskStatus.RanToCompletion &&
+                task.Status != TaskStatus.Canceled;
 
             // After each event, we synchronously re-render (unless !ShouldRender())
             // This just saves the developer the trouble of putting "StateHasChanged();"
             // at the end of every event callback.
             StateHasChanged();
+
+            return shouldAwaitTask ?
+                ProcessLifecycleTaskAsync(task) :
+                Task.CompletedTask;
         }
 
         Task IHandleAfterRender.OnAfterRenderAsync()

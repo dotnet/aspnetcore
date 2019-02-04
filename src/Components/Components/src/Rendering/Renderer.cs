@@ -4,8 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Runtime.ExceptionServices;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
 
@@ -101,40 +99,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
         private protected ArrayRange<RenderTreeFrame> GetCurrentRenderTreeFrames(int componentId) => GetRequiredComponentState(componentId).CurrrentRenderTree.GetFrames();
 
         /// <summary>
-        /// Performs the first render for a root component. After this, the root component
-        /// makes its own decisions about when to re-render, so there is no need to call
-        /// this more than once.
-        /// </summary>
-        /// <param name="componentId">The ID returned by <see cref="AssignRootComponentId(IComponent)"/>.</param>
-        protected void RenderRootComponent(int componentId)
-        {
-            RenderRootComponent(componentId, ParameterCollection.Empty);
-        }
-
-        /// <summary>
-        /// Performs the first render for a root component. After this, the root component
-        /// makes its own decisions about when to re-render, so there is no need to call
-        /// this more than once.
-        /// </summary>
-        /// <param name="componentId">The ID returned by <see cref="AssignRootComponentId(IComponent)"/>.</param>
-        /// <param name="initialParameters">The <see cref="ParameterCollection"/>with the initial parameters to use for rendering.</param>
-        protected async void RenderRootComponent(int componentId, ParameterCollection initialParameters)
-        {
-            await RenderRootComponentAsync(componentId, initialParameters);
-        }
-
-        /// <summary>
-        /// Allows derived types to handle exceptions during rendering. When unhandled, the exception is rethrown.
-        /// </summary>
-        /// <param name="componentId">The component Id.</param>
-        /// <param name="component">The <see cref="IComponent"/> instance.</param>
-        /// <param name="exception">The <see cref="Exception"/>.</param>
-        /// <returns>
-        /// <see langword="true"/> if <paramref name="exception"/> was handled, otherwise <see langword="false"/>.
-        /// </returns>
-        protected virtual bool HandleException(int componentId, IComponent component, Exception exception) => false;
-
-        /// <summary>
         /// Performs the first render for a root component, waiting for this component and all
         /// children components to finish rendering in case there is any asynchronous work being
         /// done by any of the components. After this, the root component
@@ -142,6 +106,10 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// this more than once.
         /// </summary>
         /// <param name="componentId">The ID returned by <see cref="AssignRootComponentId(IComponent)"/>.</param>
+        /// <remarks>
+        /// Rendering a root component is an asynchronous operation. Clients may choose to not await the returned task to
+        /// start, but not wait for the entire render to complete.
+        /// </remarks>
         protected Task RenderRootComponentAsync(int componentId)
         {
             return RenderRootComponentAsync(componentId, ParameterCollection.Empty);
@@ -156,13 +124,12 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// </summary>
         /// <param name="componentId">The ID returned by <see cref="AssignRootComponentId(IComponent)"/>.</param>
         /// <param name="initialParameters">The <see cref="ParameterCollection"/>with the initial parameters to use for rendering.</param>
+        /// <remarks>
+        /// Rendering a root component is an asynchronous operation. Clients may choose to not await the returned task to
+        /// start, but not wait for the entire render to complete.
+        /// </remarks>
         protected async Task RenderRootComponentAsync(int componentId, ParameterCollection initialParameters)
         {
-            if (Interlocked.CompareExchange(ref _pendingTasks, new List<Task>(), null) != null)
-            {
-                throw new InvalidOperationException("There is an ongoing rendering in progress.");
-            }
-
             // During the rendering process we keep a list of components performing work in _pendingTasks.
             // _renderer.AddToPendingTasks will be called by ComponentState.SetDirectParameters to add the
             // the Task produced by Component.SetParametersAsync to _pendingTasks in order to track the
@@ -176,7 +143,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
             try
             {
-                await ProcessAsynchronousWork(componentState);
+                await ProcessAsynchronousWork();
                 Debug.Assert(_pendingTasks.Count == 0);
             }
             finally
@@ -185,7 +152,13 @@ namespace Microsoft.AspNetCore.Components.Rendering
             }
         }
 
-        private async Task ProcessAsynchronousWork(ComponentState componentState)
+        /// <summary>
+        /// Allows derived types to handle exceptions during rendering. Defaults to rethrowing the original exception.
+        /// </summary>
+        /// <param name="exception">The <see cref="Exception"/>.</param>
+        protected abstract void HandleException(Exception exception);
+
+        private async Task ProcessAsynchronousWork()
         {
             // Child components SetParametersAsync are stored in the queue of pending tasks,
             // which might trigger further renders.
@@ -205,12 +178,11 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 {
                 await pendingWork;
         }
-                catch when (pendingWork.IsCanceled || HandleException(componentState.ComponentId, componentState.Component, pendingWork.Exception))
+                catch when (!pendingWork.IsCanceled)
                 {
-                    // await will unwrap an AggregateException and return exactly one inner exception.
-                    // We'll do our best to handle all inner exception instances.
-                    // Note that the componentId is the root component Id which may be different than the
-                    // component that produced the error.
+                    // await will unwrap an AggregateException and throw exactly one inner exception.
+                    // Using pendingWork.Exception gives us access to all of the exception
+                    HandleException(pendingWork.Exception);
                 }
             }
         }
@@ -255,9 +227,9 @@ namespace Microsoft.AspNetCore.Components.Rendering
                     task = componentState.DispatchEventAsync(binding, eventArgs);
                     await task;
                 }
-                catch (Exception ex) when (task.IsCanceled || HandleException(componentId, componentState.Component, ex))
+                catch (Exception ex) when (!task.IsCanceled)
                 {
-                    // Exception was a result of a canceled task or was handled
+                    HandleException(ex);
                 }
                 finally
                 {
@@ -341,7 +313,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             frame = frame.WithComponent(newComponentState);
         }
 
-        internal void AddToPendingTasks(int componentId, IComponent component, Task task)
+        internal void AddToPendingTasks(Task task)
         {
             switch (task == null ? TaskStatus.RanToCompletion : task.Status)
             {
@@ -352,15 +324,12 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 case TaskStatus.Canceled:
                     break;
                 case TaskStatus.Faulted:
-                    if (!HandleException(componentId, component, task.Exception.GetBaseException()))
-                    {
-                    // We want to throw immediately if the task failed synchronously instead of
+                    // We want to immediately handle exceptions if the task failed synchronously instead of
                     // waiting for it to throw later. This can happen if the task is produced by
                     // an 'async' state machine (the ones generated using async/await) where even
                     // the synchronous exceptions will get captured and converted into a faulted
                     // task.
-                        ExceptionDispatchInfo.Capture(task.Exception.GetBaseException()).Throw();
-                    }
+                    HandleException(task.Exception.GetBaseException());
                     break;
                 default:
                     // We are not in rendering the root component.
@@ -475,27 +444,33 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 {
                 // The component might be rendered and disposed in the same batch (if its parent
                 // was rendered later in the batch, and removed the child from the tree).
+                    var task = componentState.NotifyRenderCompletedAsync();
+
+                    // We want to avoid allocations per rendering. Avoid allocating a state machine or an accumulator
+                    // unless we absolutely have to.
+                    if (task.IsCompleted || task.IsCanceled)
+                    {
+                        // Nothing to do here.
+                        continue;
+                    }
+
+                    // Either the Task is incomplete or is faulted.
+                    // In either case, queue up the task and we can inspect it later.
                     batch = batch ?? new List<Task>();
-                    batch.Add(NotifyRenderCompletedAsync(componentState));
+                    batch.Add(task);
             }
         }
 
             if (batch != null)
             {
-                await Task.WhenAll(batch);
-            }
-
-            async Task NotifyRenderCompletedAsync(ComponentState componentState)
-            {
-                Task task = null;
+                var aggregateTask = Task.WhenAll(batch);
                 try
                 {
-                    task = componentState.NotifyRenderCompletedAsync();
-                    await task;
+                    await aggregateTask;
                 }
-                catch (Exception ex) when (task.IsCanceled || HandleException(componentState.ComponentId, componentState.Component, ex))
+                catch when (!aggregateTask.IsCanceled)
                 {
-                    // Exception was a result of a canceled task or was handled
+                    HandleException(aggregateTask.Exception);
                 }
             }
         }
@@ -549,8 +524,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="disposing"><see langword="true"/> if this method is being invoked by <see cref="IDisposable.Dispose"/>, otherwise <see langword="false"/>.</param>
         protected virtual void Dispose(bool disposing)
         {
-            List<Exception> exceptions = null;
-
             foreach (var componentState in _componentStateById.Values)
             {
                 if (componentState.Component is IDisposable disposable)
@@ -559,21 +532,13 @@ namespace Microsoft.AspNetCore.Components.Rendering
                     {
                         disposable.Dispose();
                     }
-                    catch (Exception exception) when (!HandleException(componentState.ComponentId, componentState.Component, exception))
+                    catch (Exception exception)
                     {
-                        // Unhandled exception. Accumulate exceptions from all components and rethrow an aggregate.
-                        // Capture exceptions thrown by individual components and rethrow as an aggregate.
-                        exceptions = exceptions ?? new List<Exception>();
-                        exceptions.Add(exception);
+                        HandleException(exception);
                     }
                 }
             }
-
-            if (exceptions != null)
-            {
-                throw new AggregateException(exceptions);
             }
-        }
 
         /// <summary>
         /// Releases all resources currently used by this <see cref="Renderer"/> instance.
