@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             }
         }
 
-        [ConditionalFact(Skip = "https://github.com/aspnet/AspNetCore/issues/6615")]
+        [ConditionalFact]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         public async Task DoesNotStartIfDisabled()
         {
