@@ -305,7 +305,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             ApplicationAbort();
         }
 
-        protected abstract void ApplicationAbort();
 
         Task IHttpResponseStartFeature.StartAsync(CancellationToken cancellationToken)
         {

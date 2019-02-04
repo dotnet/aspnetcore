@@ -32,6 +32,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public override void Complete(Exception exception = null)
         {
+            StopAcceptingWrites();
             _pipeControl.Complete(exception);
         }
 

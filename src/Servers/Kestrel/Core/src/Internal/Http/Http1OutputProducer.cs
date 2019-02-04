@@ -235,12 +235,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return WriteAsync(_continueBytes.Span);
         }
 
-        public void Complete(Exception exception = null)
-        {
-            // TODO What to do with exception.
-            // and how to handle writing to response here.
-        }
-
         private ValueTask<FlushResult> WriteAsync(
             ReadOnlySpan<byte> buffer,
             CancellationToken cancellationToken = default)
@@ -280,6 +274,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
+        // These methods are for chunked http responses that use GetMemory/Advance
         private Memory<byte> GetChunkedMemory(int sizeHint)
         {
             // The max size of a chunk will be the size of memory returned from the PipeWriter (today 4096)
@@ -309,7 +304,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return actualMemory;
         }
 
-        // This method is for chunked http responses that use GetMemory/Advance
         private void WriteCurrentMemoryToPipeWriter()
         {
             var writer = new BufferWriter<PipeWriter>(_pipeWriter);

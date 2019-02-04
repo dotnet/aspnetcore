@@ -392,6 +392,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected abstract void OnReset();
 
+        protected abstract void ApplicationAbort();
+
         protected virtual void OnRequestProcessingEnding()
         {
         }
@@ -1317,9 +1319,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             Output.CancelPendingFlush();
         }
 
-        public void Complete(Exception exception = null)
+        public void Complete(Exception ex)
         {
-            Output.Complete(exception);
+            if (ex != null)
+            {
+                var wrappedException = new ConnectionAbortedException("The BodyPipe was completed with an exception.", ex);
+                ReportApplicationError(wrappedException);
+
+                if (HasResponseStarted)
+                {
+                    ApplicationAbort();
+                }
+            }
         }
 
         public ValueTask<FlushResult> WritePipeAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)

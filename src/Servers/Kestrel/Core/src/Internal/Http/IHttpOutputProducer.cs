@@ -22,6 +22,5 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         Span<byte> GetSpan(int sizeHint = 0);
         Memory<byte> GetMemory(int sizeHint = 0);
         void CancelPendingFlush();
-        void Complete(Exception exception = null);
     }
 }

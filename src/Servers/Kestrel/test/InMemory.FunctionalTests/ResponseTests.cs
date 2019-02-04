@@ -3331,6 +3331,91 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
+        [Fact]
+        public async Task ResponsePipeWriterCompleteWithoutExceptionDoesNotThrow()
+        {
+            using (var server = new TestServer(async httpContext =>
+            {
+                httpContext.Response.BodyPipe.Complete();
+                await Task.CompletedTask;
+            }, new TestServiceContext(LoggerFactory)))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task ResponsePipeWriterCompleteWithoutExceptionCausesWritesToThrow()
+        {
+            using (var server = new TestServer(async httpContext =>
+            {
+                httpContext.Response.BodyPipe.Complete();
+                var ex = await Assert.ThrowsAsync<ObjectDisposedException>(
+                    async () => await httpContext.Response.WriteAsync("test"));
+            }, new TestServiceContext(LoggerFactory)))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task ResponsePipeWriterCompleteWithException()
+        {
+            var expectedException = new Exception();
+            using (var server = new TestServer(async httpContext =>
+            {
+                httpContext.Response.BodyPipe.Complete(expectedException);
+                await Task.CompletedTask;
+            }, new TestServiceContext(LoggerFactory)))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        $"HTTP/1.1 500 Internal Server Error",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                    Assert.Contains(TestSink.Writes, w => w.EventId.Id == 13 && w.LogLevel == LogLevel.Error
+                        && w.Exception is ConnectionAbortedException && w.Exception.InnerException == expectedException);
+                }
+                await server.StopAsync();
+            }
+        }
+
         private static async Task ResponseStatusCodeSetBeforeHttpContextDispose(
             ITestSink testSink,
             ILoggerFactory loggerFactory,
