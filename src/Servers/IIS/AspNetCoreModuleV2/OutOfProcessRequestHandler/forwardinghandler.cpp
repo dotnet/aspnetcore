@@ -124,34 +124,30 @@ FORWARDING_HANDLER::ExecuteRequestHandler()
     if (pClientConnection == NULL ||
         !pClientConnection->IsConnected())
     {
-        hr = HRESULT_FROM_WIN32(WSAECONNRESET);
-        goto Failure;
+        FAILURE(HRESULT_FROM_WIN32(WSAECONNRESET));
     }
 
     if (m_pApplication == NULL)
     {
-        hr = E_INVALIDARG;
-        goto Failure;
+        FAILURE(E_INVALIDARG);
     }
 
     hr = m_pApplication->GetProcess(&pServerProcess);
     if (FAILED_LOG(hr))
     {
         fFailedToStartKestrel = TRUE;
-        goto Failure;
+        FAILURE(hr);
     }
 
     if (pServerProcess == NULL)
     {
         fFailedToStartKestrel = TRUE;
-        hr = HRESULT_FROM_WIN32(ERROR_CREATE_FAILED);
-        goto Failure;
+        FAILURE(HRESULT_FROM_WIN32(ERROR_CREATE_FAILED));
     }
 
     if (pServerProcess->QueryWinHttpConnection() == NULL)
     {
-        hr = HRESULT_FROM_WIN32(ERROR_INVALID_HANDLE);
-        goto Failure;
+        FAILURE(HRESULT_FROM_WIN32(ERROR_INVALID_HANDLE));
     }
 
     hConnect = pServerProcess->QueryWinHttpConnection()->QueryHandle();
@@ -160,18 +156,12 @@ FORWARDING_HANDLER::ExecuteRequestHandler()
     //
     // parse original url
     //
-    if (FAILED_LOG(hr = URL_UTILITY::SplitUrl(pRequest->GetRawHttpRequest()->CookedUrl.pFullUrl,
+    FAILURE_IF_FAILED(URL_UTILITY::SplitUrl(pRequest->GetRawHttpRequest()->CookedUrl.pFullUrl,
         &fSecure,
         &strDestination,
-        &strUrl)))
-    {
-        goto Failure;
-    }
+        &strUrl));
 
-    if (FAILED_LOG(hr = URL_UTILITY::EscapeAbsPath(pRequest, &struEscapedUrl)))
-    {
-        goto Failure;
-    }
+    FAILURE_IF_FAILED(URL_UTILITY::EscapeAbsPath(pRequest, &struEscapedUrl));
 
     m_fDoReverseRewriteHeaders = pProtocol->QueryReverseRewriteHeaders();
 
@@ -190,15 +180,11 @@ FORWARDING_HANDLER::ExecuteRequestHandler()
         }
     }
 
-    hr = CreateWinHttpRequest(pRequest,
+    FAILURE_IF_FAILED(CreateWinHttpRequest(pRequest,
         pProtocol,
         hConnect,
         &struEscapedUrl,
-        pServerProcess);
-    if (FAILED_LOG(hr))
-    {
-        goto Failure;
-    }
+        pServerProcess));
 
     m_fReactToDisconnect = TRUE;
 
@@ -217,8 +203,7 @@ FORWARDING_HANDLER::ExecuteRequestHandler()
 
     if (m_hRequest == NULL)
     {
-        hr = HRESULT_FROM_WIN32(WSAECONNRESET);
-        goto Failure;
+        FAILURE(HRESULT_FROM_WIN32(WSAECONNRESET));
     }
 
     //
@@ -236,8 +221,7 @@ FORWARDING_HANDLER::ExecuteRequestHandler()
         cbContentLength = m_BytesToReceive = atol(pszContentLength);
         if (m_BytesToReceive == INFINITE)
         {
-            hr = HRESULT_FROM_WIN32(WSAECONNRESET);
-            goto Failure;
+            FAILURE(HRESULT_FROM_WIN32(WSAECONNRESET));
         }
     }
     else if (pRequest->GetHeader(HttpHeaderTransferEncoding) != NULL)
@@ -255,8 +239,7 @@ FORWARDING_HANDLER::ExecuteRequestHandler()
             NULL,
             0))
         {
-            hr = HRESULT_FROM_WIN32(GetLastError());
-            goto Finished;
+            FINISHED(HRESULT_FROM_WIN32(GetLastError()));
         }
     }
 
@@ -291,7 +274,7 @@ FORWARDING_HANDLER::ExecuteRequestHandler()
                 hr);
         }
 
-        goto Failure;
+        FAILURE_IF_FAILED(hr);
     }
 
     //
@@ -413,8 +396,7 @@ REQUEST_NOTIFICATION_STATUS
 
     if (m_fClientDisconnected && (m_RequestStatus != FORWARDER_DONE))
     {
-        hr = ERROR_CONNECTION_ABORTED;
-        goto Failure;
+        FAILURE(ERROR_CONNECTION_ABORTED);
     }
 
     if (m_RequestStatus == FORWARDER_RECEIVED_WEBSOCKET_RESPONSE)
@@ -427,8 +409,7 @@ REQUEST_NOTIFICATION_STATUS
         m_pWebSocket = new WEBSOCKET_HANDLER();
         if (m_pWebSocket == NULL)
         {
-            hr = E_OUTOFMEMORY;
-            goto Failure;
+            FAILURE(E_OUTOFMEMORY);
         }
 
         hr = m_pWebSocket->ProcessRequest(this, m_pW3Context, m_hRequest, &fWebSocketUpgraded);
@@ -439,12 +420,9 @@ REQUEST_NOTIFICATION_STATUS
             InterlockedIncrement(&m_dwHandlers);
         }
 
-        if (FAILED_LOG(hr))
-        {
-            // This failure could happen when client disconnect happens or backend server fails
-            // after websocket upgrade
-            goto Failure;
-        }
+        // This failure could happen when client disconnect happens or backend server fails
+        // after websocket upgrade
+        FAILURE_IF_FAILED(hr);
 
         //
         // WebSocket upgrade is successful. Close the WinHttpRequest Handle
@@ -456,8 +434,7 @@ REQUEST_NOTIFICATION_STATUS
 
         if (!fClosed)
         {
-            hr = HRESULT_FROM_WIN32(GetLastError());
-            goto Failure;
+            FAILURE(HRESULT_FROM_WIN32(GetLastError()));
         }
         retVal = RQ_NOTIFICATION_PENDING;
         goto Finished;
@@ -480,14 +457,10 @@ REQUEST_NOTIFICATION_STATUS
         {
             hr = hrCompletionStatus;
             fClientError = TRUE;
-            goto Failure;
+            FAILURE(hr);
         }
 
-        hr = OnReceivingResponse();
-        if (FAILED_LOG(hr))
-        {
-            goto Failure;
-        }
+        FAILURE_IF_FAILED(OnReceivingResponse());
         break;
 
     case FORWARDER_SENDING_REQUEST:
@@ -495,10 +468,7 @@ REQUEST_NOTIFICATION_STATUS
         hr = OnSendingRequest(cbCompletion,
             hrCompletionStatus,
             &fClientError);
-        if (FAILED_LOG(hr))
-        {
-            goto Failure;
-        }
+        FAILURE_IF_FAILED(hr);
         break;
 
     default:
@@ -680,39 +650,15 @@ HRESULT
 {
     HRESULT                         hr = S_OK;
 
-    sm_pAlloc = new ALLOC_CACHE_HANDLER;
-    if (sm_pAlloc == NULL)
-    {
-        hr = E_OUTOFMEMORY;
-        goto Finished;
-    }
+    FINISHED_IF_NULL_ALLOC(sm_pAlloc = new ALLOC_CACHE_HANDLER);
+    FINISHED_IF_FAILED(sm_pAlloc->Initialize(sizeof(FORWARDING_HANDLER), 64)); // nThreshold
 
-    hr = sm_pAlloc->Initialize(sizeof(FORWARDING_HANDLER),
-                               64); // nThreshold
-    if (FAILED_LOG(hr))
-    {
-        goto Finished;
-    }
+    FINISHED_IF_NULL_ALLOC(sm_pResponseHeaderHash = new RESPONSE_HEADER_HASH);
 
-    sm_pResponseHeaderHash = new RESPONSE_HEADER_HASH;
-    if (sm_pResponseHeaderHash == NULL)
-    {
-        hr = E_OUTOFMEMORY;
-        goto Finished;
-    }
-
-    hr = sm_pResponseHeaderHash->Initialize();
-    if (FAILED_LOG(hr))
-    {
-        goto Finished;
-    }
+    FINISHED_IF_FAILED(sm_pResponseHeaderHash->Initialize());
 
     // Initialize PROTOCOL_CONFIG
-    hr = sm_ProtocolConfig.Initialize();
-    if (FAILED_LOG(hr))
-    {
-        goto Finished;
-    }
+    FINISHED_IF_FAILED(sm_ProtocolConfig.Initialize());
 
     if (fEnableReferenceCountTracing)
     {
@@ -781,7 +727,6 @@ FORWARDING_HANDLER::GetHeaders(
     _Inout_ DWORD *                 pcchHeaders
 )
 {
-    HRESULT hr = S_OK;
     PCSTR pszCurrentHeader;
     PCSTR ppHeadersToBeRemoved;
     PCSTR pszFinalHeader;
@@ -803,18 +748,16 @@ FORWARDING_HANDLER::GetHeaders(
     //
     if (!pProtocol->QueryPreserveHostHeader())
     {
-        if (FAILED_LOG(hr = URL_UTILITY::SplitUrl(pRequest->GetRawHttpRequest()->CookedUrl.pFullUrl,
+        RETURN_IF_FAILED(URL_UTILITY::SplitUrl(pRequest->GetRawHttpRequest()->CookedUrl.pFullUrl,
             &fSecure,
             &struDestination,
-            &struUrl)) ||
-            FAILED_LOG(hr = strTemp.CopyW(struDestination.QueryStr())) ||
-            FAILED_LOG(hr = pRequest->SetHeader(HttpHeaderHost,
-                strTemp.QueryStr(),
-                static_cast<USHORT>(strTemp.QueryCCH()),
-                TRUE))) // fReplace
-        {
-            return hr;
-        }
+            &struUrl));
+
+        RETURN_IF_FAILED(strTemp.CopyW(struDestination.QueryStr()));
+        RETURN_IF_FAILED(pRequest->SetHeader(HttpHeaderHost,
+            strTemp.QueryStr(),
+            static_cast<USHORT>(strTemp.QueryCCH()),
+            TRUE)); // fReplace
     }
     //
     // Strip all headers starting with MS-ASPNETCORE.
@@ -845,14 +788,10 @@ FORWARDING_HANDLER::GetHeaders(
 
     if (pServerProcess->QueryGuid() != NULL)
     {
-        hr = m_pW3Context->GetRequest()->SetHeader("MS-ASPNETCORE-TOKEN",
+        RETURN_IF_FAILED(m_pW3Context->GetRequest()->SetHeader("MS-ASPNETCORE-TOKEN",
             pServerProcess->QueryGuid(),
             (USHORT)strlen(pServerProcess->QueryGuid()),
-            TRUE);
-        if (FAILED_LOG(hr))
-        {
-            return hr;
-        }
+            TRUE));
     }
 
     if (fForwardWindowsAuthToken &&
@@ -863,12 +802,8 @@ FORWARDING_HANDLER::GetHeaders(
             m_pW3Context->GetUser()->GetPrimaryToken() != INVALID_HANDLE_VALUE)
         {
             HANDLE hTargetTokenHandle = NULL;
-            hr = pServerProcess->SetWindowsAuthToken(m_pW3Context->GetUser()->GetPrimaryToken(),
-                &hTargetTokenHandle);
-            if (FAILED_LOG(hr))
-            {
-                return hr;
-            }
+            RETURN_IF_FAILED(pServerProcess->SetWindowsAuthToken(m_pW3Context->GetUser()->GetPrimaryToken(),
+                &hTargetTokenHandle));
 
             //
             // set request header with target token value
@@ -876,18 +811,13 @@ FORWARDING_HANDLER::GetHeaders(
             CHAR pszHandleStr[16] = { 0 };
             if (_ui64toa_s((UINT64)hTargetTokenHandle, pszHandleStr, 16, 16) != 0)
             {
-                hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
-                return hr;
+                RETURN_HR(HRESULT_FROM_WIN32(ERROR_INVALID_DATA));
             }
 
-            hr = m_pW3Context->GetRequest()->SetHeader("MS-ASPNETCORE-WINAUTHTOKEN",
+            RETURN_IF_FAILED(m_pW3Context->GetRequest()->SetHeader("MS-ASPNETCORE-WINAUTHTOKEN",
                 pszHandleStr,
                 (USHORT)strlen(pszHandleStr),
-                TRUE);
-            if (FAILED_LOG(hr))
-            {
-                return hr;
-            }
+                TRUE));
         }
     }
 
@@ -898,60 +828,39 @@ FORWARDING_HANDLER::GetHeaders(
         pszCurrentHeader = pRequest->GetHeader(pProtocol->QueryXForwardedForName()->QueryStr(), &cchCurrentHeader);
         if (pszCurrentHeader != NULL)
         {
-            if (FAILED_LOG(hr = strTemp.Copy(pszCurrentHeader, cchCurrentHeader)) ||
-                FAILED_LOG(hr = strTemp.Append(", ", 2)))
-            {
-                return hr;
-            }
+            RETURN_IF_FAILED(strTemp.Copy(pszCurrentHeader, cchCurrentHeader));
+            RETURN_IF_FAILED(strTemp.Append(", ", 2));
         }
 
-        if (FAILED_LOG(hr = m_pW3Context->GetServerVariable("REMOTE_ADDR",
+        RETURN_IF_FAILED(m_pW3Context->GetServerVariable("REMOTE_ADDR",
             &pszFinalHeader,
-            &cchFinalHeader)))
-        {
-            return hr;
-        }
+            &cchFinalHeader));
 
         if (pRequest->GetRawHttpRequest()->Address.pRemoteAddress->sa_family == AF_INET6)
         {
-            if (FAILED_LOG(hr = strTemp.Append("[", 1)) ||
-                FAILED_LOG(hr = strTemp.Append(pszFinalHeader, cchFinalHeader)) ||
-                FAILED_LOG(hr = strTemp.Append("]", 1)))
-            {
-                return hr;
-            }
+            RETURN_IF_FAILED(strTemp.Append("[", 1));
+            RETURN_IF_FAILED(strTemp.Append(pszFinalHeader, cchFinalHeader));
+            RETURN_IF_FAILED(strTemp.Append("]", 1));
         }
         else
         {
-            if (FAILED_LOG(hr = strTemp.Append(pszFinalHeader, cchFinalHeader)))
-            {
-                return hr;
-            }
+            RETURN_IF_FAILED(strTemp.Append(pszFinalHeader, cchFinalHeader));
         }
 
         if (pProtocol->QueryIncludePortInXForwardedFor())
         {
-            if (FAILED_LOG(hr = m_pW3Context->GetServerVariable("REMOTE_PORT",
+            RETURN_IF_FAILED(m_pW3Context->GetServerVariable("REMOTE_PORT",
                 &pszFinalHeader,
-                &cchFinalHeader)))
-            {
-                return hr;
-            }
+                &cchFinalHeader));
 
-            if (FAILED_LOG(hr = strTemp.Append(":", 1)) ||
-                FAILED_LOG(hr = strTemp.Append(pszFinalHeader, cchFinalHeader)))
-            {
-                return hr;
-            }
+            RETURN_IF_FAILED(strTemp.Append(":", 1));
+            RETURN_IF_FAILED(strTemp.Append(pszFinalHeader, cchFinalHeader));
         }
 
-        if (FAILED_LOG(hr = pRequest->SetHeader(pProtocol->QueryXForwardedForName()->QueryStr(),
+        RETURN_IF_FAILED(pRequest->SetHeader(pProtocol->QueryXForwardedForName()->QueryStr(),
             strTemp.QueryStr(),
             static_cast<USHORT>(strTemp.QueryCCH()),
-            TRUE))) // fReplace
-        {
-            return hr;
-        }
+            TRUE)); // fReplace
     }
 
     if (!pProtocol->QuerySslHeaderName()->IsEmpty())
@@ -968,25 +877,16 @@ FORWARDING_HANDLER::GetHeaders(
         pszCurrentHeader = pRequest->GetHeader(pProtocol->QuerySslHeaderName()->QueryStr(), &cchCurrentHeader);
         if (pszCurrentHeader != NULL)
         {
-            if (FAILED_LOG(hr = strTemp.Copy(pszCurrentHeader, cchCurrentHeader)) ||
-                FAILED_LOG(hr = strTemp.Append(", ", 2)))
-            {
-                return hr;
-            }
+            RETURN_IF_FAILED(strTemp.Copy(pszCurrentHeader, cchCurrentHeader));
+            RETURN_IF_FAILED(strTemp.Append(", ", 2));
         }
 
-        if (FAILED_LOG(hr = strTemp.Append(pszScheme)))
-        {
-            return hr;
-        }
+        RETURN_IF_FAILED(strTemp.Append(pszScheme));
 
-        if (FAILED_LOG(pRequest->SetHeader(pProtocol->QuerySslHeaderName()->QueryStr(),
+        RETURN_IF_FAILED(pRequest->SetHeader(pProtocol->QuerySslHeaderName()->QueryStr(),
             strTemp.QueryStr(),
             (USHORT)strTemp.QueryCCH(),
-            TRUE)))
-        {
-            return hr;
-        }
+            TRUE));
     }
 
     if (!pProtocol->QueryClientCertName()->IsEmpty())
@@ -999,11 +899,8 @@ FORWARDING_HANDLER::GetHeaders(
         else
         {
             // Resize the buffer large enough to hold the encoded certificate info
-            if (FAILED_LOG(hr = strTemp.Resize(
-                1 + (pRequest->GetRawHttpRequest()->pSslInfo->pClientCertInfo->CertEncodedSize + 2) / 3 * 4)))
-            {
-                return hr;
-            }
+            RETURN_IF_FAILED(strTemp.Resize(
+                1 + (pRequest->GetRawHttpRequest()->pSslInfo->pClientCertInfo->CertEncodedSize + 2) / 3 * 4));
 
             Base64Encode(
                 pRequest->GetRawHttpRequest()->pSslInfo->pClientCertInfo->pCertEncoded,
@@ -1013,14 +910,11 @@ FORWARDING_HANDLER::GetHeaders(
                 NULL);
             strTemp.SyncWithBuffer();
 
-            if (FAILED_LOG(hr = pRequest->SetHeader(
+            RETURN_IF_FAILED(pRequest->SetHeader(
                 pProtocol->QueryClientCertName()->QueryStr(),
                 strTemp.QueryStr(),
                 static_cast<USHORT>(strTemp.QueryCCH()),
-                TRUE))) // fReplace
-            {
-                return hr;
-            }
+                TRUE)); // fReplace
         }
     }
 
@@ -1035,13 +929,9 @@ FORWARDING_HANDLER::GetHeaders(
     //
     // Get all the headers to send to the client
     //
-    hr = m_pW3Context->GetServerVariable("ALL_RAW",
+    RETURN_IF_FAILED(m_pW3Context->GetServerVariable("ALL_RAW",
         ppszHeaders,
-        pcchHeaders);
-    if (FAILED_LOG(hr))
-    {
-        return hr;
-    }
+        pcchHeaders));
 
     return S_OK;
 }
@@ -1066,23 +956,16 @@ FORWARDING_HANDLER::CreateWinHttpRequest(
     // we will fill them when sending the request)
     //
     pszVerb = pRequest->GetHttpMethod();
-    if (FAILED_LOG(hr = strVerb.CopyA(pszVerb)))
-    {
-        goto Finished;
-    }
+    FINISHED_IF_FAILED(strVerb.CopyA(pszVerb));
 
     //pszVersion = pProtocol->QueryVersion();
     if (pszVersion == NULL)
     {
         DWORD cchUnused;
-        hr = m_pW3Context->GetServerVariable(
+        FINISHED_IF_FAILED(m_pW3Context->GetServerVariable(
             "HTTP_VERSION",
             &pszVersion,
-            &cchUnused);
-        if (FAILED_LOG(hr))
-        {
-            goto Finished;
-        }
+            &cchUnused));
     }
 
     m_hRequest = WinHttpOpenRequest(hConnect,
@@ -1093,46 +976,31 @@ FORWARDING_HANDLER::CreateWinHttpRequest(
         WINHTTP_DEFAULT_ACCEPT_TYPES,
         WINHTTP_FLAG_ESCAPE_DISABLE_QUERY
         | g_OptionalWinHttpFlags);
-    if (m_hRequest == NULL)
-    {
-        hr = HRESULT_FROM_WIN32(GetLastError());
-        goto Finished;
-    }
+
+    FINISHED_LAST_ERROR_IF_NULL (m_hRequest);
 
     if (!pServerProcess->IsDebuggerAttached())
     {
         dwTimeout = pProtocol->QueryTimeout();
     }
 
-    if (!WinHttpSetTimeouts(m_hRequest,
+    FINISHED_LAST_ERROR_IF(!WinHttpSetTimeouts(m_hRequest,
                             dwTimeout, //resolve timeout
                             dwTimeout, // connect timeout
                             dwTimeout, // send timeout
-                            dwTimeout)) // receive timeout
-    {
-        hr = HRESULT_FROM_WIN32(GetLastError());
-        goto Finished;
-    }
+                            dwTimeout)); // receive timeout
 
     DWORD dwResponseBufferLimit = pProtocol->QueryResponseBufferLimit();
-    if (!WinHttpSetOption(m_hRequest,
+    FINISHED_LAST_ERROR_IF(!WinHttpSetOption(m_hRequest,
         WINHTTP_OPTION_MAX_RESPONSE_DRAIN_SIZE,
         &dwResponseBufferLimit,
-        sizeof(dwResponseBufferLimit)))
-    {
-        hr = HRESULT_FROM_WIN32(GetLastError());
-        goto Finished;
-    }
+        sizeof(dwResponseBufferLimit)));
 
     DWORD dwMaxHeaderSize = pProtocol->QueryMaxResponseHeaderSize();
-    if (!WinHttpSetOption(m_hRequest,
+    FINISHED_LAST_ERROR_IF(!WinHttpSetOption(m_hRequest,
         WINHTTP_OPTION_MAX_RESPONSE_HEADER_SIZE,
         &dwMaxHeaderSize,
-        sizeof(dwMaxHeaderSize)))
-    {
-        hr = HRESULT_FROM_WIN32(GetLastError());
-        goto Finished;
-    }
+        sizeof(dwMaxHeaderSize)));
 
     DWORD dwOption = WINHTTP_DISABLE_COOKIES;
 
@@ -1142,36 +1010,24 @@ FORWARDING_HANDLER::CreateWinHttpRequest(
     {
         dwOption |= WINHTTP_DISABLE_KEEP_ALIVE;
     }
-    if (!WinHttpSetOption(m_hRequest,
+
+    FINISHED_LAST_ERROR_IF(!WinHttpSetOption(m_hRequest,
         WINHTTP_OPTION_DISABLE_FEATURE,
         &dwOption,
-        sizeof(dwOption)))
-    {
-        hr = HRESULT_FROM_WIN32(GetLastError());
-        goto Finished;
-    }
+        sizeof(dwOption)));
 
-    if (WinHttpSetStatusCallback(m_hRequest,
+    FINISHED_LAST_ERROR_IF(WinHttpSetStatusCallback(m_hRequest,
         FORWARDING_HANDLER::OnWinHttpCompletion,
         (WINHTTP_CALLBACK_FLAG_ALL_COMPLETIONS |
             WINHTTP_CALLBACK_FLAG_HANDLES |
             WINHTTP_CALLBACK_STATUS_SENDING_REQUEST),
-        NULL) == WINHTTP_INVALID_STATUS_CALLBACK)
-    {
-        hr = HRESULT_FROM_WIN32(GetLastError());
-        goto Finished;
-    }
+        NULL) == WINHTTP_INVALID_STATUS_CALLBACK);
 
-    hr = GetHeaders(pProtocol,
+    FINISHED_IF_FAILED(GetHeaders(pProtocol,
                     m_pApplication->QueryConfig()->QueryForwardWindowsAuthToken(),
                     pServerProcess,
                    &m_pszHeaders,
-                   &m_cchHeaders);
-    if (FAILED_LOG(hr))
-    {
-        goto Finished;
-    }
-
+                   &m_cchHeaders));
 Finished:
 
     return hr;
@@ -1308,8 +1164,7 @@ None
 
     if (m_fClientDisconnected && (m_RequestStatus != FORWARDER_DONE))
     {
-        hr = ERROR_CONNECTION_ABORTED;
-        goto Failure;
+        FAILURE(ERROR_CONNECTION_ABORTED);
     }
 
     //
@@ -1359,31 +1214,31 @@ None
     {
     case WINHTTP_CALLBACK_STATUS_SENDREQUEST_COMPLETE:
     case WINHTTP_CALLBACK_STATUS_WRITE_COMPLETE:
-        hr = OnWinHttpCompletionSendRequestOrWriteComplete(hRequest,
+        hr = LOG_IF_FAILED(OnWinHttpCompletionSendRequestOrWriteComplete(hRequest,
             dwInternetStatus,
             &fClientError,
-            &fAnotherCompletionExpected);
+            &fAnotherCompletionExpected));
         break;
 
     case WINHTTP_CALLBACK_STATUS_HEADERS_AVAILABLE:
-        hr = OnWinHttpCompletionStatusHeadersAvailable(hRequest,
-            &fAnotherCompletionExpected);
+        hr = LOG_IF_FAILED(OnWinHttpCompletionStatusHeadersAvailable(hRequest,
+            &fAnotherCompletionExpected));
         break;
 
     case WINHTTP_CALLBACK_STATUS_DATA_AVAILABLE:
-        hr = OnWinHttpCompletionStatusDataAvailable(hRequest,
+        hr = LOG_IF_FAILED(OnWinHttpCompletionStatusDataAvailable(hRequest,
             *reinterpret_cast<const DWORD *>(lpvStatusInformation), // dwBytes
-            &fAnotherCompletionExpected);
+            &fAnotherCompletionExpected));
         break;
 
     case WINHTTP_CALLBACK_STATUS_READ_COMPLETE:
-        hr = OnWinHttpCompletionStatusReadComplete(pResponse,
+        hr = LOG_IF_FAILED(OnWinHttpCompletionStatusReadComplete(pResponse,
             dwStatusInformationLength,
-            &fAnotherCompletionExpected);
+            &fAnotherCompletionExpected));
         break;
 
     case WINHTTP_CALLBACK_STATUS_REQUEST_ERROR:
-        hr = HRESULT_FROM_WIN32(static_cast<const WINHTTP_ASYNC_RESULT *>(lpvStatusInformation)->dwError);
+        hr = LOG_IF_FAILED(HRESULT_FROM_WIN32(static_cast<const WINHTTP_ASYNC_RESULT *>(lpvStatusInformation)->dwError));
         break;
 
     case WINHTTP_CALLBACK_STATUS_SENDING_REQUEST:
@@ -1412,7 +1267,7 @@ None
         }
         if (m_RequestStatus != FORWARDER_DONE)
         {
-            hr = ERROR_CONNECTION_ABORTED;
+            hr = LOG_IF_FAILED(ERROR_CONNECTION_ABORTED);
             fClientError = m_fClientDisconnected;
         }
         m_hRequest = NULL;
@@ -1420,7 +1275,7 @@ None
         break;
 
     case WINHTTP_CALLBACK_STATUS_CONNECTION_CLOSED:
-        hr = ERROR_CONNECTION_ABORTED;
+        hr = LOG_IF_FAILED(ERROR_CONNECTION_ABORTED);
         break;
 
     default:
@@ -1428,7 +1283,7 @@ None
         // E_UNEXPECTED is rarely used, if seen means that this condition may been occurred.
         //
         DBG_ASSERT(FALSE);
-        hr = E_UNEXPECTED;
+        hr = LOG_IF_FAILED(E_UNEXPECTED);
         if (sm_pTraceLog != NULL)
         {
             WriteRefTraceLogEx(sm_pTraceLog,
@@ -1632,13 +1487,8 @@ FORWARDING_HANDLER::OnWinHttpCompletionSendRequestOrWriteComplete(
     {
         if (m_pEntityBuffer == NULL)
         {
-            m_pEntityBuffer = GetNewResponseBuffer(
-                ENTITY_BUFFER_SIZE);
-            if (m_pEntityBuffer == NULL)
-            {
-                hr = E_OUTOFMEMORY;
-                goto Finished;
-            }
+            FINISHED_IF_NULL_ALLOC(m_pEntityBuffer = GetNewResponseBuffer(
+                ENTITY_BUFFER_SIZE));
         }
 
         if (sm_pTraceLog != NULL)
@@ -1683,7 +1533,7 @@ FORWARDING_HANDLER::OnWinHttpCompletionSendRequestOrWriteComplete(
                     5,
                     NULL))
                 {
-                    hr = HRESULT_FROM_WIN32(GetLastError());
+                    FINISHED(HRESULT_FROM_WIN32(GetLastError()));
                     //DereferenceForwardingHandler();
                     goto Finished;
                 }
@@ -1710,11 +1560,7 @@ FORWARDING_HANDLER::OnWinHttpCompletionSendRequestOrWriteComplete(
 
     m_RequestStatus = FORWARDER_RECEIVING_RESPONSE;
 
-    if (!WinHttpReceiveResponse(hRequest, NULL))
-    {
-        hr = HRESULT_FROM_WIN32(GetLastError());
-        goto Finished;
-    }
+    FINISHED_LAST_ERROR_IF(!WinHttpReceiveResponse(hRequest, NULL));
     *pfAnotherCompletionExpected = TRUE;
 
 Finished:
@@ -1752,31 +1598,22 @@ FORWARDING_HANDLER::OnWinHttpCompletionStatusHeadersAvailable(
     {
         if (!bufHeaderBuffer.Resize(dwHeaderSize))
         {
-            hr = E_OUTOFMEMORY;
-            goto Finished;
+            FINISHED(E_OUTOFMEMORY);
         }
 
         //
         // WinHttpQueryHeaders operates synchronously,
         // no need for taking reference.
         //
-        if (!WinHttpQueryHeaders(hRequest,
+        FINISHED_LAST_ERROR_IF(!WinHttpQueryHeaders(hRequest,
             WINHTTP_QUERY_RAW_HEADERS_CRLF,
             WINHTTP_HEADER_NAME_BY_INDEX,
             bufHeaderBuffer.QueryPtr(),
             &dwHeaderSize,
-            WINHTTP_NO_HEADER_INDEX))
-        {
-            hr = HRESULT_FROM_WIN32(GetLastError());
-            goto Finished;
-        }
+            WINHTTP_NO_HEADER_INDEX));
     }
 
-    if (FAILED_LOG(hr = strHeaders.CopyW(
-        reinterpret_cast<PWSTR>(bufHeaderBuffer.QueryPtr()))))
-    {
-        goto Finished;
-    }
+    FINISHED_IF_FAILED(strHeaders.CopyW(reinterpret_cast<PWSTR>(bufHeaderBuffer.QueryPtr())));
 
     // Issue: The reason we add trailing \r\n is to eliminate issues that have been observed
     // in some configurations where status and headers would not have final \r\n nor \r\n\r\n
@@ -1788,19 +1625,12 @@ FORWARDING_HANDLER::OnWinHttpCompletionStatusHeadersAvailable(
 
     if (!strHeaders.IsEmpty() && strHeaders.QueryStr()[strHeaders.QueryCCH() - 1] != '\n')
     {
-        hr = strHeaders.Append("\r\n");
-        if (FAILED_LOG(hr))
-        {
-            goto Finished;
-        }
+        FINISHED_IF_FAILED(strHeaders.Append("\r\n"));
     }
 
-    if (FAILED_LOG(hr = SetStatusAndHeaders(
+    FINISHED_IF_FAILED(SetStatusAndHeaders(
         strHeaders.QueryStr(),
-        strHeaders.QueryCCH())))
-    {
-        goto Finished;
-    }
+        strHeaders.QueryCCH()));
 
     FreeResponseBuffers();
 
@@ -1851,8 +1681,7 @@ FORWARDING_HANDLER::OnWinHttpCompletionStatusDataAvailable(
     {
         if (m_cContentLength != 0)
         {
-            hr = HRESULT_FROM_WIN32(ERROR_WINHTTP_INVALID_SERVER_RESPONSE);
-            goto Finished;
+            FINISHED(HRESULT_FROM_WIN32(ERROR_WINHTTP_INVALID_SERVER_RESPONSE));
         }
 
         m_RequestStatus = FORWARDER_DONE;
@@ -1868,11 +1697,7 @@ FORWARDING_HANDLER::OnWinHttpCompletionStatusDataAvailable(
 
     m_pEntityBuffer = GetNewResponseBuffer(
         min(m_BytesToSend, BUFFER_SIZE));
-    if (m_pEntityBuffer == NULL)
-    {
-        hr = E_OUTOFMEMORY;
-        goto Finished;
-    }
+    FINISHED_IF_NULL_ALLOC(m_pEntityBuffer);
 
     //
     // WinHttpReadData can operate asynchronously.
@@ -1881,15 +1706,11 @@ FORWARDING_HANDLER::OnWinHttpCompletionStatusDataAvailable(
     // async completion.
     //
     //ReferenceForwardingHandler();
-    if (!WinHttpReadData(hRequest,
+    FINISHED_LAST_ERROR_IF(!WinHttpReadData(hRequest,
         m_pEntityBuffer,
         min(m_BytesToSend, BUFFER_SIZE),
-        NULL))
-    {
-        hr = HRESULT_FROM_WIN32(GetLastError());
-        //DereferenceForwardingHandler();
-        goto Finished;
-    }
+        NULL));
+
     *pfAnotherCompletionExpected = TRUE;
 
 Finished:
@@ -1928,8 +1749,7 @@ FORWARDING_HANDLER::OnWinHttpCompletionStatusReadComplete(
         {
             if (m_cContentLength != 0)
             {
-                hr = HRESULT_FROM_WIN32(ERROR_WINHTTP_INVALID_SERVER_RESPONSE);
-                goto Finished;
+                FINISHED(HRESULT_FROM_WIN32(ERROR_WINHTTP_INVALID_SERVER_RESPONSE));
             }
 
             m_RequestStatus = FORWARDER_DONE;
@@ -1952,10 +1772,7 @@ FORWARDING_HANDLER::OnWinHttpCompletionStatusReadComplete(
         Chunk.DataChunkType = HttpDataChunkFromMemory;
         Chunk.FromMemory.pBuffer = m_pEntityBuffer;
         Chunk.FromMemory.BufferLength = dwStatusInformationLength;
-        if (FAILED_LOG(hr = pResponse->WriteEntityChunkByReference(&Chunk)))
-        {
-            goto Finished;
-        }
+        FINISHED_IF_FAILED(pResponse->WriteEntityChunkByReference(&Chunk));
     }
 
     if (m_cBytesBuffered >= m_cMinBufferLimit)
@@ -1963,13 +1780,10 @@ FORWARDING_HANDLER::OnWinHttpCompletionStatusReadComplete(
         //
         // Always post a completion to resume the WinHTTP data pump.
         //
-        hr = pResponse->Flush(TRUE,     // fAsync
+        FINISHED_IF_FAILED(pResponse->Flush(TRUE,     // fAsync
             TRUE,     // fMoreData
-            NULL);    // pcbSent
-        if (FAILED_LOG(hr))
-        {
-            goto Finished;
-        }
+            NULL));    // pcbSent
+
         *pfAnotherCompletionExpected = TRUE;
     }
     else
@@ -1989,7 +1803,6 @@ FORWARDING_HANDLER::OnSendingRequest(
     __out BOOL *                pfClientError
 )
 {
-    HRESULT hr = S_OK;
     //
     // This is a completion for a read from http.sys, abort in case
     // of failure, if we read anything write it out over WinHTTP,
@@ -2003,24 +1816,16 @@ FORWARDING_HANDLER::OnSendingRequest(
             m_BytesToReceive = 0;
             m_cchLastSend = 5; // "0\r\n\r\n"
 
-            if (!WinHttpWriteData(m_hRequest,
+            RETURN_LAST_ERROR_IF(!WinHttpWriteData(m_hRequest,
                 "0\r\n\r\n",
                 5,
-                NULL))
-            {
-                hr = HRESULT_FROM_WIN32(GetLastError());
-                goto Failure;
-            }
+                NULL));
         }
         else
         {
             m_RequestStatus = FORWARDER_RECEIVING_RESPONSE;
 
-            if (!WinHttpReceiveResponse(m_hRequest, NULL))
-            {
-                hr = HRESULT_FROM_WIN32(GetLastError());
-                goto Failure;
-            }
+            RETURN_LAST_ERROR_IF(!WinHttpReceiveResponse(m_hRequest, NULL));
         }
     }
     else if (SUCCEEDED(hrCompletionStatus))
@@ -2079,33 +1884,24 @@ FORWARDING_HANDLER::OnSendingRequest(
         }
         m_cchLastSend = cbCompletion;
 
-        if (!WinHttpWriteData(m_hRequest,
+        RETURN_LAST_ERROR_IF(!WinHttpWriteData(m_hRequest,
             m_pEntityBuffer + cbOffset,
             cbCompletion,
-            NULL))
-        {
-            hr = HRESULT_FROM_WIN32(GetLastError());
-            goto Failure;
-        }
+            NULL));
     }
     else
     {
-        hr = hrCompletionStatus;
         *pfClientError = TRUE;
-        goto Failure;
+        RETURN_HR(hrCompletionStatus);
     }
 
-Failure:
-
-    return hr;
+    return S_OK;
 }
 
 HRESULT
 FORWARDING_HANDLER::OnReceivingResponse(
 )
 {
-    HRESULT hr = S_OK;
-
     if (m_cBytesBuffered >= m_cMinBufferLimit)
     {
         FreeResponseBuffers();
@@ -2133,11 +1929,7 @@ FORWARDING_HANDLER::OnReceivingResponse(
         //
         // No buffering enabled.
         //
-        if (!WinHttpQueryDataAvailable(m_hRequest, NULL))
-        {
-            hr = HRESULT_FROM_WIN32(GetLastError());
-            goto Failure;
-        }
+        RETURN_LAST_ERROR_IF(!WinHttpQueryDataAvailable(m_hRequest, NULL));
     }
     else
     {
@@ -2149,23 +1941,17 @@ FORWARDING_HANDLER::OnReceivingResponse(
             m_pEntityBuffer = GetNewResponseBuffer(min(m_BytesToSend, BUFFER_SIZE));
             if (m_pEntityBuffer == NULL)
             {
-                hr = E_OUTOFMEMORY;
-                goto Failure;
+                RETURN_HR(E_OUTOFMEMORY);
             }
         }
 
-        if (!WinHttpReadData(m_hRequest,
+        RETURN_LAST_ERROR_IF(!WinHttpReadData(m_hRequest,
             m_pEntityBuffer,
             min(m_BytesToSend, BUFFER_SIZE),
-            NULL))
-        {
-            hr = HRESULT_FROM_WIN32(GetLastError());
-            goto Failure;
-        }
+            NULL));
     }
 
-Failure:
-    return hr;
+    return S_OK;
 }
 
 BYTE *
@@ -2216,7 +2002,6 @@ FORWARDING_HANDLER::SetStatusAndHeaders(
     DWORD
 )
 {
-    HRESULT         hr;
     IHttpResponse * pResponse = m_pW3Context->GetResponse();
     IHttpRequest *  pRequest = m_pW3Context->GetRequest();
     STACK_STRA(strHeaderName, 128);
@@ -2287,18 +2072,15 @@ FORWARDING_HANDLER::SetStatusAndHeaders(
         //
         // Copy the status description
         //
-        if (FAILED_LOG(hr = strHeaderValue.Copy(
+        RETURN_IF_FAILED(strHeaderValue.Copy(
             pchStatus,
-            (DWORD)(pchEndofHeaderValue - pchStatus) + 1)) ||
-            FAILED_LOG(hr = pResponse->SetStatus(uStatus,
+            (DWORD)(pchEndofHeaderValue - pchStatus) + 1));
+        RETURN_IF_FAILED(pResponse->SetStatus(uStatus,
                 strHeaderValue.QueryStr(),
                 0,
                 S_OK,
                 NULL,
-                TRUE)))
-        {
-            return hr;
-        }
+                TRUE));
     }
 
     for (index = static_cast<DWORD>(pchNewline - pszHeaders) + 1;
@@ -2352,12 +2134,9 @@ FORWARDING_HANDLER::SetStatusAndHeaders(
         //
         // Copy the header name
         //
-        if (FAILED_LOG(hr = strHeaderName.Copy(
+        RETURN_IF_FAILED(strHeaderName.Copy(
             pszHeaders + index,
-            (DWORD)(pchEndofHeaderName - pszHeaders) - index)))
-        {
-            return hr;
-        }
+            (DWORD)(pchEndofHeaderName - pszHeaders) - index));
 
         //
         // Skip over the ':' and any trailing spaces
@@ -2388,11 +2167,11 @@ FORWARDING_HANDLER::SetStatusAndHeaders(
         {
             strHeaderValue.Reset();
         }
-        else if (FAILED_LOG(hr = strHeaderValue.Copy(
-            pszHeaders + index,
-            (DWORD)(pchEndofHeaderValue - pszHeaders) - index)))
+        else
         {
-            return hr;
+            RETURN_IF_FAILED(strHeaderValue.Copy(
+                pszHeaders + index,
+                (DWORD)(pchEndofHeaderValue - pszHeaders) - index));
         }
 
         //
@@ -2402,10 +2181,10 @@ FORWARDING_HANDLER::SetStatusAndHeaders(
         DWORD headerIndex = sm_pResponseHeaderHash->GetIndex(strHeaderName.QueryStr());
         if (headerIndex == UNKNOWN_INDEX)
         {
-            hr = pResponse->SetHeader(strHeaderName.QueryStr(),
+            RETURN_IF_FAILED(pResponse->SetHeader(strHeaderName.QueryStr(),
                 strHeaderValue.QueryStr(),
                 static_cast<USHORT>(strHeaderValue.QueryCCH()),
-                FALSE); // fReplace
+                FALSE)); // fReplace
         }
         else
         {
@@ -2433,14 +2212,10 @@ FORWARDING_HANDLER::SetStatusAndHeaders(
                 break;
             }
 
-            hr = pResponse->SetHeader(static_cast<HTTP_HEADER_ID>(headerIndex),
+            RETURN_IF_FAILED(pResponse->SetHeader(static_cast<HTTP_HEADER_ID>(headerIndex),
                 strHeaderValue.QueryStr(),
                 static_cast<USHORT>(strHeaderValue.QueryCCH()),
-                TRUE); // fReplace
-        }
-        if (FAILED_LOG(hr))
-        {
-            return hr;
+                TRUE)); // fReplace
         }
     }
 
@@ -2455,11 +2230,7 @@ FORWARDING_HANDLER::SetStatusAndHeaders(
 
     if (m_fDoReverseRewriteHeaders)
     {
-        hr = DoReverseRewrite(pResponse);
-        if (FAILED_LOG(hr))
-        {
-            return hr;
-        }
+        RETURN_IF_FAILED(DoReverseRewrite(pResponse));
     }
 
     m_fResponseHeadersReceivedAndSet = TRUE;
@@ -2479,7 +2250,6 @@ FORWARDING_HANDLER::DoReverseRewrite(
     PCSTR pszStartHost;
     PCSTR pszEndHost;
     HTTP_RESPONSE_HEADERS *pHeaders;
-    HRESULT hr;
 
     //
     // Content-Location and Location are easy, one known header in
@@ -2503,23 +2273,17 @@ FORWARDING_HANDLER::DoReverseRewrite(
 
         pszEndHost = strchr(pszStartHost, '/');
 
-        if (FAILED_LOG(hr = strTemp.Copy(fSecure ? "https://" : "http://")) ||
-            FAILED_LOG(hr = strTemp.Append(m_pszOriginalHostHeader)))
+        RETURN_IF_FAILED(strTemp.Copy(fSecure ? "https://" : "http://"));
+        RETURN_IF_FAILED(strTemp.Append(m_pszOriginalHostHeader));
+
+        if (pszEndHost != NULL)
         {
-            return hr;
+            RETURN_IF_FAILED(strTemp.Append(pszEndHost));
         }
-        if (pszEndHost != NULL &&
-            FAILED_LOG(hr = strTemp.Append(pszEndHost)))
-        {
-            return hr;
-        }
-        if (FAILED_LOG(hr = pResponse->SetHeader(HttpHeaderContentLocation,
+        RETURN_IF_FAILED(pResponse->SetHeader(HttpHeaderContentLocation,
             strTemp.QueryStr(),
             static_cast<USHORT>(strTemp.QueryCCH()),
-            TRUE)))
-        {
-            return hr;
-        }
+            TRUE));
     }
 
 Location:
@@ -2542,23 +2306,17 @@ Location:
 
         pszEndHost = strchr(pszStartHost, '/');
 
-        if (FAILED_LOG(hr = strTemp.Copy(fSecure ? "https://" : "http://")) ||
-            FAILED_LOG(hr = strTemp.Append(m_pszOriginalHostHeader)))
+        RETURN_IF_FAILED(strTemp.Copy(fSecure ? "https://" : "http://"));
+        RETURN_IF_FAILED(strTemp.Append(m_pszOriginalHostHeader));
+
+        if (pszEndHost != NULL)
         {
-            return hr;
+            RETURN_IF_FAILED(strTemp.Append(pszEndHost));
         }
-        if (pszEndHost != NULL &&
-            FAILED_LOG(hr = strTemp.Append(pszEndHost)))
-        {
-            return hr;
-        }
-        if (FAILED_LOG(hr = pResponse->SetHeader(HttpHeaderLocation,
+        RETURN_IF_FAILED(pResponse->SetHeader(HttpHeaderLocation,
             strTemp.QueryStr(),
             static_cast<USHORT>(strTemp.QueryCCH()),
-            TRUE)))
-        {
-            return hr;
-        }
+            TRUE));
     }
 
 SetCookie:
@@ -2617,17 +2375,14 @@ SetCookie:
                 pszEndHost++;
             }
 
-            if (FAILED_LOG(hr = strTemp.Copy(pszHeader, static_cast<DWORD>(pszStartHost - pszHeader))) ||
-                FAILED_LOG(hr = strTemp.Append(m_pszOriginalHostHeader)) ||
-                FAILED_LOG(hr = strTemp.Append(pszEndHost)))
-            {
-                return hr;
-            }
+            RETURN_IF_FAILED(strTemp.Copy(pszHeader, static_cast<DWORD>(pszStartHost - pszHeader)));
+            RETURN_IF_FAILED(strTemp.Append(m_pszOriginalHostHeader));
+            RETURN_IF_FAILED(strTemp.Append(pszEndHost));
 
             pszHeader = (PCSTR)m_pW3Context->AllocateRequestMemory(strTemp.QueryCCH() + 1);
             if (pszHeader == NULL)
             {
-                return E_OUTOFMEMORY;
+                RETURN_HR(E_OUTOFMEMORY);
             }
             StringCchCopyA(const_cast<PSTR>(pszHeader), strTemp.QueryCCH() + 1, strTemp.QueryStr());
             pHeaders->pUnknownHeaders[i].pRawValue = pszHeader;
