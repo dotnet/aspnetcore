@@ -13,9 +13,16 @@ export function registerUnhandledRejectionHandler(): void {
     });
 }
 
-export function delay(durationInMilliseconds: number): Promise<void> {
+export function delayUntil(timeoutInMilliseconds: number, condition?: () => boolean): Promise<void> {
     const source = new PromiseSource<void>();
-    setTimeout(() => source.resolve(), durationInMilliseconds);
+    let timeWait: number = 0;
+    const interval = setInterval(() => {
+        timeWait += 10;
+        if ((condition && condition() === true) || timeoutInMilliseconds <= timeWait) {
+            source.resolve();
+            clearInterval(interval);
+        }
+    }, 10);
     return source.promise;
 }
 
