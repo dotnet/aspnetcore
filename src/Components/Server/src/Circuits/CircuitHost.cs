@@ -87,8 +87,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         public IServiceProvider Services { get; }
 
-        public CircuitSynchronizationContext SynchronizationContext { get; }
-
         public async Task InitializeAsync(CancellationToken cancellationToken)
         {
             await Renderer.InvokeAsync(async () =>
@@ -139,7 +137,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         public async ValueTask DisposeAsync()
         {
-            await SynchronizationContext.InvokeAsync(async () =>
+            await Renderer.InvokeAsync(async () =>
             {
                 for (var i = 0; i < _circuitHandlers.Length; i++)
                 {

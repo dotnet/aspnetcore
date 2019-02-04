@@ -28,7 +28,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
         private int _lastEventHandlerId = 0;
         private List<Task> _pendingTasks;
 
-        public event UnhandledExceptionEventHandler UnhandledSynchronizationException {
+        public event UnhandledExceptionEventHandler UnhandledSynchronizationException
+        {
             add
             {
                 _synchronizationContext.UnhandledException += value;
@@ -170,14 +171,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="initialParameters">The <see cref="ParameterCollection"/>with the initial parameters to use for rendering.</param>
         protected Task RenderRootComponentAsync(int componentId, ParameterCollection initialParameters)
         {
-            if (SynchronizationContext.Current != null)
-            {
-                return RenderRootComponentCoreAsync(componentId, initialParameters);
-            }
-            else
-            {
-                return _synchronizationContext.InvokeAsync(() => RenderRootComponentCoreAsync(componentId, initialParameters));
-            }
+            return RenderRootComponentCoreAsync(componentId, initialParameters);
         }
 
         private async Task RenderRootComponentCoreAsync(int componentId, ParameterCollection initialParameters)

@@ -373,7 +373,8 @@ namespace Microsoft.AspNetCore.Components.Test
         static CascadingValue<T> CreateCascadingValueComponent<T>(T value, string name = null)
         {
             var supplier = new CascadingValue<T>();
-            supplier.Configure(new RenderHandle(new TestRenderer(), 0));
+            var renderer = new TestRenderer();
+            supplier.Configure(new RenderHandle(renderer, 0));
 
             var supplierParams = new Dictionary<string, object>
             {
@@ -385,7 +386,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 supplierParams.Add("Name", name);
             }
 
-            supplier.SetParameters(supplierParams);
+            renderer.Invoke(() => supplier.SetParameters(supplierParams));
             return supplier;
         }
        

@@ -58,7 +58,11 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <returns>A sequence of <see cref="string"/> fragments that represent the HTML text of the component.</returns>
         private IEnumerable<string> RenderComponent(Type componentType, ParameterCollection initialParameters)
         {
-            var frames = CreateInitialRender(componentType, initialParameters);
+            ArrayRange<RenderTreeFrame> frames = default;
+            Invoke(() =>
+            {
+                frames = CreateInitialRender(componentType, initialParameters);
+            });
 
             if (frames.Count == 0)
             {
@@ -82,7 +86,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <returns>A sequence of <see cref="string"/> fragments that represent the HTML text of the component.</returns>
         public async Task<IEnumerable<string>> RenderComponentAsync(Type componentType, ParameterCollection initialParameters)
         {
-            var frames = await CreateInitialRenderAsync(componentType, initialParameters);
+            ArrayRange<RenderTreeFrame> frames = default;
+            await InvokeAsync(async () => frames = await CreateInitialRenderAsync(componentType, initialParameters));
 
             if (frames.Count == 0)
             {

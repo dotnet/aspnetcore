@@ -28,10 +28,10 @@ namespace Microsoft.AspNetCore.Components.Test
         public void DisplaysComponentInsideLayout()
         {
             // Arrange/Act
-            _layoutDisplayComponent.SetParameters(new Dictionary<string, object>
+            _renderer.Invoke(() => _layoutDisplayComponent.SetParameters(new Dictionary<string, object>
             {
                 { LayoutDisplay.NameOfPage, typeof(ComponentWithLayout) }
-            });
+            }));
 
             // Assert
             var batch = _renderer.Batches.Single();
@@ -85,10 +85,10 @@ namespace Microsoft.AspNetCore.Components.Test
         public void DisplaysComponentInsideNestedLayout()
         {
             // Arrange/Act
-            _layoutDisplayComponent.SetParameters(new Dictionary<string, object>
+            _renderer.Invoke(() => _layoutDisplayComponent.SetParameters(new Dictionary<string, object>
             {
                 { LayoutDisplay.NameOfPage, typeof(ComponentWithNestedLayout) }
-            });
+            }));
 
             // Assert
             var batch = _renderer.Batches.Single();
@@ -112,16 +112,16 @@ namespace Microsoft.AspNetCore.Components.Test
         public void CanChangeDisplayedPageWithSameLayout()
         {
             // Arrange
-            _layoutDisplayComponent.SetParameters(new Dictionary<string, object>
+            _renderer.Invoke(() => _layoutDisplayComponent.SetParameters(new Dictionary<string, object>
             {
                 { LayoutDisplay.NameOfPage, typeof(ComponentWithLayout) }
-            });
+            }));
 
             // Act
-            _layoutDisplayComponent.SetParameters(new Dictionary<string, object>
+            _renderer.Invoke(() => _layoutDisplayComponent.SetParameters(new Dictionary<string, object>
             {
                 { LayoutDisplay.NameOfPage, typeof(DifferentComponentWithLayout) }
-            });
+            }));
 
             // Assert
             Assert.Equal(2, _renderer.Batches.Count);
@@ -163,16 +163,16 @@ namespace Microsoft.AspNetCore.Components.Test
         public void CanChangeDisplayedPageWithDifferentLayout()
         {
             // Arrange
-            _layoutDisplayComponent.SetParameters(new Dictionary<string, object>
+            _renderer.Invoke(() => _layoutDisplayComponent.SetParameters(new Dictionary<string, object>
             {
                 { LayoutDisplay.NameOfPage, typeof(ComponentWithLayout) }
-            });
+            }));
 
             // Act
-            _layoutDisplayComponent.SetParameters(new Dictionary<string, object>
+            _renderer.Invoke(() => _layoutDisplayComponent.SetParameters(new Dictionary<string, object>
             {
                 { LayoutDisplay.NameOfPage, typeof(ComponentWithNestedLayout) }
-            });
+            }));
 
             // Assert
             Assert.Equal(2, _renderer.Batches.Count);

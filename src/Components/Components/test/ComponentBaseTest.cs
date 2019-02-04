@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act
             var componentId = renderer.AssignRootComponentId(component);
-            renderer.RenderRootComponent(componentId);
+            renderer.Invoke(() => renderer.RenderRootComponent(componentId));
 
             // Assert
             Assert.Equal(1, onInitAsyncRuns);
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act
             var componentId = renderer.AssignRootComponentId(component);
-            renderer.RenderRootComponent(componentId);
+            renderer.Invoke(() => renderer.RenderRootComponent(componentId));
 
             // Assert
             Assert.Equal(1, onInitAsyncRuns);
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act
             var componentId = renderer.AssignRootComponentId(component);
-            renderer.RenderRootComponent(componentId);
+            renderer.Invoke(() => renderer.RenderRootComponent(componentId));
 
             // Assert
             Assert.Equal(1, onParametersSetRuns);
@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act
             var componentId = renderer.AssignRootComponentId(component);
-            renderer.RenderRootComponent(componentId);
+            renderer.Invoke(() => renderer.RenderRootComponent(componentId));
 
             // Assert
             Assert.Equal(1, onParametersSetAsyncRuns);
@@ -137,7 +137,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act
             var componentId = renderer.AssignRootComponentId(component);
-            renderer.RenderRootComponent(componentId);
+            renderer.Invoke(() => renderer.RenderRootComponent(componentId));
 
             // Assert
             Assert.Equal(1, onParametersSetAsyncRuns);
@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act
             var componentId = renderer.AssignRootComponentId(component);
-            renderer.RenderRootComponent(componentId);
+            renderer.Invoke(() => renderer.RenderRootComponent(componentId));
 
             // Assert
             Assert.Single(renderer.Batches);
@@ -188,7 +188,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act
             var componentId = renderer.AssignRootComponentId(component);
-            renderer.RenderRootComponent(componentId);
+            renderer.Invoke(() => renderer.RenderRootComponent(componentId));
 
             // Assert
             Assert.Single(renderer.Batches);
@@ -222,7 +222,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act
             var componentId = renderer.AssignRootComponentId(component);
-            renderer.RenderRootComponent(componentId);
+            renderer.Invoke(() => renderer.RenderRootComponent(componentId));
 
             // Assert
             Assert.Single(renderer.Batches);
@@ -247,7 +247,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act
             var componentId = renderer.AssignRootComponentId(component);
-            renderer.RenderRootComponent(componentId);
+            renderer.Invoke(() => renderer.RenderRootComponent(componentId));
 
             // Assert
             Assert.Single(renderer.Batches);

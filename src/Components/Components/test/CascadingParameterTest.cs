@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert
             var componentId = renderer.AssignRootComponentId(component);
-            component.TriggerRender();
+            renderer.Invoke(() => component.TriggerRender());
             var batch = renderer.Batches.Single();
             var nestedComponent = FindComponent<CascadingParameterConsumerComponent<string>>(batch, out var nestedComponentId);
             var nestedComponentDiff = batch.DiffsByComponentId[nestedComponentId].Single();
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act 1: Render in initial state
             var componentId = renderer.AssignRootComponentId(component);
-            component.TriggerRender();
+            renderer.Invoke(() => component.TriggerRender());
 
             // Capture the nested component so we can verify the update later
             var firstBatch = renderer.Batches.Single();
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act 2: Render again with updated regular parameter
             regularParameterValue = "Changed value";
-            component.TriggerRender();
+            renderer.Invoke(() => component.TriggerRender());
 
             // Assert
             Assert.Equal(2, renderer.Batches.Count);
@@ -119,14 +119,14 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act 1: Initial render; capture nested component ID
             var componentId = renderer.AssignRootComponentId(component);
-            component.TriggerRender();
+            renderer.Invoke(() => component.TriggerRender());
             var firstBatch = renderer.Batches.Single();
             var nestedComponent = FindComponent<CascadingParameterConsumerComponent<string>>(firstBatch, out var nestedComponentId);
             Assert.Equal(1, nestedComponent.NumRenders);
 
             // Act 2: Re-render CascadingValue with new value
             providedValue = "Updated value";
-            component.TriggerRender();
+            renderer.Invoke(() => component.TriggerRender());
 
             // Assert: We re-rendered CascadingParameterConsumerComponent
             Assert.Equal(2, renderer.Batches.Count);
@@ -164,14 +164,14 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act 1: Initial render
             var componentId = renderer.AssignRootComponentId(component);
-            component.TriggerRender();
+            renderer.Invoke(() => component.TriggerRender());
             var firstBatch = renderer.Batches.Single();
             var nestedComponent = FindComponent<CascadingParameterConsumerComponent<string>>(firstBatch, out _);
             Assert.Equal(3, firstBatch.DiffsByComponentId.Count); // Root + CascadingValue + nested
             Assert.Equal(1, nestedComponent.NumRenders);
 
             // Act/Assert: Re-render the CascadingValue; observe nested component wasn't re-rendered
-            component.TriggerRender();
+            renderer.Invoke(() => component.TriggerRender());
 
             // Assert: We did not re-render CascadingParameterConsumerComponent
             Assert.Equal(2, renderer.Batches.Count);
@@ -205,7 +205,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act 1: Initial render; capture nested component ID
             var componentId = renderer.AssignRootComponentId(component);
-            component.TriggerRender();
+            renderer.Invoke(() => component.TriggerRender());
             var firstBatch = renderer.Batches.Single();
             var nestedComponent = FindComponent<CascadingParameterConsumerComponent<string>>(firstBatch, out var nestedComponentId);
             Assert.Equal(1, nestedComponent.NumSetParametersCalls);
@@ -214,7 +214,7 @@ namespace Microsoft.AspNetCore.Components.Test
             // Act/Assert 2: Re-render the CascadingValue; observe nested component wasn't re-rendered
             providedValue = "Updated value";
             displayNestedComponent = false; // Remove the nested componet
-            component.TriggerRender();
+            renderer.Invoke(() => component.TriggerRender());
 
             // Assert: We did not render the nested component now it's been removed
             Assert.Equal(2, renderer.Batches.Count);
@@ -234,7 +234,7 @@ namespace Microsoft.AspNetCore.Components.Test
             // Act 3: However, after disposal, the subscription is removed, so we won't send
             // updated params on subsequent CascadingValue renders.
             providedValue = "Updated value 2";
-            component.TriggerRender();
+            renderer.Invoke(() => component.TriggerRender());
             Assert.Equal(2, nestedComponent.NumSetParametersCalls);
         }
 
@@ -264,7 +264,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act 1: Initial render; capture nested component ID
             var componentId = renderer.AssignRootComponentId(component);
-            component.TriggerRender();
+            renderer.Invoke(() => component.TriggerRender());
             var firstBatch = renderer.Batches.Single();
             var nestedComponent = FindComponent<CascadingParameterConsumerComponent<string>>(firstBatch, out var nestedComponentId);
             Assert.Equal(1, nestedComponent.NumRenders);
@@ -281,7 +281,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act 2: Re-render CascadingValue with new value
             providedValue = "Updated value";
-            component.TriggerRender();
+            renderer.Invoke(() => component.TriggerRender());
 
             // Assert: We did not re-render the descendant
             Assert.Equal(2, renderer.Batches.Count);
@@ -292,14 +292,14 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act 3: Dispose
             shouldIncludeChild = false;
-            component.TriggerRender();
+            renderer.Invoke(() => component.TriggerRender());
 
             // Assert: Absence of an exception here implies we didn't cause a problem by
             // trying to remove a non-existent subscription
         }
 
         [Fact]
-        public void CascadingValueThrowsIfFixedFlagChangesToTrue()
+        public async Task CascadingValueThrowsIfFixedFlagChangesToTrue()
         {
             // Arrange
             var renderer = new TestRenderer();
@@ -312,16 +312,16 @@ namespace Microsoft.AspNetCore.Components.Test
                 builder.CloseComponent();
             });
             renderer.AssignRootComponentId(component);
-            component.TriggerRender();
+            var _ = renderer.Invoke(() => component.TriggerRender());
 
             // Act/Assert
             isFixed = true;
-            var ex = Assert.Throws<InvalidOperationException>(() => component.TriggerRender());
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => renderer.Invoke(() => component.TriggerRender()));
             Assert.Equal("The value of IsFixed cannot be changed dynamically.", ex.Message);
         }
 
         [Fact]
-        public void CascadingValueThrowsIfFixedFlagChangesToFalse()
+        public async Task CascadingValueThrowsIfFixedFlagChangesToFalse()
         {
             // Arrange
             var renderer = new TestRenderer();
@@ -337,11 +337,11 @@ namespace Microsoft.AspNetCore.Components.Test
                 builder.CloseComponent();
             });
             renderer.AssignRootComponentId(component);
-            component.TriggerRender();
+            var _ = renderer.Invoke(() => component.TriggerRender());
 
             // Act/Assert
             isFixed = false;
-            var ex = Assert.Throws<InvalidOperationException>(() => component.TriggerRender());
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => renderer.Invoke(() => component.TriggerRender()));
             Assert.Equal("The value of IsFixed cannot be changed dynamically.", ex.Message);
         }
 

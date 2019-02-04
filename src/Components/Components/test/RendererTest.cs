@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -15,6 +16,10 @@ namespace Microsoft.AspNetCore.Components.Test
 {
     public class RendererTest
     {
+        private const string EventActionsName = nameof(NestedAsyncComponent.EventActions);
+        private const string WhatToRenderName = nameof(NestedAsyncComponent.WhatToRender);
+        private const string LogName = nameof(NestedAsyncComponent.Log);
+
         [Fact]
         public void CanRenderTopLevelComponents()
         {
@@ -29,7 +34,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act
             var componentId = renderer.AssignRootComponentId(component);
-            component.TriggerRender();
+            renderer.Invoke(() => component.TriggerRender());
 
             // Assert
             var batch = renderer.Batches.Single();
@@ -59,7 +64,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert
             var componentId = renderer.AssignRootComponentId(component);
-            component.TriggerRender();
+            renderer.Invoke(() => component.TriggerRender());
             var batch = renderer.Batches.Single();
             var componentFrame = batch.ReferenceFrames
                 .Single(frame => frame.FrameType == RenderTreeFrameType.Component);
@@ -92,7 +97,7 @@ namespace Microsoft.AspNetCore.Components.Test
             var componentId = renderer.AssignRootComponentId(component);
 
             // Act/Assert: first render
-            component.TriggerRender();
+            renderer.Invoke(() => component.TriggerRender());
             var batch = renderer.Batches.Single();
             var firstDiff = batch.DiffsByComponentId[componentId].Single();
             Assert.Collection(firstDiff.Edits,
@@ -105,7 +110,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert: second render
             component.Message = "Modified message";
-            component.TriggerRender();
+            renderer.Invoke(() => component.TriggerRender());
             var secondBatch = renderer.Batches.Skip(1).Single();
             var secondDiff = secondBatch.DiffsByComponentId[componentId].Single();
             Assert.Collection(secondDiff.Edits,
@@ -128,7 +133,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 builder.CloseComponent();
             });
             var parentComponentId = renderer.AssignRootComponentId(parentComponent);
-            parentComponent.TriggerRender();
+            renderer.Invoke(() => parentComponent.TriggerRender());
             var nestedComponentFrame = renderer.Batches.Single()
                 .ReferenceFrames
                 .Single(frame => frame.FrameType == RenderTreeFrameType.Component);
@@ -137,7 +142,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Assert: initial render
             nestedComponent.Message = "Render 1";
-            nestedComponent.TriggerRender();
+            renderer.Invoke(() => nestedComponent.TriggerRender());
             var batch = renderer.Batches[1];
             var firstDiff = batch.DiffsByComponentId[nestedComponentId].Single();
             Assert.Collection(firstDiff.Edits,
@@ -150,7 +155,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert: re-render
             nestedComponent.Message = "Render 2";
-            nestedComponent.TriggerRender();
+            renderer.Invoke(() => nestedComponent.TriggerRender());
             var secondBatch = renderer.Batches[2];
             var secondDiff = secondBatch.DiffsByComponentId[nestedComponentId].Single();
             Assert.Collection(secondDiff.Edits,
@@ -171,7 +176,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act
             var componentId = renderer.AssignRootComponentId(component);
-            await renderer.RenderRootComponentAsync(componentId);
+            await renderer.InvokeAsync(() => renderer.RenderRootComponentAsync(componentId));
 
             // Assert
             Assert.Equal(5, renderer.Batches.Count);
@@ -221,9 +226,9 @@ namespace Microsoft.AspNetCore.Components.Test
             // Act/Assert
             var componentId = renderer.AssignRootComponentId(component);
             var log = new ConcurrentQueue<(int id, NestedAsyncComponent.EventType @event)>();
-            await renderer.RenderRootComponentAsync(componentId, ParameterCollection.FromDictionary(new Dictionary<string, object>
+            await renderer.InvokeAsync(() => renderer.RenderRootComponentAsync(componentId, ParameterCollection.FromDictionary(new Dictionary<string, object>
             {
-                [nameof(NestedAsyncComponent.EventActions)] = new Dictionary<int, IList<NestedAsyncComponent.ExecutionAction>>
+                [EventActionsName] = new Dictionary<int, IList<NestedAsyncComponent.ExecutionAction>>
                 {
                     [0] = new List<NestedAsyncComponent.ExecutionAction>
                     {
@@ -240,13 +245,13 @@ namespace Microsoft.AspNetCore.Components.Test
                         NestedAsyncComponent.ExecutionAction.On(1, NestedAsyncComponent.EventType.OnParametersSetAsyncAsync, async: true),
                     }
                 },
-                [nameof(NestedAsyncComponent.WhatToRender)] = new Dictionary<int, Func<NestedAsyncComponent, RenderFragment>>
+                [WhatToRenderName] = new Dictionary<int, Func<NestedAsyncComponent, RenderFragment>>
                 {
                     [0] = CreateRenderFactory(new[] { 1 }),
                     [1] = CreateRenderFactory(Array.Empty<int>())
                 },
-                [nameof(NestedAsyncComponent.Log)] = log
-            }));
+                [LogName] = log
+            })));
 
             var logForParent = log.Where(l => l.id == 0).ToArray();
             var logForChild = log.Where(l => l.id == 1).ToArray();
@@ -265,9 +270,9 @@ namespace Microsoft.AspNetCore.Components.Test
             // Act/Assert
             var componentId = renderer.AssignRootComponentId(component);
             var log = new ConcurrentQueue<(int id, NestedAsyncComponent.EventType @event)>();
-            await renderer.RenderRootComponentAsync(componentId, ParameterCollection.FromDictionary(new Dictionary<string, object>
+            await renderer.InvokeAsync(() => renderer.RenderRootComponentAsync(componentId, ParameterCollection.FromDictionary(new Dictionary<string, object>
             {
-                [nameof(NestedAsyncComponent.EventActions)] = new Dictionary<int, IList<NestedAsyncComponent.ExecutionAction>>
+                [EventActionsName] = new Dictionary<int, IList<NestedAsyncComponent.ExecutionAction>>
                 {
                     [0] = new List<NestedAsyncComponent.ExecutionAction>
                     {
@@ -284,13 +289,13 @@ namespace Microsoft.AspNetCore.Components.Test
                         NestedAsyncComponent.ExecutionAction.On(1, NestedAsyncComponent.EventType.OnParametersSetAsyncAsync),
                     }
                 },
-                [nameof(NestedAsyncComponent.WhatToRender)] = new Dictionary<int, Func<NestedAsyncComponent, RenderFragment>>
+                [WhatToRenderName] = new Dictionary<int, Func<NestedAsyncComponent, RenderFragment>>
                 {
                     [0] = CreateRenderFactory(new[] { 1 }),
                     [1] = CreateRenderFactory(Array.Empty<int>())
                 },
-                [nameof(NestedAsyncComponent.Log)] = log
-            }));
+                [LogName] = log
+            })));
 
             var logForParent = log.Where(l => l.id == 0).ToArray();
             var logForChild = log.Where(l => l.id == 1).ToArray();
@@ -309,9 +314,9 @@ namespace Microsoft.AspNetCore.Components.Test
             // Act/Assert
             var componentId = renderer.AssignRootComponentId(component);
             var log = new ConcurrentQueue<(int id, NestedAsyncComponent.EventType @event)>();
-            await renderer.RenderRootComponentAsync(componentId, ParameterCollection.FromDictionary(new Dictionary<string, object>
+            await renderer.InvokeAsync(() => renderer.RenderRootComponentAsync(componentId, ParameterCollection.FromDictionary(new Dictionary<string, object>
             {
-                [nameof(NestedAsyncComponent.EventActions)] = new Dictionary<int, IList<NestedAsyncComponent.ExecutionAction>>
+                [EventActionsName] = new Dictionary<int, IList<NestedAsyncComponent.ExecutionAction>>
                 {
                     [0] = new List<NestedAsyncComponent.ExecutionAction>
                     {
@@ -328,13 +333,13 @@ namespace Microsoft.AspNetCore.Components.Test
                         NestedAsyncComponent.ExecutionAction.On(1, NestedAsyncComponent.EventType.OnParametersSetAsyncAsync),
                     }
                 },
-                [nameof(NestedAsyncComponent.WhatToRender)] = new Dictionary<int, Func<NestedAsyncComponent, RenderFragment>>
+                [WhatToRenderName] = new Dictionary<int, Func<NestedAsyncComponent, RenderFragment>>
                 {
                     [0] = CreateRenderFactory(new[] { 1 }),
                     [1] = CreateRenderFactory(Array.Empty<int>())
                 },
-                [nameof(NestedAsyncComponent.Log)] = log
-            }));
+                [LogName] = log
+            })));
 
             var logForParent = log.Where(l => l.id == 0).ToArray();
             var logForChild = log.Where(l => l.id == 1).ToArray();
@@ -353,9 +358,9 @@ namespace Microsoft.AspNetCore.Components.Test
             // Act/Assert
             var componentId = renderer.AssignRootComponentId(component);
             var log = new ConcurrentQueue<(int id, NestedAsyncComponent.EventType @event)>();
-            await renderer.RenderRootComponentAsync(componentId, ParameterCollection.FromDictionary(new Dictionary<string, object>
+            await renderer.InvokeAsync(() => renderer.RenderRootComponentAsync(componentId, ParameterCollection.FromDictionary(new Dictionary<string, object>
             {
-                [nameof(NestedAsyncComponent.EventActions)] = new Dictionary<int, IList<NestedAsyncComponent.ExecutionAction>>
+                [EventActionsName] = new Dictionary<int, IList<NestedAsyncComponent.ExecutionAction>>
                 {
                     [0] = new List<NestedAsyncComponent.ExecutionAction>
                     {
@@ -386,15 +391,15 @@ namespace Microsoft.AspNetCore.Components.Test
                         NestedAsyncComponent.ExecutionAction.On(3, NestedAsyncComponent.EventType.OnParametersSetAsyncAsync, async:true),
                     }
                 },
-                [nameof(NestedAsyncComponent.WhatToRender)] = new Dictionary<int, Func<NestedAsyncComponent, RenderFragment>>
+                [WhatToRenderName] = new Dictionary<int, Func<NestedAsyncComponent, RenderFragment>>
                 {
                     [0] = CreateRenderFactory(new[] { 1, 2 }),
                     [1] = CreateRenderFactory(new[] { 3 }),
                     [2] = CreateRenderFactory(Array.Empty<int>()),
                     [3] = CreateRenderFactory(Array.Empty<int>())
                 },
-                [nameof(NestedAsyncComponent.Log)] = log
-            }));
+                [LogName] = log
+            })));
 
             var logForParent = log.Where(l => l.id == 0).ToArray();
             var logForFirstChild = log.Where(l => l.id == 1).ToArray();
@@ -419,7 +424,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 OnTest = args => { receivedArgs = args; }
             };
             var componentId = renderer.AssignRootComponentId(component);
-            component.TriggerRender();
+            renderer.Invoke(() => component.TriggerRender());
 
             var eventHandlerId = renderer.Batches.Single()
                 .ReferenceFrames
@@ -431,7 +436,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert: Event can be fired
             var eventArgs = new UIEventArgs();
-            renderer.DispatchEvent(componentId, eventHandlerId, eventArgs);
+            renderer.Invoke(() => renderer.DispatchEvent(componentId, eventHandlerId, eventArgs));
             Assert.Same(eventArgs, receivedArgs);
         }
 
@@ -447,7 +452,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 OnClick = args => { receivedArgs = args; }
             };
             var componentId = renderer.AssignRootComponentId(component);
-            component.TriggerRender();
+            renderer.Invoke(() => component.TriggerRender());
 
             var eventHandlerId = renderer.Batches.Single()
                 .ReferenceFrames
@@ -459,7 +464,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert: Event can be fired
             var eventArgs = new UIMouseEventArgs();
-            renderer.DispatchEvent(componentId, eventHandlerId, eventArgs);
+            renderer.Invoke(() => renderer.DispatchEvent(componentId, eventHandlerId, eventArgs));
             Assert.Same(eventArgs, receivedArgs);
         }
 
@@ -475,7 +480,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 OnClickAction = () => { receivedArgs = new object(); }
             };
             var componentId = renderer.AssignRootComponentId(component);
-            component.TriggerRender();
+            renderer.Invoke(() => component.TriggerRender());
 
             var eventHandlerId = renderer.Batches.Single()
                 .ReferenceFrames
@@ -487,7 +492,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert: Event can be fired
             var eventArgs = new UIMouseEventArgs();
-            renderer.DispatchEvent(componentId, eventHandlerId, eventArgs);
+            renderer.Invoke(() => renderer.DispatchEvent(componentId, eventHandlerId, eventArgs));
             Assert.NotNull(receivedArgs);
         }
 
@@ -504,7 +509,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 builder.CloseComponent();
             });
             var parentComponentId = renderer.AssignRootComponentId(parentComponent);
-            parentComponent.TriggerRender();
+            renderer.Invoke(() => parentComponent.TriggerRender());
 
             // Arrange: Render nested component
             var nestedComponentFrame = renderer.Batches.Single()
@@ -513,7 +518,7 @@ namespace Microsoft.AspNetCore.Components.Test
             var nestedComponent = (EventComponent)nestedComponentFrame.Component;
             nestedComponent.OnTest = args => { receivedArgs = args; };
             var nestedComponentId = nestedComponentFrame.ComponentId;
-            nestedComponent.TriggerRender();
+            renderer.Invoke(() => nestedComponent.TriggerRender());
 
             // Find nested component's event handler ID
             var eventHandlerId = renderer.Batches[1]
@@ -526,12 +531,12 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert: Event can be fired
             var eventArgs = new UIEventArgs();
-            renderer.DispatchEvent(nestedComponentId, eventHandlerId, eventArgs);
+            renderer.Invoke(() => renderer.DispatchEvent(nestedComponentId, eventHandlerId, eventArgs));
             Assert.Same(eventArgs, receivedArgs);
         }
 
         [Fact]
-        public void ThrowsIfComponentDoesNotHandleEvents()
+        public async Task ThrowsIfComponentDoesNotHandleEventsAsync()
         {
             // Arrange: Render a component with an event handler
             var renderer = new TestRenderer();
@@ -544,7 +549,7 @@ namespace Microsoft.AspNetCore.Components.Test
             });
 
             var componentId = renderer.AssignRootComponentId(component);
-            component.TriggerRender();
+            var _ = renderer.Invoke(() => component.TriggerRender());
 
             var eventHandlerId = renderer.Batches.Single()
                 .ReferenceFrames
@@ -553,9 +558,9 @@ namespace Microsoft.AspNetCore.Components.Test
             var eventArgs = new UIEventArgs();
 
             // Act/Assert
-            var ex = Assert.Throws<InvalidOperationException>(() =>
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             {
-                renderer.DispatchEvent(componentId, eventHandlerId, eventArgs);
+                await renderer.Invoke(() => renderer.DispatchEvent(componentId, eventHandlerId, eventArgs));
             });
             Assert.Equal($"The component of type {typeof(TestComponent).FullName} cannot receive " +
                 $"events because it does not implement {typeof(IHandleEvent).FullName}.", ex.Message);
@@ -570,7 +575,7 @@ namespace Microsoft.AspNetCore.Components.Test
             // Act/Assert
             Assert.Throws<ArgumentException>(() =>
             {
-                renderer.DispatchEvent(123, 0, new UIEventArgs());
+                ExceptionDispatchInfo.Capture(renderer.Invoke(() => renderer.DispatchEvent(123, 0, new UIEventArgs())).Exception.InnerException).Throw();
             });
         }
 
@@ -622,7 +627,7 @@ namespace Microsoft.AspNetCore.Components.Test
             });
 
             var rootComponentId = renderer.AssignRootComponentId(component);
-            component.TriggerRender();
+            renderer.Invoke(() => component.TriggerRender());
 
             var nestedComponentFrame = renderer.Batches.Single()
                 .ReferenceFrames
@@ -631,7 +636,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act: Second render
             message = "Modified message";
-            component.TriggerRender();
+            renderer.Invoke(() => component.TriggerRender());
 
             // Assert
             var batch = renderer.Batches[1];
@@ -663,7 +668,7 @@ namespace Microsoft.AspNetCore.Components.Test
             });
 
             var rootComponentId = renderer.AssignRootComponentId(component);
-            component.TriggerRender();
+            renderer.Invoke(() => component.TriggerRender());
 
             var originalComponentFrame = renderer.Batches.Single()
                 .ReferenceFrames
@@ -677,7 +682,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act: Second render
             firstRender = false;
-            component.TriggerRender();
+            renderer.Invoke(() => component.TriggerRender());
 
             // Assert
             Assert.Equal(256, childComponentInstance.IntProperty);
@@ -699,7 +704,7 @@ namespace Microsoft.AspNetCore.Components.Test
             });
 
             var rootComponentId = renderer.AssignRootComponentId(component);
-            component.TriggerRender();
+            renderer.Invoke(() => component.TriggerRender());
 
             var childComponentId = renderer.Batches.Single()
                 .ReferenceFrames
@@ -708,7 +713,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act: Second render
             firstRender = false;
-            component.TriggerRender();
+            renderer.Invoke(() => component.TriggerRender());
             var diff = renderer.Batches[1].DiffsByComponentId[childComponentId].Single();
 
             // Assert
@@ -743,7 +748,7 @@ namespace Microsoft.AspNetCore.Components.Test
             var rootComponentId = renderer.AssignRootComponentId(component);
 
             // Act/Assert 1: First render, capturing child component IDs
-            component.TriggerRender();
+            renderer.Invoke(() => component.TriggerRender());
             var batch = renderer.Batches.Single();
             var rootComponentDiff = batch.DiffsByComponentId[rootComponentId].Single();
             var childComponentIds = rootComponentDiff
@@ -759,20 +764,21 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act: Second render
             firstRender = false;
-            component.TriggerRender();
+            renderer.Invoke(() => component.TriggerRender());
 
             // Assert: Applicable children are included in disposal list
             Assert.Equal(2, renderer.Batches.Count);
             Assert.Equal(new[] { 1, 3 }, renderer.Batches[1].DisposedComponentIDs);
 
             // Act/Assert: If a disposed component requests a render, it's a no-op
-            ((FakeComponent)childComponent3).RenderHandle.Render(builder
-                => throw new NotImplementedException("Should not be invoked"));
+            var renderHandle = ((FakeComponent)childComponent3).RenderHandle;
+            renderHandle.Invoke(() => renderHandle.Render(builder
+                => throw new NotImplementedException("Should not be invoked")));
             Assert.Equal(2, renderer.Batches.Count);
         }
 
         [Fact]
-        public void DisposesEventHandlersWhenAttributeValueChanged()
+        public async Task DisposesEventHandlersWhenAttributeValueChangedAsync()
         {
             // Arrange
             var renderer = new TestRenderer();
@@ -780,7 +786,7 @@ namespace Microsoft.AspNetCore.Components.Test
             Action<UIEventArgs> origEventHandler = args => { eventCount++; };
             var component = new EventComponent { OnTest = origEventHandler };
             var componentId = renderer.AssignRootComponentId(component);
-            component.TriggerRender();
+            var _ = renderer.Invoke(() => component.TriggerRender());
             var origEventHandlerId = renderer.Batches.Single()
                 .ReferenceFrames
                 .Where(f => f.FrameType == RenderTreeFrameType.Attribute)
@@ -789,22 +795,22 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert 1: Event handler fires when we trigger it
             Assert.Equal(0, eventCount);
-            renderer.DispatchEvent(componentId, origEventHandlerId, args: null);
+            var __ = renderer.Invoke(() => renderer.DispatchEvent(componentId, origEventHandlerId, args: null));
             Assert.Equal(1, eventCount);
 
             // Now change the attribute value
             var newEventCount = 0;
             component.OnTest = args => { newEventCount++; };
-            component.TriggerRender();
+            var ___ = renderer.Invoke(() => component.TriggerRender());
 
             // Act/Assert 2: Can no longer fire the original event, but can fire the new event
-            Assert.Throws<ArgumentException>(() =>
+            await Assert.ThrowsAsync<ArgumentException>(async () =>
             {
-                renderer.DispatchEvent(componentId, origEventHandlerId, args: null);
+                await renderer.Invoke(() => renderer.DispatchEvent(componentId, origEventHandlerId, args: null));
             });
             Assert.Equal(1, eventCount);
             Assert.Equal(0, newEventCount);
-            renderer.DispatchEvent(componentId, origEventHandlerId + 1, args: null);
+            var ____ = renderer.Invoke(() => renderer.DispatchEvent(componentId, origEventHandlerId + 1, args: null));
             Assert.Equal(1, newEventCount);
         }
 
@@ -817,7 +823,7 @@ namespace Microsoft.AspNetCore.Components.Test
             Action<UIEventArgs> origEventHandler = args => { eventCount++; };
             var component = new EventComponent { OnTest = origEventHandler };
             var componentId = renderer.AssignRootComponentId(component);
-            component.TriggerRender();
+            renderer.Invoke(() => component.TriggerRender());
             var origEventHandlerId = renderer.Batches.Single()
                 .ReferenceFrames
                 .Where(f => f.FrameType == RenderTreeFrameType.Attribute)
@@ -826,23 +832,23 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert 1: Event handler fires when we trigger it
             Assert.Equal(0, eventCount);
-            renderer.DispatchEvent(componentId, origEventHandlerId, args: null);
+            renderer.Invoke(() => renderer.DispatchEvent(componentId, origEventHandlerId, args: null));
             Assert.Equal(1, eventCount);
 
             // Now remove the event attribute
             component.OnTest = null;
-            component.TriggerRender();
+            renderer.Invoke(() => component.TriggerRender());
 
             // Act/Assert 2: Can no longer fire the original event
             Assert.Throws<ArgumentException>(() =>
             {
-                renderer.DispatchEvent(componentId, origEventHandlerId, args: null);
+                ExceptionDispatchInfo.Capture(renderer.Invoke(() => renderer.DispatchEvent(componentId, origEventHandlerId, args: null)).Exception.InnerException).Throw();
             });
             Assert.Equal(1, eventCount);
         }
 
         [Fact]
-        public void DisposesEventHandlersWhenOwnerComponentRemoved()
+        public async Task DisposesEventHandlersWhenOwnerComponentRemovedAsync()
         {
             // Arrange
             var renderer = new TestRenderer();
@@ -857,7 +863,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 }
             };
             var rootComponentId = renderer.AssignRootComponentId(component);
-            component.TriggerRender();
+            var _ = renderer.Invoke(() => component.TriggerRender());
             var batch = renderer.Batches.Single();
             var rootComponentDiff = batch.DiffsByComponentId[rootComponentId].Single();
             var rootComponentFrame = batch.ReferenceFrames[0];
@@ -875,17 +881,17 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert 1: Event handler fires when we trigger it
             Assert.Equal(0, eventCount);
-            renderer.DispatchEvent(childComponentId, eventHandlerId, args: null);
+            var __ = renderer.Invoke(() => renderer.DispatchEvent(childComponentId, eventHandlerId, args: null));
             Assert.Equal(1, eventCount);
 
             // Now remove the EventComponent
             component.IncludeChild = false;
-            component.TriggerRender();
+            var ___ = renderer.Invoke(() => component.TriggerRender());
 
             // Act/Assert 2: Can no longer fire the original event
-            Assert.Throws<ArgumentException>(() =>
+            await Assert.ThrowsAsync<ArgumentException>(async () =>
             {
-                renderer.DispatchEvent(eventHandlerId, eventHandlerId, args: null);
+                await renderer.Invoke(() => renderer.DispatchEvent(eventHandlerId, eventHandlerId, args: null));
             });
             Assert.Equal(1, eventCount);
         }
@@ -899,7 +905,7 @@ namespace Microsoft.AspNetCore.Components.Test
             Action<UIEventArgs> origEventHandler = args => { eventCount++; };
             var component = new EventComponent { OnTest = origEventHandler };
             var componentId = renderer.AssignRootComponentId(component);
-            component.TriggerRender();
+            renderer.Invoke(() => component.TriggerRender());
             var origEventHandlerId = renderer.Batches.Single()
                 .ReferenceFrames
                 .Where(f => f.FrameType == RenderTreeFrameType.Attribute)
@@ -908,17 +914,17 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert 1: Event handler fires when we trigger it
             Assert.Equal(0, eventCount);
-            renderer.DispatchEvent(componentId, origEventHandlerId, args: null);
+            renderer.Invoke(() => renderer.DispatchEvent(componentId, origEventHandlerId, args: null));
             Assert.Equal(1, eventCount);
 
             // Now remove the ancestor element
             component.SkipElement = true;
-            component.TriggerRender();
+            renderer.Invoke(() => component.TriggerRender());
 
             // Act/Assert 2: Can no longer fire the original event
             Assert.Throws<ArgumentException>(() =>
             {
-                renderer.DispatchEvent(componentId, origEventHandlerId, args: null);
+                ExceptionDispatchInfo.Capture(renderer.Invoke(() => renderer.DispatchEvent(componentId, origEventHandlerId, args: null)).Exception.InnerException).Throw();
             });
             Assert.Equal(1, eventCount);
         }
@@ -945,7 +951,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 builder.CloseComponent();
             });
             var rootComponentId = renderer.AssignRootComponentId(rootComponent);
-            rootComponent.TriggerRender();
+            renderer.Invoke(() => rootComponent.TriggerRender());
             var origBatchReferenceFrames = renderer.Batches.Single().ReferenceFrames;
             var childComponentFrame = origBatchReferenceFrames
                 .Single(f => f.Component is EventComponent);
@@ -958,7 +964,7 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.Single(renderer.Batches);
 
             // Act
-            renderer.DispatchEvent(childComponentId, origEventHandlerId, args: null);
+            renderer.Invoke(() => renderer.DispatchEvent(childComponentId, origEventHandlerId, args: null));
 
             // Assert
             Assert.Equal(2, renderer.Batches.Count);
@@ -1030,7 +1036,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert: Can trigger initial render
             Assert.Equal(0, renderCount);
-            component.TriggerRender();
+            renderer.Invoke(() => component.TriggerRender());
             Assert.Equal(1, renderCount);
             var batch1 = renderer.Batches.Single();
             var edit1 = batch1.DiffsByComponentId[componentId].Single().Edits.Single();
@@ -1039,7 +1045,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 "Render count: 1", 0);
 
             // Act/Assert: Can trigger subsequent render
-            component.TriggerRender();
+            renderer.Invoke(() => component.TriggerRender());
             Assert.Equal(2, renderCount);
             var batch2 = renderer.Batches.Skip(1).Single();
             var edit2 = batch2.DiffsByComponentId[componentId].Single().Edits.Single();
@@ -1065,7 +1071,7 @@ namespace Microsoft.AspNetCore.Components.Test
             var parentComponentId = renderer.AssignRootComponentId(parent);
 
             // Act
-            parent.TriggerRender();
+            renderer.Invoke(() => parent.TriggerRender());
 
             // Assert
             var batch = renderer.Batches.Single();
@@ -1130,14 +1136,14 @@ namespace Microsoft.AspNetCore.Components.Test
                         // will queue (2) its own re-render. But by the time (1) completes, the child will
                         // have been disposed, even though (2) is still in the queue
                         shouldRenderChild = false;
-                        component.TriggerRender();
+                        renderer.Invoke(() => component.TriggerRender());
                     }));
                     builder.CloseComponent();
                 }
             });
 
             var componentId = renderer.AssignRootComponentId(component);
-            component.TriggerRender();
+            renderer.Invoke(() => component.TriggerRender());
             var childComponentId = renderer.Batches.Single()
                 .ReferenceFrames
                 .Where(f => f.ComponentId != 0)
@@ -1151,7 +1157,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act
             // The fact that there's no error here is the main thing we're testing
-            renderer.DispatchEvent(childComponentId, origEventHandlerId, args: null);
+            renderer.Invoke(() => renderer.DispatchEvent(childComponentId, origEventHandlerId, args: null));
 
             // Assert: correct render result
             var newBatch = renderer.Batches.Skip(1).Single();
@@ -1174,7 +1180,7 @@ namespace Microsoft.AspNetCore.Components.Test
             var renderer = new TestRenderer();
             var component = new BindPlusConditionalAttributeComponent();
             var componentId = renderer.AssignRootComponentId(component);
-            component.TriggerRender();
+            renderer.Invoke(() => component.TriggerRender());
             var checkboxChangeEventHandlerId = renderer.Batches.Single()
                 .ReferenceFrames
                 .First(frame => frame.FrameType == RenderTreeFrameType.Attribute && frame.AttributeEventHandlerId != 0)
@@ -1182,7 +1188,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act: Toggle the checkbox
             var eventArgs = new UIChangeEventArgs { Value = true };
-            renderer.DispatchEvent(componentId, checkboxChangeEventHandlerId, eventArgs);
+            renderer.Invoke(() => renderer.DispatchEvent(componentId, checkboxChangeEventHandlerId, eventArgs));
             var latestBatch = renderer.Batches.Last();
             var latestDiff = latestBatch.DiffsInOrder.Single();
             var referenceFrames = latestBatch.ReferenceFrames;
@@ -1219,9 +1225,9 @@ namespace Microsoft.AspNetCore.Components.Test
             renderer.AssignRootComponentId(component);
 
             // Act: Update the attribute value on the parent
-            component.TriggerRender();
+            renderer.Invoke(() => component.TriggerRender());
             attrValue++;
-            component.TriggerRender();
+            renderer.Invoke(() => component.TriggerRender());
 
             // Assert
             var latestBatch = renderer.Batches.Skip(1).Single();
@@ -1249,7 +1255,7 @@ namespace Microsoft.AspNetCore.Components.Test
             renderer.AssignRootComponentId(component);
 
             // Act
-            component.TriggerRender();
+            renderer.Invoke(() => component.TriggerRender());
 
             // Assert
             // When the display was first updated, OnAfterRender had not yet been called
@@ -1258,7 +1264,7 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.Equal(1, component.OnAfterRenderCallCount);
 
             // Act/Assert 2: On a subsequent render, the same happens again
-            component.TriggerRender();
+            renderer.Invoke(() => component.TriggerRender());
             Assert.Equal(new[] { 0, 1 }, onAfterRenderCallCountLog);
             Assert.Equal(2, component.OnAfterRenderCallCount);
         }
@@ -1290,7 +1296,7 @@ namespace Microsoft.AspNetCore.Components.Test
             var parentComponentId = renderer.AssignRootComponentId(parentComponent);
 
             // Act: First render
-            parentComponent.TriggerRender();
+            renderer.Invoke(() => parentComponent.TriggerRender());
 
             // Assert: All child components were notified of "after render"
             var batch1 = renderer.Batches.Single();
@@ -1305,7 +1311,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act: Second render
             showComponent3 = false;
-            parentComponent.TriggerRender();
+            renderer.Invoke(() => parentComponent.TriggerRender());
 
             // Assert: Only the re-rendered component was notified of "after render"
             var batch2 = renderer.Batches.Skip(1).Single();
@@ -1340,19 +1346,19 @@ namespace Microsoft.AspNetCore.Components.Test
             EventComponent component = null;
             Action<UIEventArgs> eventHandler = null;
 
-            eventHandler = _ =>
+            eventHandler = ___ =>
             {
                 numEventsFired++;
 
                 // Replace the old event handler with a different one,
                 // (old the old handler ID will be disposed) then re-render.
                 component.OnTest = args => eventHandler(args);
-                component.TriggerRender();
+                renderer.Invoke(() => component.TriggerRender());
             };
 
             component = new EventComponent { OnTest = eventHandler };
             var componentId = renderer.AssignRootComponentId(component);
-            component.TriggerRender();
+            var _ = renderer.Invoke(() => component.TriggerRender());
 
             var eventHandlerId = renderer.Batches.Single()
                 .ReferenceFrames
@@ -1362,14 +1368,14 @@ namespace Microsoft.AspNetCore.Components.Test
             // Act/Assert 1: Event can be fired for the first time
             var render1TCS = new TaskCompletionSource<object>();
             renderer.NextUpdateDisplayReturnTask = render1TCS.Task;
-            renderer.DispatchEvent(componentId, eventHandlerId, new UIEventArgs());
+            var __ = renderer.Invoke(() => renderer.DispatchEvent(componentId, eventHandlerId, new UIEventArgs()));
             Assert.Equal(1, numEventsFired);
 
             // Act/Assert 2: *Same* event handler ID can be reused prior to completion of
             // preceding UI update
             var render2TCS = new TaskCompletionSource<object>();
             renderer.NextUpdateDisplayReturnTask = render2TCS.Task;
-            renderer.DispatchEvent(componentId, eventHandlerId, new UIEventArgs());
+            var ____ = renderer.Invoke(() => renderer.DispatchEvent(componentId, eventHandlerId, new UIEventArgs()));
             Assert.Equal(2, numEventsFired);
 
             // Act/Assert 3: After we complete the first UI update in which a given
@@ -1378,7 +1384,9 @@ namespace Microsoft.AspNetCore.Components.Test
             await Task.Delay(500); // From here we can't see when the async disposal is completed. Just give it plenty of time (Task.Yield isn't enough).
             var ex = Assert.Throws<ArgumentException>(() =>
             {
-                renderer.DispatchEvent(componentId, eventHandlerId, new UIEventArgs());
+                var t = renderer.Invoke(() => renderer.DispatchEvent(componentId, eventHandlerId, new UIEventArgs()));
+                Assert.True(t.IsFaulted);
+                ExceptionDispatchInfo.Capture(t.Exception.InnerException).Throw();
             });
             Assert.Equal($"There is no event handler with ID {eventHandlerId}", ex.Message);
             Assert.Equal(2, numEventsFired);
@@ -1411,7 +1419,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 builder.CloseComponent();
             });
             var componentId = renderer.AssignRootComponentId(component);
-            component.TriggerRender();
+            renderer.Invoke(() => component.TriggerRender());
             var batch = renderer.Batches.Single();
             var componentFrame = batch.ReferenceFrames
                 .Single(frame => frame.FrameType == RenderTreeFrameType.Component);
@@ -1444,7 +1452,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 builder.CloseComponent();
             });
             var componentId = renderer.AssignRootComponentId(component);
-            component.TriggerRender();
+            renderer.Invoke(() => component.TriggerRender());
 
             // Act &A Assert
             var aggregate = Assert.Throws<AggregateException>(renderer.Dispose);
@@ -1674,10 +1682,10 @@ namespace Microsoft.AspNetCore.Components.Test
             {
                 foreach (var renderHandle in _renderHandles)
                 {
-                    renderHandle.Render(builder =>
+                    renderHandle.Invoke(() => renderHandle.Render(builder =>
                     {
                         builder.AddContent(0, $"Hello from {nameof(MultiRendererComponent)}");
-                    });
+                    }));
                 }
             }
         }
