@@ -1,4 +1,3 @@
-#!/usr/bin/env pwsh -c
 $ErrorActionPreference = 'Continue'
 
 taskkill /T /F /IM dotnet.exe
@@ -11,6 +10,7 @@ taskkill /T /F /IM vbcscompiler.exe
 taskkill /T /F /IM git.exe
 taskkill /T /F /IM vctip.exe
 taskkill /T /F /IM chrome.exe
+taskkill /T /F /IM h2spec.exe
 iisreset /restart
 
 exit 0
