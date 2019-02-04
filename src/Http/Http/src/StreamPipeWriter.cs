@@ -14,7 +14,6 @@ namespace System.IO.Pipelines
     public class StreamPipeWriter : PipeWriter, IDisposable
     {
         private readonly int _minimumSegmentSize;
-        private readonly Stream _writingStream;
         private int _bytesWritten;
 
         private List<CompletedBuffer> _completedSegments;
@@ -53,14 +52,14 @@ namespace System.IO.Pipelines
         public StreamPipeWriter(Stream writingStream, int minimumSegmentSize, MemoryPool<byte> pool = null)
         {
             _minimumSegmentSize = minimumSegmentSize;
-            _writingStream = writingStream;
+            InnerStream = writingStream;
             _pool = pool ?? MemoryPool<byte>.Shared;
         }
 
         /// <summary>
         /// Gets the inner stream that is being written to.
         /// </summary>
-        public Stream InnerStream => _writingStream;
+        public Stream InnerStream { get; }
 
         /// <inheritdoc />
         public override void Advance(int count)
@@ -180,7 +179,7 @@ namespace System.IO.Pipelines
                         {
                             var segment = _completedSegments[0];
 #if NETCOREAPP3_0
-                            await _writingStream.WriteAsync(segment.Buffer.Slice(0, segment.Length), localToken);
+                            await InnerStream.WriteAsync(segment.Buffer.Slice(0, segment.Length), localToken);
 #elif NETSTANDARD2_0
                             MemoryMarshal.TryGetArray<byte>(segment.Buffer, out var arraySegment);
                             await _writingStream.WriteAsync(arraySegment.Array, 0, segment.Length, localToken);
@@ -196,7 +195,7 @@ namespace System.IO.Pipelines
                     if (!_currentSegment.IsEmpty)
                     {
 #if NETCOREAPP3_0
-                        await _writingStream.WriteAsync(_currentSegment.Slice(0, _position), localToken);
+                        await InnerStream.WriteAsync(_currentSegment.Slice(0, _position), localToken);
 #elif NETSTANDARD2_0
                         MemoryMarshal.TryGetArray<byte>(_currentSegment, out var arraySegment);
                         await _writingStream.WriteAsync(arraySegment.Array, 0, _position, localToken);
@@ -207,7 +206,7 @@ namespace System.IO.Pipelines
                         _position = 0;
                     }
 
-                    await _writingStream.FlushAsync(localToken);
+                    await InnerStream.FlushAsync(localToken);
 
                     return new FlushResult(isCanceled: false, _isCompleted);
                 }

@@ -11,7 +11,6 @@ namespace System.IO.Pipelines
     /// </summary>
     public class WriteOnlyPipeStream : Stream
     {
-        private PipeWriter _pipeWriter;
         private bool _allowSynchronousIO = true;
 
         /// <summary>
@@ -30,7 +29,7 @@ namespace System.IO.Pipelines
         /// <param name="allowSynchronousIO">Whether synchronous IO is allowed.</param>
         public WriteOnlyPipeStream(PipeWriter pipeWriter, bool allowSynchronousIO)
         {
-            _pipeWriter = pipeWriter;
+            InnerPipeWriter = pipeWriter;
             _allowSynchronousIO = allowSynchronousIO;
         }
 
@@ -60,7 +59,7 @@ namespace System.IO.Pipelines
             set => throw new NotSupportedException();
         }
 
-        public PipeWriter InnerPipeWriter => _pipeWriter;
+        public PipeWriter InnerPipeWriter { get; }
 
         /// <inheritdoc />
         public override int Read(byte[] buffer, int offset, int count)
@@ -84,7 +83,7 @@ namespace System.IO.Pipelines
         /// <inheritdoc />
         public override async Task FlushAsync(CancellationToken cancellationToken)
         {
-            await _pipeWriter.FlushAsync(cancellationToken);
+            await InnerPipeWriter.FlushAsync(cancellationToken);
         }
 
         /// <inheritdoc />
@@ -158,7 +157,7 @@ namespace System.IO.Pipelines
         /// <inheritdoc />
         public override async ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
         {
-            await _pipeWriter.WriteAsync(source, cancellationToken);
+            await InnerPipeWriter.WriteAsync(source, cancellationToken);
         }
     }
 }

@@ -17,7 +17,6 @@ namespace System.IO.Pipelines
     {
         private readonly int _minimumSegmentSize;
         private readonly int _minimumReadThreshold;
-        private readonly Stream _readingStream;
         private readonly MemoryPool<byte> _pool;
 
         private CancellationTokenSource _internalTokenSource;
@@ -42,7 +41,6 @@ namespace System.IO.Pipelines
         {
         }
 
-
         /// <summary>
         /// Creates a new StreamPipeReader.
         /// </summary>
@@ -50,7 +48,7 @@ namespace System.IO.Pipelines
         /// <param name="options">The options to use.</param>
         public StreamPipeReader(Stream readingStream, StreamPipeReaderOptions options)
         {
-            _readingStream = readingStream ?? throw new ArgumentNullException(nameof(readingStream));
+            InnerStream = readingStream ?? throw new ArgumentNullException(nameof(readingStream));
 
             if (options == null)
             {
@@ -70,7 +68,7 @@ namespace System.IO.Pipelines
         /// <summary>
         /// Gets the inner stream that is being read from.
         /// </summary>
-        public Stream InnerStream => _readingStream;
+        public Stream InnerStream { get; }
 
         /// <inheritdoc />
         public override void AdvanceTo(SequencePosition consumed)
@@ -235,7 +233,7 @@ namespace System.IO.Pipelines
                 {
                     AllocateReadTail();
 #if NETCOREAPP3_0
-                    var length = await _readingStream.ReadAsync(_readTail.AvailableMemory.Slice(_readTail.End), tokenSource.Token);
+                    var length = await InnerStream.ReadAsync(_readTail.AvailableMemory.Slice(_readTail.End), tokenSource.Token);
 #elif NETSTANDARD2_0
                     if (!MemoryMarshal.TryGetArray<byte>(_readTail.AvailableMemory.Slice(_readTail.End), out var arraySegment))
                     {
