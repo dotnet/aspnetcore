@@ -11,7 +11,7 @@ See https://github.com/aspnet/AspNetCore/labels/area-infrastructure for known is
 
 Building ASP.NET Core on Windows requires:
 
-* Windows 7 or higher
+* Windows 10
 * At least 10 GB of disk space and a good internet connection (our build scripts download a lot of tools and dependencies)
 * Visual Studio **2019 Preview**. <https://visualstudio.com>
     * To install the exact required components, run [eng/scripts/InstallVisualStudio.ps1](/eng/scripts/InstallVisualStudio.ps1).
