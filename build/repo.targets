@@ -102,7 +102,7 @@
   </Target>
 
   <!-- will move into korebuild -->
-  <Target Name="HelixPublish">
+  <Target Name="HelixPublish" DependsOnTargets="Restore">
     <ItemGroup>
       <CsProjects Include="@(ProjectToBuild)" Condition="'%(Extension)' == '.csproj'" />
       <!-- <CsProjects Include="C:\Github\AspNetCore\src\Http\Http.Abstractions\test\Microsoft.AspNetCore.Http.Abstractions.Tests.csproj" />
