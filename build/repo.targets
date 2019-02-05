@@ -1,3 +1,0 @@
-<Project>
-  <Import Project="legacy.repo.targets" Condition="'$(LegacySigning)' == 'true'" />
-</Project>
