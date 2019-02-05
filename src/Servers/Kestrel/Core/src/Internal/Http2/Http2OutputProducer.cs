@@ -299,11 +299,5 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             throw new NotImplementedException();
         }
-
-        public void Complete(Exception exception = null)
-        {
-            // TODO What to do with exception.
-            // and how to handle writing to response here.
-        }
     }
 }

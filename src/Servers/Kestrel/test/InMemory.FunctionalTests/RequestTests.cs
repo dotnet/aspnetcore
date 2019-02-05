@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging.Testing;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
@@ -52,6 +53,32 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 Assert.Equal(string.Empty, await server.HttpClientSlim.GetStringAsync($"http://localhost:{server.Port}/"));
 
                 Assert.False(requestBodyPersisted);
+                Assert.False(responseBodyPersisted);
+
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task PipesAreNotPersistedAcrossRequests()
+        {
+            var responseBodyPersisted = false;
+            PipeWriter bodyPipe = null;
+            using (var server = new TestServer(async context =>
+            {
+                if (context.Response.BodyPipe == bodyPipe)
+                {
+                    responseBodyPersisted = true;
+                }
+                bodyPipe = new StreamPipeWriter(new MemoryStream());
+                context.Response.BodyPipe = bodyPipe;
+
+                await context.Response.WriteAsync("hello, world");
+            }, new TestServiceContext(LoggerFactory)))
+            {
+                Assert.Equal(string.Empty, await server.HttpClientSlim.GetStringAsync($"http://localhost:{server.Port}/"));
+                Assert.Equal(string.Empty, await server.HttpClientSlim.GetStringAsync($"http://localhost:{server.Port}/"));
+
                 Assert.False(responseBodyPersisted);
 
                 await server.StopAsync();

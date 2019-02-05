@@ -67,6 +67,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         protected Stream _userSetResponseBody;
         protected PipeWriter _cachedResponsePipeWriter;
         protected Stream _cachedResponseBodyStream;
+        private List<IDisposable> _wrapperObjectsToDispose;
 
         public HttpProtocol(HttpConnectionContext context)
         {
@@ -344,6 +345,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _httpVersion = Http.HttpVersion.Unknown;
             _statusCode = StatusCodes.Status200OK;
             _reasonPhrase = null;
+            _userSetPipeWriter = null;
+            _userSetResponseBody = null;
 
             var remoteEndPoint = RemoteEndPoint;
             RemoteIpAddress = remoteEndPoint?.Address;
@@ -378,6 +381,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     _abortedCts?.Dispose();
                     _abortedCts = null;
+                }
+            }
+
+            if (_wrapperObjectsToDispose != null)
+            {
+                foreach (var disposable in _wrapperObjectsToDispose)
+                {
+                    disposable.Dispose();
                 }
             }
 
@@ -882,12 +893,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        private ValueTask<FlushResult> WriteChunkedAsync(ReadOnlySpan<byte> data, CancellationToken cancellationToken)
-        {
-            _requestProcessingStatus = RequestProcessingStatus.HeadersFlushed;
-            return Output.WriteChunkAsync(data, cancellationToken);
-        }
-
         public void ProduceContinue()
         {
             if (HasResponseStarted)
@@ -1360,7 +1365,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return !firstWrite ? default : FlushAsyncInternal(cancellationToken);
                     }
-                    return WriteChunkedAsync(data.Span, cancellationToken);
+
+                    _requestProcessingStatus = RequestProcessingStatus.HeadersFlushed;
+                    return Output.WriteChunkAsync(data.Span, cancellationToken);
                 }
                 else
                 {
@@ -1407,7 +1414,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         return await FlushAsyncInternal(cancellationToken);
                     }
 
-                    return await WriteChunkedAsync(data.Span, cancellationToken);
+                    _requestProcessingStatus = RequestProcessingStatus.HeadersFlushed;
+                    return await Output.WriteChunkAsync(data.Span, cancellationToken);
                 }
                 else
                 {

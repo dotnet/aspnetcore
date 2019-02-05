@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
@@ -201,15 +202,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 if (!object.ReferenceEquals(_cachedResponseBodyStream, ResponseBody))
                 {
+                    // TODO use kestrel's memory pool here
                     var responsePipeWriter = new StreamPipeWriter(ResponseBody);
                     ResponsePipeWriter = responsePipeWriter;
                     _cachedResponseBodyStream = ResponseBody;
-                    OnCompleted((rpw) =>
+                    if (_wrapperObjectsToDispose == null)
                     {
-                        ((StreamPipeWriter)rpw).Dispose();
-                        return Task.CompletedTask;
-                    }, responsePipeWriter);
-
+                        _wrapperObjectsToDispose = new List<IDisposable>();
+                    }
+                    _wrapperObjectsToDispose.Add(responsePipeWriter);
                 }
 
                 return ResponsePipeWriter;
@@ -236,7 +237,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     var responseBody = new WriteOnlyPipeStream(ResponsePipeWriter);
                     ResponseBody = responseBody;
                     _cachedResponsePipeWriter = ResponsePipeWriter;
-                    OnCompleted(async (rb) => await ((WriteOnlyPipeStream)rb).DisposeAsync(), responseBody);
+                    if (_wrapperObjectsToDispose == null)
+                    {
+                        _wrapperObjectsToDispose = new List<IDisposable>();
+                    }
+                    _wrapperObjectsToDispose.Add(responseBody);
                 }
 
                 return ResponseBody;
