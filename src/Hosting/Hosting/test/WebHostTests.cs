@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -233,7 +234,8 @@ namespace Microsoft.AspNetCore.Hosting
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix] https://github.com/aspnet/AspNetCore/issues/7291
         public async Task WebHostStopAsyncUsesDefaultTimeoutIfNoTokenProvided()
         {
             var data = new Dictionary<string, string>
