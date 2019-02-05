@@ -44,6 +44,7 @@
   <ItemGroup>
     <ProjectReference Include="..\CustomAction\aspnetcoreCA.vcxproj">
       <Name>aspnetcoreCA</Name>
+      <SetPlatform Condition="'$(Platform)' == 'x86'">Platform=Win32</SetPlatform>
       <Project>{7c27e72f-54d0-4820-8cfa-5e4be640974b}</Project>
       <Private>True</Private>
       <DoNotHarvest>True</DoNotHarvest>
