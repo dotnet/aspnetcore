@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.IO.Pipelines;
 using System.Net;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -31,22 +32,7 @@ namespace PlaintextApp
             response.ContentType = "text/plain";
             response.ContentLength = payload.Length;
 
-            var vt = response.BodyPipe.WriteAsync(payload);
-            if (vt.IsCompletedSuccessfully)
-            {
-                // Signal consumption to the IValueTaskSource
-                vt.GetAwaiter().GetResult();
-                return Task.CompletedTask;
-            }
-            else
-            {
-                return AwaitResult(vt);
-            }
-
-            async Task AwaitResult(ValueTask<FlushResult> flushResult)
-            {
-                await flushResult;
-            }
+            return response.BodyPipe.WriteAsync(payload).GetAsTask();
         }
 
         public static Task Main(string[] args)
@@ -61,6 +47,24 @@ namespace PlaintextApp
                 .Build();
 
             return host.RunAsync();
+        }
+    }
+
+    internal static class ValueTaskExtensions
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Task GetAsTask<T>(this in ValueTask<T> valueTask)
+        {
+            if (valueTask.IsCompletedSuccessfully)
+            {
+                // Signal consumption to the IValueTaskSource
+                valueTask.GetAwaiter().GetResult();
+                return Task.CompletedTask;
+            }
+            else
+            {
+                return valueTask.AsTask();
+            }
         }
     }
 }
