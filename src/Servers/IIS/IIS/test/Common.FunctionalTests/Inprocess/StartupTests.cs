@@ -533,7 +533,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var eventPrefix = deploymentParameters.ServerType == ServerType.IISExpress ? "" : "Global\\";
 
             var startWaitHandle = new EventWaitHandle(false, EventResetMode.ManualReset, eventPrefix + "ANCM_TestEvent");
-            var suspendedWaitHandle = new EventWaitHandle(false, EventResetMode.ManualReset, eventPrefix + "Global\\ANCM_TestEvent_suspended");
+            var suspendedWaitHandle = new EventWaitHandle(false, EventResetMode.ManualReset, eventPrefix + "ANCM_TestEvent_suspended");
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
