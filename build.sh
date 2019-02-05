@@ -236,9 +236,6 @@ while [[ $# -gt 0 ]]; do
             ;;
         --ci|-[Cc][Ii])
             ci=true
-            if [[ -z "${DOTNET_HOME:-}" ]]; then
-                DOTNET_HOME="$DIR/.dotnet"
-            fi
             ;;
         --verbose|-[Vv]erbose)
             verbose=true
@@ -286,8 +283,7 @@ if [ -f "$config_file" ]; then
     [ ! -z "${config_tools_source:-}" ] && tools_source="$config_tools_source"
 fi
 
-[ -z "${DOTNET_HOME:-}" ] && DOTNET_HOME="$HOME/.dotnet"
-export DOTNET_HOME="$DOTNET_HOME"
+export DOTNET_HOME="$DIR/.dotnet"
 
 get_korebuild
 
