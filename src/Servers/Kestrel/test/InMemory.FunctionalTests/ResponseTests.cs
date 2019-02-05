@@ -3378,7 +3378,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
                         $"Date: {server.Context.DateHeaderValue}",
-                        "Content-Length: 0",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "0",
                         "",
                         "");
                 }

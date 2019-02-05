@@ -61,21 +61,69 @@ namespace Microsoft.AspNetCore.Http
                 throw new ArgumentNullException(nameof(encoding));
             }
 
-            byte[] data = encoding.GetBytes(text);
-            var writeTask = response.BodyPipe.WriteAsync(data, cancellationToken);
-
-            if (writeTask.IsCompleted)
+            if (!response.HasStarted)
             {
-                writeTask.GetAwaiter().GetResult();
+                var startAsyncTask = response.StartAsync(cancellationToken);
+                if (!startAsyncTask.IsCompletedSuccessfully)
+                {
+                    return StartAndWriteAsyncAwaited(response, text, encoding, cancellationToken, startAsyncTask);
+                }
+            }
+
+            Write(response, text, encoding);
+
+            var flushAsyncTask = response.BodyPipe.FlushAsync(cancellationToken);
+            if (flushAsyncTask.IsCompleted)
+            {
+                flushAsyncTask.GetAwaiter().GetResult();
                 return Task.CompletedTask;
             }
 
-            return WriteTaskAwaited(writeTask);
+            return flushAsyncTask.AsTask();
         }
 
-        private static async Task WriteTaskAwaited(ValueTask<FlushResult> flushTask)
+        private static async Task StartAndWriteAsyncAwaited(this HttpResponse response, string text, Encoding encoding, CancellationToken cancellationToken, Task startAsyncTask)
         {
-            await flushTask;
+            await startAsyncTask;
+            Write(response, text, encoding);
+            await response.BodyPipe.FlushAsync(cancellationToken);
+        }
+
+        private static void Write(this HttpResponse response, string text, Encoding encoding)
+        {
+            var pipeWriter = response.BodyPipe;
+            var encodedLength = encoding.GetByteCount(text);
+            var destination = pipeWriter.GetSpan();
+
+            if (encodedLength <= destination.Length)
+            {
+                var bytesWritten = encoding.GetBytes(text, destination);
+                pipeWriter.Advance(bytesWritten);
+            }
+            else
+            {
+                WriteMutliSegmentEncoded(pipeWriter, text, encoding, destination);
+            }
+        }
+
+        private static void WriteMutliSegmentEncoded(PipeWriter writer, string text, Encoding encoding, Span<byte> destination)
+        {
+            var encoder = encoding.GetEncoder();
+            var readOnlySpan = text.AsSpan();
+            var completed = false;
+            while (!completed)
+            {
+                encoder.Convert(readOnlySpan, destination, readOnlySpan.Length == 0, out var charsUsed, out var bytesUsed, out completed);
+
+                writer.Advance(bytesUsed);
+                if (completed)
+                {
+                    return;
+                }
+                readOnlySpan = readOnlySpan.Slice(charsUsed);
+
+                destination = writer.GetSpan(readOnlySpan.Length);
+            }
         }
     }
 }

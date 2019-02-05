@@ -911,7 +911,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.IsType<Http2StreamErrorException>(thrownEx.InnerException);
         }
 
-        [Fact]
+        [Fact] // TODO https://github.com/aspnet/AspNetCore/issues/7034
         public async Task ContentLength_Response_FirstWriteMoreBytesWritten_Throws_Sends500()
         {
             var headers = new[]
@@ -929,12 +929,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StartStreamAsync(1, headers, endStream: true);
 
             var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
-                withLength: 55,
+                withLength: 56,
                 withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
                 withStreamId: 1);
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 0,
-                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+            await ExpectAsync(Http2FrameType.RST_STREAM,
+                withLength: 4,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
                 withStreamId: 1);
 
             Assert.Contains(TestApplicationErrorLogger.Messages, m => m.Exception?.Message.Contains("Response Content-Length mismatch: too many bytes written (12 of 11).") ?? false);
@@ -945,8 +945,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Assert.Equal(3, _decodedHeaders.Count);
             Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-            Assert.Equal("500", _decodedHeaders[HeaderNames.Status]);
-            Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
+            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+            Assert.Equal("11", _decodedHeaders[HeaderNames.ContentLength]);
         }
 
         [Fact]
@@ -3124,8 +3124,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StartStreamAsync(1, headers, endStream: true);
 
+            // Don't receive content length because we called WriteAsync which caused an invalid response
             var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
-                withLength: 55,
+                withLength: 37,
                 withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
                 withStreamId: 1);
 
@@ -3138,7 +3139,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
 
-            Assert.Equal(3, _decodedHeaders.Count);
+            Assert.Equal(2, _decodedHeaders.Count);
             Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
             Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
         }

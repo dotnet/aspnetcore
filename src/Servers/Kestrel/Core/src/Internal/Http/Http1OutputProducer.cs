@@ -26,6 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private readonly IKestrelTrace _log;
         private readonly IHttpMinResponseDataRateFeature _minResponseDataRateFeature;
         private readonly TimingPipeFlusher _flusher;
+        private readonly MemoryPool<byte> _memoryPool;
 
         // This locks access to all of the below fields
         private readonly object _contextLock = new object();
@@ -47,6 +48,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private int _advancedBytesForChunk;
         private Memory<byte> _currentChunkMemory;
         private bool _currentChunkMemoryUpdated;
+        private IMemoryOwner<byte> _completedMemoryOwner;
 
         public Http1OutputProducer(
             PipeWriter pipeWriter,
@@ -54,7 +56,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             ConnectionContext connectionContext,
             IKestrelTrace log,
             ITimeoutControl timeoutControl,
-            IHttpMinResponseDataRateFeature minResponseDataRateFeature)
+            IHttpMinResponseDataRateFeature minResponseDataRateFeature,
+            MemoryPool<byte> memoryPool)
         {
             _pipeWriter = pipeWriter;
             _connectionId = connectionId;
@@ -62,6 +65,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _log = log;
             _minResponseDataRateFeature = minResponseDataRateFeature;
             _flusher = new TimingPipeFlusher(pipeWriter, timeoutControl, log);
+            _memoryPool = memoryPool;
         }
 
         public Task WriteDataAsync(ReadOnlySpan<byte> buffer, CancellationToken cancellationToken = default)
@@ -96,6 +100,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public Memory<byte> GetMemory(int sizeHint = 0)
         {
+            if (_completed)
+            {
+                if (_completedMemoryOwner == null)
+                {
+                    _completedMemoryOwner = _memoryPool.Rent(sizeHint);
+                }
+                return _completedMemoryOwner.Memory;
+            }
+
             if (_autoChunk)
             {
                 return GetChunkedMemory(sizeHint);
@@ -108,6 +121,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public Span<byte> GetSpan(int sizeHint = 0)
         {
+            if (_completed)
+            {
+                if (_completedMemoryOwner == null)
+                {
+                    _completedMemoryOwner = _memoryPool.Rent(sizeHint);
+                }
+                return _completedMemoryOwner.Memory.Span;
+            }
+
             if (_autoChunk)
             {
                 return GetChunkedMemory(sizeHint).Span;
@@ -120,6 +142,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public void Advance(int bytes)
         {
+            if (_completed)
+            {
+                return;
+            }
+
             if (_autoChunk)
             {
                 if (bytes < 0)
@@ -203,14 +230,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             lock (_contextLock)
             {
-                if (_completed)
+                if (_completedMemoryOwner != null)
                 {
-                    return;
+                    _completedMemoryOwner.Dispose();
                 }
-
-                _log.ConnectionDisconnect(_connectionId);
-                _completed = true;
-                _pipeWriter.Complete();
+                if (!_completed)
+                {
+                    _log.ConnectionDisconnect(_connectionId);
+                    _completed = true;
+                    _pipeWriter.Complete();
+                }
             }
         }
 

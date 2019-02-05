@@ -22,11 +22,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public override void Advance(int bytes)
         {
+            ValidateState();
             _pipeControl.Advance(bytes);
         }
 
         public override void CancelPendingFlush()
         {
+            ValidateState();
             _pipeControl.CancelPendingFlush();
         }
 
@@ -44,17 +46,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public override Memory<byte> GetMemory(int sizeHint = 0)
         {
+            ValidateState();
             return _pipeControl.GetMemory(sizeHint);
         }
 
         public override Span<byte> GetSpan(int sizeHint = 0)
         {
+            ValidateState();
             return _pipeControl.GetSpan(sizeHint);
         }
 
         public override void OnReaderCompleted(Action<Exception, object> callback, object state)
         {
-            // noop
+            throw new NotSupportedException();
         }
 
         public override ValueTask<FlushResult> WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
@@ -89,7 +93,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void ValidateState(CancellationToken cancellationToken)
+        private void ValidateState(CancellationToken cancellationToken = default)
         {
             var state = _state;
             if (state == HttpStreamState.Open || state == HttpStreamState.Aborted)
