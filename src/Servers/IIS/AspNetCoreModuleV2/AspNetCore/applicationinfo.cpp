@@ -146,6 +146,13 @@ APPLICATION_INFO::TryCreateApplication(IHttpContext& pHttpContext, const ShimOpt
         }
         else
         {
+            auto const suspendedEventName = startupEvent.value() + L"_suspended";
+
+            HandleWrapper<NullHandleTraits> suspendedEventHandle = OpenEvent(EVENT_MODIFY_STATE, false, suspendedEventName.c_str());
+            if (suspendedEventHandle != nullptr)
+            {
+                LOG_LAST_ERROR_IF(!SetEvent(suspendedEventHandle));
+            }
             LOG_LAST_ERROR_IF(WaitForSingleObject(eventHandle, INFINITE) != WAIT_OBJECT_0);
         }
 

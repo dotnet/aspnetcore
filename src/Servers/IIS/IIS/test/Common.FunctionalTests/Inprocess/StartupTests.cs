@@ -530,27 +530,26 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             deploymentParameters.ApplicationType = ApplicationType.Standalone;
             deploymentParameters.EnvironmentVariables["ASPNETCORE_STARTUP_SUSPEND_EVENT"] = "ANCM_TestEvent";
 
-            var eventWaitHandle = new  EventWaitHandle(false, EventResetMode.ManualReset, "ANCM_TestEvent");
+            var startWaitHandle = new EventWaitHandle(false, EventResetMode.ManualReset, "Global\\ANCM_TestEvent");
+            var suspendedWaitHandle = new EventWaitHandle(false, EventResetMode.ManualReset, "Global\\ANCM_TestEvent_suspended");
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
-            var request = deploymentResult.HttpClient.GetAsync("/HelloWorld");
+            var request = deploymentResult.AssertStarts();
+
+            Assert.True(suspendedWaitHandle.WaitOne(TimeoutExtensions.DefaultTimeoutValue));
 
             // didn't figure out a better way to check that ANCM is waiting to start
             var applicationDll = Path.Combine(deploymentResult.ContentRoot, "InProcessWebSite.dll");
             var handlerDll = Path.Combine(deploymentResult.ContentRoot, "aspnetcorev2_inprocess.dll");
-            for (int i = 0; i < 10; i++)
-            {
-                // Make sure application dll is not locked
-                File.WriteAllBytes(applicationDll, File.ReadAllBytes(applicationDll));
-                // Make sure handler dll is not locked
-                File.WriteAllBytes(handlerDll, File.ReadAllBytes(handlerDll));
-                // Make sure request is not completed
-                Assert.False(request.IsCompleted);
-                await Task.Delay(100);
-            }
+            // Make sure application dll is not locked
+            File.WriteAllBytes(applicationDll, File.ReadAllBytes(applicationDll));
+            // Make sure handler dll is not locked
+            File.WriteAllBytes(handlerDll, File.ReadAllBytes(handlerDll));
+            // Make sure request is not completed
+            Assert.False(request.IsCompleted);
 
-            eventWaitHandle.Set();
+            startWaitHandle.Set();
 
             await request;
         }
