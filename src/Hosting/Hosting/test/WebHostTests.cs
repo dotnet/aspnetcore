@@ -25,7 +25,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Hosting
 {
-    public class WebHostTests
+    public partial class WebHostTests
     {
         [Fact]
         public async Task WebHostThrowsWithNoServer()
