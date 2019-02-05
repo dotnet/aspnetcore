@@ -5,7 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;   
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -588,11 +588,11 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 expectedMessage);
         }
 
-        [Fact]
-        public async Task ProcessAsync_GeneratesExpectedOutput_WithModelErrorForIEnumerable()
+        [Theory]
+        [MemberData(nameof(ProcessAsync_GeneratesExpectedOutput_WithErrorsData))]
+        public async Task ProcessAsync_GeneratesExpectedOutput_WithModelErrorForIEnumerable(ModelStateDictionary modelState, string error)
         {
             // Arrange
-            var expectedError = "Something went wrong.";
             var expectedTagName = "not-div";
             var expectedAttributes = new TagHelperAttributeList
             {
@@ -631,12 +631,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             output.PostContent.SetContent("Custom Content");
 
             var model = new FormMetadata();
-            var viewContext = TestableHtmlGenerator.GetViewContext(model, htmlGenerator, metadataProvider);
+            var viewContext = TestableHtmlGenerator.GetViewContext(model, htmlGenerator, metadataProvider, modelState);
             validationSummaryTagHelper.ViewContext = viewContext;
-
-            var modelState = viewContext.ModelState;
-            SetValidModelState(modelState);
-            modelState.AddModelError(key: $"{nameof(Model.Strings)}[0]", errorMessage: expectedError);
 
             // Act
             await validationSummaryTagHelper.ProcessAsync(tagHelperContext, output);
@@ -646,12 +642,12 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             Assert.Equal(expectedPreContent, output.PreContent.GetContent());
             Assert.Equal(expectedContent, output.Content.GetContent());
             Assert.Equal(
-                $"Custom Content<ul><li>{expectedError}</li>{Environment.NewLine}</ul>",
+                $"Custom Content<ul><li>{error}</li>{Environment.NewLine}</ul>",
                 output.PostContent.GetContent());
             Assert.Equal(expectedTagName, output.TagName);
         }
 
-            private static ViewContext CreateViewContext()
+        private static ViewContext CreateViewContext()
         {
             var actionContext = new ActionContext(
                 new DefaultHttpContext(),
@@ -676,11 +672,31 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             modelState.SetModelValue(key: $"{nameof(Model.Strings)}[1]", rawValue: null, attemptedValue: null);
             modelState.SetModelValue(key: $"{nameof(Model.Strings)}[2]", rawValue: null, attemptedValue: null);
             modelState.SetModelValue(key: nameof(Model.Text), rawValue: null, attemptedValue: null);
-            modelState.SetModelValue(key: nameof(FormMetadata.ID), rawValue: null, attemptedValue: null);
 
             foreach (var key in modelState.Keys)
             {
                 modelState.MarkFieldValid(key);
+            }
+        }
+
+        public static TheoryData<ModelStateDictionary, string> ProcessAsync_GeneratesExpectedOutput_WithErrorsData
+        {
+            get
+            {
+                string errorMessage1 = "Id required", errorMessage2 = "Something went wrong.", parameter = "Id";
+                var parameterError = new ModelStateDictionary();
+                parameterError.AddModelError(key: nameof(FormMetadata.ID), errorMessage: errorMessage1);
+
+                var modelStateError = new ModelStateDictionary();
+                modelStateError.SetModelValue(key: parameter, rawValue: null, attemptedValue: null);
+                modelStateError.MarkFieldValid(parameter);
+                modelStateError.AddModelError("MyForm.MyField", errorMessage2);
+
+                return new TheoryData<ModelStateDictionary, string>
+                {
+                    { parameterError,errorMessage1 },
+                    { modelStateError,errorMessage2 }
+                };
             }
         }
 
