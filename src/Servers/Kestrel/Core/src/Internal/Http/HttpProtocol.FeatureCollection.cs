@@ -202,8 +202,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 if (!object.ReferenceEquals(_cachedResponseBodyStream, ResponseBody))
                 {
-                    // TODO use kestrel's memory pool here
-                    var responsePipeWriter = new StreamPipeWriter(ResponseBody);
+                    var responsePipeWriter = new StreamPipeWriter(ResponseBody, 4096, _context.MemoryPool);
                     ResponsePipeWriter = responsePipeWriter;
                     _cachedResponseBodyStream = ResponseBody;
                     if (_wrapperObjectsToDispose == null)
