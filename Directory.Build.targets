@@ -72,7 +72,7 @@
   <Import Project="eng\targets\Npm.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.npmproj'" />
 
   <ItemGroup>
-    <PackageReference Include="xunit.runner.console" Version="2.4.1" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' AND $(IsHelixJob)' == 'true'" />
+    <PackageReference Include="xunit.runner.console" Version="2.4.1" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' AND '$(IsHelixJob)' == 'true'" />
   </ItemGroup>
   
   <!-- Prepares the test projects for helix by including xunit and publishing -->
