@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
@@ -63,7 +62,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             get => _binderType;
             set
             {
-                if (!(value == null || typeof(IModelBinder).GetTypeInfo().IsAssignableFrom(value.GetTypeInfo())))
+                if (value != null && !typeof(IModelBinder).IsAssignableFrom(value))
                 {
                     throw new ArgumentException(
                         Resources.FormatBinderType_MustBeIModelBinder(

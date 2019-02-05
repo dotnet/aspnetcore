@@ -3,7 +3,6 @@
 
 using System;
 using System.ComponentModel;
-using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
@@ -105,7 +104,7 @@ namespace Microsoft.AspNetCore.Mvc
             get => _binderType;
             set
             {
-                if (! (value == null || typeof(IModelBinder).GetTypeInfo().IsAssignableFrom(value.GetTypeInfo())))
+                if (value != null && !typeof(IModelBinder).IsAssignableFrom(value))
                 {
                     throw new ArgumentException(
                         Resources.FormatBinderType_MustBeIModelBinder(

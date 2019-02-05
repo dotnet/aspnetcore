@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Core;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
@@ -40,7 +39,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             get => _binderType;
             set
             {
-                if (! (value == null || typeof(IModelBinder).GetTypeInfo().IsAssignableFrom(value.GetTypeInfo())))
+                if (value != null && !typeof(IModelBinder).IsAssignableFrom(value))
                 {
                     throw new ArgumentException(
                         Resources.FormatBinderType_MustBeIModelBinder(

@@ -206,11 +206,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 return bindingSource == Form || bindingSource == Path || bindingSource == Query;
             }
 
-            if (bindingSource == ModelBinding)
-            {
-                return this == Form || this == Path || this == Query;
-            }
-
             return false;
         }
 
