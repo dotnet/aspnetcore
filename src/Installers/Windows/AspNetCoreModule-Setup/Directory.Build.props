@@ -62,7 +62,7 @@
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <SetPlatform>Platform=Win32</SetPlatform>
     </ProjectReference>
-    <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" Platform="Win32">
+    <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj">
       <Name>AspNetCoreV2Handler</Name>
       <Private>True</Private>
       <DoNotHarvest>True</DoNotHarvest>
