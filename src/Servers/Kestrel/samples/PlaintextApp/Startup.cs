@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using System.IO.Pipelines;
 using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -48,7 +49,7 @@ namespace PlaintextApp
     internal static class ValueTaskExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Task GetAsTask<T>(this in ValueTask<T> valueTask)
+        public static Task GetAsTask(this in ValueTask<FlushResult> valueTask)
         {
             if (valueTask.IsCompletedSuccessfully)
             {
