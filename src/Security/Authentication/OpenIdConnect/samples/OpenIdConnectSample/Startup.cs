@@ -5,6 +5,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Encodings.Web;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -16,7 +17,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
-using Newtonsoft.Json.Linq;
 
 namespace OpenIdConnectSample
 {
@@ -208,30 +208,31 @@ namespace OpenIdConnectSample
                     var tokenResponse = await options.Backchannel.PostAsync(metadata.TokenEndpoint, content, context.RequestAborted);
                     tokenResponse.EnsureSuccessStatusCode();
 
-                    var payload = JObject.Parse(await tokenResponse.Content.ReadAsStringAsync());
-
-                    // Persist the new acess token
-                    props.UpdateTokenValue("access_token", payload.Value<string>("access_token"));
-                    props.UpdateTokenValue("refresh_token", payload.Value<string>("refresh_token"));
-                    if (int.TryParse(payload.Value<string>("expires_in"), NumberStyles.Integer, CultureInfo.InvariantCulture, out var seconds))
+                    using (var payload = JsonDocument.Parse(await tokenResponse.Content.ReadAsStringAsync()))
                     {
-                        var expiresAt = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(seconds);
-                        props.UpdateTokenValue("expires_at", expiresAt.ToString("o", CultureInfo.InvariantCulture));
+                        // Persist the new acess token
+                        props.UpdateTokenValue("access_token", payload.RootElement.GetString("access_token"));
+                        props.UpdateTokenValue("refresh_token", payload.RootElement.GetString("refresh_token"));
+                        if (payload.RootElement.TryGetProperty("expires_in", out var property) && property.TryGetInt32(out var seconds))
+                        {
+                            var expiresAt = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(seconds);
+                            props.UpdateTokenValue("expires_at", expiresAt.ToString("o", CultureInfo.InvariantCulture));
+                        }
+                        await context.SignInAsync(user, props);
+
+                        await WriteHtmlAsync(response, async res =>
+                        {
+                            await res.WriteAsync($"<h1>Refreshed.</h1>");
+                            await res.WriteAsync("<a class=\"btn btn-default\" href=\"/refresh\">Refresh tokens</a>");
+                            await res.WriteAsync("<a class=\"btn btn-default\" href=\"/\">Home</a>");
+
+                            await res.WriteAsync("<h2>Tokens:</h2>");
+                            await WriteTableHeader(res, new string[] { "Token Type", "Value" }, props.GetTokens().Select(token => new string[] { token.Name, token.Value }));
+
+                            await res.WriteAsync("<h2>Payload:</h2>");
+                            await res.WriteAsync(HtmlEncoder.Default.Encode(payload.ToString()).Replace(",", ",<br>") + "<br>");
+                        });
                     }
-                    await context.SignInAsync(user, props);
-
-                    await WriteHtmlAsync(response, async res =>
-                    {
-                        await res.WriteAsync($"<h1>Refreshed.</h1>");
-                        await res.WriteAsync("<a class=\"btn btn-default\" href=\"/refresh\">Refresh tokens</a>");
-                        await res.WriteAsync("<a class=\"btn btn-default\" href=\"/\">Home</a>");
-
-                        await res.WriteAsync("<h2>Tokens:</h2>");
-                        await WriteTableHeader(res, new string[] { "Token Type", "Value" }, props.GetTokens().Select(token => new string[] { token.Name, token.Value }));
-
-                        await res.WriteAsync("<h2>Payload:</h2>");
-                        await res.WriteAsync(HtmlEncoder.Default.Encode(payload.ToString()).Replace(",", ",<br>") + "<br>");
-                    });
 
                     return;
                 }
@@ -272,7 +273,7 @@ namespace OpenIdConnectSample
 
         private static async Task WriteHtmlAsync(HttpResponse response, Func<HttpResponse, Task> writeContent)
         {
-            var bootstrap = "<link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css\" integrity=\"sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u\" crossorigin=\"anonymous\">";
+            var bootstrap = "<link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css\" integrity=\"sha384-PmY9l28YgO4JwMKbTvgaS7XNZJ30MK9FAZjjzXtlqyZCqBY6X6bXIkM++IkyinN+\" crossorigin=\"anonymous\">";
 
             response.ContentType = "text/html";
             await response.WriteAsync($"<html><head>{bootstrap}</head><body><div class=\"container\">");

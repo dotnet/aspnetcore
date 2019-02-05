@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         // Keep-alive is default for HTTP/1.1 and HTTP/2; parsing and errors will change its value
         // volatile, see: https://msdn.microsoft.com/en-us/library/x13ttww7.aspx
         protected volatile bool _keepAlive = true;
-        private bool _canHaveBody;
+        private bool _canWriteResponseBody;
         private bool _autoChunk;
         protected Exception _applicationException;
         private BadHttpRequestException _requestRejectedException;
@@ -828,7 +828,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 VerifyAndUpdateWrite(data.Length);
             }
 
-            if (_canHaveBody)
+            if (_canWriteResponseBody)
             {
                 if (_autoChunk)
                 {
@@ -857,7 +857,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             // WriteAsyncAwaited is only called for the first write to the body.
             // Ensure headers are flushed if Write(Chunked)Async isn't called.
-            if (_canHaveBody)
+            if (_canWriteResponseBody)
             {
                 if (_autoChunk)
                 {
@@ -1140,48 +1140,47 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             // Set whether response can have body
-            _canHaveBody = StatusCanHaveBody(StatusCode) && Method != HttpMethod.Head;
+            _canWriteResponseBody = CanWriteResponseBody();
 
-            // Don't set the Content-Length or Transfer-Encoding headers
-            // automatically for HEAD requests or 204, 205, 304 responses.
-            if (_canHaveBody)
-            {
-                if (!hasTransferEncoding && !responseHeaders.ContentLength.HasValue)
-                {
-                    if (appCompleted && StatusCode != StatusCodes.Status101SwitchingProtocols)
-                    {
-                        // Since the app has completed and we are only now generating
-                        // the headers we can safely set the Content-Length to 0.
-                        responseHeaders.ContentLength = 0;
-                    }
-                    else
-                    {
-                        // Note for future reference: never change this to set _autoChunk to true on HTTP/1.0
-                        // connections, even if we were to infer the client supports it because an HTTP/1.0 request
-                        // was received that used chunked encoding. Sending a chunked response to an HTTP/1.0
-                        // client would break compliance with RFC 7230 (section 3.3.1):
-                        //
-                        // A server MUST NOT send a response containing Transfer-Encoding unless the corresponding
-                        // request indicates HTTP/1.1 (or later).
-                        //
-                        // This also covers HTTP/2, which forbids chunked encoding in RFC 7540 (section 8.1:
-                        //
-                        // The chunked transfer encoding defined in Section 4.1 of [RFC7230] MUST NOT be used in HTTP/2.
-                        if (_httpVersion == Http.HttpVersion.Http11 && StatusCode != StatusCodes.Status101SwitchingProtocols)
-                        {
-                            _autoChunk = true;
-                            responseHeaders.SetRawTransferEncoding("chunked", _bytesTransferEncodingChunked);
-                        }
-                        else
-                        {
-                            _keepAlive = false;
-                        }
-                    }
-                }
-            }
-            else if (hasTransferEncoding)
+            if (!_canWriteResponseBody && hasTransferEncoding)
             {
                 RejectNonBodyTransferEncodingResponse(appCompleted);
+            }
+            else if (!hasTransferEncoding && !responseHeaders.ContentLength.HasValue)
+            {
+                if (StatusCode == StatusCodes.Status101SwitchingProtocols)
+                {
+                    _keepAlive = false;
+                }
+                else if (appCompleted || !_canWriteResponseBody)
+                {
+                    // Don't set the Content-Length header automatically for HEAD requests, 204 responses, or 304 responses.
+                    if (CanAutoSetContentLengthZeroResponseHeader())
+                    {
+                        // Since the app has completed writing or cannot write to the response, we can safely set the Content-Length to 0.
+                        responseHeaders.ContentLength = 0;
+                    }
+                }
+                // Note for future reference: never change this to set _autoChunk to true on HTTP/1.0
+                // connections, even if we were to infer the client supports it because an HTTP/1.0 request
+                // was received that used chunked encoding. Sending a chunked response to an HTTP/1.0
+                // client would break compliance with RFC 7230 (section 3.3.1):
+                //
+                // A server MUST NOT send a response containing Transfer-Encoding unless the corresponding
+                // request indicates HTTP/1.1 (or later).
+                //
+                // This also covers HTTP/2, which forbids chunked encoding in RFC 7540 (section 8.1:
+                //
+                // The chunked transfer encoding defined in Section 4.1 of [RFC7230] MUST NOT be used in HTTP/2.
+                else if (_httpVersion == Http.HttpVersion.Http11)
+                {
+                    _autoChunk = true;
+                    responseHeaders.SetRawTransferEncoding("chunked", _bytesTransferEncodingChunked);
+                }
+                else
+                {
+                    _keepAlive = false;
+                }
             }
 
             responseHeaders.SetReadOnly();
@@ -1212,12 +1211,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             Output.WriteResponseHeaders(StatusCode, ReasonPhrase, responseHeaders);
         }
 
-        public bool StatusCanHaveBody(int statusCode)
+        private bool CanWriteResponseBody()
         {
             // List of status codes taken from Microsoft.Net.Http.Server.Response
-            return statusCode != StatusCodes.Status204NoContent &&
-                   statusCode != StatusCodes.Status205ResetContent &&
-                   statusCode != StatusCodes.Status304NotModified;
+            return Method != HttpMethod.Head &&
+                   StatusCode != StatusCodes.Status204NoContent &&
+                   StatusCode != StatusCodes.Status205ResetContent &&
+                   StatusCode != StatusCodes.Status304NotModified;
+        }
+
+        private bool CanAutoSetContentLengthZeroResponseHeader()
+        {
+            return Method != HttpMethod.Head &&
+                   StatusCode != StatusCodes.Status204NoContent &&
+                   StatusCode != StatusCodes.Status304NotModified;
         }
 
         private static void ThrowResponseAlreadyStartedException(string value)

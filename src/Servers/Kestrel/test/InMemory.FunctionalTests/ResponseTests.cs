@@ -477,7 +477,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
         [Theory]
         [InlineData(StatusCodes.Status204NoContent)]
-        [InlineData(StatusCodes.Status205ResetContent)]
         [InlineData(StatusCodes.Status304NotModified)]
         public async Task TransferEncodingChunkedNotSetOnNonBodyResponse(int statusCode)
         {
@@ -497,6 +496,124 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await connection.Receive(
                         $"HTTP/1.1 {Encoding.ASCII.GetString(ReasonPhrases.ToStatusBytes(statusCode))}",
                         $"Date: {server.Context.DateHeaderValue}",
+                        "",
+                        "");
+                }
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task ContentLengthZeroSetOn205Response()
+        {
+            using (var server = new TestServer(httpContext =>
+            {
+                httpContext.Response.StatusCode = 205;
+                return Task.CompletedTask;
+            }, new TestServiceContext(LoggerFactory)))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        $"HTTP/1.1 205 Reset Content",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+                await server.StopAsync();
+            }
+        }
+
+        [Theory]
+        [InlineData(StatusCodes.Status204NoContent)]
+        [InlineData(StatusCodes.Status304NotModified)]
+        public async Task AttemptingToWriteFailsForNonBodyResponse(int statusCode)
+        {
+            var responseWriteTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                httpContext.Response.StatusCode = statusCode;
+
+                try
+                {
+                    await httpContext.Response.WriteAsync("hello, world");
+                }
+                catch (Exception ex)
+                {
+                    responseWriteTcs.TrySetException(ex);
+                    throw;
+                }
+
+                responseWriteTcs.TrySetResult("This should not be reached.");
+            }, new TestServiceContext(LoggerFactory)))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+
+
+                    var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => responseWriteTcs.Task).DefaultTimeout();
+                    Assert.Equal(CoreStrings.FormatWritingToResponseBodyNotSupported(statusCode), ex.Message);
+
+                    await connection.Receive(
+                        $"HTTP/1.1 {Encoding.ASCII.GetString(ReasonPhrases.ToStatusBytes(statusCode))}",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "",
+                        "");
+                }
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task AttemptingToWriteFailsFor205Response()
+        {
+            var responseWriteTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                httpContext.Response.StatusCode = 205;
+
+                try
+                {
+                    await httpContext.Response.WriteAsync("hello, world");
+                }
+                catch (Exception ex)
+                {
+                    responseWriteTcs.TrySetException(ex);
+                    throw;
+                }
+
+                responseWriteTcs.TrySetResult("This should not be reached.");
+            }, new TestServiceContext(LoggerFactory)))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+
+
+                    var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => responseWriteTcs.Task).DefaultTimeout();
+                    Assert.Equal(CoreStrings.FormatWritingToResponseBodyNotSupported(205), ex.Message);
+
+                    await connection.Receive(
+                        $"HTTP/1.1 205 Reset Content",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 0",
                         "",
                         "");
                 }
@@ -1850,10 +1967,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Host:",
                         "Content-Length: 3",
                         "",
-                        "205POST / HTTP/1.1",
-                        "Host:",
-                        "Content-Length: 3",
-                        "",
                         "304POST / HTTP/1.1",
                         "Host:",
                         "Content-Length: 3",
@@ -1861,9 +1974,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "200");
                     await connection.Receive(
                         "HTTP/1.1 204 No Content",
-                        $"Date: {testContext.DateHeaderValue}",
-                        "",
-                        "HTTP/1.1 205 Reset Content",
                         $"Date: {testContext.DateHeaderValue}",
                         "",
                         "HTTP/1.1 304 Not Modified",
