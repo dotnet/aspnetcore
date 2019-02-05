@@ -28,6 +28,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Windows)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
+        [OSSkipCondition(OperatingSystems.Linux)] // https://github.com/aspnet/AspNetCore-Internal/issues/1687
         public async Task ShutdownTestRun()
         {
             await ExecuteShutdownTest(nameof(ShutdownTestRun), "Run");

@@ -24,14 +24,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             => TestMatrix.ForServers(DeployerSelector.ServerType)
                 .WithTfms(Tfm.NetCoreApp30)
                 .WithAllApplicationTypes()
-                .WithAllAncmVersions()
+                .WithAncmVersions(AncmVersion.AspNetCoreModuleV2)
                 .WithAllHostingModels();
 
         [ConditionalTheory]
         [MemberData(nameof(TestVariants))]
         public async Task StartupStress(TestVariant variant)
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant, publish: true);
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant);
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 

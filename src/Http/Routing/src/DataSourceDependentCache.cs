@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Routing
 {
-    internal class DataSourceDependentCache<T> : IDisposable where T : class
+    internal sealed class DataSourceDependentCache<T> : IDisposable where T : class
     {
         private readonly EndpointDataSource _dataSource;
         private readonly Func<IReadOnlyList<Endpoint>, T> _initializeCore;
@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Routing
         private object _lock;
         private bool _initialized;
         private T _value;
-        
+
         private IDisposable _disposable;
         private bool _disposed;
 

@@ -6,7 +6,7 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <PackageTags>aspnetcore;authentication;AzureADB2C</PackageTags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <IsProductPackage>true</IsProductPackage>
+    <IsShippingPackage>true</IsShippingPackage>
     <ProvideApplicationPartFactoryAttributeTypeName>Microsoft.AspNetCore.Mvc.ApplicationParts.NullApplicationPartFactory, Microsoft.AspNetCore.Mvc.Core</ProvideApplicationPartFactoryAttributeTypeName>
 
     <_EnableAllInclusiveRazorSdk>true</_EnableAllInclusiveRazorSdk>

@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -460,7 +461,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         [MemberData(nameof(SupportedEncodingsWithBodyLength))]
         public async Task FlushHeaders_SendsHeaders_Compresses(string encoding, int expectedBodyLength)
         {
-            var responseReceived = new ManualResetEvent(false);
+            var responseReceived = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             var builder = new WebHostBuilder()
                 .ConfigureServices(services =>
@@ -470,13 +471,13 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                 .Configure(app =>
                 {
                     app.UseResponseCompression();
-                    app.Run(context =>
+                    app.Run(async context =>
                     {
                         context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
                         context.Response.ContentType = TextPlain;
                         context.Response.Body.Flush();
-                        Assert.True(responseReceived.WaitOne(TimeSpan.FromSeconds(3)));
-                        return context.Response.WriteAsync(new string('a', 100));
+                        await responseReceived.Task.TimeoutAfter(TimeSpan.FromSeconds(3));
+                        await context.Response.WriteAsync(new string('a', 100));
                     });
                 });
 
@@ -487,7 +488,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             request.Headers.AcceptEncoding.ParseAdd(encoding);
 
             var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
-            responseReceived.Set();
+            responseReceived.SetResult(0);
 
             await response.Content.LoadIntoBufferAsync();
 
@@ -498,7 +499,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         [MemberData(nameof(SupportedEncodingsWithBodyLength))]
         public async Task FlushAsyncHeaders_SendsHeaders_Compresses(string encoding, int expectedBodyLength)
         {
-            var responseReceived = new ManualResetEvent(false);
+            var responseReceived = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             var builder = new WebHostBuilder()
                 .ConfigureServices(services =>
@@ -513,7 +514,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                         context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
                         context.Response.ContentType = TextPlain;
                         await context.Response.Body.FlushAsync();
-                        Assert.True(responseReceived.WaitOne(TimeSpan.FromSeconds(3)));
+                        await responseReceived.Task.TimeoutAfter(TimeSpan.FromSeconds(3));
                         await context.Response.WriteAsync(new string('a', 100));
                     });
                 });
@@ -525,7 +526,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             request.Headers.AcceptEncoding.ParseAdd(encoding);
 
             var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
-            responseReceived.Set();
+            responseReceived.SetResult(0);
 
             await response.Content.LoadIntoBufferAsync();
 
@@ -536,7 +537,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         [MemberData(nameof(SupportedEncodings))]
         public async Task FlushBody_CompressesAndFlushes(string encoding)
         {
-            var responseReceived = new ManualResetEvent(false);
+            var responseReceived = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             var builder = new WebHostBuilder()
                 .ConfigureServices(services =>
@@ -546,7 +547,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                 .Configure(app =>
                 {
                     app.UseResponseCompression();
-                    app.Run(context =>
+                    app.Run(async context =>
                     {
                         var feature = context.Features.Get<IHttpBodyControlFeature>();
                         if (feature != null)
@@ -558,9 +559,8 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                         context.Response.ContentType = TextPlain;
                         context.Response.Body.Write(new byte[10], 0, 10);
                         context.Response.Body.Flush();
-                        Assert.True(responseReceived.WaitOne(TimeSpan.FromSeconds(3)));
+                        await responseReceived.Task.TimeoutAfter(TimeSpan.FromSeconds(3));
                         context.Response.Body.Write(new byte[90], 0, 90);
-                        return Task.FromResult(0);
                     });
                 });
 
@@ -579,7 +579,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             var read = await body.ReadAsync(new byte[100], 0, 100);
             Assert.True(read > 0);
 
-            responseReceived.Set();
+            responseReceived.SetResult(0);
 
             read = await body.ReadAsync(new byte[100], 0, 100);
             Assert.True(read > 0);
@@ -589,7 +589,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         [MemberData(nameof(SupportedEncodings))]
         public async Task FlushAsyncBody_CompressesAndFlushes(string encoding)
         {
-            var responseReceived = new ManualResetEvent(false);
+            var responseReceived = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             var builder = new WebHostBuilder()
                 .ConfigureServices(services =>
@@ -605,7 +605,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                         context.Response.ContentType = TextPlain;
                         await context.Response.WriteAsync(new string('a', 10));
                         await context.Response.Body.FlushAsync();
-                        Assert.True(responseReceived.WaitOne(TimeSpan.FromSeconds(3)));
+                        await responseReceived.Task.TimeoutAfter(TimeSpan.FromSeconds(3));
                         await context.Response.WriteAsync(new string('a', 90));
                     });
                 });
@@ -625,7 +625,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             var read = await body.ReadAsync(new byte[100], 0, 100);
             Assert.True(read > 0);
 
-            responseReceived.Set();
+            responseReceived.SetResult(0);
 
             read = await body.ReadAsync(new byte[100], 0, 100);
             Assert.True(read > 0);
@@ -637,11 +637,11 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         {
             var responseReceived = new[]
             {
-                new ManualResetEvent(false),
-                new ManualResetEvent(false),
-                new ManualResetEvent(false),
-                new ManualResetEvent(false),
-                new ManualResetEvent(false),
+                new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously),
+                new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously),
+                new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously),
+                new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously),
+                new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously),
             };
 
             var builder = new WebHostBuilder()
@@ -652,7 +652,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                 .Configure(app =>
                 {
                     app.UseResponseCompression();
-                    app.Run(context =>
+                    app.Run(async context =>
                     {
                         context.Response.Headers[HeaderNames.ContentMD5] = "MD5";
                         context.Response.ContentType = TextPlain;
@@ -668,9 +668,8 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                         {
                             context.Response.Body.Write(new byte[1], 0, 1);
                             context.Response.Body.Flush();
-                            Assert.True(signal.WaitOne(TimeSpan.FromSeconds(3)));
+                            await signal.Task.TimeoutAfter(TimeSpan.FromSeconds(3));
                         }
-                        return Task.FromResult(0);
                     });
                 });
 
@@ -691,7 +690,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                 var read = await body.ReadAsync(new byte[100], 0, 100);
                 Assert.True(read > 0);
 
-                signal.Set();
+                signal.SetResult(0);
             }
         }
 
@@ -701,11 +700,11 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         {
             var responseReceived = new[]
             {
-                new ManualResetEvent(false),
-                new ManualResetEvent(false),
-                new ManualResetEvent(false),
-                new ManualResetEvent(false),
-                new ManualResetEvent(false),
+                new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously),
+                new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously),
+                new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously),
+                new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously),
+                new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously),
             };
 
             var builder = new WebHostBuilder()
@@ -726,7 +725,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                         {
                             await context.Response.WriteAsync("a");
                             await context.Response.Body.FlushAsync();
-                            Assert.True(signal.WaitOne(TimeSpan.FromSeconds(3)));
+                            await signal.Task.TimeoutAfter(TimeSpan.FromSeconds(3));
                         }
                     });
                 });
@@ -748,7 +747,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                 var read = await body.ReadAsync(new byte[100], 0, 100);
                 Assert.True(read > 0);
 
-                signal.Set();
+                signal.SetResult(0);
             }
         }
 
@@ -918,7 +917,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         [MemberData(nameof(SupportedEncodings))]
         public async Task Dispose_SyncWriteOrFlushNotCalled(string encoding)
         {
-            var responseReceived = new ManualResetEvent(false);
+            var responseReceived = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             var builder = new WebHostBuilder()
                 .ConfigureServices(services =>
@@ -939,7 +938,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                         context.Response.ContentType = TextPlain;
                         await context.Response.WriteAsync(new string('a', 10));
                         await context.Response.Body.FlushAsync();
-                        Assert.True(responseReceived.WaitOne(TimeSpan.FromSeconds(3)));
+                        await responseReceived.Task.TimeoutAfter(TimeSpan.FromSeconds(3));
                         await context.Response.WriteAsync(new string('a', 90));
                     });
                 });
@@ -959,7 +958,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             var read = await body.ReadAsync(new byte[100], 0, 100);
             Assert.True(read > 0);
 
-            responseReceived.Set();
+            responseReceived.SetResult(0);
 
             read = await body.ReadAsync(new byte[100], 0, 100);
             Assert.True(read > 0);

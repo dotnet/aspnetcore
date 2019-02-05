@@ -124,6 +124,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _collection[typeof(IHttpMinRequestBodyDataRateFeature)] = CreateHttp1Connection();
             _collection[typeof(IHttpMinResponseDataRateFeature)] = CreateHttp1Connection();
             _collection[typeof(IHttpBodyControlFeature)] = CreateHttp1Connection();
+            _collection[typeof(IHttpResponseStartFeature)] = CreateHttp1Connection();
 
             CompareGenericGetterToIndexer();
 
@@ -142,6 +143,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _collection.Set<IHttpMinRequestBodyDataRateFeature>(CreateHttp1Connection());
             _collection.Set<IHttpMinResponseDataRateFeature>(CreateHttp1Connection());
             _collection.Set<IHttpBodyControlFeature>(CreateHttp1Connection());
+            _collection.Set<IHttpResponseStartFeature>(CreateHttp1Connection());
 
             CompareGenericGetterToIndexer();
 
@@ -178,6 +180,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Same(_collection.Get<IHttpMinRequestBodyDataRateFeature>(), _collection[typeof(IHttpMinRequestBodyDataRateFeature)]);
             Assert.Same(_collection.Get<IHttpMinResponseDataRateFeature>(), _collection[typeof(IHttpMinResponseDataRateFeature)]);
             Assert.Same(_collection.Get<IHttpBodyControlFeature>(), _collection[typeof(IHttpBodyControlFeature)]);
+            Assert.Same(_collection.Get<IHttpResponseStartFeature>(), _collection[typeof(IHttpResponseStartFeature)]);
         }
 
         private int EachHttpProtocolFeatureSetAndUnique()

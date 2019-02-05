@@ -4,18 +4,17 @@
   <PropertyGroup>
     <TargetFramework Condition="'$(MSBuildRuntimeType)' == 'Core' ">netcoreapp2.2</TargetFramework>
     <TargetFramework Condition="'$(MSBuildRuntimeType)' != 'Core' ">net461</TargetFramework>
-    <DefineConstants Condition="'$(BuildWindowsInstallers)' == 'true'">$(DefineConstants);BUILD_MSI_TASKS</DefineConstants>
-    <DefineConstants Condition="'$(PublishToAzureFeed)' == 'true'">$(DefineConstants);BUILD_AZ_TASKS</DefineConstants>
+    <DefineConstants Condition="'$(BuildInstallers)' == 'true' AND '$(TargetOsName)' == 'win'">$(DefineConstants);BUILD_MSI_TASKS</DefineConstants>
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Remove="Internal.AspNetCore.Sdk" />
     <PackageReference Include="NuGet.Build.Tasks" Version="4.9.1" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="2.1.0" />
-    <PackageReference Include="WindowsAzure.Storage" Version="8.7.0" Condition="'$(PublishToAzureFeed)' == 'true'" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(BuildWindowsInstallers)' == 'true'">
+  <ItemGroup Condition="'$(BuildInstallers)' == 'true' AND '$(TargetOsName)' == 'win'">
     <PackageReference Include="Wix" Version="3.11.1" />
 
     <Reference Include="Microsoft.Deployment.WindowsInstaller">

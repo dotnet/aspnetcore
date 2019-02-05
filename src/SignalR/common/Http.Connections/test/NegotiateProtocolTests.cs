@@ -21,8 +21,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         public void ParsingNegotiateResponseMessageSuccessForValid(string json, string connectionId, string[] availableTransports, string url, string accessToken)
         {
             var responseData = Encoding.UTF8.GetBytes(json);
-            var ms = new MemoryStream(responseData);
-            var response = NegotiateProtocol.ParseResponse(ms);
+            var response = NegotiateProtocol.ParseResponse(responseData);
 
             Assert.Equal(connectionId, response.ConnectionId);
             Assert.Equal(availableTransports?.Length, response.AvailableTransports?.Count);
@@ -48,9 +47,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         public void ParsingNegotiateResponseMessageThrowsForInvalid(string payload, string expectedMessage)
         {
             var responseData = Encoding.UTF8.GetBytes(payload);
-            var ms = new MemoryStream(responseData);
 
-            var exception = Assert.Throws<InvalidDataException>(() => NegotiateProtocol.ParseResponse(ms));
+            var exception = Assert.Throws<InvalidDataException>(() => NegotiateProtocol.ParseResponse(responseData));
 
             Assert.Equal(expectedMessage, exception.InnerException.Message);
         }
@@ -69,9 +67,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 "\"LongPollDelay\":0.0}";
 
             var responseData = Encoding.UTF8.GetBytes(payload);
-            var ms = new MemoryStream(responseData);
 
-            var exception = Assert.Throws<InvalidDataException>(() => NegotiateProtocol.ParseResponse(ms));
+            var exception = Assert.Throws<InvalidDataException>(() => NegotiateProtocol.ParseResponse(responseData));
 
             Assert.Equal("Detected a connection attempt to an ASP.NET SignalR Server. This client only supports connecting to an ASP.NET Core SignalR Server. See https://aka.ms/signalr-core-differences for details.", exception.InnerException.Message);
         }

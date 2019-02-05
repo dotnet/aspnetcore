@@ -8,6 +8,8 @@
     <PackAsTool>true</PackAsTool>
     <!-- This is a requirement for Microsoft tool packages only. -->
     <PackAsToolShimRuntimeIdentifiers>win-x64;win-x86</PackAsToolShimRuntimeIdentifiers>
+    <!-- This package is for internal use only. It contains a CLI which is bundled in the .NET Core SDK. -->
+    <IsShippingPackage>false</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,14 +19,6 @@
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" PrivateAssets="All" />
     <Reference Include="System.Data.SqlClient" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <!-- These files should be signed by corefx -->
-    <ExcludePackageFileFromSigning Include="sni.dll"  />
-    <ExcludePackageFileFromSigning Include="System.Data.SqlClient.dll" />
-    <ExcludePackageFileFromSigning Include="System.Runtime.CompilerServices.Unsafe.dll" />
-    <ExcludePackageFileFromSigning Include="System.Text.Encoding.CodePages.dll" />
   </ItemGroup>
 
 </Project>

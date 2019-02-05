@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         ReadOnlySequence<byte> _requestMessage2;
         ReadOnlySequence<byte> _requestMessage3;
         ReadOnlySequence<byte> _requestMessage4;
+        ReadOnlySequence<byte> _requestMessage5;
 
         ReadOnlySequence<byte> _responseMessage1;
         ReadOnlySequence<byte> _responseMessage2;
@@ -31,6 +32,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             _requestMessage2 = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("{\"protocol\":\"\",\"version\":10}\u001e"));
             _requestMessage3 = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("{\"protocol\":\"\",\"version\":10,\"unknown\":null}\u001e"));
             _requestMessage4 = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("42"));
+            _requestMessage5 = ReadOnlySequenceFactory.CreateSegments(Encoding.UTF8.GetBytes("{\"protocol\":\"dummy\",\"ver"), Encoding.UTF8.GetBytes("sion\":1}\u001e"));
 
             _responseMessage1 = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("{\"error\":\"dummy\"}\u001e"));
             _responseMessage2 = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("{\"error\":\"\"}\u001e"));
@@ -85,43 +87,112 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         }
 
         [Benchmark]
-        public void ParsingHandshakeRequestMessage_ValidMessage1()
-            => HandshakeProtocol.TryParseRequestMessage(ref _requestMessage1, out var deserializedMessage);
+        public void ParsingHandshakeRequestMessage_ValidMessage1() {
+            var message = _requestMessage1;
+            if (!HandshakeProtocol.TryParseRequestMessage(ref message, out var deserializedMessage))
+            {
+                throw new Exception();
+            }
+        }
 
         [Benchmark]
         public void ParsingHandshakeRequestMessage_ValidMessage2()
-            => HandshakeProtocol.TryParseRequestMessage(ref _requestMessage2, out var deserializedMessage);
+        {
+            var message = _requestMessage2;
+            if (!HandshakeProtocol.TryParseRequestMessage(ref message, out var deserializedMessage))
+            {
+                throw new Exception();
+            }
+        }
 
         [Benchmark]
         public void ParsingHandshakeRequestMessage_ValidMessage3()
-            => HandshakeProtocol.TryParseRequestMessage(ref _requestMessage3, out var deserializedMessage);
+        {
+            var message = _requestMessage3;
+            if (!HandshakeProtocol.TryParseRequestMessage(ref message, out var deserializedMessage))
+            {
+                throw new Exception();
+            }
+        }
 
         [Benchmark]
         public void ParsingHandshakeRequestMessage_NotComplete1()
-            => HandshakeProtocol.TryParseRequestMessage(ref _requestMessage4, out _);
+        {
+            var message = _requestMessage4;
+            if (!HandshakeProtocol.TryParseRequestMessage(ref message, out var deserializedMessage))
+            {
+                throw new Exception();
+            }
+        }
+
+        [Benchmark]
+        public void ParsingHandshakeRequestMessage_ValidMessageSegments()
+        {
+            var message = _requestMessage5;
+            if (!HandshakeProtocol.TryParseRequestMessage(ref message, out var deserializedMessage))
+            {
+                throw new Exception();
+            }
+        }
 
         [Benchmark]
         public void ParsingHandshakeResponseMessage_ValidMessages1()
-            => HandshakeProtocol.TryParseResponseMessage(ref _responseMessage1, out var response);
+        {
+            var message = _responseMessage1;
+            if (!HandshakeProtocol.TryParseResponseMessage(ref message, out var deserializedMessage))
+            {
+                throw new Exception();
+            }
+        }
 
         [Benchmark]
         public void ParsingHandshakeResponseMessage_ValidMessages2()
-            => HandshakeProtocol.TryParseResponseMessage(ref _responseMessage2, out var response);
+        {
+            var message = _responseMessage2;
+            if (!HandshakeProtocol.TryParseResponseMessage(ref message, out var deserializedMessage))
+            {
+                throw new Exception();
+            }
+        }
 
         [Benchmark]
         public void ParsingHandshakeResponseMessage_ValidMessages3()
-            => HandshakeProtocol.TryParseResponseMessage(ref _responseMessage3, out var response);
+        {
+            var message = _responseMessage3;
+            if (!HandshakeProtocol.TryParseResponseMessage(ref message, out var deserializedMessage))
+            {
+                throw new Exception();
+            }
+        }
 
         [Benchmark]
         public void ParsingHandshakeResponseMessage_ValidMessages4() 
-            => HandshakeProtocol.TryParseResponseMessage(ref _responseMessage4, out var response);
+        {
+            var message = _responseMessage4;
+            if (!HandshakeProtocol.TryParseResponseMessage(ref message, out var deserializedMessage))
+            {
+                throw new Exception();
+            }
+        }
 
         [Benchmark]
         public void ParsingHandshakeResponseMessage_GivesMinorVersion1()
-            => HandshakeProtocol.TryParseResponseMessage(ref _responseMessage5, out var response);
+        {
+            var message = _responseMessage5;
+            if (!HandshakeProtocol.TryParseResponseMessage(ref message, out var deserializedMessage))
+            {
+                throw new Exception();
+            }
+        }
 
         [Benchmark]
         public void ParsingHandshakeResponseMessage_GivesMinorVersion2()
-            => HandshakeProtocol.TryParseResponseMessage(ref _responseMessage6, out var response);
+        {
+            var message = _responseMessage6;
+            if (!HandshakeProtocol.TryParseResponseMessage(ref message, out var deserializedMessage))
+            {
+                throw new Exception();
+            }
+        }
     }
 }

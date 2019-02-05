@@ -3,13 +3,12 @@
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Xunit;
 
 namespace System.Threading.Channels
 {
     public static class ChannelExtensions
     {
-        public static async Task<List<T>> ReadAllAsync<T>(this ChannelReader<T> channel, bool suppressExceptions = false)
+        public static async Task<List<T>> ReadAndCollectAllAsync<T>(this ChannelReader<T> channel, bool suppressExceptions = false)
         {
             var list = new List<T>();
             try

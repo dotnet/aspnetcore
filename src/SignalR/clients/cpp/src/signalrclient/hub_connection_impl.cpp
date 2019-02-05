@@ -18,24 +18,21 @@ namespace signalr
         static std::function<void(const json::value&)> create_hub_invocation_callback(const logger& logger,
             const std::function<void(const json::value&)>& set_result,
             const std::function<void(const std::exception_ptr e)>& set_exception);
-
-        static utility::string_t adapt_url(const utility::string_t& url, bool use_default_url);
     }
 
     std::shared_ptr<hub_connection_impl> hub_connection_impl::create(const utility::string_t& url, const utility::string_t& query_string,
-        trace_level trace_level, const std::shared_ptr<log_writer>& log_writer, bool use_default_url)
+        trace_level trace_level, const std::shared_ptr<log_writer>& log_writer)
     {
-        return hub_connection_impl::create(url, query_string, trace_level, log_writer, use_default_url,
+        return hub_connection_impl::create(url, query_string, trace_level, log_writer,
             std::make_unique<web_request_factory>(), std::make_unique<transport_factory>());
     }
 
     std::shared_ptr<hub_connection_impl> hub_connection_impl::create(const utility::string_t& url, const utility::string_t& query_string,
-        trace_level trace_level, const std::shared_ptr<log_writer>& log_writer, bool use_default_url,
-        std::unique_ptr<web_request_factory> web_request_factory, std::unique_ptr<transport_factory> transport_factory)
+        trace_level trace_level, const std::shared_ptr<log_writer>& log_writer, std::unique_ptr<web_request_factory> web_request_factory,
+        std::unique_ptr<transport_factory> transport_factory)
     {
         auto connection = std::shared_ptr<hub_connection_impl>(new hub_connection_impl(url, query_string, trace_level,
-            log_writer ? log_writer : std::make_shared<trace_log_writer>(), use_default_url,
-            std::move(web_request_factory), std::move(transport_factory)));
+            log_writer ? log_writer : std::make_shared<trace_log_writer>(), std::move(web_request_factory), std::move(transport_factory)));
 
         connection->initialize();
 
@@ -43,11 +40,11 @@ namespace signalr
     }
 
     hub_connection_impl::hub_connection_impl(const utility::string_t& url, const utility::string_t& query_string, trace_level trace_level,
-        const std::shared_ptr<log_writer>& log_writer, bool use_default_url, std::unique_ptr<web_request_factory> web_request_factory,
+        const std::shared_ptr<log_writer>& log_writer, std::unique_ptr<web_request_factory> web_request_factory,
         std::unique_ptr<transport_factory> transport_factory)
-        : m_connection(connection_impl::create(adapt_url(url, use_default_url), query_string, trace_level, log_writer,
+        : m_connection(connection_impl::create(url, query_string, trace_level, log_writer,
         std::move(web_request_factory), std::move(transport_factory))),m_logger(log_writer, trace_level),
-        m_callback_manager(json::value::parse(_XPLATSTR("{ \"E\" : \"connection went out of scope before invocation result was received\"}")))
+        m_callback_manager(json::value::parse(_XPLATSTR("{ \"error\" : \"connection went out of scope before invocation result was received\"}")))
     { }
 
     void hub_connection_impl::initialize()
@@ -65,8 +62,6 @@ namespace signalr
                 connection->process_message(message);
             }
         });
-
-        set_reconnecting([](){});
     }
 
     void hub_connection_impl::on(const utility::string_t& event_name, const std::function<void(const json::value &)>& handler)
@@ -99,7 +94,7 @@ namespace signalr
 
     pplx::task<void> hub_connection_impl::stop()
     {
-        m_callback_manager.clear(json::value::parse(_XPLATSTR("{ \"E\" : \"connection was stopped before invocation result was received\"}")));
+        m_callback_manager.clear(json::value::parse(_XPLATSTR("{ \"error\" : \"connection was stopped before invocation result was received\"}")));
         return m_connection->stop();
     }
 
@@ -225,29 +220,6 @@ namespace signalr
         m_connection->set_client_config(config);
     }
 
-    void hub_connection_impl::set_reconnecting(const std::function<void()>& reconnecting)
-    {
-        // weak_ptr prevents a circular dependency leading to memory leak and other problems
-        auto weak_hub_connection = std::weak_ptr<hub_connection_impl>(shared_from_this());
-
-        m_connection->set_reconnecting([weak_hub_connection, reconnecting]()
-        {
-            auto hub_connection = weak_hub_connection.lock();
-            if (hub_connection)
-            {
-                hub_connection->m_callback_manager.clear(
-                    json::value::parse(_XPLATSTR("{ \"E\" : \"connection has been lost\"}")));
-            }
-
-            reconnecting();
-        });
-    }
-
-    void hub_connection_impl::set_reconnected(const std::function<void()>& reconnected)
-    {
-        m_connection->set_reconnected(reconnected);
-    }
-
     void hub_connection_impl::set_disconnected(const std::function<void()>& disconnected)
     {
         m_connection->set_disconnected(disconnected);
@@ -270,27 +242,11 @@ namespace signalr
                 {
                     set_exception(
                         std::make_exception_ptr(
-                            signalr_exception(message.at(_XPLATSTR("error")).serialize())));
+                            hub_exception(message.at(_XPLATSTR("error")).serialize())));
                 }
 
                 set_result(json::value::null());
             };
-        }
-
-        static utility::string_t adapt_url(const utility::string_t& url, bool use_default_url)
-        {
-            if (use_default_url)
-            {
-                auto new_url = url;
-                if (new_url.back() != _XPLATSTR('/'))
-                {
-                    new_url.append(_XPLATSTR("/"));
-                }
-
-                return new_url;
-            }
-
-            return url;
         }
     }
 }

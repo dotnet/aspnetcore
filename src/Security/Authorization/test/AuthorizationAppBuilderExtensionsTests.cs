@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Authorization.Test
     public class AuthorizationAppBuilderExtensionsTests
     {
         [Fact]
-        public async Task UseAuthorization_RegistersMiddleware()
+        public async Task UseAuthorization_HasRequiredSevices_RegistersMiddleware()
         {
             // Arrange
             var authenticationService = new TestAuthenticationService();
@@ -48,11 +48,32 @@ namespace Microsoft.AspNetCore.Authorization.Test
             Assert.True(authenticationService.ChallengeCalled);
         }
 
+        [Fact]
+        public void UseAuthorization_MissingRequiredSevices_FriendlyErrorMessage()
+        {
+            // Arrange
+            var authenticationService = new TestAuthenticationService();
+            
+            var app = new ApplicationBuilder(new ServiceCollection().BuildServiceProvider());
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(() =>
+            {
+                app.UseAuthorization();
+            });
+
+            // Assert
+            Assert.Equal(
+                "Unable to find the required services. Please add all the required services by calling " +
+                "'IServiceCollection.AddAuthorizationPolicyEvaluator' inside the call to 'ConfigureServices(...)' " +
+                "in the application startup code.",
+                ex.Message);
+        }
+
         private IServiceProvider CreateServices(IAuthenticationService authenticationService)
         {
             var services = new ServiceCollection();
 
-            services.AddAuthorization(options => { });
             services.AddAuthorizationPolicyEvaluator();
             services.AddLogging();
             services.AddSingleton(authenticationService);

@@ -356,7 +356,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {{{(header.Identifier == "ContentLength" ? $@"
             get
             {{
-                StringValues value;
+                StringValues value = default;
                 if (_contentLength.HasValue)
                 {{
                     value = new StringValues(HeaderUtilities.FormatNonNegativeInt64(_contentLength.Value));
@@ -369,7 +369,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }}" : $@"
             get
             {{
-                StringValues value;
+                StringValues value = default;
                 if ({header.TestBit()})
                 {{
                     value = _headers._{header.Identifier};
@@ -397,6 +397,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected override bool TryGetValueFast(string key, out StringValues value)
         {{
+            value = default;
             switch (key.Length)
             {{{Each(loop.HeadersByLength, byLength => $@"
                 case {byLength.Key}:

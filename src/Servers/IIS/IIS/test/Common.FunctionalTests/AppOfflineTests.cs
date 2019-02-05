@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         [InlineData(HostingModel.OutOfProcess, 502, "502.5")]
         public async Task AppOfflineDroppedWhileSiteFailedToStartInShim_AppOfflineServed(HostingModel hostingModel, int statusCode, string content)
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel: hostingModel, publish: true);
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel: hostingModel);
             deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("processPath", "nonexistent"));
 
             var deploymentResult = await DeployAsync(deploymentParameters);
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             await deploymentResult.AssertRecycledAsync(() => AssertAppOffline(deploymentResult));
         }
 
-        [ConditionalFact(Skip = "https://github.com/aspnet/AspNetCore/issues/6555")]
+        [ConditionalFact]
         [RequiresIIS(IISCapability.ShutdownToken)]
         public async Task AppOfflineDroppedWhileSiteStarting_SiteShutsDown_InProcess()
         {
@@ -228,7 +228,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         private async Task<IISDeploymentResult> DeployApp(HostingModel hostingModel = HostingModel.InProcess)
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel: hostingModel, publish: true);
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel: hostingModel);
 
             return await DeployAsync(deploymentParameters);
         }

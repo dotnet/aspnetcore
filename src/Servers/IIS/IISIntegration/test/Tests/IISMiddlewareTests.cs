@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -81,8 +82,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         [InlineData("/pathBase", "/pathBase/iisintegration", "Shutdown")]
         public async Task MiddlewareShutsdownGivenANCMShutdown(string pathBase, string requestPath, string shutdownEvent)
         {
-            var requestExecuted = new ManualResetEvent(false);
-            var applicationStoppingFired = new ManualResetEvent(false);
+            var requestExecuted = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var applicationStoppingFired = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             var builder = new WebHostBuilder()
                 .UseSetting("TOKEN", "TestToken")
                 .UseSetting("PORT", "12345")
@@ -91,11 +92,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 .Configure(app =>
                 {
                     var appLifetime = app.ApplicationServices.GetRequiredService<IApplicationLifetime>();
-                    appLifetime.ApplicationStopping.Register(() => applicationStoppingFired.Set());
+                    appLifetime.ApplicationStopping.Register(() => applicationStoppingFired.SetResult(0));
 
                     app.Run(context =>
                     {
-                        requestExecuted.Set();
+                        requestExecuted.SetResult(0);
                         return Task.FromResult(0);
                     });
                 });
@@ -106,8 +107,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             request.Headers.TryAddWithoutValidation("MS-ASPNETCORE-EVENT", shutdownEvent);
             var response = await server.CreateClient().SendAsync(request);
 
-            Assert.True(applicationStoppingFired.WaitOne(TimeSpan.FromSeconds(5)));
-            Assert.False(requestExecuted.WaitOne(0));
+            await applicationStoppingFired.Task.TimeoutAfter(TimeSpan.FromSeconds(5));
+            Assert.False(requestExecuted.Task.IsCompleted);
             Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
         }
 
@@ -131,8 +132,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         [MemberData(nameof(InvalidShutdownMethods))]
         public async Task MiddlewareIgnoresShutdownGivenWrongMethod(HttpMethod method)
         {
-            var requestExecuted = new ManualResetEvent(false);
-            var applicationStoppingFired = new ManualResetEvent(false);
+            var requestExecuted = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var applicationStoppingFired = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             var builder = new WebHostBuilder()
                 .UseSetting("TOKEN", "TestToken")
                 .UseSetting("PORT", "12345")
@@ -141,11 +142,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 .Configure(app =>
                 {
                     var appLifetime = app.ApplicationServices.GetRequiredService<IApplicationLifetime>();
-                    appLifetime.ApplicationStopping.Register(() => applicationStoppingFired.Set());
+                    appLifetime.ApplicationStopping.Register(() => applicationStoppingFired.SetResult(0));
 
                     app.Run(context =>
                     {
-                        requestExecuted.Set();
+                        requestExecuted.SetResult(0);
                         return Task.FromResult(0);
                     });
                 });
@@ -156,8 +157,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             request.Headers.TryAddWithoutValidation("MS-ASPNETCORE-EVENT", "shutdown");
             var response = await server.CreateClient().SendAsync(request);
 
-            Assert.False(applicationStoppingFired.WaitOne(TimeSpan.FromSeconds(1)));
-            Assert.True(requestExecuted.WaitOne(0));
+            Assert.False(applicationStoppingFired.Task.IsCompleted);
+            await requestExecuted.Task.TimeoutAfter(TimeSpan.FromSeconds(1));
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
@@ -167,8 +168,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         [InlineData("/path/iisintegration")]
         public async Task MiddlewareIgnoresShutdownGivenWrongPath(string path)
         {
-            var requestExecuted = new ManualResetEvent(false);
-            var applicationStoppingFired = new ManualResetEvent(false);
+            var requestExecuted = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var applicationStoppingFired = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             var builder = new WebHostBuilder()
                 .UseSetting("TOKEN", "TestToken")
                 .UseSetting("PORT", "12345")
@@ -177,11 +178,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 .Configure(app =>
                 {
                     var appLifetime = app.ApplicationServices.GetRequiredService<IApplicationLifetime>();
-                    appLifetime.ApplicationStopping.Register(() => applicationStoppingFired.Set());
+                    appLifetime.ApplicationStopping.Register(() => applicationStoppingFired.SetResult(0));
 
                     app.Run(context =>
                     {
-                        requestExecuted.Set();
+                        requestExecuted.SetResult(0);
                         return Task.FromResult(0);
                     });
                 });
@@ -192,8 +193,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             request.Headers.TryAddWithoutValidation("MS-ASPNETCORE-EVENT", "shutdown");
             var response = await server.CreateClient().SendAsync(request);
 
-            Assert.False(applicationStoppingFired.WaitOne(TimeSpan.FromSeconds(1)));
-            Assert.True(requestExecuted.WaitOne(0));
+            Assert.False(applicationStoppingFired.Task.IsCompleted);
+            await requestExecuted.Task.TimeoutAfter(TimeSpan.FromSeconds(1));
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
@@ -203,8 +204,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         [InlineData(null)]
         public async Task MiddlewareIgnoresShutdownGivenWrongEvent(string shutdownEvent)
         {
-            var requestExecuted = new ManualResetEvent(false);
-            var applicationStoppingFired = new ManualResetEvent(false);
+            var requestExecuted = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var applicationStoppingFired = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             var builder = new WebHostBuilder()
                 .UseSetting("TOKEN", "TestToken")
                 .UseSetting("PORT", "12345")
@@ -213,11 +214,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 .Configure(app =>
                 {
                     var appLifetime = app.ApplicationServices.GetRequiredService<IApplicationLifetime>();
-                    appLifetime.ApplicationStopping.Register(() => applicationStoppingFired.Set());
+                    appLifetime.ApplicationStopping.Register(() => applicationStoppingFired.SetResult(0));
 
                     app.Run(context =>
                     {
-                        requestExecuted.Set();
+                        requestExecuted.SetResult(0);
                         return Task.FromResult(0);
                     });
                 });
@@ -228,8 +229,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             request.Headers.TryAddWithoutValidation("MS-ASPNETCORE-EVENT", shutdownEvent);
             var response = await server.CreateClient().SendAsync(request);
 
-            Assert.False(applicationStoppingFired.WaitOne(TimeSpan.FromSeconds(1)));
-            Assert.True(requestExecuted.WaitOne(0));
+            Assert.False(applicationStoppingFired.Task.IsCompleted);
+            await requestExecuted.Task.TimeoutAfter(TimeSpan.FromSeconds(1));
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 

@@ -1,16 +1,13 @@
 #requires -version 5
 [cmdletbinding()]
 param(
-    [string]$Configuration = 'Debug',
-    [Parameter(Mandatory = $true)]
+    [switch]$ci,
     [Alias("x86")]
-    [string]$Runtime86Zip,
-    [Parameter(Mandatory = $true)]
+    [string]$sharedfx86harvestroot,
     [Alias("x64")]
-    [string]$Runtime64Zip,
-    [string]$BuildNumber = 't000',
-    [switch]$IsFinalBuild,
-    [string]$SignType = ''
+    [string]$sharedfx64harvestroot,
+    [Parameter(ValueFromRemainingArguments = $true)]
+    [string[]]$AdditionalArgs
 )
 
 $ErrorActionPreference = 'Stop'
@@ -26,24 +23,24 @@ if ($clean) {
 
 New-Item "$harvestRoot/x86", "$harvestRoot/x64" -ItemType Directory -ErrorAction Ignore | Out-Null
 
-if (-not (Test-Path "$harvestRoot/x86/shared/")) {
-    Expand-Archive $Runtime86Zip -DestinationPath "$harvestRoot/x86"
+[string[]] $msbuildargs = @()
+if (-not $sharedfx86harvestroot) {
+    $msbuildargs += "-p:SharedFrameworkX86HarvestRootPath=$sharedfx86harvestroot"
 }
 
-if (-not (Test-Path "$harvestRoot/x64/shared/")) {
-    Expand-Archive $Runtime64Zip -DestinationPath "$harvestRoot/x64"
+if (-not $sharedfx64harvestroot) {
+    $msbuildargs += "-p:SharedFrameworkX64HarvestRootPath=$sharedfx64harvestroot"
 }
 
 Push-Location $PSScriptRoot
 try {
     & $repoRoot/build.ps1 `
-            -Installers `
-            "-p:SharedFrameworkHarvestRootPath=$repoRoot/obj/sfx/" `
-            "-p:Configuration=$Configuration" `
-            "-p:BuildNumberSuffix=$BuildNumber" `
-            "-p:SignType=$SignType" `
-            "-p:IsFinalBuild=$IsFinalBuild" `
-            "-bl:$repoRoot/artifacts/logs/installers.msbuild.binlog"
+            -ci:$ci `
+            -sign `
+            -BuildInstallers `
+            "-bl:$repoRoot/artifacts/logs/installers.msbuild.binlog" `
+            @msbuildargs `
+            @AdditionalArgs
 }
 finally {
     Pop-Location

@@ -31,16 +31,6 @@ namespace signalr
         m_pImpl->set_message_received_string(message_received_callback);
     }
 
-    void connection::set_reconnecting(const std::function<void()>& reconnecting_callback)
-    {
-        m_pImpl->set_reconnecting(reconnecting_callback);
-    }
-
-    void connection::set_reconnected(const std::function<void()>& reconnected_callback)
-    {
-        m_pImpl->set_reconnected(reconnected_callback);
-    }
-
     void connection::set_disconnected(const std::function<void()>& disconnected_callback)
     {
         m_pImpl->set_disconnected(disconnected_callback);

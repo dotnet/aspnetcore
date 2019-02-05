@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+
 namespace Microsoft.AspNetCore.Authentication.Google
 {
     /// <summary>
@@ -17,7 +19,6 @@ namespace Microsoft.AspNetCore.Authentication.Google
 
         public static readonly string TokenEndpoint = "https://www.googleapis.com/oauth2/v4/token";
 
-        // https://developers.google.com/+/web/people/
-        public static readonly string UserInformationEndpoint = "https://www.googleapis.com/plus/v1/people/me";
+        public static readonly string UserInformationEndpoint = "https://www.googleapis.com/oauth2/v2/userinfo";
     }
 }

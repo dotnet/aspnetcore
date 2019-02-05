@@ -6,8 +6,11 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.IO.Pipelines;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Primitives;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Http.Internal
@@ -99,6 +102,32 @@ namespace Microsoft.AspNetCore.Http.Internal
             Assert.Throws<ArgumentNullException>(() => context.Response.BodyPipe = null);
         }
 
+        [Fact]
+        public async Task ResponseStart_CallsFeatureIfSet()
+        {
+            var features = new FeatureCollection();
+            var mock = new Mock<IHttpResponseStartFeature>();
+            mock.Setup(o => o.StartAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+            features.Set(mock.Object);
+
+            var context = new DefaultHttpContext(features);
+            await context.Response.StartAsync();
+
+            mock.Verify(m => m.StartAsync(default), Times.Once());
+        }
+
+        [Fact]
+        public async Task ResponseStart_CallsResponseBodyFlushIfNotSet()
+        {
+            var context = new DefaultHttpContext();
+            var mock = new FlushAsyncCheckStream();
+            context.Response.Body = mock;
+
+            await context.Response.StartAsync(default);
+
+            Assert.True(mock.IsCalled);
+        }
+
         private static HttpResponse CreateResponse(IHeaderDictionary headers)
         {
             var context = new DefaultHttpContext();
@@ -125,6 +154,17 @@ namespace Microsoft.AspNetCore.Http.Internal
             }
 
             return CreateResponse(headers);
+        }
+
+        private class FlushAsyncCheckStream : MemoryStream
+        {
+            public bool IsCalled { get; private set; }
+
+            public override Task FlushAsync(CancellationToken cancellationToken)
+            {
+                IsCalled = true;
+                return base.FlushAsync(cancellationToken);
+            }
         }
     }
 }

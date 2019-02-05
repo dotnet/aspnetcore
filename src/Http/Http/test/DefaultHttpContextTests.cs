@@ -159,15 +159,16 @@ namespace Microsoft.AspNetCore.Http
             features.Set<IHttpRequestFeature>(new HttpRequestFeature());
             features.Set<IHttpResponseFeature>(new HttpResponseFeature());
             features.Set<IHttpWebSocketFeature>(new TestHttpWebSocketFeature());
+            features.Set<IHttpResponseStartFeature>(new MockHttpResponseStartFeature());
 
             // FeatureCollection is set. all cached interfaces are null.
             var context = new DefaultHttpContext(features);
             TestAllCachedFeaturesAreNull(context, features);
-            Assert.Equal(3, features.Count());
+            Assert.Equal(4, features.Count());
 
             // getting feature properties populates feature collection with defaults
             TestAllCachedFeaturesAreSet(context, features);
-            Assert.NotEqual(3, features.Count());
+            Assert.NotEqual(4, features.Count());
 
             // FeatureCollection is null. and all cached interfaces are null.
             // only top level is tested because child objects are inaccessible.
@@ -179,15 +180,16 @@ namespace Microsoft.AspNetCore.Http
             newFeatures.Set<IHttpRequestFeature>(new HttpRequestFeature());
             newFeatures.Set<IHttpResponseFeature>(new HttpResponseFeature());
             newFeatures.Set<IHttpWebSocketFeature>(new TestHttpWebSocketFeature());
+            newFeatures.Set<IHttpResponseStartFeature>(new MockHttpResponseStartFeature());
 
             // FeatureCollection is set to newFeatures. all cached interfaces are null.
             context.Initialize(newFeatures);
             TestAllCachedFeaturesAreNull(context, newFeatures);
-            Assert.Equal(3, newFeatures.Count());
+            Assert.Equal(4, newFeatures.Count());
 
             // getting feature properties populates new feature collection with defaults
             TestAllCachedFeaturesAreSet(context, newFeatures);
-            Assert.NotEqual(3, newFeatures.Count());
+            Assert.NotEqual(4, newFeatures.Count());
         }
 
         [Fact]
@@ -413,6 +415,14 @@ namespace Microsoft.AspNetCore.Http
             }
 
             public Task<WebSocket> AcceptAsync(WebSocketAcceptContext context)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        private class MockHttpResponseStartFeature : IHttpResponseStartFeature
+        {
+            public Task StartAsync(CancellationToken cancellationToken)
             {
                 throw new NotImplementedException();
             }

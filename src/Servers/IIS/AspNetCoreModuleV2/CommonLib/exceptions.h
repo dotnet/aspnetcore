@@ -56,11 +56,23 @@
     __pragma(warning(pop))
 
 
+#define _GOTO_FAILURE()                                        __pragma(warning(push)) \
+    __pragma(warning(disable:26438)) /*disable avoid goto warning*/ \
+    goto Failure \
+    __pragma(warning(pop))
+
+
 #define FINISHED(hrr)                                           do { _HR_RET(hrr); if (_CHECK_FAILED(__hrRet)) { LogHResultFailed(LOCATION_INFO, __hrRet); } hr = __hrRet; _GOTO_FINISHED(); } while (0, 0)
 #define FINISHED_IF_FAILED(hrr)                                 do { _HR_RET(hrr); if (FAILED(__hrRet)) { LogHResultFailed(LOCATION_INFO, __hrRet); hr = __hrRet; _GOTO_FINISHED(); }} while (0, 0)
 #define FINISHED_IF_NULL_ALLOC(ptr)                             do { if ((ptr) == nullptr) { hr = LogHResultFailed(LOCATION_INFO, E_OUTOFMEMORY); _GOTO_FINISHED(); }} while (0, 0)
 #define FINISHED_LAST_ERROR_IF(condition)                       do { if (condition) { hr = LogLastError(LOCATION_INFO); _GOTO_FINISHED(); }} while (0, 0)
 #define FINISHED_LAST_ERROR_IF_NULL(ptr)                        do { if ((ptr) == nullptr) { hr = LogLastError(LOCATION_INFO); _GOTO_FINISHED(); }} while (0, 0)
+
+#define FAILURE(hrr)                                            do { _HR_RET(hrr); if (_CHECK_FAILED(__hrRet)) { LogHResultFailed(LOCATION_INFO, __hrRet); } hr = __hrRet; _GOTO_FAILURE(); } while (0, 0)
+#define FAILURE_IF_FAILED(hrr)                                  do { _HR_RET(hrr); if (FAILED(__hrRet)) { LogHResultFailed(LOCATION_INFO, __hrRet); hr = __hrRet; _GOTO_FAILURE(); }} while (0, 0)
+#define FAILURE_IF_NULL_ALLOC(ptr)                              do { if ((ptr) == nullptr) { hr = LogHResultFailed(LOCATION_INFO, E_OUTOFMEMORY); _GOTO_FAILURE(); }} while (0, 0)
+#define FAILURE_LAST_ERROR_IF(condition)                        do { if (condition) { hr = LogLastError(LOCATION_INFO); _GOTO_FAILURE(); }} while (0, 0)
+#define FAILURE_LAST_ERROR_IF_NULL(ptr)                         do { if ((ptr) == nullptr) { hr = LogLastError(LOCATION_INFO); _GOTO_FAILURE(); }} while (0, 0)
 
 #define THROW_HR(hr)                                            do { _HR_RET(hr); ThrowResultException(LOCATION_INFO, LogHResultFailed(LOCATION_INFO, __hrRet)); } while (0, 0)
 #define THROW_LAST_ERROR()                                      do { ThrowResultException(LOCATION_INFO, LogLastError(LOCATION_INFO)); } while (0, 0)

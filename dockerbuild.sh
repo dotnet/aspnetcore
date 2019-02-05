@@ -26,6 +26,7 @@ __usage() {
     echo ""
     echo "Options:"
     echo "    -v, --volume <VOLUME>      An additional volume mount to add to the build container"
+    echo "    -e, --env <NAME=VAL>       Additional environment variables to add to the build container"
     echo ""
     echo "Description:"
     echo "    This will run build.sh inside the dockerfile as defined in build/docker/\$image.Dockerfile."
@@ -68,6 +69,13 @@ while [[ $# -gt 0 ]]; do
             [ -z "$volume_spec" ] && __error "Missing value for parameter --volume" && __usage
             docker_args[${#docker_args[*]}]="--volume"
             docker_args[${#docker_args[*]}]="$volume_spec"
+            ;;
+        -e|--env)
+            shift
+            env_var="${1:-}"
+            [ -z "$env_var" ] && __error "Missing value for parameter --env" && __usage
+            docker_args[${#docker_args[*]}]="-e"
+            docker_args[${#docker_args[*]}]="$env_var"
             ;;
         *)
             build_args[${#build_args[*]}]="$1"

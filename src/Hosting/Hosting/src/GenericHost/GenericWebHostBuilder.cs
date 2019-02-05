@@ -232,6 +232,10 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 {
                     throw new NotSupportedException($"{typeof(IStartup)} isn't supported");
                 }
+                if (StartupLoader.HasConfigureServicesIServiceProviderDelegate(startupType, context.HostingEnvironment.EnvironmentName))
+                {
+                    throw new NotSupportedException($"ConfigureServices returning an {typeof(IServiceProvider)} isn't supported.");
+                }
 
                 instance = ActivatorUtilities.CreateInstance(new HostServiceProvider(webHostBuilderContext), startupType);
                 context.Properties[_startupKey] = instance;
@@ -327,7 +331,10 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 return webHostBuilderContext;
             }
 
-            return (WebHostBuilderContext)contextVal;
+            // Refresh config, it's periodically updated/replaced
+            var webHostContext = (WebHostBuilderContext)contextVal;
+            webHostContext.Configuration = context.Configuration;
+            return webHostContext;
         }
 
         public string GetSetting(string key)

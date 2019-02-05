@@ -4,7 +4,16 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TestAssetOutputName>InProcessForwardsCompatWebSite</TestAssetOutputName>
   </PropertyGroup>
+
+  <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
+    <!-- UseAppHost is a workaround for https://github.com/aspnet/websdk/issues/422 -->
+    <TestAssetPublishProfile Include="Portable" Properties="UseAppHost=false;TargetFramework=netcoreapp3.0" />
+    <TestAssetPublishProfile Include="Standalone-x64" Properties="RuntimeIdentifier=win7-x64;" />
+    <TestAssetPublishProfile Include="Standalone-x86" Properties="RuntimeIdentifier=win7-x86;" />
+    <TestAssetPublishProfile Include="AppHost" Properties="RuntimeIdentifier=win7-x64;UseAppHost=true;SelfContained=false;" />
+  </ItemGroup>
 
   <ItemGroup>
     <Compile Include="..\shared\**\*.cs" />
@@ -18,8 +27,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- This package is hard-coded to 2.2.0 as a part of ensuring ANCM stays forward compatible.  -->
-    <PackageReference Include="Microsoft.AspNetCore.Server.IIS" Version="2.2.0" />
+    <!-- This package is hard-coded to the 2.2.0 package as a part of ensuring ANCM stays forward compatible.  -->
+    <PackageReference Include="Microsoft.AspNetCore.Server.IIS" Version="2.2.0">
+      <AllowExplicitReference>true</AllowExplicitReference>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>

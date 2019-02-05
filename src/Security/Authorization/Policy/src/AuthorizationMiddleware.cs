@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Endpoints;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Authorization
@@ -45,11 +44,19 @@ namespace Microsoft.AspNetCore.Authorization
                 throw new ArgumentNullException(nameof(context));
             }
 
+            var endpoint = context.GetEndpoint();
+
+            // Workaround for https://github.com/aspnet/AspNetCore/issues/7011. Do not use the AuthorizationMiddleware for Razor Pages
+            if (endpoint != null && endpoint.Metadata.Any(m => m.GetType().FullName == "Microsoft.AspNetCore.Mvc.ApplicationModels.PageRouteMetadata"))
+            {
+                await _next(context);
+                return;
+            }
+
             // Flag to indicate to other systems, e.g. MVC, that authorization middleware was run for this request
             context.Items[AuthorizationMiddlewareInvokedKey] = AuthorizationMiddlewareInvokedValue;
 
             // IMPORTANT: Changes to authorization logic should be mirrored in MVC's AuthorizeFilter
-            var endpoint = context.GetEndpoint();
             var authorizeData = endpoint?.Metadata.GetOrderedMetadata<IAuthorizeData>() ?? Array.Empty<IAuthorizeData>();
             var policy = await AuthorizationPolicy.CombineAsync(_policyProvider, authorizeData);
             if (policy == null)

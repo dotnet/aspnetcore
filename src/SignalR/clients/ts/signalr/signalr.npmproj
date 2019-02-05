@@ -5,7 +5,7 @@
     <PackageId>@aspnet/signalr</PackageId>
     <IsPackable>true</IsPackable>
     <IsTestProject>false</IsTestProject>
-    <IsProductPackage>true</IsProductPackage>
+    <IsShippingPackage>true</IsShippingPackage>
   </PropertyGroup>
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />

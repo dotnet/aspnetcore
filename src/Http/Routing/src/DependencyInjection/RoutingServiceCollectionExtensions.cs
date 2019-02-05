@@ -92,9 +92,8 @@ namespace Microsoft.Extensions.DependencyInjection
 
             //
             // Misc infrastructure
-            // 
+            //
             services.TryAddSingleton<RoutePatternTransformer, DefaultRoutePatternTransformer>();
-           
             return services;
         }
 

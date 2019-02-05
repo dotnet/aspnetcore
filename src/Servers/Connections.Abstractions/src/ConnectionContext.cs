@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -26,6 +26,6 @@ namespace Microsoft.AspNetCore.Connections
             Features.Get<IConnectionLifetimeFeature>()?.Abort();
         }
 
-        public virtual void Abort() => Abort(new ConnectionAbortedException("The connection was aborted by the application."));
+        public virtual void Abort() => Abort(new ConnectionAbortedException("The connection was aborted by the application via ConnectionContext.Abort()."));
     }
 }

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Description>Provides scale-out support for ASP.NET Core SignalR using a Redis server and the StackExchange.Redis client.</Description>
     <TargetFramework>netcoreapp3.0</TargetFramework>
-    <IsProductPackage>true</IsProductPackage>
+    <IsShippingPackage>true</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>

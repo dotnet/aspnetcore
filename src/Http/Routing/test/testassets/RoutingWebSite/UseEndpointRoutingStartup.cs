@@ -70,6 +70,16 @@ namespace RoutingWebSite
                         return response.Body.WriteAsync(_plainTextPayload, 0, payloadLength);
                     });
                 routes.MapGet(
+                    "/convention",
+                    (httpContext) =>
+                    {
+                        var endpoint = httpContext.GetEndpoint();
+                        return httpContext.Response.WriteAsync((endpoint.Metadata.GetMetadata<CustomMetadata>() != null) ? "Has metadata" : "No metadata");
+                    }).Add(b =>
+                    {
+                        b.Metadata.Add(new CustomMetadata());
+                    });
+                routes.MapGet(
                     "/withconstraints/{id:endsWith(_001)}",
                     (httpContext) =>
                     {
@@ -129,6 +139,10 @@ namespace RoutingWebSite
             // Imagine some more stuff here...
 
             app.UseEndpoint();
+        }
+
+        private class CustomMetadata
+        {
         }
 
         private IEndpointConventionBuilder MapHostEndpoint(IEndpointRouteBuilder routes, params string[] hosts)

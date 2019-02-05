@@ -32,9 +32,9 @@ namespace ServerComparison.FunctionalTests
         }
 
         public static TestMatrix NoCompressionTestVariants
-            => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Kestrel, /* ServerType.Nginx, https://github.com/aspnet/AspNetCore-Internal/issues/1525 */  ServerType.HttpSys)
+            => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Kestrel, ServerType.Nginx,  ServerType.HttpSys)
                 .WithTfms(Tfm.NetCoreApp30)
-                .WithAllAncmVersions()
+                .WithAncmVersions(AncmVersion.AspNetCoreModuleV2)
                 .WithAllHostingModels();
 
         [ConditionalTheory]
@@ -45,9 +45,9 @@ namespace ServerComparison.FunctionalTests
         }
 
         public static TestMatrix HostCompressionTestVariants
-            => TestMatrix.ForServers(ServerType.IISExpress /*, ServerType.Nginx https://github.com/aspnet/AspNetCore-Internal/issues/1525 */ )
+            => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Nginx)
                 .WithTfms(Tfm.NetCoreApp30)
-                .WithAllAncmVersions()
+                .WithAncmVersions(AncmVersion.AspNetCoreModuleV2)
                 .WithAllHostingModels();
 
         [ConditionalTheory]
@@ -60,7 +60,7 @@ namespace ServerComparison.FunctionalTests
         public static TestMatrix AppCompressionTestVariants
             => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Kestrel, ServerType.HttpSys) // No pass-through compression for nginx
                 .WithTfms(Tfm.NetCoreApp30)
-                .WithAllAncmVersions()
+                .WithAncmVersions(AncmVersion.AspNetCoreModuleV2)
                 .WithAllHostingModels();
 
         [ConditionalTheory]
@@ -71,9 +71,9 @@ namespace ServerComparison.FunctionalTests
         }
 
         public static TestMatrix HostAndAppCompressionTestVariants
-            => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Kestrel, /* ServerType.Nginx, https://github.com/aspnet/AspNetCore-Internal/issues/1525 */ ServerType.HttpSys)
+            => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Kestrel, ServerType.Nginx, ServerType.HttpSys)
                 .WithTfms(Tfm.NetCoreApp30)
-                .WithAllAncmVersions()
+                .WithAncmVersions(AncmVersion.AspNetCoreModuleV2)
                 .WithAllHostingModels();
 
         [ConditionalTheory]

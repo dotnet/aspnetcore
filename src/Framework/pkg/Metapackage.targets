@@ -18,6 +18,7 @@
 
     <PackageId>$(MSBuildProjectName)</PackageId>
     <TargetPath>$(PackageOutputPath)$(PackageId).$(PackageVersion).nupkg</TargetPath>
+
   </PropertyGroup>
 
   <ItemGroup>
@@ -29,7 +30,7 @@
       <AllowExplicitVersion>true</AllowExplicitVersion>
     </PackageReference>
 
-    <PackageReference Include="@(Dependency)" />
+    <PackageReference Include="@(Dependency);@(ExternalDependency)" />
   </ItemGroup>
 
   <ItemDefinitionGroup>
@@ -89,7 +90,7 @@
   <ItemGroup Condition="'%24(DisableDefaultPackageConflictOverrides)' != 'true'">
     <PackageConflictOverrides Include="Microsoft.AspNetCore.App">
       <OverriddenPackages>
-        @(_AspNetAppPackageConflictOverrides, '%3B%0A        )%3B
+        @(_AspNetAppPackageConflictOverrides, '%3B%0A        ')%3B
       </OverriddenPackages>
     </PackageConflictOverrides>
   </ItemGroup>

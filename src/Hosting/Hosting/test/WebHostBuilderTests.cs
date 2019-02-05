@@ -889,6 +889,22 @@ namespace Microsoft.AspNetCore.Hosting
             Assert.Equal("Building this implementation of IWebHostBuilder is not supported.", exception.Message);
         }
 
+        [Fact]
+        public void GenericWebHostDoesNotSupportBuildingInConfigureServices()
+        {
+            var hostBuilder = new HostBuilder()
+                   .ConfigureWebHost(builder =>
+                   {
+                       builder.UseStartup<StartupWithBuiltConfigureServices>();
+                   });
+            var exception = Assert.Throws<NotSupportedException>(() =>
+            {
+                hostBuilder.Build();
+            });
+
+            Assert.Equal($"ConfigureServices returning an {typeof(IServiceProvider)} isn't supported.", exception.Message);
+        }
+
         [Theory]
         [MemberData(nameof(DefaultWebHostBuildersWithConfig))]
         public void Build_HostingStartupAssemblyCanBeExcluded(IWebHostBuilder builder)
@@ -942,6 +958,54 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 var configuration = host.Services.GetRequiredService<IConfiguration>();
                 Assert.Equal("value", configuration["testhostingstartup:config"]);
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(DefaultWebHostBuildersWithConfig))]
+        public void Build_AppConfigAvailableEverywhere(IWebHostBuilder builder)
+        {
+            builder = builder
+                .CaptureStartupErrors(false)
+                .ConfigureAppConfiguration((context, configurationBuilder) => {
+                    configurationBuilder.AddInMemoryCollection(
+                        new[]
+                        {
+                            new KeyValuePair<string,string>("appconfig", "appvalue")
+                        });
+                })
+                .ConfigureLogging((context, logging) =>
+                {
+                    Assert.Equal("appvalue", context.Configuration["appconfig"]);
+                })
+                .ConfigureServices((context, services) =>
+                {
+                    Assert.Equal("appvalue", context.Configuration["appconfig"]);
+                })
+                .UseDefaultServiceProvider((context, services) =>
+                {
+                    Assert.Equal("appvalue", context.Configuration["appconfig"]);
+                })
+                .UseStartup<StartupCheckConfig>()
+                .UseServer(new TestServer());
+
+            using (var host = builder.Build())
+            {
+                var configuration = host.Services.GetRequiredService<IConfiguration>();
+                Assert.Equal("appvalue", configuration["appconfig"]);
+            }
+        }
+
+        public class StartupCheckConfig
+        {
+            public StartupCheckConfig(IConfiguration config)
+            {
+                Assert.Equal("value", config["testhostingstartup:config"]);
+            }
+
+            public void Configure(IApplicationBuilder app)
+            {
+
             }
         }
 

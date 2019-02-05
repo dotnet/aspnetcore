@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Description>Components feature for ASP.NET Core.</Description>
+    <IsShippingPackage>true</IsShippingPackage>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.JSInterop" />
+  </ItemGroup>
+
+</Project>

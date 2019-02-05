@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
@@ -74,34 +75,26 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         [ConditionalFact]
         public async Task ResponseSendFile_MissingFile_Throws()
         {
-            var waitHandle = new ManualResetEvent(false);
-            bool? appThrew = null;
-            string address;
-            using (Utilities.CreateHttpServer(out address, httpContext =>
+            var appThrew = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            using (Utilities.CreateHttpServer(out var address, httpContext =>
             {
                 var sendFile = httpContext.Features.Get<IHttpSendFileFeature>();
                 try
                 {
                     sendFile.SendFileAsync(string.Empty, 0, null, CancellationToken.None).Wait();
-                    appThrew = false;
+                    appThrew.SetResult(false);
                 }
                 catch (Exception)
                 {
-                    appThrew = true;
+                    appThrew.SetResult(true);
                     throw;
-                }
-                finally
-                {
-                    waitHandle.Set();
                 }
                 return Task.FromResult(0);
             }))
             {
                 HttpResponseMessage response = await SendRequestAsync(address);
                 Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
-                Assert.True(waitHandle.WaitOne(100));
-                Assert.True(appThrew.HasValue, "appThrew.HasValue");
-                Assert.True(appThrew.Value, "appThrew.Value");
+                Assert.True(await appThrew.Task.TimeoutAfter(TimeSpan.FromSeconds(10)));
             }
         }
         

@@ -21,20 +21,20 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task CheckStartupEventLogMessage()
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters();
             
             var deploymentResult = await DeployAsync(deploymentParameters);
             await deploymentResult.AssertStarts();
 
             StopServer();
 
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult, "Application '.+' started the coreclr in-process successfully.");
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessStarted(deploymentResult));
         }
 
         [ConditionalFact]
         public async Task CheckShutdownEventLogMessage()
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters();
             var deploymentResult = await DeployAsync(deploymentParameters);
             await deploymentResult.AssertStarts();
 
