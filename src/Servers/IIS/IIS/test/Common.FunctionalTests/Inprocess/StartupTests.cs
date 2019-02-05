@@ -530,8 +530,10 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             deploymentParameters.ApplicationType = ApplicationType.Standalone;
             deploymentParameters.EnvironmentVariables["ASPNETCORE_STARTUP_SUSPEND_EVENT"] = "ANCM_TestEvent";
 
-            var startWaitHandle = new EventWaitHandle(false, EventResetMode.ManualReset, "Global\\ANCM_TestEvent");
-            var suspendedWaitHandle = new EventWaitHandle(false, EventResetMode.ManualReset, "Global\\ANCM_TestEvent_suspended");
+            var eventPrefix = deploymentParameters.ServerType == ServerType.IISExpress ? "" : "Global\\";
+
+            var startWaitHandle = new EventWaitHandle(false, EventResetMode.ManualReset, eventPrefix + "ANCM_TestEvent");
+            var suspendedWaitHandle = new EventWaitHandle(false, EventResetMode.ManualReset, eventPrefix + "Global\\ANCM_TestEvent_suspended");
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
