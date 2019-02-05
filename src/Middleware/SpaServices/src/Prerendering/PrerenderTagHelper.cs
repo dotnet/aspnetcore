@@ -31,11 +31,11 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
         /// <param name="serviceProvider">The <see cref="IServiceProvider"/>.</param>
         public PrerenderTagHelper(IServiceProvider serviceProvider)
         {
-            var hostEnv = (IHostingEnvironment) serviceProvider.GetService(typeof(IHostingEnvironment));
-            _nodeServices = (INodeServices) serviceProvider.GetService(typeof(INodeServices)) ?? _fallbackNodeServices;
+            var hostEnv = (IHostingEnvironment)serviceProvider.GetService(typeof(IHostingEnvironment));
+            _nodeServices = (INodeServices)serviceProvider.GetService(typeof(INodeServices)) ?? _fallbackNodeServices;
             _applicationBasePath = hostEnv.ContentRootPath;
-            
-            var applicationLifetime = (IApplicationLifetime) serviceProvider.GetService(typeof(IApplicationLifetime));
+
+            var applicationLifetime = (IApplicationLifetime)serviceProvider.GetService(typeof(IApplicationLifetime));
             _applicationStoppingToken = applicationLifetime.ApplicationStopping;
 
             // Consider removing the following. Having it means you can get away with not putting app.AddNodeServices()
@@ -102,7 +102,8 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
             if (!string.IsNullOrEmpty(result.RedirectUrl))
             {
                 // It's a redirection
-                ViewContext.HttpContext.Response.Redirect(result.RedirectUrl);
+                var permanentRedirect = result.StatusCode.GetValueOrDefault() == 301;
+                ViewContext.HttpContext.Response.Redirect(result.RedirectUrl, permanentRedirect);
                 return;
             }
 
