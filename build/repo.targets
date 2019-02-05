@@ -102,12 +102,26 @@
   </Target>
 
   <!-- will move into korebuild -->
-  <Target Name="Helix" DependsOnTargets="Restore">
+  <Target Name="HelixPublish">
     <ItemGroup>
       <CsProjects Include="@(ProjectToBuild)" Condition="'%(Extension)' == '.csproj'" />
+      <!-- <CsProjects Include="C:\Github\AspNetCore\src\Http\Http.Abstractions\test\Microsoft.AspNetCore.Http.Abstractions.Tests.csproj" />
+      <CsProjects Include="C:\Github\AspNetCore\src\Http\Authentication.Core\test\Microsoft.AspNetCore.Authentication.Core.Test.csproj" /> -->
     </ItemGroup>
+    <MSBuild Projects="@(CsProjects)"
+              Targets="PrepareHelixPayload"
+              BuildInParallel="false">
+      <Output TaskParameter="TargetOutputs" ItemName="HelixDirectory" />
+    </MSBuild>
+
+    <ItemGroup>
+      <HelixTestProject Include="@(HelixDirectory)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="Helix" DependsOnTargets="HelixPublish">
     <PropertyGroup>
-      <HelixTestProjects>@(CsProjects)</HelixTestProjects>
+      <HelixTestProjects>@(HelixTestProject)</HelixTestProjects>
     </PropertyGroup>
     <MSBuild Projects="$(MSBuildThisFileDirectory)..\test\helix.proj"
              Targets="Test"
