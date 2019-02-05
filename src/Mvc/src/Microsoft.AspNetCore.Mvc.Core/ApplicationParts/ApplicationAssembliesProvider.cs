@@ -24,6 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
             "Microsoft.AspNetCore.Mvc.Core",
             "Microsoft.AspNetCore.Mvc.Cors",
             "Microsoft.AspNetCore.Mvc.DataAnnotations",
+            "Microsoft.AspNetCore.Mvc.Formatters.Json",
             "Microsoft.AspNetCore.Mvc.Formatters.Xml",
             "Microsoft.AspNetCore.Mvc.Localization",
             "Microsoft.AspNetCore.Mvc.NewtonsoftJson",

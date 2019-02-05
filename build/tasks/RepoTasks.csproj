@@ -5,7 +5,6 @@
     <TargetFramework Condition="'$(MSBuildRuntimeType)' == 'Core' ">netcoreapp2.2</TargetFramework>
     <TargetFramework Condition="'$(MSBuildRuntimeType)' != 'Core' ">net461</TargetFramework>
     <DefineConstants Condition="'$(BuildInstallers)' == 'true' AND '$(TargetOsName)' == 'win'">$(DefineConstants);BUILD_MSI_TASKS</DefineConstants>
-    <DefineConstants Condition="'$(PublishToAzureFeed)' == 'true'">$(DefineConstants);BUILD_AZ_TASKS</DefineConstants>
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
   </PropertyGroup>
 
@@ -13,7 +12,6 @@
     <PackageReference Remove="Internal.AspNetCore.Sdk" />
     <PackageReference Include="NuGet.Build.Tasks" Version="4.9.1" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="2.1.0" />
-    <PackageReference Include="WindowsAzure.Storage" Version="8.7.0" Condition="'$(PublishToAzureFeed)' == 'true'" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(BuildInstallers)' == 'true' AND '$(TargetOsName)' == 'win'">

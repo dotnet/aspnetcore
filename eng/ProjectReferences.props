@@ -96,6 +96,7 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Core" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.Core\Microsoft.AspNetCore.Mvc.Core.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Cors" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.Cors\Microsoft.AspNetCore.Mvc.Cors.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.DataAnnotations" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.DataAnnotations\Microsoft.AspNetCore.Mvc.DataAnnotations.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Formatters.Json" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.Formatters.Json\Microsoft.AspNetCore.Mvc.Formatters.Json.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Formatters.Xml" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.Formatters.Xml\Microsoft.AspNetCore.Mvc.Formatters.Xml.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Localization" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.Localization\Microsoft.AspNetCore.Mvc.Localization.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.NewtonsoftJson\Microsoft.AspNetCore.Mvc.NewtonsoftJson.csproj" />

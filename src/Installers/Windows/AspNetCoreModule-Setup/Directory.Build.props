@@ -40,30 +40,34 @@
   </PropertyGroup>
 
  <ItemGroup>
-    <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj"  Platform="x64">
+    <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj">
       <Name>AspNetCoreV2WoW64</Name>
       <Private>True</Private>
       <DoNotHarvest>True</DoNotHarvest>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SetPlatform>Platform=x64</SetPlatform>
     </ProjectReference>
-    <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" Platform="x64">
+    <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj">
       <Name>AspNetCoreV2HandlerWoW64</Name>
       <Private>True</Private>
       <DoNotHarvest>True</DoNotHarvest>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SetPlatform>Platform=x64</SetPlatform>
     </ProjectReference>
 
-    <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj"  Platform="Win32">
+    <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj">
       <Name>AspNetCoreV2</Name>
       <Private>True</Private>
       <DoNotHarvest>True</DoNotHarvest>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SetPlatform>Platform=Win32</SetPlatform>
     </ProjectReference>
-    <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" Platform="Win32">
+    <ProjectReference Include="$(_ServerIISBasePath)AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj">
       <Name>AspNetCoreV2Handler</Name>
       <Private>True</Private>
       <DoNotHarvest>True</DoNotHarvest>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SetPlatform>Platform=Win32</SetPlatform>
     </ProjectReference>
   </ItemGroup>
 </Project>

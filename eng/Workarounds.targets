@@ -1,8 +1,3 @@
 <!-- Use this file to workaround issues. List the issue tracking the item to fix so we can remove the workaround when the issue is resolved. -->
 <Project>
-
-  <!-- Workaround https://github.com/aspnet/AspNetCore-Internal/issues/1501. dotnet-blazor.dll isn't strong-named signed. -->
-  <ItemGroup>
-    <FileNamesToSign Include="dotnet-blazor.dll" CertificateName="Microsoft400" />
-  </ItemGroup>
 </Project>

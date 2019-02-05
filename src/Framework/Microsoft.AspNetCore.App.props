@@ -46,6 +46,7 @@
     <Dependency Include="Microsoft.AspNetCore.Mvc.Core" />
     <Dependency Include="Microsoft.AspNetCore.Mvc.Cors" />
     <Dependency Include="Microsoft.AspNetCore.Mvc.DataAnnotations" />
+    <Dependency Include="Microsoft.AspNetCore.Mvc.Formatters.Json" />
     <Dependency Include="Microsoft.AspNetCore.Mvc.Formatters.Xml" />
     <Dependency Include="Microsoft.AspNetCore.Mvc.Localization" />
     <Dependency Include="Microsoft.AspNetCore.Mvc.Razor" />

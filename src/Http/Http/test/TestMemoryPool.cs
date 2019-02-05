@@ -14,12 +14,14 @@ namespace System.IO.Pipelines.Tests
     public class TestMemoryPool : MemoryPool<byte>
     {
         private MemoryPool<byte> _pool;
-
+        private int _maxBufferSize;
         private bool _disposed;
         private int _rentCount;
-        public TestMemoryPool()
+
+        public TestMemoryPool(int maxBufferSize = 4096)
         {
             _pool = new CustomMemoryPool<byte>();
+            _maxBufferSize = maxBufferSize;
         }
 
         public override IMemoryOwner<byte> Rent(int minBufferSize = -1)
@@ -39,7 +41,7 @@ namespace System.IO.Pipelines.Tests
             _disposed = true;
         }
 
-        public override int MaxBufferSize => 4096;
+        public override int MaxBufferSize => _maxBufferSize;
 
         internal void CheckDisposed()
         {
