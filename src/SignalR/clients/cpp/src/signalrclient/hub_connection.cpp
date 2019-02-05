@@ -41,7 +41,7 @@ namespace signalr
     {
         if (!m_pImpl)
         {
-            throw signalr_exception(_XPLATSTR("invoke() cannot be called on uninitialized hub_proxy instance"));
+            throw signalr_exception(_XPLATSTR("invoke() cannot be called on uninitialized hub_connection instance"));
         }
 
         return m_pImpl->invoke_json(method_name, arguments);
@@ -51,7 +51,7 @@ namespace signalr
     {
         if (!m_pImpl)
         {
-            throw signalr_exception(_XPLATSTR("invoke() cannot be called on uninitialized hub_proxy instance"));
+            throw signalr_exception(_XPLATSTR("invoke() cannot be called on uninitialized hub_connection instance"));
         }
 
         return m_pImpl->invoke_void(method_name, arguments);

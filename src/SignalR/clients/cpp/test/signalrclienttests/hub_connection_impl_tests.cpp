@@ -713,3 +713,84 @@ TEST(connection_id, can_get_connection_id)
     ASSERT_EQ(_XPLATSTR("f7707523-307d-4cba-9abf-3eef701241e8"), connection_id);
     ASSERT_EQ(_XPLATSTR("f7707523-307d-4cba-9abf-3eef701241e8"), hub_connection->get_connection_id());
 }
+
+TEST(on, event_name_must_not_be_empty_string)
+{
+    auto hub_connection = create_hub_connection();
+    try
+    {
+        hub_connection->on(_XPLATSTR(""), [](const json::value&) {});
+
+        ASSERT_TRUE(false); // exception expected but not thrown
+    }
+    catch (const std::invalid_argument& e)
+    {
+        ASSERT_STREQ("event_name cannot be empty", e.what());
+    }
+}
+
+TEST(on, cannot_register_multiple_handlers_for_event)
+{
+    auto hub_connection = create_hub_connection();
+    hub_connection->on(_XPLATSTR("ping"), [](const json::value&) {});
+
+    try
+    {
+        hub_connection->on(_XPLATSTR("ping"), [](const json::value&) {});
+        ASSERT_TRUE(false); // exception expected but not thrown
+    }
+    catch (const signalr_exception& e)
+    {
+        ASSERT_STREQ("an action for this event has already been registered. event name: ping", e.what());
+    }
+}
+
+TEST(on, cannot_register_handler_if_connection_not_in_disconnected_state)
+{
+    try
+    {
+        auto websocket_client = create_test_websocket_client(
+            /* receive function */ []() { return pplx::task_from_result(std::string("{ }\x1e")); });
+        auto hub_connection = create_hub_connection(websocket_client);
+
+        hub_connection->start().get();
+
+        hub_connection->on(_XPLATSTR("myfunc"), [](const web::json::value&) {});
+
+        ASSERT_TRUE(false); // exception expected but not thrown
+    }
+    catch (const signalr_exception& e)
+    {
+        ASSERT_STREQ("can't register a handler if the connection is in a disconnected state", e.what());
+    }
+}
+
+TEST(invoke_json, invoke_throws_when_the_underlying_connection_is_not_valid)
+{
+    auto hub_connection = create_hub_connection();
+
+    try
+    {
+        hub_connection->invoke_json(_XPLATSTR("method"), json::value::array()).get();
+        ASSERT_TRUE(true); // exception expected but not thrown
+    }
+    catch (const signalr_exception& e)
+    {
+        ASSERT_STREQ("cannot send data when the connection is not in the connected state. current connection state: disconnected", e.what());
+    }
+}
+
+TEST(invoke_void, send_throws_when_the_underlying_connection_is_not_valid)
+{
+    auto hub_connection = create_hub_connection();
+
+    try
+    {
+        hub_connection->invoke_void(_XPLATSTR("method"), json::value::array()).get();
+        ASSERT_TRUE(true); // exception expected but not thrown
+    }
+    catch (const signalr_exception& e)
+    {
+        ASSERT_STREQ("cannot send data when the connection is not in the connected state. current connection state: disconnected", e.what());
+    }
+}

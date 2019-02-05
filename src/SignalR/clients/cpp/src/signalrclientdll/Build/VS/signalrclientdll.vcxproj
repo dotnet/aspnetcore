@@ -46,7 +46,6 @@
     <ClInclude Include="..\..\..\..\include\signalrclient\connection_state.h" />
     <ClInclude Include="..\..\..\..\include\signalrclient\hub_connection.h" />
     <ClInclude Include="..\..\..\..\include\signalrclient\hub_exception.h" />
-    <ClInclude Include="..\..\..\..\include\signalrclient\hub_proxy.h" />
     <ClInclude Include="..\..\..\..\include\signalrclient\log_writer.h" />
     <ClInclude Include="..\..\..\..\include\signalrclient\trace_level.h" />
     <ClInclude Include="..\..\..\..\include\signalrclient\transport_type.h" />
@@ -58,7 +57,6 @@
     <ClInclude Include="..\..\..\signalrclient\default_websocket_client.h" />
     <ClInclude Include="..\..\..\signalrclient\http_sender.h" />
     <ClInclude Include="..\..\..\signalrclient\hub_connection_impl.h" />
-    <ClInclude Include="..\..\..\signalrclient\internal_hub_proxy.h" />
     <ClInclude Include="..\..\..\signalrclient\callback_manager.h" />
     <ClInclude Include="..\..\..\signalrclient\logger.h" />
     <ClInclude Include="..\..\..\signalrclient\negotiation_response.h" />
