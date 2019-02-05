@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -704,7 +703,6 @@ namespace Microsoft.AspNetCore.Authentication.Google
                 {
                     OnCreatingTicket = context =>
                     {
-                        Assert.NotNull(context.User);
                         Assert.Equal("Test Access Token", context.AccessToken);
                         Assert.Equal("Test Refresh Token", context.RefreshToken);
                         Assert.Equal(TimeSpan.FromSeconds(3600), context.ExpiresIn);
@@ -972,7 +970,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
         private static HttpResponseMessage ReturnJsonResponse(object content, HttpStatusCode code = HttpStatusCode.OK)
         {
             var res = new HttpResponseMessage(code);
-            var text = JsonConvert.SerializeObject(content);
+            var text = Newtonsoft.Json.JsonConvert.SerializeObject(content);
             res.Content = new StringContent(text, Encoding.UTF8, "application/json");
             return res;
         }
