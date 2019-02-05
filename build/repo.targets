@@ -2,7 +2,6 @@
   <Import Project="AzureIntegration.targets" />
   <Import Project="SharedFx.targets" />
   <Import Project="CodeSign.targets" />
-  <Import Project="Publish.targets" />
   <Import Project="..\eng\Workarounds.targets" />
 
   <PropertyGroup>
@@ -99,6 +98,17 @@
     <RepoTasks.RemoveSharedFrameworkDependencies Condition="@(_BuildOutput->Count()) != 0"
       Files="@(_BuildOutput)"
       FrameworkOnlyPackages="@(SharedFrameworkOnlyPackage)" />
+  </Target>
+
+  <Target Name="GenerateBuildAssetManifest">
+    <!-- Generate build manifests. These manifests are used by Maestro and the Build Asset Registry to flow dependencies to other repos. -->
+    <MSBuild Projects="$(MSBuildThisFileDirectory)Maestro\Maestro.csproj"
+          Targets="Restore"
+          Properties="$(BuildProperties);__DummyTarget=Restore" />
+
+    <MSBuild Projects="$(MSBuildThisFileDirectory)Maestro\Maestro.csproj"
+             Targets="GenerateBuildAssetManifest"
+             Properties="$(BuildProperties);__DummyTarget=GenerateBuildAssetManifest" />
   </Target>
 
 </Project>
