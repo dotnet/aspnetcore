@@ -1,16 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.IO;
-using System.IO.Pipelines;
 using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 
 namespace PlaintextApp
 {
@@ -20,19 +17,17 @@ namespace PlaintextApp
 
         public void Configure(IApplicationBuilder app)
         {
-            app.Run(Plaintext);
-        }
+            app.Run((httpContext) =>
+            {
+                var payload = _helloWorldBytes;
+                var response = httpContext.Response;
 
-        private static Task Plaintext(HttpContext httpContext)
-        {
-            var payload = _helloWorldBytes;
-            var response = httpContext.Response;
+                response.StatusCode = 200;
+                response.ContentType = "text/plain";
+                response.ContentLength = payload.Length;
 
-            response.StatusCode = 200;
-            response.ContentType = "text/plain";
-            response.ContentLength = payload.Length;
-
-            return response.BodyPipe.WriteAsync(payload).GetAsTask();
+                return response.BodyPipe.WriteAsync(payload).GetAsTask();
+            });
         }
 
         public static Task Main(string[] args)
