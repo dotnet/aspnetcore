@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.DotNet.Maestro.Tasks" Version="1.1.0-beta.19065.2" />
+    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Feed" Version="2.2.0-beta.19061.6" />
   </ItemGroup>
 
   <Target Name="GetFilesToPublish">
@@ -21,8 +21,6 @@
       </PackageToPublish>
     </ItemGroup>
   </Target>
-
-  <UsingTask TaskName="GenerateBuildManifest" AssemblyFile="$(PkgMicrosoft_DotNet_Maestro_Tasks)\tools\netcoreapp2.1\Microsoft.DotNet.Maestro.Tasks.dll"/>
 
   <Target Name="GenerateBuildAssetManifest"
           DependsOnTargets="GetFilesToPublish;ResolveRepositoryBranch;ResolveCommitHash">
