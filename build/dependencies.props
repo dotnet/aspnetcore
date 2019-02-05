@@ -3,7 +3,7 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
-    <ESRPClientPackageVersion>1.1.5</ESRPClientPackageVersion>
+    <MicrosoftESRPClientPackageVersion>1.2.0</MicrosoftESRPClientPackageVersion>
     <MicrosoftBuildFrameworkPackageVersion>15.6.85</MicrosoftBuildFrameworkPackageVersion>
     <MicrosoftBuildUtilitiesCorePackageVersion>15.6.85</MicrosoftBuildUtilitiesCorePackageVersion>
     <NewtonsoftJsonPackageVersion>9.0.1</NewtonsoftJsonPackageVersion>
