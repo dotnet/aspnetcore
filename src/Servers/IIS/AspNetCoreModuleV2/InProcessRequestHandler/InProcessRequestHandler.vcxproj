@@ -24,7 +24,7 @@
     <ProjectGuid>{D57EA297-6DC2-4BC0-8C91-334863327863}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>InProcessRequestHandler</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
     <ProjectName>InProcessRequestHandler</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
