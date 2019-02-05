@@ -83,6 +83,7 @@
 
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="_CreateHelixPayloadInner"
+             BuildInParallel="true"
              Properties="TargetFramework=%(_TargetFrameworks.Identity);IsWindowsHelixQueue=$(HelixTargetQueue.Contains('Windows'))">
       <Output TaskParameter="TargetOutputs" ItemName="HelixPayload" />
     </MSBuild>
