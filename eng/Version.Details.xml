@@ -281,6 +281,10 @@
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>9e074e4a3f3626fa953f36ab79e3cd3e6db1c9de</Sha>
     </Dependency>
+    <Dependency Name="Mono.WebAssembly.Interop" Version="3.0.0-preview.19105.3">
+      <Uri>https://github.com/aspnet/Extensions</Uri>
+      <Sha>9750bf67ab22d8d28255c6222be282f4c8e49383</Sha>
+    </Dependency>
     <Dependency Name="System.ComponentModel.Annotations" Version="4.6.0-preview.19080.5">
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>9e074e4a3f3626fa953f36ab79e3cd3e6db1c9de</Sha>
