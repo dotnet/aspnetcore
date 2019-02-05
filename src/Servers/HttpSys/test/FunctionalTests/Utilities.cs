@@ -23,7 +23,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         // ports during dynamic port allocation.
         private const int BasePort = 5001;
         private const int MaxPort = 8000;
+        private const int BaseHttpsPort = 44300;
+        private const int MaxHttpsPort = 44399;
         private static int NextPort = BasePort;
+        private static int NextHttpsPort = BaseHttpsPort;
         private static object PortLock = new object();
         internal static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(15);
         internal static readonly int WriteRetryLimit = 1000;
@@ -148,17 +151,38 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             throw new Exception("Failed to locate a free port.");
         }
 
-        internal static IServer CreateHttpsServer(RequestDelegate app)
+        internal static IServer CreateDynamicHttpsServer(out string baseAddress, RequestDelegate app)
         {
-            return CreateServer("https", "localhost", 9090, string.Empty, app);
+            return CreateDynamicHttpsServer("/", out var root, out baseAddress, options => { }, app);
         }
 
-        internal static IServer CreateServer(string scheme, string host, int port, string path, RequestDelegate app)
+        internal static IServer CreateDynamicHttpsServer(string basePath, out string root, out string baseAddress, Action<HttpSysOptions> configureOptions, RequestDelegate app)
         {
-            var server = CreatePump();
-            server.Features.Get<IServerAddressesFeature>().Addresses.Add(UrlPrefix.Create(scheme, host, port, path).ToString());
-            server.StartAsync(new DummyApplication(app), CancellationToken.None).Wait();
-            return server;
+            lock (PortLock)
+            {
+                while (NextHttpsPort < MaxHttpsPort)
+                {
+
+                    var port = NextHttpsPort++;
+                    var prefix = UrlPrefix.Create("https", "localhost", port, basePath);
+                    root = prefix.Scheme + "://" + prefix.Host + ":" + prefix.Port;
+                    baseAddress = prefix.ToString();
+
+                    var server = CreatePump();
+                    server.Features.Get<IServerAddressesFeature>().Addresses.Add(baseAddress);
+                    configureOptions(server.Listener.Options);
+                    try
+                    {
+                        server.StartAsync(new DummyApplication(app), CancellationToken.None).Wait();
+                        return server;
+                    }
+                    catch (HttpSysException)
+                    {
+                    }
+                }
+                NextHttpsPort = BaseHttpsPort;
+            }
+            throw new Exception("Failed to locate a free port.");
         }
 
         internal static Task WithTimeout(this Task task) => task.TimeoutAfter(DefaultTimeout);

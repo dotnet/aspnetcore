@@ -184,10 +184,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             {
                 var info = &requestInfo[i];
                 if (info != null
-                    && info->InfoType == HttpApiTypes.HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeAuth
-                    && info->pInfo->AuthStatus == HttpApiTypes.HTTP_AUTH_STATUS.HttpAuthStatusSuccess)
+                    && info->InfoType == HttpApiTypes.HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeAuth)
                 {
-                    return true;
+                    var authInfo = (HttpApiTypes.HTTP_REQUEST_AUTH_INFO*)info->pInfo;
+                    if (authInfo->AuthStatus == HttpApiTypes.HTTP_AUTH_STATUS.HttpAuthStatusSuccess)
+                    {
+                        return true;
+                    }
                 }
             }
             return false;
@@ -202,20 +205,42 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             {
                 var info = &requestInfo[i];
                 if (info != null
-                    && info->InfoType == HttpApiTypes.HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeAuth
-                    && info->pInfo->AuthStatus == HttpApiTypes.HTTP_AUTH_STATUS.HttpAuthStatusSuccess)
+                    && info->InfoType == HttpApiTypes.HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeAuth)
                 {
-                    // Duplicates AccessToken
-                    var identity = new WindowsIdentity(info->pInfo->AccessToken, GetAuthTypeFromRequest(info->pInfo->AuthType));
+                    var authInfo = (HttpApiTypes.HTTP_REQUEST_AUTH_INFO*)info->pInfo;
+                    if (authInfo->AuthStatus == HttpApiTypes.HTTP_AUTH_STATUS.HttpAuthStatusSuccess)
+                    {
+                        // Duplicates AccessToken
+                        var identity = new WindowsIdentity(authInfo->AccessToken, GetAuthTypeFromRequest(authInfo->AuthType));
 
-                    // Close the original
-                    UnsafeNclNativeMethods.SafeNetHandles.CloseHandle(info->pInfo->AccessToken);
+                        // Close the original
+                        UnsafeNclNativeMethods.SafeNetHandles.CloseHandle(authInfo->AccessToken);
 
-                    return new WindowsPrincipal(identity);
+                        return new WindowsPrincipal(identity);
+                    }
                 }
             }
 
             return new WindowsPrincipal(WindowsIdentity.GetAnonymous()); // Anonymous / !IsAuthenticated
+        }
+
+        internal HttpApiTypes.HTTP_SSL_PROTOCOL_INFO GetTlsHandshake()
+        {
+            var requestInfo = NativeRequestV2->pRequestInfo;
+            var infoCount = NativeRequestV2->RequestInfoCount;
+
+            for (int i = 0; i < infoCount; i++)
+            {
+                var info = &requestInfo[i];
+                if (info != null
+                    && info->InfoType == HttpApiTypes.HTTP_REQUEST_INFO_TYPE.HttpRequestInfoTypeSslProtocol)
+                {
+                    var authInfo = (HttpApiTypes.HTTP_SSL_PROTOCOL_INFO*)info->pInfo;
+                    return *authInfo;
+                }
+            }
+
+            return default;
         }
 
         private static string GetAuthTypeFromRequest(HttpApiTypes.HTTP_REQUEST_AUTH_TYPE input)

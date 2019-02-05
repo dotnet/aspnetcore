@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
 
@@ -19,6 +20,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             { typeof(IHttpResponseFeature), _identityFunc },
             { typeof(IHttpSendFileFeature), _identityFunc },
             { typeof(ITlsConnectionFeature), ctx => ctx.GetTlsConnectionFeature() },
+            { typeof(ITlsHandshakeFeature), ctx => ctx.GetTlsHandshakeFeature() },
             // { typeof(ITlsTokenBindingFeature), ctx => ctx.GetTlsTokenBindingFeature() }, TODO: https://github.com/aspnet/HttpSysServer/issues/231
             { typeof(IHttpBufferingFeature), _identityFunc },
             { typeof(IHttpRequestLifetimeFeature), _identityFunc },

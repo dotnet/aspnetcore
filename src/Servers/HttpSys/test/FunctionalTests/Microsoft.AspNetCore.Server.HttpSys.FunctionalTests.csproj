@@ -10,4 +10,9 @@
     <Reference Include="System.Net.Http.WinHttpHandler" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <!--Imitate IIS Express so we can use it's cert bindings-->
+    <PackageTags>214124cd-d05b-4309-9af9-9caa44b2b74a</PackageTags>
+  </PropertyGroup>
+
 </Project>

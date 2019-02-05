@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Authentication.Core" />
+    <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.Net.Http.Headers" />
     <Reference Include="Microsoft.Win32.Registry" />

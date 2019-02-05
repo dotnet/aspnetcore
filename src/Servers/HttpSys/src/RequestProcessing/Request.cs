@@ -5,6 +5,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Net;
+using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using System.Threading;
@@ -82,6 +83,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             Headers = new RequestHeaders(_nativeRequestContext);
 
             User = _nativeRequestContext.GetUser();
+
+            if (IsHttps)
+            {
+                GetTlsHandshakeResults();
+            }
 
             // GetTlsTokenBindingInfo(); TODO: https://github.com/aspnet/HttpSysServer/issues/231
 
@@ -231,6 +237,59 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         internal bool IsUpgradable => !HasEntityBody && ComNetOS.IsWin8orLater;
 
         internal WindowsPrincipal User { get; }
+
+        public SslProtocols Protocol { get; private set; }
+
+        public CipherAlgorithmType CipherAlgorithm { get; private set; }
+
+        public int CipherStrength { get; private set; }
+
+        public HashAlgorithmType HashAlgorithm { get; private set; }
+
+        public int HashStrength { get; private set; }
+
+        public ExchangeAlgorithmType KeyExchangeAlgorithm { get; private set; }
+
+        public int KeyExchangeStrength { get; private set; }
+
+        private void GetTlsHandshakeResults()
+        {
+            var handshake = _nativeRequestContext.GetTlsHandshake();
+
+            Protocol = handshake.Protocol;
+            // https://docs.microsoft.com/en-us/windows/desktop/api/schannel/ns-schannel-_secpkgcontext_connectioninfo
+            // restore client/server bits so the result maps exaclty on SslProtocols constants
+            // Compare to https://referencesource.microsoft.com/#System/net/System/Net/SecureProtocols/_SslState.cs,8905d1bf17729de3
+#pragma warning disable CS0618 // Type or member is obsolete
+            if ((Protocol & SslProtocols.Ssl2) != 0)
+            {
+                Protocol |= SslProtocols.Ssl2;
+            }
+            if ((Protocol & SslProtocols.Ssl3) != 0)
+            {
+                Protocol |= SslProtocols.Ssl3;
+            }
+#pragma warning restore CS0618 // Type or member is obsolete
+            if ((Protocol & SslProtocols.Tls) != 0)
+            {
+                Protocol |= SslProtocols.Tls;
+            }
+            if ((Protocol & SslProtocols.Tls11) != 0)
+            {
+                Protocol |= SslProtocols.Tls11;
+            }
+            if ((Protocol & SslProtocols.Tls12) != 0)
+            {
+                Protocol |= SslProtocols.Tls12;
+            }
+
+            CipherAlgorithm = handshake.CipherType;
+            CipherStrength = (int)handshake.CipherStrength;
+            HashAlgorithm = handshake.HashType;
+            HashStrength = (int)handshake.HashStrength;
+            KeyExchangeAlgorithm = handshake.KeyExchangeType;
+            KeyExchangeStrength = (int)handshake.KeyExchangeStrength;
+        }
 
         // Populates the client certificate.  The result may be null if there is no client cert.
         // TODO: Does it make sense for this to be invoked multiple times (e.g. renegotiate)? Client and server code appear to
