@@ -22,16 +22,7 @@ namespace Microsoft.AspNetCore.Http
             return Task.CompletedTask;
         };
 
-        private static readonly Func<object, Task> _disposeAsyncDelegate = disposable => {
-            var valueTask = ((IAsyncDisposable)disposable).DisposeAsync();
-            if (valueTask.IsCompleted)
-            {
-                valueTask.GetAwaiter().GetResult();
-                return Task.CompletedTask;
-            }
-
-            return valueTask.AsTask();
-        };
+        private static readonly Func<object, Task> _disposeAsyncDelegate = disposable => ((IAsyncDisposable)disposable).DisposeAsync().AsTask();
 
         /// <summary>
         /// Gets the <see cref="HttpContext"/> for this response.
