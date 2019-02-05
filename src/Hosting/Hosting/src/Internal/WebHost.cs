@@ -343,7 +343,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
         public void Dispose()
         {
-            DisposeAsync().GetAwaiter().GetResult();
+            DisposeAsync().ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
         public async ValueTask DisposeAsync()
@@ -352,7 +352,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             {
                 try
                 {
-                    await StopAsync();
+                    await StopAsync().ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -360,11 +360,11 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 }
             }
 
-            await DisposeServiceProvider(_applicationServices);
-            await DisposeServiceProvider(_hostingServiceProvider);
+            await DisposeServiceProviderAsync(_applicationServices).ConfigureAwait(false);
+            await DisposeServiceProviderAsync(_hostingServiceProvider).ConfigureAwait(false);
         }
 
-        private async ValueTask DisposeServiceProvider(IServiceProvider serviceProvider)
+        private async ValueTask DisposeServiceProviderAsync(IServiceProvider serviceProvider)
         {
             switch (serviceProvider)
             {

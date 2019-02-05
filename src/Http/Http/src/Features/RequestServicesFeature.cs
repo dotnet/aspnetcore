@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Http.Features
             {
                 if (!_requestServicesSet && _scopeFactory != null)
                 {
-                    _context.Response.RegisterForDispose((IAsyncDisposable)this);
+                    _context.Response.RegisterForDisposeAsync(this);
                     _scope = _scopeFactory.CreateScope();
                     _requestServices = _scope.ServiceProvider;
                     _requestServicesSet = true;
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Http.Features
 
         public void Dispose()
         {
-            DisposeAsync().GetAwaiter().GetResult();
+            DisposeAsync().ConfigureAwait(false).GetAwaiter().GetResult();
         }
     }
 }
