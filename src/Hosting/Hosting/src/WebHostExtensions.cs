@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 if (host is IAsyncDisposable asyncDisposable)
                 {
-                    await asyncDisposable.DisposeAsync();
+                    await asyncDisposable.DisposeAsync().ConfigureAwait(false);
                 }
                 else
                 {
