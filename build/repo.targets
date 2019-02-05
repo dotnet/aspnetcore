@@ -105,8 +105,6 @@
   <Target Name="HelixPublish" DependsOnTargets="Restore">
     <ItemGroup>
       <CsProjects Include="@(ProjectToBuild)" Condition="'%(Extension)' == '.csproj'" />
-      <!-- <CsProjects Include="C:\Github\AspNetCore\src\Http\Http.Abstractions\test\Microsoft.AspNetCore.Http.Abstractions.Tests.csproj" />
-      <CsProjects Include="C:\Github\AspNetCore\src\Http\Authentication.Core\test\Microsoft.AspNetCore.Authentication.Core.Test.csproj" /> -->
     </ItemGroup>
     <MSBuild Projects="@(CsProjects)"
               Targets="PrepareHelixPayload"
