@@ -4,6 +4,10 @@
     <DefineConstants>$(DefineConstants);XPLAT</DefineConstants>
     <!-- WebDriver is not strong-named, so this test project cannot be strong named either. -->
     <SignAssembly>false</SignAssembly>
+
+    <!-- Workaround until https://github.com/aspnet/AspNetCore/issues/4321 is resolved. -->
+    <RunTemplateTests Condition="'$(OS)' != 'Windows_NT'">true</RunTemplateTests>
+    <SkipTests Condition="'$(RunTemplateTests)' != 'true'">true</SkipTests>
   </PropertyGroup>
 
   <ItemGroup>
