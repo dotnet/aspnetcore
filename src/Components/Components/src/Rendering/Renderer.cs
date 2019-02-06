@@ -193,12 +193,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// </summary>
         /// <param name="componentId">The ID returned by <see cref="AssignRootComponentId(IComponent)"/>.</param>
         /// <param name="initialParameters">The <see cref="ParameterCollection"/>with the initial parameters to use for rendering.</param>
-        protected Task RenderRootComponentAsync(int componentId, ParameterCollection initialParameters)
-        {
-            return RenderRootComponentCoreAsync(componentId, initialParameters);
-        }
-
-        private async Task RenderRootComponentCoreAsync(int componentId, ParameterCollection initialParameters)
+        protected async Task RenderRootComponentAsync(int componentId, ParameterCollection initialParameters)
         {
             if (_pendingTasks != null)
             {
@@ -462,8 +457,9 @@ namespace Microsoft.AspNetCore.Components.Rendering
             try
             {
                 // Process render queue until empty
-                while (TryDequeueRenderQueueEntry(out var nextToRender))
+                while (_batchBuilder.ComponentRenderQueue.Count > 0)
                 {
+                    var nextToRender = _batchBuilder.ComponentRenderQueue.Dequeue();
                     RenderInExistingBatch(nextToRender);
                 }
 
@@ -476,20 +472,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 RemoveEventHandlerIds(_batchBuilder.DisposedEventHandlerIds.ToRange(), updateDisplayTask);
                 _batchBuilder.Clear();
                 _isBatchInProgress = false;
-            }
-        }
-
-        private bool TryDequeueRenderQueueEntry(out RenderQueueEntry entry)
-        {
-            if (_batchBuilder.ComponentRenderQueue.Count > 0)
-            {
-                entry = _batchBuilder.ComponentRenderQueue.Dequeue();
-                return true;
-            }
-            else
-            {
-                entry = default;
-                return false;
             }
         }
 

@@ -49,7 +49,13 @@ namespace Microsoft.AspNetCore.Components
         /// </summary>
         /// <param name="workItem">The work item to execute.</param>
         public Task Invoke(Action workItem)
-            => _renderer.Invoke(workItem);
+        {
+            if (_renderer == null)
+            {
+                throw new InvalidOperationException("The render handle is not yet assigned.");
+            }
+            return _renderer.Invoke(workItem);
+        }
 
         /// <summary>
         /// Executes the supplied work item on the renderer's
@@ -57,6 +63,12 @@ namespace Microsoft.AspNetCore.Components
         /// </summary>
         /// <param name="workItem">The work item to execute.</param>
         public Task InvokeAsync(Func<Task> workItem)
-            => _renderer.InvokeAsync(workItem);
+        {
+            if (_renderer == null)
+            {
+                throw new InvalidOperationException("The render handle is not yet assigned.");
+            }
+            return _renderer.InvokeAsync(workItem);
+        }
     }
 }

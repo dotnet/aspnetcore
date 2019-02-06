@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.ExceptionServices;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -14,6 +15,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
     public class HtmlRendererTests
     {
         private static readonly Func<string, string> _encoder = (string t) => HtmlEncoder.Default.Encode(t);
+        private static readonly IDispatcher _dispatcher = Renderer.CreateDefaultDispatcher();
 
         [Fact]
         public void RenderComponent_CanRenderEmptyElement()
@@ -25,10 +27,10 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 rtb.OpenElement(0, "p");
                 rtb.CloseElement();
             })).BuildServiceProvider();
-            var htmlRenderer = new HtmlRenderer(serviceProvider, _encoder);
+            var htmlRenderer = new HtmlRenderer(serviceProvider, _encoder, _dispatcher);
 
             // Act
-            var result = htmlRenderer.RenderComponent<TestComponent>(ParameterCollection.Empty);
+            var result = GetResult(_dispatcher.Invoke(() => htmlRenderer.RenderComponent<TestComponent>(ParameterCollection.Empty)));
 
             // Assert
             Assert.Equal(expectedHtml, result);
@@ -45,10 +47,10 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 rtb.AddContent(1, "Hello world!");
                 rtb.CloseElement();
             })).BuildServiceProvider();
-            var htmlRenderer = new HtmlRenderer(serviceProvider, _encoder);
+            var htmlRenderer = new HtmlRenderer(serviceProvider, _encoder, _dispatcher);
 
             // Act
-            var result = htmlRenderer.RenderComponent<TestComponent>(ParameterCollection.Empty);
+            var result = GetResult(_dispatcher.Invoke(() => htmlRenderer.RenderComponent<TestComponent>(ParameterCollection.Empty)));
 
             // Assert
             Assert.Equal(expectedHtml, result);
@@ -65,10 +67,10 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 rtb.AddContent(1, "<Hello world!>");
                 rtb.CloseElement();
             })).BuildServiceProvider();
-            var htmlRenderer = new HtmlRenderer(serviceProvider, _encoder);
+            var htmlRenderer = new HtmlRenderer(serviceProvider, _encoder, _dispatcher);
 
             // Act
-            var result = htmlRenderer.RenderComponent<TestComponent>(ParameterCollection.Empty);
+            var result = GetResult(_dispatcher.Invoke(() => htmlRenderer.RenderComponent<TestComponent>(ParameterCollection.Empty)));
 
             // Assert
             Assert.Equal(expectedHtml, result);
@@ -86,10 +88,10 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 rtb.AddMarkupContent(1, "<span>Hello world!</span>");
                 rtb.CloseElement();
             })).BuildServiceProvider();
-            var htmlRenderer = new HtmlRenderer(serviceProvider, _encoder);
+            var htmlRenderer = new HtmlRenderer(serviceProvider, _encoder, _dispatcher);
 
             // Act
-            var result = htmlRenderer.RenderComponent<TestComponent>(ParameterCollection.Empty);
+            var result = GetResult(_dispatcher.Invoke(() => htmlRenderer.RenderComponent<TestComponent>(ParameterCollection.Empty)));
 
             // Assert
             Assert.Equal(expectedHtml, result);
@@ -109,10 +111,10 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 rtb.CloseElement();
             })).BuildServiceProvider();
 
-            var htmlRenderer = new HtmlRenderer(serviceProvider, _encoder);
+            var htmlRenderer = new HtmlRenderer(serviceProvider, _encoder, _dispatcher);
 
             // Act
-            var result = htmlRenderer.RenderComponent<TestComponent>(ParameterCollection.Empty);
+            var result = GetResult(_dispatcher.Invoke(() => htmlRenderer.RenderComponent<TestComponent>(ParameterCollection.Empty)));
 
             // Assert
             Assert.Equal(expectedHtml, result);
@@ -131,10 +133,10 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 rtb.CloseElement();
             })).BuildServiceProvider();
 
-            var htmlRenderer = new HtmlRenderer(serviceProvider, _encoder);
+            var htmlRenderer = new HtmlRenderer(serviceProvider, _encoder, _dispatcher);
 
             // Act
-            var result = htmlRenderer.RenderComponent<TestComponent>(ParameterCollection.Empty);
+            var result = GetResult(_dispatcher.Invoke(() => htmlRenderer.RenderComponent<TestComponent>(ParameterCollection.Empty)));
 
             // Assert
             Assert.Equal(expectedHtml, result);
@@ -152,10 +154,10 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 rtb.CloseElement();
             })).BuildServiceProvider();
 
-            var htmlRenderer = new HtmlRenderer(serviceProvider, _encoder);
+            var htmlRenderer = new HtmlRenderer(serviceProvider, _encoder, _dispatcher);
 
             // Act
-            var result = htmlRenderer.RenderComponent<TestComponent>(ParameterCollection.Empty);
+            var result = GetResult(_dispatcher.Invoke(() => htmlRenderer.RenderComponent<TestComponent>(ParameterCollection.Empty)));
 
             // Assert
             Assert.Equal(expectedHtml, result);
@@ -173,10 +175,10 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 rtb.CloseElement();
             })).BuildServiceProvider();
 
-            var htmlRenderer = new HtmlRenderer(serviceProvider, _encoder);
+            var htmlRenderer = new HtmlRenderer(serviceProvider, _encoder, _dispatcher);
 
             // Act
-            var result = htmlRenderer.RenderComponent<TestComponent>(ParameterCollection.Empty);
+            var result = GetResult(_dispatcher.Invoke(() => htmlRenderer.RenderComponent<TestComponent>(ParameterCollection.Empty)));
 
             // Assert
             Assert.Equal(expectedHtml, result);
@@ -196,10 +198,10 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 rtb.CloseElement();
             })).BuildServiceProvider();
 
-            var htmlRenderer = new HtmlRenderer(serviceProvider, _encoder);
+            var htmlRenderer = new HtmlRenderer(serviceProvider, _encoder, _dispatcher);
 
             // Act
-            var result = htmlRenderer.RenderComponent<TestComponent>(ParameterCollection.Empty);
+            var result = GetResult(_dispatcher.Invoke(() => htmlRenderer.RenderComponent<TestComponent>(ParameterCollection.Empty)));
 
             // Assert
             Assert.Equal(expectedHtml, result);
@@ -226,10 +228,10 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 rtb.CloseElement();
             })).BuildServiceProvider();
 
-            var htmlRenderer = new HtmlRenderer(serviceProvider, _encoder);
+            var htmlRenderer = new HtmlRenderer(serviceProvider, _encoder, _dispatcher);
 
             // Act
-            var result = htmlRenderer.RenderComponent<TestComponent>(ParameterCollection.Empty);
+            var result = GetResult(_dispatcher.Invoke(() => htmlRenderer.RenderComponent<TestComponent>(ParameterCollection.Empty)));
 
             // Assert
             Assert.Equal(expectedHtml, result);
@@ -255,10 +257,10 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 rtb.CloseComponent();
             })).BuildServiceProvider();
 
-            var htmlRenderer = new HtmlRenderer(serviceProvider, _encoder);
+            var htmlRenderer = new HtmlRenderer(serviceProvider, _encoder, _dispatcher);
 
             // Act
-            var result = htmlRenderer.RenderComponent<TestComponent>(ParameterCollection.Empty);
+            var result = GetResult(_dispatcher.Invoke(() => htmlRenderer.RenderComponent<TestComponent>(ParameterCollection.Empty)));
 
             // Assert
             Assert.Equal(expectedHtml, result);
@@ -285,10 +287,10 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 rtb.CloseComponent();
             })).BuildServiceProvider();
 
-            var htmlRenderer = new HtmlRenderer(serviceProvider, _encoder);
+            var htmlRenderer = new HtmlRenderer(serviceProvider, _encoder, _dispatcher);
 
             // Act
-            var result = htmlRenderer.RenderComponent<TestComponent>(ParameterCollection.Empty);
+            var result = GetResult(_dispatcher.Invoke(() => htmlRenderer.RenderComponent<TestComponent>(ParameterCollection.Empty)));
 
             // Assert
             Assert.Equal(expectedHtml, result);
@@ -315,16 +317,16 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 .AddSingleton(new Func<ParameterCollection, RenderFragment>(Content))
                 .BuildServiceProvider();
 
-            var htmlRenderer = new HtmlRenderer(serviceProvider, _encoder);
+            var htmlRenderer = new HtmlRenderer(serviceProvider, _encoder, _dispatcher);
             Action<UIChangeEventArgs> change = (UIChangeEventArgs changeArgs) => throw new InvalidOperationException();
 
             // Act
-            var result = htmlRenderer.RenderComponent<ComponentWithParameters>(
+            var result = GetResult(_dispatcher.Invoke(() => htmlRenderer.RenderComponent<ComponentWithParameters>(
                 new ParameterCollection(new[] {
                     RenderTreeFrame.Element(0,string.Empty),
                     RenderTreeFrame.Attribute(1,"update",change),
                     RenderTreeFrame.Attribute(2,"value",5)
-                }, 0));
+                }, 0))));
 
             // Assert
             Assert.Equal(expectedHtml, result);
@@ -347,10 +349,10 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 rtb.CloseElement();
             })).BuildServiceProvider();
 
-            var htmlRenderer = new HtmlRenderer(serviceProvider, _encoder);
+            var htmlRenderer = new HtmlRenderer(serviceProvider, _encoder, _dispatcher);
 
             // Act
-            var result = htmlRenderer.RenderComponent<TestComponent>(ParameterCollection.Empty);
+            var result = GetResult(_dispatcher.Invoke(() => htmlRenderer.RenderComponent<TestComponent>(ParameterCollection.Empty)));
 
             // Assert
             Assert.Equal(expectedHtml, result);
@@ -374,13 +376,28 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 rtb.CloseElement();
             })).BuildServiceProvider();
 
-            var htmlRenderer = new HtmlRenderer(serviceProvider, _encoder);
+            var htmlRenderer = new HtmlRenderer(serviceProvider, _encoder, _dispatcher);
 
             // Act
-            var result = htmlRenderer.RenderComponent<TestComponent>(ParameterCollection.Empty);
+            var result = GetResult(_dispatcher.Invoke(() => htmlRenderer.RenderComponent<TestComponent>(ParameterCollection.Empty)));
 
             // Assert
             Assert.Equal(expectedHtml, result);
+        }
+
+        private IEnumerable<string> GetResult(Task<IEnumerable<string>> task)
+        {
+            Assert.True(task.IsCompleted);
+            if (task.IsCompletedSuccessfully)
+            {
+                return task.Result;
+            }
+            else
+            {
+                ExceptionDispatchInfo.Capture(task.Exception).Throw();
+                // We never get here
+                return null;
+            }
         }
 
         private class ComponentWithParameters : IComponent
@@ -410,13 +427,13 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 "<", "p", ">", "20", "</", "p", ">" };
             var serviceProvider = new ServiceCollection().AddSingleton<AsyncComponent>().BuildServiceProvider();
 
-            var htmlRenderer = new HtmlRenderer(serviceProvider, _encoder);
+            var htmlRenderer = new HtmlRenderer(serviceProvider, _encoder, _dispatcher);
 
             // Act
-            var result = await htmlRenderer.RenderComponentAsync<AsyncComponent>(ParameterCollection.FromDictionary(new Dictionary<string, object>
+            var result = await _dispatcher.InvokeAsync(() => htmlRenderer.RenderComponentAsync<AsyncComponent>(ParameterCollection.FromDictionary(new Dictionary<string, object>
             {
                 ["Value"] = 10
-            }));
+            })));
 
             // Assert
             Assert.Equal(expectedHtml, result);
@@ -433,14 +450,14 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
             var serviceProvider = new ServiceCollection().AddSingleton<AsyncComponent>().BuildServiceProvider();
 
-            var htmlRenderer = new HtmlRenderer(serviceProvider, _encoder);
+            var htmlRenderer = new HtmlRenderer(serviceProvider, _encoder, _dispatcher);
 
             // Act
-            var result = await htmlRenderer.RenderComponentAsync<NestedAsyncComponent>(ParameterCollection.FromDictionary(new Dictionary<string, object>
+            var result = await _dispatcher.InvokeAsync(() => htmlRenderer.RenderComponentAsync<NestedAsyncComponent>(ParameterCollection.FromDictionary(new Dictionary<string, object>
             {
                 ["Nested"] = false,
                 ["Value"] = 10
-            }));
+            })));
 
             // Assert
             Assert.Equal(expectedHtml, result);
