@@ -8,9 +8,12 @@
 <Project>
   <!--
 
-    These versions should be updated by automation.
+    These versions should ONLY be updated by automation.
 
-    DO NOT UPDATE VERSIONS MANUALLY! Run `darc update-dependencies` to make sure this and Version.Details.xml stay in sync.
+    DO NOT UPDATE THESE MANUALLY. Use the `darc` command line tool to update this file so it stays in sync with
+    Version.Details.xml.
+
+    See https://github.com/dotnet/arcade/blob/master/Documentation/Darc.md for instructions on using darc.
 
   -->
   <PropertyGroup Label="Automated">
@@ -116,27 +119,20 @@
     <MicrosoftNETSdkRazorPackageVersion>3.0.0-preview-19104-04</MicrosoftNETSdkRazorPackageVersion>
   </PropertyGroup>
   <!--
-    ^^^^^^^^^^
-    See note at top of file. DO NOT UPDATE VERSIONS ABOVE THIS POINT MANUALLY.
-    ^^^^^^^^^^^
 
-    vvvvvvvvvvv
-    Versions below this point should be updated manually as needed.
-    vvvvvvvvvvv
+    ^^^^^^^^^^
+    SEE NOTE ABOVE.
+
+    Versions above this comment are updated automatically. Don't change them manually.
+
+    Versions below this comment are not managed by automation and can be changed as needed.
   -->
-  <PropertyGroup Label="Build tool dependencies">
+  <PropertyGroup Label="Manual">
+    <!-- Build tool dependencies -->
     <InternalAspNetCoreSdkPackageVersion>$(KoreBuildVersion)</InternalAspNetCoreSdkPackageVersion>
     <InternalAspNetCoreSdkPackageVersion Condition=" '$(KoreBuildVersion)' == '' ">3.0.0-build-feat-vs2019-20190206.1</InternalAspNetCoreSdkPackageVersion>
     <MicrosoftNETFrameworkReferenceAssembliesPackageVersion>1.0.0-alpha-004</MicrosoftNETFrameworkReferenceAssembliesPackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.9.0</MicrosoftNETTestSdkPackageVersion>
-  </PropertyGroup>
-  <!--
-
-    These versions are not managed by automation.
-    Update them manually as necessary.
-
-  -->
-  <PropertyGroup Label="Pinned">
     <!-- Stable dotnet/corefx packages no longer updated for .NET Core 3 -->
     <SystemBuffersPackageVersion>4.5.0</SystemBuffersPackageVersion>
     <SystemCodeDomPackageVersion>4.4.0</SystemCodeDomPackageVersion>

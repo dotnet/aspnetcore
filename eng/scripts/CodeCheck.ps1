@@ -11,7 +11,7 @@ $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 1
 Import-Module -Scope Local -Force "$PSScriptRoot/common.psm1"
 
-$repoRoot = Resolve-Path "$PSScriptRoot/../../"
+$repoRoot = Resolve-Path "$PSScriptRoot/../.."
 
 [string[]] $errors = @()
 
@@ -27,6 +27,28 @@ try {
 
     if ($ci) {
         & $repoRoot/build.ps1 -ci /t:InstallDotNet
+    }
+
+    Write-Host "Checking that Versions.props and Version.Details.xml match"
+    [xml] $versionProps = Get-Content "$repoRoot/eng/Versions.props"
+    [xml] $versionDetails = Get-Content "$repoRoot/eng/Version.Details.xml"
+    foreach ($dep in $versionDetails.SelectNodes('//ProductDependencies/Dependency')) {
+        Write-Verbose "Found $dep"
+        $varName = $dep.Name -replace '\.',''
+        $varName = $varName -replace '\-',''
+        $varName = "${varName}PackageVersion"
+        $versionVar = $versionProps.SelectSingleNode("//PropertyGroup[`@Label=`"Automated`"]/$varName")
+        if (-not $versionVar) {
+            LogError "Missing version variable '$varName' in the 'Automated' property group in $repoRoot/eng/Versions.props"
+            continue
+        }
+
+        $expectedVersion = $dep.Version
+        $actualVersion = $versionVar.InnerText
+
+        if ($expectedVersion -ne $actualVersion) {
+            LogError "Version variable '$varName' does not match the value in Version.Details.xml. Expected '$expectedVersion', actual '$actualVersion'"
+        }
     }
 
     Write-Host "Checking that solutions are up to date"
