@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using Microsoft.AspNetCore.Components.Browser;
 using Microsoft.AspNetCore.Components.Browser.Rendering;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
@@ -41,7 +42,13 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var scope = _scopeFactory.CreateScope();
             var jsRuntime = new RemoteJSRuntime(client);
             var rendererRegistry = new RendererRegistry();
-            var renderer = new RemoteRenderer(scope.ServiceProvider, rendererRegistry, jsRuntime, client);
+            var dispatcher = Renderer.CreateDefaultDispatcher();
+            var renderer = new RemoteRenderer(
+                scope.ServiceProvider,
+                rendererRegistry,
+                jsRuntime,
+                client,
+                dispatcher);
 
             var circuitHandlers = scope.ServiceProvider.GetServices<CircuitHandler>()
                 .OrderBy(h => h.Order)

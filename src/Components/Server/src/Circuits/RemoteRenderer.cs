@@ -44,8 +44,9 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
             IServiceProvider serviceProvider,
             RendererRegistry rendererRegistry,
             IJSRuntime jsRuntime,
-            IClientProxy client)
-            : base(serviceProvider)
+            IClientProxy client,
+            IDispatcher dispatcher)
+            : base(serviceProvider, dispatcher)
         {
             _rendererRegistry = rendererRegistry;
             _jsRuntime = jsRuntime;
@@ -61,7 +62,7 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
         /// <typeparam name="TComponent">The type of the component.</typeparam>
         /// <param name="domElementSelector">A CSS selector that uniquely identifies a DOM element.</param>
         public void AddComponent<TComponent>(string domElementSelector)
-            where TComponent: IComponent
+            where TComponent : IComponent
         {
             AddComponent(typeof(TComponent), domElementSelector);
         }

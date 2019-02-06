@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         private readonly Dictionary<int, ComponentState> _componentStateById = new Dictionary<int, ComponentState>();
         private readonly RenderBatchBuilder _batchBuilder = new RenderBatchBuilder();
         private readonly Dictionary<int, EventHandlerInvoker> _eventBindings = new Dictionary<int, EventHandlerInvoker>();
-        private RendererSynchronizationContext _synchronizationContext = new RendererSynchronizationContext();
+        private IDispatcher _dispatcher;
 
         private int _nextComponentId = 0; // TODO: change to 'long' when Mono .NET->JS interop supports it
         private bool _isBatchInProgress;
@@ -32,11 +32,19 @@ namespace Microsoft.AspNetCore.Components.Rendering
         {
             add
             {
-                _synchronizationContext.UnhandledException += value;
+                if (!(_dispatcher is RendererSynchronizationContext rendererSynchronizationContext))
+                {
+                    return;
+                }
+                rendererSynchronizationContext.UnhandledException += value;
             }
             remove
             {
-                _synchronizationContext.UnhandledException -= value;
+                if (!(_dispatcher is RendererSynchronizationContext rendererSynchronizationContext))
+                {
+                    return;
+                }
+                rendererSynchronizationContext.UnhandledException -= value;
             }
         }
 
@@ -48,6 +56,22 @@ namespace Microsoft.AspNetCore.Components.Rendering
         {
             _componentFactory = new ComponentFactory(serviceProvider);
         }
+
+        /// <summary>
+        /// Constructs an instance of <see cref="Renderer"/>.
+        /// </summary>
+        /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to be used when initialising components.</param>
+        public Renderer(IServiceProvider serviceProvider, IDispatcher dispatcher)
+        {
+            _componentFactory = new ComponentFactory(serviceProvider);
+            _dispatcher = dispatcher;
+        }
+
+        /// <summary>
+        /// Creates an <see cref="IDispatcher"/> that can be used with one or more renderers.
+        /// </summary>
+        /// <returns>The <see cref="IDispatcher"/>.</returns>
+        public static IDispatcher CreateDefaultDispatcher() => new RendererSynchronizationContext();
 
         /// <summary>
         /// Constructs a new component of the specified type.
@@ -277,7 +301,13 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="workItem">The work item to execute.</param>
         public virtual Task Invoke(Action workItem)
         {
-            if (SynchronizationContext.Current == _synchronizationContext)
+            if (!(_dispatcher is SynchronizationContext synchronizationContext))
+            {
+                workItem();
+                return Task.CompletedTask;
+            }
+
+            if (SynchronizationContext.Current == synchronizationContext)
             {
                 // No need to dispatch. Avoid deadlock by invoking directly.
                 workItem();
@@ -285,8 +315,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
             }
             else
             {
-                var syncContext = _synchronizationContext;
-                return syncContext.Invoke(workItem);
+                var syncContext = synchronizationContext;
+                return _dispatcher.Invoke(workItem);
             }
         }
 
@@ -297,14 +327,20 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="workItem">The work item to execute.</param>
         public virtual Task InvokeAsync(Func<Task> workItem)
         {
-            if (SynchronizationContext.Current == _synchronizationContext)
+            if (!(_dispatcher is SynchronizationContext synchronizationContext))
+            {
+                workItem();
+                return Task.CompletedTask;
+            }
+
+            if (SynchronizationContext.Current == synchronizationContext)
             {
                 // No need to dispatch. Avoid deadlock by invoking directly.
                 return workItem();
             }
             else
             {
-                return _synchronizationContext.InvokeAsync(workItem);
+                return _dispatcher.InvokeAsync(workItem);
             }
         }
 
@@ -399,7 +435,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             // Plus, any other logic that mutates state accessed during rendering also
             // needs not to run concurrently with rendering so should be dispatched to
             // the renderer's sync context.
-            if (SynchronizationContext.Current != _synchronizationContext)
+            if (_dispatcher is SynchronizationContext synchronizationContext && SynchronizationContext.Current != synchronizationContext)
             {
                 throw new InvalidOperationException(
                     "The current thread is not associated with the renderer's synchronization context. " +

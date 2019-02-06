@@ -1466,7 +1466,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
         private class NoOpRenderer : Renderer
         {
-            public NoOpRenderer() : base(new TestServiceProvider())
+            public NoOpRenderer() : base(new TestServiceProvider(), new RendererSynchronizationContext())
             {
             }
 

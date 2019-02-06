@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
         {
         }
 
-        public TestRenderer(IServiceProvider serviceProvider) : base(serviceProvider)
+        public TestRenderer(IServiceProvider serviceProvider) : base(serviceProvider, new RendererSynchronizationContext())
         {
         }
 

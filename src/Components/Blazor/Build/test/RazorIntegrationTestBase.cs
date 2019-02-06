@@ -434,7 +434,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 
         private class TestRenderer : Renderer
         {
-            public TestRenderer() : base(new TestServiceProvider())
+            public TestRenderer() : base(new TestServiceProvider(), CreateDefaultDispatcher())
             {
             }
 
