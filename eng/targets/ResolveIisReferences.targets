@@ -46,7 +46,7 @@ with the right MSBuild incantations to get output copied to the right place.
 
         <ProjectReference Include="@(NativeProjectReference)">
           <!-- Set the arch-->
-          <SetPlatform>Platform=x86</SetPlatform>
+          <SetPlatform>Platform=Win32</SetPlatform>
           <!-- The base path for the output. -->
           <LinkBase>x86\%(HandlerPath)\</LinkBase>
           <!-- This reference assembly doesn't need -->
