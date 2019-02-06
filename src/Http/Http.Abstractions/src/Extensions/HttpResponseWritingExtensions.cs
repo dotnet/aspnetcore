@@ -112,18 +112,17 @@ namespace Microsoft.AspNetCore.Http
             var encoder = encoding.GetEncoder();
             var source = text.AsSpan();
             var completed = false;
-            while (!completed)
+            var totalBytesUsed = 0;
+
+            while (!completed || encodedLength - totalBytesUsed != 0)
             {
                 encoder.Convert(source, destination, source.Length == 0, out var charsUsed, out var bytesUsed, out completed);
+                totalBytesUsed += bytesUsed;
 
                 writer.Advance(bytesUsed);
-                if (completed)
-                {
-                    return;
-                }
                 source = source.Slice(charsUsed);
 
-                destination = writer.GetSpan(encodedLength - bytesUsed);
+                destination = writer.GetSpan(encodedLength - totalBytesUsed);
             }
         }
     }
