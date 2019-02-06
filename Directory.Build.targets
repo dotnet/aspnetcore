@@ -12,6 +12,11 @@
     <PackageOutputPath Condition=" '$(IsShippingPackage)' != 'true' ">$(ArtifactsNonShippingPackagesDir)</PackageOutputPath>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(PackAsTool)' == 'true' AND '$(IsShippingPackage)' == 'true'">
+    <!-- This is a requirement for Microsoft tool packages only. -->
+    <PackAsToolShimRuntimeIdentifiers>win-x64;win-x86</PackAsToolShimRuntimeIdentifiers>
+  </PropertyGroup>
+
   <PropertyGroup Condition=" '$(MSBuildProjectExtension)' == '.csproj' ">
     <PackageId Condition=" '$(PackageId)' == '' ">$(AssemblyName)</PackageId>
     <IsPackable Condition="'$(IsPackable)' == '' AND ( '$(IsTestProject)' == 'true' OR '$(IsTestAssetProject)' == 'true' OR '$(IsBenchmarkProject)' == 'true' OR '$(IsSampleProject)' == 'true' ) ">false</IsPackable>
@@ -61,6 +66,8 @@
 
     <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == 'netcoreapp3.0' ">$(MicrosoftNETCoreAppPackageVersion)</RuntimeFrameworkVersion>
   </PropertyGroup>
+
+  <Import Project="eng\Workarounds.targets" />
 
   <Import Project="eng\targets\ResolveIisReferences.targets" Condition=" '$(MSBuildProjectExtension)' != '.vcxproj' " />
   <Import Project="eng\targets\Cpp.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.vcxproj'" />

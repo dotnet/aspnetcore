@@ -6,7 +6,13 @@
 
 -->
 <Project>
-  <!-- These versions should be updated by automation. -->
+  <!--
+
+    These versions should be updated by automation.
+
+    DO NOT UPDATE VERSIONS MANUALLY! Run `darc update-dependencies` to make sure this and Version.Details.xml stay in sync.
+
+  -->
   <PropertyGroup Label="Automated">
     <!-- Packages from dotnet/core-setup -->
     <MicrosoftExtensionsDependencyModelPackageVersion>3.0.0-preview-27405-2</MicrosoftExtensionsDependencyModelPackageVersion>
@@ -34,6 +40,8 @@
     <SystemServiceProcessServiceControllerPackageVersion>4.6.0-preview.19105.1</SystemServiceProcessServiceControllerPackageVersion>
     <SystemTextEncodingsWebPackageVersion>4.6.0-preview.19105.1</SystemTextEncodingsWebPackageVersion>
     <SystemThreadingChannelsPackageVersion>4.6.0-preview.19105.1</SystemThreadingChannelsPackageVersion>
+    <!-- Only listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
+    <MicrosoftNETCorePlatformsPackageVersion>3.0.0-preview.19105.1</MicrosoftNETCorePlatformsPackageVersion>
     <!-- Packages from aspnet/Extensions -->
     <InternalAspNetCoreAnalyzersPackageVersion>3.0.0-preview.19105.4</InternalAspNetCoreAnalyzersPackageVersion>
     <MicrosoftAspNetCoreAnalyzerTestingPackageVersion>3.0.0-preview.19105.4</MicrosoftAspNetCoreAnalyzerTestingPackageVersion>
@@ -107,13 +115,27 @@
     <MicrosoftCodeAnalysisRazorPackageVersion>3.0.0-preview-19104-04</MicrosoftCodeAnalysisRazorPackageVersion>
     <MicrosoftNETSdkRazorPackageVersion>3.0.0-preview-19104-04</MicrosoftNETSdkRazorPackageVersion>
   </PropertyGroup>
+  <!--
+    ^^^^^^^^^^
+    See note at top of file. DO NOT UPDATE VERSIONS ABOVE THIS POINT MANUALLY.
+    ^^^^^^^^^^^
+
+    vvvvvvvvvvv
+    Versions below this point should be updated manually as needed.
+    vvvvvvvvvvv
+  -->
   <PropertyGroup Label="Build tool dependencies">
     <InternalAspNetCoreSdkPackageVersion>$(KoreBuildVersion)</InternalAspNetCoreSdkPackageVersion>
-    <InternalAspNetCoreSdkPackageVersion Condition=" '$(KoreBuildVersion)' == '' ">3.0.0-build-20190130.1</InternalAspNetCoreSdkPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion Condition=" '$(KoreBuildVersion)' == '' ">3.0.0-build-feat-vs2019-20190206.1</InternalAspNetCoreSdkPackageVersion>
     <MicrosoftNETFrameworkReferenceAssembliesPackageVersion>1.0.0-alpha-004</MicrosoftNETFrameworkReferenceAssembliesPackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.9.0</MicrosoftNETTestSdkPackageVersion>
   </PropertyGroup>
-  <!-- These versions are not managed by automation. -->
+  <!--
+
+    These versions are not managed by automation.
+    Update them manually as necessary.
+
+  -->
   <PropertyGroup Label="Pinned">
     <!-- Stable dotnet/corefx packages no longer updated for .NET Core 3 -->
     <SystemBuffersPackageVersion>4.5.0</SystemBuffersPackageVersion>

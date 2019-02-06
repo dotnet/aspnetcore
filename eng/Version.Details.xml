@@ -353,6 +353,10 @@
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>9e074e4a3f3626fa953f36ab79e3cd3e6db1c9de</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.NETCore.Platforms" Version="3.0.0-preview.19105.1">
+      <Uri>https://github.com/dotnet/corefx</Uri>
+      <Sha>53b8e52dbf12355ce845230f6bbe6c5425bb73e6</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.Extensions.DependencyModel" Version="3.0.0-preview-27404-9">
       <Uri>https://github.com/dotnet/core-setup</Uri>
       <Sha>5ff1240bef06a9a0a6544fcef93808ac26028e43</Sha>
