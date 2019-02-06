@@ -19,8 +19,8 @@
     <Content Include="..\AspNetCore\bin\$(Configuration)\x64\aspnetcorev2.dll" PackagePath="contentFiles/any/any/x64" />
     <Content Include="..\AspNetCore\bin\$(Configuration)\x64\aspnetcorev2.pdb" PackagePath="contentFiles/any/any/x64" />
 
-    <Content Include="..\OutOfProcessRequestHandler\bin\$(Configuration)\x86\aspnetcorev2_outofprocess.dll" PackagePath="contentFiles/any/any/x86/2.0.0" />
-    <Content Include="..\OutOfProcessRequestHandler\bin\$(Configuration)\x86\aspnetcorev2_outofprocess.pdb" PackagePath="contentFiles/any/any/x86/2.0.0" />
+    <Content Include="..\OutOfProcessRequestHandler\bin\$(Configuration)\Win32\aspnetcorev2_outofprocess.dll" PackagePath="contentFiles/any/any/x86/2.0.0" />
+    <Content Include="..\OutOfProcessRequestHandler\bin\$(Configuration)\Win32\aspnetcorev2_outofprocess.pdb" PackagePath="contentFiles/any/any/x86/2.0.0" />
     <Content Include="..\OutOfProcessRequestHandler\bin\$(Configuration)\x64\aspnetcorev2_outofprocess.dll" PackagePath="contentFiles/any/any/x64/2.0.0" />
     <Content Include="..\OutOfProcessRequestHandler\bin\$(Configuration)\x64\aspnetcorev2_outofprocess.pdb" PackagePath="contentFiles/any/any/x64/2.0.0" />
 
