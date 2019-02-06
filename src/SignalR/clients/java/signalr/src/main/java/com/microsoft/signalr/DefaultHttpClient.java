@@ -86,10 +86,6 @@ final class DefaultHttpClient extends HttpClient {
         }
     }
 
-    public DefaultHttpClient(int timeoutInMiliseonds) {
-
-    }
-
     @Override
     public Single<HttpResponse> send(HttpRequest httpRequest) {
         return send(httpRequest, null);

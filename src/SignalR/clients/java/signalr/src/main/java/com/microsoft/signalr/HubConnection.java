@@ -299,7 +299,7 @@ public class HubConnection {
             if (transport == null) {
                 switch (transportEnum) {
                     case LONG_POLLING:
-                        transport = new LongPollingTransport(headers, httpClient);
+                        transport = new LongPollingTransport(headers, httpClient, accessTokenProvider);
                         break;
                     default:
                         transport = new WebSocketTransport(headers, httpClient);

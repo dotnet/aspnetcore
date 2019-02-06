@@ -22,7 +22,7 @@ public class LongPollingTransportTest {
                 .on("GET", (req) -> Single.just(new HttpResponse(404, "", "")));
 
         Map<String, String> headers = new HashMap<>();
-        LongPollingTransport transport = new LongPollingTransport(headers, client);
+        LongPollingTransport transport = new LongPollingTransport(headers, client, Single.just(""));
         Throwable exception = assertThrows(RuntimeException.class, () -> transport.start("http://example.com").timeout(1, TimeUnit.SECONDS).blockingAwait());
         assertEquals(Exception.class, exception.getCause().getClass());
         assertEquals("Failed to connect.", exception.getCause().getMessage());
@@ -42,8 +42,8 @@ public class LongPollingTransportTest {
                 });
 
         Map<String, String> headers = new HashMap<>();
-        LongPollingTransport transport = new LongPollingTransport(headers, client);
-        transport.start("http://example.com").timeout(100, TimeUnit.SECONDS).blockingAwait();
+        LongPollingTransport transport = new LongPollingTransport(headers, client, Single.just(""));
+        transport.start("http://example.com").timeout(1, TimeUnit.SECONDS).blockingAwait();
         assertFalse(transport.isActive());
     }
 
@@ -60,14 +60,14 @@ public class LongPollingTransportTest {
                 });
 
         Map<String, String> headers = new HashMap<>();
-        LongPollingTransport transport = new LongPollingTransport(headers, client);
+        LongPollingTransport transport = new LongPollingTransport(headers, client, Single.just(""));
         AtomicBoolean onClosedRan = new AtomicBoolean(false);
         transport.setOnClose((error) -> {
             onClosedRan.set(true);
         });
 
         assertFalse(onClosedRan.get());
-        transport.start("http://example.com").timeout(100, TimeUnit.SECONDS).blockingAwait();
+        transport.start("http://example.com").timeout(1, TimeUnit.SECONDS).blockingAwait();
         assertTrue(onClosedRan.get());
         assertFalse(transport.isActive());
     }
@@ -85,14 +85,14 @@ public class LongPollingTransportTest {
                 });
 
         Map<String, String> headers = new HashMap<>();
-        LongPollingTransport transport = new LongPollingTransport(headers, client);
+        LongPollingTransport transport = new LongPollingTransport(headers, client, Single.just(""));
         AtomicBoolean onClosedRan = new AtomicBoolean(false);
         transport.setOnClose((error) -> {
             onClosedRan.set(true);
             assertEquals("Unexpected response code 999", error);
         });
 
-        transport.start("http://example.com").timeout(100, TimeUnit.SECONDS).blockingAwait();
+        transport.start("http://example.com").timeout(1, TimeUnit.SECONDS).blockingAwait();
         assertFalse(transport.isActive());
         assertTrue(onClosedRan.get());
     }
@@ -103,7 +103,7 @@ public class LongPollingTransportTest {
                 .on("GET", (req) -> Single.just(new HttpResponse(200, "", "")));
 
         Map<String, String> headers = new HashMap<>();
-        LongPollingTransport transport = new LongPollingTransport(headers, client);
+        LongPollingTransport transport = new LongPollingTransport(headers, client, Single.just(""));
 
         AtomicBoolean onReceivedRan = new AtomicBoolean(false);
         transport.setOnReceive((message) -> {
@@ -115,6 +115,5 @@ public class LongPollingTransportTest {
         // when we are handling the last outstanding poll.
         transport.onReceive("TEST");
         assertTrue(onReceivedRan.get());
-        transport.stop();
     }
 }
