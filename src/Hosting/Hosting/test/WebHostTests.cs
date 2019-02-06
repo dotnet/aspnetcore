@@ -195,7 +195,8 @@ namespace Microsoft.AspNetCore.Hosting
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/7291
         public async Task WebHostStopAsyncUsesDefaultTimeoutIfGivenTokenDoesNotFire()
         {
             var data = new Dictionary<string, string>
