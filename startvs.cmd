@@ -2,12 +2,8 @@
 
 :: This command launches a Visual Studio solution with environment variables required to use a local version of the .NET Core SDK.
 
-IF "%DOTNET_HOME%"=="" (
-    set DOTNET_HOME=%USERPROFILE%\.dotnet
-)
-
 :: This tells .NET Core to use the same dotnet.exe that build scripts use
-SET DOTNET_ROOT=%DOTNET_HOME%\x64
+SET DOTNET_ROOT=%~dp0.dotnet\x64
 
 :: This tells .NET Core not to go looking for .NET Core in other places
 SET DOTNET_MULTILEVEL_LOOKUP=0

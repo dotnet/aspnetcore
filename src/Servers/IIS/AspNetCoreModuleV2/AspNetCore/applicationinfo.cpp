@@ -133,6 +133,30 @@ APPLICATION_INFO::CreateApplication(IHttpContext& pHttpContext)
 HRESULT
 APPLICATION_INFO::TryCreateApplication(IHttpContext& pHttpContext, const ShimOptions& options)
 {
+    const auto startupEvent = Environment::GetEnvironmentVariableValue(L"ASPNETCORE_STARTUP_SUSPEND_EVENT");
+    if (startupEvent.has_value())
+    {
+        LOG_INFOF(L"Startup suspend event %ls", startupEvent.value().c_str());
+
+        HandleWrapper<NullHandleTraits> eventHandle = OpenEvent(SYNCHRONIZE, false, startupEvent.value().c_str());
+
+        if (eventHandle == nullptr)
+        {
+            LOG_INFOF(L"Unable to open startup suspend event");
+        }
+        else
+        {
+            auto const suspendedEventName = startupEvent.value() + L"_suspended";
+
+            HandleWrapper<NullHandleTraits> suspendedEventHandle = OpenEvent(EVENT_MODIFY_STATE, false, suspendedEventName.c_str());
+            if (suspendedEventHandle != nullptr)
+            {
+                LOG_LAST_ERROR_IF(!SetEvent(suspendedEventHandle));
+            }
+            LOG_LAST_ERROR_IF(WaitForSingleObject(eventHandle, INFINITE) != WAIT_OBJECT_0);
+        }
+
+    }
     RETURN_IF_FAILED(m_handlerResolver.GetApplicationFactory(*pHttpContext.GetApplication(), m_pApplicationFactory, options));
     LOG_INFO(L"Creating handler application");
 

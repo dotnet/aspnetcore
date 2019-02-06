@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
@@ -518,6 +519,41 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.Equal(Path.GetDirectoryName(deploymentResult.HostProcess.MainModule.FileName), await deploymentResult.HttpClient.GetStringAsync("/CurrentDirectory"));
             Assert.Equal(deploymentResult.ContentRoot + "\\", await deploymentResult.HttpClient.GetStringAsync("/BaseDirectory"));
             Assert.Equal(deploymentResult.ContentRoot + "\\", await deploymentResult.HttpClient.GetStringAsync("/ASPNETCORE_IIS_PHYSICAL_PATH"));
+        }
+
+        [ConditionalFact]
+        [RequiresNewShim]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        public async Task StartupIsSuspendedWhenEventIsUsed()
+        {
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters();
+            deploymentParameters.ApplicationType = ApplicationType.Standalone;
+            deploymentParameters.EnvironmentVariables["ASPNETCORE_STARTUP_SUSPEND_EVENT"] = "ANCM_TestEvent";
+
+            var eventPrefix = deploymentParameters.ServerType == ServerType.IISExpress ? "" : "Global\\";
+
+            var startWaitHandle = new EventWaitHandle(false, EventResetMode.ManualReset, eventPrefix + "ANCM_TestEvent");
+            var suspendedWaitHandle = new EventWaitHandle(false, EventResetMode.ManualReset, eventPrefix + "ANCM_TestEvent_suspended");
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            var request = deploymentResult.AssertStarts();
+
+            Assert.True(suspendedWaitHandle.WaitOne(TimeoutExtensions.DefaultTimeoutValue));
+
+            // didn't figure out a better way to check that ANCM is waiting to start
+            var applicationDll = Path.Combine(deploymentResult.ContentRoot, "InProcessWebSite.dll");
+            var handlerDll = Path.Combine(deploymentResult.ContentRoot, "aspnetcorev2_inprocess.dll");
+            // Make sure application dll is not locked
+            File.WriteAllBytes(applicationDll, File.ReadAllBytes(applicationDll));
+            // Make sure handler dll is not locked
+            File.WriteAllBytes(handlerDll, File.ReadAllBytes(handlerDll));
+            // Make sure request is not completed
+            Assert.False(request.IsCompleted);
+
+            startWaitHandle.Set();
+
+            await request;
         }
 
         private static void MoveApplication(
