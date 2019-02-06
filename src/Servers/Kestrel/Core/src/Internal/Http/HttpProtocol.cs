@@ -1347,6 +1347,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     ApplicationAbort();
                 }
             }
+            Output.Complete(ex);
         }
 
         public ValueTask<FlushResult> WritePipeAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)

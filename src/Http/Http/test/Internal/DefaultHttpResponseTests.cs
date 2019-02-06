@@ -117,6 +117,22 @@ namespace Microsoft.AspNetCore.Http.Internal
         }
 
         [Fact]
+        public async Task ResponseStart_CallsFeatureIfSetWithProvidedCancellationToken()
+        {
+            var features = new FeatureCollection();
+
+            var mock = new Mock<IHttpResponseStartFeature>();
+            var ct = new CancellationToken();
+            mock.Setup(o => o.StartAsync(It.Is<CancellationToken>((localCt) => localCt.Equals(ct)))).Returns(Task.CompletedTask);
+            features.Set(mock.Object);
+
+            var context = new DefaultHttpContext(features);
+            await context.Response.StartAsync(ct);
+
+            mock.Verify(m => m.StartAsync(default), Times.Once());
+        }
+
+        [Fact]
         public async Task ResponseStart_CallsResponseBodyFlushIfNotSet()
         {
             var context = new DefaultHttpContext();

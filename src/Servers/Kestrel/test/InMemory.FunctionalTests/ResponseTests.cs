@@ -3364,8 +3364,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             using (var server = new TestServer(async httpContext =>
             {
                 httpContext.Response.BodyPipe.Complete();
-                var ex = await Assert.ThrowsAsync<ObjectDisposedException>(
-                    async () => await httpContext.Response.WriteAsync("test"));
+                await httpContext.Response.WriteAsync("test");
             }, new TestServiceContext(LoggerFactory)))
             {
                 using (var connection = server.CreateConnection())
@@ -3413,6 +3412,76 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     Assert.Contains(TestSink.Writes, w => w.EventId.Id == 13 && w.LogLevel == LogLevel.Error
                         && w.Exception is ConnectionAbortedException && w.Exception.InnerException == expectedException);
+                }
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task ResponseCompleteGetMemoryReturnsRentedMemory()
+        {
+            using (var server = new TestServer(async httpContext =>
+            {
+                await httpContext.Response.StartAsync();
+                httpContext.Response.BodyPipe.Complete();
+                var memory = httpContext.Response.BodyPipe.GetMemory(); // Shouldn't throw
+                Assert.Equal(4096, memory.Length);
+
+                await Task.CompletedTask;
+            }, new TestServiceContext(LoggerFactory)))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "0",
+                        "",
+                        "");
+                }
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task ResponseCompleteGetMemoryAdvanceInLoopDoesNotThrow()
+        {
+            using (var server = new TestServer(async httpContext =>
+            {
+                await httpContext.Response.StartAsync();
+
+                httpContext.Response.BodyPipe.Complete();
+                for (var i = 0; i < 5; i++)
+                {
+                    var memory = httpContext.Response.BodyPipe.GetMemory(); // Shouldn't throw
+                    httpContext.Response.BodyPipe.Advance(memory.Length);
+                }
+
+                await Task.CompletedTask;
+            }, new TestServiceContext(LoggerFactory)))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "0",
+                        "",
+                        "");
                 }
                 await server.StopAsync();
             }

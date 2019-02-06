@@ -238,12 +238,6 @@ namespace Microsoft.AspNetCore.ResponseCompression
             }
         }
 
-        private Task OnWriteWrapper()
-        {
-            OnWrite();
-            return Task.CompletedTask;
-        }
-
         private ICompressionProvider ResolveCompressionProvider()
         {
             if (!_providerCreated)

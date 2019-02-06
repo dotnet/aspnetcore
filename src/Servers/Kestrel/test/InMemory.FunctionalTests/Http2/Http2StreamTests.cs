@@ -2530,7 +2530,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var response = httpContext.Response;
                 await response.StartAsync();
 
-                var memory = response.BodyPipe.GetMemory(5000); // This will return 4096
+                var memory = response.BodyPipe.GetMemory(5000);
+                Assert.Equal(4096, memory.Length);
                 var fisrtPartOfResponse = Encoding.ASCII.GetBytes(new string('a', memory.Length));
                 fisrtPartOfResponse.CopyTo(memory);
                 response.BodyPipe.Advance(memory.Length);
@@ -3107,7 +3108,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public async Task ResponseBodyPipeCompleteWithoutExceptionWritesThrow()
+        public async Task ResponseBodyPipeCompleteWithoutExceptionWritesDoNotThrow()
         {
             var headers = new[]
             {
@@ -3118,8 +3119,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await InitializeConnectionAsync(async context =>
             {
                 context.Response.BodyPipe.Complete();
-                await Assert.ThrowsAsync<ObjectDisposedException>(
-                    async () => await context.Response.WriteAsync("test"));
+                await context.Response.WriteAsync("test");
             });
 
             await StartStreamAsync(1, headers, endStream: true);
@@ -3157,6 +3157,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await InitializeConnectionAsync(async context =>
             {
                 context.Response.BodyPipe.Complete(expectedException);
+                await context.Response.WriteAsync("test");
                 await Task.CompletedTask;
             });
 

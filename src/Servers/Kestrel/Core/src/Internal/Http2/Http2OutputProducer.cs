@@ -299,5 +299,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             throw new NotImplementedException();
         }
+
+        public void Complete(Exception ex)
+        {
+            //_dataPipe.Writer.Complete(ex);
+        }
     }
 }

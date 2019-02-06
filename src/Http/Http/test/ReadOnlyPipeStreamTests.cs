@@ -150,6 +150,13 @@ namespace System.IO.Pipelines.Tests
             Assert.Throws<InvalidOperationException>(() => readOnlyPipeStream.Read(new byte[0], 0, 0));
         }
 
+        [Fact]
+        public void InnerPipeReaderReturnsPipeReader()
+        {
+            var readOnlyPipeStream = new ReadOnlyPipeStream(Reader, allowSynchronousIO: false);
+            Assert.Equal(Reader, readOnlyPipeStream.InnerPipeReader);
+        }
+
         private async Task<Mock<PipeReader>> SetupMockPipeReader()
         {
             await WriteByteArrayToPipeAsync(new byte[1]);

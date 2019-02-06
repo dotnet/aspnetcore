@@ -58,17 +58,6 @@ namespace Microsoft.AspNetCore.Http
             streamPipeWriter.Complete();
         }
 
-        public static TheoryData<Encoding> Encodings =>
-                 new TheoryData<Encoding>
-                 {
-                     { Encoding.ASCII },
-                     { Encoding.BigEndianUnicode },
-                     { Encoding.Unicode },
-                     { Encoding.UTF32 },
-                     { Encoding.UTF7 },
-                     { Encoding.UTF8 }
-                 };
-
         [Theory]
         [MemberData(nameof(Encodings))]
         public async Task WritingTextWithPassedInEncodingWorks(Encoding encoding)
@@ -86,6 +75,17 @@ namespace Microsoft.AspNetCore.Http
             Assert.Equal(expected.Length, length);
             Assert.Equal(expected, actual);
         }
+
+        public static TheoryData<Encoding> Encodings =>
+            new TheoryData<Encoding>
+            {
+                        { Encoding.ASCII },
+                        { Encoding.BigEndianUnicode },
+                        { Encoding.Unicode },
+                        { Encoding.UTF32 },
+                        { Encoding.UTF7 },
+                        { Encoding.UTF8 }
+            };
 
         private HttpContext CreateRequest()
         {

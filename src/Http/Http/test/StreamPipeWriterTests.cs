@@ -403,6 +403,12 @@ namespace System.IO.Pipelines.Tests
             Assert.Equal(expectedString, ReadAsString());
         }
 
+        [Fact]
+        public void InnerStreamReturnsStream()
+        {
+            Assert.Equal(MemoryStream, ((StreamPipeWriter)Writer).InnerStream);
+        }
+
         private void WriteStringToStream(string input)
         {
             var buffer = Encoding.ASCII.GetBytes(input);

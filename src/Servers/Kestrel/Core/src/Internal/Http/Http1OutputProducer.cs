@@ -31,7 +31,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         // This locks access to all of the below fields
         private readonly object _contextLock = new object();
 
-        private bool _completed = false;
+        private bool _pipeWriterCompleted;
+        private bool _completed;
         private bool _aborted;
         private long _unflushedBytes;
         private bool _autoChunk;
@@ -176,7 +177,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             lock (_contextLock)
             {
-                if (_completed)
+                if (_pipeWriterCompleted)
                 {
                     return default;
                 }
@@ -205,7 +206,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             lock (_contextLock)
             {
-                if (_completed)
+                if (_pipeWriterCompleted)
                 {
                     return;
                 }
@@ -233,10 +234,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 if (_completedMemoryOwner != null)
                 {
                     _completedMemoryOwner.Dispose();
+                    _completedMemoryOwner = null;
                 }
-                if (!_completed)
+
+                if (!_pipeWriterCompleted)
                 {
                     _log.ConnectionDisconnect(_connectionId);
+                    _pipeWriterCompleted = true;
                     _completed = true;
                     _pipeWriter.Complete();
                 }
@@ -260,6 +264,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
+        public void Complete(Exception ex)
+        {
+            lock (_contextLock)
+            {
+                _completed = true;
+            }
+        }
+
         public ValueTask<FlushResult> Write100ContinueAsync()
         {
             return WriteAsync(_continueBytes.Span);
@@ -271,7 +283,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             lock (_contextLock)
             {
-                if (_completed)
+                if (_pipeWriterCompleted)
                 {
                     return default;
                 }

@@ -163,11 +163,14 @@ namespace System.IO.Pipelines
         private Task WriteAsyncInternal(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
         {
             var task = InnerPipeWriter.WriteAsync(source, cancellationToken);
+
             if (task.IsCompletedSuccessfully)
             {
+                // Most ValueTask implementations reset in GetResult, so call it before returning completed task
                 task.GetAwaiter().GetResult();
                 return Task.CompletedTask;
             }
+
             return task.AsTask();
         }
     }
