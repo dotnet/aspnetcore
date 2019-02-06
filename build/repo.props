@@ -160,7 +160,6 @@
                           $(RepositoryRoot)src\SignalR\**\*.csproj;
                           $(RepositoryRoot)src\Components\**\*.csproj;
                           $(RepositoryRoot)src\ProjectTemplates\*\*.csproj;
-                          $(RepositoryRoot)src\ProjectTemplates\test\*.csproj;
                           $(RepositoryRoot)src\ProjectTemplates\testassets\*\*.csproj;
                           "
                         Exclude="
