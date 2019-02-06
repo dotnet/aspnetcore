@@ -178,9 +178,9 @@
           NativeAsset="aspnetcorev2_outofprocess"
           BaseOutputPath="AspNetCoreModuleV2"
           PackageSubPath="$(AspNetCoreModuleOutOfProcessVersion)\"
-          DllLocation="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV2\OutOfProcessRequestHandler\bin\$(Configuration)\x86\aspnetcorev2_outofprocess.dll"
+          DllLocation="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV2\OutOfProcessRequestHandler\bin\$(Configuration)\Win32\aspnetcorev2_outofprocess.dll"
           Include="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj"
-          PdbLocation="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV2\OutOfProcessRequestHandler\bin\$(Configuration)\x86\aspnetcorev2_outofprocess.pdb"
+          PdbLocation="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV2\OutOfProcessRequestHandler\bin\$(Configuration)\Win32\aspnetcorev2_outofprocess.pdb"
           HandlerPath="2.0.0"
         />
 
@@ -204,9 +204,9 @@
           PropetyName="AspNetCoreModuleV2InProcessHandler"
           BaseOutputPath="AspNetCoreModuleV2"
           ProjectDirectory="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV2\InProcessRequestHandler"
-          DllLocation="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV2\InProcessRequestHandler\bin\$(Configuration)\x86\aspnetcorev2_inprocess.dll"
+          DllLocation="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV2\InProcessRequestHandler\bin\$(Configuration)\Win32\aspnetcorev2_inprocess.dll"
           Include="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV2\InProcessRequestHandler\InProcessRequestHandler.vcxproj"
-          PdbLocation="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV2\InProcessRequestHandler\bin\$(Configuration)\x86\aspnetcorev2_inprocess.pdb"
+          PdbLocation="$(MSBuildThisFileDirectory)..\AspNetCoreModuleV2\InProcessRequestHandler\bin\$(Configuration)\Win32\aspnetcorev2_inprocess.pdb"
         />
 
        <RunShimComponents
