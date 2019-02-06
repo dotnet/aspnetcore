@@ -15,13 +15,14 @@ namespace Microsoft.AspNetCore.ResponseCompression
     /// <summary>
     /// Stream wrapper that create specific compression stream only if necessary.
     /// </summary>
-    internal class BodyWrapperStream : Stream, IHttpBufferingFeature, IHttpSendFileFeature
+    internal class BodyWrapperStream : Stream, IHttpBufferingFeature, IHttpSendFileFeature, IHttpResponseStartFeature
     {
         private readonly HttpContext _context;
         private readonly Stream _bodyOriginalStream;
         private readonly IResponseCompressionProvider _provider;
         private readonly IHttpBufferingFeature _innerBufferFeature;
         private readonly IHttpSendFileFeature _innerSendFileFeature;
+        private readonly IHttpResponseStartFeature _innerStartFeature;
 
         private ICompressionProvider _compressionProvider = null;
         private bool _compressionChecked = false;
@@ -30,14 +31,14 @@ namespace Microsoft.AspNetCore.ResponseCompression
         private bool _autoFlush = false;
 
         internal BodyWrapperStream(HttpContext context, Stream bodyOriginalStream, IResponseCompressionProvider provider,
-            IHttpBufferingFeature innerBufferFeature, IHttpSendFileFeature innerSendFileFeature)
+            IHttpBufferingFeature innerBufferFeature, IHttpSendFileFeature innerSendFileFeature, IHttpResponseStartFeature innerStartFeature)
         {
             _context = context;
             _bodyOriginalStream = bodyOriginalStream;
             _provider = provider;
             _innerBufferFeature = innerBufferFeature;
             _innerSendFileFeature = innerSendFileFeature;
-            _context.Response.OnStarting((b) => ((BodyWrapperStream)b).OnWriteWrapper(), this);
+            _innerStartFeature = innerStartFeature;
         }
 
         internal ValueTask FinishCompressionAsync()
@@ -324,6 +325,12 @@ namespace Microsoft.AspNetCore.ResponseCompression
                     await _compressionStream.FlushAsync(cancellation);
                 }
             }
+        }
+
+        public Task StartAsync(CancellationToken token = default)
+        {
+            OnWrite();
+            return _innerStartFeature.StartAsync(token);
         }
     }
 }

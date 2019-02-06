@@ -278,10 +278,10 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
 
         [Theory]
         [InlineData("")]
-        [InlineData("text/plain", Skip = "https://github.com/aspnet/AspNetCore/issues/7296")]
-        [InlineData("text/PLAIN", Skip = "https://github.com/aspnet/AspNetCore/issues/7296")]
-        [InlineData("text/plain; charset=ISO-8859-4", Skip = "https://github.com/aspnet/AspNetCore/issues/7296")]
-        [InlineData("text/plain ; charset=ISO-8859-4", Skip = "https://github.com/aspnet/AspNetCore/issues/7296")]
+        [InlineData("text/plain")]
+        [InlineData("text/PLAIN")]
+        [InlineData("text/plain; charset=ISO-8859-4")]
+        [InlineData("text/plain ; charset=ISO-8859-4")]
         [InlineData("text/plain2")]
         public async Task NoBody_NotCompressed(string contentType)
         {
