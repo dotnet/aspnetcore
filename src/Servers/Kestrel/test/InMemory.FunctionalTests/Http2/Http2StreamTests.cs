@@ -3157,7 +3157,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await InitializeConnectionAsync(async context =>
             {
                 context.Response.BodyPipe.Complete(expectedException);
-                await context.Response.WriteAsync("test");
                 await Task.CompletedTask;
             });
 

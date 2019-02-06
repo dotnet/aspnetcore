@@ -264,7 +264,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        public void Complete(Exception ex)
+        public void Complete()
         {
             lock (_contextLock)
             {

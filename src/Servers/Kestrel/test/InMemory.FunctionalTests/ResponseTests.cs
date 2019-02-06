@@ -3332,7 +3332,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public async Task ResponsePipeWriterCompleteWithoutExceptionDoesNotThrow()
+        public async Task ResponseBodyPipeCompleteWithoutExceptionDoesNotThrow()
         {
             using (var server = new TestServer(async httpContext =>
             {
@@ -3359,7 +3359,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public async Task ResponsePipeWriterCompleteWithoutExceptionCausesWritesToThrow()
+        public async Task ResponseBodyPipeCompleteWithoutExceptionWritesDoNotThrow()
         {
             using (var server = new TestServer(async httpContext =>
             {

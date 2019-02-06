@@ -300,9 +300,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             throw new NotImplementedException();
         }
 
-        public void Complete(Exception ex)
+        public void Complete()
         {
-            //_dataPipe.Writer.Complete(ex);
+            // This can't complete the pipe today because headers NEED to be added as part of the protocol
+            //_dataPipe.Writer.Complete();
         }
     }
 }

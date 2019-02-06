@@ -324,7 +324,13 @@ namespace Microsoft.AspNetCore.ResponseCompression
         public Task StartAsync(CancellationToken token = default)
         {
             OnWrite();
-            return _innerStartFeature.StartAsync(token);
+
+            if (_innerStartFeature != null)
+            {
+                return _innerStartFeature.StartAsync(token);
+            }
+
+            return Task.CompletedTask;
         }
     }
 }
