@@ -452,7 +452,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task ActionMethod_ReturningSequenceOfObjectsWrappedInActionResultOfT()
         {
             // Arrange
-            var url = "ActionResultOfT/GetProductsAsync";
+            var url = "ActionResultOfT/GetProducts";
 
             // Act
             var response = await Client.GetStringAsync(url);
