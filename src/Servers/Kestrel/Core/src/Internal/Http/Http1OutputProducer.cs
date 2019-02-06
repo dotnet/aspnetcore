@@ -294,7 +294,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 var bytesWritten = _unflushedBytes;
                 _unflushedBytes = 0;
-                _currentChunkMemoryUpdated = false;
 
                 return _flusher.FlushAsync(
                     _minResponseDataRateFeature.MinDataRate,
@@ -361,6 +360,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 writer.Commit();
                 _advancedBytesForChunk = 0;
                 _unflushedBytes += writer.BytesCommitted;
+                _currentChunkMemoryUpdated = false;
             }
         }
     }

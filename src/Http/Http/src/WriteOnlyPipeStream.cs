@@ -151,13 +151,24 @@ namespace System.IO.Pipelines
         /// <inheritdoc />
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            return WriteAsync(new ReadOnlyMemory<byte>(buffer, offset, count), cancellationToken).AsTask();
+            return WriteAsyncInternal(new ReadOnlyMemory<byte>(buffer, offset, count), cancellationToken);
         }
 
         /// <inheritdoc />
-        public override async ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
+        public override ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
         {
-            await InnerPipeWriter.WriteAsync(source, cancellationToken);
+            return new ValueTask(WriteAsyncInternal(source, cancellationToken));
+        }
+
+        private Task WriteAsyncInternal(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
+        {
+            var task = InnerPipeWriter.WriteAsync(source, cancellationToken);
+            if (task.IsCompletedSuccessfully)
+            {
+                task.GetAwaiter().GetResult();
+                return Task.CompletedTask;
+            }
+            return task.AsTask();
         }
     }
 }
