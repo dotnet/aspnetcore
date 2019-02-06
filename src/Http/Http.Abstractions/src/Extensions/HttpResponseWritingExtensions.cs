@@ -61,6 +61,7 @@ namespace Microsoft.AspNetCore.Http
                 throw new ArgumentNullException(nameof(encoding));
             }
 
+            // Need to call StartAsync before GetMemory/GetSpan
             if (!response.HasStarted)
             {
                 var startAsyncTask = response.StartAsync(cancellationToken);
@@ -98,6 +99,7 @@ namespace Microsoft.AspNetCore.Http
 
             if (encodedLength <= destination.Length)
             {
+                // Just call Encoding.GetBytes if everything will fit into a single segment.
                 var bytesWritten = encoding.GetBytes(text, destination);
                 pipeWriter.Advance(bytesWritten);
             }
@@ -114,6 +116,8 @@ namespace Microsoft.AspNetCore.Http
             var completed = false;
             var totalBytesUsed = 0;
 
+            // This may be a bug, but encoder.Convert returns completed = true for UTF7 too early.
+            // Therefore, we check encodedLength - totalBytesUsed too.
             while (!completed || encodedLength - totalBytesUsed != 0)
             {
                 encoder.Convert(source, destination, source.Length == 0, out var charsUsed, out var bytesUsed, out completed);
