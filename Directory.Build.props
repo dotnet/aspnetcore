@@ -118,6 +118,14 @@
     <IntermediateOutputPath Condition=" '$(PlatformName)' != 'AnyCPU' ">$(BaseIntermediateOutputPath)$(PlatformName)\$(Configuration)\</IntermediateOutputPath>
   </PropertyGroup>
 
+  <!-- The location of the local installation of the .NET Core shared framework. -->
+  <PropertyGroup>
+    <LocalDotNetRoot Condition="'$(TargetOSName)' == 'win'">$(RepositoryRoot).dotnet\$(TargetArchitecture)\</LocalDotNetRoot>
+    <LocalDotNetRoot Condition="'$(TargetOSName)' != 'win'">$(RepositoryRoot).dotnet\</LocalDotNetRoot>
+    <!-- Override the SDK default and point to local .dotnet folder. -->
+    <NetCoreTargetingPackRoot>$(LocalDotNetRoot)packs\</NetCoreTargetingPackRoot>
+  </PropertyGroup>
+
   <!-- Defines project type conventions. -->
   <PropertyGroup>
     <RepoRelativeProjectDir>$([MSBuild]::MakeRelative($(RepositoryRoot), $(MSBuildProjectDirectory)))</RepoRelativeProjectDir>

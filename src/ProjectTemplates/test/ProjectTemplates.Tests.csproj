@@ -6,6 +6,7 @@
     <SignAssembly>false</SignAssembly>
 
     <!-- Workaround until https://github.com/aspnet/AspNetCore/issues/4321 is resolved. -->
+    <RunTemplateTests Condition="'$(OS)' != 'Windows_NT'">true</RunTemplateTests>
     <SkipTests Condition="'$(RunTemplateTests)' != 'true'">true</SkipTests>
   </PropertyGroup>
 
