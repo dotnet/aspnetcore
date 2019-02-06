@@ -105,7 +105,7 @@ final class DefaultHttpClient extends HttpClient {
                 break;
             case "POST":
                 RequestBody body;
-                if(bodyContent != null) {
+                if (bodyContent != null) {
                     body = RequestBody.create(MediaType.parse("text/plain"), bodyContent);
                 } else {
                     body = RequestBody.create(null, new byte[]{});

@@ -297,7 +297,7 @@ public class HubConnection {
         negotiate.flatMapCompletable(url -> {
             logger.debug("Starting HubConnection.");
             if (transport == null) {
-                switch (transportEnum){
+                switch (transportEnum) {
                     case LONG_POLLING:
                         transport = new LongPollingTransport(headers, httpClient);
                         break;
@@ -324,7 +324,7 @@ public class HubConnection {
                             logger.info("HubConnection started.");
                             resetServerTimeout();
                             //Don't send pings if we're using long polling.
-                            if(transportEnum != TransportEnum.LONG_POLLING) {
+                            if (transportEnum != TransportEnum.LONG_POLLING) {
                                 this.pingTimer = new Timer();
                                 this.pingTimer.schedule(new TimerTask() {
                                     @Override

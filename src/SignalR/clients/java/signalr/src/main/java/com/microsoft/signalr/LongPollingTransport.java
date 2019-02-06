@@ -3,12 +3,13 @@
 
 package com.microsoft.signalr;
 
-import io.reactivex.Completable;
-import io.reactivex.subjects.CompletableSubject;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Map;
+import io.reactivex.Completable;
+import io.reactivex.subjects.CompletableSubject;
 
 class LongPollingTransport implements Transport {
     private OnReceiveCallBack onReceiveCallBack;
@@ -31,7 +32,7 @@ class LongPollingTransport implements Transport {
     }
 
     //Package private active accessor for testing.
-    boolean isActive(){
+    boolean isActive() {
         return this.active;
     }
 
@@ -45,7 +46,7 @@ class LongPollingTransport implements Transport {
         HttpRequest request = new HttpRequest();
         request.addHeaders(headers);
         return this.pollingClient.get(pollUrl, request).flatMapCompletable(response -> {
-            if (response.getStatusCode() != 200){
+            if (response.getStatusCode() != 200) {
                 logger.error("Unexpected response code {}", response.getStatusCode());
                 this.active = false;
                 return Completable.error(new Exception("Failed to connect."));
@@ -59,7 +60,7 @@ class LongPollingTransport implements Transport {
         });
     }
 
-    private Completable poll(String url){
+    private Completable poll(String url) {
         if (this.active) {
             pollUrl = url + "&_=" + System.currentTimeMillis();
             logger.info("Polling {}", pollUrl);
