@@ -53,7 +53,7 @@ To update an existing copy, run:
 git submodule update --init --recursive
 ```
 
-## Building in Visual Studio / Code
+## Building in Visual Studio
 
 Before opening our .sln files in Visual Studio or VS Code, you need to perform the following actions.
 
@@ -95,30 +95,22 @@ Or you can use this script to automatically traverse the project reference graph
 
     ./eng/scripts/AddAllProjectRefsToSolution.ps1 -WorkingDir src/Mvc/
 
-#### PATH
+## Building with Visual Studio Code
 
-For VS Code and Visual Studio and `dotnet` commands to work correctly, you must place the following location in your PATH.
-Use the following commands to update the PATH variable in a command line window.
+Using Visual Studio Code with this repo requires setting environment variables on command line first.
+Use these command to launch VS Code with the right settings.
 
-Windows (Command Prompt)
-
-```batch
-set PATH=%USERPROFILE%\.dotnet\x64;%PATH%
+On Windows (requires PowerShell):
+```
+. activate.ps1
+code .
 ```
 
-Windows (Powershell)
-
-```ps1
-$env:PATH="$env:USERPROFILE\.dotnet\x64;$env:PATH"
+On macOS/Linux:
 ```
-
-Linux/macOS:
-
-```sh
-export PATH="$HOME/.dotnet:$PATH"
+source activate.sh
+code .
 ```
-
-On Windows, we recommend using the `startvs.cmd` command to launch Visual Studio.
 
 ## Building on command-line
 
@@ -132,6 +124,22 @@ On Windows:
 On macOS/Linux:
 ```
 ./build.sh
+```
+
+### Using `dotnet` on command line in this repo
+
+Because we are using pre-release versions of .NET Core, you have to set a handful of environment variables
+to make the .NET Core command line tool work well. You can set these environment variables like this
+
+On Windows (requires PowerShell):
+
+```ps1
+. .\activate.ps1
+```
+
+On macOS/Linux:
+```bash
+source ./activate.sh
 ```
 
 ## Running tests on command-line

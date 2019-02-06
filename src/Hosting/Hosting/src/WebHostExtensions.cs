@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Hosting
 
         private static async Task RunAsync(this IWebHost host, CancellationToken token, string shutdownMessage)
         {
-            using (host)
+            try
             {
                 await host.StartAsync(token);
 
@@ -130,6 +130,17 @@ namespace Microsoft.AspNetCore.Hosting
                 }
 
                 await host.WaitForTokenShutdownAsync(token);
+            }
+            finally
+            {
+                if (host is IAsyncDisposable asyncDisposable)
+                {
+                    await asyncDisposable.DisposeAsync().ConfigureAwait(false);
+                }
+                else
+                {
+                    host.Dispose();
+                }
             }
         }
 

@@ -234,12 +234,7 @@ if (Test-Path $ConfigFile) {
     }
 }
 
-$DotNetHome = if ($env:DOTNET_HOME) { $env:DOTNET_HOME } `
-    elseif ($CI) { Join-Path $PSScriptRoot '.dotnet' } `
-    elseif ($env:USERPROFILE) { Join-Path $env:USERPROFILE '.dotnet'} `
-    elseif ($env:HOME) {Join-Path $env:HOME '.dotnet'}`
-    else { Join-Path $PSScriptRoot '.dotnet'}
-
+$DotNetHome = Join-Path $PSScriptRoot '.dotnet'
 $env:DOTNET_HOME = $DotNetHome
 
 # Execute
@@ -310,4 +305,5 @@ try {
 }
 finally {
     Remove-Module 'KoreBuild' -ErrorAction Ignore
+    Remove-Item env:DOTNET_HOME
 }

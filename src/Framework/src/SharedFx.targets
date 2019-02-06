@@ -22,15 +22,12 @@ This targets file should only be imported by .shfxproj files.
       CollectSharedFxOutput;
       PostBuildEvent;
       GetTargetPath;
+      PrepareForRun;
     </CoreBuildDependsOn>
 
-    <CollectOutputSharedFxDependsOn Condition=" '$(CrossGenOutput)' != 'false' ">
+    <CollectOutputSharedFxDependsOn>
       PrepareForCrossGen;
       CrossGenAssemblies;
-    </CollectOutputSharedFxDependsOn>
-
-    <CollectOutputSharedFxDependsOn Condition=" '$(CrossgenSymbolsOutput)' != 'false' ">
-      $(CollectOutputSharedFxDependsOn);
       CrossGenSymbols;
     </CollectOutputSharedFxDependsOn>
 
@@ -45,6 +42,12 @@ This targets file should only be imported by .shfxproj files.
       FindInvalidProjectReferences;
       AfterResolveReferences
     </ResolveReferencesDependsOn>
+
+    <PrepareForRunDependsOn>
+      CollectSharedFxOutput;
+      GetCopyToSharedFrameworkItems;
+      InstallFrameworkIntoLocalDotNet;
+    </PrepareForRunDependsOn>
 
     <!-- The name of the shared framework. -->
     <SharedFxName Condition=" '$(SharedFxName)' == '' ">$(MSBuildProjectName)</SharedFxName>
@@ -71,6 +74,7 @@ This targets file should only be imported by .shfxproj files.
     <SymbolsOutputPath Condition="'$(SymbolsOutputPath)' == ''">$(OutputPath)symbols\</SymbolsOutputPath>
     <NativeAssetsOutputPath Condition="'$(NativeAssetsOutputPath)' == ''">$(OutputPath)native\</NativeAssetsOutputPath>
     <RuntimeAssetsOutputPath Condition="'$(RuntimeAssetsOutputPath)' == ''">$(OutputPath)lib\$(TargetFramework)\</RuntimeAssetsOutputPath>
+    <LocalInstallationOutputPath>$(LocalDotNetRoot)shared\$(SharedFxName)\$(SharedFxVersion)\</LocalInstallationOutputPath>
 
     <CrossGenToolDir>$(IntermediateOutputPath)crossgen\</CrossGenToolDir>
     <!-- Crossgen executable name -->
@@ -99,6 +103,12 @@ This targets file should only be imported by .shfxproj files.
     <VersionFileOutputPath>$(MetadataOutputPath).version</VersionFileOutputPath>
     <PlatformManifestOutputPath>$(ManifestOutputDir)$(SharedFxName).PlatformManifest.txt</PlatformManifestOutputPath>
   </PropertyGroup>
+
+  <ItemGroup>
+    <CopyToSharedFramework Include="$(SharedFxDepsFilePath)" OutputPath="$(LocalInstallationOutputPath)$(SharedFxName).deps.json" />
+    <CopyToSharedFramework Include="$(VersionFileOutputPath)" OutputPath="$(LocalInstallationOutputPath).version" />
+    <CopyToSharedFramework Include="$(PublishRuntimeConfigFilePath)" OutputPath="$(LocalInstallationOutputPath)$(SharedFxName).runtimeconfig.json" />
+  </ItemGroup>
 
   <ItemDefinitionGroup>
     <TargetPathWithTargetPlatformMoniker>
@@ -155,7 +165,7 @@ This targets file should only be imported by .shfxproj files.
   </Target>
 
   <Target Name="PrepareOutputPaths">
-    <MakeDir Directories="$(MetadataOutputPath);$(SymbolsOutputPath);$(NativeAssetsOutputPath);$(RuntimeAssetsOutputPath)" />
+    <MakeDir Directories="$(MetadataOutputPath);$(SymbolsOutputPath);$(NativeAssetsOutputPath);$(RuntimeAssetsOutputPath);$(LocalInstallationOutputPath)" />
   </Target>
 
   <!-- Generates the .version file in the shared framework -->
@@ -192,7 +202,9 @@ This targets file should only be imported by .shfxproj files.
   </Target>
 
   <!-- Prepare the project to run crossgen. -->
-  <Target Name="CopySharedFxToOutput" DependsOnTargets="RunResolvePackageDependencies;RunResolvePublishAssemblies">
+  <Target Name="CopySharedFxToOutput" DependsOnTargets="_GetCopyToOutputItems;_BatchCopyToOutputIfNewer" />
+
+  <Target Name="_GetCopyToOutputItems" DependsOnTargets="RunResolvePackageDependencies;RunResolvePublishAssemblies">
     <ItemGroup>
       <NativeAssetsToPublish Include="@(ResolvedAssembliesToPublish)" Condition="'%(AssetType)' == 'native' " />
       <ResourceAssetsToPublish Include="@(ResolvedAssembliesToPublish)" Condition="'%(AssetType)' == 'resources'" />
@@ -202,13 +214,27 @@ This targets file should only be imported by .shfxproj files.
 
     <Error Text="Unaccounted shared framework assemblies found: @(OtherAssemblies). These files have an unknown asset type." Condition="'@(OtherAssemblies)' != ''" />
 
-    <Copy Condition=" '$(CrossGenOutput)' != 'true' "
-          SourceFiles="@(RuntimeAssetsToPublish)" DestinationFiles="@(RuntimeAssetsToPublish->'$(RuntimeAssetsOutputPath)%(DestinationSubPath)')" />
-    <Copy SourceFiles="@(NativeAssetsToPublish)" DestinationFiles="@(NativeAssetsToPublish->'$(NativeAssetsOutputPath)%(DestinationSubPath)')" />
-    <Copy SourceFiles="@(ResourceAssetsToPublish)" DestinationFiles="@(ResourceAssetsToPublish->'$(RuntimeAssetsOutputPath)%(DestinationSubPath)')" />
+    <ItemGroup>
+      <CopyToOutputItem Condition=" '$(CrossGenOutput)' != 'true' "
+            Include="@(RuntimeAssetsToPublish)" OutputPath="$(RuntimeAssetsOutputPath)%(RuntimeAssetsToPublish.DestinationSubPath)" />
+      <CopyToSharedFramework Condition=" '$(CrossGenOutput)' != 'true' "
+            Include="@(RuntimeAssetsToPublish)" OutputPath="$(LocalInstallationOutputPath)%(RuntimeAssetsToPublish.DestinationSubPath)" />
+      <CopyToOutputItem Include="@(NativeAssetsToPublish)" OutputPath="$(NativeAssetsOutputPath)%(NativeAssetsToPublish.DestinationSubPath)" />
+      <CopyToSharedFramework Include="@(NativeAssetsToPublish)" OutputPath="$(LocalInstallationOutputPath)%(NativeAssetsToPublish.DestinationSubPath)" />
+      <CopyToOutputItem Include="@(ResourceAssetsToPublish)" OutputPath="$(RuntimeAssetsOutputPath)%(ResourceAssetsToPublish.DestinationSubPath)" />
+      <CopyToSharedFramework Include="@(ResourceAssetsToPublish)" OutputPath="$(LocalInstallationOutputPath)%(ResourceAssetsToPublish.DestinationSubPath)" />
+    </ItemGroup>
   </Target>
 
-  <Target Name="PrepareForCrossGen" DependsOnTargets="RunResolvePackageDependencies;RunResolvePublishAssemblies">
+  <Target Name="_BatchCopyToOutputIfNewer"
+          Inputs="@(CopyToOutputItem)"
+          Outputs="@(CopyToOutputItem->'%(OutputPath)')">
+    <Copy SourceFiles="@(CopyToOutputItem)"
+          DestinationFiles="@(CopyToOutputItem->'%(OutputPath)')"
+          UseHardlinksIfPossible="true" />
+  </Target>
+
+  <Target Name="PrepareForCrossGen" DependsOnTargets="RunResolvePackageDependencies;RunResolvePublishAssemblies" Condition=" '$(CrossGenOutput)' != 'false' ">
     <MakeDir Directories="$(CrossGenToolDir)" />
 
     <PropertyGroup>
@@ -246,8 +272,10 @@ This targets file should only be imported by .shfxproj files.
         <SymbolsRsp>$(IntermediateOutputPath)%(RecursiveDir)%(Filename).symbols.rsp</SymbolsRsp>
         <SymbolsOutputPath>$(SymbolsOutputPath)%(RecursiveDir)%(Filename).ni.pdb</SymbolsOutputPath>
         <Destination>$(RuntimeAssetsOutputPath)%(RecursiveDir)%(Filename)%(Extension)</Destination>
+        <DestinationSubPath>%(RecursiveDir)%(Filename)%(Extension)</DestinationSubPath>
         <Symbols>$(SymbolsOutputPath)%(RecursiveDir)</Symbols>
       </AssembliesToCrossgen>
+      <CopyToSharedFramework Include="%(AssembliesToCrossgen.Destination)" OutputPath="$(LocalInstallationOutputPath)%(AssembliesToCrossgen.DestinationSubPath)" />
     </ItemGroup>
   </Target>
 
@@ -255,7 +283,7 @@ This targets file should only be imported by .shfxproj files.
     Run the crossgen tool.
     This uses .rsp files to get around OS limitations in the maximum number of characters that can be passed in on command-line.
   -->
-  <Target Name="CrossGenAssemblies"
+  <Target Name="CrossGenAssemblies" Condition=" '$(CrossGenOutput)' != 'false' "
     DependsOnTargets="CopySharedFxToOutput;ResolveReferences"
     Inputs="@(AssembliesToCrossgen)"
     Outputs="%(AssembliesToCrossgen.Destination)">
@@ -294,7 +322,7 @@ This targets file should only be imported by .shfxproj files.
           StandardOutputImportance="Normal" />
   </Target>
 
-  <Target Name="CrossGenSymbols"
+  <Target Name="CrossGenSymbols" Condition=" '$(CrossgenSymbolsOutput)' != 'false' "
     DependsOnTargets="CrossGenAssemblies"
     Inputs="@(AssembliesToCrossgen)"
     Outputs="%(AssembliesToCrossgen.SymbolsOutputPath)">
@@ -344,5 +372,18 @@ This targets file should only be imported by .shfxproj files.
         runtimeAssets=$([MSBuild]::NormalizeDirectory($(RuntimeAssetsOutputPath)));
       </NuspecProperties>
     </PropertyGroup>
+  </Target>
+
+  <Target Name="PrepareForRun" DependsOnTargets="$(PrepareForRunDependsOn)" />
+
+  <Target Name="GetCopyToSharedFrameworkItems" DependsOnTargets="PrepareForCrossGen;CopySharedFxToOutput" />
+
+  <!-- Required to workaround https://github.com/dotnet/core-setup/issues/4809. This copies the shared framework into the $reporoot/.dotnet folder so tests can run against the shared framework. -->
+  <Target Name="InstallFrameworkIntoLocalDotNet"
+          Inputs="@(CopyToSharedFramework)"
+          Outputs="@(CopyToSharedFramework->'%(OutputPath)')">
+    <Copy SourceFiles="@(CopyToSharedFramework)"
+          DestinationFiles="@(CopyToSharedFramework->'%(OutputPath)')"
+          UseHardlinksIfPossible="true" />
   </Target>
 </Project>
