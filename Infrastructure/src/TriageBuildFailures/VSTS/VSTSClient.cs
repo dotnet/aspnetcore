@@ -135,7 +135,7 @@ namespace TriageBuildFailures.VSTS
             }
             else
             {
-                throw new NotImplementedException("If there are no logs and no ValidationResults then why did we fail?");
+                return null;
             }
         }
 
