@@ -25,6 +25,7 @@ using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Moq;
 using Newtonsoft.Json;
@@ -2175,7 +2176,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
         private static HttpConnectionManager CreateConnectionManager(ILoggerFactory loggerFactory)
         {
-            return new HttpConnectionManager(loggerFactory ?? new LoggerFactory(), new EmptyApplicationLifetime());
+            var connectionOptions = new ConnectionOptions();
+            connectionOptions.DisconnectTimeout = TimeSpan.FromSeconds(15);
+            return new HttpConnectionManager(loggerFactory ?? new LoggerFactory(), new EmptyApplicationLifetime(), Options.Create(connectionOptions));
         }
 
         private string GetContentAsString(Stream body)
