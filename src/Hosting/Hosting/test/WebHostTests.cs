@@ -311,7 +311,8 @@ namespace Microsoft.AspNetCore.Hosting
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/7291
         public void WebHostApplicationLifetimeEventsOrderedCorrectlyDuringShutdown()
         {
             using (var host = CreateBuilder()
