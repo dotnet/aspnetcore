@@ -26,8 +26,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// </summary>
         /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to use to instantiate components.</param>
         /// <param name="htmlEncoder">A <see cref="Func{T, TResult}"/> that will HTML encode the given string.</param>
-        public HtmlRenderer(IServiceProvider serviceProvider, Func<string, string> htmlEncoder)
-            : base(serviceProvider, new RendererSynchronizationContext())
+        public HtmlRenderer(IServiceProvider serviceProvider, Func<string, string> htmlEncoder, IDispatcher dispatcher)
+            : base(serviceProvider, dispatcher)
         {
             _htmlEncoder = htmlEncoder;
         }
@@ -59,11 +59,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <returns>A sequence of <see cref="string"/> fragments that represent the HTML text of the component.</returns>
         private IEnumerable<string> RenderComponent(Type componentType, ParameterCollection initialParameters)
         {
-            ArrayRange<RenderTreeFrame> frames = default;
-            Invoke(() =>
-            {
-                frames = CreateInitialRender(componentType, initialParameters);
-            });
+            var frames = CreateInitialRender(componentType, initialParameters);
 
             if (frames.Count == 0)
             {
@@ -87,8 +83,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <returns>A sequence of <see cref="string"/> fragments that represent the HTML text of the component.</returns>
         public async Task<IEnumerable<string>> RenderComponentAsync(Type componentType, ParameterCollection initialParameters)
         {
-            ArrayRange<RenderTreeFrame> frames = default;
-            await InvokeAsync(async () => frames = await CreateInitialRenderAsync(componentType, initialParameters));
+            var frames = await CreateInitialRenderAsync(componentType, initialParameters);
 
             if (frames.Count == 0)
             {
