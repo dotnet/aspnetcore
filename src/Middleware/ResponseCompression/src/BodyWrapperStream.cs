@@ -37,6 +37,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
             _provider = provider;
             _innerBufferFeature = innerBufferFeature;
             _innerSendFileFeature = innerSendFileFeature;
+            _context.Response.OnStarting((b) => ((BodyWrapperStream)b).OnWriteWrapper(), this);
         }
 
         internal ValueTask FinishCompressionAsync()
@@ -234,6 +235,12 @@ namespace Microsoft.AspNetCore.ResponseCompression
                     }
                 }
             }
+        }
+
+        private Task OnWriteWrapper()
+        {
+            OnWrite();
+            return Task.CompletedTask;
         }
 
         private ICompressionProvider ResolveCompressionProvider()

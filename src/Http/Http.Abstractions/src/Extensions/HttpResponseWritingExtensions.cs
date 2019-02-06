@@ -75,6 +75,7 @@ namespace Microsoft.AspNetCore.Http
             var flushAsyncTask = response.BodyPipe.FlushAsync(cancellationToken);
             if (flushAsyncTask.IsCompleted)
             {
+                // Most implementations of ValueTask reset state in GetResult, so call it before returning a completed task.
                 flushAsyncTask.GetAwaiter().GetResult();
                 return Task.CompletedTask;
             }
@@ -93,7 +94,7 @@ namespace Microsoft.AspNetCore.Http
         {
             var pipeWriter = response.BodyPipe;
             var encodedLength = encoding.GetByteCount(text);
-            var destination = pipeWriter.GetSpan();
+            var destination = pipeWriter.GetSpan(encodedLength);
 
             if (encodedLength <= destination.Length)
             {
@@ -102,27 +103,27 @@ namespace Microsoft.AspNetCore.Http
             }
             else
             {
-                WriteMutliSegmentEncoded(pipeWriter, text, encoding, destination);
+                WriteMutliSegmentEncoded(pipeWriter, text, encoding, destination, encodedLength);
             }
         }
 
-        private static void WriteMutliSegmentEncoded(PipeWriter writer, string text, Encoding encoding, Span<byte> destination)
+        private static void WriteMutliSegmentEncoded(PipeWriter writer, string text, Encoding encoding, Span<byte> destination, int encodedLength)
         {
             var encoder = encoding.GetEncoder();
-            var readOnlySpan = text.AsSpan();
+            var source = text.AsSpan();
             var completed = false;
             while (!completed)
             {
-                encoder.Convert(readOnlySpan, destination, readOnlySpan.Length == 0, out var charsUsed, out var bytesUsed, out completed);
+                encoder.Convert(source, destination, source.Length == 0, out var charsUsed, out var bytesUsed, out completed);
 
                 writer.Advance(bytesUsed);
                 if (completed)
                 {
                     return;
                 }
-                readOnlySpan = readOnlySpan.Slice(charsUsed);
+                source = source.Slice(charsUsed);
 
-                destination = writer.GetSpan(readOnlySpan.Length);
+                destination = writer.GetSpan(encodedLength - bytesUsed);
             }
         }
     }

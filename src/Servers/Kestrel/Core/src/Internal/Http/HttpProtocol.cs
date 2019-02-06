@@ -1277,8 +1277,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public void Advance(int bytes)
         {
-            VerifyAndUpdateWrite(bytes);
-            Output.Advance(bytes);
+            if (_canWriteResponseBody)
+            {
+                VerifyAndUpdateWrite(bytes);
+                Output.Advance(bytes);
+            }
+            else
+            {
+                HandleNonBodyResponseWrite();
+            }
         }
 
         public Memory<byte> GetMemory(int sizeHint = 0)
