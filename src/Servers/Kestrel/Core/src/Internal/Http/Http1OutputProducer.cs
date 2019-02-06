@@ -360,8 +360,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 writer.Commit();
                 _advancedBytesForChunk = 0;
                 _unflushedBytes += writer.BytesCommitted;
-                _currentChunkMemoryUpdated = false;
             }
+
+            // If there is an empty write, we still need to update the current chunk
+            _currentChunkMemoryUpdated = false;
         }
     }
 }

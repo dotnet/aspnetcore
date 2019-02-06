@@ -1285,6 +1285,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             else
             {
                 HandleNonBodyResponseWrite();
+
+                // For HEAD requests, we still use the number of bytes written for logging
+                // how many bytes were written. 
+                VerifyAndUpdateWrite(bytes);
             }
         }
 
