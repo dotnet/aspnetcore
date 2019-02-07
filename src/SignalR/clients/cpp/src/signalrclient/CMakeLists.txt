@@ -8,8 +8,6 @@ set (SOURCES
  http_sender.cpp
  hub_connection.cpp
  hub_connection_impl.cpp
- hub_proxy.cpp
- internal_hub_proxy.cpp
  logger.cpp
  request_sender.cpp
  signalr_client_config.cpp

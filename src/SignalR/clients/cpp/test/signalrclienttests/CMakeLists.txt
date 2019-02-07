@@ -7,7 +7,6 @@ set (SOURCES
  http_sender_tests.cpp
  hub_connection_impl_tests.cpp
  hub_exception_tests.cpp
- internal_hub_proxy_tests.cpp
  logger_tests.cpp
  memory_log_writer.cpp
  request_sender_tests.cpp

@@ -89,9 +89,6 @@
     <ClCompile Include="..\..\hub_connection_impl_tests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\internal_hub_proxy_tests.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\callback_manager_tests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
