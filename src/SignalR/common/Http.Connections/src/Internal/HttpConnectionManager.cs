@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         }
 
         public HttpConnectionManager(ILoggerFactory loggerFactory, IApplicationLifetime appLifetime, IOptions<ConnectionOptions> connectionOptions)
-            :this(loggerFactory, appLifetime)
+            : this(loggerFactory, appLifetime)
         {
             DisconnectTimeout = connectionOptions.Value.DisconnectTimeout ?? ConnectionOptionsSetup.DefaultDisconectTimeout;
         }
