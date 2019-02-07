@@ -147,7 +147,7 @@
 
     <!-- NonWindows -->
     <ItemGroup Condition="!$(IsWindowsHelixQueue)"  >
-        <_CopyItems Include="$(MSBuildThisFileDirectory)test\vstest\runtests.sh" />
+        <_CopyItems Include="$(MSBuildThisFileDirectory)eng\helix\vstest\runtests.sh" />
     </ItemGroup>
 
     <Copy SourceFiles="@(_CopyItems)" DestinationFolder="$(PublishAbsoluteDir)" />
