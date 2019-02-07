@@ -2887,13 +2887,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public async Task UploadStreamItemInvalidId()
         {
-            bool ExpectedErrors(WriteContext writeContext)
-            {
-                return writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.HubConnectionHandler" &&
-                       writeContext.EventId.Name == "ErrorProcessingRequest";
-            }
-
-            using (StartVerifiableLog(ExpectedErrors))
+            using (StartVerifiableLog())
             {
                 var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
                 {
@@ -2906,10 +2900,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
                     await client.SendHubMessageAsync(new StreamItemMessage("fake_id", "not a number")).OrTimeout();
 
-                    // Client is breaking protocol by sending an invalid id, and should be closed.
                     var message = client.TryRead();
-                    Assert.IsType<CloseMessage>(message);
-                    Assert.Equal("Connection closed with an error. KeyNotFoundException: No stream with id 'fake_id' could be found.", ((CloseMessage)message).Error);
+                    Assert.Null(message);
                 }
             }
         }
@@ -2917,13 +2909,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public async Task UploadStreamCompleteInvalidId()
         {
-            bool ExpectedErrors(WriteContext writeContext)
-            {
-                return writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.HubConnectionHandler" &&
-                       writeContext.EventId.Name == "ErrorProcessingRequest";
-            }
-
-            using (StartVerifiableLog(ExpectedErrors))
+            using (StartVerifiableLog())
             {
                 var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
                 {
@@ -2936,10 +2922,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
                     await client.SendHubMessageAsync(CompletionMessage.Empty("fake_id")).OrTimeout();
 
-                    // Client is breaking protocol by sending an invalid id, and should be closed.
                     var message = client.TryRead();
-                    Assert.IsType<CloseMessage>(message);
-                    Assert.Equal("Connection closed with an error. KeyNotFoundException: No stream with id 'fake_id' could be found.", ((CloseMessage)message).Error);
+                    Assert.Null(message);
                 }
             }
         }

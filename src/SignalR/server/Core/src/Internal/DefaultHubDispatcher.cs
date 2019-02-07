@@ -143,7 +143,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         {
             Log.FailedInvokingHubMethod(_logger, bindingFailureMessage.Target, bindingFailureMessage.BindingFailure.SourceException);
 
-
             var errorMessage = ErrorMessageHelper.BuildErrorMessage($"Failed to invoke '{bindingFailureMessage.Target}' due to an error on the server.",
                 bindingFailureMessage.BindingFailure.SourceException, _enableDetailedErrors);
             return SendInvocationError(bindingFailureMessage.InvocationId, connection, errorMessage);
@@ -175,6 +174,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 catch (KeyNotFoundException)
                 {
                     Log.UnexpectedStreamItem(_logger);
+                    return Task.CompletedTask;
                 }
             }
             else
