@@ -3119,7 +3119,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await InitializeConnectionAsync(async context =>
             {
                 context.Response.BodyPipe.Complete();
-                await context.Response.WriteAsync("test");
+                await context.Response.WriteAsync("");
             });
 
             await StartStreamAsync(1, headers, endStream: true);
