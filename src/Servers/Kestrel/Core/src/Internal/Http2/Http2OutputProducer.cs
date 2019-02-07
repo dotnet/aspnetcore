@@ -196,6 +196,61 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
+        public void Advance(int bytes)
+        {
+            _startedWritingDataFrames = true;
+
+            _dataPipe.Writer.Advance(bytes);
+        }
+
+        public Span<byte> GetSpan(int sizeHint = 0)
+        {
+            return _dataPipe.Writer.GetSpan(sizeHint);
+        }
+
+        public Memory<byte> GetMemory(int sizeHint = 0)
+        {
+            return _dataPipe.Writer.GetMemory(sizeHint);
+        }
+
+        public void CancelPendingFlush()
+        {
+            _dataPipe.Writer.CancelPendingFlush();
+        }
+
+        public ValueTask<FlushResult> WriteDataToPipeAsync(ReadOnlySpan<byte> data, CancellationToken cancellationToken)
+        {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return new ValueTask<FlushResult>(Task.FromCanceled<FlushResult>(cancellationToken));
+            }
+
+            lock (_dataWriterLock)
+            {
+                // This length check is important because we don't want to set _startedWritingDataFrames unless a data
+                // frame will actually be written causing the headers to be flushed.
+                if (_completed || data.Length == 0)
+                {
+                    return default;
+                }
+
+                _startedWritingDataFrames = true;
+
+                _dataPipe.Writer.Write(data);
+                return _flusher.FlushAsync(this, cancellationToken);
+            }
+        }
+
+        ValueTask<FlushResult> IHttpOutputProducer.WriteChunkAsync(ReadOnlySpan<byte> data, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Complete()
+        {
+            _dataPipe.Writer.Complete();
+        }
+
         private async ValueTask<FlushResult> ProcessDataWrites()
         {
             FlushResult flushResult = default;
@@ -249,61 +304,5 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 useSynchronizationContext: false,
                 minimumSegmentSize: KestrelMemoryPool.MinimumSegmentSize
             ));
-
-        public void Advance(int bytes)
-        {
-            _startedWritingDataFrames = true;
-
-            _dataPipe.Writer.Advance(bytes);
-        }
-
-        public Span<byte> GetSpan(int sizeHint = 0)
-        {
-            return _dataPipe.Writer.GetSpan(sizeHint);
-        }
-
-        public Memory<byte> GetMemory(int sizeHint = 0)
-        {
-            return _dataPipe.Writer.GetMemory(sizeHint);
-        }
-
-        public void CancelPendingFlush()
-        {
-            _dataPipe.Writer.CancelPendingFlush();
-        }
-
-        public ValueTask<FlushResult> WriteDataToPipeAsync(ReadOnlySpan<byte> data, CancellationToken cancellationToken)
-        {
-            if (cancellationToken.IsCancellationRequested)
-            {
-                return new ValueTask<FlushResult>(Task.FromCanceled<FlushResult>(cancellationToken));
-            }
-
-            lock (_dataWriterLock)
-            {
-                // This length check is important because we don't want to set _startedWritingDataFrames unless a data
-                // frame will actually be written causing the headers to be flushed.
-                if (_completed || data.Length == 0)
-                {
-                    return default;
-                }
-
-                _startedWritingDataFrames = true;
-
-                _dataPipe.Writer.Write(data);
-                return _flusher.FlushAsync(this, cancellationToken);
-            }
-        }
-
-        ValueTask<FlushResult> IHttpOutputProducer.WriteChunkAsync(ReadOnlySpan<byte> data, CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Complete()
-        {
-            // This can't complete the pipe today because headers NEED to be added as part of the protocol
-            //_dataPipe.Writer.Complete();
-        }
     }
 }

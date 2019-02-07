@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Http
             // Therefore, we check encodedLength - totalBytesUsed too.
             while (!completed || encodedLength - totalBytesUsed != 0)
             {
-                encoder.Convert(source, destination, source.Length == 0, out var charsUsed, out var bytesUsed, out completed);
+                encoder.Convert(source, destination, flush: source.Length == 0, out var charsUsed, out var bytesUsed, out completed);
                 totalBytesUsed += bytesUsed;
 
                 writer.Advance(bytesUsed);

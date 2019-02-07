@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.IO.Pipelines;
 using System.IO.Pipelines.Tests;
@@ -43,7 +44,7 @@ namespace Microsoft.AspNetCore.Http
             HttpContext context = new DefaultHttpContext();
             context.Response.BodyPipe = streamPipeWriter;
 
-            var inputString = "丂丂丂丂丂丂丂丂丂丂丂丂丂丂丂";
+            var inputString = "昨日すき焼きを食べました";
             var expected = encoding.GetBytes(inputString);
             await context.Response.WriteAsync(inputString, encoding);
 
@@ -64,16 +65,19 @@ namespace Microsoft.AspNetCore.Http
         {
             HttpContext context = CreateRequest();
 
-            var inputString = "丂丂丂丂丂";
+            var inputString = "昨日すき焼きを食べました";
             var expected = encoding.GetBytes(inputString);
             await context.Response.WriteAsync(inputString, encoding);
 
             context.Response.Body.Position = 0;
-            var actual = new byte[expected.Length];
+            var actual = new byte[expected.Length * 2];
             var length = context.Response.Body.Read(actual);
 
+            var actualShortened = new byte[length];
+            Array.Copy(actual, actualShortened, length);
+
             Assert.Equal(expected.Length, length);
-            Assert.Equal(expected, actual);
+            Assert.Equal(expected, actualShortened);
         }
 
         public static TheoryData<Encoding> Encodings =>

@@ -101,69 +101,68 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public Memory<byte> GetMemory(int sizeHint = 0)
         {
-            if (_completed)
+            lock (_contextLock)
             {
-                if (_completedMemoryOwner == null)
+                if (_completed)
                 {
-                    _completedMemoryOwner = _memoryPool.Rent(sizeHint);
+                    return GetFakeMemory(sizeHint);
                 }
-                return _completedMemoryOwner.Memory;
-            }
-
-            if (_autoChunk)
-            {
-                return GetChunkedMemory(sizeHint);
-            }
-            else
-            {
-                return _pipeWriter.GetMemory(sizeHint);
+                else if (_autoChunk)
+                {
+                    return GetChunkedMemory(sizeHint);
+                }
+                else
+                {
+                    return _pipeWriter.GetMemory(sizeHint);
+                }
             }
         }
 
         public Span<byte> GetSpan(int sizeHint = 0)
         {
-            if (_completed)
+            lock (_contextLock)
             {
-                if (_completedMemoryOwner == null)
+                if (_completed)
                 {
-                    _completedMemoryOwner = _memoryPool.Rent(sizeHint);
+                    return GetFakeMemory(sizeHint).Span;
                 }
-                return _completedMemoryOwner.Memory.Span;
-            }
-
-            if (_autoChunk)
-            {
-                return GetChunkedMemory(sizeHint).Span;
-            }
-            else
-            {
-                return _pipeWriter.GetMemory(sizeHint).Span;
+                else if (_autoChunk)
+                {
+                    return GetChunkedMemory(sizeHint).Span;
+                }
+                else
+                {
+                    return _pipeWriter.GetMemory(sizeHint).Span;
+                }
             }
         }
 
         public void Advance(int bytes)
         {
-            if (_completed)
+            lock (_contextLock)
             {
-                return;
-            }
-
-            if (_autoChunk)
-            {
-                if (bytes < 0)
+                if (_completed)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(bytes));
+                    return;
                 }
 
-                if (bytes + _advancedBytesForChunk > _currentChunkMemory.Length - BeginChunkLengthMax - EndChunkLength)
+                if (_autoChunk)
                 {
-                    throw new InvalidOperationException("Can't advance past buffer size.");
+                    if (bytes < 0)
+                    {
+                        throw new ArgumentOutOfRangeException(nameof(bytes));
+                    }
+
+                    if (bytes + _advancedBytesForChunk > _currentChunkMemory.Length - BeginChunkLengthMax - EndChunkLength)
+                    {
+                        throw new InvalidOperationException("Can't advance past buffer size.");
+                    }
+                    _advancedBytesForChunk += bytes;
                 }
-                _advancedBytesForChunk += bytes;
-            }
-            else
-            {
-                _pipeWriter.Advance(bytes);
+                else
+                {
+                    _pipeWriter.Advance(bytes);
+                }
             }
         }
 
@@ -376,6 +375,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             // If there is an empty write, we still need to update the current chunk
             _currentChunkMemoryUpdated = false;
+        }
+
+        private Memory<byte> GetFakeMemory(int sizeHint)
+        {
+            if (_completedMemoryOwner == null)
+            {
+                _completedMemoryOwner = _memoryPool.Rent(sizeHint);
+            }
+            return _completedMemoryOwner.Memory;
         }
     }
 }

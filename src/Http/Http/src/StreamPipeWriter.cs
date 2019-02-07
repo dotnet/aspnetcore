@@ -182,7 +182,7 @@ namespace System.IO.Pipelines
                             await InnerStream.WriteAsync(segment.Buffer.Slice(0, segment.Length), localToken);
 #elif NETSTANDARD2_0
                             MemoryMarshal.TryGetArray<byte>(segment.Buffer, out var arraySegment);
-                            await _writingStream.WriteAsync(arraySegment.Array, 0, segment.Length, localToken);
+                            await InnerStream.WriteAsync(arraySegment.Array, 0, segment.Length, localToken);
 #else
 #error Target frameworks need to be updated.
 #endif
@@ -198,7 +198,7 @@ namespace System.IO.Pipelines
                         await InnerStream.WriteAsync(_currentSegment.Slice(0, _position), localToken);
 #elif NETSTANDARD2_0
                         MemoryMarshal.TryGetArray<byte>(_currentSegment, out var arraySegment);
-                        await _writingStream.WriteAsync(arraySegment.Array, 0, _position, localToken);
+                        await InnerStream.WriteAsync(arraySegment.Array, 0, _position, localToken);
 #else
 #error Target frameworks need to be updated.
 #endif
