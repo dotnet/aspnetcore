@@ -4,19 +4,25 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
+using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Test.Helpers
 {
     public class TestRenderer : Renderer
     {
-        public TestRenderer(): this(new TestServiceProvider())
+        public TestRenderer() : this(new TestServiceProvider())
         {
         }
 
-        public TestRenderer(IServiceProvider serviceProvider) : base(serviceProvider)
+        public TestRenderer(IDispatcher dispatcher) : base(new TestServiceProvider(), dispatcher)
+        {
+        }
+
+        public TestRenderer(IServiceProvider serviceProvider) : base(serviceProvider, new RendererSynchronizationContext())
         {
         }
 
@@ -29,16 +35,29 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
             => base.AssignRootComponentId(component);
 
         public new void RenderRootComponent(int componentId)
-            => base.RenderRootComponent(componentId);
+            => Invoke(() => base.RenderRootComponent(componentId));
 
         public new Task RenderRootComponentAsync(int componentId)
-            => base.RenderRootComponentAsync(componentId);
+            => InvokeAsync(() => base.RenderRootComponentAsync(componentId));
 
         public new Task RenderRootComponentAsync(int componentId, ParameterCollection parameters)
-            => base.RenderRootComponentAsync(componentId, parameters);
+            => InvokeAsync(() => base.RenderRootComponentAsync(componentId, parameters));
 
         public new void DispatchEvent(int componentId, int eventHandlerId, UIEventArgs args)
-            => base.DispatchEvent(componentId, eventHandlerId, args);
+        {
+            var t = Invoke(() => base.DispatchEvent(componentId, eventHandlerId, args));
+            // This should always be run synchronously
+            Assert.True(t.IsCompleted);
+            if (t.IsFaulted)
+            {
+                var exception = t.Exception.Flatten().InnerException;
+                while (exception is AggregateException e)
+                {
+                    exception = e.InnerException;
+                }
+                ExceptionDispatchInfo.Capture(exception).Throw();
+            }
+        }
 
         public T InstantiateComponent<T>() where T : IComponent
             => (T)InstantiateComponent(typeof(T));

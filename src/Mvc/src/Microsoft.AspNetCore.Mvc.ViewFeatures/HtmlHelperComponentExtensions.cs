@@ -51,12 +51,13 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             var serviceProvider = htmlHelper.ViewContext.HttpContext.RequestServices;
             var encoder = serviceProvider.GetRequiredService<HtmlEncoder>();
-            using (var htmlRenderer = new HtmlRenderer(serviceProvider, encoder.Encode))
+            var dispatcher = Renderer.CreateDefaultDispatcher();
+            using (var htmlRenderer = new HtmlRenderer(serviceProvider, encoder.Encode, dispatcher))
             {
-                var result = await htmlRenderer.RenderComponentAsync<TComponent>(
+                var result = await dispatcher.InvokeAsync(() => htmlRenderer.RenderComponentAsync<TComponent>(
                     parameters == null ?
                         ParameterCollection.Empty :
-                        ParameterCollection.FromDictionary(HtmlHelper.ObjectToDictionary(parameters)));
+                        ParameterCollection.FromDictionary(HtmlHelper.ObjectToDictionary(parameters))));
 
                 return new ComponentHtmlContent(result);
             }

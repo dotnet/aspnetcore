@@ -6,10 +6,10 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Components.Server.Circuits
+namespace Microsoft.AspNetCore.Components.Rendering
 {
     [DebuggerDisplay("{_state,nq}")]
-    internal class CircuitSynchronizationContext : SynchronizationContext
+    internal class RendererSynchronizationContext : SynchronizationContext, IDispatcher
     {
         private static readonly ContextCallback ExecutionContextThunk = (object state) =>
         {
@@ -27,12 +27,12 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         public event UnhandledExceptionEventHandler UnhandledException;
 
-        public CircuitSynchronizationContext()
+        public RendererSynchronizationContext()
             : this(new State())
         {
         }
 
-        private CircuitSynchronizationContext(State state)
+        private RendererSynchronizationContext(State state)
         {
             _state = state;
         }
@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         // shallow copy
         public override SynchronizationContext CreateCopy()
         {
-            return new CircuitSynchronizationContext(_state);
+            return new RendererSynchronizationContext(_state);
         }
 
         private Task Enqueue(Task antecedant, SendOrPostCallback d, object state)
@@ -259,7 +259,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         private class WorkItem
         {
-            public CircuitSynchronizationContext SynchronizationContext;
+            public RendererSynchronizationContext SynchronizationContext;
             public ExecutionContext ExecutionContext;
             public SendOrPostCallback Callback;
             public object State;

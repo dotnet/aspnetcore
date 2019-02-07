@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Components.Performance
         private class FakeRenderer : Renderer
         {
             public FakeRenderer()
-                : base(new TestServiceProvider())
+                : base(new TestServiceProvider(), new RendererSynchronizationContext())
             {
             }
 
