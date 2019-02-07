@@ -278,7 +278,7 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
             _tempDir.Create();
             return await filesetFactory
                 .CreateAsync(CancellationToken.None)
-                .TimeoutAfter(TimeSpan.FromSeconds(60));
+                .TimeoutAfter(TimeSpan.FromSeconds(30));
         }
 
         public void Dispose()
