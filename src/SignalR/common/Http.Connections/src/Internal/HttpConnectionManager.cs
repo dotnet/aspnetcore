@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             _logger = loggerFactory.CreateLogger<HttpConnectionManager>();
             _connectionLogger = loggerFactory.CreateLogger<HttpConnectionContext>();
             _nextHeartbeat = new TimerAwaitable(_heartbeatTickRate, _heartbeatTickRate);
-            DisconnectTimeout = connectionOptions.Value.DisconnectTimeout ?? TimeSpan.FromSeconds(15);
+            DisconnectTimeout = connectionOptions.Value.DisconnectTimeout ?? ConnectionOptionsSetup.DefaultDisconectTimeout;
             // Register these last as the callbacks could run immediately
             appLifetime.ApplicationStarted.Register(() => Start());
             appLifetime.ApplicationStopping.Register(() => CloseConnections());

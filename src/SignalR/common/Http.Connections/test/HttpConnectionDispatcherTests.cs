@@ -440,7 +440,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     await task.OrTimeout();
 
                     // We've been gone longer than the expiration time
-                    connection.LastSeenUtc = DateTime.UtcNow.Subtract(TimeSpan.FromSeconds(10));
+                    connection.LastSeenUtc = DateTime.UtcNow.Subtract(TimeSpan.FromSeconds(20));
 
                     // The application is still running here because the poll is only killed
                     // by the heartbeat so we pretend to do a scan and this should force the application task to complete
