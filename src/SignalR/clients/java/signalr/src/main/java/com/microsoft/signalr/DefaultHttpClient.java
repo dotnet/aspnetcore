@@ -29,7 +29,7 @@ final class DefaultHttpClient extends HttpClient {
         return new DefaultHttpClient(timeoutInMilliseconds, newClient);
     }
 
-    public DefaultHttpClient(int timeoutInMiliseconds, OkHttpClient client) {
+    public DefaultHttpClient(int timeoutInMilliseconds, OkHttpClient client) {
         if (client != null) {
             this.client = client;
         } else {
@@ -81,7 +81,7 @@ final class DefaultHttpClient extends HttpClient {
                         cookieLock.unlock();
                     }
                 }
-            }).readTimeout(timeoutInMiliseconds, TimeUnit.MILLISECONDS)
+            }).readTimeout(timeoutInMilliseconds, TimeUnit.MILLISECONDS)
                     .build();
         }
     }
