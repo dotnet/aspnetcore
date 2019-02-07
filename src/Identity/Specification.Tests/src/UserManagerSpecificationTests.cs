@@ -1846,6 +1846,11 @@ namespace Microsoft.AspNetCore.Identity.Test
             token = await manager.GenerateTwoFactorTokenAsync(user, factorId);
             Assert.NotNull(token);
             IdentityResultAssert.IsSuccess(await manager.UpdateSecurityStampAsync(user));
+            var token2 = await manager.GenerateTwoFactorTokenAsync(user, factorId);
+            if (token == token2) // Guard against the rare case there's a totp collision once
+            {
+                IdentityResultAssert.IsSuccess(await manager.UpdateSecurityStampAsync(user));
+            }
             Assert.False(await manager.VerifyTwoFactorTokenAsync(user, factorId, token));
             IdentityResultAssert.VerifyLogMessage(manager.Logger, $"VerifyTwoFactorTokenAsync() failed for user {await manager.GetUserIdAsync(user)}.");
         }
