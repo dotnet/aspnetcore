@@ -1357,8 +1357,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 var tagStart = CurrentStart;
                 builder.Add(OutputAsMarkupLiteral());
 
-                SpanContext.EditHandler.AcceptedCharacters = endTagAcceptedCharacters;
-
                 var openAngleToken = EatCurrentToken(); // '<'
                 var forwardSlashToken = EatCurrentToken(); // '/'
                 var tagNameToken = EatCurrentToken(); // 'script'
@@ -1369,8 +1367,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 {
                     var miscAttributeBuilder = pooledResult.Builder;
 
-                    ParseMarkupNodes(miscAttributeBuilder, ParseMode.Text, token => token.Kind == SyntaxKind.CloseAngle);
+                    // We want to accept malformed end tags as content.
+                    AcceptUntil(SyntaxKind.CloseAngle, SyntaxKind.OpenAngle);
                     miscAttributeBuilder.Add(OutputAsMarkupLiteral());
+
                     if (miscAttributeBuilder.Count > 0)
                     {
                         miscContent = SyntaxFactory.MarkupMiscAttributeContent(miscAttributeBuilder.ToList());
@@ -1389,6 +1389,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         closeAngleToken = EatCurrentToken();
                     }
                 }
+
+                SpanContext.EditHandler.AcceptedCharacters = endTagAcceptedCharacters;
 
                 endTag = SyntaxFactory.MarkupEndTag(
                     openAngleToken,

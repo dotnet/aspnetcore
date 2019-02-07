@@ -2179,6 +2179,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             CompleteBlock();
             var keyword = OutputAsMetaCode(Output());
             var directiveBody = SyntaxFactory.RazorDirectiveBody(keyword, cSharpCode: null);
+
+            // transition could be null if we're already inside a code block.
+            transition = transition ?? SyntaxFactory.CSharpTransition(SyntaxFactory.MissingToken(SyntaxKind.Transition));
             var directive = SyntaxFactory.RazorDirective(transition, directiveBody);
             builder.Add(directive);
         }

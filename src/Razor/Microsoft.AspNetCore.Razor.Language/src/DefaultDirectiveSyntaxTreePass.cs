@@ -65,15 +65,23 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             public override SyntaxNode VisitRazorDirective(RazorDirectiveSyntax node)
             {
-                if (_nestedLevel > 0)
+                if (node.DirectiveDescriptor?.Directive != SectionDirective.Directive.Directive)
+                {
+                    // We only want to track the nesting of section directives.
+                    return base.VisitRazorDirective(node);
+                }
+
+                _nestedLevel++;
+                var result = (RazorDirectiveSyntax)base.VisitRazorDirective(node);
+
+                if (_nestedLevel > 1)
                 {
                     var directiveStart = node.Transition.GetSourceLocation(_syntaxTree.Source);
                     var errorLength = /* @ */ 1 + SectionDirective.Directive.Directive.Length;
                     var error = RazorDiagnosticFactory.CreateParsing_SectionsCannotBeNested(new SourceSpan(directiveStart, errorLength));
-                    node = node.AppendDiagnostic(error);
+                    result = result.AppendDiagnostic(error);
                 }
-                _nestedLevel++;
-                var result = base.VisitRazorDirective(node);
+
                 _nestedLevel--;
 
                 return result;

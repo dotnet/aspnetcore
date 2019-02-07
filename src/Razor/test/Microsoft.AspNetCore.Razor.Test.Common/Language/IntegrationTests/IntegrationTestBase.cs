@@ -409,7 +409,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 baselineDiagnostics = diagnosticsFile.ReadAllText();
             }
 
-            var actualDiagnostics = string.Concat(cSharpDocument.Diagnostics.Select(d => RazorDiagnosticSerializer.Serialize(d) + "\r\n"));
+            var actualDiagnostics = string.Concat(cSharpDocument.Diagnostics.Select(d => NormalizeNewLines(RazorDiagnosticSerializer.Serialize(d)) + "\r\n"));
             Assert.Equal(baselineDiagnostics, actualDiagnostics);
         }
 
@@ -540,6 +540,30 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                     CodeSpans.Add(node);
                 }
                 return base.VisitCSharpExpressionLiteral(node);
+            }
+
+            public override Syntax.SyntaxNode VisitCSharpStatement(CSharpStatementSyntax node)
+            {
+                if (node.FirstAncestorOrSelf<MarkupTagHelperAttributeValueSyntax>() != null)
+                {
+                    // We don't support code blocks inside tag helper attribute values.
+                    // If it exists, we don't want to track its code spans for source mappings.
+                    return node;
+                }
+
+                return base.VisitCSharpStatement(node);
+            }
+
+            public override Syntax.SyntaxNode VisitRazorDirective(RazorDirectiveSyntax node)
+            {
+                if (node.FirstAncestorOrSelf<MarkupTagHelperAttributeValueSyntax>() != null)
+                {
+                    // We don't support Razor directives inside tag helper attribute values.
+                    // If it exists, we don't want to track its code spans for source mappings.
+                    return node;
+                }
+
+                return base.VisitRazorDirective(node);
             }
         }
 
