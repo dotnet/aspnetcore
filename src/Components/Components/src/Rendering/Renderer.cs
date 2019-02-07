@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.ExceptionServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
 
@@ -20,27 +21,60 @@ namespace Microsoft.AspNetCore.Components.Rendering
         private readonly Dictionary<int, ComponentState> _componentStateById = new Dictionary<int, ComponentState>();
         private readonly RenderBatchBuilder _batchBuilder = new RenderBatchBuilder();
         private readonly Dictionary<int, EventHandlerInvoker> _eventBindings = new Dictionary<int, EventHandlerInvoker>();
+        private IDispatcher _dispatcher;
 
         private int _nextComponentId = 0; // TODO: change to 'long' when Mono .NET->JS interop supports it
         private bool _isBatchInProgress;
         private int _lastEventHandlerId = 0;
         private List<Task> _pendingTasks;
 
-        // We need to introduce locking as we don't know if we are executing
-        // under a synchronization context that limits the ammount of concurrency
-        // that can happen when async callbacks are executed.
-        // As a result, we have to protect the _pendingTask list and the
-        // _batchBuilder render queue from concurrent modifications.
-        private object _asyncWorkLock = new object();
+        /// <summary>
+        /// Allows the caller to handle exceptions from the SynchronizationContext when one is available.
+        /// </summary>
+        public event UnhandledExceptionEventHandler UnhandledSynchronizationException
+        {
+            add
+            {
+                if (!(_dispatcher is RendererSynchronizationContext rendererSynchronizationContext))
+                {
+                    return;
+                }
+                rendererSynchronizationContext.UnhandledException += value;
+            }
+            remove
+            {
+                if (!(_dispatcher is RendererSynchronizationContext rendererSynchronizationContext))
+                {
+                    return;
+                }
+                rendererSynchronizationContext.UnhandledException -= value;
+            }
+        }
 
         /// <summary>
         /// Constructs an instance of <see cref="Renderer"/>.
         /// </summary>
-        /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to be used when initialising components.</param>
+        /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to be used when initializing components.</param>
         public Renderer(IServiceProvider serviceProvider)
         {
             _componentFactory = new ComponentFactory(serviceProvider);
         }
+
+        /// <summary>
+        /// Constructs an instance of <see cref="Renderer"/>.
+        /// </summary>
+        /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to be used when initializing components.</param>
+        /// <param name="dispatcher">The <see cref="IDispatcher"/> to be for invoking user actions into the <see cref="Renderer"/> context.</param>
+        public Renderer(IServiceProvider serviceProvider, IDispatcher dispatcher) : this(serviceProvider)
+        {
+            _dispatcher = dispatcher;
+        }
+
+        /// <summary>
+        /// Creates an <see cref="IDispatcher"/> that can be used with one or more <see cref="Renderer"/>.
+        /// </summary>
+        /// <returns>The <see cref="IDispatcher"/>.</returns>
+        public static IDispatcher CreateDefaultDispatcher() => new RendererSynchronizationContext();
 
         /// <summary>
         /// Constructs a new component of the specified type.
@@ -198,14 +232,11 @@ namespace Microsoft.AspNetCore.Components.Rendering
             while (_pendingTasks.Count > 0)
             {
                 Task pendingWork;
-                lock (_asyncWorkLock)
-                {
-                    // Create a Task that represents the remaining ongoing work for the rendering process
-                    pendingWork = Task.WhenAll(_pendingTasks);
+                // Create a Task that represents the remaining ongoing work for the rendering process
+                pendingWork = Task.WhenAll(_pendingTasks);
 
-                    // Clear all pending work.
-                    _pendingTasks.Clear();
-                }
+                // Clear all pending work.
+                _pendingTasks.Clear();
 
                 // new work might be added before we check again as a result of waiting for all
                 // the child components to finish executing SetParametersAsync
@@ -238,6 +269,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="eventArgs">Arguments to be passed to the event handler.</param>
         public void DispatchEvent(int componentId, int eventHandlerId, UIEventArgs eventArgs)
         {
+            EnsureSynchronizationContext();
+
             if (_eventBindings.TryGetValue(eventHandlerId, out var binding))
             {
                 // The event handler might request multiple renders in sequence. Capture them
@@ -266,9 +299,24 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="workItem">The work item to execute.</param>
         public virtual Task Invoke(Action workItem)
         {
-            // Base renderer has nothing to dispatch to, so execute directly
-            workItem();
-            return Task.CompletedTask;
+            // This is for example when we run on a system with a single thread, like WebAssembly.
+            if (_dispatcher == null)
+            {
+                workItem();
+                return Task.CompletedTask;
+            }
+
+            if (SynchronizationContext.Current == _dispatcher)
+            {
+                // This is an optimization for when the dispatcher is also a syncronization context, like in the default case.
+                // No need to dispatch. Avoid deadlock by invoking directly.
+                workItem();
+                return Task.CompletedTask;
+            }
+            else
+            {
+                return _dispatcher.Invoke(workItem);
+            }
         }
 
         /// <summary>
@@ -278,8 +326,23 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="workItem">The work item to execute.</param>
         public virtual Task InvokeAsync(Func<Task> workItem)
         {
-            // Base renderer has nothing to dispatch to, so execute directly
-            return workItem();
+            // This is for example when we run on a system with a single thread, like WebAssembly.
+            if (_dispatcher == null)
+            {
+                workItem();
+                return Task.CompletedTask;
+            }
+
+            if (SynchronizationContext.Current == _dispatcher)
+            {
+                // This is an optimization for when the dispatcher is also a syncronization context, like in the default case.
+                // No need to dispatch. Avoid deadlock by invoking directly.
+                return workItem();
+            }
+            else
+            {
+                return _dispatcher.InvokeAsync(workItem);
+            }
         }
 
         internal void InstantiateChildComponentOnFrame(ref RenderTreeFrame frame, int parentComponentId)
@@ -323,10 +386,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
                     {
                         return;
                     }
-                    lock (_asyncWorkLock)
-                    {
-                        _pendingTasks.Add(task);
-                    }
+                    _pendingTasks.Add(task);
                     break;
             }
         }
@@ -351,6 +411,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="renderFragment">A <see cref="RenderFragment"/> that will supply the updated UI contents.</param>
         protected internal virtual void AddToRenderQueue(int componentId, RenderFragment renderFragment)
         {
+            EnsureSynchronizationContext();
+
             var componentState = GetOptionalComponentState(componentId);
             if (componentState == null)
             {
@@ -359,15 +421,28 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 return;
             }
 
-            lock (_asyncWorkLock)
-            {
-                _batchBuilder.ComponentRenderQueue.Enqueue(
-                    new RenderQueueEntry(componentState, renderFragment));
-            }
+            _batchBuilder.ComponentRenderQueue.Enqueue(
+                new RenderQueueEntry(componentState, renderFragment));
 
             if (!_isBatchInProgress)
             {
                 ProcessRenderQueue();
+            }
+        }
+
+        private void EnsureSynchronizationContext()
+        {
+            // When the IDispatcher is a synchronization context
+            // Render operations are not thread-safe, so they need to be serialized.
+            // Plus, any other logic that mutates state accessed during rendering also
+            // needs not to run concurrently with rendering so should be dispatched to
+            // the renderer's sync context.
+            if (_dispatcher is SynchronizationContext synchronizationContext && SynchronizationContext.Current != synchronizationContext)
+            {
+                throw new InvalidOperationException(
+                    "The current thread is not associated with the renderer's synchronization context. " +
+                    "Use Invoke() or InvokeAsync() to switch execution to the renderer's synchronization " +
+                    "context when triggering rendering or modifying any state accessed during rendering.");
             }
         }
 
@@ -389,8 +464,9 @@ namespace Microsoft.AspNetCore.Components.Rendering
             try
             {
                 // Process render queue until empty
-                while (TryDequeueRenderQueueEntry(out var nextToRender))
+                while (_batchBuilder.ComponentRenderQueue.Count > 0)
                 {
+                    var nextToRender = _batchBuilder.ComponentRenderQueue.Dequeue();
                     RenderInExistingBatch(nextToRender);
                 }
 
@@ -403,23 +479,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 RemoveEventHandlerIds(_batchBuilder.DisposedEventHandlerIds.ToRange(), updateDisplayTask);
                 _batchBuilder.Clear();
                 _isBatchInProgress = false;
-            }
-        }
-
-        private bool TryDequeueRenderQueueEntry(out RenderQueueEntry entry)
-        {
-            lock (_asyncWorkLock)
-            {
-                if (_batchBuilder.ComponentRenderQueue.Count > 0)
-                {
-                    entry = _batchBuilder.ComponentRenderQueue.Dequeue();
-                    return true;
-                }
-                else
-                {
-                    entry = default;
-                    return false;
-                }
             }
         }
 

@@ -13,6 +13,7 @@
     <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\IWebHostPortExtensions.cs" LinkBase="shared" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TestResources.cs" LinkBase="shared" />
     <Content Include="$(KestrelSharedSourceRoot)test\TestCertificates\*.pfx" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
+    <Compile Include="..\..\..\..\..\test\xunit\SkipOnHelixAttribute.cs" />
   </ItemGroup>
 
   <ItemGroup>

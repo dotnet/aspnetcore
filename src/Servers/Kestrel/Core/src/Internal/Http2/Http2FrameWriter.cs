@@ -402,7 +402,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 _outgoingFrame.PrepareWindowUpdate(streamId, sizeIncrement);
                 WriteHeaderUnsynchronized();
                 var buffer = _outputWriter.GetSpan(4);
-                Bitshifter.WriteUInt31BigEndian(buffer, (uint)sizeIncrement);
+                Bitshifter.WriteUInt31BigEndian(buffer, (uint)sizeIncrement, preserveHighestBit: false);
                 _outputWriter.Advance(4);
                 return TimeFlushUnsynchronizedAsync();
             }
@@ -538,7 +538,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 WriteHeaderUnsynchronized();
 
                 var buffer = _outputWriter.GetSpan(8);
-                Bitshifter.WriteUInt31BigEndian(buffer, (uint)lastStreamId);
+                Bitshifter.WriteUInt31BigEndian(buffer, (uint)lastStreamId, preserveHighestBit: false);
                 buffer = buffer.Slice(4);
                 BinaryPrimitives.WriteUInt32BigEndian(buffer, (uint)errorCode);
                 _outputWriter.Advance(8);
@@ -578,7 +578,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             buffer[1] = frame.Flags;
             buffer = buffer.Slice(2);
 
-            Bitshifter.WriteUInt31BigEndian(buffer, (uint)frame.StreamId);
+            Bitshifter.WriteUInt31BigEndian(buffer, (uint)frame.StreamId, preserveHighestBit: false);
 
             output.Advance(Http2FrameReader.HeaderLength);
         }

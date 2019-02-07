@@ -373,7 +373,7 @@ namespace Microsoft.AspNetCore.Components.Server
         class FakeRenderer : Renderer
         {
             public FakeRenderer()
-                : base(new ServiceCollection().BuildServiceProvider())
+                : base(new ServiceCollection().BuildServiceProvider(), new RendererSynchronizationContext())
             {
             }
 

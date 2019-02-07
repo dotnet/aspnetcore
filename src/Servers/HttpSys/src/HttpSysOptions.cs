@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 if (value.HasValue && value < -1)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), value, "The value must be positive, or -1 for infiniate.");
+                    throw new ArgumentOutOfRangeException(nameof(value), value, "The value must be positive, or -1 for infinite.");
                 }
 
                 if (value.HasValue && _urlGroup != null)

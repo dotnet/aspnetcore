@@ -33,8 +33,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public static TestMatrix TestVariants
             => TestMatrix.ForServers(DeployerSelector.ServerType)
                 .WithTfms(Tfm.NetCoreApp30)
-                .WithApplicationTypes(ApplicationType.Portable)
-                .WithAncmVersions(AncmVersion.AspNetCoreModuleV2);
+                .WithApplicationTypes(ApplicationType.Portable);
 
         public static IEnumerable<object[]> InvalidTestVariants
             => from v in TestVariants.Select(v => v.Single())

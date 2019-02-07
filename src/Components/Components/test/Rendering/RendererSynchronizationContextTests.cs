@@ -1,17 +1,15 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.Server.Circuits;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Components.Server
+namespace Microsoft.AspNetCore.Components.Rendering
 {
-    public class CircuitSynchronizationContextTest
+    public class RendererSynchronizationContextTest
     {
         // Nothing should exceed the timeout in a successful run of the the tests, this is just here to catch
         // failures.
@@ -21,7 +19,7 @@ namespace Microsoft.AspNetCore.Components.Server
         public void Post_CanRunSynchronously_WhenNotBusy()
         {
             // Arrange
-            var context = new CircuitSynchronizationContext();
+            var context = new RendererSynchronizationContext();
             var thread = Thread.CurrentThread;
             Thread capturedThread = null;
 
@@ -39,7 +37,7 @@ namespace Microsoft.AspNetCore.Components.Server
         public void Post_CanRunSynchronously_WhenNotBusy_Exception()
         {
             // Arrange
-            var context = new CircuitSynchronizationContext();
+            var context = new RendererSynchronizationContext();
 
             // Act & Assert
             Assert.Throws<InvalidTimeZoneException>(() => context.Post((_) =>
@@ -52,7 +50,7 @@ namespace Microsoft.AspNetCore.Components.Server
         public async Task Post_CanRunAsynchronously_WhenBusy()
         {
             // Arrange
-            var context = new CircuitSynchronizationContext();
+            var context = new RendererSynchronizationContext();
             var thread = Thread.CurrentThread;
             Thread capturedThread = null;
 
@@ -92,7 +90,7 @@ namespace Microsoft.AspNetCore.Components.Server
         public async Task Post_CanRunAsynchronously_CaptureExecutionContext()
         {
             // Arrange
-            var context = new CircuitSynchronizationContext();
+            var context = new RendererSynchronizationContext();
 
             // CultureInfo uses the execution context.
             CultureInfo.CurrentCulture = new CultureInfo("en-GB");
@@ -147,7 +145,7 @@ namespace Microsoft.AspNetCore.Components.Server
         public async Task Post_CanRunAsynchronously_WhenBusy_Exception()
         {
             // Arrange
-            var context = new CircuitSynchronizationContext();
+            var context = new RendererSynchronizationContext();
 
             Exception exception = null;
             context.UnhandledException += (sender, e) =>
@@ -189,7 +187,7 @@ namespace Microsoft.AspNetCore.Components.Server
         public async Task Post_BackgroundWorkItem_CanProcessMoreItemsInline()
         {
             // Arrange
-            var context = new CircuitSynchronizationContext();
+            var context = new RendererSynchronizationContext();
             Thread capturedThread = null;
 
             var e1 = new ManualResetEventSlim();
@@ -251,7 +249,7 @@ namespace Microsoft.AspNetCore.Components.Server
         public void Post_CapturesContext()
         {
             // Arrange
-            var context = new CircuitSynchronizationContext();
+            var context = new RendererSynchronizationContext();
 
             var e1 = new ManualResetEventSlim();
 
@@ -281,7 +279,7 @@ namespace Microsoft.AspNetCore.Components.Server
         public void Send_CanRunSynchronously()
         {
             // Arrange
-            var context = new CircuitSynchronizationContext();
+            var context = new RendererSynchronizationContext();
             var thread = Thread.CurrentThread;
             Thread capturedThread = null;
 
@@ -299,7 +297,7 @@ namespace Microsoft.AspNetCore.Components.Server
         public void Send_CanRunSynchronously_Exception()
         {
             // Arrange
-            var context = new CircuitSynchronizationContext();
+            var context = new RendererSynchronizationContext();
 
             // Act & Assert
             Assert.Throws<InvalidTimeZoneException>(() => context.Send((_) =>
@@ -312,7 +310,7 @@ namespace Microsoft.AspNetCore.Components.Server
         public async Task Send_BlocksWhenOtherWorkRunning()
         {
             // Arrange
-            var context = new CircuitSynchronizationContext();
+            var context = new RendererSynchronizationContext();
 
             var e1 = new ManualResetEventSlim();
             var e2 = new ManualResetEventSlim();
@@ -359,7 +357,7 @@ namespace Microsoft.AspNetCore.Components.Server
         public void Send_CapturesContext()
         {
             // Arrange
-            var context = new CircuitSynchronizationContext();
+            var context = new RendererSynchronizationContext();
 
             var e1 = new ManualResetEventSlim();
 
@@ -390,7 +388,7 @@ namespace Microsoft.AspNetCore.Components.Server
         public async Task Invoke_Void_CanRunSynchronously_WhenNotBusy()
         {
             // Arrange
-            var context = new CircuitSynchronizationContext();
+            var context = new RendererSynchronizationContext();
             var thread = Thread.CurrentThread;
             Thread capturedThread = null;
 
@@ -409,7 +407,7 @@ namespace Microsoft.AspNetCore.Components.Server
         public async Task Invoke_Void_CanRunAsynchronously_WhenBusy()
         {
             // Arrange
-            var context = new CircuitSynchronizationContext();
+            var context = new RendererSynchronizationContext();
             var thread = Thread.CurrentThread;
             Thread capturedThread = null;
 
@@ -449,7 +447,7 @@ namespace Microsoft.AspNetCore.Components.Server
         public async Task Invoke_Void_CanRethrowExceptions()
         {
             // Arrange
-            var context = new CircuitSynchronizationContext();
+            var context = new RendererSynchronizationContext();
 
             // Act
             var task = context.Invoke(() =>
@@ -465,7 +463,7 @@ namespace Microsoft.AspNetCore.Components.Server
         public async Task Invoke_T_CanRunSynchronously_WhenNotBusy()
         {
             // Arrange
-            var context = new CircuitSynchronizationContext();
+            var context = new RendererSynchronizationContext();
             var thread = Thread.CurrentThread;
 
             // Act
@@ -482,7 +480,7 @@ namespace Microsoft.AspNetCore.Components.Server
         public async Task Invoke_T_CanRunAsynchronously_WhenBusy()
         {
             // Arrange
-            var context = new CircuitSynchronizationContext();
+            var context = new RendererSynchronizationContext();
             var thread = Thread.CurrentThread;
 
             var e1 = new ManualResetEventSlim();
@@ -520,7 +518,7 @@ namespace Microsoft.AspNetCore.Components.Server
         public async Task Invoke_T_CanRethrowExceptions()
         {
             // Arrange
-            var context = new CircuitSynchronizationContext();
+            var context = new RendererSynchronizationContext();
 
             // Act
             var task = context.Invoke<string>(() =>
@@ -536,7 +534,7 @@ namespace Microsoft.AspNetCore.Components.Server
         public async Task InvokeAsync_Void_CanRunSynchronously_WhenNotBusy()
         {
             // Arrange
-            var context = new CircuitSynchronizationContext();
+            var context = new RendererSynchronizationContext();
             var thread = Thread.CurrentThread;
             Thread capturedThread = null;
 
@@ -556,7 +554,7 @@ namespace Microsoft.AspNetCore.Components.Server
         public async Task InvokeAsync_Void_CanRunAsynchronously_WhenBusy()
         {
             // Arrange
-            var context = new CircuitSynchronizationContext();
+            var context = new RendererSynchronizationContext();
             var thread = Thread.CurrentThread;
             Thread capturedThread = null;
 
@@ -597,7 +595,7 @@ namespace Microsoft.AspNetCore.Components.Server
         public async Task InvokeAsync_Void_CanRethrowExceptions()
         {
             // Arrange
-            var context = new CircuitSynchronizationContext();
+            var context = new RendererSynchronizationContext();
 
             // Act
             var task = context.InvokeAsync(() =>
@@ -613,7 +611,7 @@ namespace Microsoft.AspNetCore.Components.Server
         public async Task InvokeAsync_T_CanRunSynchronously_WhenNotBusy()
         {
             // Arrange
-            var context = new CircuitSynchronizationContext();
+            var context = new RendererSynchronizationContext();
             var thread = Thread.CurrentThread;
 
             // Act
@@ -630,7 +628,7 @@ namespace Microsoft.AspNetCore.Components.Server
         public async Task InvokeAsync_T_CanRunAsynchronously_WhenBusy()
         {
             // Arrange
-            var context = new CircuitSynchronizationContext();
+            var context = new RendererSynchronizationContext();
             var thread = Thread.CurrentThread;
 
             var e1 = new ManualResetEventSlim();
@@ -668,7 +666,7 @@ namespace Microsoft.AspNetCore.Components.Server
         public async Task InvokeAsync_T_CanRethrowExceptions()
         {
             // Arrange
-            var context = new CircuitSynchronizationContext();
+            var context = new RendererSynchronizationContext();
 
             // Act
             var task = context.InvokeAsync<string>(() =>
