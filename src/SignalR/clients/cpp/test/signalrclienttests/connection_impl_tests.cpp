@@ -768,7 +768,8 @@ TEST(connection_impl_stop, can_start_and_stop_connection)
     ASSERT_EQ(_XPLATSTR("[state change] disconnecting -> disconnected\n"), remove_date_from_log_entry(log_entries[3]));
 }
 
-TEST(connection_impl_stop, can_start_and_stop_connection_multiple_times)
+// Flaky test: "transport timed out when trying to connect"
+TEST(connection_impl_stop, DISABLED_can_start_and_stop_connection_multiple_times)
 {
     auto writer = std::shared_ptr<log_writer>{std::make_shared<memory_log_writer>()};
 
