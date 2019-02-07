@@ -46,6 +46,7 @@ namespace Common
                 ("Microsoft.VisualStudio.Editor.Razor", "area-mvc"),
                 ("Microsoft.AspNetCore.Razor", "area-mvc"),
                 ("Microsoft.AspNetCore.Components", "area-mvc"),
+                ("Interop.FunctionalTests", "area-servers"),
 
                 // Tools
                 ("Microsoft.VisualStudio.Web.CodeGeneration", "area-webtools"),
