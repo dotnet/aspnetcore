@@ -39,8 +39,12 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         public override async Task OnConnectedAsync(HubConnectionContext connection)
         {
-            using (var scope = _serviceScopeFactory.CreateScope())
+            IServiceScope scope = null;
+
+            try
             {
+                scope = _serviceScopeFactory.CreateScope();
+
                 var hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
                 var hub = hubActivator.Create();
                 try
@@ -53,12 +57,28 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                     hubActivator.Release(hub);
                 }
             }
+            finally
+            {
+                if (scope is IAsyncDisposable asyncDisposable)
+                {
+                    // If the container supports IAsyncDisposable then dispose it asynchronously
+                    await asyncDisposable.DisposeAsync();
+                }
+                else
+                {
+                    scope.Dispose();
+                }
+            }
         }
 
         public override async Task OnDisconnectedAsync(HubConnectionContext connection, Exception exception)
         {
-            using (var scope = _serviceScopeFactory.CreateScope())
+            IServiceScope scope = null;
+
+            try
             {
+                scope = _serviceScopeFactory.CreateScope();
+
                 var hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
                 var hub = hubActivator.Create();
                 try
@@ -69,6 +89,18 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 finally
                 {
                     hubActivator.Release(hub);
+                }
+            }
+            finally
+            {
+                if (scope is IAsyncDisposable asyncDisposable)
+                {
+                    // If the container supports IAsyncDisposable then dispose it asynchronously
+                    await asyncDisposable.DisposeAsync();
+                }
+                else
+                {
+                    scope.Dispose();
                 }
             }
         }
@@ -304,7 +336,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                                 // And normal invocations handle cleanup below in the finally
                                 if (isStreamCall)
                                 {
-                                    CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, hub, scope);
+                                    await CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, hub, scope);
                                 }
                             }
 
@@ -342,16 +374,25 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             {
                 if (disposeScope)
                 {
-                    CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, hub, scope);
+                    await CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, hub, scope);
                 }
             }
         }
 
-        private void CleanupInvocation(HubConnectionContext connection, HubMethodInvocationMessage hubMessage, IHubActivator<THub> hubActivator,
+        private async Task CleanupInvocation(HubConnectionContext connection, HubMethodInvocationMessage hubMessage, IHubActivator<THub> hubActivator,
             THub hub, IServiceScope scope)
         {
             hubActivator?.Release(hub);
-            scope.Dispose();
+
+            if (scope is IAsyncDisposable asyncDisposable)
+            {
+                // If the container supports IAsyncDisposable then dispose it asynchronously
+                await asyncDisposable.DisposeAsync();
+            }
+            else
+            {
+                scope.Dispose();
+            }
 
             if (hubMessage.StreamIds != null)
             {
@@ -398,7 +439,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             {
                 (enumerator as IDisposable)?.Dispose();
 
-                CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, hub, scope);
+                await CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, hub, scope);
 
                 // Dispose the linked CTS for the stream.
                 streamCts.Dispose();
