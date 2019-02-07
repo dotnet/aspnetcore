@@ -20,7 +20,7 @@ class LongPollingTransport implements Transport {
     private final HttpClient pollingClient;
     private final Map<String, String> headers;
     private static final int POLL_TIMEOUT = 100*1000;
-    private volatile Boolean active;
+    private volatile Boolean active = false;
     private String pollUrl;
     private String closeError;
     private Single<String> accessTokenProvider;
@@ -108,6 +108,9 @@ class LongPollingTransport implements Transport {
 
     @Override
     public Completable send(String message) {
+        if (!this.active) {
+            return Completable.error(new Exception("Cannot send unless the transport is active."));
+        }
         this.updateHeaderToken();
         return Completable.fromSingle(this.client.post(url, message));
     }
