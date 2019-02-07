@@ -20,7 +20,7 @@
         <AdditionalProperties>
           RepositoryToBuild=%(RepositoryBuildOrder.Identity);
           BuildRepositoryRoot=$([MSBuild]::NormalizeDirectory(%(RepositoryBuildOrder.RootPath)));
-          SkipTests=%(RepositoryBuildOrder.SkipTest)
+          SkipTests=%(RepositoryBuildOrder.SkipTests)
         </AdditionalProperties>
       </BatchedRepository>
     </ItemGroup>
@@ -58,7 +58,7 @@
       Targets="_TestRepository"
       Properties="BuildNumber=$(BuildNumber);IsFinalBuild=$(IsFinalBuild);Configuration=$(Configuration);_NoBuildRepos=$(_NoBuildRepos)"
       ContinueOnError="true"
-      Condition=" %(_BatchedTestRepo.SkipTests) != 'true' ">
+      Condition=" @(_BatchedTestRepo.SkipTests) != 'true' ">
       <Output TaskParameter="TargetOutputs" ItemName="_RepoTestResults" />
     </MSBuild>
 
