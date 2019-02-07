@@ -87,20 +87,17 @@ OUT_OF_PROCESS_APPLICATION::SetWebsocketStatus(
     PCWSTR pszTempWebsocketValue;
     DWORD cbLength;
     HRESULT hr = pHttpContext->GetServerVariable("WEBSOCKET_VERSION", &pszTempWebsocketValue, &cbLength);
-    if (hr)
+    if (SUCCEEDED(hr))
     {
-        if (hr == HRESULT_FROM_WIN32(ERROR_INVALID_INDEX))
-        {
-            m_fWebSocketSupported = WEBSOCKET_STATUS::WEBSOCKET_NOT_SUPPORTED;
-        }
-        else
-        {
-            FAILED_LOG(hr);
-        }
+        m_fWebSocketSupported = WEBSOCKET_STATUS::WEBSOCKET_SUPPORTED;
     }
     else
     {
-        m_fWebSocketSupported = WEBSOCKET_STATUS::WEBSOCKET_SUPPORTED;
+        m_fWebSocketSupported = WEBSOCKET_STATUS::WEBSOCKET_NOT_SUPPORTED;
+        if (hr != HRESULT_FROM_WIN32(ERROR_INVALID_INDEX))
+        {
+            LOG_IF_FAILED(hr);
+        }
     }
 }
 
