@@ -12,10 +12,6 @@
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="$(MicrosoftNETFrameworkReferenceAssembliesPackageVersion)" PrivateAssets="All" AllowExplicitReference="true" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' AND '$(IsHelixJob)' == 'true' ">
-    <Reference Include="xunit.runner.console" Version="2.4.1" />
-  </ItemGroup>
-  
   <ItemGroup Condition=" '$(AddImplicitReferences)' != 'false' AND '$(IsTestProject)' == 'true' ">
     <Reference Include="Microsoft.AspNetCore.Testing" />
     <Reference Include="Microsoft.NET.Test.Sdk" />
@@ -25,5 +21,4 @@
     <Reference Include="xunit.runner.visualstudio" />
   </ItemGroup>
 
-  
 </Project>
