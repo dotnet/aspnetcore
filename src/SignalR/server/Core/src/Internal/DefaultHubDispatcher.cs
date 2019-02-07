@@ -114,14 +114,20 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                     break;
 
                 case StreamItemMessage streamItem:
-                    Log.ReceivedStreamItem(_logger, streamItem);
                     return ProcessStreamItem(connection, streamItem);
 
                 case CompletionMessage streamCompleteMessage:
                     // closes channels, removes from Lookup dict
                     // user's method can see the channel is complete and begin wrapping up
-                    Log.CompletingStream(_logger, streamCompleteMessage);
-                    connection.StreamTracker.Complete(streamCompleteMessage);
+                    try
+                    {
+                        connection.StreamTracker.Complete(streamCompleteMessage);
+                        Log.CompletingStream(_logger, streamCompleteMessage);
+                    }
+                    catch (KeyNotFoundException)
+                    {
+                        Log.UnexpectedStreamCompletion(_logger);
+                    }
                     break;
 
                 // Other kind of message we weren't expecting
@@ -158,8 +164,24 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         private Task ProcessStreamItem(HubConnectionContext connection, StreamItemMessage message)
         {
-            Log.ReceivedStreamItem(_logger, message);
-            return connection.StreamTracker.ProcessItem(message);
+            var processTask = connection.StreamTracker.ProcessItem(message);
+            // Review: This is kind of ugly and relies on the fact that the exception will be thrown from the synchronous code path
+            if (processTask.IsFaulted)
+            {
+                try
+                {
+                    processTask.GetAwaiter().GetResult();
+                }
+                catch (KeyNotFoundException)
+                {
+                    Log.UnexpectedStreamItem(_logger);
+                }
+            }
+            else
+            {
+                Log.ReceivedStreamItem(_logger, message);
+            }
+            return processTask;
         }
 
         private Task ProcessInvocation(HubConnectionContext connection,
