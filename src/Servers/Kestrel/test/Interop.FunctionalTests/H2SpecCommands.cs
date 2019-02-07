@@ -178,7 +178,7 @@ namespace Interop.FunctionalTests
                 process.StartInfo.FileName = GetToolLocation();
                 process.StartInfo.RedirectStandardOutput = true;
                 process.StartInfo.RedirectStandardError = true;
-                process.StartInfo.Arguments = $"{testId} -p {port.ToString(CultureInfo.InvariantCulture)} --strict -j {tempFile} --timeout {TimeoutSeconds}"
+                process.StartInfo.Arguments = $"{testId} -p {port.ToString(CultureInfo.InvariantCulture)} --strict -v -j {tempFile} --timeout {TimeoutSeconds}"
                     + (https ? " --tls --insecure" : "");
                 process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
                 process.StartInfo.CreateNoWindow = true;
