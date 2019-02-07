@@ -480,6 +480,28 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 return base.VisitRazorMetaCode(node);
             }
 
+            public override SyntaxNode VisitCSharpStatement(CSharpStatementSyntax node)
+            {
+                // We don't support code blocks inside tag helper attributes. Don't rewrite anything inside a code block.
+                // E.g, <p age="@{1 + 2}"> is not supported.
+                return node;
+            }
+
+            public override SyntaxNode VisitRazorDirective(RazorDirectiveSyntax node)
+            {
+                // We don't support directives inside tag helper attributes. Don't rewrite anything inside a directive.
+                // E.g, <p age="@functions { }"> is not supported.
+                return node;
+            }
+
+            public override SyntaxNode VisitMarkupElement(MarkupElementSyntax node)
+            {
+                // We're visiting an attribute value. If we encounter a MarkupElement this means the attribute value is invalid.
+                // We don't want to rewrite anything here.
+                // E.g, <my age="@if (true) { <my4 age=... }"></my4>
+                return node;
+            }
+
             public override SyntaxNode VisitCSharpExpressionLiteral(CSharpExpressionLiteralSyntax node)
             {
                 if (!_tryParseResult.IsBoundNonStringAttribute)
