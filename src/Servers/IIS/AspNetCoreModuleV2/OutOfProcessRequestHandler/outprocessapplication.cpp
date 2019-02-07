@@ -86,10 +86,17 @@ OUT_OF_PROCESS_APPLICATION::SetWebsocketStatus(
     // the websocket module may still not be enabled.
     PCWSTR pszTempWebsocketValue;
     DWORD cbLength;
-
-    if (pHttpContext->GetServerVariable("WEBSOCKET_VERSION", &pszTempWebsocketValue, &cbLength))
+    HRESULT hr = pHttpContext->GetServerVariable("WEBSOCKET_VERSION", &pszTempWebsocketValue, &cbLength);
+    if (hr)
     {
-        m_fWebSocketSupported = WEBSOCKET_STATUS::WEBSOCKET_NOT_SUPPORTED;
+        if (hr == HRESULT_FROM_WIN32(ERROR_INVALID_INDEX))
+        {
+            m_fWebSocketSupported = WEBSOCKET_STATUS::WEBSOCKET_NOT_SUPPORTED;
+        }
+        else
+        {
+            FAILED_LOG(hr);
+        }
     }
     else
     {
