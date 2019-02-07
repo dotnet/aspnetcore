@@ -675,7 +675,7 @@ namespace System.IO.Pipelines.Tests
 
         private class ThrowAfterZeroByteReadStream : MemoryStream
         {
-            private bool throwOnNextCallToRead;
+            private bool _throwOnNextCallToRead;
             public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
             {
                 return ReadAsync(new Memory<byte>(buffer, offset, count)).AsTask();
@@ -683,14 +683,14 @@ namespace System.IO.Pipelines.Tests
 
             public override async ValueTask<int> ReadAsync(Memory<byte> destination, CancellationToken cancellationToken = default)
             {
-                if (throwOnNextCallToRead)
+                if (_throwOnNextCallToRead)
                 {
                     throw new Exception();
                 }
                 var bytes = await base.ReadAsync(destination, cancellationToken);
                 if (bytes == 0)
                 {
-                    throwOnNextCallToRead = true;
+                    _throwOnNextCallToRead = true;
                 }
                 return bytes;
             }
