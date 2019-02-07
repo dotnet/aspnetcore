@@ -8,7 +8,7 @@ for example: `Windows.10.Amd64.ClientRS4.VS2017.Open`, `OSX.1012.Amd64.Open`, `U
 For more info about helix see: [SDK](https://github.com/dotnet/arcade/blob/master/src/Microsoft.DotNet.Helix/Sdk/Readme.md), [JobSender](https://github.com/dotnet/arcade/blob/master/src/Microsoft.DotNet.Helix/Sdk/Readme.md) 
 
 ## How do I look at the results of a helix run?
-There's a link embedded in the build.cmd log of the helix target on AzoDO, near the bottom right that will look something like this:
+There's a link embedded in the build.cmd log of the helix target on Azure Pipelines, near the bottom right that will look something like this:
 ```
 2019-02-07T21:55:48.1516089Z   Results will be available from https://mc.dot.net/#/user/aspnetcore/pr~2Faspnet~2Faspnetcore/ci/20190207.34
 2019-02-07T21:56:43.2209607Z   Job 0dedeef6-210e-4815-89f9-fd07513179fe is completed with 108 finished work items.
