@@ -139,6 +139,7 @@
           the entire pattern will silently fail to evaluate correctly.
         -->
         <DotNetProjects Include="
+                          $(RepositoryRoot)src\Framework\ref\Microsoft.AspNetCore.App.Ref.csproj;
                           $(RepositoryRoot)src\DefaultBuilder\**\*.*proj;
                           $(RepositoryRoot)src\Features\JsonPatch\**\*.*proj;
                           $(RepositoryRoot)src\DataProtection\**\*.*proj;
