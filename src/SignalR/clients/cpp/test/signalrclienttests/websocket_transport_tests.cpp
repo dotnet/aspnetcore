@@ -98,24 +98,24 @@ TEST(websocket_transport_connect, connect_logs_exceptions)
 }
 
 // Flaky test: crashes test process
-// TEST(websocket_transport_connect, cannot_call_connect_on_already_connected_transport)
-// {
-//     auto client = std::make_shared<test_websocket_client>();
-//     auto ws_transport = websocket_transport::create([&](){ return client; }, logger(std::make_shared<trace_log_writer>(), trace_level::none),
-//         [](const utility::string_t&){}, [](const std::exception&){});
+TEST(websocket_transport_connect, DISABLED_cannot_call_connect_on_already_connected_transport)
+{
+    auto client = std::make_shared<test_websocket_client>();
+    auto ws_transport = websocket_transport::create([&](){ return client; }, logger(std::make_shared<trace_log_writer>(), trace_level::none),
+        [](const utility::string_t&){}, [](const std::exception&){});
 
-//     ws_transport->connect(_XPLATSTR("ws://fakeuri.org")).wait();
+    ws_transport->connect(_XPLATSTR("ws://fakeuri.org")).wait();
 
-//     try
-//     {
-//         ws_transport->connect(_XPLATSTR("ws://fakeuri.org")).wait();
-//         ASSERT_TRUE(false); // exception not thrown
-//     }
-//     catch (const std::exception &e)
-//     {
-//         ASSERT_EQ(_XPLATSTR("transport already connected"), utility::conversions::to_string_t(e.what()));
-//     }
-// }
+    try
+    {
+        ws_transport->connect(_XPLATSTR("ws://fakeuri.org")).wait();
+        ASSERT_TRUE(false); // exception not thrown
+    }
+    catch (const std::exception &e)
+    {
+        ASSERT_EQ(_XPLATSTR("transport already connected"), utility::conversions::to_string_t(e.what()));
+    }
+}
 
 TEST(websocket_transport_connect, can_connect_after_disconnecting)
 {

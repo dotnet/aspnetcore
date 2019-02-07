@@ -769,47 +769,47 @@ TEST(connection_impl_stop, can_start_and_stop_connection)
 }
 
 // Flaky test: "transport timed out when trying to connect"
-// TEST(connection_impl_stop, can_start_and_stop_connection_multiple_times)
-// {
-//     auto writer = std::shared_ptr<log_writer>{std::make_shared<memory_log_writer>()};
+TEST(connection_impl_stop, DISABLED_can_start_and_stop_connection_multiple_times)
+{
+    auto writer = std::shared_ptr<log_writer>{std::make_shared<memory_log_writer>()};
 
-//     {
-//         auto websocket_client = create_test_websocket_client(
-//             /* receive function */ []() { return pplx::task_from_result(std::string("{ }\x1e")); });
-//         auto connection = create_connection(websocket_client, writer, trace_level::state_changes);
+    {
+        auto websocket_client = create_test_websocket_client(
+            /* receive function */ []() { return pplx::task_from_result(std::string("{ }\x1e")); });
+        auto connection = create_connection(websocket_client, writer, trace_level::state_changes);
 
-//         connection->start()
-//             .then([connection]()
-//         {
-//             return connection->stop();
-//         })
-//         .then([connection]()
-//         {
-//             return connection->start();
-//         }).get();
-//     }
+        connection->start()
+            .then([connection]()
+        {
+            return connection->stop();
+        })
+        .then([connection]()
+        {
+            return connection->start();
+        }).get();
+    }
 
-//     auto memory_writer = std::dynamic_pointer_cast<memory_log_writer>(writer);
+    auto memory_writer = std::dynamic_pointer_cast<memory_log_writer>(writer);
 
-//     // The connection_impl will be destroyed when the last reference to shared_ptr holding is released. This can happen
-//     // on a different thread in which case the dtor will be invoked on a different thread so we need to wait for this
-//     // to happen and if it does not the test will fail
-//     for (int wait_time_ms = 5; wait_time_ms < 100 && memory_writer->get_log_entries().size() < 8; wait_time_ms <<= 1)
-//     {
-//         std::this_thread::sleep_for(std::chrono::milliseconds(wait_time_ms));
-//     }
+    // The connection_impl will be destroyed when the last reference to shared_ptr holding is released. This can happen
+    // on a different thread in which case the dtor will be invoked on a different thread so we need to wait for this
+    // to happen and if it does not the test will fail
+    for (int wait_time_ms = 5; wait_time_ms < 100 && memory_writer->get_log_entries().size() < 8; wait_time_ms <<= 1)
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(wait_time_ms));
+    }
 
-//     auto log_entries = memory_writer->get_log_entries();
-//     ASSERT_EQ(8U, log_entries.size());
-//     ASSERT_EQ(_XPLATSTR("[state change] disconnected -> connecting\n"), remove_date_from_log_entry(log_entries[0]));
-//     ASSERT_EQ(_XPLATSTR("[state change] connecting -> connected\n"), remove_date_from_log_entry(log_entries[1]));
-//     ASSERT_EQ(_XPLATSTR("[state change] connected -> disconnecting\n"), remove_date_from_log_entry(log_entries[2]));
-//     ASSERT_EQ(_XPLATSTR("[state change] disconnecting -> disconnected\n"), remove_date_from_log_entry(log_entries[3]));
-//     ASSERT_EQ(_XPLATSTR("[state change] disconnected -> connecting\n"), remove_date_from_log_entry(log_entries[4]));
-//     ASSERT_EQ(_XPLATSTR("[state change] connecting -> connected\n"), remove_date_from_log_entry(log_entries[5]));
-//     ASSERT_EQ(_XPLATSTR("[state change] connected -> disconnecting\n"), remove_date_from_log_entry(log_entries[6]));
-//     ASSERT_EQ(_XPLATSTR("[state change] disconnecting -> disconnected\n"), remove_date_from_log_entry(log_entries[7]));
-// }
+    auto log_entries = memory_writer->get_log_entries();
+    ASSERT_EQ(8U, log_entries.size());
+    ASSERT_EQ(_XPLATSTR("[state change] disconnected -> connecting\n"), remove_date_from_log_entry(log_entries[0]));
+    ASSERT_EQ(_XPLATSTR("[state change] connecting -> connected\n"), remove_date_from_log_entry(log_entries[1]));
+    ASSERT_EQ(_XPLATSTR("[state change] connected -> disconnecting\n"), remove_date_from_log_entry(log_entries[2]));
+    ASSERT_EQ(_XPLATSTR("[state change] disconnecting -> disconnected\n"), remove_date_from_log_entry(log_entries[3]));
+    ASSERT_EQ(_XPLATSTR("[state change] disconnected -> connecting\n"), remove_date_from_log_entry(log_entries[4]));
+    ASSERT_EQ(_XPLATSTR("[state change] connecting -> connected\n"), remove_date_from_log_entry(log_entries[5]));
+    ASSERT_EQ(_XPLATSTR("[state change] connected -> disconnecting\n"), remove_date_from_log_entry(log_entries[6]));
+    ASSERT_EQ(_XPLATSTR("[state change] disconnecting -> disconnected\n"), remove_date_from_log_entry(log_entries[7]));
+}
 
 TEST(connection_impl_stop, dtor_stops_the_connection)
 {
