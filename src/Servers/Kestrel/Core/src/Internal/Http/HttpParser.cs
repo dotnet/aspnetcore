@@ -201,7 +201,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             byte ch1;
                             byte ch2;
                             var readAhead = false;
-                            bool readSecond = true;
+                            var readSecond = true;
 
                             // Fast path, we're still looking at the same span
                             if (remaining >= 2)
