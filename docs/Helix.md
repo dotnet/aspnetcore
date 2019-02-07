@@ -32,7 +32,7 @@ You can simulate how most tests locally:
 ```
 dotnet publish
 cd <the publish directory>
-dotnet vstest
+dotnet vstest My.Tests.dll
 ```
 
 If that doesn't help, you can try the Get Repro environment link from mission control and try to debug that way.
