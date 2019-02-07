@@ -7,11 +7,11 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import io.reactivex.Single;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.reactivex.Completable;
+import io.reactivex.Single;
 import io.reactivex.subjects.CompletableSubject;
 
 class LongPollingTransport implements Transport {
@@ -45,7 +45,7 @@ class LongPollingTransport implements Transport {
 
     private void updateHeaderToken() {
         this.accessTokenProvider.flatMap((token) -> {
-            if(!token.isEmpty()) {
+            if (!token.isEmpty()) {
                 this.headers.put("Authorization", "Bearer " + token);
             }
             return Single.just("");
@@ -94,7 +94,7 @@ class LongPollingTransport implements Transport {
                     this.active = false;
                     this.closeError = "Unexpected response code " + response.getStatusCode();
                 } else {
-                    if(response.getContent() != null) {
+                    if (response.getContent() != null) {
                         logger.debug("Message received.");
                         threadPool.execute(() -> this.onReceive(response.getContent()));
                     } else {

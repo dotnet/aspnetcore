@@ -140,7 +140,7 @@ public class LongPollingTransportTest {
                     if (requestCount.get() == 0) {
                         requestCount.incrementAndGet();
                         return Single.just(new HttpResponse(200, "", ""));
-                    } else if (requestCount.get() == 1){
+                    } else if (requestCount.get() == 1) {
                         requestCount.incrementAndGet();
                         return Single.just(new HttpResponse(200, "", "TEST"));
                     }
@@ -174,7 +174,7 @@ public class LongPollingTransportTest {
                     if (requestCount.get() == 0) {
                         requestCount.incrementAndGet();
                         return Single.just(new HttpResponse(200, "", ""));
-                    } else if (requestCount.get() == 1){
+                    } else if (requestCount.get() == 1) {
                         requestCount.incrementAndGet();
                         return Single.just(new HttpResponse(200, "", "FIRST"));
                     } else if (requestCount.get() == 2) {
