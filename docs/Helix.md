@@ -47,7 +47,7 @@ This will restore, and then publish all of the test projects including some boot
 
 ## How to skip tests on helix
 There are two main ways to opt out of helix
-- Skipping the entire test project via `<BuildHelixPayload>false</BuildHelixPayload>` in csproj (the default value for this is IsTestProject). This will
+- Skipping the entire test project via `<BuildHelixPayload>false</BuildHelixPayload>` in csproj (the default value for this is IsTestProject).
 - Skipping an individual test via `[SkipOnHelix]` which might require including a compile reference to: `<Compile Include="$(SharedSourceRoot)test\xunit\SkipOnHelixAttribute.cs" />`
 
 Make sure to file an issue for any skipped tests and include that in a comment next to either of these
