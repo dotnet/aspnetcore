@@ -46,10 +46,6 @@
       _ResolveCustomTargetingPackReferences;
       _BatchCopyToOutputDirectory;
     </BuildDependsOn>
-    <BuiltProjectOutputGroupDependsOn>
-      $(BuiltProjectOutputGroupDependsOn);
-      _ResolveCustomTargetingPackReferences
-    </BuiltProjectOutputGroupDependsOn>
   </PropertyGroup>
 
   <!-- Override the default MSBuild targets so that nothing is returned from the project since it represents a collection of assemblies. -->
@@ -57,8 +53,10 @@
   <Target Name="Build" DependsOnTargets="$(BuildDependsOn)">
     <Message Importance="High" Text="$(MSBuildProjectName) -> $(TargetDir)" />
   </Target>
+
   <!-- This project doesn't compile anything. -->
   <Target Name="CoreCompile" />
+
   <!-- Completely disable default targets for copying to output. -->
   <Target Name="CopyFilesToOutputDirectory" />
 
