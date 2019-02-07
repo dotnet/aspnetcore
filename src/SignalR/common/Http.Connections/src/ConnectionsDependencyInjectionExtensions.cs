@@ -23,6 +23,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             services.AddRouting();
             services.AddAuthorizationPolicyEvaluator();
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<ConnectionOptions>, ConnectionOptionsSetup>());
             services.TryAddSingleton<HttpConnectionDispatcher>();
             services.TryAddSingleton<HttpConnectionManager>();
             return services;
@@ -36,13 +37,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The same instance of the <see cref="IServiceCollection"/> for chaining.</returns>
         public static IServiceCollection AddConnections(this IServiceCollection services, Action<ConnectionOptions> options)
         {
-            services.AddRouting();
-            services.AddAuthorizationPolicyEvaluator();
-            services.TryAddSingleton<IConfigureOptions<ConnectionOptions>, ConnectionOptionsSetup>();
-            services.TryAddSingleton<HttpConnectionDispatcher>();
-            services.TryAddSingleton<HttpConnectionManager>();
-            services.Configure(options);
-            return services;
+            return services.Configure(options)
+                .AddConnections();
         }
     }
 }
