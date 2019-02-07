@@ -363,13 +363,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             }
         }
 
-        private async Task CleanupInvocation(HubConnectionContext connection, HubMethodInvocationMessage hubMessage, IHubActivator<THub> hubActivator,
+        private ValueTask CleanupInvocation(HubConnectionContext connection, HubMethodInvocationMessage hubMessage, IHubActivator<THub> hubActivator,
             THub hub, IServiceScope scope)
         {
-            hubActivator?.Release(hub);
-
-            await scope.DisposeAsync();
-            
             if (hubMessage.StreamIds != null)
             {
                 foreach (var stream in hubMessage.StreamIds)
@@ -382,6 +378,10 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                     catch (KeyNotFoundException) { }
                 }
             }
+
+            hubActivator?.Release(hub);
+
+            return scope.DisposeAsync();
         }
 
         private async Task StreamResultsAsync(string invocationId, HubConnectionContext connection, IAsyncEnumerator<object> enumerator, IServiceScope scope,
