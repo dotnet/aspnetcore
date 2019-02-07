@@ -4,6 +4,8 @@
 package com.microsoft.signalr;
 
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import io.reactivex.Single;
 import org.slf4j.Logger;
@@ -25,6 +27,8 @@ class LongPollingTransport implements Transport {
     private String closeError;
     private Single<String> accessTokenProvider;
     private CompletableSubject receiveLoop = CompletableSubject.create();
+    private final ExecutorService threadPool = Executors.newCachedThreadPool();
+
     private final Logger logger = LoggerFactory.getLogger(LongPollingTransport.class);
 
     public LongPollingTransport(Map<String, String> headers, HttpClient client, Single<String> accessTokenProvider) {
@@ -91,7 +95,7 @@ class LongPollingTransport implements Transport {
                 } else {
                     if(response.getContent() != null) {
                         logger.debug("Message received.");
-                        new Thread(() -> this.onReceive(response.getContent())).start();
+                        threadPool.execute(() -> this.onReceive(response.getContent()));
                     } else {
                         logger.debug("Poll timed out, reissuing.");
                     }
