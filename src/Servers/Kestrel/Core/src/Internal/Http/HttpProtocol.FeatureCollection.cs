@@ -195,14 +195,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                if (_userSetPipeWriter != null)
-                {
-                    return _userSetPipeWriter;
-                }
-
                 if (!object.ReferenceEquals(_cachedResponseBodyStream, ResponseBody))
                 {
-                    var responsePipeWriter = new StreamPipeWriter(ResponseBody, 4096, _context.MemoryPool);
+                    var responsePipeWriter = new StreamPipeWriter(ResponseBody, minimumSegmentSize: 4096, _context.MemoryPool);
                     ResponsePipeWriter = responsePipeWriter;
                     _cachedResponseBodyStream = ResponseBody;
                     if (_wrapperObjectsToDispose == null)
@@ -216,21 +211,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             set
             {
-                _userSetPipeWriter = value ?? throw new ArgumentNullException(nameof(value));
-                ResponsePipeWriter = _userSetPipeWriter;
+                ResponsePipeWriter = value;
             }
         }
-
 
         Stream IHttpResponseFeature.Body
         {
             get
             {
-                if (_userSetResponseBody != null)
-                {
-                    return _userSetResponseBody;
-                }
-
                 if (!object.ReferenceEquals(_cachedResponsePipeWriter, ResponsePipeWriter))
                 {
                     var responseBody = new WriteOnlyPipeStream(ResponsePipeWriter);
@@ -247,8 +235,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             set
             {
-                _userSetResponseBody = value ?? throw new ArgumentNullException(nameof(value));
-                ResponseBody = _userSetResponseBody;
+                ResponseBody = value;
             }
         }
 

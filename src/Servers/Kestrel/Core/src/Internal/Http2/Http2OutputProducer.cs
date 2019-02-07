@@ -198,24 +198,36 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public void Advance(int bytes)
         {
-            _startedWritingDataFrames = true;
+            lock (_dataWriterLock)
+            {
+                _startedWritingDataFrames = true;
 
-            _dataPipe.Writer.Advance(bytes);
+                _dataPipe.Writer.Advance(bytes);
+            }
         }
 
         public Span<byte> GetSpan(int sizeHint = 0)
         {
-            return _dataPipe.Writer.GetSpan(sizeHint);
+            lock (_dataWriterLock)
+            {
+                return _dataPipe.Writer.GetSpan(sizeHint);
+            }
         }
 
         public Memory<byte> GetMemory(int sizeHint = 0)
         {
-            return _dataPipe.Writer.GetMemory(sizeHint);
+            lock (_dataWriterLock)
+            {
+                return _dataPipe.Writer.GetMemory(sizeHint);
+            }
         }
 
         public void CancelPendingFlush()
         {
-            _dataPipe.Writer.CancelPendingFlush();
+            lock (_dataWriterLock)
+            {
+                _dataPipe.Writer.CancelPendingFlush();
+            }
         }
 
         public ValueTask<FlushResult> WriteDataToPipeAsync(ReadOnlySpan<byte> data, CancellationToken cancellationToken)
@@ -248,7 +260,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public void Complete()
         {
-            _dataPipe.Writer.Complete();
+            // This will noop for now. See: 
         }
 
         private async ValueTask<FlushResult> ProcessDataWrites()
