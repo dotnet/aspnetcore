@@ -24,9 +24,6 @@
 
   <ItemGroup>
     <!-- The versions on these references are hard-coded because we want to ensure we maintain backwards compatibility with ANCM 2.2.0 -->
-    <PackageReference Include="Microsoft.AspNetCore.AspNetCoreModule" Version="2.2.0">
-      <AllowExplicitReference>true</AllowExplicitReference>
-    </PackageReference>
     <PackageReference Include="Microsoft.AspNetCore.AspNetCoreModuleV2" Version="2.2.0">
       <AllowExplicitReference>true</AllowExplicitReference>
     </PackageReference>
