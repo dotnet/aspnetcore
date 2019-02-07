@@ -1325,7 +1325,7 @@ namespace Microsoft.AspNetCore.Components.Test
             EventComponent component = null;
             Action<UIEventArgs> eventHandler = null;
 
-            eventHandler = ___ =>
+            eventHandler = _ =>
             {
                 numEventsFired++;
 
