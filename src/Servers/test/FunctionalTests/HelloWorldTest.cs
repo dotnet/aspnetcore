@@ -23,7 +23,6 @@ namespace ServerComparison.FunctionalTests
             => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Kestrel, ServerType.Nginx, ServerType.HttpSys)
                 .WithTfms(Tfm.NetCoreApp30)
                 .WithApplicationTypes(ApplicationType.Portable)
-                .WithAncmVersions(AncmVersion.AspNetCoreModuleV2)
                 .WithAllHostingModels()
                 .WithAllArchitectures();
 
