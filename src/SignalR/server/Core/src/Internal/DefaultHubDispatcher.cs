@@ -59,15 +59,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             }
             finally
             {
-                if (scope is IAsyncDisposable asyncDisposable)
-                {
-                    // If the container supports IAsyncDisposable then dispose it asynchronously
-                    await asyncDisposable.DisposeAsync();
-                }
-                else
-                {
-                    scope.Dispose();
-                }
+                await scope.DisposeAsync();
             }
         }
 
@@ -93,15 +85,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             }
             finally
             {
-                if (scope is IAsyncDisposable asyncDisposable)
-                {
-                    // If the container supports IAsyncDisposable then dispose it asynchronously
-                    await asyncDisposable.DisposeAsync();
-                }
-                else
-                {
-                    scope.Dispose();
-                }
+                await scope.DisposeAsync();
             }
         }
 
@@ -384,16 +368,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         {
             hubActivator?.Release(hub);
 
-            if (scope is IAsyncDisposable asyncDisposable)
-            {
-                // If the container supports IAsyncDisposable then dispose it asynchronously
-                await asyncDisposable.DisposeAsync();
-            }
-            else
-            {
-                scope.Dispose();
-            }
-
+            await scope.DisposeAsync();
+            
             if (hubMessage.StreamIds != null)
             {
                 foreach (var stream in hubMessage.StreamIds)
