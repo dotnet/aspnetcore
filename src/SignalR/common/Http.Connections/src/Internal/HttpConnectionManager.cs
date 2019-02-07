@@ -31,24 +31,22 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         private readonly TimerAwaitable _nextHeartbeat;
         private readonly ILogger<HttpConnectionManager> _logger;
         private readonly ILogger<HttpConnectionContext> _connectionLogger;
+        private readonly TimeSpan _disconnectTimeout;
 
-        public TimeSpan DisconnectTimeout { get; set; }
+        public HttpConnectionManager(ILoggerFactory loggerFactory, IApplicationLifetime appLifetime)
+            : this(loggerFactory, appLifetime, Options.Create(new ConnectionOptions() { DisconnectTimeout = ConnectionOptionsSetup.DefaultDisconectTimeout }))
+        {
+        }
 
-        public HttpConnectionManager(ILoggerFactory loggerFactory, IApplicationLifetime appLifetime) 
+        public HttpConnectionManager(ILoggerFactory loggerFactory, IApplicationLifetime appLifetime, IOptions<ConnectionOptions> connectionOptions)
         {
             _logger = loggerFactory.CreateLogger<HttpConnectionManager>();
             _connectionLogger = loggerFactory.CreateLogger<HttpConnectionContext>();
             _nextHeartbeat = new TimerAwaitable(_heartbeatTickRate, _heartbeatTickRate);
-            DisconnectTimeout = ConnectionOptionsSetup.DefaultDisconectTimeout;
+            _disconnectTimeout = connectionOptions.Value.DisconnectTimeout ?? ConnectionOptionsSetup.DefaultDisconectTimeout;
             // Register these last as the callbacks could run immediately
             appLifetime.ApplicationStarted.Register(() => Start());
             appLifetime.ApplicationStopping.Register(() => CloseConnections());
-        }
-
-        public HttpConnectionManager(ILoggerFactory loggerFactory, IApplicationLifetime appLifetime, IOptions<ConnectionOptions> connectionOptions)
-            : this(loggerFactory, appLifetime)
-        {
-            DisconnectTimeout = connectionOptions.Value.DisconnectTimeout ?? ConnectionOptionsSetup.DefaultDisconectTimeout;
         }
 
         public void Start()
@@ -164,7 +162,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
                 // Once the decision has been made to dispose we don't check the status again
                 // But don't clean up connections while the debugger is attached.
-                if (!Debugger.IsAttached && status == HttpConnectionStatus.Inactive && (DateTimeOffset.UtcNow - lastSeenUtc).TotalSeconds > DisconnectTimeout.Seconds)
+                if (!Debugger.IsAttached && status == HttpConnectionStatus.Inactive && (DateTimeOffset.UtcNow - lastSeenUtc).TotalSeconds > _disconnectTimeout.Seconds)
                 {
                     Log.ConnectionTimedOut(_logger, connection.ConnectionId);
                     HttpConnectionsEventSource.Log.ConnectionTimedOut(connection.ConnectionId);

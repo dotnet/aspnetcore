@@ -396,7 +396,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         {
             using (StartVerifiableLog())
             {
-                var manager = CreateConnectionManager(LoggerFactory);
+                var manager = CreateConnectionManager(LoggerFactory, TimeSpan.FromSeconds(5));
                 var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
                 var connection = manager.CreateConnection();
                 connection.TransportType = HttpTransportType.LongPolling;
@@ -440,7 +440,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     await task.OrTimeout();
 
                     // We've been gone longer than the expiration time
-                    connection.LastSeenUtc = DateTime.UtcNow.Subtract(TimeSpan.FromSeconds(20));
+                    connection.LastSeenUtc = DateTime.UtcNow.Subtract(TimeSpan.FromSeconds(10));
 
                     // The application is still running here because the poll is only killed
                     // by the heartbeat so we pretend to do a scan and this should force the application task to complete
@@ -2177,6 +2177,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         private static HttpConnectionManager CreateConnectionManager(ILoggerFactory loggerFactory)
         {
             return new HttpConnectionManager(loggerFactory ?? new LoggerFactory(), new EmptyApplicationLifetime());
+        }
+
+        private static HttpConnectionManager CreateConnectionManager(ILoggerFactory loggerFactory, TimeSpan disconnectTimeout)
+        {
+            var connectionOptions = new ConnectionOptions();
+            connectionOptions.DisconnectTimeout = disconnectTimeout;
+            return new HttpConnectionManager(loggerFactory ?? new LoggerFactory(), new EmptyApplicationLifetime(), Options.Create(connectionOptions));
         }
 
         private string GetContentAsString(Stream body)
