@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\..\shared\test\SkipOnHelixAttribute.cs" />    
+    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />    
     <Content Include="testroot\**\*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
