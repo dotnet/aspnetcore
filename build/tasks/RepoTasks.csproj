@@ -2,15 +2,15 @@
   <Import Project="$(RepoTasksSdkPath)\Sdk.props" Condition="'$(RepoTasksSdkPath)' != '' "/>
 
   <PropertyGroup>
-    <TargetFramework Condition="'$(MSBuildRuntimeType)' == 'Core' ">netcoreapp2.2</TargetFramework>
-    <TargetFramework Condition="'$(MSBuildRuntimeType)' != 'Core' ">net461</TargetFramework>
+    <TargetFramework Condition="'$(MSBuildRuntimeType)' == 'Core' ">netcoreapp3.0</TargetFramework>
+    <TargetFramework Condition="'$(MSBuildRuntimeType)' != 'Core' ">net472</TargetFramework>
     <DefineConstants Condition="'$(BuildInstallers)' == 'true' AND '$(TargetOsName)' == 'win'">$(DefineConstants);BUILD_MSI_TASKS</DefineConstants>
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Remove="Internal.AspNetCore.Sdk" />
-    <PackageReference Include="NuGet.Build.Tasks" Version="4.9.1" />
+    <PackageReference Include="NuGet.Build.Tasks" Version="5.0.0-preview2.5782" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="2.1.0" />
   </ItemGroup>
 
