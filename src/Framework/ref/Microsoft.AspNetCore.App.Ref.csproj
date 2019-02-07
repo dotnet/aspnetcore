@@ -11,7 +11,9 @@
     <TargetFramework>netcoreapp$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)</TargetFramework>
     <IsShippingPackage>true</IsShippingPackage>
 
-    <PackageDescription>This package provides reference assemblies for compiling an ASP.NET Core application. This package is an internal implementation of the .NET Core SDK and is not meant to be used as a normal PackageReference.</PackageDescription>
+    <PackageDescription>Provides a default set of APIs for building an ASP.NET Core application. Contains reference assemblies, documentation, and other design-time assets.
+
+This package is an internal implementation of the .NET Core SDK and is not meant to be used as a normal PackageReference.</PackageDescription>
     <PackageTags>aspnetcore;targeting-pack</PackageTags>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
 
