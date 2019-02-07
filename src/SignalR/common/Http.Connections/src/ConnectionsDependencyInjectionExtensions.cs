@@ -41,6 +41,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IConfigureOptions<ConnectionOptions>, ConnectionOptionsSetup>();
             services.TryAddSingleton<HttpConnectionDispatcher>();
             services.TryAddSingleton<HttpConnectionManager>();
+            services.Configure(options);
             return services;
         }
     }
