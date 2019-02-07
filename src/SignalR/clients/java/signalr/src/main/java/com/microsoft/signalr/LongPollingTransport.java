@@ -27,7 +27,7 @@ class LongPollingTransport implements Transport {
     private String closeError;
     private Single<String> accessTokenProvider;
     private CompletableSubject receiveLoop = CompletableSubject.create();
-    private final ExecutorService threadPool = Executors.newCachedThreadPool();
+    private ExecutorService threadPool;
 
     private final Logger logger = LoggerFactory.getLogger(LongPollingTransport.class);
 
@@ -71,6 +71,7 @@ class LongPollingTransport implements Transport {
             } else {
                 this.active = true;
             }
+            this.threadPool = Executors.newCachedThreadPool();
             poll(url).subscribeWith(receiveLoop);
 
             return Completable.complete();
