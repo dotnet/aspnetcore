@@ -7,7 +7,7 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
-    <RepositoryBuildOrder Include="EntityFrameworkCore" Order="8" />
+    <RepositoryBuildOrder Include="EntityFrameworkCore" Order="8" SkipTest="true" />
     <RepositoryBuildOrder Include="Templating" Order="17" RootPath="$(RepositoryRoot)src\Templating\" />
   </ItemGroup>
 </Project>

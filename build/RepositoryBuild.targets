@@ -14,7 +14,7 @@
       <RepositoryBuildOrder Condition="'%(RootPath)' == ''">
         <RootPath>$(SubmoduleRoot)%(Identity)\</RootPath>
       </RepositoryBuildOrder>
-      <BatchedRepository Include="$(MSBuildProjectFullPath)">
+      <BatchedRepository Include="$(MSBuildProjectFullPath)" Condition=" %(RepositoryBuildOrder.SkipTest) == 'true' ">
         <BuildGroup>%(RepositoryBuildOrder.Order)</BuildGroup>
         <Repository>%(RepositoryBuildOrder.Identity)</Repository>
         <AdditionalProperties>
