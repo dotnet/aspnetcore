@@ -6,6 +6,7 @@
 
   <ItemGroup>
   	<Reference Include="Microsoft.AspNetCore.DeveloperCertificates.XPlat" />
+    <Compile Include="..\..\..\..\test\xunit\SkipOnHelixAttribute.cs" />
   </ItemGroup>
 
 </Project>

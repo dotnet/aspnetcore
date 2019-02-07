@@ -30,6 +30,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\testassets\StandaloneApp\StandaloneApp.csproj" />
+    <Compile Include="..\..\..\..\..\test\xunit\SkipOnHelixAttribute.cs" />
 
     <Compile Include="$(ComponentsSharedSourceRoot)test\**\*.cs" LinkBase="Helpers" />
   </ItemGroup>

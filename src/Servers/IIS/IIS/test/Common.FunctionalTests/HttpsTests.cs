@@ -30,7 +30,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             => TestMatrix.ForServers(DeployerSelector.ServerType)
                 .WithTfms(Tfm.NetCoreApp30)
                 .WithAllApplicationTypes()
-                .WithAncmVersions(AncmVersion.AspNetCoreModuleV2)
                 .WithAllHostingModels();
 
         [ConditionalTheory]
@@ -56,8 +55,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 Assert.Equal("Scheme:https; Original:", responseText);
             }
 
-            if (variant.AncmVersion == AncmVersion.AspNetCoreModuleV2 &&
-                DeployerSelector.HasNewHandler &&
+            if (DeployerSelector.HasNewHandler &&
                 DeployerSelector.HasNewShim)
             {
                 // We expect ServerAddress to be set for InProcess and HTTPS_PORT for OutOfProcess

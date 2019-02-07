@@ -26,7 +26,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// </summary>
         /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to use to instantiate components.</param>
         /// <param name="htmlEncoder">A <see cref="Func{T, TResult}"/> that will HTML encode the given string.</param>
-        public HtmlRenderer(IServiceProvider serviceProvider, Func<string, string> htmlEncoder) : base(serviceProvider)
+        public HtmlRenderer(IServiceProvider serviceProvider, Func<string, string> htmlEncoder, IDispatcher dispatcher)
+            : base(serviceProvider, dispatcher)
         {
             _htmlEncoder = htmlEncoder;
         }

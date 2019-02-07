@@ -7,6 +7,7 @@
   <ItemGroup>
     <Compile Include="..\..\shared\test\*.cs" />
     <Content Include="TestFiles\**\*" CopyToOutputDirectory="PreserveNewest" />
+    <Compile Include="..\..\..\..\test\xunit\SkipOnHelixAttribute.cs" />
   </ItemGroup>
 
   <ItemGroup>

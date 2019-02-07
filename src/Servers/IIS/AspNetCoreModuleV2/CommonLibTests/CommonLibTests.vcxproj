@@ -193,5 +193,7 @@
       </AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
-  <Import Project=".\NativeTests.targets" />
+  <PropertyGroup>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
 </Project>

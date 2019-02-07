@@ -11,6 +11,7 @@ using System.Net.Http;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -37,7 +38,8 @@ namespace Microsoft.AspNetCore.Identity.Test
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
+        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/6549
         [MemberData(nameof(ScriptWithIntegrityData))]
         public async Task IdentityUI_ScriptTags_SubresourceIntegrityCheck(ScriptTag scriptTag)
         {
@@ -65,7 +67,8 @@ namespace Microsoft.AspNetCore.Identity.Test
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
+        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/6549
         [MemberData(nameof(ScriptWithFallbackSrcData))]
         public async Task IdentityUI_ScriptTags_FallbackSourceContent_Matches_CDNContent(ScriptTag scriptTag)
         {

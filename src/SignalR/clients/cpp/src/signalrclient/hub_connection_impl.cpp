@@ -103,10 +103,8 @@ namespace signalr
         auto type = message.at(_XPLATSTR("type")).as_integer();
         if (type == 3)
         {
-            if (invoke_callback(message))
-            {
-                return;
-            }
+            invoke_callback(message);
+            return;
         }
         else if (type == 1)
         {

@@ -208,7 +208,7 @@ namespace signalr
 
         pplx::create_task([negotiation_response, connect_request_tce, disconnect_cts, weak_connection]()
         {
-            //std::this_thread::sleep_for(std::chrono::milliseconds(negotiation_response.transport_connect_timeout));
+            // TODO? std::this_thread::sleep_for(std::chrono::milliseconds(negotiation_response.transport_connect_timeout));
             std::this_thread::sleep_for(std::chrono::milliseconds(5000));
 
             // if the disconnect_cts is canceled it means that the connection has been stopped or went out of scope in
@@ -307,6 +307,7 @@ namespace signalr
                         }
                         m_handshakeReceived = true;
                         connect_request_tce.set();
+                        return;
                     }
                 }
 
@@ -328,7 +329,7 @@ namespace signalr
                 {
                     if (result.has_field(_XPLATSTR("error")) && result.has_field(_XPLATSTR("result")))
                     {
-                        //error
+                        // TODO: error
                     }
                     invoke_message_received(result);
                     break;
