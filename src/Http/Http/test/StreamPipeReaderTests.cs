@@ -607,6 +607,7 @@ namespace System.IO.Pipelines.Tests
             var readResult = await Reader.ReadAsync();
 
             readResult = await Reader.ReadAsync();
+            Assert.True(readResult.Buffer.IsEmpty);
             Assert.True(readResult.IsCompleted);
         }
 
