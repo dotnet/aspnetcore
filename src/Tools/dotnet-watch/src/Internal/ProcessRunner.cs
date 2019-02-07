@@ -100,15 +100,6 @@ namespace Microsoft.DotNet.Watcher.Internal
             return process;
         }
 
-        private static async Task ConsumeStreamAsync(StreamReader reader, Action<string> consume)
-        {
-            string line;
-            while ((line = await reader.ReadLineAsync().ConfigureAwait(false)) != null)
-            {
-                consume?.Invoke(line);
-            }
-        }
-
         private class ProcessState : IDisposable
         {
             private readonly IReporter _reporter;
