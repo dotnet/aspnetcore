@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
             yield return WebConfigHelpers.AddOrModifyHandlerSection(
                 key: "modules",
-                value: DeploymentParameters.AncmVersion.ToString());
+                value: AspNetCoreModuleV2ModuleName);
 
             foreach (var action in base.GetWebConfigActions())
             {
@@ -186,11 +186,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                         return;
                     }
                 }
-                // ANCM V1 does not support logs
-                if (DeploymentParameters.AncmVersion == AncmVersion.AspNetCoreModuleV2)
-                {
-                    throw new InvalidOperationException($"Unable to find non-empty debug log files. Tried: {string.Join(", ", debugLogLocations)}");
-                }
+
+                throw new InvalidOperationException($"Unable to find non-empty debug log files. Tried: {string.Join(", ", debugLogLocations)}");
             }
             finally
             {
@@ -304,7 +301,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             config
                 .RequiredElement("system.webServer")
                 .RequiredElement("modules")
-                .GetOrAdd("add", "name", DeploymentParameters.AncmVersion.ToString());
+                .GetOrAdd("add", "name", AspNetCoreModuleV2ModuleName);
 
             var pool = config
                 .RequiredElement("system.applicationHost")
