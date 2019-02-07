@@ -8,7 +8,7 @@
   <Import Project="..\Microsoft.AspNetCore.App.props" />
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsShippingPackage>true</IsShippingPackage>
 
     <PackageDescription>Provides a default set of APIs for building an ASP.NET Core application. Contains reference assemblies, documentation, and other design-time assets.
