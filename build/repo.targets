@@ -131,7 +131,7 @@
     <PropertyGroup>
       <HelixTestProjects>@(HelixTestProject)</HelixTestProjects>
     </PropertyGroup>
-    <MSBuild Projects="$(MSBuildThisFileDirectory)..\test\helix.proj"
+    <MSBuild Projects="$(MSBuildThisFileDirectory)..\eng\helix.proj"
              Targets="Test"
              Properties="ProjectsToTest=$(HelixTestProjects)"
              ContinueOnError="ErrorAndStop"

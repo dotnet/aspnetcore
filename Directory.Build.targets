@@ -137,12 +137,12 @@
 
     <!-- Windows NetCore -->
     <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework' AND $(IsWindowsHelixQueue)" >
-        <_CopyItems Include="$(MSBuildThisFileDirectory)test\vstest\runtests.cmd" />
+        <_CopyItems Include="$(MSBuildThisFileDirectory)eng\helix\vstest\runtests.cmd" />
     </ItemGroup>
 
     <!-- Windows NetFramework -->
     <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' AND $(IsWindowsHelixQueue)" >
-        <_CopyItems Include="$(MSBuildThisFileDirectory)test\xunit\runtests.cmd" />
+        <_CopyItems Include="$(MSBuildThisFileDirectory)eng\helix\xunit\runtests.cmd" />
     </ItemGroup>
 
     <!-- NonWindows -->
