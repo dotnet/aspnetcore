@@ -18,9 +18,6 @@
   <Target Name="PopulateNuspec" BeforeTargets="GenerateNuspec" DependsOnTargets="Build">
 
     <PropertyGroup>
-      <!-- Make sure we create a symbols.nupkg. -->
-      <IncludeSymbols>true</IncludeSymbols>
-
       <NuspecProperties>
         id=$(PackageId);
         version=$(PackageVersion);

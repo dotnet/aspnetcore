@@ -43,7 +43,7 @@
   <PropertyGroup>
     <BuildDependsOn>
       $(BuildDependsOn);
-      _ResolveCustomTargetingPackReferences;
+      _ResolveTargetingPackContent;
       _BatchCopyToOutputDirectory;
     </BuildDependsOn>
   </PropertyGroup>
@@ -61,7 +61,7 @@
   <Target Name="CopyFilesToOutputDirectory" />
 
   <!-- This target finds the reference assemblies. -->
-  <Target Name="_ResolveCustomTargetingPackReferences"
+  <Target Name="_ResolveTargetingPackContent"
           BeforeTargets="_GetPackageFiles"
           DependsOnTargets="ResolveReferences;FindReferenceAssembliesForReferences">
     <ItemGroup>
@@ -69,18 +69,27 @@
           Include="@(ReferencePathWithRefAssemblies)"
           Exclude="@(ReferencePathWithRefAssemblies->WithMetadataValue('NuGetPackageId', 'Microsoft.NETCore.App'))" />
 
-      <_PackageFiles Include="@(AspNetCoreReferenceAssemblyPath)" PackagePath="$(RefAssemblyPackagePath)" />
+      <AspNetCoreReferenceDocXml Include="@(AspNetCoreReferenceAssemblyPath->'%(RootDir)%(Directory)%(FileName).xml')" />
+
+      <!-- Exclude known missing XML docs files. Time-boxing this workaround because we want XML docs for everything. This can be removed when we get a new build with https://github.com/dotnet/core-setup/pull/5109. -->
+      <AspNetCoreReferenceDocXml Remove="@(AspNetCoreReferenceDocXml)"
+        Condition="'$(MicrosoftNETCoreAppPackageVersion)' == '3.0.0-preview-27405-2' AND ('%(FileName)' == 'Microsoft.Extensions.DependencyModel' OR '%(FileName)' == 'Microsoft.DotNet.PlatformAbstractions' )" />
+
+      <RefPackContent Include="@(AspNetCoreReferenceAssemblyPath)" />
+      <RefPackContent Include="@(AspNetCoreReferenceDocXml)" />
+
+      <_PackageFiles Include="@(RefPackContent)" PackagePath="$(RefAssemblyPackagePath)" />
     </ItemGroup>
   </Target>
 
   <!-- Written to take advantage of target batching in MSBuild. -->
   <Target Name="_BatchCopyToOutputDirectory"
-          DependsOnTargets="_ResolveCustomTargetingPackReferences"
-          Inputs="@(AspNetCoreReferenceAssemblyPath)"
-          Outputs="@(AspNetCoreReferenceAssemblyPath->'$(TargetDir)%(FileName)%(Extension)')">
+          DependsOnTargets="_ResolveTargetingPackContent"
+          Inputs="@(RefPackContent)"
+          Outputs="@(RefPackContent->'$(TargetDir)%(FileName)%(Extension)')">
 
-    <Copy SourceFiles="@(AspNetCoreReferenceAssemblyPath)"
-          DestinationFiles="@(AspNetCoreReferenceAssemblyPath->'$(TargetDir)%(FileName)%(Extension)')"
+    <Copy SourceFiles="@(RefPackContent)"
+          DestinationFiles="@(RefPackContent->'$(TargetDir)%(FileName)%(Extension)')"
           UseHardlinksIfPossible="true" />
   </Target>
 
