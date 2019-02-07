@@ -38,7 +38,7 @@ dotnet vstest
 If that doesn't help, you can try the Get Repro environment link from mission control and try to debug that way.
 
 ## Differences from running tests locally
-Most tests that don't just work on helix automatically are ones that depend on the source code being accessible. The helix payloads only contain whatever is in the publish directories, so any thing else that test.d will need to be included to the payload.
+Most tests that don't just work on helix automatically are ones that depend on the source code being accessible. The helix payloads only contain whatever is in the publish directories, so any thing else that test depends on will need to be included to the payload (TBD how to do this).
 
 ## Running helix tests locally
 `.\build.cmd /t:Helix /p:IsHelixJob=true`
