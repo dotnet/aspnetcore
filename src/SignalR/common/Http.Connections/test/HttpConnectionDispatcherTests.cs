@@ -2176,9 +2176,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
         private static HttpConnectionManager CreateConnectionManager(ILoggerFactory loggerFactory)
         {
-            var connectionOptions = new ConnectionOptions();
-            connectionOptions.DisconnectTimeout = TimeSpan.FromSeconds(15);
-            return new HttpConnectionManager(loggerFactory ?? new LoggerFactory(), new EmptyApplicationLifetime(), Options.Create(connectionOptions));
+            return new HttpConnectionManager(loggerFactory ?? new LoggerFactory(), new EmptyApplicationLifetime());
         }
 
         private string GetContentAsString(Stream body)

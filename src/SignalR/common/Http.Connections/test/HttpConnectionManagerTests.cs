@@ -381,9 +381,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         private static HttpConnectionManager CreateConnectionManager(ILoggerFactory loggerFactory, IApplicationLifetime lifetime = null)
         {
             lifetime = lifetime ?? new EmptyApplicationLifetime();
-            var connectionOptions = new ConnectionOptions();
-            connectionOptions.DisconnectTimeout = TimeSpan.FromSeconds(15);
-            return new HttpConnectionManager(loggerFactory, lifetime, Options.Create(connectionOptions));
+            return new HttpConnectionManager(loggerFactory, lifetime);
         }
 
         [Flags]

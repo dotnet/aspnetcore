@@ -34,15 +34,21 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         public TimeSpan DisconnectTimeout { get; set; }
 
-        public HttpConnectionManager(ILoggerFactory loggerFactory, IApplicationLifetime appLifetime, IOptions<ConnectionOptions> connectionOptions)
+        public HttpConnectionManager(ILoggerFactory loggerFactory, IApplicationLifetime appLifetime) 
         {
             _logger = loggerFactory.CreateLogger<HttpConnectionManager>();
             _connectionLogger = loggerFactory.CreateLogger<HttpConnectionContext>();
             _nextHeartbeat = new TimerAwaitable(_heartbeatTickRate, _heartbeatTickRate);
-            DisconnectTimeout = connectionOptions.Value.DisconnectTimeout ?? ConnectionOptionsSetup.DefaultDisconectTimeout;
+            DisconnectTimeout = ConnectionOptionsSetup.DefaultDisconectTimeout;
             // Register these last as the callbacks could run immediately
             appLifetime.ApplicationStarted.Register(() => Start());
             appLifetime.ApplicationStopping.Register(() => CloseConnections());
+        }
+
+        public HttpConnectionManager(ILoggerFactory loggerFactory, IApplicationLifetime appLifetime, IOptions<ConnectionOptions> connectionOptions)
+            :this(loggerFactory, appLifetime)
+        {
+            DisconnectTimeout = connectionOptions.Value.DisconnectTimeout ?? ConnectionOptionsSetup.DefaultDisconectTimeout;
         }
 
         public void Start()
