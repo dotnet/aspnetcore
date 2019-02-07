@@ -588,11 +588,11 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 expectedMessage);
         }
 
-        [Theory]
-        [MemberData(nameof(ProcessAsync_GeneratesExpectedOutput_WithErrorsData))]
-        public async Task ProcessAsync_GeneratesExpectedOutput_WithModelErrorForIEnumerable(ModelStateDictionary modelState, string error)
+        [Fact]
+        public async Task ProcessAsync_GeneratesExpectedOutput_WithModelErrorForIEnumerable()
         {
             // Arrange
+            var expectedError = "Something went wrong.";
             var expectedTagName = "not-div";
             var expectedAttributes = new TagHelperAttributeList
             {
@@ -631,8 +631,10 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             output.PostContent.SetContent("Custom Content");
 
             var model = new FormMetadata();
-            var viewContext = TestableHtmlGenerator.GetViewContext(model, htmlGenerator, metadataProvider, modelState);
+            var viewContext = TestableHtmlGenerator.GetViewContext(model, htmlGenerator, metadataProvider);
             validationSummaryTagHelper.ViewContext = viewContext;
+
+            viewContext.ModelState.AddModelError(key: nameof(FormMetadata.ID), errorMessage: expectedError);
 
             // Act
             await validationSummaryTagHelper.ProcessAsync(tagHelperContext, output);
@@ -642,7 +644,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             Assert.Equal(expectedPreContent, output.PreContent.GetContent());
             Assert.Equal(expectedContent, output.Content.GetContent());
             Assert.Equal(
-                $"Custom Content<ul><li>{error}</li>{Environment.NewLine}</ul>",
+                $"Custom Content<ul><li>{expectedError}</li>{Environment.NewLine}</ul>",
                 output.PostContent.GetContent());
             Assert.Equal(expectedTagName, output.TagName);
         }
