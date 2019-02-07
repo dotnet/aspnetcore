@@ -22,6 +22,8 @@
     <NoWarn>$(NoWarn);NU5125</NoWarn>
     <!-- Suppress warnings about using SemVer 2.0. -->
     <NoWarn>$(NoWarn);NU5105</NoWarn>
+    <!-- Don't make missing XML docs a fatal build error, but still surface so we have visibility into undocumented APIs. -->
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);CS1591</WarningsNotAsErrors>
 
     <!-- Contact email address for NuGet packages and Linux installers. -->
     <MaintainerEmail>nugetaspnet@microsoft.com</MaintainerEmail>
