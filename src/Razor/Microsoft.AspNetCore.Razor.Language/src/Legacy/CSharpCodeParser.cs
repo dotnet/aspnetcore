@@ -1651,7 +1651,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Therefore, if we're top level then we want to act like an implicit expression,
             // otherwise just act as whatever we're contained in.
             var topLevel = transition != null;
-            if (topLevel)
+            if (!topLevel)
+            {
+                return;
+            }
+
+            if (At(CSharpKeyword.Foreach))
+            {
+                // C# 8 async streams. @await foreach (var value in asyncEnumerable) { .... }
+
+                ParseConditionalBlock(builder, transition);
+            }
+            else
             {
                 // Setup the Span to be an async implicit expression (an implicit expresison that allows spaces).
                 // Spaces are allowed because of "@await Foo()".
