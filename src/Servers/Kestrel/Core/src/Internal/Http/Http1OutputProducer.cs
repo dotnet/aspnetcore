@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private int _advancedBytesForChunk;
         private Memory<byte> _currentChunkMemory;
         private bool _currentChunkMemoryUpdated;
-        private IMemoryOwner<byte> _completedMemoryOwner;
+        private IMemoryOwner<byte> _fakeMemoryOwner;
 
         public Http1OutputProducer(
             PipeWriter pipeWriter,
@@ -230,19 +230,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             lock (_contextLock)
             {
-                if (_completedMemoryOwner != null)
+                if (_fakeMemoryOwner != null)
                 {
-                    _completedMemoryOwner.Dispose();
-                    _completedMemoryOwner = null;
+                    _fakeMemoryOwner.Dispose();
+                    _fakeMemoryOwner = null;
                 }
 
-                if (!_pipeWriterCompleted)
-                {
-                    _log.ConnectionDisconnect(_connectionId);
-                    _pipeWriterCompleted = true;
-                    _completed = true;
-                    _pipeWriter.Complete();
-                }
+                CompletePipe();
+            }
+        }
+
+        private void CompletePipe()
+        {
+            if (!_pipeWriterCompleted)
+            {
+                _log.ConnectionDisconnect(_connectionId);
+                _pipeWriterCompleted = true;
+                _completed = true;
+                _pipeWriter.Complete();
             }
         }
 
@@ -259,7 +264,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 _aborted = true;
                 _connectionContext.Abort(error);
-                Dispose();
+
+                CompletePipe();
             }
         }
 
@@ -379,11 +385,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private Memory<byte> GetFakeMemory(int sizeHint)
         {
-            if (_completedMemoryOwner == null)
+            if (_fakeMemoryOwner == null)
             {
-                _completedMemoryOwner = _memoryPool.Rent(sizeHint);
+                _fakeMemoryOwner = _memoryPool.Rent(sizeHint);
             }
-            return _completedMemoryOwner.Memory;
+            return _fakeMemoryOwner.Memory;
         }
     }
 }

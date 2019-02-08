@@ -260,7 +260,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public void Complete()
         {
-            // This will noop for now. See: 
+            // This will noop for now. See: https://github.com/aspnet/AspNetCore/issues/7370
         }
 
         private async ValueTask<FlushResult> ProcessDataWrites()
