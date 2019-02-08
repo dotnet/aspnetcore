@@ -205,8 +205,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     var responseBody = new WriteOnlyPipeStream(ResponsePipeWriter);
                     ResponseBody = responseBody;
-
-                    RegisterWrapperForDisposal(responseBody);
+                    _cachedResponsePipeWriter = ResponsePipeWriter;
                 }
             }
         }
@@ -225,18 +224,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     var responsePipeWriter = new StreamPipeWriter(ResponseBody, minimumSegmentSize: 4096, _context.MemoryPool);
                     ResponsePipeWriter = responsePipeWriter;
                     _cachedResponseBodyStream = ResponseBody;
-                    RegisterWrapperForDisposal(responsePipeWriter);
+
+                    // The StreamPipeWrapper needs to be disposed as it hold onto blocks of memory
+                    if (_wrapperObjectsToDispose == null)
+                    {
+                        _wrapperObjectsToDispose = new List<IDisposable>();
+                    }
+                    _wrapperObjectsToDispose.Add(responsePipeWriter);
                 }
             }
-        }
-
-        private void RegisterWrapperForDisposal(IDisposable responseBody)
-        {
-            if (_wrapperObjectsToDispose == null)
-            {
-                _wrapperObjectsToDispose = new List<IDisposable>();
-            }
-            _wrapperObjectsToDispose.Add(responseBody);
         }
 
         protected void ResetHttp1Features()

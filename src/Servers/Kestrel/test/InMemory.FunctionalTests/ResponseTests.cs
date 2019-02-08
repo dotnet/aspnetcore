@@ -3518,6 +3518,74 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
+        public async Task ResponseSetBodyToSameValueTwiceGetPipeMultipleTimesSameObject()
+        {
+            using (var server = new TestServer(async httpContext =>
+            {
+                var memoryStream = new MemoryStream();
+                httpContext.Response.Body = memoryStream;
+                var bodyPipe1 = httpContext.Response.BodyPipe;
+
+                httpContext.Response.Body = memoryStream;
+                var bodyPipe2 = httpContext.Response.BodyPipe;
+
+                Assert.Equal(bodyPipe1, bodyPipe2);
+                await Task.CompletedTask;
+            }, new TestServiceContext(LoggerFactory)))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task ResponseSetPipeToSameValueTwiceGetBodyMultipleTimesSameObject()
+        {
+            using (var server = new TestServer(async httpContext =>
+            {
+                var pipeWriter = new Pipe().Writer;
+                httpContext.Response.BodyPipe = pipeWriter;
+                var body1 = httpContext.Response.Body;
+
+                httpContext.Response.BodyPipe = pipeWriter;
+                var body2 = httpContext.Response.Body;
+
+                Assert.Equal(body1, body2);
+                await Task.CompletedTask;
+            }, new TestServiceContext(LoggerFactory)))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
         public async Task ResponseSetPipeAndBodyPipeIsWrapped()
         {
             using (var server = new TestServer(async httpContext =>
