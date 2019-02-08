@@ -5,7 +5,7 @@ import { HttpClient } from "./HttpClient";
 import { ILogger, LogLevel } from "./ILogger";
 import { ITransport, TransferFormat } from "./ITransport";
 import { WebSocketConstructor } from "./Polyfills";
-import { Arg, getDataDetail } from "./Utils";
+import { Arg, getDataDetail, Platform } from "./Utils";
 
 /** @private */
 export class WebSocketTransport implements ITransport {
@@ -50,7 +50,7 @@ export class WebSocketTransport implements ITransport {
             let webSocket: WebSocket | undefined;
             const cookies = this.httpClient.getCookieString(url);
 
-            if (typeof window === "undefined" && cookies) {
+            if (Platform.isNode && cookies) {
                 // Only pass cookies when in non-browser environments
                 webSocket = new this.webSocketConstructor(url, undefined, {
                     headers: {
