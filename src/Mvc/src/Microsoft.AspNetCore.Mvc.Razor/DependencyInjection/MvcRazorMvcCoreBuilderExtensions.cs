@@ -72,13 +72,6 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 builder.PartManager.FeatureProviders.Add(new RazorCompiledItemFeatureProvider());
             }
-
-#pragma warning disable CS0618 // Type or member is obsolete
-            if (!builder.PartManager.FeatureProviders.OfType<ViewsFeatureProvider>().Any())
-            {
-                builder.PartManager.FeatureProviders.Add(new ViewsFeatureProvider());
-            }
-#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         /// <summary>
