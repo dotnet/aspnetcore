@@ -340,6 +340,25 @@ namespace System.IO.Pipelines.Tests
         }
 
         [Fact]
+        public void DisposeDoesNotThrowIfUnflushedData()
+        {
+            var streamPipeWriter = new StreamPipeWriter(new MemoryStream());
+            streamPipeWriter.Write(new byte[1]);
+
+            streamPipeWriter.Dispose();
+        }
+
+        [Fact]
+        public void CompleteAfterDisposeDoesNotThrowIfUnflushedData()
+        {
+            var streamPipeWriter = new StreamPipeWriter(new MemoryStream());
+            streamPipeWriter.Write(new byte[1]);
+
+            streamPipeWriter.Dispose();
+            streamPipeWriter.Complete();
+        }
+
+        [Fact]
         public void CallGetMemoryWithNegativeSizeHint_ThrowsArgException()
         {
             Assert.Throws<ArgumentOutOfRangeException>(() => Writer.GetMemory(-1));
