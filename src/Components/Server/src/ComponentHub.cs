@@ -4,7 +4,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Server.Circuits;
-using Microsoft.AspNetCore.Components.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,6 +18,7 @@ namespace Microsoft.AspNetCore.Components.Server
     {
         private static readonly object CircuitKey = new object();
         private readonly CircuitFactory _circuitFactory;
+        private readonly CircuitRegistry _circuitRegistry;
         private readonly ILogger _logger;
 
         /// <summary>
@@ -28,6 +28,7 @@ namespace Microsoft.AspNetCore.Components.Server
         public ComponentHub(IServiceProvider services, ILogger<ComponentHub> logger)
         {
             _circuitFactory = services.GetRequiredService<CircuitFactory>();
+            _circuitRegistry = services.GetRequiredService<CircuitRegistry>();
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -42,7 +43,7 @@ namespace Microsoft.AspNetCore.Components.Server
         internal CircuitHost CircuitHost
         {
             get => (CircuitHost)Context.Items[CircuitKey];
-            private set => Context.Items[CircuitKey] = value;
+            set => Context.Items[CircuitKey] = value;
         }
 
         /// <summary>
@@ -50,17 +51,25 @@ namespace Microsoft.AspNetCore.Components.Server
         /// </summary>
         public override async Task OnDisconnectedAsync(Exception exception)
         {
-            await CircuitHost.DisposeAsync();
+            var circuitHost = CircuitHost;
+            if (circuitHost == null)
+            {
+                return;
+            }
+
+            await _circuitRegistry.DisconnectAsync(circuitHost, Context.ConnectionId);
         }
 
         /// <summary>
         /// Intended for framework use only. Applications should not call this method directly.
         /// </summary>
-        public async Task StartCircuit(string uriAbsolute, string baseUriAbsolute)
+        public async Task<string> StartCircuit(string uriAbsolute, string baseUriAbsolute)
         {
+            var circuitClient = new CircuitClientProxy(Clients.Caller, Context.ConnectionId);
+
             var circuitHost = _circuitFactory.CreateCircuitHost(
                 Context.GetHttpContext(),
-                Clients.Caller,
+                circuitClient,
                 uriAbsolute,
                 baseUriAbsolute);
 
@@ -69,7 +78,26 @@ namespace Microsoft.AspNetCore.Components.Server
             // If initialization fails, this will throw. The caller will fail if they try to call into any interop API.
             await circuitHost.InitializeAsync(Context.ConnectionAborted);
 
+            _circuitRegistry.Register(circuitHost);
+
             CircuitHost = circuitHost;
+
+            return circuitHost.CircuitId;
+        }
+
+        /// <summary>
+        /// Intended for framework use only. Applications should not call this method directly.
+        /// </summary>
+        public async Task<bool> ConnectCircuit(string circuitId)
+        {
+            var circuitHost = await _circuitRegistry.ConnectAsync(circuitId, Clients.Caller, Context.ConnectionId, Context.ConnectionAborted);
+            if (circuitHost != null)
+            {
+                CircuitHost = circuitHost;
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -94,7 +122,7 @@ namespace Microsoft.AspNetCore.Components.Server
             try
             {
                 _logger.LogWarning((Exception)e.ExceptionObject, "Unhandled Server-Side exception");
-                await circuitHost.Client.SendAsync("JS.Error", e.ExceptionObject);
+                await circuitHost.Client.Client.SendAsync("JS.Error", e.ExceptionObject);
 
                 // We generally can't abort the connection here since this is an async
                 // callback. The Hub has already been torn down. We'll rely on the
@@ -111,7 +139,7 @@ namespace Microsoft.AspNetCore.Components.Server
             var circuitHost = CircuitHost;
             if (circuitHost == null)
             {
-                var message = $"The {nameof(CircuitHost)} is null. This is due to an exception thrown during initialization.";
+                var message = "The circuit state is invalid. This is due to an exception thrown during initialization or due to a timeout when reconnecting to it.";
                 throw new InvalidOperationException(message);
             }
 

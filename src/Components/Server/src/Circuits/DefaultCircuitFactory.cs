@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         public override CircuitHost CreateCircuitHost(
             HttpContext httpContext,
-            IClientProxy client,
+            CircuitClientProxy client,
             string uriAbsolute,
             string baseUriAbsolute)
         {
@@ -42,13 +42,10 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var scope = _scopeFactory.CreateScope();
             var encoder = scope.ServiceProvider.GetRequiredService<HtmlEncoder>();
             var jsRuntime = (RemoteJSRuntime)scope.ServiceProvider.GetRequiredService<IJSRuntime>();
-            if (client != null)
-            {
-                jsRuntime.Initialize(client);
-            }
+            jsRuntime.Initialize(client);
 
             var uriHelper = (RemoteUriHelper)scope.ServiceProvider.GetRequiredService<IUriHelper>();
-            if (client != null)
+            if (client != CircuitClientProxy.OfflineClient)
             {
                 uriHelper.Initialize(uriAbsolute, baseUriAbsolute, jsRuntime);
             }
@@ -80,7 +77,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 components,
                 dispatcher,
                 jsRuntime,
-                circuitHandlers);
+                uriHelper,
+                circuitHandlers,
+                _loggerFactory.CreateLogger<CircuitHost>());
 
             // Initialize per - circuit data that services need
             (circuitHost.Services.GetRequiredService<ICircuitAccessor>() as DefaultCircuitAccessor).Circuit = circuitHost.Circuit;
@@ -88,9 +87,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             return circuitHost;
         }
 
-        private static IList<ComponentDescriptor> ResolveComponentMetadata(HttpContext httpContext, IClientProxy client)
+        private static IList<ComponentDescriptor> ResolveComponentMetadata(HttpContext httpContext, CircuitClientProxy client)
         {
-            if (client == null)
+            if (client == CircuitClientProxy.OfflineClient)
             {
                 // This is the prerendering case.
                 return Array.Empty<ComponentDescriptor>();

@@ -8,8 +8,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Browser;
 using Microsoft.AspNetCore.Components.Browser.Rendering;
 using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits
@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         private readonly IServiceScope _scope;
         private readonly IDispatcher _dispatcher;
         private readonly CircuitHandler[] _circuitHandlers;
+        private readonly ILogger _logger;
         private bool _initialized;
 
         /// <summary>
@@ -49,13 +50,15 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         public CircuitHost(
             IServiceScope scope,
-            IClientProxy client,
+            CircuitClientProxy client,
             RendererRegistry rendererRegistry,
             RemoteRenderer renderer,
             IList<ComponentDescriptor> descriptors,
             IDispatcher dispatcher,
-            IJSRuntime jsRuntime,
-            CircuitHandler[] circuitHandlers)
+            RemoteJSRuntime jsRuntime,
+            RemoteUriHelper remoteUriHelper,
+            CircuitHandler[] circuitHandlers,
+            ILogger logger)
         {
             _scope = scope ?? throw new ArgumentNullException(nameof(scope));
             _dispatcher = dispatcher;
@@ -64,7 +67,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             Descriptors = descriptors ?? throw new ArgumentNullException(nameof(descriptors));
             Renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
             JSRuntime = jsRuntime ?? throw new ArgumentNullException(nameof(jsRuntime));
-            
+            RemoteUriHelper = remoteUriHelper ?? throw new ArgumentNullException(nameof(remoteUriHelper));
+            _logger = logger;
+
             Services = scope.ServiceProvider;
 
             Circuit = new Circuit(this);
@@ -78,9 +83,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         public Circuit Circuit { get; }
 
-        public IClientProxy Client { get; set; }
+        public CircuitClientProxy Client { get; set; }
 
-        public IJSRuntime JSRuntime { get; }
+        public RemoteJSRuntime JSRuntime { get; }
 
         public RemoteRenderer Renderer { get; }
 
@@ -88,13 +93,14 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         public IList<ComponentDescriptor> Descriptors { get; }
 
+        public RemoteUriHelper RemoteUriHelper { get; }
+
         public IServiceProvider Services { get; }
 
         public Task<IEnumerable<string>> PrerenderComponentAsync(Type componentType, ParameterCollection parameters)
         {
             return _dispatcher.InvokeAsync(async () =>
             {
-                Renderer.StartPrerender();
                 var result = await Renderer.RenderComponentAsync(componentType, parameters);
                 return result;
             });
@@ -117,10 +123,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     await _circuitHandlers[i].OnCircuitOpenedAsync(Circuit, cancellationToken);
                 }
 
-                for (var i = 0; i < _circuitHandlers.Length; i++)
-                {
-                    await _circuitHandlers[i].OnConnectionUpAsync(Circuit, cancellationToken);
-                }
+                await OnConnectionUpAsync(cancellationToken);
             });
 
             _initialized = true;
@@ -144,20 +147,48 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
         }
 
-        public async ValueTask DisposeAsync()
+        public Task OnConnectionUpAsync(CancellationToken cancellationToken)
         {
-            await Renderer.InvokeAsync(async () =>
+            return Renderer.InvokeAsync(async () =>
+            {
+                for (var i = 0; i < _circuitHandlers.Length; i++)
+                {
+                    await _circuitHandlers[i].OnConnectionUpAsync(Circuit, cancellationToken);
+                }
+            });
+        }
+
+        public Task OnConnectionDownAsync()
+        {
+            return Renderer.InvokeAsync(async () =>
             {
                 for (var i = 0; i < _circuitHandlers.Length; i++)
                 {
                     await _circuitHandlers[i].OnConnectionDownAsync(Circuit, default);
                 }
-
-                for (var i = 0; i < _circuitHandlers.Length; i++)
-                {
-                    await _circuitHandlers[i].OnCircuitClosedAsync(Circuit, default);
-                }
             });
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            Log.DisposingCircuit(_logger, CircuitId);
+
+            try
+            {
+                await Renderer.InvokeAsync(async () =>
+                {
+                    await OnConnectionDownAsync();
+
+                    for (var i = 0; i < _circuitHandlers.Length; i++)
+                    {
+                        await _circuitHandlers[i].OnCircuitClosedAsync(Circuit, default);
+                    }
+                });
+            }
+            catch (Exception exception)
+            {
+                Log.UnhandledExceptionInvokingCircuitHandler(_logger, exception);
+            }
 
             _scope.Dispose();
             Renderer.Dispose();
@@ -179,6 +210,41 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         private void SynchronizationContext_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             UnhandledException?.Invoke(this, e);
+        }
+
+        private static class Log
+        {
+            private static readonly Action<ILogger, string, Exception> _unhandledExceptionInvokingCircuitHandler;
+            private static readonly Action<ILogger, string, Exception> _disposingCircuit;
+
+            private static class EventIds
+            {
+                public static readonly EventId ExceptionInvokingCircuitHandlerMethod = new EventId(100, "ExceptionInvokingCircuitHandlerMethod");
+                public static readonly EventId DisposingCircuit = new EventId(101, "DisposingCircuitHost");
+            }
+
+            static Log()
+            {
+                _unhandledExceptionInvokingCircuitHandler = LoggerMessage.Define<string>(
+                    LogLevel.Error,
+                    EventIds.ExceptionInvokingCircuitHandlerMethod,
+                    "Unhandled invoking circuit handler: {Message}");
+
+                _disposingCircuit = LoggerMessage.Define<string>(
+                    LogLevel.Trace,
+                    EventIds.DisposingCircuit,
+                    "Disposing circuit with identifier {CircuitId}");
+            }
+
+            public static void UnhandledExceptionInvokingCircuitHandler(ILogger logger, Exception exception)
+            {
+                _unhandledExceptionInvokingCircuitHandler(
+                    logger,
+                    exception.Message,
+                    exception);
+            }
+
+            public static void DisposingCircuit(ILogger logger, string circuitId) => _disposingCircuit(logger, circuitId, null);
         }
     }
 }

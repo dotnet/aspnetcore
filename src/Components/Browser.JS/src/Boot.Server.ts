@@ -6,16 +6,42 @@ import { OutOfProcessRenderBatch } from './Rendering/RenderBatch/OutOfProcessRen
 import { internalFunctions as uriHelperFunctions } from './Services/UriHelper';
 import { renderBatch } from './Rendering/Renderer';
 import { fetchBootConfigAsync, loadEmbeddedResourcesAsync } from './BootCommon';
+import { CircuitHandler } from './Platform/Circuits/CircuitHandler';
+import { AutoReconnectCircuitHandler } from './Platform/Circuits/AutoReconnectCircuitHandler';
 
-let connection : signalR.HubConnection;
+async function boot() {
+  const circuitHandlers: CircuitHandler[] = [ new AutoReconnectCircuitHandler() ];
+  window['Blazor'].circuitHandlers = circuitHandlers;
 
-function boot() {
   // In the background, start loading the boot config and any embedded resources
   const embeddedResourcesPromise = fetchBootConfigAsync().then(bootConfig => {
     return loadEmbeddedResourcesAsync(bootConfig);
   });
 
-  connection = new signalR.HubConnectionBuilder()
+  const initialConnection = await initializeConnection(circuitHandlers);
+
+  // Ensure any embedded resources have been loaded before starting the app
+  await embeddedResourcesPromise;
+  const circuitId = await initialConnection.invoke<string>(
+    'StartCircuit',
+    uriHelperFunctions.getLocationHref(),
+    uriHelperFunctions.getBaseURI()
+  );
+
+  window['Blazor'].reconnect = async () => {
+    const reconnection = await initializeConnection(circuitHandlers);
+    if (!await reconnection.invoke<Boolean>('ConnectCircuit', circuitId)) {
+      throw new Error('Failed to reconnect to the server. The supplied circuitId is invalid.');
+    }
+
+    circuitHandlers.forEach(h => h.onConnectionUp && h.onConnectionUp());
+  };
+
+  circuitHandlers.forEach(h => h.onConnectionUp && h.onConnectionUp());
+}
+
+async function initializeConnection(circuitHandlers: CircuitHandler[]): Promise<signalR.HubConnection> {
+  const connection = new signalR.HubConnectionBuilder()
     .withUrl('_blazor')
     .withHubProtocol(new MessagePackHubProtocol())
     .configureLogging(signalR.LogLevel.Information)
@@ -33,39 +59,30 @@ function boot() {
     }
   });
 
-  connection.on('JS.Error', unhandledError);
+  connection.onclose(error => circuitHandlers.forEach(h => h.onConnectionDown && h.onConnectionDown(error)));
+  connection.on('JS.Error', error => unhandledError(connection, error));
 
-  connection.start()
-    .then(async () => {
-      DotNet.attachDispatcher({
-        beginInvokeDotNetFromJS: (callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson) => {
-          connection.send('BeginInvokeDotNetFromJS', callId ? callId.toString() : null, assemblyName, methodIdentifier, dotNetObjectId || 0, argsJson);
-        }
-      });
+  window['Blazor']._internal.forceCloseConnection = () => connection.stop();
 
-      // Ensure any embedded resources have been loaded before starting the app
-      await embeddedResourcesPromise;
+  try {
+    await connection.start();
+  } catch (ex) {
+    unhandledError(connection, ex);
+  }
 
-      connection.send(
-        'StartCircuit',
-        uriHelperFunctions.getLocationHref(),
-        uriHelperFunctions.getBaseURI()
-      );
-    })
-    .catch(unhandledError);
+  DotNet.attachDispatcher({
+    beginInvokeDotNetFromJS: (callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson) => {
+      connection.send('BeginInvokeDotNetFromJS', callId ? callId.toString() : null, assemblyName, methodIdentifier, dotNetObjectId || 0, argsJson);
+    }
+  });
 
-  // Temporary undocumented API to help with https://github.com/aspnet/Blazor/issues/1339
-  // This will be replaced once we implement proper connection management (reconnects, etc.)
-  window['Blazor'].onServerConnectionClose = connection.onclose.bind(connection);
+  return connection;
 }
 
-function unhandledError(err) {
+function unhandledError(connection: signalR.HubConnection, err: Error) {
   console.error(err);
 
   // Disconnect on errors.
-  //
-  // TODO: it would be nice to have some kind of experience for what happens when you're
-  // trying to interact with an app that's disconnected.
   //
   // Trying to call methods on the connection after its been closed will throw.
   if (connection) {

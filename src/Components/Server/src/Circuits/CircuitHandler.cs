@@ -67,8 +67,12 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         /// <param name="circuit">The <see cref="Circuit"/>.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
         /// <returns><see cref="Task"/> that represents the asynchronous execution operation.</returns>
+        /// <remarks>
+        /// While <see cref="OnConnectionUpAsync(Circuit, CancellationToken)"/> is always invoked when a client
+        /// connects to the server, <see cref="OnConnectionDownAsync(Circuit, CancellationToken)"/> may not be invoked
+        /// if a client reconnects prior to the server identifying a client disconnect.
+        /// </remarks>
         public virtual Task OnConnectionDownAsync(Circuit circuit, CancellationToken cancellationToken) => Task.CompletedTask;
-
 
         /// <summary>
         /// Invoked when a new circuit is being discarded.

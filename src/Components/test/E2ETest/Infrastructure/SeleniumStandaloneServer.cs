@@ -17,26 +17,11 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
     class SeleniumStandaloneServer
     {
         private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(30);
-        private static readonly object _instanceCreationLock = new object();
-        private static SeleniumStandaloneServer _instance;
+        private static Lazy<SeleniumStandaloneServer> _instance = new Lazy<SeleniumStandaloneServer>(() => new SeleniumStandaloneServer());
 
         public Uri Uri { get; }
 
-        public static SeleniumStandaloneServer Instance
-        {
-            get
-            {
-                lock (_instanceCreationLock)
-                {
-                    if (_instance == null)
-                    {
-                        _instance = new SeleniumStandaloneServer();
-                    }
-                }
-
-                return _instance;
-            }
-        }
+        public static SeleniumStandaloneServer Instance => _instance.Value;
 
         private SeleniumStandaloneServer()
         {
@@ -80,6 +65,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
             {
                 lock (builder)
                 {
+                    Console.WriteLine(e.Data);
                     builder.AppendLine(e.Data);
                 }
             }
@@ -91,7 +77,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
                     Timeout = TimeSpan.FromSeconds(1),
                 };
 
-                while (true)
+                var retries = 0;
+                while (retries++ < 30)
                 {
                     try
                     {
@@ -109,6 +96,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
                     }
                     await Task.Delay(1000);
                 }
+
+                throw new Exception("Failed to launch the server");
             });
 
             try
