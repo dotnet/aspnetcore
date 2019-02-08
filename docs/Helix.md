@@ -28,7 +28,7 @@ The link will take you to an overview of all the tests with clickable links to t
 All of the helix runs for aspnetcore can be found here https://mc.dot.net/#/user/aspnetcore/builds
 
 ## What do I do if a test fails?
-You can simulate how most tests locally:
+You can simulate how most tests run locally:
 ```
 dotnet publish
 cd <the publish directory>
