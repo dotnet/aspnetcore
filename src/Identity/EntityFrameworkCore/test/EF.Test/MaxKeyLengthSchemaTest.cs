@@ -5,6 +5,7 @@ using System.Data.SqlClient;
 using Microsoft.AspNetCore.Builder.Internal;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -22,7 +23,9 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
 
             services
                 .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build())
-                .AddDbContext<IdentityDbContext>(o => o.UseSqlServer(fixture.ConnectionString))
+                .AddDbContext<IdentityDbContext>(o =>
+                    o.UseSqlServer(fixture.ConnectionString)
+                        .ConfigureWarnings(b => b.Log(CoreEventId.ManyServiceProvidersCreatedWarning)))
                 .AddIdentity<IdentityUser, IdentityRole>(o => o.Stores.MaxLengthForKeys = 128)
                 .AddEntityFrameworkStores<IdentityDbContext>();
 
