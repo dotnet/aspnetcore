@@ -59,12 +59,12 @@
     <VerifyVersion>false</VerifyVersion>
 
     <EnableApiCheck Condition=" '$(EnableApiCheck)' != '' ">$(IsImplementationProject)</EnableApiCheck>
-    <IsPackable Condition="'$(IsPackable)' == '' AND '$(IsImplementationProject)' == 'true' ">true</IsPackable>
+    <IsPackable Condition="'$(IsPackable)' == '' AND ('$(IsImplementationProject)' == 'true' OR '$(IsAnalyzersProject)' == 'true') ">true</IsPackable>
     <IsPackable Condition="'$(IsPackable)' == '' ">false</IsPackable>
 
     <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == 'netcoreapp3.0' ">$(MicrosoftNETCoreAppPackageVersion)</RuntimeFrameworkVersion>
-    
-    <BuildHelixPayload Condition="'$(BuildHelixPayload)' == '' AND '$(IsTestProject)' == 'true'">true</BuildHelixPayload> 
+
+    <BuildHelixPayload Condition="'$(BuildHelixPayload)' == '' AND '$(IsTestProject)' == 'true'">true</BuildHelixPayload>
   </PropertyGroup>
 
   <Import Project="eng\targets\ResolveIisReferences.targets" Condition=" '$(MSBuildProjectExtension)' != '.vcxproj' " />
@@ -77,8 +77,8 @@
   <!-- Move to CSharp.Common.props -->
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' AND '$(IsHelixJob)' == 'true' ">
     <PackageReference Include="xunit.runner.console" Version="2.4.1" />
-  </ItemGroup>  
-  
+  </ItemGroup>
+
   <!-- Prepares the test projects for helix by including xunit and publishing -->
   <Target Name="PrepareHelixPayload" Returns="@(HelixDirectory)">
     <ItemGroup>
@@ -93,9 +93,9 @@
     </MSBuild>
   </Target>
 
-  <Target Name="_PrepareHelixPayloadInner" 
-    DependsOnTargets="Publish" 
-    Condition="'$(BuildHelixPayload)' == 'true'" 
+  <Target Name="_PrepareHelixPayloadInner"
+    DependsOnTargets="Publish"
+    Condition="'$(BuildHelixPayload)' == 'true'"
     Returns="@(HelixDirectory)">
 
     <ItemGroup>
@@ -129,9 +129,9 @@
     <Copy SourceFiles="@(XunitConsoleRunnerFiles)" DestinationFolder="$(PublishDir)" />
   </Target>
 
-  <Target Name="_CreateHelixPayloadInner" 
-    DependsOnTargets="CollectXunitConsoleRunner" 
-    Condition="($(IsWindowsHelixQueue) OR '$(TargetFrameworkIdentifier)' != '.NETFramework')" 
+  <Target Name="_CreateHelixPayloadInner"
+    DependsOnTargets="CollectXunitConsoleRunner"
+    Condition="($(IsWindowsHelixQueue) OR '$(TargetFrameworkIdentifier)' != '.NETFramework')"
     Returns="@(HelixPayload)">
 
     <ConvertToAbsolutePath Paths="$(PublishDir)">
