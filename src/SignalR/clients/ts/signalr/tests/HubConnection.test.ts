@@ -13,7 +13,7 @@ import { Subject } from "../src/Subject";
 import { TextMessageFormat } from "../src/TextMessageFormat";
 
 import { VerifyLogger } from "./Common";
-import { delay, PromiseSource, registerUnhandledRejectionHandler } from "./Utils";
+import { delayUntil, PromiseSource, registerUnhandledRejectionHandler } from "./Utils";
 
 function createHubConnection(connection: IConnection, logger?: ILogger | null, protocol?: IHubProtocol | null) {
     return HubConnection.create(connection, logger || NullLogger.instance, protocol || new JsonHubProtocol());
@@ -66,7 +66,7 @@ describe("HubConnection", () => {
 
                 try {
                     await hubConnection.start();
-                    await delay(500);
+                    await delayUntil(500);
 
                     const numPings = connection.sentData.filter((s) => JSON.parse(s).type === MessageType.Ping).length;
                     expect(numPings).toBeGreaterThanOrEqual(2);
@@ -1075,6 +1075,8 @@ describe("HubConnection", () => {
                     // Observer should no longer receive messages
                     expect(observer.itemsReceived).toEqual([1]);
 
+                    // Close message sent asynchronously so we need to wait
+                    await delayUntil(1000, () => connection.sentData.length === 3);
                     // Verify the cancel is sent (+ handshake)
                     expect(connection.sentData.length).toBe(3);
                     expect(JSON.parse(connection.sentData[2])).toEqual({
@@ -1183,14 +1185,14 @@ describe("HubConnection", () => {
                 const connection = new TestConnection();
                 const hubConnection = createHubConnection(connection, logger);
                 try {
-                    hubConnection.serverTimeoutInMilliseconds = 200;
+                    hubConnection.serverTimeoutInMilliseconds = 400;
 
                     const p = new PromiseSource<Error>();
                     hubConnection.onclose((e) => p.resolve(e));
 
                     await hubConnection.start();
 
-                    for (let i = 0; i < 6; i++) {
+                    for (let i = 0; i < 12; i++) {
                         await pingAndWait(connection);
                     }
 
@@ -1230,7 +1232,7 @@ describe("HubConnection", () => {
 
 async function pingAndWait(connection: TestConnection): Promise<void> {
     await connection.receive({ type: MessageType.Ping });
-    await delay(50);
+    await delayUntil(50);
 }
 
 class TestConnection implements IConnection {
