@@ -79,7 +79,6 @@
           "description": "a worker app using the WebJobs SDK."
         }
       ],
-      "defaultValue": "empty",
       "description": "The type of worker, HostedServices or WebJobs SDK for example."
     },
     "Empty": {
@@ -109,7 +108,6 @@
           "description": "Create a Linux based Dockerfile"
         }
       ],
-      "defaultValue": "none",
       "DefaultIfOptionWithoutValue": "linux"
     },
     "helm": {
