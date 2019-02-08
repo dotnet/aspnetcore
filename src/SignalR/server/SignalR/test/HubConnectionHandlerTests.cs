@@ -55,6 +55,37 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
+        public async Task AsyncDisposablesInHubsAreSupported()
+        {
+            using (StartVerifiableLog())
+            {
+                var trackDispose = new TrackDispose();
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(s =>
+                {
+                    s.AddScoped<AsyncDisposable>();
+                    s.AddSingleton(trackDispose);
+                },
+                LoggerFactory);
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<HubWithAsyncDisposable>>();
+
+                using (var client = new TestClient())
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                    var result = (await client.InvokeAsync(nameof(HubWithAsyncDisposable.Test)).OrTimeout());
+                    Assert.NotNull(result);
+
+                    // kill the connection
+                    client.Dispose();
+
+                    await connectionHandlerTask;
+
+                    Assert.Equal(3, trackDispose.DisposeCount);
+                }
+            }
+        }
+
+        [Fact]
         public async Task ConnectionAbortedTokenTriggers()
         {
             using (StartVerifiableLog())
