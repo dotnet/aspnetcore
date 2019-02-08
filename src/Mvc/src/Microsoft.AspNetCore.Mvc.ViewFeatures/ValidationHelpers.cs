@@ -93,14 +93,16 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                     Visit(indexEntry, metadata.ElementMetadata, orderedModelStateEntries);
                 }
             }
-
-            for (var i = 0; i < metadata.Properties.Count; i++)
+            else
             {
-                var propertyMetadata = metadata.Properties[i];
-                var propertyModelStateEntry = modelStateEntry.GetModelStateForProperty(propertyMetadata.PropertyName);
-                if (propertyModelStateEntry != null)
+                for (var i = 0; i < metadata.Properties.Count; i++)
                 {
-                    Visit(propertyModelStateEntry, propertyMetadata, orderedModelStateEntries);
+                    var propertyMetadata = metadata.Properties[i];
+                    var propertyModelStateEntry = modelStateEntry.GetModelStateForProperty(propertyMetadata.PropertyName);
+                    if (propertyModelStateEntry != null)
+                    {
+                        Visit(propertyModelStateEntry, propertyMetadata, orderedModelStateEntries);
+                    }
                 }
             }
 
