@@ -1185,14 +1185,14 @@ describe("HubConnection", () => {
                 const connection = new TestConnection();
                 const hubConnection = createHubConnection(connection, logger);
                 try {
-                    hubConnection.serverTimeoutInMilliseconds = 200;
+                    hubConnection.serverTimeoutInMilliseconds = 400;
 
                     const p = new PromiseSource<Error>();
                     hubConnection.onclose((e) => p.resolve(e));
 
                     await hubConnection.start();
 
-                    for (let i = 0; i < 6; i++) {
+                    for (let i = 0; i < 12; i++) {
                         await pingAndWait(connection);
                     }
 
