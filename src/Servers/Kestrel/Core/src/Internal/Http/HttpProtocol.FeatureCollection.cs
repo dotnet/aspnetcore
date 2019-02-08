@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
@@ -221,7 +222,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 ResponseBody = value;
                 if (!object.ReferenceEquals(_cachedResponseBodyStream, ResponseBody))
                 {
-                    var responsePipeWriter = new StreamPipeWriter(ResponseBody, minimumSegmentSize: 4096, _context.MemoryPool);
+                    var responsePipeWriter = new StreamPipeWriter(ResponseBody, minimumSegmentSize: KestrelMemoryPool.MinimumSegmentSize, _context.MemoryPool);
                     ResponsePipeWriter = responsePipeWriter;
                     _cachedResponseBodyStream = ResponseBody;
 
