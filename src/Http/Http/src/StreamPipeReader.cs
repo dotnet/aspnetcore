@@ -208,6 +208,11 @@ namespace System.IO.Pipelines
         public override async ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
         {
             // TODO ReadyAsync needs to throw if there are overlapping reads.
+            if (_isWriterCompleted)
+            {
+                return new ReadResult(buffer: default, isCanceled: false, isCompleted: true);
+            }
+
             ThrowIfCompleted();
 
             // PERF: store InternalTokenSource locally to avoid querying it twice (which acquires a lock)
