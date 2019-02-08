@@ -16,6 +16,10 @@
     <PackageReference Include="Microsoft.NET.Sdk.Razor" PrivateAssets="All" Version="$(MicrosoftNETSdkRazorPackageVersion)" AllowExplicitReference="true" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' AND '$(IsHelixJob)' == 'true' ">
+    <PackageReference Include="xunit.runner.console" Version="$(XunitRunnerConsolePackageVersion)" AllowExplicitReference="true" />
+  </ItemGroup>
+
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' AND '$(OS)' != 'Windows_NT' ">
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="$(MicrosoftNETFrameworkReferenceAssembliesPackageVersion)" PrivateAssets="All" AllowExplicitReference="true" />
   </ItemGroup>
