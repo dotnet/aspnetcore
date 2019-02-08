@@ -18,7 +18,15 @@ export function delayUntil(timeoutInMilliseconds: number, condition?: () => bool
     let timeWait: number = 0;
     const interval = setInterval(() => {
         timeWait += 10;
-        if ((condition && condition() === true) || timeoutInMilliseconds <= timeWait) {
+        if (condition) {
+            if (condition() === true) {
+                source.resolve();
+                clearInterval(interval);
+            } else if (timeoutInMilliseconds <= timeWait) {
+                source.reject(new Error("Timed out waiting for condition"));
+                clearInterval(interval);
+            }
+        } else if (timeoutInMilliseconds <= timeWait) {
             source.resolve();
             clearInterval(interval);
         }
