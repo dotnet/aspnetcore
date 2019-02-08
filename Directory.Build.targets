@@ -10,6 +10,9 @@
 
     <PackageOutputPath Condition=" '$(IsShippingPackage)' == 'true' ">$(ArtifactsShippingPackagesDir)</PackageOutputPath>
     <PackageOutputPath Condition=" '$(IsShippingPackage)' != 'true' ">$(ArtifactsNonShippingPackagesDir)</PackageOutputPath>
+
+    <!-- Analyzers package are special. In general, they should not have dependencies in the nuspec. Analyzer assemblies are not meant to be used for compilation or runtime. -->
+    <SuppressDependenciesWhenPacking Condition="'$(SuppressDependenciesWhenPacking)' == '' AND '$(IsAnalyzersProject)' == 'true'">true</SuppressDependenciesWhenPacking>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(MSBuildProjectExtension)' == '.csproj' ">
@@ -47,7 +50,7 @@
 
   <PropertyGroup>
     <!-- Implementation projects are the projects which produce nuget packages or shipping assemblies. -->
-    <IsImplementationProject Condition=" '$(IsImplementationProject)' == '' AND '$(IsTestAssetProject)' != 'true' AND '$(IsTestProject)' != 'true' AND '$(IsBenchmarkProject)' != 'true' AND '$(IsSampleProject)' != 'true' ">true</IsImplementationProject>
+    <IsImplementationProject Condition=" '$(IsImplementationProject)' == '' AND '$(IsAnalyzersProject)' != 'true' AND '$(IsTestAssetProject)' != 'true' AND '$(IsTestProject)' != 'true' AND '$(IsBenchmarkProject)' != 'true' AND '$(IsSampleProject)' != 'true' ">true</IsImplementationProject>
 
     <!-- This determines whether a project is available as a <Reference> to other projects in this repo. -->
     <IsProjectReferenceProvider Condition=" '$(IsProjectReferenceProvider)' == '' AND '$(IsImplementationProject)' == 'true' AND '$(PackAsTool)' != 'true' ">true</IsProjectReferenceProvider>
@@ -56,12 +59,12 @@
     <VerifyVersion>false</VerifyVersion>
 
     <EnableApiCheck Condition=" '$(EnableApiCheck)' != '' ">$(IsImplementationProject)</EnableApiCheck>
-    <IsPackable Condition="'$(IsPackable)' == '' AND '$(IsImplementationProject)' == 'true' ">true</IsPackable>
+    <IsPackable Condition="'$(IsPackable)' == '' AND ('$(IsImplementationProject)' == 'true' OR '$(IsAnalyzersProject)' == 'true') ">true</IsPackable>
     <IsPackable Condition="'$(IsPackable)' == '' ">false</IsPackable>
 
     <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == 'netcoreapp3.0' ">$(MicrosoftNETCoreAppPackageVersion)</RuntimeFrameworkVersion>
-    
-    <BuildHelixPayload Condition="'$(BuildHelixPayload)' == '' AND '$(IsTestProject)' == 'true'">true</BuildHelixPayload> 
+
+    <BuildHelixPayload Condition="'$(BuildHelixPayload)' == '' AND '$(IsTestProject)' == 'true'">true</BuildHelixPayload>
   </PropertyGroup>
 
   <Import Project="eng\targets\ResolveIisReferences.targets" Condition=" '$(MSBuildProjectExtension)' != '.vcxproj' " />
@@ -74,8 +77,8 @@
   <!-- Move to CSharp.Common.props -->
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' AND '$(IsHelixJob)' == 'true' ">
     <PackageReference Include="xunit.runner.console" Version="2.4.1" />
-  </ItemGroup>  
-  
+  </ItemGroup>
+
   <!-- Prepares the test projects for helix by including xunit and publishing -->
   <Target Name="PrepareHelixPayload" Returns="@(HelixDirectory)">
     <ItemGroup>
@@ -90,9 +93,9 @@
     </MSBuild>
   </Target>
 
-  <Target Name="_PrepareHelixPayloadInner" 
-    DependsOnTargets="Publish" 
-    Condition="'$(BuildHelixPayload)' == 'true'" 
+  <Target Name="_PrepareHelixPayloadInner"
+    DependsOnTargets="Publish"
+    Condition="'$(BuildHelixPayload)' == 'true'"
     Returns="@(HelixDirectory)">
 
     <ItemGroup>
@@ -126,9 +129,9 @@
     <Copy SourceFiles="@(XunitConsoleRunnerFiles)" DestinationFolder="$(PublishDir)" />
   </Target>
 
-  <Target Name="_CreateHelixPayloadInner" 
-    DependsOnTargets="CollectXunitConsoleRunner" 
-    Condition="($(IsWindowsHelixQueue) OR '$(TargetFrameworkIdentifier)' != '.NETFramework')" 
+  <Target Name="_CreateHelixPayloadInner"
+    DependsOnTargets="CollectXunitConsoleRunner"
+    Condition="($(IsWindowsHelixQueue) OR '$(TargetFrameworkIdentifier)' != '.NETFramework')"
     Returns="@(HelixPayload)">
 
     <ConvertToAbsolutePath Paths="$(PublishDir)">

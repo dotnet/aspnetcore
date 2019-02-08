@@ -1,0 +1,98 @@
+<Project>
+
+  <PropertyGroup>
+    <OutputInRepoRoot>true</OutputInRepoRoot>
+  </PropertyGroup>
+
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+  <Import Project="..\Microsoft.AspNetCore.App.props" />
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <IsShippingPackage>true</IsShippingPackage>
+
+    <PackageDescription>Provides a default set of APIs for building an ASP.NET Core application. Contains reference assemblies, documentation, and other design-time assets.
+
+This package is an internal implementation of the .NET Core SDK and is not meant to be used as a normal PackageReference.</PackageDescription>
+    <PackageTags>aspnetcore;targeting-pack</PackageTags>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+
+    <!-- Subject to change: see https://github.com/dotnet/designs/pull/50 -->
+    <PackageType>TargetingPack</PackageType>
+    <RefAssemblyPackagePath>ref/$(TargetFramework)/</RefAssemblyPackagePath>
+
+    <!-- There are no symbols for reference assemblies. -->
+    <IncludeSymbols>false</IncludeSymbols>
+
+    <!-- The project representing the shared framework doesn't produce a .NET assembly or symbols. -->
+    <DebugType>none</DebugType>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <CopyBuildOutputToPublishDirectory>false</CopyBuildOutputToPublishDirectory>
+    <CopyBuildOutputToOutputDirectory>false</CopyBuildOutputToOutputDirectory>
+    <CopyOutputSymbolsToOutputDirectory>false</CopyOutputSymbolsToOutputDirectory>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+
+    <!-- This project should not be referenced via the `<Reference>` impementation. -->
+    <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="@(Dependency)" />
+  </ItemGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <BuildDependsOn>
+      $(BuildDependsOn);
+      _ResolveTargetingPackContent;
+      _BatchCopyToOutputDirectory;
+    </BuildDependsOn>
+  </PropertyGroup>
+
+  <!-- Override the default MSBuild targets so that nothing is returned from the project since it represents a collection of assemblies. -->
+  <Target Name="GetTargetPath" />
+  <Target Name="Build" DependsOnTargets="$(BuildDependsOn)">
+    <Message Importance="High" Text="$(MSBuildProjectName) -> $(TargetDir)" />
+  </Target>
+
+  <!-- This project doesn't compile anything. -->
+  <Target Name="CoreCompile" />
+
+  <!-- Completely disable default targets for copying to output. -->
+  <Target Name="CopyFilesToOutputDirectory" />
+
+  <!-- This target finds the reference assemblies. -->
+  <Target Name="_ResolveTargetingPackContent"
+          BeforeTargets="_GetPackageFiles"
+          DependsOnTargets="ResolveReferences;FindReferenceAssembliesForReferences">
+    <ItemGroup>
+      <AspNetCoreReferenceAssemblyPath
+          Include="@(ReferencePathWithRefAssemblies)"
+          Exclude="@(ReferencePathWithRefAssemblies->WithMetadataValue('NuGetPackageId', 'Microsoft.NETCore.App'))" />
+
+      <AspNetCoreReferenceDocXml Include="@(AspNetCoreReferenceAssemblyPath->'%(RootDir)%(Directory)%(FileName).xml')" />
+
+      <!-- Exclude known missing XML docs files. Time-boxing this workaround because we want XML docs for everything. This can be removed when we get a new build with https://github.com/dotnet/core-setup/pull/5109. -->
+      <AspNetCoreReferenceDocXml Remove="@(AspNetCoreReferenceDocXml)"
+        Condition="'$(MicrosoftNETCoreAppPackageVersion)' == '3.0.0-preview-27405-2' AND ('%(FileName)' == 'Microsoft.Extensions.DependencyModel' OR '%(FileName)' == 'Microsoft.DotNet.PlatformAbstractions' )" />
+
+      <RefPackContent Include="@(AspNetCoreReferenceAssemblyPath)" />
+      <RefPackContent Include="@(AspNetCoreReferenceDocXml)" />
+
+      <_PackageFiles Include="@(RefPackContent)" PackagePath="$(RefAssemblyPackagePath)" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Written to take advantage of target batching in MSBuild. -->
+  <Target Name="_BatchCopyToOutputDirectory"
+          DependsOnTargets="_ResolveTargetingPackContent"
+          Inputs="@(RefPackContent)"
+          Outputs="@(RefPackContent->'$(TargetDir)%(FileName)%(Extension)')">
+
+    <Copy SourceFiles="@(RefPackContent)"
+          DestinationFiles="@(RefPackContent->'$(TargetDir)%(FileName)%(Extension)')"
+          UseHardlinksIfPossible="true" />
+  </Target>
+
+</Project>

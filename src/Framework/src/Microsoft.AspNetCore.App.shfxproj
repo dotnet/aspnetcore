@@ -8,7 +8,7 @@
 
   <PropertyGroup>
     <RuntimeIdentifier>$(TargetRuntimeIdentifier)</RuntimeIdentifier>
-    <TargetFramework>netcoreapp$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <BaseSharedFrameworkName>Microsoft.NETCore.App</BaseSharedFrameworkName>
     <RuntimeFrameworkVersion>$(MicrosoftNETCoreAppPackageVersion)</RuntimeFrameworkVersion>
 
