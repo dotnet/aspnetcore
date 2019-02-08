@@ -163,7 +163,7 @@ export class HubConnection {
             delete this.callbacks[invocationDescriptor.invocationId];
 
             return promiseQueue.then(() => {
-                return this.sendWithProtocol(cancelInvocation);
+                return this.sendMessage(cancelMessage);
             });
         };
 
