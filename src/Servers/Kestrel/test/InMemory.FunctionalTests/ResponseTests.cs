@@ -3607,7 +3607,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public async Task ResponseSetBodyToSameValueTwiceGetPipeMultipleTimesSameObject()
+        public async Task ResponseSetBodyToSameValueTwiceGetPipeMultipleTimesDifferentObject()
         {
             using (var server = new TestServer(async httpContext =>
             {
@@ -3618,7 +3618,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 httpContext.Response.Body = memoryStream;
                 var bodyPipe2 = httpContext.Response.BodyPipe;
 
-                Assert.Equal(bodyPipe1, bodyPipe2);
+                Assert.NotEqual(bodyPipe1, bodyPipe2);
                 await Task.CompletedTask;
             }, new TestServiceContext(LoggerFactory)))
             {
@@ -3641,7 +3641,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public async Task ResponseSetPipeToSameValueTwiceGetBodyMultipleTimesSameObject()
+        public async Task ResponseSetPipeToSameValueTwiceGetBodyMultipleTimesDifferent()
         {
             using (var server = new TestServer(async httpContext =>
             {
@@ -3652,7 +3652,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 httpContext.Response.BodyPipe = pipeWriter;
                 var body2 = httpContext.Response.Body;
 
-                Assert.Equal(body1, body2);
+                Assert.NotEqual(body1, body2);
                 await Task.CompletedTask;
             }, new TestServiceContext(LoggerFactory)))
             {
