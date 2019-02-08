@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public async Task PipesAreNotPersistedAcrossRequests()
+        public async Task PipesAreNotPersistedBySettingStreamPipeWriterAcrossRequests()
         {
             var responseBodyPersisted = false;
             PipeWriter bodyPipe = null;
@@ -78,6 +78,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             {
                 Assert.Equal(string.Empty, await server.HttpClientSlim.GetStringAsync($"http://localhost:{server.Port}/"));
                 Assert.Equal(string.Empty, await server.HttpClientSlim.GetStringAsync($"http://localhost:{server.Port}/"));
+
+                Assert.False(responseBodyPersisted);
+
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task PipesAreNotPersistedAcrossRequests()
+        {
+            var responseBodyPersisted = false;
+            PipeWriter bodyPipe = null;
+            using (var server = new TestServer(async context =>
+            {
+                if (context.Response.BodyPipe == bodyPipe)
+                {
+                    responseBodyPersisted = true;
+                }
+                bodyPipe = context.Response.BodyPipe;
+
+                await context.Response.WriteAsync("hello, world");
+            }, new TestServiceContext(LoggerFactory)))
+            {
+                Assert.Equal("hello, world", await server.HttpClientSlim.GetStringAsync($"http://localhost:{server.Port}/"));
+                Assert.Equal("hello, world", await server.HttpClientSlim.GetStringAsync($"http://localhost:{server.Port}/"));
 
                 Assert.False(responseBodyPersisted);
 

@@ -201,13 +201,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 ResponsePipeWriter = value;
-
-                if (!object.ReferenceEquals(_cachedResponsePipeWriter, ResponsePipeWriter))
-                {
-                    var responseBody = new WriteOnlyPipeStream(ResponsePipeWriter);
-                    ResponseBody = responseBody;
-                    _cachedResponsePipeWriter = ResponsePipeWriter;
-                }
+                ResponseBody = new WriteOnlyPipeStream(ResponsePipeWriter);
             }
         }
 
@@ -220,19 +214,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 ResponseBody = value;
-                if (!object.ReferenceEquals(_cachedResponseBodyStream, ResponseBody))
-                {
-                    var responsePipeWriter = new StreamPipeWriter(ResponseBody, minimumSegmentSize: KestrelMemoryPool.MinimumSegmentSize, _context.MemoryPool);
-                    ResponsePipeWriter = responsePipeWriter;
-                    _cachedResponseBodyStream = ResponseBody;
+                var responsePipeWriter = new StreamPipeWriter(ResponseBody, minimumSegmentSize: KestrelMemoryPool.MinimumSegmentSize, _context.MemoryPool);
+                ResponsePipeWriter = responsePipeWriter;
 
-                    // The StreamPipeWrapper needs to be disposed as it hold onto blocks of memory
-                    if (_wrapperObjectsToDispose == null)
-                    {
-                        _wrapperObjectsToDispose = new List<IDisposable>();
-                    }
-                    _wrapperObjectsToDispose.Add(responsePipeWriter);
+                // The StreamPipeWrapper needs to be disposed as it hold onto blocks of memory
+                if (_wrapperObjectsToDispose == null)
+                {
+                    _wrapperObjectsToDispose = new List<IDisposable>();
                 }
+                _wrapperObjectsToDispose.Add(responsePipeWriter);
             }
         }
 

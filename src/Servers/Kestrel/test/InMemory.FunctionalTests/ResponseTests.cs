@@ -1445,6 +1445,49 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
+        public async Task FirstWriteVerifiedAfterOnStartingWithResponseBody()
+        {
+            var serviceContext = new TestServiceContext(LoggerFactory) { ServerOptions = { AllowSynchronousIO = true } };
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                httpContext.Response.OnStarting(() =>
+                {
+                    // Change response to chunked
+                    httpContext.Response.ContentLength = null;
+                    return Task.CompletedTask;
+                });
+
+                var response = Encoding.ASCII.GetBytes("hello, world");
+                httpContext.Response.ContentLength = response.Length - 1;
+
+                // If OnStarting is not run before verifying writes, an error response will be sent.
+                await httpContext.Response.Body.WriteAsync(new Memory<byte>(response, 0, response.Length));
+            }, serviceContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        $"Transfer-Encoding: chunked",
+                        "",
+                        "c",
+                        "hello, world",
+                        "0",
+                        "",
+                        "");
+                }
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
         public async Task SubsequentWriteVerifiedAfterOnStarting()
         {
             var serviceContext = new TestServiceContext(LoggerFactory) { ServerOptions = { AllowSynchronousIO = true } };
@@ -1463,6 +1506,52 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                 // If OnStarting is not run before verifying writes, an error response will be sent.
                 await httpContext.Response.BodyPipe.WriteAsync(new Memory<byte>(response, 0, response.Length / 2));
+                await httpContext.Response.BodyPipe.WriteAsync(new Memory<byte>(response, response.Length / 2, response.Length - response.Length / 2));
+            }, serviceContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        $"Transfer-Encoding: chunked",
+                        "",
+                        "6",
+                        "hello,",
+                        "6",
+                        " world",
+                        "0",
+                        "",
+                        "");
+                }
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task SubsequentWriteVerifiedAfterOnStartingWithResponseBody()
+        {
+            var serviceContext = new TestServiceContext(LoggerFactory) { ServerOptions = { AllowSynchronousIO = true } };
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                httpContext.Response.OnStarting(() =>
+                {
+                    // Change response to chunked
+                    httpContext.Response.ContentLength = null;
+                    return Task.CompletedTask;
+                });
+
+                var response = Encoding.ASCII.GetBytes("hello, world");
+                httpContext.Response.ContentLength = response.Length - 1;
+
+                // If OnStarting is not run before verifying writes, an error response will be sent.
+                await httpContext.Response.Body.WriteAsync(new Memory<byte>(response, 0, response.Length / 2));
                 await httpContext.Response.BodyPipe.WriteAsync(new Memory<byte>(response, response.Length / 2, response.Length - response.Length / 2));
             }, serviceContext))
             {

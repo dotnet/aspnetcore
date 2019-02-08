@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private static readonly byte[] _bytesServer = Encoding.ASCII.GetBytes("\r\nServer: " + Constants.ServerName);
 
         protected Streams _streams;
-
+        private HttpResponsePipeWriter _originalPipeWriter;
         private Stack<KeyValuePair<Func<object, Task>, object>> _onStarting;
         private Stack<KeyValuePair<Func<object, Task>, object>> _onCompleted;
 
@@ -63,10 +63,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         protected string _methodText = null;
         private string _scheme = null;
 
-        protected PipeWriter _userSetPipeWriter;
-        protected Stream _userSetResponseBody;
-        protected PipeWriter _cachedResponsePipeWriter;
-        protected Stream _cachedResponseBodyStream;
         private List<IDisposable> _wrapperObjectsToDispose;
 
         public HttpProtocol(HttpConnectionContext context)
@@ -303,13 +299,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 var pipeWriter = new HttpResponsePipeWriter(this);
                 _streams = new Streams(bodyControl: this, pipeWriter);
-                ResponsePipeWriter = pipeWriter;
+                _originalPipeWriter = pipeWriter;
             }
 
             (RequestBody, ResponseBody) = _streams.Start(messageBody);
-
-            _cachedResponseBodyStream = ResponseBody;
-            _cachedResponsePipeWriter = ResponsePipeWriter;
+            ResponsePipeWriter = _originalPipeWriter;
         }
 
         public void StopStreams() => _streams.Stop();
@@ -345,8 +339,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _httpVersion = Http.HttpVersion.Unknown;
             _statusCode = StatusCodes.Status200OK;
             _reasonPhrase = null;
-            _userSetPipeWriter = null;
-            _userSetResponseBody = null;
 
             var remoteEndPoint = RemoteEndPoint;
             RemoteIpAddress = remoteEndPoint?.Address;
