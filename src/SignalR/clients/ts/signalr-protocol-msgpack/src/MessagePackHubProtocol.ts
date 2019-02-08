@@ -4,7 +4,8 @@
 import { Buffer } from "buffer";
 import * as msgpack5 from "msgpack5";
 
-import { CompletionMessage, HubMessage, IHubProtocol, ILogger, InvocationMessage, LogLevel, MessageHeaders, MessageType, NullLogger, StreamInvocationMessage, StreamItemMessage, TransferFormat } from "@aspnet/signalr";
+import { CancelInvocationMessage, CompletionMessage, HubMessage, IHubProtocol, ILogger, InvocationMessage,
+    LogLevel, MessageHeaders, MessageType, NullLogger, StreamInvocationMessage, StreamItemMessage, TransferFormat } from "@aspnet/signalr";
 
 import { BinaryMessageFormat } from "./BinaryMessageFormat";
 import { isArrayBuffer } from "./Utils";
@@ -70,6 +71,8 @@ export class MessagePackHubProtocol implements IHubProtocol {
                 throw new Error(`Writing messages of type '${message.type}' is not supported.`);
             case MessageType.Ping:
                 return BinaryMessageFormat.write(SERIALIZED_PING_MESSAGE);
+            case MessageType.CancelInvocation:
+                return this.writeCancelInvocation(message as CancelInvocationMessage);
             default:
                 throw new Error("Invalid message type.");
         }
@@ -222,6 +225,13 @@ export class MessagePackHubProtocol implements IHubProtocol {
         const msgpack = msgpack5();
         const payload = msgpack.encode([MessageType.StreamInvocation, streamInvocationMessage.headers || {}, streamInvocationMessage.invocationId,
         streamInvocationMessage.target, streamInvocationMessage.arguments]);
+
+        return BinaryMessageFormat.write(payload.slice());
+    }
+
+    private writeCancelInvocation(cancelInvocationMessage: CancelInvocationMessage): ArrayBuffer {
+        const msgpack = msgpack5();
+        const payload = msgpack.encode([MessageType.CancelInvocation, cancelInvocationMessage.headers || {}, cancelInvocationMessage.invocationId]);
 
         return BinaryMessageFormat.write(payload.slice());
     }
