@@ -72,6 +72,20 @@
     <BuildHelixPayload Condition="'$(BuildHelixPayload)' == '' AND '$(IsTestProject)' == 'true'">true</BuildHelixPayload>
   </PropertyGroup>
 
+  <ItemGroup>
+    <KnownFrameworkReference Update="Microsoft.NETCore.App">
+      <LatestRuntimeFrameworkVersion>$(MicrosoftNETCoreAppPackageVersion)</LatestRuntimeFrameworkVersion>
+      <DefaultRuntimeFrameworkVersion Condition="'$(IsServicingBuild)' != 'true'">$(MicrosoftNETCoreAppPackageVersion)</DefaultRuntimeFrameworkVersion>
+      <TargetingPackVersion Condition="'$(IsServicingBuild)' != 'true'">$(MicrosoftNETCoreAppPackageVersion)</TargetingPackVersion>
+    </KnownFrameworkReference>
+
+    <KnownFrameworkReference Update="Microsoft.AspNetCore.App">
+      <LatestRuntimeFrameworkVersion>$(SharedFxVersion)</LatestRuntimeFrameworkVersion>
+      <DefaultRuntimeFrameworkVersion Condition="'$(IsServicingBuild)' != 'true'">$(SharedFxVersion)</DefaultRuntimeFrameworkVersion>
+      <TargetingPackVersion Condition="'$(IsServicingBuild)' != 'true'">$(SharedFxVersion)</TargetingPackVersion>
+    </KnownFrameworkReference>
+  </ItemGroup>
+
   <Import Project="eng\Workarounds.targets" />
 
   <Import Project="eng\targets\ResolveIisReferences.targets" Condition=" '$(MSBuildProjectExtension)' != '.vcxproj' " />

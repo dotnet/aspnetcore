@@ -27,7 +27,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Remove="Internal.AspNetCore.Sdk" />
-    <PackageReference Include="Microsoft.AspNetCore.App" Version="$(MicrosoftAspNetCoreAppPackageVersion)" IsImplicitlyDefined="true"/>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="%(HostingStartupPackageReference.Identity)" Version="%(HostingStartupPackageReference.Version)" />
   </ItemGroup>
 </Project>
