@@ -406,7 +406,7 @@ namespace System.IO.Pipelines.Tests
         [Fact]
         public void InnerStreamReturnsStream()
         {
-            Assert.Equal(MemoryStream, ((StreamPipeWriter)Writer).InnerStream);
+            Assert.Equal(Stream, ((StreamPipeWriter)Writer).InnerStream);
         }
 
         private void WriteStringToStream(string input)

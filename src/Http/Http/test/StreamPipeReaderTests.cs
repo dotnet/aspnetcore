@@ -610,10 +610,11 @@ namespace System.IO.Pipelines.Tests
             Assert.True(readResult.Buffer.IsEmpty);
             Assert.True(readResult.IsCompleted);
         }
-        
+
+        [Fact]
         public void InnerStreamReturnsStream()
         {
-            Assert.Equal(MemoryStream, ((StreamPipeReader)Reader).InnerStream);
+            Assert.Equal(Stream, ((StreamPipeReader)Reader).InnerStream);
         }
 
         private async Task<string> ReadFromPipeAsString()
