@@ -1057,7 +1057,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
         private class TestRenderer : Renderer
         {
-            public TestRenderer() : base(new TestServiceProvider())
+            public TestRenderer() : base(new TestServiceProvider(), new RendererSynchronizationContext())
             {
             }
 

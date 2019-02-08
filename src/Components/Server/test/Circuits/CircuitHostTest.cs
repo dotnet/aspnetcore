@@ -129,7 +129,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var clientProxy = Mock.Of<IClientProxy>();
             var renderRegistry = new RendererRegistry();
             var jsRuntime = Mock.Of<IJSRuntime>();
-            var syncContext = new CircuitSynchronizationContext();
 
             remoteRenderer = remoteRenderer ?? GetRemoteRenderer();
             handlers = handlers ?? Array.Empty<CircuitHandler>();
@@ -141,8 +140,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 remoteRenderer,
                 configure: _ => { },
                 jsRuntime: jsRuntime,
-                synchronizationContext:
-                syncContext,
                 handlers);
         }
 
@@ -152,14 +149,13 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 Mock.Of<IServiceProvider>(),
                 new RendererRegistry(),
                 Mock.Of<IJSRuntime>(),
-                Mock.Of<IClientProxy>(),
-                new CircuitSynchronizationContext());
+                Mock.Of<IClientProxy>());
         }
 
         private class TestRemoteRenderer : RemoteRenderer
         {
-            public TestRemoteRenderer(IServiceProvider serviceProvider, RendererRegistry rendererRegistry, IJSRuntime jsRuntime, IClientProxy client, SynchronizationContext syncContext)
-                : base(serviceProvider, rendererRegistry, jsRuntime, client, syncContext)
+            public TestRemoteRenderer(IServiceProvider serviceProvider, RendererRegistry rendererRegistry, IJSRuntime jsRuntime, IClientProxy client)
+                : base(serviceProvider, rendererRegistry, jsRuntime, client, CreateDefaultDispatcher())
             {
             }
 

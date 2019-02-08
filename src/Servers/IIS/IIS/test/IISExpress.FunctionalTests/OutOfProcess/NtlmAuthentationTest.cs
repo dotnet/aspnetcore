@@ -30,8 +30,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         public static TestMatrix TestVariants
             => TestMatrix.ForServers(DeployerSelector.ServerType)
-                .WithTfms(Tfm.NetCoreApp30)
-                .WithAncmVersions(AncmVersion.AspNetCoreModuleV2);
+                .WithTfms(Tfm.NetCoreApp30);
 
         [ConditionalTheory]
         [RequiresIIS(IISCapability.WindowsAuthentication)]

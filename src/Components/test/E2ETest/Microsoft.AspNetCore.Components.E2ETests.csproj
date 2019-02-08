@@ -10,6 +10,8 @@
       Temporarily disabled until this runs on macOS
     -->
     <SkipTests Condition="'$(BlazorAllTests)' != 'true'">true</SkipTests>
+    <!-- https://github.com/aspnet/AspNetCore/issues/6857 -->
+    <BuildHelixPayload>false</BuildHelixPayload>
   </PropertyGroup>
 
   <ItemGroup>

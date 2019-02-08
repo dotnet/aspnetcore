@@ -128,8 +128,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             return "IIS " +
                 (deploymentResult.DeploymentParameters.ServerType == ServerType.IISExpress ? "Express " : "") +
-                "AspNetCore Module" +
-                (deploymentResult.DeploymentParameters.AncmVersion == AncmVersion.AspNetCoreModuleV2 ? " V2" : "");
+                "AspNetCore Module V2";
         }
 
         public static string Started(IISDeploymentResult deploymentResult)

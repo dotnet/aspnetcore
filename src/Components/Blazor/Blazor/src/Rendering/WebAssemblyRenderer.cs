@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.JSInterop;
 using Mono.WebAssembly.Interop;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Blazor.Rendering
@@ -30,9 +31,6 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
             // case where Blazor is running in process.
             _webAssemblyRendererId = RendererRegistry.Current.Add(this);
         }
-
-        internal void DispatchBrowserEvent(int componentId, int eventHandlerId, UIEventArgs eventArgs)
-            => DispatchEvent(componentId, eventHandlerId, eventArgs);
 
         /// <summary>
         /// Attaches a new root component to the renderer,
