@@ -37,7 +37,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="@(Dependency)" />
+    <!-- Note: do not add _TransitiveExternalDependency to this list. This is intentionally not listed as a direct package reference. -->
+    <Reference Include="@(Dependency);@(ExternalDependency)" />
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
