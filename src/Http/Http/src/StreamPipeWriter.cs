@@ -129,20 +129,7 @@ namespace System.IO.Pipelines
                 return;
             }
 
-            _isCompleted = true;
-
-            _internalTokenSource?.Dispose();
-
-            if (_completedSegments != null)
-            {
-                foreach (var segment in _completedSegments)
-                {
-                    segment.Return();
-                }
-            }
-
-            _currentSegmentOwner?.Dispose();
-
+            Dispose();
             // We still want to cleanup segments before throwing an exception.
             if (_bytesWritten > 0 && exception == null)
             {
@@ -286,7 +273,24 @@ namespace System.IO.Pipelines
 
         public void Dispose()
         {
-            Complete();
+            if (_isCompleted)
+            {
+                return;
+            }
+
+            _isCompleted = true;
+
+            _internalTokenSource?.Dispose();
+
+            if (_completedSegments != null)
+            {
+                foreach (var segment in _completedSegments)
+                {
+                    segment.Return();
+                }
+            }
+
+            _currentSegmentOwner?.Dispose();
         }
 
         /// <summary>
