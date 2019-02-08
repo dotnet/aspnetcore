@@ -538,6 +538,21 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
     }
 
+    public class HubWithAsyncDisposable : TestHub
+    {
+        private AsyncDisposable _disposable;
+
+        public HubWithAsyncDisposable(AsyncDisposable disposable)
+        {
+            _disposable = disposable;
+        }
+
+        public void Test()
+        {
+
+        }
+    }
+
     public class AbortHub : Hub
     {
         public void Kill()

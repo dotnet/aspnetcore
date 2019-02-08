@@ -39,8 +39,12 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         public override async Task OnConnectedAsync(HubConnectionContext connection)
         {
-            using (var scope = _serviceScopeFactory.CreateScope())
+            IServiceScope scope = null;
+
+            try
             {
+                scope = _serviceScopeFactory.CreateScope();
+
                 var hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
                 var hub = hubActivator.Create();
                 try
@@ -53,12 +57,20 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                     hubActivator.Release(hub);
                 }
             }
+            finally
+            {
+                await scope.DisposeAsync();
+            }
         }
 
         public override async Task OnDisconnectedAsync(HubConnectionContext connection, Exception exception)
         {
-            using (var scope = _serviceScopeFactory.CreateScope())
+            IServiceScope scope = null;
+
+            try
             {
+                scope = _serviceScopeFactory.CreateScope();
+
                 var hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
                 var hub = hubActivator.Create();
                 try
@@ -70,6 +82,10 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 {
                     hubActivator.Release(hub);
                 }
+            }
+            finally
+            {
+                await scope.DisposeAsync();
             }
         }
 
@@ -304,7 +320,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                                 // And normal invocations handle cleanup below in the finally
                                 if (isStreamCall)
                                 {
-                                    CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, hub, scope);
+                                    await CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, hub, scope);
                                 }
                             }
 
@@ -342,17 +358,14 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             {
                 if (disposeScope)
                 {
-                    CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, hub, scope);
+                    await CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, hub, scope);
                 }
             }
         }
 
-        private void CleanupInvocation(HubConnectionContext connection, HubMethodInvocationMessage hubMessage, IHubActivator<THub> hubActivator,
+        private ValueTask CleanupInvocation(HubConnectionContext connection, HubMethodInvocationMessage hubMessage, IHubActivator<THub> hubActivator,
             THub hub, IServiceScope scope)
         {
-            hubActivator?.Release(hub);
-            scope.Dispose();
-
             if (hubMessage.StreamIds != null)
             {
                 foreach (var stream in hubMessage.StreamIds)
@@ -365,6 +378,10 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                     catch (KeyNotFoundException) { }
                 }
             }
+
+            hubActivator?.Release(hub);
+
+            return scope.DisposeAsync();
         }
 
         private async Task StreamResultsAsync(string invocationId, HubConnectionContext connection, IAsyncEnumerator<object> enumerator, IServiceScope scope,
@@ -398,7 +415,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             {
                 (enumerator as IDisposable)?.Dispose();
 
-                CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, hub, scope);
+                await CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, hub, scope);
 
                 // Dispose the linked CTS for the stream.
                 streamCts.Dispose();
