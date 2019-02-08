@@ -133,7 +133,7 @@ namespace System.IO.Pipelines.Tests
             }
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/4621")]
+        [Fact]
         public async Task CancelPendingFlushBetweenWritesAllDataIsPreserved()
         {
             Stream = new SingleWriteStream();
@@ -206,7 +206,7 @@ namespace System.IO.Pipelines.Tests
             Assert.True(flushResult.IsCanceled);
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/4621")]
+        [Fact]
         public async Task CancelPendingFlushLostOfCancellationsNoDataLost()
         {
             var writeSize = 16;
