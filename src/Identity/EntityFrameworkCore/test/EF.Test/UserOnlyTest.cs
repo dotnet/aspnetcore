@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Builder.Internal;
 using Microsoft.AspNetCore.Identity.Test;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -28,7 +29,9 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
 
             services
                 .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build())
-                .AddDbContext<TestUserDbContext>(o => o.UseSqlServer(fixture.ConnectionString))
+                .AddDbContext<TestUserDbContext>(
+                    o => o.UseSqlServer(fixture.ConnectionString)
+                        .ConfigureWarnings(b => b.Log(CoreEventId.ManyServiceProvidersCreatedWarning)))
                 .AddIdentityCore<IdentityUser>(o => { })
                 .AddEntityFrameworkStores<TestUserDbContext>();
 
