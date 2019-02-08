@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Http
             Write(response, text, encoding);
 
             var flushAsyncTask = response.BodyPipe.FlushAsync(cancellationToken);
-            if (flushAsyncTask.IsCompleted)
+            if (flushAsyncTask.IsCompletedSuccessfully)
             {
                 // Most implementations of ValueTask reset state in GetResult, so call it before returning a completed task.
                 flushAsyncTask.GetAwaiter().GetResult();
