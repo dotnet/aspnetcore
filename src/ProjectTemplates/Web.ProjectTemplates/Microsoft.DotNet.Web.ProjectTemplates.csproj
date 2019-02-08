@@ -16,6 +16,7 @@
       MicrosoftEntityFrameworkCoreSqlitePackageVersion=$(MicrosoftEntityFrameworkCoreSqlitePackageVersion);
       MicrosoftEntityFrameworkCoreSqlServerPackageVersion=$(MicrosoftEntityFrameworkCoreSqlServerPackageVersion);
       MicrosoftEntityFrameworkCoreToolsPackageVersion=$(MicrosoftEntityFrameworkCoreToolsPackageVersion);
+      MicrosoftExtensionsHostingPackageVersion=$(MicrosoftExtensionsHostingPackageVersion);
       MicrosoftNETCoreAppPackageVersion=$(MicrosoftNETCoreAppPackageVersion);
     </GeneratedContentProperties>
   </PropertyGroup>
@@ -35,6 +36,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <GeneratedContent Include="Worker-CSharp.csproj.in" OutputPath="content/Worker-CSharp/Company.Application1.csproj" />
     <GeneratedContent Include="EmptyWeb-CSharp.csproj.in" OutputPath="content/EmptyWeb-CSharp/Company.WebApplication1.csproj" />
     <GeneratedContent Include="EmptyWeb-FSharp.fsproj.in" OutputPath="content/EmptyWeb-FSharp/Company.WebApplication1.fsproj" />
     <GeneratedContent Include="RazorComponentsWeb-CSharp.App.csproj.in" OutputPath="content/RazorComponentsWeb-CSharp/RazorComponentsWeb-CSharp.App/RazorComponentsWeb-CSharp.App.csproj" />

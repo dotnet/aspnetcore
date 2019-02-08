@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "company.application1.fullname" . }}
+  labels:
+    app.kubernetes.io/name: {{ include "company.application1.name" . }}
+    helm.sh/chart: {{ include "company.application1.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: health
+      protocol: TCP
+      name: health
+  selector:
+    app.kubernetes.io/name: {{ include "company.application1.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
