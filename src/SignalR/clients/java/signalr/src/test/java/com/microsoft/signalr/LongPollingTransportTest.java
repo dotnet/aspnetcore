@@ -12,7 +12,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import io.reactivex.subjects.CompletableSubject;
 import org.junit.jupiter.api.Test;
 
 import io.reactivex.Single;

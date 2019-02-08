@@ -84,7 +84,7 @@ final class DefaultHttpClient extends HttpClient {
                 }
             });
 
-            if (timeoutInMilliseconds > 0){
+            if (timeoutInMilliseconds > 0) {
                 builder.readTimeout(timeoutInMilliseconds, TimeUnit.MILLISECONDS);
             }
             this.client = builder.build();
