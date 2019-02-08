@@ -12,6 +12,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import io.reactivex.subjects.CompletableSubject;
 import org.junit.jupiter.api.Test;
 
 import io.reactivex.Single;
@@ -201,5 +202,44 @@ public class LongPollingTransportTest {
 
         assertTrue(onReceiveCalled.get());
         assertEquals("FIRSTSECOND", message.get());
+    }
+
+    @Test
+    public void LongPollingTransportSendsHeaders() {
+        AtomicInteger requestCount = new AtomicInteger();
+        AtomicReference<String> headerValue = new AtomicReference<>();
+        TestHttpClient client = new TestHttpClient()
+                .on("GET", (req) -> {
+                    if (requestCount.get() == 0) {
+                        requestCount.incrementAndGet();
+                        return Single.just(new HttpResponse(200, "", ""));
+                    } else if (requestCount.get() == 1) {
+                        requestCount.incrementAndGet();
+                        return Single.just(new HttpResponse(200, "", "FIRST"));
+                    }
+
+                    return Single.just(new HttpResponse(204, "", ""));
+                })
+                .on("POST", (req) -> {
+                    assertFalse(req.getHeaders().isEmpty());
+                    headerValue.set(req.getHeaders().get("KEY"));
+                    return Single.just(new HttpResponse(200, "", ""));
+                });
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put("KEY", "VALUE");
+        LongPollingTransport transport = new LongPollingTransport(headers, client, Single.just(""));
+
+        AtomicBoolean onReceiveCalled = new AtomicBoolean(false);
+        transport.setOnReceive((msg -> {
+            onReceiveCalled.set(true);
+        }) );
+
+        transport.setOnClose((error) -> {});
+
+        transport.start("http://example.com").timeout(1, TimeUnit.SECONDS).blockingAwait();
+        transport.send("TEST");
+        assertEquals("VALUE", client.getSentRequests().get(2).getHeaders().get("KEY"));
+        assertTrue(onReceiveCalled.get());
     }
 }

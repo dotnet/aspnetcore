@@ -20,7 +20,7 @@ final class DefaultHttpClient extends HttpClient {
     private OkHttpClient client = null;
 
     public DefaultHttpClient() {
-        this(5000, null);
+        this(0, null);
     }
 
     public DefaultHttpClient cloneWithTimeOut(int timeoutInMilliseconds) {
@@ -33,7 +33,8 @@ final class DefaultHttpClient extends HttpClient {
         if (client != null) {
             this.client = client;
         } else {
-            this.client = new OkHttpClient.Builder().cookieJar(new CookieJar() {
+
+            OkHttpClient.Builder builder = new OkHttpClient.Builder().cookieJar(new CookieJar() {
                 private List<Cookie> cookieList = new ArrayList<>();
                 private Lock cookieLock = new ReentrantLock();
 
@@ -81,8 +82,12 @@ final class DefaultHttpClient extends HttpClient {
                         cookieLock.unlock();
                     }
                 }
-            }).readTimeout(timeoutInMilliseconds, TimeUnit.MILLISECONDS)
-                    .build();
+            });
+
+            if (timeoutInMilliseconds > 0){
+                builder.readTimeout(timeoutInMilliseconds, TimeUnit.MILLISECONDS);
+            }
+            this.client = builder.build();
         }
     }
 

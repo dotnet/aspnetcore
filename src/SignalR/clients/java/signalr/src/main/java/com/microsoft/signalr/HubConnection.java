@@ -325,27 +325,7 @@ public class HubConnection {
                             resetServerTimeout();
                             //Don't send pings if we're using long polling.
                             if (transportEnum != TransportEnum.LONG_POLLING) {
-                                this.pingTimer = new Timer();
-                                this.pingTimer.schedule(new TimerTask() {
-                                    @Override
-                                    public void run() {
-                                        try {
-                                            if (System.currentTimeMillis() > nextServerTimeout.get()) {
-                                                stop("Server timeout elapsed without receiving a message from the server.");
-                                                return;
-                                            }
-
-                                            if (System.currentTimeMillis() > nextPingActivation.get()) {
-                                                sendHubMessage(PingMessage.getInstance());
-                                            }
-                                        } catch (Exception e) {
-                                            logger.warn("Error sending ping: {}.", e.getMessage());
-                                            // The connection is probably in a bad or closed state now, cleanup the timer so
-                                            // it stops triggering
-                                            pingTimer.cancel();
-                                        }
-                                    }
-                                }, new Date(0), tickRate);
+                                activatePingTimer();
                             }
                         } finally {
                             hubConnectionStateLock.unlock();
@@ -359,6 +339,30 @@ public class HubConnection {
         }).subscribeWith(start);
 
         return start;
+    }
+
+    private void activatePingTimer() {
+        this.pingTimer = new Timer();
+        this.pingTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                try {
+                    if (System.currentTimeMillis() > nextServerTimeout.get()) {
+                        stop("Server timeout elapsed without receiving a message from the server.");
+                        return;
+                    }
+
+                    if (System.currentTimeMillis() > nextPingActivation.get()) {
+                        sendHubMessage(PingMessage.getInstance());
+                    }
+                } catch (Exception e) {
+                    logger.warn("Error sending ping: {}.", e.getMessage());
+                    // The connection is probably in a bad or closed state now, cleanup the timer so
+                    // it stops triggering
+                    pingTimer.cancel();
+                }
+            }
+        }, new Date(0), tickRate);
     }
 
     private Single<String> startNegotiate(String url, int negotiateAttempts) {
@@ -571,7 +575,7 @@ public class HubConnection {
         } else {
             logger.debug("Sending {} message.", message.getMessageType().name());
         }
-        transport.send(serializedMessage);
+        transport.send(serializedMessage).subscribeWith(CompletableSubject.create());
 
         resetKeepAlive();
     }

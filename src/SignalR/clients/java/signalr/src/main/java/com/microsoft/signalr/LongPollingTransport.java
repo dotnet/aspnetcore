@@ -43,14 +43,13 @@ class LongPollingTransport implements Transport {
         return this.active;
     }
 
-    private void updateHeaderToken() {
-        this.accessTokenProvider.flatMap((token) -> {
+    private Single updateHeaderToken() {
+        return this.accessTokenProvider.flatMap((token) -> {
             if (!token.isEmpty()) {
                 this.headers.put("Authorization", "Bearer " + token);
             }
             return Single.just("");
         });
-
     }
 
     @Override
@@ -60,21 +59,22 @@ class LongPollingTransport implements Transport {
         this.url = url;
         pollUrl = url + "&_=" + System.currentTimeMillis();
         logger.debug("Polling {}", pollUrl);
-        this.updateHeaderToken();
-        HttpRequest request = new HttpRequest();
-        request.addHeaders(headers);
-        return this.pollingClient.get(pollUrl, request).flatMapCompletable(response -> {
-            if (response.getStatusCode() != 200) {
-                logger.error("Unexpected response code {}.", response.getStatusCode());
-                this.active = false;
-                return Completable.error(new Exception("Failed to connect."));
-            } else {
-                this.active = true;
-            }
-            this.threadPool = Executors.newCachedThreadPool();
-            poll(url).subscribeWith(receiveLoop);
+        return this.updateHeaderToken().flatMapCompletable((r) -> {
+            HttpRequest request = new HttpRequest();
+            request.addHeaders(headers);
+            return this.pollingClient.get(pollUrl, request).flatMapCompletable(response -> {
+                if (response.getStatusCode() != 200) {
+                    logger.error("Unexpected response code {}.", response.getStatusCode());
+                    this.active = false;
+                    return Completable.error(new Exception("Failed to connect."));
+                } else {
+                    this.active = true;
+                }
+                this.threadPool = Executors.newCachedThreadPool();
+                poll(url).subscribeWith(receiveLoop);
 
-            return Completable.complete();
+                return Completable.complete();
+            });
         });
     }
 
@@ -82,28 +82,30 @@ class LongPollingTransport implements Transport {
         if (this.active) {
             pollUrl = url + "&_=" + System.currentTimeMillis();
             logger.info("Polling {}", pollUrl);
-            this.updateHeaderToken();
-            HttpRequest request = new HttpRequest();
-            request.addHeaders(headers);
-            Completable pollingCompletable = this.pollingClient.get(pollUrl, request).flatMapCompletable(response -> {
-                if (response.getStatusCode() == 204) {
-                    logger.info("LongPolling transport terminated by server.");
-                    this.active = false;
-                } else if (response.getStatusCode() != 200) {
-                    logger.error("Unexpected response code {}.", response.getStatusCode());
-                    this.active = false;
-                    this.closeError = "Unexpected response code " + response.getStatusCode();
-                } else {
-                    if (response.getContent() != null) {
-                        logger.debug("Message received.");
-                        threadPool.execute(() -> this.onReceive(response.getContent()));
+            return this.updateHeaderToken().flatMapCompletable((x) -> {
+                HttpRequest request = new HttpRequest();
+                request.addHeaders(headers);
+                Completable pollingCompletable = this.pollingClient.get(pollUrl, request).flatMapCompletable(response -> {
+                    if (response.getStatusCode() == 204) {
+                        logger.info("LongPolling transport terminated by server.");
+                        this.active = false;
+                    } else if (response.getStatusCode() != 200) {
+                        logger.error("Unexpected response code {}.", response.getStatusCode());
+                        this.active = false;
+                        this.closeError = "Unexpected response code " + response.getStatusCode();
                     } else {
-                        logger.debug("Poll timed out, reissuing.");
+                        if (response.getContent() != null) {
+                            logger.debug("Message received.");
+                            threadPool.execute(() -> this.onReceive(response.getContent()));
+                        } else {
+                            logger.debug("Poll timed out, reissuing.");
+                        }
                     }
+                    return poll(url);
+                });
 
-                }
-                return poll(url); });
-            return pollingCompletable;
+                return pollingCompletable;
+            });
         } else {
             logger.info("Long Polling transport polling complete.");
             receiveLoop.onComplete();
@@ -116,8 +118,9 @@ class LongPollingTransport implements Transport {
         if (!this.active) {
             return Completable.error(new Exception("Cannot send unless the transport is active."));
         }
-        this.updateHeaderToken();
-        return Completable.fromSingle(this.client.post(url, message));
+        return this.updateHeaderToken().flatMapCompletable((x) -> {
+            return Completable.fromSingle(this.client.post(url, message));
+        });
     }
 
     @Override
@@ -139,13 +142,14 @@ class LongPollingTransport implements Transport {
     @Override
     public Completable stop() {
         this.active = false;
-        this.updateHeaderToken();
-        this.pollingClient.delete(this.url);
-        CompletableSubject stopCompletableSubject = CompletableSubject.create();
-        return this.receiveLoop.andThen(Completable.defer(() -> {
-            logger.info("LongPolling transport stopped.");
-            this.onClose.invoke(this.closeError);
-            return Completable.complete();
-        })).subscribeWith(stopCompletableSubject);
+        return this.updateHeaderToken().flatMapCompletable((x) -> {
+            this.pollingClient.delete(this.url);
+            CompletableSubject stopCompletableSubject = CompletableSubject.create();
+            return this.receiveLoop.andThen(Completable.defer(() -> {
+                logger.info("LongPolling transport stopped.");
+                this.onClose.invoke(this.closeError);
+                return Completable.complete();
+            })).subscribeWith(stopCompletableSubject);
+        });
     }
 }
