@@ -139,6 +139,7 @@ This targets file should only be imported by .shfxproj files.
       <AllowExplicitVersion>true</AllowExplicitVersion>
     </PackageReference>
 
+    <!-- Note: do not add _TransitiveExternalDependency to this list. This is intentionally not listed as a direct package reference. -->
     <PackageReference Include="@(Dependency);@(ExternalDependency)">
       <IncludeAssets>Runtime;Native</IncludeAssets>
       <Publish>true</Publish>

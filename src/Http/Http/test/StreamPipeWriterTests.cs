@@ -32,7 +32,7 @@ namespace System.IO.Pipelines.Tests
         [InlineData(8000, 8000)]
         public async Task CanAdvanceWithPartialConsumptionOfFirstSegment(int firstWriteLength, int secondWriteLength)
         {
-            Writer = new StreamPipeWriter(MemoryStream, MinimumSegmentSize, new TestMemoryPool(maxBufferSize: 20000));
+            Writer = new StreamPipeWriter(Stream, MinimumSegmentSize, new TestMemoryPool(maxBufferSize: 20000));
             await Writer.WriteAsync(Encoding.ASCII.GetBytes("a"));
 
             var expectedLength = firstWriteLength + secondWriteLength + 1;
@@ -133,11 +133,11 @@ namespace System.IO.Pipelines.Tests
             }
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/4621")]
+        [Fact]
         public async Task CancelPendingFlushBetweenWritesAllDataIsPreserved()
         {
-            MemoryStream = new SingleWriteStream();
-            Writer = new StreamPipeWriter(MemoryStream);
+            Stream = new SingleWriteStream();
+            Writer = new StreamPipeWriter(Stream);
             FlushResult flushResult = new FlushResult();
 
             var tcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -174,8 +174,8 @@ namespace System.IO.Pipelines.Tests
         [Fact]
         public async Task CancelPendingFlushAfterAllWritesAllDataIsPreserved()
         {
-            MemoryStream = new CannotFlushStream();
-            Writer = new StreamPipeWriter(MemoryStream);
+            Stream = new CannotFlushStream();
+            Writer = new StreamPipeWriter(Stream);
             FlushResult flushResult = new FlushResult();
 
             var tcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -206,13 +206,13 @@ namespace System.IO.Pipelines.Tests
             Assert.True(flushResult.IsCanceled);
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/4621")]
+        [Fact]
         public async Task CancelPendingFlushLostOfCancellationsNoDataLost()
         {
             var writeSize = 16;
             var singleWriteStream = new SingleWriteStream();
-            MemoryStream = singleWriteStream;
-            Writer = new StreamPipeWriter(MemoryStream, minimumSegmentSize: writeSize);
+            Stream = singleWriteStream;
+            Writer = new StreamPipeWriter(Stream, minimumSegmentSize: writeSize);
 
             for (var i = 0; i < 10; i++)
             {
@@ -340,6 +340,25 @@ namespace System.IO.Pipelines.Tests
         }
 
         [Fact]
+        public void DisposeDoesNotThrowIfUnflushedData()
+        {
+            var streamPipeWriter = new StreamPipeWriter(new MemoryStream());
+            streamPipeWriter.Write(new byte[1]);
+
+            streamPipeWriter.Dispose();
+        }
+
+        [Fact]
+        public void CompleteAfterDisposeDoesNotThrowIfUnflushedData()
+        {
+            var streamPipeWriter = new StreamPipeWriter(new MemoryStream());
+            streamPipeWriter.Write(new byte[1]);
+
+            streamPipeWriter.Dispose();
+            streamPipeWriter.Complete();
+        }
+
+        [Fact]
         public void CallGetMemoryWithNegativeSizeHint_ThrowsArgException()
         {
             Assert.Throws<ArgumentOutOfRangeException>(() => Writer.GetMemory(-1));
@@ -392,7 +411,7 @@ namespace System.IO.Pipelines.Tests
         private void WriteStringToStream(string input)
         {
             var buffer = Encoding.ASCII.GetBytes(input);
-            MemoryStream.Write(buffer, 0, buffer.Length);
+            Stream.Write(buffer, 0, buffer.Length);
         }
 
         private async Task WriteStringToPipeWriter(string input)
