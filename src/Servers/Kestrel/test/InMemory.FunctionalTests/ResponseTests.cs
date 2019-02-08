@@ -1552,7 +1552,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                 // If OnStarting is not run before verifying writes, an error response will be sent.
                 await httpContext.Response.Body.WriteAsync(new Memory<byte>(response, 0, response.Length / 2));
-                await httpContext.Response.BodyPipe.WriteAsync(new Memory<byte>(response, response.Length / 2, response.Length - response.Length / 2));
+                await httpContext.Response.Body.WriteAsync(new Memory<byte>(response, response.Length / 2, response.Length - response.Length / 2));
             }, serviceContext))
             {
                 using (var connection = server.CreateConnection())
