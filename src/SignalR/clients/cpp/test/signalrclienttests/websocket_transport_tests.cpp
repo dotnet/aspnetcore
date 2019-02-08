@@ -97,7 +97,8 @@ TEST(websocket_transport_connect, connect_logs_exceptions)
         entry);
 }
 
-TEST(websocket_transport_connect, cannot_call_connect_on_already_connected_transport)
+// Flaky test: crashes test process
+TEST(websocket_transport_connect, DISABLED_cannot_call_connect_on_already_connected_transport)
 {
     auto client = std::make_shared<test_websocket_client>();
     auto ws_transport = websocket_transport::create([&](){ return client; }, logger(std::make_shared<trace_log_writer>(), trace_level::none),

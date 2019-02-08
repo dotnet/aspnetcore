@@ -73,8 +73,7 @@ namespace System.Buffers
                 Commit();
             }
 
-            _output.GetMemory(count);
-            _span = _output.GetSpan();
+            _span = _output.GetSpan(count);
         }
 
         private void WriteMultiBuffer(ReadOnlySpan<byte> source)
