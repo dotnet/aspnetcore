@@ -148,7 +148,7 @@ namespace System.IO.Pipelines.Tests
             Assert.NotEqual(readResult, readResult2);
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/4621")]
+        [Fact]
         public async Task ReadCanBeCancelledViaProvidedCancellationToken()
         {
             var pipeReader = new StreamPipeReader(new HangingStream());
