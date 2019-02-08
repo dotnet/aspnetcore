@@ -19,7 +19,8 @@
         <Repository>%(RepositoryBuildOrder.Identity)</Repository>
         <AdditionalProperties>
           RepositoryToBuild=%(RepositoryBuildOrder.Identity);
-          BuildRepositoryRoot=$([MSBuild]::NormalizeDirectory(%(RepositoryBuildOrder.RootPath)))
+          BuildRepositoryRoot=$([MSBuild]::NormalizeDirectory(%(RepositoryBuildOrder.RootPath)));
+          SkipTests=%(RepositoryBuildOrder.SkipTests)
         </AdditionalProperties>
       </BatchedRepository>
     </ItemGroup>
@@ -171,7 +172,7 @@
 
     <Message Text="============ Testing $(RepositoryToBuild) ============" Importance="High" />
 
-    <Exec Condition="'$(SkipTestsDueToMissingSharedFx)' != 'true' "
+    <Exec Condition="'$(SkipTestsDueToMissingSharedFx)' != 'true' AND '$(SkipTests)' != 'true'"
       Command="./$(_BuildScriptToExecute) -Path $(BuildRepositoryRoot) $(BuildArguments)"
       IgnoreStandardErrorWarningFormat="true"
       WorkingDirectory="$(RepositoryRoot)"
@@ -182,7 +183,7 @@
     <CallTarget Targets="_RestoreOriginalRepoLockFile" />
 
     <ItemGroup>
-      <RepositoryTestResult Update="$(RepositoryToBuild)" Success="true" Condition="'$(TestExitCode)' == '0' OR '$(SkipTestsDueToMissingSharedFx)' == 'true' " />
+      <RepositoryTestResult Update="$(RepositoryToBuild)" Success="true" Condition="'$(TestExitCode)' == '0' OR '$(SkipTestsDueToMissingSharedFx)' == 'true' OR '$(SkipTests)' == 'true' " />
     </ItemGroup>
 
     <Message Text="============ Done testing $(RepositoryToBuild) ============" Importance="High" />
