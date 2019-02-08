@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <summary>
         /// Invokes the given <see cref="Func{TResult}"/> in the context of the associated <see cref="Renderer"/>.
         /// </summary>
-        /// <param name="asyncAction">The asynchronous function to execute.</param>
+        /// <param name="asyncFunction">The asynchronous function to execute.</param>
         /// <returns>A <see cref="Task{TResult}"/> that will be completed when the function has finished executing.</returns>
         Task<TResult> InvokeAsync<TResult>(Func<Task<TResult>> asyncFunction);
     }
