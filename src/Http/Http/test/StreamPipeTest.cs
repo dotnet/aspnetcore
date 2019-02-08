@@ -11,7 +11,7 @@ namespace System.IO.Pipelines.Tests
 
         protected const int MinimumSegmentSize = 4096;
 
-        public MemoryStream MemoryStream { get; set; }
+        public Stream Stream { get; set; }
 
         public PipeWriter Writer { get; set; }
 
@@ -19,9 +19,9 @@ namespace System.IO.Pipelines.Tests
 
         protected StreamPipeTest()
         {
-            MemoryStream = new MemoryStream();
-            Writer = new StreamPipeWriter(MemoryStream, MinimumSegmentSize, new TestMemoryPool());
-            Reader = new StreamPipeReader(MemoryStream, new StreamPipeReaderOptions(MinimumSegmentSize, minimumReadThreshold: 256, new TestMemoryPool()));
+            Stream = new MemoryStream();
+            Writer = new StreamPipeWriter(Stream, MinimumSegmentSize, new TestMemoryPool());
+            Reader = new StreamPipeReader(Stream, new StreamPipeReaderOptions(MinimumSegmentSize, minimumReadThreshold: 256, new TestMemoryPool()));
         }
 
         public void Dispose()
@@ -44,27 +44,27 @@ namespace System.IO.Pipelines.Tests
 
         public void Write(byte[] data)
         {
-            MemoryStream.Write(data, 0, data.Length);
-            MemoryStream.Position = 0;
+            Stream.Write(data, 0, data.Length);
+            Stream.Position = 0;
         }
 
         public void WriteWithoutPosition(byte[] data)
         {
-            MemoryStream.Write(data, 0, data.Length);
+            Stream.Write(data, 0, data.Length);
         }
 
         public void Append(byte[] data)
         {
-            var originalPosition = MemoryStream.Position;
-            MemoryStream.Write(data, 0, data.Length);
-            MemoryStream.Position = originalPosition;
+            var originalPosition = Stream.Position;
+            Stream.Write(data, 0, data.Length);
+            Stream.Position = originalPosition;
         }
 
         public byte[] ReadWithoutFlush()
         {
-            MemoryStream.Position = 0;
-            var buffer = new byte[MemoryStream.Length];
-            var result = MemoryStream.Read(buffer, 0, (int)MemoryStream.Length);
+            Stream.Position = 0;
+            var buffer = new byte[Stream.Length];
+            var result = Stream.Read(buffer, 0, (int)Stream.Length);
             return buffer;
         }
     }

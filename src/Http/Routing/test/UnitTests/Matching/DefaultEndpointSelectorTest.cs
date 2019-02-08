@@ -167,10 +167,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             // Assert
             Assert.Equal(
-@"The request matched multiple endpoints. Matches: 
-
-test: /test2
-test: /test3", ex.Message);
+@"The request matched multiple endpoints. Matches: " + Environment.NewLine + Environment.NewLine +
+"test: /test2" + Environment.NewLine + "test: /test3", ex.Message);
             Assert.Null(context.Endpoint);
         }
 

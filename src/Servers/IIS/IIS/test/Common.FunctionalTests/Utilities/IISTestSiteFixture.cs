@@ -35,7 +35,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             deploymentParameters.ApplicationPublisher = new PublishedApplicationPublisher(Helpers.GetOutOfProcessTestSitesName());;
             deploymentParameters.ApplicationPath = Helpers.GetOutOfProcessTestSitesName();
             deploymentParameters.HostingModel = HostingModel.OutOfProcess;
-            deploymentParameters.AncmVersion = AncmVersion.AspNetCoreModule;
         }
     }
 
@@ -114,7 +113,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 RuntimeArchitecture = RuntimeArchitecture.x64,
                 RuntimeFlavor =  RuntimeFlavor.CoreClr,
                 TargetFramework = Tfm.NetCoreApp30,
-                AncmVersion = AncmVersion.AspNetCoreModuleV2,
                 HostingModel = HostingModel.InProcess,
                 PublishApplicationBeforeDeployment = true,
                 ApplicationPublisher = new PublishedApplicationPublisher(Helpers.GetInProcessTestSitesName()),

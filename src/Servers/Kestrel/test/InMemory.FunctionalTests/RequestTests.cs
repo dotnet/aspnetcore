@@ -130,7 +130,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task CanUpgradeRequestWithConnectionKeepAliveUpgradeHeader()
         {
-            var testContext = new TestServiceContext();
             var dataRead = false;
 
             using (var server = new TestServer(async context =>
@@ -154,7 +153,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await connection.ReceiveEnd(
                         "HTTP/1.1 101 Switching Protocols",
                         "Connection: Upgrade",
-                        $"Date: {testContext.DateHeaderValue}",
+                        $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "");
                 }

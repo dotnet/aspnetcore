@@ -55,7 +55,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             RemoteRenderer renderer,
             Action<IComponentsApplicationBuilder> configure,
             IJSRuntime jsRuntime,
-            CircuitSynchronizationContext synchronizationContext,
             CircuitHandler[] circuitHandlers)
         {
             _scope = scope ?? throw new ArgumentNullException(nameof(scope));
@@ -64,7 +63,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             Renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
             _configure = configure ?? throw new ArgumentNullException(nameof(configure));
             JSRuntime = jsRuntime ?? throw new ArgumentNullException(nameof(jsRuntime));
-            SynchronizationContext = synchronizationContext ?? throw new ArgumentNullException(nameof(synchronizationContext));
 
             Services = scope.ServiceProvider;
 
@@ -72,7 +70,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             _circuitHandlers = circuitHandlers;
 
             Renderer.UnhandledException += Renderer_UnhandledException;
-            SynchronizationContext.UnhandledException += SynchronizationContext_UnhandledException;
+            Renderer.UnhandledSynchronizationException += SynchronizationContext_UnhandledException;
         }
 
         public string CircuitId { get; } = Guid.NewGuid().ToString();
@@ -89,11 +87,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         public IServiceProvider Services { get; }
 
-        public CircuitSynchronizationContext SynchronizationContext { get; }
-
         public async Task InitializeAsync(CancellationToken cancellationToken)
         {
-            await SynchronizationContext.InvokeAsync(async () =>
+            await Renderer.InvokeAsync(async () =>
             {
                 SetCurrentCircuitHost(this);
 
@@ -127,10 +123,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             try
             {
-                await SynchronizationContext.Invoke(() =>
+                await Renderer.Invoke(() =>
                 {
                     SetCurrentCircuitHost(this);
-
                     DotNetDispatcher.BeginInvoke(callId, assemblyName, methodIdentifier, dotNetObjectId, argsJson);
                 });
             }
@@ -142,7 +137,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         public async ValueTask DisposeAsync()
         {
-            await SynchronizationContext.InvokeAsync(async () =>
+            await Renderer.InvokeAsync(async () =>
             {
                 for (var i = 0; i < _circuitHandlers.Length; i++)
                 {

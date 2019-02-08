@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.Components.E2ETest.Tests;
 using OpenQA.Selenium;
+using System;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -32,7 +33,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             appElement.FindElement(By.Id("run-without-dispatch")).Click();
 
             WaitAssert.Contains(
-                $"{typeof(RemoteRendererException).FullName}: The current thread is not associated with the renderer's synchronization context",
+                $"{typeof(InvalidOperationException).FullName}: The current thread is not associated with the renderer's synchronization context",
                 () => result.Text);
         }
     }

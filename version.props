@@ -3,8 +3,9 @@
     <AspNetCoreMajorVersion>3</AspNetCoreMajorVersion>
     <AspNetCoreMinorVersion>0</AspNetCoreMinorVersion>
     <AspNetCorePatchVersion>0</AspNetCorePatchVersion>
-    <PreReleaseLabel>preview</PreReleaseLabel>
-    <PreReleaseBrandingLabel>Preview</PreReleaseBrandingLabel>
+    <PreReleasePreviewNumber>3</PreReleasePreviewNumber>
+    <PreReleaseLabel>preview$(PreReleasePreviewNumber)</PreReleaseLabel>
+    <PreReleaseBrandingLabel>Preview $(PreReleasePreviewNumber)</PreReleaseBrandingLabel>
     <ExperimentalVersionPrefix>0.3.$(AspNetCorePatchVersion)</ExperimentalVersionPrefix>
     <BlazorComponentsVersionPrefix>0.8.$(AspNetCorePatchVersion)</BlazorComponentsVersionPrefix>
 

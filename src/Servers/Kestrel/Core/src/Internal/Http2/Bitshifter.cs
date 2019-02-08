@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -36,11 +36,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         // Does not overwrite the highest order bit
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void WriteUInt31BigEndian(Span<byte> destination, uint value)
+            => WriteUInt31BigEndian(destination, value, true);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void WriteUInt31BigEndian(Span<byte> destination, uint value, bool preserveHighestBit)
         {
             Debug.Assert(value <= 0x7F_FF_FF_FF, value.ToString());
-            // Keep the highest bit
-            var reserved = (destination[0] & 0x80u) << 24;
-            BinaryPrimitives.WriteUInt32BigEndian(destination, value | reserved);
+
+            if (preserveHighestBit)
+            {
+                // Keep the highest bit
+                value |= (destination[0] & 0x80u) << 24;
+            }
+
+            BinaryPrimitives.WriteUInt32BigEndian(destination, value);
         }
     }
 }

@@ -30,6 +30,7 @@
       <AllowExplicitVersion>true</AllowExplicitVersion>
     </PackageReference>
 
+    <!-- Note: do not add _TransitiveExternalDependency to this list. This is intentionally not listed as a direct package reference. -->
     <PackageReference Include="@(Dependency);@(ExternalDependency)" />
   </ItemGroup>
 
@@ -71,6 +72,7 @@
 
     <ItemGroup>
       <_AspNetAppPackageConflictOverrides Include="@(Dependency->'%(Identity)|%(Version)')" Condition=" '%(Dependency.Version)' != '' " />
+      <_AspNetAppPackageConflictOverrides Include="@(ExternalDependency->'%(Identity)|%(Version)')" Condition=" '%(ExternalDependency.Version)' != '' " />
     </ItemGroup>
 
     <PropertyGroup>

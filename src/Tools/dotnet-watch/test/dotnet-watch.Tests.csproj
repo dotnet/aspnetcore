@@ -5,6 +5,8 @@
     <AssemblyName>Microsoft.DotNet.Watcher.Tools.Tests</AssemblyName>
     <DefaultItemExcludes>$(DefaultItemExcludes);TestProjects\**\*</DefaultItemExcludes>
     <TestGroupName>DotNetWatcherToolsTests</TestGroupName>
+    <!-- https://github.com/aspnet/AspNetCore/issues/6549 -->
+    <BuildHelixPayload>false</BuildHelixPayload>
   </PropertyGroup>
 
   <ItemGroup>

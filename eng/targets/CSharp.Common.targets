@@ -5,7 +5,7 @@
     <TargetFramework>net$(TargetFrameworkVersion.Substring(1).Replace('.',''))</TargetFramework>
     <TargetFrameworkIdentifier>.NETFramework</TargetFrameworkIdentifier>
   </PropertyGroup>
-
+  
   <Import Project="Packaging.targets" />
   <Import Project="ResolveReferences.targets" />
 </Project>

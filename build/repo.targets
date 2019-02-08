@@ -111,4 +111,30 @@
              Properties="$(BuildProperties);__DummyTarget=GenerateBuildAssetManifest" />
   </Target>
 
+  <!-- will move into korebuild -->
+  <Target Name="HelixPublish" DependsOnTargets="Restore">
+    <ItemGroup>
+      <CsProjects Include="@(ProjectToBuild)" Condition="'%(Extension)' == '.csproj'" />
+    </ItemGroup>
+    <MSBuild Projects="@(CsProjects)"
+              Targets="PrepareHelixPayload"
+              BuildInParallel="false">
+      <Output TaskParameter="TargetOutputs" ItemName="HelixDirectory" />
+    </MSBuild>
+
+    <ItemGroup>
+      <HelixTestProject Include="@(HelixDirectory)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="Helix" DependsOnTargets="HelixPublish">
+    <PropertyGroup>
+      <HelixTestProjects>@(HelixTestProject)</HelixTestProjects>
+    </PropertyGroup>
+    <MSBuild Projects="$(MSBuildThisFileDirectory)..\eng\helix\helix.proj"
+             Targets="Test"
+             Properties="ProjectsToTest=$(HelixTestProjects)"
+             ContinueOnError="ErrorAndStop"
+             BuildInParallel="false" />
+  </Target>
 </Project>

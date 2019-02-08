@@ -65,28 +65,28 @@ TEST(http_sender_get_response, user_agent_set)
     ASSERT_EQ(response_body, http_sender::get(*web_request_factory, _XPLATSTR("url")).get());
 }
 
-//TEST(http_sender_get_response, headers_set)
-//{
-//    utility::string_t response_body{ _XPLATSTR("response body") };
-//
-//    auto web_request_factory = std::make_unique<test_web_request_factory>([response_body](const web::uri &) -> std::unique_ptr<web_request>
-//    {
-//        auto request = new web_request_stub((unsigned short)200, _XPLATSTR("OK"), response_body);
-//        request->on_get_response = [](web_request_stub& request)
-//        {
-//            auto http_headers = request.m_signalr_client_config.get_http_headers();
-//            ASSERT_EQ(1, http_headers.size());
-//            ASSERT_EQ(_XPLATSTR("123"), http_headers[_XPLATSTR("abc")]);
-//        };
-//
-//        return std::unique_ptr<web_request>(request);
-//    });
-//
-//    signalr::signalr_client_config signalr_client_config;
-//    auto http_headers = signalr_client_config.get_http_headers();
-//    http_headers[_XPLATSTR("abc")] = _XPLATSTR("123");
-//    signalr_client_config.set_http_headers(http_headers);
-//
-//    // ensures that web_request.get_response() was invoked
-//    ASSERT_EQ(response_body, http_sender::get(*web_request_factory, _XPLATSTR("url"), signalr_client_config).get());
-//}
+TEST(http_sender_get_response, headers_set)
+{
+    utility::string_t response_body{ _XPLATSTR("response body") };
+
+    auto web_request_factory = std::make_unique<test_web_request_factory>([response_body](const web::uri &) -> std::unique_ptr<web_request>
+    {
+        auto request = new web_request_stub((unsigned short)200, _XPLATSTR("OK"), response_body);
+        request->on_get_response = [](web_request_stub& request)
+        {
+            auto http_headers = request.m_signalr_client_config.get_http_headers();
+            ASSERT_EQ(1U, http_headers.size());
+            ASSERT_EQ(_XPLATSTR("123"), http_headers[_XPLATSTR("abc")]);
+        };
+
+        return std::unique_ptr<web_request>(request);
+    });
+
+    signalr::signalr_client_config signalr_client_config;
+    auto http_headers = signalr_client_config.get_http_headers();
+    http_headers[_XPLATSTR("abc")] = _XPLATSTR("123");
+    signalr_client_config.set_http_headers(http_headers);
+
+    // ensures that web_request.get_response() was invoked
+    ASSERT_EQ(response_body, http_sender::get(*web_request_factory, _XPLATSTR("url"), signalr_client_config).get());
+}

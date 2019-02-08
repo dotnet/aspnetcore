@@ -1527,7 +1527,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
         private class FakeRenderer : Renderer
         {
-            public FakeRenderer() : base(new TestServiceProvider())
+            public FakeRenderer() : base(new TestServiceProvider(), new RendererSynchronizationContext())
             {
             }
 

@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity.Test;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -24,7 +25,10 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
         {
             var services = new ServiceCollection();
             services.AddHttpContextAccessor();
-            services.AddDbContext<InMemoryContextWithGenerics>(options => options.UseInMemoryDatabase("Scratch"));
+            services.AddDbContext<InMemoryContextWithGenerics>(
+                options => options
+                    .UseInMemoryDatabase("Scratch")
+                    .ConfigureWarnings(b => b.Log(CoreEventId.ManyServiceProvidersCreatedWarning)));
             _context = services.BuildServiceProvider().GetRequiredService<InMemoryContextWithGenerics>();
         }
 

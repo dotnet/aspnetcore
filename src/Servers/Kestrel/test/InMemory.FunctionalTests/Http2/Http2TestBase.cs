@@ -1055,7 +1055,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             frame.PrepareWindowUpdate(streamId, sizeIncrement);
             Http2FrameWriter.WriteHeader(frame, outputWriter);
             var buffer = outputWriter.GetSpan(4);
-            Bitshifter.WriteUInt31BigEndian(buffer, (uint)sizeIncrement);
+            BinaryPrimitives.WriteUInt32BigEndian(buffer, (uint)sizeIncrement);
             outputWriter.Advance(4);
             return FlushAsync(outputWriter);
         }

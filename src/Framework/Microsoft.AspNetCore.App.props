@@ -85,8 +85,7 @@
     <!-- We still be the shared framework but running restore against packages we just built. This sets the version to match the current build number. -->
     <Dependency Update="@(Dependency)" Version="$(PackageVersion)" />
 
-    <!-- Dependencies build as packages in other repos. -->
-    <ExternalDependency Include="Microsoft.DotNet.PlatformAbstractions"                        Version="$(MicrosoftDotNetPlatformAbstractionsPackageVersion)" />
+    <!-- Dependencies built as packages in other repos that we definitely want in the shared framework. -->
     <ExternalDependency Include="Microsoft.Extensions.Caching.Abstractions"                    Version="$(MicrosoftExtensionsCachingAbstractionsPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.Caching.Memory"                          Version="$(MicrosoftExtensionsCachingMemoryPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.Configuration.Abstractions"              Version="$(MicrosoftExtensionsConfigurationAbstractionsPackageVersion)" />
@@ -102,7 +101,6 @@
     <ExternalDependency Include="Microsoft.Extensions.Configuration"                           Version="$(MicrosoftExtensionsConfigurationPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.DependencyInjection.Abstractions"        Version="$(MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.DependencyInjection"                     Version="$(MicrosoftExtensionsDependencyInjectionPackageVersion)" />
-    <ExternalDependency Include="Microsoft.Extensions.DependencyModel"                         Version="$(MicrosoftExtensionsDependencyModelPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions"   Version="$(MicrosoftExtensionsDiagnosticsHealthChecksAbstractionsPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.Diagnostics.HealthChecks"                Version="$(MicrosoftExtensionsDiagnosticsHealthChecksPackageVersion)"  />
     <ExternalDependency Include="Microsoft.Extensions.FileProviders.Abstractions"              Version="$(MicrosoftExtensionsFileProvidersAbstractionsPackageVersion)" />
@@ -129,14 +127,32 @@
     <ExternalDependency Include="Microsoft.Extensions.Primitives"                              Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" />
     <ExternalDependency Include="Microsoft.Extensions.WebEncoders"                             Version="$(MicrosoftExtensionsWebEncodersPackageVersion)" />
     <ExternalDependency Include="Microsoft.JSInterop"                                          Version="$(MicrosoftJSInteropPackageVersion)" />
-    <ExternalDependency Include="Newtonsoft.Json"                                              Version="$(NewtonsoftJsonPackageVersion)" />
-    <ExternalDependency Include="System.IO.Pipelines"                                          Version="$(SystemIOPipelinesPackageVersion)" />
-    <ExternalDependency Include="System.Runtime.CompilerServices.Unsafe"                       Version="$(SystemRuntimeCompilerServicesUnsafePackageVersion)" />
-    <ExternalDependency Include="System.Security.Cryptography.Pkcs"                            Version="$(SystemSecurityCryptographyPkcsPackageVersion)" />
-    <ExternalDependency Include="System.Security.Cryptography.Xml"                             Version="$(SystemSecurityCryptographyXmlPackageVersion)" />
-    <ExternalDependency Include="System.Security.Permissions"                                  Version="$(SystemSecurityPermissionsPackageVersion)" />
-    <ExternalDependency Include="System.Text.Encodings.Web"                                    Version="$(SystemTextEncodingsWebPackageVersion)" />
-    <ExternalDependency Include="System.Threading.Channels"                                    Version="$(SystemThreadingChannelsPackageVersion)" />
+
+    <!--
+      Transitive dependencies of other assemblies in the shared framework. These are listed separately and should not be included directly
+      when setting `<Reference>`. These are listed for the purpose of tests and servicing builds only.
+      If implementation details change and these assemblies are no longer showing up in the shared framework as a result of that,
+      it is okay to remove these transitive dependencies.
+    -->
+    <_TransitiveExternalDependency Include="Microsoft.DotNet.PlatformAbstractions"              Version="$(MicrosoftDotNetPlatformAbstractionsPackageVersion)" />
+    <_TransitiveExternalDependency Include="Microsoft.Extensions.DependencyModel"               Version="$(MicrosoftExtensionsDependencyModelPackageVersion)" />
+    <_TransitiveExternalDependency Include="Newtonsoft.Json"                                    Version="$(NewtonsoftJsonPackageVersion)" />
+    <_TransitiveExternalDependency Include="System.IO.Pipelines"                                Version="$(SystemIOPipelinesPackageVersion)" />
+    <_TransitiveExternalDependency Include="System.Runtime.CompilerServices.Unsafe"             Version="$(SystemRuntimeCompilerServicesUnsafePackageVersion)" />
+    <_TransitiveExternalDependency Include="System.Security.Cryptography.Pkcs"                  Version="$(SystemSecurityCryptographyPkcsPackageVersion)" />
+    <_TransitiveExternalDependency Include="System.Security.Cryptography.Xml"                   Version="$(SystemSecurityCryptographyXmlPackageVersion)" />
+    <_TransitiveExternalDependency Include="System.Security.Permissions"                        Version="$(SystemSecurityPermissionsPackageVersion)" />
+    <_TransitiveExternalDependency Include="System.Text.Encodings.Web"                          Version="$(SystemTextEncodingsWebPackageVersion)" />
+    <_TransitiveExternalDependency Include="System.Threading.Channels"                          Version="$(SystemThreadingChannelsPackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(IsServicingBuild)' == 'true' ">
+    <!--
+      Once we start to build a servicing release, hoist transitive dependencies to be direct dependencies.
+      This will help us ensure servicing builds carry the latest versions of dependencies, even if we aren't rebuilding
+      the original direct dependency that pulled in the transitive reference.
+    -->
+    <ExternalDependency Include="@(_TransitiveExternalDependency)" />
   </ItemGroup>
 
 </Project>

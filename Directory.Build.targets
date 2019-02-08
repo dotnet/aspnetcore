@@ -10,6 +10,9 @@
 
     <PackageOutputPath Condition=" '$(IsShippingPackage)' == 'true' ">$(ArtifactsShippingPackagesDir)</PackageOutputPath>
     <PackageOutputPath Condition=" '$(IsShippingPackage)' != 'true' ">$(ArtifactsNonShippingPackagesDir)</PackageOutputPath>
+
+    <!-- Analyzers package are special. In general, they should not have dependencies in the nuspec. Analyzer assemblies are not meant to be used for compilation or runtime. -->
+    <SuppressDependenciesWhenPacking Condition="'$(SuppressDependenciesWhenPacking)' == '' AND '$(IsAnalyzersProject)' == 'true'">true</SuppressDependenciesWhenPacking>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(MSBuildProjectExtension)' == '.csproj' ">
@@ -47,7 +50,7 @@
 
   <PropertyGroup>
     <!-- Implementation projects are the projects which produce nuget packages or shipping assemblies. -->
-    <IsImplementationProject Condition=" '$(IsImplementationProject)' == '' AND '$(IsTestAssetProject)' != 'true' AND '$(IsTestProject)' != 'true' AND '$(IsBenchmarkProject)' != 'true' AND '$(IsSampleProject)' != 'true' ">true</IsImplementationProject>
+    <IsImplementationProject Condition=" '$(IsImplementationProject)' == '' AND '$(IsAnalyzersProject)' != 'true' AND '$(IsTestAssetProject)' != 'true' AND '$(IsTestProject)' != 'true' AND '$(IsBenchmarkProject)' != 'true' AND '$(IsSampleProject)' != 'true' ">true</IsImplementationProject>
 
     <!-- This determines whether a project is available as a <Reference> to other projects in this repo. -->
     <IsProjectReferenceProvider Condition=" '$(IsProjectReferenceProvider)' == '' AND '$(IsImplementationProject)' == 'true' AND '$(PackAsTool)' != 'true' ">true</IsProjectReferenceProvider>
@@ -56,10 +59,12 @@
     <VerifyVersion>false</VerifyVersion>
 
     <EnableApiCheck Condition=" '$(EnableApiCheck)' != '' ">$(IsImplementationProject)</EnableApiCheck>
-    <IsPackable Condition="'$(IsPackable)' == '' AND '$(IsImplementationProject)' == 'true' ">true</IsPackable>
+    <IsPackable Condition="'$(IsPackable)' == '' AND ('$(IsImplementationProject)' == 'true' OR '$(IsAnalyzersProject)' == 'true') ">true</IsPackable>
     <IsPackable Condition="'$(IsPackable)' == '' ">false</IsPackable>
 
     <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == 'netcoreapp3.0' ">$(MicrosoftNETCoreAppPackageVersion)</RuntimeFrameworkVersion>
+
+    <BuildHelixPayload Condition="'$(BuildHelixPayload)' == '' AND '$(IsTestProject)' == 'true'">true</BuildHelixPayload>
   </PropertyGroup>
 
   <Import Project="eng\targets\ResolveIisReferences.targets" Condition=" '$(MSBuildProjectExtension)' != '.vcxproj' " />
@@ -68,4 +73,96 @@
   <Import Project="eng\targets\FSharp.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.fsproj'" />
   <Import Project="eng\targets\Wix.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.wixproj'" />
   <Import Project="eng\targets\Npm.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.npmproj'" />
+
+  <!-- Move to CSharp.Common.props -->
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' AND '$(IsHelixJob)' == 'true' ">
+    <PackageReference Include="xunit.runner.console" Version="2.4.1" />
+  </ItemGroup>
+
+  <!-- Prepares the test projects for helix by including xunit and publishing -->
+  <Target Name="PrepareHelixPayload" Returns="@(HelixDirectory)">
+    <ItemGroup>
+      <_TargetFrameworks Remove="@(_TargetFrameworks)" />
+      <_TargetFrameworks Include="$(TargetFrameworks);$(TargetFramework)" />
+    </ItemGroup>
+
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="_PrepareHelixPayloadInner"
+             Properties="TargetFramework=%(_TargetFrameworks.Identity);IsWindowsHelixQueue=$(HelixTargetQueue.Contains('Windows'))">
+      <Output TaskParameter="TargetOutputs" ItemName="HelixDirectory" />
+    </MSBuild>
+  </Target>
+
+  <Target Name="_PrepareHelixPayloadInner"
+    DependsOnTargets="Publish"
+    Condition="'$(BuildHelixPayload)' == 'true'"
+    Returns="@(HelixDirectory)">
+
+    <ItemGroup>
+      <HelixDirectory Include="$(MSBuildProjectFullPath)" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Build the actual helix work items to send to helix queues -->
+  <Target Name="CreateHelixPayload" Returns="@(HelixPayload)">
+    <ItemGroup>
+      <_TargetFrameworks Remove="@(_TargetFrameworks)" />
+      <_TargetFrameworks Include="$(TargetFrameworks);$(TargetFramework)" />
+    </ItemGroup>
+
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="_CreateHelixPayloadInner"
+             Properties="TargetFramework=%(_TargetFrameworks.Identity);IsWindowsHelixQueue=$(HelixTargetQueue.Contains('Windows'))">
+      <Output TaskParameter="TargetOutputs" ItemName="HelixPayload" />
+    </MSBuild>
+  </Target>
+
+  <Target Name="CollectXunitConsoleRunner" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+    <PropertyGroup>
+      <XunitConsoleRunnerDir>$([System.IO.Path]::GetDirectoryName($(XunitConsole472Path)))</XunitConsoleRunnerDir>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <XunitConsoleRunnerFiles Include="$(XunitConsoleRunnerDir)/**/*" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(XunitConsoleRunnerFiles)" DestinationFolder="$(PublishDir)" />
+  </Target>
+
+  <Target Name="_CreateHelixPayloadInner"
+    DependsOnTargets="CollectXunitConsoleRunner"
+    Condition="($(IsWindowsHelixQueue) OR '$(TargetFrameworkIdentifier)' != '.NETFramework')"
+    Returns="@(HelixPayload)">
+
+    <ConvertToAbsolutePath Paths="$(PublishDir)">
+      <Output TaskParameter="AbsolutePaths" PropertyName="PublishAbsoluteDir" />
+    </ConvertToAbsolutePath>
+
+    <!-- Windows NetCore -->
+    <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework' AND $(IsWindowsHelixQueue)" >
+        <_CopyItems Include="$(MSBuildThisFileDirectory)eng\helix\vstest\runtests.cmd" />
+    </ItemGroup>
+
+    <!-- Windows NetFramework -->
+    <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' AND $(IsWindowsHelixQueue)" >
+        <_CopyItems Include="$(MSBuildThisFileDirectory)eng\helix\xunit\runtests.cmd" />
+    </ItemGroup>
+
+    <!-- NonWindows -->
+    <ItemGroup Condition="!$(IsWindowsHelixQueue)"  >
+        <_CopyItems Include="$(MSBuildThisFileDirectory)eng\helix\vstest\runtests.sh" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(_CopyItems)" DestinationFolder="$(PublishAbsoluteDir)" />
+
+    <ItemGroup>
+      <HelixPayload Include="$(PublishAbsoluteDir)">
+        <TestAssembly>$(TargetFileName)</TestAssembly>
+        <TestName>$(MSBuildProjectName)-$(TargetFramework)</TestName>
+        <Command Condition="$(IsWindowsHelixQueue)">runtests.cmd $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppPackageVersion)</Command>
+        <Command Condition="!$(IsWindowsHelixQueue)">./runtests.sh $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppPackageVersion)</Command>
+        <TestTimeout>00:30:00</TestTimeout>
+      </HelixPayload>
+    </ItemGroup>
+  </Target>
 </Project>

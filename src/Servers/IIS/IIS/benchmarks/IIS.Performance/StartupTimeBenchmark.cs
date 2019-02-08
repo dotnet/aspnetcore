@@ -28,8 +28,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Performance
                 ServerConfigTemplateContent = File.ReadAllText("IISExpress.config"),
                 SiteName = "HttpTestSite",
                 TargetFramework = "netcoreapp2.1",
-                ApplicationType = ApplicationType.Portable,
-                AncmVersion = AncmVersion.AspNetCoreModuleV2
+                ApplicationType = ApplicationType.Portable
             };
             _deployer = ApplicationDeployerFactory.Create(deploymentParameters, NullLoggerFactory.Instance);
             _client = _deployer.DeployAsync().Result.HttpClient;

@@ -5,7 +5,9 @@ using System;
 using System.Data.SqlClient;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
@@ -21,7 +23,9 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             services.AddHttpContextAccessor();
             services.AddDbContext<TContext>(options =>
             {
-                options.UseSqlServer(connectionString);
+                options
+                    .ConfigureWarnings(b => b.Log(CoreEventId.ManyServiceProvidersCreatedWarning))
+                    .UseSqlServer(connectionString);
             });
             return services;
         }

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -35,10 +36,12 @@ namespace Identity.DefaultUI.WebSite
             });
 
             services.AddDbContext<TContext>(options =>
-                options.UseSqlServer(
-                    Configuration.GetConnectionString("DefaultConnection"),
-                    sqlOptions => sqlOptions.MigrationsAssembly("Identity.DefaultUI.WebSite")
-                ));
+                options
+                    .ConfigureWarnings(b => b.Log(CoreEventId.ManyServiceProvidersCreatedWarning))
+                    .UseSqlServer(
+                        Configuration.GetConnectionString("DefaultConnection"),
+                        sqlOptions => sqlOptions.MigrationsAssembly("Identity.DefaultUI.WebSite")
+                    ));
 
             services.AddDefaultIdentity<TUser>()
                 .AddDefaultUI(Framework)

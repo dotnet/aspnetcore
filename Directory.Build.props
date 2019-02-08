@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
   <Import Project="version.props" />
 
   <PropertyGroup>
@@ -22,6 +22,8 @@
     <NoWarn>$(NoWarn);NU5125</NoWarn>
     <!-- Suppress warnings about using SemVer 2.0. -->
     <NoWarn>$(NoWarn);NU5105</NoWarn>
+    <!-- Don't make missing XML docs a fatal build error, but still surface so we have visibility into undocumented APIs. -->
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);CS1591</WarningsNotAsErrors>
 
     <!-- Contact email address for NuGet packages and Linux installers. -->
     <MaintainerEmail>nugetaspnet@microsoft.com</MaintainerEmail>
@@ -33,6 +35,8 @@
 
     <IncludeSource>false</IncludeSource>
     <IncludeSymbols>true</IncludeSymbols>
+
+    <DefaultNetCoreTargetFramework>netcoreapp$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)</DefaultNetCoreTargetFramework>
 
     <SharedFxProductName>$(Product) $(PackageVersion) Shared Framework</SharedFxProductName>
     <SharedFxDescription>Shared Framework for hosting of Microsoft ASP.NET Core applications. It is open source, cross-platform and is supported by Microsoft. We hope you enjoy using it! If you do, please consider joining the active community of developers that are contributing to the project on GitHub ($(RepositoryUrl)). We happily accept issues and PRs.</SharedFxDescription>
@@ -134,6 +138,7 @@
     <IsTestProject Condition="$(MSBuildProjectName.EndsWith('Tests')) OR $(MSBuildProjectName.EndsWith('.Test'))">true</IsTestProject>
     <IsTestAssetProject Condition="$(RepoRelativeProjectDir.Contains('testassets'))">true</IsTestAssetProject>
     <IsSampleProject Condition="$(RepoRelativeProjectDir.Contains('sample'))">true</IsSampleProject>
+    <IsAnalyzersProject Condition="$(MSBuildProjectName.EndsWith('.Analyzers'))">true</IsAnalyzersProject>
     <DisableDeterministicSourceRoot Condition="'$(IsSampleProject)' == 'true' OR '$(IsTestAssetProject)' == 'true'">true</DisableDeterministicSourceRoot>
   </PropertyGroup>
 

@@ -1,0 +1,50 @@
+<Project DefaultTargets="Test">
+
+  <!-- Version included until we get global.json generation to support this SDK. -->
+  <Sdk Name="Microsoft.DotNet.Helix.Sdk" Version="2.0.0-beta.19073.6" />
+
+  <Target Name="Gather" BeforeTargets="Test">
+    <ItemGroup>
+      <ProjectsToTest Include="$(ProjectsToTest)" />
+    </ItemGroup>
+    <MSBuild Projects="@(ProjectsToTest)"
+              Targets="CreateHelixPayload"
+              BuildInParallel="true">
+      <Output TaskParameter="TargetOutputs" ItemName="HelixPayload" />
+    </MSBuild>
+    <ItemGroup>
+      <HelixWorkItem Include="%(HelixPayload.TestName)">
+        <Command>%(HelixPayload.Command)</Command>
+        <PayloadDirectory>%(HelixPayload.Identity)</PayloadDirectory>
+        <Timeout>%(HelixPayload.TestTimeout)</Timeout>
+      </HelixWorkItem>
+    </ItemGroup>
+  </Target>
+
+  <PropertyGroup>
+    <!-- helix SDK issue https://github.com/dotnet/arcade/issues/1605 -->
+    <SkipInvalidConfigurations>true</SkipInvalidConfigurations>
+    <HelixSource>pr/aspnet/aspnetcore</HelixSource>
+    <HelixType>ci</HelixType>
+    <HelixBuild>private-$(USERNAME)</HelixBuild>
+    <HelixBuild Condition=" '$(USERNAME)' == '' ">private-$(USER)</HelixBuild>
+    <HelixBuild Condition=" '$(CI)' == 'true' ">$(BUILD_BUILDNUMBER)</HelixBuild>
+    <WaitForWorkItemCompletion Condition=" '$(CI)' == 'true' ">true</WaitForWorkItemCompletion>
+    <FailOnMissionControlTestFailure>true</FailOnMissionControlTestFailure>
+    <EnableAzurePipelinesReporter>false</EnableAzurePipelinesReporter>
+    <IsExternal>true</IsExternal>
+    <Creator>aspnetcore</Creator>
+
+    <HelixTargetQueues>
+      Windows.10.Amd64.ClientRS4.VS2017.Open;
+      OSX.1012.Amd64.Open;
+      Ubuntu.1810.Amd64.Open;
+      Ubuntu.1604.Amd64.Open;
+      Centos.7.Amd64.Open;
+      Debian.8.Amd64.Open;
+      Debian.9.Amd64.Open;
+      Redhat.7.Amd64.Open;
+    </HelixTargetQueues>
+    <!--  TODO: re-enable Fedora.27.Amd64.Open and Fedora.28.Amd64.Open. See https://github.com/aspnet/AspNetCore/issues/7398   -->
+  </PropertyGroup>
+</Project> 
