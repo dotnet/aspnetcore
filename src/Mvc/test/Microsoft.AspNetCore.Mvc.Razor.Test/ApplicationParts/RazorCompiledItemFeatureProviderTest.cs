@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
         }
 
         [Fact]
-        public void PopulateFeature_PopulatesRazorViewAttributeFromTypeAssembly()
+        public void PopulateFeature_PopulatesRazorCompiledItemsFromTypeAssembly()
         {
             // Arrange
             var item1 = Mock.Of<RazorCompiledItem>(i => i.Identifier == "Item1" && i.Type == typeof(TestView));
