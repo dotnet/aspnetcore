@@ -195,23 +195,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                if (!object.ReferenceEquals(_cachedResponseBodyStream, ResponseBody))
-                {
-                    var responsePipeWriter = new StreamPipeWriter(ResponseBody, minimumSegmentSize: 4096, _context.MemoryPool);
-                    ResponsePipeWriter = responsePipeWriter;
-                    _cachedResponseBodyStream = ResponseBody;
-                    if (_wrapperObjectsToDispose == null)
-                    {
-                        _wrapperObjectsToDispose = new List<IDisposable>();
-                    }
-                    _wrapperObjectsToDispose.Add(responsePipeWriter);
-                }
-
                 return ResponsePipeWriter;
             }
             set
             {
                 ResponsePipeWriter = value;
+
+                if (!object.ReferenceEquals(_cachedResponsePipeWriter, ResponsePipeWriter))
+                {
+                    var responseBody = new WriteOnlyPipeStream(ResponsePipeWriter);
+                    ResponseBody = responseBody;
+
+                    RegisterWrapperForDisposal(responseBody);
+                }
             }
         }
 
@@ -219,24 +215,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                if (!object.ReferenceEquals(_cachedResponsePipeWriter, ResponsePipeWriter))
-                {
-                    var responseBody = new WriteOnlyPipeStream(ResponsePipeWriter);
-                    ResponseBody = responseBody;
-                    _cachedResponsePipeWriter = ResponsePipeWriter;
-                    if (_wrapperObjectsToDispose == null)
-                    {
-                        _wrapperObjectsToDispose = new List<IDisposable>();
-                    }
-                    _wrapperObjectsToDispose.Add(responseBody);
-                }
-
                 return ResponseBody;
             }
             set
             {
                 ResponseBody = value;
+                if (!object.ReferenceEquals(_cachedResponseBodyStream, ResponseBody))
+                {
+                    var responsePipeWriter = new StreamPipeWriter(ResponseBody, minimumSegmentSize: 4096, _context.MemoryPool);
+                    ResponsePipeWriter = responsePipeWriter;
+                    _cachedResponseBodyStream = ResponseBody;
+                    RegisterWrapperForDisposal(responsePipeWriter);
+                }
             }
+        }
+
+        private void RegisterWrapperForDisposal(IDisposable responseBody)
+        {
+            if (_wrapperObjectsToDispose == null)
+            {
+                _wrapperObjectsToDispose = new List<IDisposable>();
+            }
+            _wrapperObjectsToDispose.Add(responseBody);
         }
 
         protected void ResetHttp1Features()

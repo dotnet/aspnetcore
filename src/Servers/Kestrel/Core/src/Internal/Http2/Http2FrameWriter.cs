@@ -319,7 +319,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             while (dataLength > 0)
             {
                 OutputFlowControlAwaitable availabilityAwaitable;
-                var writeTask = new ValueTask<FlushResult>(new FlushResult());
+                var writeTask = default(ValueTask<FlushResult>);
 
                 lock (_writeLock)
                 {
