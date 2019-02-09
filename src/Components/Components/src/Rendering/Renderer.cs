@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         private readonly Dictionary<int, ComponentState> _componentStateById = new Dictionary<int, ComponentState>();
         private readonly RenderBatchBuilder _batchBuilder = new RenderBatchBuilder();
         private readonly Dictionary<int, EventHandlerInvoker> _eventBindings = new Dictionary<int, EventHandlerInvoker>();
+        private IDispatcher _dispatcher;
 
         private int _nextComponentId = 0; // TODO: change to 'long' when Mono .NET->JS interop supports it
         private bool _isBatchInProgress;
@@ -33,7 +34,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         {
             add
             {
-                if (!(Dispatcher is RendererSynchronizationContext rendererSynchronizationContext))
+                if (!(_dispatcher is RendererSynchronizationContext rendererSynchronizationContext))
                 {
                     return;
                 }
@@ -41,7 +42,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             }
             remove
             {
-                if (!(Dispatcher is RendererSynchronizationContext rendererSynchronizationContext))
+                if (!(_dispatcher is RendererSynchronizationContext rendererSynchronizationContext))
                 {
                     return;
                 }
@@ -65,13 +66,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="dispatcher">The <see cref="IDispatcher"/> to be for invoking user actions into the <see cref="Renderer"/> context.</param>
         public Renderer(IServiceProvider serviceProvider, IDispatcher dispatcher) : this(serviceProvider)
         {
-            Dispatcher = dispatcher;
+            _dispatcher = dispatcher;
         }
-
-        /// <summary>
-        /// Gets the <see cref="IDispatcher"/>.
-        /// </summary>
-        protected IDispatcher Dispatcher { get; }
 
         /// <summary>
         /// Creates an <see cref="IDispatcher"/> that can be used with one or more <see cref="Renderer"/>.
@@ -261,13 +257,13 @@ namespace Microsoft.AspNetCore.Components.Rendering
         public virtual Task Invoke(Action workItem)
         {
             // This is for example when we run on a system with a single thread, like WebAssembly.
-            if (Dispatcher == null)
+            if (_dispatcher == null)
             {
                 workItem();
                 return Task.CompletedTask;
             }
 
-            if (SynchronizationContext.Current == Dispatcher)
+            if (SynchronizationContext.Current == _dispatcher)
             {
                 // This is an optimization for when the dispatcher is also a syncronization context, like in the default case.
                 // No need to dispatch. Avoid deadlock by invoking directly.
@@ -276,7 +272,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             }
             else
             {
-                return Dispatcher.Invoke(workItem);
+                return _dispatcher.Invoke(workItem);
             }
         }
 
@@ -288,13 +284,13 @@ namespace Microsoft.AspNetCore.Components.Rendering
         public virtual Task InvokeAsync(Func<Task> workItem)
         {
             // This is for example when we run on a system with a single thread, like WebAssembly.
-            if (Dispatcher == null)
+            if (_dispatcher == null)
             {
                 workItem();
                 return Task.CompletedTask;
             }
 
-            if (SynchronizationContext.Current == Dispatcher)
+            if (SynchronizationContext.Current == _dispatcher)
             {
                 // This is an optimization for when the dispatcher is also a syncronization context, like in the default case.
                 // No need to dispatch. Avoid deadlock by invoking directly.
@@ -302,7 +298,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             }
             else
             {
-                return Dispatcher.InvokeAsync(workItem);
+                return _dispatcher.InvokeAsync(workItem);
             }
         }
 
@@ -398,7 +394,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             // Plus, any other logic that mutates state accessed during rendering also
             // needs not to run concurrently with rendering so should be dispatched to
             // the renderer's sync context.
-            if (Dispatcher is SynchronizationContext synchronizationContext && SynchronizationContext.Current != synchronizationContext)
+            if (_dispatcher is SynchronizationContext synchronizationContext && SynchronizationContext.Current != synchronizationContext)
             {
                 throw new InvalidOperationException(
                     "The current thread is not associated with the renderer's synchronization context. " +
