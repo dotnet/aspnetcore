@@ -93,7 +93,7 @@ class LongPollingTransport implements Transport {
                     } else if (response.getStatusCode() != 200) {
                         logger.error("Unexpected response code {}.", response.getStatusCode());
                         this.active = false;
-                        this.closeError = "Unexpected response code " + response.getStatusCode();
+                        this.closeError = "Unexpected response code " + response.getStatusCode() + ".";
                     } else {
                         if (response.getContent() != null) {
                             logger.debug("Message received.");

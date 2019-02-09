@@ -12,10 +12,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import io.reactivex.subjects.CompletableSubject;
 import org.junit.jupiter.api.Test;
 
 import io.reactivex.Single;
+import io.reactivex.subjects.CompletableSubject;
 
 public class LongPollingTransportTest {
 
@@ -91,7 +91,7 @@ public class LongPollingTransportTest {
         AtomicBoolean onClosedRan = new AtomicBoolean(false);
         transport.setOnClose((error) -> {
             onClosedRan.set(true);
-            assertEquals("Unexpected response code 999", error);
+            assertEquals("Unexpected response code 999.", error);
             blocker.onComplete();
 
         });
