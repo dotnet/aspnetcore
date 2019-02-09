@@ -468,8 +468,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
                         }
                     }
 
-                    // Either the Task is incomplete or is faulted.
-                    // In either case, queue up the task and we can inspect it later.
+                    // The Task is incomplete.
+                    // Queue up the task and we can inspect it later.
                     batch = batch ?? new List<Task>();
                     batch.Add(task);
                 }
