@@ -91,7 +91,8 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         public void AddConventionalRoutedEndpoints(
             List<Endpoint> endpoints,
             ActionDescriptor action,
-            IReadOnlyList<ConventionalRouteEntry> routes)
+            IReadOnlyList<ConventionalRouteEntry> routes,
+            IReadOnlyList<Action<EndpointBuilder>> conventions)
         {
             if (endpoints == null)
             {
@@ -106,6 +107,11 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             if (routes == null)
             {
                 throw new ArgumentNullException(nameof(routes));
+            }
+
+            if (conventions == null)
+            {
+                throw new ArgumentNullException(nameof(conventions));
             }
 
             if (action.AttributeRouteInfo != null)
@@ -145,7 +151,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     route.DataTokens,
                     suppressLinkGeneration: false,
                     suppressPathMatching: false,
-                    Array.Empty<Action<EndpointBuilder>>());
+                    conventions);
                 endpoints.Add(builder);
             }
         }

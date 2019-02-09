@@ -7,14 +7,13 @@ using System.Diagnostics;
 using System.Threading;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.Routing
 {
-    internal class MvcEndpointDataSource : EndpointDataSource
+    internal class MvcEndpointDataSource : EndpointDataSource, IEndpointConventionBuilder
     {
         private readonly IActionDescriptorCollectionProvider _actions;
         private readonly ActionEndpointFactory _builderFactory;
@@ -34,8 +33,8 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             _actions = actions;
             _builderFactory = builderFactory;
 
+            Conventions = new List<Action<EndpointBuilder>>();
             Routes = new List<ConventionalRouteEntry>();
-            AttributeRoutingConventionResolvers = new List<Func<ActionDescriptor, DefaultEndpointConventionBuilder>>();
 
             // IMPORTANT: this needs to be the last thing we do in the constructor. Change notifications can happen immediately!
             //
@@ -49,9 +48,9 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             }
         }
 
-        public List<ConventionalRouteEntry> Routes { get; }
+        public List<Action<EndpointBuilder>> Conventions { get; }
 
-        public List<Func<ActionDescriptor, DefaultEndpointConventionBuilder>> AttributeRoutingConventionResolvers { get; }
+        public List<ConventionalRouteEntry> Routes { get; }
 
         public override IReadOnlyList<Endpoint> Endpoints
         {
@@ -61,6 +60,19 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 Debug.Assert(_changeToken != null);
                 Debug.Assert(_endpoints != null);
                 return _endpoints;
+            }
+        }
+
+        public void Add(Action<EndpointBuilder> convention)
+        {
+            if (convention == null)
+            {
+                throw new ArgumentNullException(nameof(convention));
+            }
+
+            lock (_lock)
+            {
+                Conventions.Add(convention);
             }
         }
 
@@ -96,19 +108,11 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 {
                     if (action.AttributeRouteInfo == null)
                     {
-                        _builderFactory.AddConventionalRoutedEndpoints(endpoints, action, Routes);
+                        _builderFactory.AddConventionalRoutedEndpoints(endpoints, action, Routes, Conventions);
                     }
                     else
                     {
-                        var convention = ResolveActionConventionBuilder(action);
-                        if (convention == null)
-                        {
-                            // No convention builder for this action
-                            // Do not create an endpoint for it
-                            continue;
-                        }
-
-                        _builderFactory.AddAttributeRoutedEndpoint(endpoints, action, convention.Conventions);
+                        _builderFactory.AddAttributeRoutedEndpoint(endpoints, action, Conventions);
                     }
                 }
 
@@ -128,20 +132,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 // Step 4 - trigger old token
                 oldCancellationTokenSource?.Cancel();
             }
-        }
-
-        private DefaultEndpointConventionBuilder ResolveActionConventionBuilder(ActionDescriptor action)
-        {
-            foreach (var filter in AttributeRoutingConventionResolvers)
-            {
-                var conventionBuilder = filter(action);
-                if (conventionBuilder != null)
-                {
-                    return conventionBuilder;
-                }
-            }
-
-            return null;
         }
     }
 }

@@ -131,6 +131,72 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         [Fact]
+        public void Endpoints_AppliesConventions()
+        {
+            // Arrange
+            var actions = new List<ActionDescriptor>
+            {
+                new ActionDescriptor
+                {
+                    AttributeRouteInfo = new AttributeRouteInfo()
+                    {
+                        Template = "/test",
+                    },
+                    RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "action", "Test" },
+                        { "controller", "Test" },
+                    },
+                },
+                new ActionDescriptor
+                {
+                    RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "action", "Index" },
+                        { "controller", "Home" },
+                    },
+                }
+            };
+
+            var mockDescriptorProvider = new Mock<IActionDescriptorCollectionProvider>();
+            mockDescriptorProvider.Setup(m => m.ActionDescriptors).Returns(new ActionDescriptorCollection(actions, 0));
+
+            var dataSource = CreateMvcEndpointDataSource(mockDescriptorProvider.Object);
+            dataSource.Routes.Add(new ConventionalRouteEntry("1", "/1/{controller}/{action}/{id?}", null, null, null));
+            dataSource.Routes.Add(new ConventionalRouteEntry("2", "/2/{controller}/{action}/{id?}", null, null, null));
+
+            dataSource.Conventions.Add((b) =>
+            {
+                b.Metadata.Add("Hi there");
+            });
+
+            // Act
+            var endpoints = dataSource.Endpoints;
+
+            // Assert
+            Assert.Collection(
+                endpoints.OfType<RouteEndpoint>().OrderBy(e => e.RoutePattern.RawText),
+                e =>
+                {
+                    Assert.Equal("/1/{controller}/{action}/{id?}", e.RoutePattern.RawText);
+                    Assert.Same(actions[1], e.Metadata.GetMetadata<ActionDescriptor>());
+                    Assert.Equal("Hi there", e.Metadata.GetMetadata<string>());
+                },
+                e =>
+                {
+                    Assert.Equal("/2/{controller}/{action}/{id?}", e.RoutePattern.RawText);
+                    Assert.Same(actions[1], e.Metadata.GetMetadata<ActionDescriptor>());
+                    Assert.Equal("Hi there", e.Metadata.GetMetadata<string>());
+                },
+                e =>
+                {
+                    Assert.Equal("/test", e.RoutePattern.RawText);
+                    Assert.Same(actions[0], e.Metadata.GetMetadata<ActionDescriptor>());
+                    Assert.Equal("Hi there", e.Metadata.GetMetadata<string>());
+                });
+        }
+
+        [Fact]
         public void Endpoints_CalledMultipleTimes_ReturnsSameInstance()
         {
             // Arrange
@@ -254,12 +320,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 new ActionEndpointFactory(
                     serviceProvider.GetRequiredService<RoutePatternTransformer>(),
                     new MvcEndpointInvokerFactory(new ActionInvokerFactory(Array.Empty<IActionInvokerProvider>()))));
-
-            var defaultEndpointConventionBuilder = new DefaultEndpointConventionBuilder();
-            dataSource.AttributeRoutingConventionResolvers.Add((actionDescriptor) =>
-            {
-                return defaultEndpointConventionBuilder;
-            });
 
             return dataSource;
         }

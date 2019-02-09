@@ -12,21 +12,7 @@ namespace Microsoft.AspNetCore.Builder
 {
     public static class MvcEndpointRouteBuilderExtensions
     {
-        public static IEndpointConventionBuilder MapApplication(
-            this IEndpointRouteBuilder routeBuilder)
-        {
-            return MapActionDescriptors(routeBuilder, null);
-        }
-
-        public static IEndpointConventionBuilder MapAssembly<TContainingType>(
-            this IEndpointRouteBuilder routeBuilder)
-        {
-            return MapActionDescriptors(routeBuilder, typeof(TContainingType));
-        }
-
-        private static IEndpointConventionBuilder MapActionDescriptors(
-            this IEndpointRouteBuilder routeBuilder,
-            Type containingType)
+        public static IEndpointConventionBuilder MapApplication(this IEndpointRouteBuilder routeBuilder)
         {
             var mvcEndpointDataSource = routeBuilder.DataSources.OfType<MvcEndpointDataSource>().FirstOrDefault();
 
@@ -36,30 +22,7 @@ namespace Microsoft.AspNetCore.Builder
                 routeBuilder.DataSources.Add(mvcEndpointDataSource);
             }
 
-            var conventionBuilder = new DefaultEndpointConventionBuilder();
-
-            var assemblyFilter = containingType?.Assembly;
-
-            mvcEndpointDataSource.AttributeRoutingConventionResolvers.Add(actionDescriptor =>
-            {
-                // Filter a descriptor by the assembly
-                // Note that this will only filter actions on controllers
-                // Does not support filtering Razor pages embedded in assemblies
-                if (assemblyFilter != null)
-                {
-                    if (actionDescriptor is ControllerActionDescriptor controllerActionDescriptor)
-                    {
-                        if (controllerActionDescriptor.ControllerTypeInfo.Assembly != assemblyFilter)
-                        {
-                            return null;
-                        }
-                    }
-                }
-
-                return conventionBuilder;
-            });
-
-            return conventionBuilder;
+            return mvcEndpointDataSource;
         }
 
         public static void MapControllerRoute(

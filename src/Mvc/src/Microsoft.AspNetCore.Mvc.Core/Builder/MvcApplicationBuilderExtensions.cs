@@ -116,13 +116,6 @@ namespace Microsoft.AspNetCore.Builder
                     }
                 }
 
-                // Include all controllers with attribute routing and Razor pages
-                var defaultEndpointConventionBuilder = new DefaultEndpointConventionBuilder();
-                mvcEndpointDataSource.AttributeRoutingConventionResolvers.Add((actionDescriptor) =>
-                {
-                    return defaultEndpointConventionBuilder;
-                });
-
                 if (!app.Properties.TryGetValue(EndpointRoutingRegisteredKey, out _))
                 {
                     // Matching middleware has not been registered yet

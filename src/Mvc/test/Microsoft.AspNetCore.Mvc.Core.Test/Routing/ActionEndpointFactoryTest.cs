@@ -413,7 +413,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             Assert.NotNull(action.RouteValues);
 
             var endpoints = new List<Endpoint>();
-            Factory.AddConventionalRoutedEndpoints(endpoints, action, new[] { route, });
+            Factory.AddConventionalRoutedEndpoints(endpoints, action, new[] { route, }, Array.Empty<Action<EndpointBuilder>>());
             var endpoint = Assert.IsType<RouteEndpoint>(Assert.Single(endpoints));
 
             // This should be true for all conventional-routed actions.
@@ -430,7 +430,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         private IReadOnlyList<RouteEndpoint> CreateConventionalRoutedEndpoints(ActionDescriptor action, IReadOnlyList<ConventionalRouteEntry> routes)
         {
             var endpoints = new List<Endpoint>();
-            Factory.AddConventionalRoutedEndpoints(endpoints, action, routes);
+            Factory.AddConventionalRoutedEndpoints(endpoints, action, routes, Array.Empty<Action<EndpointBuilder>>());
             return endpoints.Cast<RouteEndpoint>().ToList();
         }
 
