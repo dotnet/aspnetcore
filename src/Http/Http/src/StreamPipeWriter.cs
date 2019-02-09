@@ -18,7 +18,7 @@ namespace System.IO.Pipelines
 
         private List<CompletedBuffer> _completedSegments;
         private Memory<byte> _currentSegment;
-        private IMemoryOwner<byte> _currentSegmentOwner;
+        private object _currentSegmentOwner;
         private MemoryPool<byte> _pool;
         private int _position;
 
@@ -53,7 +53,7 @@ namespace System.IO.Pipelines
         {
             _minimumSegmentSize = minimumSegmentSize;
             InnerStream = writingStream;
-            _pool = pool ?? MemoryPool<byte>.Shared;
+            _pool = pool == MemoryPool<byte>.Shared ? null : pool;
         }
 
         /// <summary>
@@ -162,7 +162,7 @@ namespace System.IO.Pipelines
         {
             // Write all completed segments and whatever remains in the current segment
             // and flush the result.
-            CancellationTokenRegistration reg = new CancellationTokenRegistration();
+            var reg = new CancellationTokenRegistration();
             if (cancellationToken.CanBeCanceled)
             {
                 reg = cancellationToken.Register(state => ((StreamPipeWriter)state).Cancel(), this);
@@ -260,13 +260,27 @@ namespace System.IO.Pipelines
                 // Position might be less than the segment length if there wasn't enough space to satisfy the sizeHint when
                 // GetMemory was called. In that case we'll take the current segment and call it "completed", but need to
                 // ignore any empty space in it.
-                _completedSegments.Add(new CompletedBuffer(_currentSegmentOwner, _position));
+                _completedSegments.Add(new CompletedBuffer(_currentSegmentOwner, _currentSegment, _position));
             }
 
-            // Get a new buffer using the minimum segment size, unless the size hint is larger than a single segment.
-            // Also, the size cannot be larger than the MaxBufferSize of the MemoryPool
-            _currentSegmentOwner = _pool.Rent(Math.Clamp(sizeHint, _minimumSegmentSize, _pool.MaxBufferSize));
-            _currentSegment = _currentSegmentOwner.Memory;
+            if (_pool is null)
+            {
+                _currentSegment = ArrayPool<byte>.Shared.Rent(Math.Max(sizeHint, _minimumSegmentSize));
+                _currentSegmentOwner = _currentSegment;
+            }
+            else if (sizeHint <= _pool.MaxBufferSize)
+            {
+                // Get a new buffer using the minimum segment size, unless the size hint is larger than a single segment.
+                // Also, the size cannot be larger than the MaxBufferSize of the MemoryPool
+                var owner = _pool.Rent(Math.Clamp(sizeHint, _minimumSegmentSize, _pool.MaxBufferSize));
+                _currentSegment = owner.Memory;
+                _currentSegmentOwner = owner;
+            }
+            else
+            {
+                _currentSegment = new byte[sizeHint];
+            }
+
             _position = 0;
         }
 
@@ -289,7 +303,19 @@ namespace System.IO.Pipelines
                 }
             }
 
-            _currentSegmentOwner?.Dispose();
+            DisposeOwner(_currentSegmentOwner);
+        }
+
+        private static void DisposeOwner(object owner)
+        {
+            if (owner is IMemoryOwner<byte> memoryOwner)
+            {
+                memoryOwner.Dispose();
+            }
+            else if (owner is byte[] array)
+            {
+                ArrayPool<byte>.Shared.Return(array);
+            }
         }
 
         /// <summary>
@@ -297,23 +323,24 @@ namespace System.IO.Pipelines
         /// </summary>
         private readonly struct CompletedBuffer
         {
+            private readonly object _memoryOwner;
+
             public Memory<byte> Buffer { get; }
             public int Length { get; }
 
             public ReadOnlySpan<byte> Span => Buffer.Span;
 
-            private readonly IMemoryOwner<byte> _memoryOwner;
-
-            public CompletedBuffer(IMemoryOwner<byte> buffer, int length)
+            public CompletedBuffer(object owner, Memory<byte> buffer, int length)
             {
-                Buffer = buffer.Memory;
+                _memoryOwner = owner;
+
+                Buffer = buffer;
                 Length = length;
-                _memoryOwner = buffer;
             }
 
             public void Return()
             {
-                _memoryOwner.Dispose();
+                DisposeOwner(_memoryOwner);
             }
         }
     }
