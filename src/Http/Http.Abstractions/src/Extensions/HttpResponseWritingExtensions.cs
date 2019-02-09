@@ -105,11 +105,11 @@ namespace Microsoft.AspNetCore.Http
             }
             else
             {
-                WriteMutliSegmentEncoded(pipeWriter, text, encoding, destination, encodedLength);
+                WriteMultiSegmentEncoded(pipeWriter, text, encoding, destination, encodedLength);
             }
         }
 
-        private static void WriteMutliSegmentEncoded(PipeWriter writer, string text, Encoding encoding, Span<byte> destination, int encodedLength)
+        private static void WriteMultiSegmentEncoded(PipeWriter writer, string text, Encoding encoding, Span<byte> destination, int encodedLength)
         {
             var encoder = encoding.GetEncoder();
             var source = text.AsSpan();
