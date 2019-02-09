@@ -28,6 +28,7 @@ class LongPollingTransport implements Transport {
     private Single<String> accessTokenProvider;
     private CompletableSubject receiveLoop = CompletableSubject.create();
     private ExecutorService threadPool;
+    private Boolean stopCalled = false;
 
     private final Logger logger = LoggerFactory.getLogger(LongPollingTransport.class);
 
@@ -55,10 +56,10 @@ class LongPollingTransport implements Transport {
     @Override
     public Completable start(String url) {
         this.active = true;
-        logger.info("Starting LongPolling transport");
+        logger.debug("Starting LongPolling transport.");
         this.url = url;
         pollUrl = url + "&_=" + System.currentTimeMillis();
-        logger.debug("Polling {}", pollUrl);
+        logger.debug("Polling {}.", pollUrl);
         return this.updateHeaderToken().flatMapCompletable((r) -> {
             HttpRequest request = new HttpRequest();
             request.addHeaders(headers);
@@ -71,7 +72,7 @@ class LongPollingTransport implements Transport {
                     this.active = true;
                 }
                 this.threadPool = Executors.newCachedThreadPool();
-                poll(url).subscribeWith(receiveLoop);
+                threadPool.execute(() -> poll(url).subscribeWith(receiveLoop));
 
                 return Completable.complete();
             });
@@ -81,7 +82,7 @@ class LongPollingTransport implements Transport {
     private Completable poll(String url) {
         if (this.active) {
             pollUrl = url + "&_=" + System.currentTimeMillis();
-            logger.info("Polling {}", pollUrl);
+            logger.debug("Polling {}", pollUrl);
             return this.updateHeaderToken().flatMapCompletable((x) -> {
                 HttpRequest request = new HttpRequest();
                 request.addHeaders(headers);
@@ -107,9 +108,12 @@ class LongPollingTransport implements Transport {
                 return pollingCompletable;
             });
         } else {
-            logger.info("Long Polling transport polling complete.");
+            logger.debug("Long Polling transport polling complete.");
             receiveLoop.onComplete();
-            return this.stop();
+            if (!stopCalled) {
+                return this.stop();
+            }
+            return Completable.complete();
         }
     }
 
@@ -119,7 +123,9 @@ class LongPollingTransport implements Transport {
             return Completable.error(new Exception("Cannot send unless the transport is active."));
         }
         return this.updateHeaderToken().flatMapCompletable((x) -> {
-            return Completable.fromSingle(this.client.post(url, message));
+            HttpRequest request = new HttpRequest();
+            request.addHeaders(headers);
+            return Completable.fromSingle(this.client.post(url, message, request));
         });
     }
 
@@ -143,7 +149,9 @@ class LongPollingTransport implements Transport {
     public Completable stop() {
         this.active = false;
         return this.updateHeaderToken().flatMapCompletable((x) -> {
-            this.pollingClient.delete(this.url);
+            HttpRequest request = new HttpRequest();
+            request.addHeaders(headers);
+            this.pollingClient.delete(this.url, request);
             CompletableSubject stopCompletableSubject = CompletableSubject.create();
             return this.receiveLoop.andThen(Completable.defer(() -> {
                 logger.info("LongPolling transport stopped.");

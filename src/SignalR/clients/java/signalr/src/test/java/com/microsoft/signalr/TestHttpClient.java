@@ -7,7 +7,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import io.reactivex.Completable;
 import io.reactivex.Single;
+import io.reactivex.subjects.SingleSubject;
 
 class TestHttpClient extends HttpClient {
     private TestHttpRequestHandler handler;
@@ -22,13 +24,13 @@ class TestHttpClient extends HttpClient {
 
     @Override
     public Single<HttpResponse> send(HttpRequest request) {
-        this.sentRequests.add(request);
-        return this.handler.invoke(request);
+        return send(request, null);
     }
 
     @Override
     public Single<HttpResponse> send(HttpRequest request, String body) {
-        return null;
+        this.sentRequests.add(request);
+        return this.handler.invoke(request);
     }
 
     public List<HttpRequest> getSentRequests() {

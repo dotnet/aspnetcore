@@ -95,11 +95,10 @@ abstract class HttpClient {
         return this.send(request);
     }
 
-    public Single<HttpResponse> post(String url, String body) {
-        HttpRequest request = new HttpRequest();
-        request.setUrl(url);
-        request.setMethod("POST");
-        return this.send(request, body);
+    public Single<HttpResponse> post(String url, String body, HttpRequest options) {
+        options.setUrl(url);
+        options.setMethod("POST");
+        return this.send(options, body);
     }
 
     public Single<HttpResponse> post(String url, HttpRequest options) {
