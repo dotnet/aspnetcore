@@ -2,13 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO.Pipelines;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    public interface IHttpResponseControl
+    public interface IHttpResponsePipeWriterControl
     {
         void ProduceContinue();
         Memory<byte> GetMemory(int sizeHint = 0);
@@ -17,6 +19,5 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         ValueTask<FlushResult> FlushPipeAsync(CancellationToken cancellationToken);
         ValueTask<FlushResult> WritePipeAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken);
         void CancelPendingFlush();
-        void Complete(Exception exception = null);
     }
 }

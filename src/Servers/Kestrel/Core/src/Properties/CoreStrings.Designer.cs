@@ -2239,6 +2239,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// </summary>
         internal static string FormatServerShutdownDuringConnectionInitialization()
             => GetString("ServerShutdownDuringConnectionInitialization");
+        /// <summary>
+        /// Cannot call GetMemory() until response has started. Call HttpResponse.StartAsync() before calling GetMemory().
+        /// </summary>
+        internal static string StartAsyncBeforeGetMemory
+        {
+            get => GetString("StartAsyncBeforeGetMemory");
+        }
+
+        /// <summary>
+        /// Cannot call GetMemory() until response has started. Call HttpResponse.StartAsync() before calling GetMemory().
+        /// </summary>
+        internal static string FormatStartAsyncBeforeGetMemory()
+            => GetString("StartAsyncBeforeGetMemory");
 
         private static string GetString(string name, params string[] formatterNames)
         {

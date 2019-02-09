@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task StreamsThrowAfterAbort()
         {
-            var streams = new Streams(Mock.Of<IHttpBodyControlFeature>(), Mock.Of<IHttpResponseControl>());
+            var streams = new Streams(Mock.Of<IHttpBodyControlFeature>(), new HttpResponsePipeWriter(Mock.Of<IHttpResponseControl>()));
             var (request, response) = streams.Start(new MockMessageBody());
 
             var ex = new Exception("My error");
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task StreamsThrowOnAbortAfterUpgrade()
         {
-            var streams = new Streams(Mock.Of<IHttpBodyControlFeature>(), Mock.Of<IHttpResponseControl>());
+            var streams = new Streams(Mock.Of<IHttpBodyControlFeature>(), new HttpResponsePipeWriter(Mock.Of<IHttpResponseControl>()));
             var (request, response) = streams.Start(new MockMessageBody(upgradeable: true));
 
             var upgrade = streams.Upgrade();
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task StreamsThrowOnUpgradeAfterAbort()
         {
-            var streams = new Streams(Mock.Of<IHttpBodyControlFeature>(), Mock.Of<IHttpResponseControl>());
+            var streams = new Streams(Mock.Of<IHttpBodyControlFeature>(), new HttpResponsePipeWriter(Mock.Of<IHttpResponseControl>()));
 
             var (request, response) = streams.Start(new MockMessageBody(upgradeable: true));
             var ex = new Exception("My error");

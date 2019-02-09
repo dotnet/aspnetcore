@@ -611,6 +611,12 @@ namespace System.IO.Pipelines.Tests
             Assert.True(readResult.IsCompleted);
         }
 
+        [Fact]
+        public void InnerStreamReturnsStream()
+        {
+            Assert.Equal(Stream, ((StreamPipeReader)Reader).InnerStream);
+        }
+
         private async Task<string> ReadFromPipeAsString()
         {
             var readResult = await Reader.ReadAsync();

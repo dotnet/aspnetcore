@@ -11,7 +11,6 @@ namespace System.IO.Pipelines
     /// </summary>
     public class WriteOnlyPipeStream : Stream
     {
-        private PipeWriter _pipeWriter;
         private bool _allowSynchronousIO = true;
 
         /// <summary>
@@ -30,7 +29,7 @@ namespace System.IO.Pipelines
         /// <param name="allowSynchronousIO">Whether synchronous IO is allowed.</param>
         public WriteOnlyPipeStream(PipeWriter pipeWriter, bool allowSynchronousIO)
         {
-            _pipeWriter = pipeWriter;
+            InnerPipeWriter = pipeWriter;
             _allowSynchronousIO = allowSynchronousIO;
         }
 
@@ -60,6 +59,8 @@ namespace System.IO.Pipelines
             set => throw new NotSupportedException();
         }
 
+        public PipeWriter InnerPipeWriter { get; }
+
         /// <inheritdoc />
         public override int Read(byte[] buffer, int offset, int count)
             => throw new NotSupportedException();
@@ -82,7 +83,7 @@ namespace System.IO.Pipelines
         /// <inheritdoc />
         public override async Task FlushAsync(CancellationToken cancellationToken)
         {
-            await _pipeWriter.FlushAsync(cancellationToken);
+            await InnerPipeWriter.FlushAsync(cancellationToken);
         }
 
         /// <inheritdoc />
@@ -150,13 +151,27 @@ namespace System.IO.Pipelines
         /// <inheritdoc />
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            return WriteAsync(new ReadOnlyMemory<byte>(buffer, offset, count), cancellationToken).AsTask();
+            return WriteAsyncInternal(new ReadOnlyMemory<byte>(buffer, offset, count), cancellationToken);
         }
 
         /// <inheritdoc />
-        public override async ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
+        public override ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
         {
-            await _pipeWriter.WriteAsync(source, cancellationToken);
+            return new ValueTask(WriteAsyncInternal(source, cancellationToken));
+        }
+
+        private Task WriteAsyncInternal(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
+        {
+            var task = InnerPipeWriter.WriteAsync(source, cancellationToken);
+
+            if (task.IsCompletedSuccessfully)
+            {
+                // Most ValueTask implementations reset in GetResult, so call it before returning completed task
+                task.GetAwaiter().GetResult();
+                return Task.CompletedTask;
+            }
+
+            return task.AsTask();
         }
     }
 }
