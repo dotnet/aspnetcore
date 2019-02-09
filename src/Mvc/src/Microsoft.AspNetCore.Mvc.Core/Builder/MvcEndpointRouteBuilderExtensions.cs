@@ -110,8 +110,7 @@ namespace Microsoft.AspNetCore.Builder
                 template,
                 new RouteValueDictionary(defaults),
                 new RouteValueDictionary(constraints),
-                new RouteValueDictionary(dataTokens),
-                routeBuilder.ServiceProvider.GetRequiredService<ParameterPolicyFactory>());
+                new RouteValueDictionary(dataTokens));
 
             mvcEndpointDataSource.ConventionalEndpointInfos.Add(endpointInfo);
 

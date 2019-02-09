@@ -90,8 +90,6 @@ namespace Microsoft.AspNetCore.Builder
             {
                 var mvcEndpointDataSource = app.ApplicationServices
                     .GetRequiredService<MvcEndpointDataSource>();
-                var parameterPolicyFactory = app.ApplicationServices
-                    .GetRequiredService<ParameterPolicyFactory>();
 
                 var endpointRouteBuilder = new EndpointRouteBuilder(app);
 
@@ -108,8 +106,7 @@ namespace Microsoft.AspNetCore.Builder
                             route.RouteTemplate,
                             route.Defaults,
                             route.Constraints.ToDictionary(kvp => kvp.Key, kvp => (object)kvp.Value),
-                            route.DataTokens,
-                            parameterPolicyFactory);
+                            route.DataTokens);
 
                         mvcEndpointDataSource.ConventionalEndpointInfos.Add(endpointInfo);
                     }

@@ -48,8 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.Performance
                     DefaultRoute,
                     new RouteValueDictionary(),
                     new Dictionary<string, object>(),
-                    new RouteValueDictionary(),
-                    new MockParameterPolicyFactory())
+                    new RouteValueDictionary())
             };
         }
 

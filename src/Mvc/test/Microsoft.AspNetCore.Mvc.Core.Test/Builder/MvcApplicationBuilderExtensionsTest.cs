@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Builder
 
             var endpointInfo = Assert.Single(mvcEndpointDataSource.ConventionalEndpointInfos);
             Assert.Equal("default", endpointInfo.Name);
-            Assert.Equal("{controller=Home}/{action=Index}/{id?}", endpointInfo.Pattern);
+            Assert.Equal("{controller=Home}/{action=Index}/{id?}", endpointInfo.Pattern.RawText);
         }
     }
 }

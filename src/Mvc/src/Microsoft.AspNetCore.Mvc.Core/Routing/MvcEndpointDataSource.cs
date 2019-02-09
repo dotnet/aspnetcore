@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                             // An 'endpointInfo' is applicable if:
                             // 1. It has a parameter (or default value) for 'required' non-null route value
                             // 2. It does not have a parameter (or default value) for 'required' null route value
-                            var updatedRoutePattern = _routePatternTransformer.SubstituteRequiredValues(endpointInfo.ParsedPattern, action.RouteValues);
+                            var updatedRoutePattern = _routePatternTransformer.SubstituteRequiredValues(endpointInfo.Pattern, action.RouteValues);
 
                             if (updatedRoutePattern == null)
                             {

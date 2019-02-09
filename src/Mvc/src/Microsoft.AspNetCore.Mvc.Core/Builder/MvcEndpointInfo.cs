@@ -16,23 +16,16 @@ namespace Microsoft.AspNetCore.Builder
             string pattern,
             RouteValueDictionary defaults,
             IDictionary<string, object> constraints,
-            RouteValueDictionary dataTokens,
-            ParameterPolicyFactory parameterPolicyFactory)
+            RouteValueDictionary dataTokens)
         {
             Name = name;
-            Pattern = pattern ?? string.Empty;
             DataTokens = dataTokens;
 
             try
             {
                 // Data we parse from the pattern will be used to fill in the rest of the constraints or
                 // defaults. The parser will throw for invalid routes.
-                ParsedPattern = RoutePatternFactory.Parse(pattern, defaults, constraints);
-                ParameterPolicies = BuildParameterPolicies(ParsedPattern.Parameters, parameterPolicyFactory);
-
-                Defaults = defaults;
-                // Merge defaults outside of RoutePattern because the defaults will already have values from pattern
-                MergedDefaults = new RouteValueDictionary(ParsedPattern.Defaults);
+                Pattern = RoutePatternFactory.Parse(pattern, defaults, constraints);
             }
             catch (Exception exception)
             {
@@ -42,38 +35,9 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         public string Name { get; }
-        public string Pattern { get; }
 
-        // Non-inline defaults
-        public RouteValueDictionary Defaults { get; }
-
-        // Inline and non-inline defaults merged into one
-        public RouteValueDictionary MergedDefaults { get; }
-
-        public IDictionary<string, IList<IParameterPolicy>> ParameterPolicies { get; }
         public RouteValueDictionary DataTokens { get; }
-        public RoutePattern ParsedPattern { get; private set; }
 
-        internal static Dictionary<string, IList<IParameterPolicy>> BuildParameterPolicies(IReadOnlyList<RoutePatternParameterPart> parameters, ParameterPolicyFactory parameterPolicyFactory)
-        {
-            var policies = new Dictionary<string, IList<IParameterPolicy>>(StringComparer.OrdinalIgnoreCase);
-
-            foreach (var parameter in parameters)
-            {
-                foreach (var parameterPolicy in parameter.ParameterPolicies)
-                {
-                    var createdPolicy = parameterPolicyFactory.Create(parameter, parameterPolicy);
-                    if (!policies.TryGetValue(parameter.Name, out var policyList))
-                    {
-                        policyList = new List<IParameterPolicy>();
-                        policies.Add(parameter.Name, policyList);
-                    }
-
-                    policyList.Add(createdPolicy);
-                }
-            }
-
-            return policies;
-        }
+        public RoutePattern Pattern { get; }
     }
 }
