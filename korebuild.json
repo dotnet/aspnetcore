@@ -16,7 +16,8 @@
       "requiredWorkloads": [
         "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
         "Microsoft.VisualStudio.Component.VC.ATL",
-        "Microsoft.VisualStudio.Component.Windows10SDK.17134"
+        "Microsoft.VisualStudio.Component.Windows10SDK.17134",
+        "Microsoft.VisualStudio.Workload.VisualStudioExtension"
       ]
     }
   }
