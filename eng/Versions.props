@@ -102,6 +102,9 @@
     <MicrosoftExtensionsValueStopwatchSourcesPackageVersion>3.0.0-preview.19105.4</MicrosoftExtensionsValueStopwatchSourcesPackageVersion>
     <MicrosoftExtensionsWebEncodersPackageVersion>3.0.0-preview.19105.4</MicrosoftExtensionsWebEncodersPackageVersion>
     <MicrosoftJSInteropPackageVersion>3.0.0-preview.19105.4</MicrosoftJSInteropPackageVersion>
+    <!-- When updating this, ensure you also update src/Components/Browser.JS/src/package.json to reference the corresponding version of @dotnet/jsinterop -->
+    <MonoWebAssemblyInteropPackageVersion>3.0.0-preview.19105.4</MonoWebAssemblyInteropPackageVersion>
+
     <!-- Packages from aspnet/EntityFrameworkCore -->
     <dotnetefPackageVersion>3.0.0-preview.19080.1</dotnetefPackageVersion>
     <MicrosoftEntityFrameworkCoreInMemoryPackageVersion>3.0.0-preview.19080.1</MicrosoftEntityFrameworkCoreInMemoryPackageVersion>
@@ -161,8 +164,6 @@
     <WindowsAzureStoragePackageVersion>8.1.4</WindowsAzureStoragePackageVersion>
     <!-- Dependencies for Blazor. -->
     <MicrosoftAspNetCoreBlazorMonoPackageVersion>0.8.0-preview-20190204.1</MicrosoftAspNetCoreBlazorMonoPackageVersion>
-    <!-- When updating this, ensure you also update src/Components/Browser.JS/src/package.json to reference the corresponding version of @dotnet/jsinterop -->
-    <MonoWebAssemblyInteropPackageVersion>0.8.0-preview1-20181126.4</MonoWebAssemblyInteropPackageVersion>
     <!-- Packages from 2.1/2.2 branches used for site extension build -->
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension21PackageVersion>2.1.1</MicrosoftAspNetCoreAzureAppServicesSiteExtension21PackageVersion>
     <MicrosoftAspNetCoreAzureAppServicesSiteExtension22PackageVersion>2.2.0</MicrosoftAspNetCoreAzureAppServicesSiteExtension22PackageVersion>
