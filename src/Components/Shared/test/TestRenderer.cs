@@ -37,6 +37,12 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
         public new int AssignRootComponentId(IComponent component)
             => base.AssignRootComponentId(component);
 
+        public void RenderRootComponent(int componentId, ParameterCollection? parameters = default)
+        {
+            var task = InvokeAsync(() => base.RenderRootComponentAsync(componentId, parameters ?? ParameterCollection.Empty));
+            UnwrapTask(task);
+        }
+
         public new Task RenderRootComponentAsync(int componentId)
             => InvokeAsync(() => base.RenderRootComponentAsync(componentId));
 
@@ -45,18 +51,26 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
 
         public new Task DispatchEventAsync(int componentId, int eventHandlerId, UIEventArgs args)
         {
-            var t = Invoke(() => base.DispatchEvent(componentId, eventHandlerId, args));
+            var task = InvokeAsync(() => base.DispatchEventAsync(componentId, eventHandlerId, args));
+            return UnwrapTask(task);
+        }
+
+        private static Task UnwrapTask(Task task)
+        {
             // This should always be run synchronously
-            Assert.True(t.IsCompleted);
-            if (t.IsFaulted)
+            Assert.True(task.IsCompleted);
+            if (task.IsFaulted)
             {
-                var exception = t.Exception.Flatten().InnerException;
+                var exception = task.Exception.Flatten().InnerException;
                 while (exception is AggregateException e)
                 {
                     exception = e.InnerException;
                 }
+
                 ExceptionDispatchInfo.Capture(exception).Throw();
             }
+
+            return task;
         }
 
         public T InstantiateComponent<T>() where T : IComponent

@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.ExceptionServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -412,6 +413,36 @@ namespace Microsoft.AspNetCore.Components.Test
             AssertStream(1, logForFirstChild);
             AssertStream(2, logForSecondChild);
             AssertStream(3, logForThirdChild);
+        }
+
+        [Fact]
+        public void DispatchingEventsWithoutAsyncWorkShouldCompleteSynchronously()
+        {
+            // Arrange: Render a component with an event handler
+            var renderer = new TestRenderer();
+            UIEventArgs receivedArgs = null;
+
+            var component = new EventComponent
+            {
+                OnTest = args => { receivedArgs = args; }
+            };
+            var componentId = renderer.AssignRootComponentId(component);
+            component.TriggerRender();
+
+            var eventHandlerId = renderer.Batches.Single()
+                .ReferenceFrames
+                .First(frame => frame.AttributeValue != null)
+                .AttributeEventHandlerId;
+
+            // Assert: Event not yet fired
+            Assert.Null(receivedArgs);
+
+            // Act/Assert: Event can be fired
+            var eventArgs = new UIEventArgs();
+            var task = renderer.DispatchEventAsync(componentId, eventHandlerId, eventArgs);
+
+            // This should always be run synchronously
+            Assert.True(task.IsCompleted);
         }
 
         [Fact]
@@ -1377,6 +1408,39 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
+        public void ExceptionsThrownSynchronouslyCanBeHandledSynchronously()
+        {
+            // Arrange
+            var renderer = new TestRenderer { ShouldHandleExceptions = true };
+            var component = new NestedAsyncComponent();
+            var exception = new InvalidTimeZoneException();
+
+            // Act/Assert
+            var componentId = renderer.AssignRootComponentId(component);
+            var task = renderer.RenderRootComponentAsync(componentId, ParameterCollection.FromDictionary(new Dictionary<string, object>
+            {
+                [nameof(NestedAsyncComponent.EventActions)] = new Dictionary<int, IList<NestedAsyncComponent.ExecutionAction>>
+                {
+                    [0] = new[]
+                    {
+                        new NestedAsyncComponent.ExecutionAction
+                        {
+                            Event = NestedAsyncComponent.EventType.OnInitAsyncAsync,
+                            EventAction = () => throw exception,
+                        },
+                    }
+                },
+                [nameof(NestedAsyncComponent.WhatToRender)] = new Dictionary<int, Func<NestedAsyncComponent, RenderFragment>>
+                {
+                    [0] = CreateRenderFactory(Array.Empty<int>()),
+                },
+            }));
+
+            Assert.True(task.IsCompletedSuccessfully);
+            Assert.Equal(new[] { exception }, renderer.HandledExceptions);
+        }
+
+        [Fact]
         public async Task ExceptionsThrownSynchronouslyCanBeHandled()
         {
             // Arrange
@@ -1405,12 +1469,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 },
             }));
 
-            Assert.Collection(renderer.HandledExceptions,
-                tuple =>
-                {
-                    Assert.Equal(componentId, tuple.componentId);
-                    Assert.Same(exception, tuple.exception);
-                });
+            Assert.Equal(new[] { exception }, renderer.HandledExceptions);
         }
 
         [Fact]
@@ -1446,13 +1505,7 @@ namespace Microsoft.AspNetCore.Components.Test
                 },
             }));
 
-            Assert.Collection(renderer.HandledExceptions,
-                tuple =>
-                {
-                    Assert.Equal(componentId, tuple.componentId);
-                    // EventAction may finish synchronously. Call GetBaseException to account for the absence of an AggregateExcepiton.
-                    Assert.Same(exception, tuple.exception.GetBaseException());
-                });
+            Assert.Same(exception, Assert.Single(renderer.HandledExceptions).GetBaseException());
         }
 
         [Fact]
@@ -1504,9 +1557,8 @@ namespace Microsoft.AspNetCore.Components.Test
                 },
             }));
 
-            var result = Assert.Single(renderer.HandledExceptions);
-            Assert.Equal(componentId, result.componentId);
-            var aggregateException = Assert.IsType<AggregateException>(result.exception);
+            var exception = Assert.Single(renderer.HandledExceptions);
+            var aggregateException = Assert.IsType<AggregateException>(exception);
             Assert.Equal(2, aggregateException.InnerExceptions.Count);
             Assert.Contains(exception1, aggregateException.InnerExceptions);
             Assert.Contains(exception2, aggregateException.InnerExceptions);
@@ -1562,11 +1614,77 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // OnAfterRenderAsync happens in the background. Make it more predictable, by gating it until we're ready to capture exceptions.
             await taskCompletionSource.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
-            Assert.Collection(renderer.HandledExceptions,
-                tuple =>
+            Assert.Same(exception, Assert.Single(renderer.HandledExceptions).GetBaseException());
+        }
+
+        [Fact]
+        public void SynchronousCancelledTasks_HandleAfter_Works()
+        {
+            // Arrange
+            var renderer = new TestRenderer { ShouldHandleExceptions = true };
+            var component = new NestedAsyncComponent();
+            var tcs = new TaskCompletionSource<(int, NestedAsyncComponent.EventType)>();
+            tcs.TrySetCanceled();
+
+            // Act/Assert
+            var componentId = renderer.AssignRootComponentId(component);
+            var renderTask = renderer.RenderRootComponentAsync(componentId, ParameterCollection.FromDictionary(new Dictionary<string, object>
+            {
+                [nameof(NestedAsyncComponent.EventActions)] = new Dictionary<int, IList<NestedAsyncComponent.ExecutionAction>>
                 {
-                    Assert.Same(exception, tuple.exception.GetBaseException());
-                });
+                    [0] = new[]
+                    {
+                        new NestedAsyncComponent.ExecutionAction
+                        {
+                            Event = NestedAsyncComponent.EventType.OnAfterRenderAsync,
+                            EventAction = () => tcs.Task,
+                        }
+                    },
+                },
+                [nameof(NestedAsyncComponent.WhatToRender)] = new Dictionary<int, Func<NestedAsyncComponent, RenderFragment>>
+                {
+                    [0] = CreateRenderFactory(Array.Empty<int>()),
+                },
+            }));
+
+            // Rendering should finish synchronously
+            Assert.True(renderTask.IsCompletedSuccessfully);
+            Assert.Empty(renderer.HandledExceptions);
+        }
+
+        [Fact]
+        public void AsynchronousCancelledTasks_HandleAfter_Works()
+        {
+            // Arrange
+            var renderer = new TestRenderer { ShouldHandleExceptions = true };
+            var component = new NestedAsyncComponent();
+            var tcs = new TaskCompletionSource<(int, NestedAsyncComponent.EventType)>();
+
+            // Act/Assert
+            var componentId = renderer.AssignRootComponentId(component);
+            var renderTask = renderer.RenderRootComponentAsync(componentId, ParameterCollection.FromDictionary(new Dictionary<string, object>
+            {
+                [nameof(NestedAsyncComponent.EventActions)] = new Dictionary<int, IList<NestedAsyncComponent.ExecutionAction>>
+                {
+                    [0] = new[]
+                    {
+                        new NestedAsyncComponent.ExecutionAction
+                        {
+                            Event = NestedAsyncComponent.EventType.OnAfterRenderAsync,
+                            EventAction = () => tcs.Task,
+                        }
+                    },
+                },
+                [nameof(NestedAsyncComponent.WhatToRender)] = new Dictionary<int, Func<NestedAsyncComponent, RenderFragment>>
+                {
+                    [0] = CreateRenderFactory(Array.Empty<int>()),
+                },
+            }));
+
+            // Rendering should be complete.
+            Assert.True(renderTask.IsCompletedSuccessfully);
+            tcs.TrySetCanceled();
+            Assert.Empty(renderer.HandledExceptions);
         }
 
         [Fact]
@@ -1655,7 +1773,7 @@ namespace Microsoft.AspNetCore.Components.Test
         public void DisposingRenderer_CapturesExceptionsFromAllRegisteredComponents()
         {
             // Arrange
-            var renderer = new TestRenderer();
+            var renderer = new TestRenderer { ShouldHandleExceptions = true };
             var exception1 = new Exception();
             var exception2 = new Exception();
             var component = new TestComponent(builder =>
@@ -1673,13 +1791,13 @@ namespace Microsoft.AspNetCore.Components.Test
             component.TriggerRender();
 
             // Act &A Assert
-            var aggregate = Assert.Throws<AggregateException>(renderer.Dispose);
+            renderer.Dispose();
 
             // All components must be disposed even if some throw as part of being diposed.
             Assert.True(component.Disposed);
-            Assert.Equal(2, aggregate.InnerExceptions.Count);
-            Assert.Contains(exception1, aggregate.InnerExceptions);
-            Assert.Contains(exception2, aggregate.InnerExceptions);
+            Assert.Equal(2, renderer.HandledExceptions.Count);
+            Assert.Contains(exception1, renderer.HandledExceptions);
+            Assert.Contains(exception2, renderer.HandledExceptions);
         }
 
         private class NoOpRenderer : Renderer

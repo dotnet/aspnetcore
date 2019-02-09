@@ -61,24 +61,12 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
         }
 
         /// <summary>
-        /// Attaches a new root component to the renderer,
-        /// causing it to be displayed in the specified DOM element.
-        /// </summary>
-        /// <typeparam name="TComponent">The type of the component.</typeparam>
-        /// <param name="domElementSelector">A CSS selector that uniquely identifies a DOM element.</param>
-        public void AddComponent<TComponent>(string domElementSelector)
-            where TComponent : IComponent
-        {
-            AddComponent(typeof(TComponent), domElementSelector);
-        }
-
-        /// <summary>
         /// Associates the <see cref="IComponent"/> with the <see cref="RemoteRenderer"/>,
         /// causing it to be displayed in the specified DOM element.
         /// </summary>
         /// <param name="componentType">The type of the component.</param>
         /// <param name="domElementSelector">A CSS selector that uniquely identifies a DOM element.</param>
-        public void AddComponent(Type componentType, string domElementSelector)
+        public Task AddComponentAsync(Type componentType, string domElementSelector)
         {
             var component = InstantiateComponent(componentType);
             var componentId = AssignRootComponentId(component);
@@ -90,11 +78,11 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
                 componentId);
             CaptureAsyncExceptions(attachComponentTask);
 
-            RenderRootComponent(componentId);
+            return RenderRootComponentAsync(componentId);
         }
 
         /// <inheritdoc />
-        protected override bool HandleException(Exception exception)
+        protected override void HandleException(Exception exception)
         {
             if (exception is AggregateException aggregateException)
             {
@@ -107,8 +95,6 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
             {
                 _logger.UnhandledExceptionRenderingComponent(exception);
             }
-
-            return true;
         }
 
         /// <inheritdoc />

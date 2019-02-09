@@ -443,6 +443,11 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             public void AttachComponent(IComponent component)
                 => AssignRootComponentId(component);
 
+            protected override void HandleException(Exception exception)
+            {
+                throw new NotImplementedException();
+            }
+
             protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
             {
                 LatestBatchReferenceFrames = renderBatch.ReferenceFrames.ToArray();

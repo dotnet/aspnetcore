@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public void RendersAfterParametersSetAsyncTaskIsCompleted()
+        public async Task RendersAfterParametersSetAsyncTaskIsCompleted()
         {
             // Arrange
             var renderer = new TestRenderer();
@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act
             var componentId = renderer.AssignRootComponentId(component);
-            renderer.RenderRootComponent(componentId);
+            var renderTask = renderer.RenderRootComponentAsync(componentId);
 
             // Assert
             Assert.Single(renderer.Batches);
@@ -170,10 +170,12 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Component should be rendered again
             Assert.Equal(2, renderer.Batches.Count);
+
+            await renderTask;
         }
 
         [Fact]
-        public void RendersAfterParametersSetAndInitAsyncTasksAreCompleted()
+        public async Task RendersAfterParametersSetAndInitAsyncTasksAreCompleted()
         {
             // Arrange
             var renderer = new TestRenderer();
@@ -189,7 +191,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act
             var componentId = renderer.AssignRootComponentId(component);
-            renderer.RenderRootComponent(componentId);
+            var renderTask = renderer.RenderRootComponentAsync(componentId);
 
             // Assert
             Assert.Single(renderer.Batches);
@@ -210,10 +212,12 @@ namespace Microsoft.AspNetCore.Components.Test
             // Component should be rendered again
             // after the async part of onparameterssetasync completes
             Assert.Equal(4, renderer.Batches.Count);
+
+            await renderTask;
         }
 
         [Fact]
-        public void DoesNotRenderAfterOnInitAsyncTaskIsCancelled()
+        public async Task DoesNotRenderAfterOnInitAsyncTaskIsCancelled()
         {
             // Arrange
             var renderer = new TestRenderer();
@@ -223,7 +227,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act
             var componentId = renderer.AssignRootComponentId(component);
-            renderer.RenderRootComponent(componentId);
+            var renderTask = renderer.RenderRootComponentAsync(componentId);
 
             // Assert
             Assert.Single(renderer.Batches);
@@ -235,6 +239,8 @@ namespace Microsoft.AspNetCore.Components.Test
             // Component should only be rendered again due to
             // the call to StateHasChanged after SetParametersAsync
             Assert.Equal(2, renderer.Batches.Count);
+
+            await renderTask;
         }
 
         [Fact]
@@ -262,7 +268,7 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public void DoesNotRenderAfterOnParametersSetAsyncTaskIsCanceled()
+        public async Task DoesNotRenderAfterOnParametersSetAsyncTaskIsCanceled()
         {
             // Arrange
             var renderer = new TestRenderer();
@@ -272,7 +278,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act
             var componentId = renderer.AssignRootComponentId(component);
-            renderer.RenderRootComponent(componentId);
+            var renderTask = renderer.RenderRootComponentAsync(componentId);
 
             // Assert
             Assert.Single(renderer.Batches);
@@ -283,6 +289,8 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Component should not be rendered again
             Assert.Single(renderer.Batches);
+
+            await renderTask;
         }
 
         [Fact]

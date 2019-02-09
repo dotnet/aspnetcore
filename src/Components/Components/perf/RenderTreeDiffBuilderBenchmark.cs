@@ -91,6 +91,11 @@ namespace Microsoft.AspNetCore.Components.Performance
             {
             }
 
+            protected override void HandleException(Exception exception)
+            {
+                throw new NotImplementedException();
+            }
+
             protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
                 => Task.CompletedTask;
         }

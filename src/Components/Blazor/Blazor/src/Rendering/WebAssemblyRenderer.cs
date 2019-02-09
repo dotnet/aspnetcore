@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         /// </summary>
         /// <param name="componentType">The type of the component.</param>
         /// <param name="domElementSelector">A CSS selector that uniquely identifies a DOM element.</param>
-        public void AddComponent(Type componentType, string domElementSelector)
+        public async void AddComponent(Type componentType, string domElementSelector)
         {
             var component = InstantiateComponent(componentType);
             var componentId = AssignRootComponentId(component);
@@ -65,7 +65,8 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
                 domElementSelector,
                 componentId);
 
-            RenderRootComponent(componentId);
+            // Dispatch the rendering. In the most common cases, this will finish synchronously
+            await RenderRootComponentAsync(componentId);
         }
 
         /// <inheritdoc />
@@ -94,7 +95,7 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         }
 
         /// <inheritdoc />
-        protected override bool HandleException(Exception exception)
+        protected override void HandleException(Exception exception)
         {
             Console.Error.WriteLine($"Unhandled exception rendering component:");
             if (exception is AggregateException aggregateException)
@@ -108,8 +109,6 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
             {
                 Console.Error.WriteLine(exception);
             }
-
-            return true;
         }
     }
 }

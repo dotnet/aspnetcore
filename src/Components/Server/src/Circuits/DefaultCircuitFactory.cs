@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var scope = _scopeFactory.CreateScope();
             var jsRuntime = new RemoteJSRuntime(client);
             var rendererRegistry = new RendererRegistry();
-            var synchronizationContext = new CircuitSynchronizationContext();
+            var dispatcher = Renderer.CreateDefaultDispatcher();
             var renderer = new RemoteRenderer(
                 scope.ServiceProvider,
                 rendererRegistry,
