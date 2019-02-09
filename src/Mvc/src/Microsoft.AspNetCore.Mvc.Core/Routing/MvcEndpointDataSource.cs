@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             _actions = actions;
             _builderFactory = builderFactory;
 
-            ConventionalEndpointInfos = new List<MvcEndpointInfo>();
+            Routes = new List<ConventionalRouteEntry>();
             AttributeRoutingConventionResolvers = new List<Func<ActionDescriptor, DefaultEndpointConventionBuilder>>();
 
             // IMPORTANT: this needs to be the last thing we do in the constructor. Change notifications can happen immediately!
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             }
         }
 
-        public List<MvcEndpointInfo> ConventionalEndpointInfos { get; }
+        public List<ConventionalRouteEntry> Routes { get; }
 
         public List<Func<ActionDescriptor, DefaultEndpointConventionBuilder>> AttributeRoutingConventionResolvers { get; }
 
@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 {
                     if (action.AttributeRouteInfo == null)
                     {
-                        _builderFactory.AddConventionalRoutedEndpoints(endpoints, action, ConventionalEndpointInfos);
+                        _builderFactory.AddConventionalRoutedEndpoints(endpoints, action, Routes);
                     }
                     else
                     {

@@ -101,14 +101,14 @@ namespace Microsoft.AspNetCore.Builder
                     // Sub-types could have additional customization that we can't knowingly convert
                     if (router is Route route && router.GetType() == typeof(Route))
                     {
-                        var endpointInfo = new MvcEndpointInfo(
+                        var endpointInfo = new ConventionalRouteEntry(
                             route.Name,
                             route.RouteTemplate,
                             route.Defaults,
                             route.Constraints.ToDictionary(kvp => kvp.Key, kvp => (object)kvp.Value),
                             route.DataTokens);
 
-                        mvcEndpointDataSource.ConventionalEndpointInfos.Add(endpointInfo);
+                        mvcEndpointDataSource.Routes.Add(endpointInfo);
                     }
                     else
                     {

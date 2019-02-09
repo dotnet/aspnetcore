@@ -87,8 +87,8 @@ namespace Microsoft.AspNetCore.Mvc.Core.Builder
 
             var mvcEndpointDataSource = (MvcEndpointDataSource)Assert.Single(routeOptions.Value.EndpointDataSources, ds => ds is MvcEndpointDataSource);
 
-            var endpointInfo = Assert.Single(mvcEndpointDataSource.ConventionalEndpointInfos);
-            Assert.Equal("default", endpointInfo.Name);
+            var endpointInfo = Assert.Single(mvcEndpointDataSource.Routes);
+            Assert.Equal("default", endpointInfo.RouteName);
             Assert.Equal("{controller=Home}/{action=Index}/{id?}", endpointInfo.Pattern.RawText);
         }
     }

@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             // Arrange
             var values = new { controller = "TestController", action = "TestAction", page = (string)null };
             var action = CreateActionDescriptor(values);
-            var route = CreateRoute(name: string.Empty, pattern: "{controller}/{action}");
+            var route = CreateRoute(routeName: string.Empty, pattern: "{controller}/{action}");
 
             // Act
             var endpoint = CreateConventionalRoutedEndpoint(action, route);
@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var values = new { controller = "TestController", action = "TestAction", page = (string)null };
             var action = CreateActionDescriptor(values);
             var route = CreateRoute(
-                name: "Test",
+                routeName: "Test",
                 pattern: "{controller}/{action}/{page}", 
                 defaults: new RouteValueDictionary(new { action = "TestAction" }));
 
@@ -182,7 +182,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             // Arrange
             var values = new { controller = "home", action = "index", locale = "en-NZ" };
             var action = CreateActionDescriptor(values);
-            var route = CreateRoute(name: "test", pattern: "{controller}/{action}");
+            var route = CreateRoute(routeName: "test", pattern: "{controller}/{action}");
 
             // Act
             var endpoints = CreateConventionalRoutedEndpoints(action, route);
@@ -197,7 +197,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             // Arrange
             var values = new { controller = "home", action = "index", locale = "en-NZ" };
             var action = CreateActionDescriptor(values);
-            var route = CreateRoute(name: "test", pattern: "{locale}/{controller}/{action}");
+            var route = CreateRoute(routeName: "test", pattern: "{locale}/{controller}/{action}");
 
             // Act
             var endpoints = CreateConventionalRoutedEndpoints(action, route);
@@ -212,7 +212,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             // Arrange
             var values = new { controller = "TestController", action = "TestAction", area = "admin", page = (string)null };
             var action = CreateActionDescriptor(values);
-            var route = CreateRoute(name: "test", pattern: "{controller}/{action}");
+            var route = CreateRoute(routeName: "test", pattern: "{controller}/{action}");
 
             // Act
             var endpoints = CreateConventionalRoutedEndpoints(action, route);
@@ -227,7 +227,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             // Arrange
             var values = new { controller = "TestController", action = "TestAction", area = (string)null, page = (string)null };
             var action = CreateActionDescriptor(values);
-            var route = CreateRoute(name: "test", pattern: "{area}/{controller}/{action}");
+            var route = CreateRoute(routeName: "test", pattern: "{area}/{controller}/{action}");
 
             // Act
             var endpoints = CreateConventionalRoutedEndpoints(action, route);
@@ -243,7 +243,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var values = new { controller = "TestController", action = "TestAction", page = (string)null };
             var action = CreateActionDescriptor(values);
             var route = CreateRoute(
-                name: "test", 
+                routeName: "test", 
                 pattern: "{controller}/{action}/{id?}", 
                 defaults: new RouteValueDictionary(new { controller = "TestController", action = "TestAction1" }));
 
@@ -265,7 +265,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var values = new { controller = "TestController", action = "TestAction", page = (string)null };
             var action = CreateActionDescriptor(values);
             var route = CreateRoute(
-                name: "test", 
+                routeName: "test", 
                 pattern: "/Blog/{*slug}", 
                 defaults: new RouteValueDictionary(new { controller = "TestController", action = "TestAction1" }));
 
@@ -298,7 +298,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             // Arrange
             var values = new { area = "admin", controller = "home", action = "index" };
             var action = CreateActionDescriptor(values);
-            var route = CreateRoute(name: "test", pattern: "{controller}/{action}");
+            var route = CreateRoute(routeName: "test", pattern: "{controller}/{action}");
 
             // Act
             var endpoints = CreateConventionalRoutedEndpoints(action, route);
@@ -331,7 +331,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var values = new { controller = "TestController", action = "TestAction1", page = (string)null };
             var action = CreateActionDescriptor(values);
             var route = CreateRoute(
-                name: "test", 
+                routeName: "test", 
                 pattern: "{controller}/{action}",
                 constraints: new RouteValueDictionary(new { action = "(TestAction1|TestAction2)" }));
 
@@ -349,7 +349,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var values = new { controller = "TestController", action = "TestAction", page = (string)null };
             var action = CreateActionDescriptor(values);
             var route = CreateRoute(
-                name: "test", 
+                routeName: "test", 
                 pattern: "{controller}/{action}",
                 constraints: new RouteValueDictionary(new { action = "(TestAction1|TestAction2)" }));
 
@@ -368,8 +368,8 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var action = CreateActionDescriptor(values);
             var routes = new[]
             {
-                CreateRoute(name: "test1", pattern: "{controller}/{action}/{id?}"),
-                CreateRoute(name: "test2", pattern: "named/{controller}/{action}/{id?}"),
+                CreateRoute(routeName: "test1", pattern: "{controller}/{action}/{id?}"),
+                CreateRoute(routeName: "test2", pattern: "named/{controller}/{action}/{id?}"),
             };
 
             // Act
@@ -405,10 +405,10 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
         private RouteEndpoint CreateConventionalRoutedEndpoint(ActionDescriptor action, string template)
         {
-            return CreateConventionalRoutedEndpoint(action, new MvcEndpointInfo(name: null, template, null, null, null));
+            return CreateConventionalRoutedEndpoint(action, new ConventionalRouteEntry(routeName: null, template, null, null, null));
         }
 
-        private RouteEndpoint CreateConventionalRoutedEndpoint(ActionDescriptor action, MvcEndpointInfo route)
+        private RouteEndpoint CreateConventionalRoutedEndpoint(ActionDescriptor action, ConventionalRouteEntry route)
         {
             Assert.NotNull(action.RouteValues);
 
@@ -422,26 +422,26 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             return endpoint;
         }
 
-        private IReadOnlyList<RouteEndpoint> CreateConventionalRoutedEndpoints(ActionDescriptor action, MvcEndpointInfo route)
+        private IReadOnlyList<RouteEndpoint> CreateConventionalRoutedEndpoints(ActionDescriptor action, ConventionalRouteEntry route)
         {
             return CreateConventionalRoutedEndpoints(action, new[] { route, });
         }
 
-        private IReadOnlyList<RouteEndpoint> CreateConventionalRoutedEndpoints(ActionDescriptor action, IReadOnlyList<MvcEndpointInfo> routes)
+        private IReadOnlyList<RouteEndpoint> CreateConventionalRoutedEndpoints(ActionDescriptor action, IReadOnlyList<ConventionalRouteEntry> routes)
         {
             var endpoints = new List<Endpoint>();
             Factory.AddConventionalRoutedEndpoints(endpoints, action, routes);
             return endpoints.Cast<RouteEndpoint>().ToList();
         }
 
-        private MvcEndpointInfo CreateRoute(
-            string name, 
+        private ConventionalRouteEntry CreateRoute(
+            string routeName, 
             string pattern,
             RouteValueDictionary defaults = null,
             IDictionary<string, object> constraints = null,
             RouteValueDictionary dataTokens = null)
         {
-            return new MvcEndpointInfo(name, pattern, defaults, constraints, dataTokens);
+            return new ConventionalRouteEntry(routeName, pattern, defaults, constraints, dataTokens);
         }
 
         private ActionDescriptor CreateActionDescriptor(

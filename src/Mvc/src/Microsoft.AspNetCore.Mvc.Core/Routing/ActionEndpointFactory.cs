@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         public void AddConventionalRoutedEndpoints(
             List<Endpoint> endpoints,
             ActionDescriptor action,
-            IReadOnlyList<MvcEndpointInfo> routes)
+            IReadOnlyList<ConventionalRouteEntry> routes)
         {
             if (endpoints == null)
             {
@@ -140,12 +140,12 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 var builder = CreateEndpoint(
                     action,
                     updatedRoutePattern,
-                    route.Name,
+                    route.RouteName,
                     conventionalRouteOrder++,
                     route.DataTokens,
                     suppressLinkGeneration: false,
                     suppressPathMatching: false,
-                    route.Conventions);
+                    Array.Empty<Action<EndpointBuilder>>());
                 endpoints.Add(builder);
             }
         }

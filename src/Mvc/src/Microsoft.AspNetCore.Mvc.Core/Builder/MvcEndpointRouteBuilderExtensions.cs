@@ -62,34 +62,34 @@ namespace Microsoft.AspNetCore.Builder
             return conventionBuilder;
         }
 
-        public static IEndpointConventionBuilder MapControllerRoute(
+        public static void MapControllerRoute(
             this IEndpointRouteBuilder routeBuilder,
             string name,
             string template)
         {
-            return MapControllerRoute(routeBuilder, name, template, defaults: null);
+            MapControllerRoute(routeBuilder, name, template, defaults: null);
         }
 
-        public static IEndpointConventionBuilder MapControllerRoute(
+        public static void MapControllerRoute(
             this IEndpointRouteBuilder routeBuilder,
             string name,
             string template,
             object defaults)
         {
-            return MapControllerRoute(routeBuilder, name, template, defaults, constraints: null);
+            MapControllerRoute(routeBuilder, name, template, defaults, constraints: null);
         }
 
-        public static IEndpointConventionBuilder MapControllerRoute(
+        public static void MapControllerRoute(
             this IEndpointRouteBuilder routeBuilder,
             string name,
             string template,
             object defaults,
             object constraints)
         {
-            return MapControllerRoute(routeBuilder, name, template, defaults, constraints, dataTokens: null);
+            MapControllerRoute(routeBuilder, name, template, defaults, constraints, dataTokens: null);
         }
 
-        public static IEndpointConventionBuilder MapControllerRoute(
+        public static void MapControllerRoute(
             this IEndpointRouteBuilder routeBuilder,
             string name,
             string template,
@@ -105,16 +105,14 @@ namespace Microsoft.AspNetCore.Builder
                 routeBuilder.DataSources.Add(mvcEndpointDataSource);
             }
 
-            var endpointInfo = new MvcEndpointInfo(
+            var route = new ConventionalRouteEntry(
                 name,
                 template,
                 new RouteValueDictionary(defaults),
                 new RouteValueDictionary(constraints),
                 new RouteValueDictionary(dataTokens));
 
-            mvcEndpointDataSource.ConventionalEndpointInfos.Add(endpointInfo);
-
-            return endpointInfo;
+            mvcEndpointDataSource.Routes.Add(route);
         }
     }
 }

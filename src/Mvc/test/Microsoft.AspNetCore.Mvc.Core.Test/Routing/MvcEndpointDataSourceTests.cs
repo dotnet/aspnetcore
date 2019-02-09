@@ -104,8 +104,8 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             mockDescriptorProvider.Setup(m => m.ActionDescriptors).Returns(new ActionDescriptorCollection(actions, 0));
 
             var dataSource = CreateMvcEndpointDataSource(mockDescriptorProvider.Object);
-            dataSource.ConventionalEndpointInfos.Add(new MvcEndpointInfo("1", "/1/{controller}/{action}/{id?}", null, null, null));
-            dataSource.ConventionalEndpointInfos.Add(new MvcEndpointInfo("2", "/2/{controller}/{action}/{id?}", null, null, null));
+            dataSource.Routes.Add(new ConventionalRouteEntry("1", "/1/{controller}/{action}/{id?}", null, null, null));
+            dataSource.Routes.Add(new ConventionalRouteEntry("2", "/2/{controller}/{action}/{id?}", null, null, null));
 
             // Act
             var endpoints = dataSource.Endpoints;
@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 }, version: 0));
 
             var dataSource = CreateMvcEndpointDataSource(actionDescriptorCollectionProviderMock.Object);
-            dataSource.ConventionalEndpointInfos.Add(new MvcEndpointInfo(
+            dataSource.Routes.Add(new ConventionalRouteEntry(
                 string.Empty,
                 "{controller}/{action}",
                 new RouteValueDictionary(new { action = "TestAction" }),
@@ -186,7 +186,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 });
             
             var dataSource = CreateMvcEndpointDataSource(actionDescriptorCollectionProviderMock.Object);
-            dataSource.ConventionalEndpointInfos.Add(new MvcEndpointInfo(
+            dataSource.Routes.Add(new ConventionalRouteEntry(
                 string.Empty,
                 "{controller}/{action}",
                 new RouteValueDictionary(new { action = "TestAction" }),

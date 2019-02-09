@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.Performance
 
         private MockActionDescriptorCollectionProvider _conventionalActionProvider;
         private MockActionDescriptorCollectionProvider _attributeActionProvider;
-        private List<MvcEndpointInfo> _conventionalEndpointInfos;
+        private List<ConventionalRouteEntry> _routes;
 
         [Params(1, 100, 1000)]
         public int ActionCount;
@@ -41,9 +41,9 @@ namespace Microsoft.AspNetCore.Mvc.Performance
                 Enumerable.Range(0, ActionCount).Select(i => CreateAttributeRoutedAction(i)).ToList()
                 );
 
-            _conventionalEndpointInfos = new List<MvcEndpointInfo>
+            _routes = new List<ConventionalRouteEntry>
             {
-                new MvcEndpointInfo(
+                new ConventionalRouteEntry(
                     "Default",
                     DefaultRoute,
                     new RouteValueDictionary(),
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Mvc.Performance
         public void ConventionalEndpoints()
         {
             var endpointDataSource = CreateMvcEndpointDataSource(_conventionalActionProvider);
-            endpointDataSource.ConventionalEndpointInfos.AddRange(_conventionalEndpointInfos);
+            endpointDataSource.Routes.AddRange(_routes);
             var endpoints = endpointDataSource.Endpoints;
 
             AssertHasEndpoints(endpoints);
