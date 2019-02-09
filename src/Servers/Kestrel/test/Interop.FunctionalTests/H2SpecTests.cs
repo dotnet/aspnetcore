@@ -23,7 +23,7 @@ namespace Interop.FunctionalTests
         SkipReason = "Missing Windows ALPN support: https://en.wikipedia.org/wiki/Application-Layer_Protocol_Negotiation#Support")]
     public class H2SpecTests : LoggedTest
     {
-        [ConditionalTheory]
+        [ConditionalTheory(Skip = "https://github.com/aspnet/AspNetCore/issues/6691")]
         [MemberData(nameof(H2SpecTestCases))]
         [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/7299
         public async Task RunIndividualTestCase(H2SpecTestCase testCase)
