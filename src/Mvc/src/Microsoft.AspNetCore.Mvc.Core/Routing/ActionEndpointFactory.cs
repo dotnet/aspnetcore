@@ -37,58 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             _invokerFactory = invokerFactory;
         }
 
-        public void AddAttributeRoutedEndpoint(
-            List<Endpoint> endpoints,
-            ActionDescriptor action,
-            IReadOnlyList<Action<EndpointBuilder>> conventions)
-        {
-            if (endpoints == null)
-            {
-                throw new ArgumentNullException(nameof(endpoints));
-            }
-
-            if (action == null)
-            {
-                throw new ArgumentNullException(nameof(action));
-            }
-
-            if (conventions == null)
-            {
-                throw new ArgumentNullException(nameof(conventions));
-            }
-
-            if (action.AttributeRouteInfo == null)
-            {
-                throw new InvalidOperationException(
-                    $"{nameof(AddAttributeRoutedEndpoint)} should be used for attribute routed" +
-                    $"actions only.");
-            }
-
-            var attributeRoutePattern = RoutePatternFactory.Parse(action.AttributeRouteInfo.Template);
-
-            // Modify the route and required values to ensure required values can be successfully subsituted.
-            // Subsitituting required values into an attribute route pattern should always succeed.
-            var (resolvedRoutePattern, resolvedRouteValues) = ResolveDefaultsAndRequiredValues(action, attributeRoutePattern);
-
-            var updatedRoutePattern = _routePatternTransformer.SubstituteRequiredValues(resolvedRoutePattern, resolvedRouteValues);
-            if (updatedRoutePattern == null)
-            {
-                throw new InvalidOperationException("Failed to update route pattern with required values.");
-            }
-
-            var endpoint = CreateEndpoint(
-                action,
-                updatedRoutePattern,
-                action.AttributeRouteInfo.Name,
-                action.AttributeRouteInfo.Order,
-                dataTokens: null,
-                action.AttributeRouteInfo.SuppressLinkGeneration,
-                action.AttributeRouteInfo.SuppressPathMatching,
-                conventions);
-            endpoints.Add(endpoint);
-        }
-
-        public void AddConventionalRoutedEndpoints(
+        public void AddEndpoints(
             List<Endpoint> endpoints,
             ActionDescriptor action,
             IReadOnlyList<ConventionalRouteEntry> routes,
@@ -114,45 +63,66 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 throw new ArgumentNullException(nameof(conventions));
             }
 
-            if (action.AttributeRouteInfo != null)
+            if (action.AttributeRouteInfo == null)
             {
-                throw new InvalidOperationException(
-                    $"{nameof(AddConventionalRoutedEndpoints)} should be used for conventional routed" +
-                    $"actions only.");
+                // In traditional conventional routing setup, the routes defined by a user have a static order
+                // defined by how they are added into the list. We would like to maintain the same order when building
+                // up the endpoints too.
+                //
+                // Start with an order of '1' for conventional routes as attribute routes have a default order of '0'.
+                // This is for scenarios dealing with migrating existing Router based code to Endpoint Routing world.
+                var conventionalRouteOrder = 1;
+
+                // Check each of the conventional patterns to see if the action would be reachable.
+                // If the action and pattern are compatible then create an endpoint with action
+                // route values on the pattern.
+                foreach (var route in routes)
+                {
+                    // An 'endpointInfo' is applicable if:
+                    // 1. It has a parameter (or default value) for 'required' non-null route value
+                    // 2. It does not have a parameter (or default value) for 'required' null route value
+                    var updatedRoutePattern = _routePatternTransformer.SubstituteRequiredValues(route.Pattern, action.RouteValues);
+                    if (updatedRoutePattern == null)
+                    {
+                        continue;
+                    }
+
+                    var builder = CreateEndpoint(
+                        action,
+                        updatedRoutePattern,
+                        route.RouteName,
+                        conventionalRouteOrder++,
+                        route.DataTokens,
+                        suppressLinkGeneration: false,
+                        suppressPathMatching: false,
+                        conventions);
+                    endpoints.Add(builder);
+                }
             }
-
-            // In traditional conventional routing setup, the routes defined by a user have a static order
-            // defined by how they are added into the list. We would like to maintain the same order when building
-            // up the endpoints too.
-            //
-            // Start with an order of '1' for conventional routes as attribute routes have a default order of '0'.
-            // This is for scenarios dealing with migrating existing Router based code to Endpoint Routing world.
-            var conventionalRouteOrder = 1;
-
-            // Check each of the conventional patterns to see if the action would be reachable.
-            // If the action and pattern are compatible then create an endpoint with action
-            // route values on the pattern.
-            foreach (var route in routes)
+            else
             {
-                // An 'endpointInfo' is applicable if:
-                // 1. It has a parameter (or default value) for 'required' non-null route value
-                // 2. It does not have a parameter (or default value) for 'required' null route value
-                var updatedRoutePattern = _routePatternTransformer.SubstituteRequiredValues(route.Pattern, action.RouteValues);
+                var attributeRoutePattern = RoutePatternFactory.Parse(action.AttributeRouteInfo.Template);
+
+                // Modify the route and required values to ensure required values can be successfully subsituted.
+                // Subsitituting required values into an attribute route pattern should always succeed.
+                var (resolvedRoutePattern, resolvedRouteValues) = ResolveDefaultsAndRequiredValues(action, attributeRoutePattern);
+
+                var updatedRoutePattern = _routePatternTransformer.SubstituteRequiredValues(resolvedRoutePattern, resolvedRouteValues);
                 if (updatedRoutePattern == null)
                 {
-                    continue;
+                    throw new InvalidOperationException("Failed to update route pattern with required values.");
                 }
 
-                var builder = CreateEndpoint(
+                var endpoint = CreateEndpoint(
                     action,
                     updatedRoutePattern,
-                    route.RouteName,
-                    conventionalRouteOrder++,
-                    route.DataTokens,
-                    suppressLinkGeneration: false,
-                    suppressPathMatching: false,
+                    action.AttributeRouteInfo.Name,
+                    action.AttributeRouteInfo.Order,
+                    dataTokens: null,
+                    action.AttributeRouteInfo.SuppressLinkGeneration,
+                    action.AttributeRouteInfo.SuppressPathMatching,
                     conventions);
-                endpoints.Add(builder);
+                endpoints.Add(endpoint);
             }
         }
 

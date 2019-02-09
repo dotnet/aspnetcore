@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
     internal class MvcEndpointDataSource : EndpointDataSource, IEndpointConventionBuilder
     {
         private readonly IActionDescriptorCollectionProvider _actions;
-        private readonly ActionEndpointFactory _builderFactory;
+        private readonly ActionEndpointFactory _endpointFactory;
 
         // The following are protected by this lock for WRITES only. This pattern is similar
         // to DefaultActionDescriptorChangeProvider - see comments there for details on
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             ActionEndpointFactory builderFactory)
         {
             _actions = actions;
-            _builderFactory = builderFactory;
+            _endpointFactory = builderFactory;
 
             Conventions = new List<Action<EndpointBuilder>>();
             Routes = new List<ConventionalRouteEntry>();
@@ -106,14 +106,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
                 foreach (var action in _actions.ActionDescriptors.Items)
                 {
-                    if (action.AttributeRouteInfo == null)
-                    {
-                        _builderFactory.AddConventionalRoutedEndpoints(endpoints, action, Routes, Conventions);
-                    }
-                    else
-                    {
-                        _builderFactory.AddAttributeRoutedEndpoint(endpoints, action, Conventions);
-                    }
+                    _endpointFactory.AddEndpoints(endpoints, action, Routes, Conventions);
                 }
 
                 // See comments in DefaultActionDescriptorCollectionProvider. These steps are done

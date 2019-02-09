@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         internal IServiceProvider Services { get; }
 
         [Fact]
-        public async Task AddAttributeRoutedEndpoint_UsesActionInvoker()
+        public async Task AddEndpoints_AttributeRouted_UsesActionInvoker()
         {
             // Arrange
             var values = new
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         [Fact]
-        public async Task AddConventionalRoutedEndpoints_UsesActionInvoker()
+        public async Task AddEndpoints_ConventionalRouted_UsesActionInvoker()
         {
             // Arrange
             var values = new
@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         [Fact]
-        public void AddConventionalRoutedEndpoints_WithEmptyRouteName_CreatesMetadataWithEmptyRouteName()
+        public void AddEndpoints_ConventionalRouted_WithEmptyRouteName_CreatesMetadataWithEmptyRouteName()
         {
             // Arrange
             var values = new { controller = "TestController", action = "TestAction", page = (string)null };
@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         [Fact]
-        public void AddConventionalRoutedEndpoints_ContainsParameterWithNullRequiredRouteValue_NoEndpointCreated()
+        public void AddEndpoints_ConventionalRouted_ContainsParameterWithNullRequiredRouteValue_NoEndpointCreated()
         {
             // Arrange
             var values = new { controller = "TestController", action = "TestAction", page = (string)null };
@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         // route values. This has been used successfully for localization, versioning and similar schemes. We should
         // be able to replace custom route values too.
         [Fact]
-        public void AddConventionalRoutedEndpoints_NonReservedRequiredValue_WithNoCorresponding_TemplateParameter_DoesNotProduceEndpoint()
+        public void AddEndpoints_ConventionalRouted_NonReservedRequiredValue_WithNoCorresponding_TemplateParameter_DoesNotProduceEndpoint()
         {
             // Arrange
             var values = new { controller = "home", action = "index", locale = "en-NZ" };
@@ -192,7 +192,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         [Fact]
-        public void AddConventionalRoutedEndpoints_NonReservedRequiredValue_WithCorresponding_TemplateParameter_ProducesEndpoint()
+        public void AddEndpoints_ConventionalRouted_NonReservedRequiredValue_WithCorresponding_TemplateParameter_ProducesEndpoint()
         {
             // Arrange
             var values = new { controller = "home", action = "index", locale = "en-NZ" };
@@ -207,7 +207,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         [Fact]
-        public void AddConventionalRoutedEndpoints_NonAreaRouteForAreaAction_DoesNotProduceEndpoint()
+        public void AddEndpoints_ConventionalRouted_NonAreaRouteForAreaAction_DoesNotProduceEndpoint()
         {
             // Arrange
             var values = new { controller = "TestController", action = "TestAction", area = "admin", page = (string)null };
@@ -222,7 +222,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         [Fact]
-        public void AddConventionalRoutedEndpoints_AreaRouteForNonAreaAction_DoesNotProduceEndpoint()
+        public void AddEndpoints_ConventionalRouted_AreaRouteForNonAreaAction_DoesNotProduceEndpoint()
         {
             // Arrange
             var values = new { controller = "TestController", action = "TestAction", area = (string)null, page = (string)null };
@@ -237,7 +237,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         [Fact]
-        public void AddConventionalRoutedEndpoints_RequiredValues_DoesNotMatchParameterDefaults_CreatesEndpoint()
+        public void AddEndpoints_ConventionalRouted_RequiredValues_DoesNotMatchParameterDefaults_CreatesEndpoint()
         {
             // Arrange
             var values = new { controller = "TestController", action = "TestAction", page = (string)null };
@@ -259,7 +259,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         [Fact]
-        public void AddConventionalRoutedEndpoints_RequiredValues_DoesNotMatchNonParameterDefaults_DoesNotProduceEndpoint()
+        public void AddEndpoints_ConventionalRouted_RequiredValues_DoesNotMatchNonParameterDefaults_DoesNotProduceEndpoint()
         {
             // Arrange
             var values = new { controller = "TestController", action = "TestAction", page = (string)null };
@@ -277,7 +277,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         [Fact]
-        public void AddConventionalRoutedEndpoints_AttributeRoutes_DefaultDifferentCaseFromRouteValue_UseDefaultCase()
+        public void AddEndpoints_ConventionalRouted_AttributeRoutes_DefaultDifferentCaseFromRouteValue_UseDefaultCase()
         {
             // Arrange
             var values = new { controller = "TestController", action = "TestAction", page = (string)null };
@@ -293,7 +293,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         [Fact]
-        public void AddConventionalRoutedEndpoints_RequiredValueWithNoCorrespondingParameter_DoesNotProduceEndpoint()
+        public void AddEndpoints_ConventionalRouted_RequiredValueWithNoCorrespondingParameter_DoesNotProduceEndpoint()
         {
             // Arrange
             var values = new { area = "admin", controller = "home", action = "index" };
@@ -308,7 +308,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         [Fact]
-        public void AddAttributeRoutedEndpoint_ContainsParameterWithNullRequiredRouteValue_EndpointCreated()
+        public void AddEndpoints_AttributeRouted_ContainsParameterWithNullRequiredRouteValue_EndpointCreated()
         {
             // Arrange
             var values = new { controller = "TestController", action = "TestAction", page = (string)null };
@@ -325,7 +325,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         [Fact]
-        public void AddConventionalRoutedEndpoints_WithMatchingConstraint_CreatesEndpoint()
+        public void AddEndpoints_ConventionalRouted_WithMatchingConstraint_CreatesEndpoint()
         {
             // Arrange
             var values = new { controller = "TestController", action = "TestAction1", page = (string)null };
@@ -343,7 +343,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         [Fact]
-        public void AddConventionalRoutedEndpoints_WithNotMatchingConstraint_DoesNotCreateEndpoint()
+        public void AddEndpoints_ConventionalRouted_WithNotMatchingConstraint_DoesNotCreateEndpoint()
         {
             // Arrange
             var values = new { controller = "TestController", action = "TestAction", page = (string)null };
@@ -361,7 +361,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         [Fact]
-        public void AddConventionalRoutedEndpoints_StaticallyDefinedOrder_IsMaintained()
+        public void AddEndpoints_ConventionalRouted_StaticallyDefinedOrder_IsMaintained()
         {
             // Arrange
             var values = new { controller = "Home", action = "Index", page = (string)null };
@@ -399,7 +399,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         private RouteEndpoint CreateAttributeRoutedEndpoint(ActionDescriptor action)
         {
             var endpoints = new List<Endpoint>();
-            Factory.AddAttributeRoutedEndpoint(endpoints, action, Array.Empty<Action<EndpointBuilder>>());
+            Factory.AddEndpoints(endpoints, action, Array.Empty<ConventionalRouteEntry>(), Array.Empty<Action<EndpointBuilder>>());
             return Assert.IsType<RouteEndpoint>(Assert.Single(endpoints));
         }
 
@@ -413,7 +413,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             Assert.NotNull(action.RouteValues);
 
             var endpoints = new List<Endpoint>();
-            Factory.AddConventionalRoutedEndpoints(endpoints, action, new[] { route, }, Array.Empty<Action<EndpointBuilder>>());
+            Factory.AddEndpoints(endpoints, action, new[] { route, }, Array.Empty<Action<EndpointBuilder>>());
             var endpoint = Assert.IsType<RouteEndpoint>(Assert.Single(endpoints));
 
             // This should be true for all conventional-routed actions.
@@ -430,7 +430,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         private IReadOnlyList<RouteEndpoint> CreateConventionalRoutedEndpoints(ActionDescriptor action, IReadOnlyList<ConventionalRouteEntry> routes)
         {
             var endpoints = new List<Endpoint>();
-            Factory.AddConventionalRoutedEndpoints(endpoints, action, routes, Array.Empty<Action<EndpointBuilder>>());
+            Factory.AddEndpoints(endpoints, action, routes, Array.Empty<Action<EndpointBuilder>>());
             return endpoints.Cast<RouteEndpoint>().ToList();
         }
 
