@@ -750,7 +750,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private Task FireOnCompletedMayAwait(Stack<KeyValuePair<Func<object, Task>, object>> onCompleted)
         {
-
             while (onCompleted.TryPop(out var entry))
             {
                 try
@@ -792,14 +791,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     Log.ApplicationError(ConnectionId, TraceIdentifier, ex);
                 }
             }
-
-        }
-
-        [MethodImpl(MethodImplOptions.NoInlining)]
-        private async Task InitializeAndFlushAsyncAwaited(Task initializeTask, CancellationToken cancellationToken)
-        {
-            await initializeTask;
-            await FlushAsyncInternal(cancellationToken);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -807,12 +798,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             _requestProcessingStatus = RequestProcessingStatus.HeadersFlushed;
             return Output.FlushAsync(cancellationToken);
-        }
-
-        private Task WriteDataAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
-        {
-            _requestProcessingStatus = RequestProcessingStatus.HeadersFlushed;
-            return Output.WriteDataAsync(data.Span, cancellationToken: cancellationToken);
         }
 
         private void VerifyAndUpdateWrite(int count)
@@ -1376,6 +1361,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 else
                 {
                     CheckLastWrite();
+                    _requestProcessingStatus = RequestProcessingStatus.HeadersFlushed;
                     return Output.WriteDataToPipeAsync(data.Span, cancellationToken: cancellationToken);
                 }
             }
