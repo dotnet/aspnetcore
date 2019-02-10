@@ -796,7 +796,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         [MethodImpl(MethodImplOptions.NoInlining)]
         private ValueTask<FlushResult> FlushAsyncInternal(CancellationToken cancellationToken)
         {
-            _requestProcessingStatus = RequestProcessingStatus.HeadersFlushed;
             return Output.FlushAsync(cancellationToken);
         }
 
@@ -996,6 +995,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             if (!HasFlushedHeaders)
             {
+                _requestProcessingStatus = RequestProcessingStatus.HeadersFlushed;
                 return FlushAsyncInternal(default).AsTask();
             }
 
@@ -1335,6 +1335,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (firstWrite)
             {
                 var initializeTask = InitializeResponseAsync(data.Length);
+                // Just about to Flush the headers
+                _requestProcessingStatus = RequestProcessingStatus.HeadersFlushed;
                 // If return is Task.CompletedTask no awaiting is required
                 if (!ReferenceEquals(initializeTask, Task.CompletedTask))
                 {
@@ -1355,13 +1357,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         return !firstWrite ? default : FlushAsyncInternal(cancellationToken);
                     }
 
-                    _requestProcessingStatus = RequestProcessingStatus.HeadersFlushed;
                     return Output.WriteChunkAsync(data.Span, cancellationToken);
                 }
                 else
                 {
                     CheckLastWrite();
-                    _requestProcessingStatus = RequestProcessingStatus.HeadersFlushed;
                     return Output.WriteDataToPipeAsync(data.Span, cancellationToken: cancellationToken);
                 }
             }
@@ -1372,7 +1372,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        public Task FlushAsync(CancellationToken cancellationToken = default(CancellationToken))
+        public Task FlushAsync(CancellationToken cancellationToken = default)
         {
             return FlushPipeAsync(cancellationToken).AsTask();
         }
@@ -1404,7 +1404,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         return await FlushAsyncInternal(cancellationToken);
                     }
 
-                    _requestProcessingStatus = RequestProcessingStatus.HeadersFlushed;
                     return await Output.WriteChunkAsync(data.Span, cancellationToken);
                 }
                 else
