@@ -160,7 +160,7 @@ namespace Company.WebApplication1
 
             app.UseRouting(routes =>
             {
-                routes.MapApplication();
+                routes.MapRazorPages();
             });
 
             app.UseCookiePolicy();
