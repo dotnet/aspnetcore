@@ -330,7 +330,7 @@ namespace Microsoft.AspNetCore.Components
         /// <summary>
         /// A unique identifier for the pointer causing the event.
         /// </summary>
-        public string PointerId { get; set; }
+        public long PointerId { get; set; }
 
         /// <summary>
         /// The width (magnitude on the X axis), in CSS pixels, of the contact geometry of the pointer.
