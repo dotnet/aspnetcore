@@ -21,9 +21,9 @@ namespace FilesWebSite
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseMvc(routes =>
+            app.UseRouting(routes =>
             {
-                routes.MapRoute(name: null, template: "{controller}/{action}", defaults: null);
+                routes.MapDefaultControllerRoute();
             });
         }
 

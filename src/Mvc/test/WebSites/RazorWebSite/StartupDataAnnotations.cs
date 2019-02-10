@@ -45,9 +45,11 @@ namespace RazorWebSite
                 }
             });
             app.UseStaticFiles();
-
-            // Add MVC to the request pipeline
-            app.UseMvcWithDefaultRoute();
+            
+            app.UseRouting(routes =>
+            {
+                routes.MapDefaultControllerRoute();
+            });
         }
     }
 }

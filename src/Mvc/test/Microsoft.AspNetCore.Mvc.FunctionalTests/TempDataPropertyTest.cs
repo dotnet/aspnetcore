@@ -12,11 +12,11 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class TempDataPropertyTest : IClassFixture<MvcTestFixture<BasicWebSite.Startup>>
+    public class TempDataPropertyTest : IClassFixture<MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting>>
     {
         protected HttpClient Client { get; }
 
-        public TempDataPropertyTest(MvcTestFixture<BasicWebSite.Startup> fixture)
+        public TempDataPropertyTest(MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting> fixture)
         {
             Client = fixture.CreateDefaultClient();
         }

@@ -21,7 +21,10 @@ namespace ErrorPageMiddlewareWebSite
         public void Configure(IApplicationBuilder app)
         {
             app.UseDeveloperExceptionPage();
-            app.UseMvc();
+            app.UseRouting(routes =>
+            {
+                routes.MapControllers();
+            });
         }
 
         public static void Main(string[] args)

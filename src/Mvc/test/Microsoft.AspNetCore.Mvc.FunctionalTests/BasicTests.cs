@@ -15,7 +15,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class BasicTests : IClassFixture<MvcTestFixture<BasicWebSite.Startup>>
+    public class BasicTests : IClassFixture<MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting>>
     {
         // Some tests require comparing the actual response body against an expected response baseline
         // so they require a reference to the assembly on which the resources are located, in order to
@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         // use it on all the rest of the tests.
         private static readonly Assembly _resourcesAssembly = typeof(BasicTests).GetTypeInfo().Assembly;
 
-        public BasicTests(MvcTestFixture<BasicWebSite.Startup> fixture)
+        public BasicTests(MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting> fixture)
         {
             Client = fixture.CreateDefaultClient();
         }

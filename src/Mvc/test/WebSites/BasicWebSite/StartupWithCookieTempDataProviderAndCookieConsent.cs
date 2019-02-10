@@ -29,7 +29,11 @@ namespace BasicWebSite
 
             app.UseCookiePolicy();
 
-            app.UseMvcWithDefaultRoute();
+            app.UseRouting(routes =>
+            {
+                routes.MapDefaultControllerRoute();
+                routes.MapRazorPages();
+            });
         }
     }
 }

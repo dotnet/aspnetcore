@@ -16,9 +16,9 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class ContentNegotiationTest : IClassFixture<MvcTestFixture<BasicWebSite.Startup>>
+    public class ContentNegotiationTest : IClassFixture<MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting>>
     {
-        public ContentNegotiationTest(MvcTestFixture<BasicWebSite.Startup> fixture)
+        public ContentNegotiationTest(MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting> fixture)
         {
             Client = fixture.CreateDefaultClient();
         }

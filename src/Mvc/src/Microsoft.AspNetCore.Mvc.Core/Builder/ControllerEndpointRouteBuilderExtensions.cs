@@ -6,6 +6,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Builder
@@ -16,7 +17,7 @@ namespace Microsoft.AspNetCore.Builder
     public static class ControllerEndpointRouteBuilderExtensions
     {
         /// <summary>
-        /// Adds controller actions to the route builder.
+        /// Adds endpoints for controller actions to the <see cref="IEndpointRouteBuilder"/> without specifying any routes.
         /// </summary>
         /// <param name="routes">The <see cref="IEndpointRouteBuilder"/>.</param>
         /// <returns>An <see cref="IEndpointConventionBuilder"/> for endpoints associated with controller actions.</returns>
@@ -33,12 +34,12 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         /// <summary>
-        /// Adds controller actions to the route builder and adds the default conventional route
+        /// Adds endpoints for controller actions to the <see cref="IEndpointRouteBuilder"/> and adds the default route
         /// <c>{controller=Home}/{action=Index}/{id?}</c>.
         /// </summary>
         /// <param name="routes">The <see cref="IEndpointRouteBuilder"/>.</param>
         /// <returns>An <see cref="IEndpointConventionBuilder"/> for endpoints associated with controller actions.</returns>
-        public static IEndpointConventionBuilder MapControllersWithDefaultRoute(this IEndpointRouteBuilder routes)
+        public static IEndpointConventionBuilder MapDefaultControllerRoute(this IEndpointRouteBuilder routes)
         {
             if (routes == null)
             {
@@ -59,14 +60,25 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         /// <summary>
-        /// Adds a conventional route that can be used to route to conventionally-route controller actions.
+        /// Adds endpoints for controller actions to the <see cref="IEndpointRouteBuilder"/> and specifies a route
+        /// with the given <paramref name="name"/>, <paramref name="template"/>, 
+        /// <paramref name="defaults"/>, <paramref name="constraints"/>, and <paramref name="dataTokens"/>.
         /// </summary>
-        /// <param name="routes">The <see cref="IEndpointRouteBuilder"/>.</param>
-        /// <param name="name">The route name.</param>
-        /// <param name="template">The route template.</param>
-        /// <param name="defaults">The route default values.</param>
-        /// <param name="constraints">The route constraints.</param>
-        /// <param name="dataTokens">The route data tokens.</param>
+        /// <param name="routes">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="name">The name of the route.</param>
+        /// <param name="template">The URL pattern of the route.</param>
+        /// <param name="defaults">
+        /// An object that contains default values for route parameters. The object's properties represent the
+        /// names and values of the default values.
+        /// </param>
+        /// <param name="constraints">
+        /// An object that contains constraints for the route. The object's properties represent the names and
+        /// values of the constraints.
+        /// </param>
+        /// <param name="dataTokens">
+        /// An object that contains data tokens for the route. The object's properties represent the names and
+        /// values of the data tokens.
+        /// </param>
         public static void MapControllerRoute(
             this IEndpointRouteBuilder routes,
             string name,
@@ -75,6 +87,11 @@ namespace Microsoft.AspNetCore.Builder
             object constraints = null,
             object dataTokens = null)
         {
+            if (routes == null)
+            {
+                throw new ArgumentNullException(nameof(routes));
+            }
+
             EnsureControllerServices(routes);
 
             var dataSource = GetOrCreateDataSource(routes);
@@ -84,6 +101,55 @@ namespace Microsoft.AspNetCore.Builder
                 new RouteValueDictionary(defaults),
                 new RouteValueDictionary(constraints),
                 new RouteValueDictionary(dataTokens)));
+        }
+
+        /// <summary>
+        /// Adds endpoints for controller actions to the <see cref="IEndpointRouteBuilder"/> and specifies a route
+        /// with the given <paramref name="name"/>, <paramref name="areaName"/>, <paramref name="template"/>, 
+        /// <paramref name="defaults"/>, <paramref name="constraints"/>, and <paramref name="dataTokens"/>.
+        /// </summary>
+        /// <param name="routes">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="name">The name of the route.</param>
+        /// <param name="areaName">The area name.</param>
+        /// <param name="template">The URL pattern of the route.</param>
+        /// <param name="defaults">
+        /// An object that contains default values for route parameters. The object's properties represent the
+        /// names and values of the default values.
+        /// </param>
+        /// <param name="constraints">
+        /// An object that contains constraints for the route. The object's properties represent the names and
+        /// values of the constraints.
+        /// </param>
+        /// <param name="dataTokens">
+        /// An object that contains data tokens for the route. The object's properties represent the names and
+        /// values of the data tokens.
+        /// </param>
+        public static void MapAreaControllerRoute(
+            this IEndpointRouteBuilder routes,
+            string name,
+            string areaName,
+            string template,
+            object defaults = null,
+            object constraints = null,
+            object dataTokens = null)
+        {
+            if (routes == null)
+            {
+                throw new ArgumentNullException(nameof(routes));
+            }
+
+            if (string.IsNullOrEmpty(areaName))
+            {
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(areaName));
+            }
+
+            var defaultsDictionary = new RouteValueDictionary(defaults);
+            defaultsDictionary["area"] = defaultsDictionary["area"] ?? areaName;
+
+            var constraintsDictionary = new RouteValueDictionary(constraints);
+            constraintsDictionary["area"] = constraintsDictionary["area"] ?? new StringRouteConstraint(areaName);
+
+            routes.MapControllerRoute(name, template, defaultsDictionary, constraintsDictionary, dataTokens);
         }
 
         private static void EnsureControllerServices(IEndpointRouteBuilder routes)
