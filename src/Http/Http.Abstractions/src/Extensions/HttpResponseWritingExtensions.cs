@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO.Pipelines;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -60,8 +61,73 @@ namespace Microsoft.AspNetCore.Http
                 throw new ArgumentNullException(nameof(encoding));
             }
 
-            byte[] data = encoding.GetBytes(text);
-            return response.Body.WriteAsync(data, 0, data.Length, cancellationToken);
+            // Need to call StartAsync before GetMemory/GetSpan
+            if (!response.HasStarted)
+            {
+                var startAsyncTask = response.StartAsync(cancellationToken);
+                if (!startAsyncTask.IsCompletedSuccessfully)
+                {
+                    return StartAndWriteAsyncAwaited(response, text, encoding, cancellationToken, startAsyncTask);
+                }
+            }
+
+            Write(response, text, encoding);
+
+            var flushAsyncTask = response.BodyPipe.FlushAsync(cancellationToken);
+            if (flushAsyncTask.IsCompletedSuccessfully)
+            {
+                // Most implementations of ValueTask reset state in GetResult, so call it before returning a completed task.
+                flushAsyncTask.GetAwaiter().GetResult();
+                return Task.CompletedTask;
+            }
+
+            return flushAsyncTask.AsTask();
+        }
+
+        private static async Task StartAndWriteAsyncAwaited(this HttpResponse response, string text, Encoding encoding, CancellationToken cancellationToken, Task startAsyncTask)
+        {
+            await startAsyncTask;
+            Write(response, text, encoding);
+            await response.BodyPipe.FlushAsync(cancellationToken);
+        }
+
+        private static void Write(this HttpResponse response, string text, Encoding encoding)
+        {
+            var pipeWriter = response.BodyPipe;
+            var encodedLength = encoding.GetByteCount(text);
+            var destination = pipeWriter.GetSpan(encodedLength);
+
+            if (encodedLength <= destination.Length)
+            {
+                // Just call Encoding.GetBytes if everything will fit into a single segment.
+                var bytesWritten = encoding.GetBytes(text, destination);
+                pipeWriter.Advance(bytesWritten);
+            }
+            else
+            {
+                WriteMultiSegmentEncoded(pipeWriter, text, encoding, destination, encodedLength);
+            }
+        }
+
+        private static void WriteMultiSegmentEncoded(PipeWriter writer, string text, Encoding encoding, Span<byte> destination, int encodedLength)
+        {
+            var encoder = encoding.GetEncoder();
+            var source = text.AsSpan();
+            var completed = false;
+            var totalBytesUsed = 0;
+
+            // This may be a bug, but encoder.Convert returns completed = true for UTF7 too early.
+            // Therefore, we check encodedLength - totalBytesUsed too.
+            while (!completed || encodedLength - totalBytesUsed != 0)
+            {
+                encoder.Convert(source, destination, flush: source.Length == 0, out var charsUsed, out var bytesUsed, out completed);
+                totalBytesUsed += bytesUsed;
+
+                writer.Advance(bytesUsed);
+                source = source.Slice(charsUsed);
+
+                destination = writer.GetSpan(encodedLength - totalBytesUsed);
+            }
         }
     }
 }

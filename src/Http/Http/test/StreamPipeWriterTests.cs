@@ -25,27 +25,22 @@ namespace System.IO.Pipelines.Tests
         }
 
         [Theory]
-        [InlineData(100, 1000)]
-        [InlineData(100, 8000)]
-        [InlineData(100, 10000)]
-        [InlineData(8000, 100)]
-        [InlineData(8000, 8000)]
-        public async Task CanAdvanceWithPartialConsumptionOfFirstSegment(int firstWriteLength, int secondWriteLength)
+        [InlineData(100)]
+        [InlineData(4000)]
+        public async Task CanAdvanceWithPartialConsumptionOfFirstSegment(int firstWriteLength)
         {
             Writer = new StreamPipeWriter(Stream, MinimumSegmentSize, new TestMemoryPool(maxBufferSize: 20000));
             await Writer.WriteAsync(Encoding.ASCII.GetBytes("a"));
 
-            var expectedLength = firstWriteLength + secondWriteLength + 1;
-
             var memory = Writer.GetMemory(firstWriteLength);
             Writer.Advance(firstWriteLength);
 
-            memory = Writer.GetMemory(secondWriteLength);
-            Writer.Advance(secondWriteLength);
+            memory = Writer.GetMemory();
+            Writer.Advance(memory.Length);
 
             await Writer.FlushAsync();
 
-            Assert.Equal(expectedLength, Read().Length);
+            Assert.Equal(firstWriteLength + memory.Length + 1, Read().Length);
         }
 
         [Fact]
@@ -406,6 +401,12 @@ namespace System.IO.Pipelines.Tests
 
             await Writer.FlushAsync();
             Assert.Equal(expectedString, ReadAsString());
+        }
+
+        [Fact]
+        public void InnerStreamReturnsStream()
+        {
+            Assert.Equal(Stream, ((StreamPipeWriter)Writer).InnerStream);
         }
 
         private void WriteStringToStream(string input)

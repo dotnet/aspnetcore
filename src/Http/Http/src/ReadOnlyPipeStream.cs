@@ -13,7 +13,6 @@ namespace System.IO.Pipelines
     /// </summary>
     public class ReadOnlyPipeStream : Stream
     {
-        private readonly PipeReader _pipeReader;
         private bool _allowSynchronousIO = true;
 
         /// <summary>
@@ -33,7 +32,7 @@ namespace System.IO.Pipelines
         public ReadOnlyPipeStream(PipeReader pipeReader, bool allowSynchronousIO)
         {
             _allowSynchronousIO = allowSynchronousIO;
-            _pipeReader = pipeReader;
+            InnerPipeReader = pipeReader;
         }
 
         /// <inheritdoc />
@@ -61,6 +60,8 @@ namespace System.IO.Pipelines
             get => throw new NotSupportedException();
             set => throw new NotSupportedException();
         }
+
+        public PipeReader InnerPipeReader { get; }
 
         /// <inheritdoc />
         public override void Write(byte[] buffer, int offset, int count)
@@ -160,7 +161,7 @@ namespace System.IO.Pipelines
         {
             while (true)
             {
-                var result = await _pipeReader.ReadAsync(cancellationToken);
+                var result = await InnerPipeReader.ReadAsync(cancellationToken);
                 var readableBuffer = result.Buffer;
                 var readableBufferLength = readableBuffer.Length;
 
@@ -186,7 +187,7 @@ namespace System.IO.Pipelines
                 }
                 finally
                 {
-                    _pipeReader.AdvanceTo(consumed);
+                    InnerPipeReader.AdvanceTo(consumed);
                 }
             }
         }
@@ -211,7 +212,7 @@ namespace System.IO.Pipelines
         {
             while (true)
             {
-                var result = await _pipeReader.ReadAsync(cancellationToken);
+                var result = await InnerPipeReader.ReadAsync(cancellationToken);
                 var readableBuffer = result.Buffer;
                 var readableBufferLength = readableBuffer.Length;
 
@@ -232,7 +233,7 @@ namespace System.IO.Pipelines
                 }
                 finally
                 {
-                    _pipeReader.AdvanceTo(readableBuffer.End);
+                    InnerPipeReader.AdvanceTo(readableBuffer.End);
                 }
             }
         }

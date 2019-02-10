@@ -37,8 +37,8 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         {
             get
             {
-                yield return new EncodingTestData("gzip", expectedBodyLength: 24);
-                yield return new EncodingTestData("br", expectedBodyLength: 20);
+                yield return new EncodingTestData("gzip", expectedBodyLength: 30);
+                yield return new EncodingTestData("br", expectedBodyLength: 21);
             }
         }
 
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         {
             var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: new[] { "gzip", "deflate" }, responseType: TextPlain);
 
-            CheckResponseCompressed(response, expectedBodyLength: 24, expectedEncoding: "gzip");
+            CheckResponseCompressed(response, expectedBodyLength: 30, expectedEncoding: "gzip");
             AssertCompressedWithLog(logMessages, "gzip");
         }
 
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         {
             var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: new[] { "br" }, responseType: TextPlain);
 
-            CheckResponseCompressed(response, expectedBodyLength: 20, expectedEncoding: "br");
+            CheckResponseCompressed(response, expectedBodyLength: 21, expectedEncoding: "br");
             AssertCompressedWithLog(logMessages, "br");
         }
 
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         {
             var (response, logMessages) = await InvokeMiddleware(100, new[] { encoding1, encoding2 }, responseType: TextPlain);
 
-            CheckResponseCompressed(response, expectedBodyLength: 20, expectedEncoding: "br");
+            CheckResponseCompressed(response, expectedBodyLength: 21, expectedEncoding: "br");
             AssertCompressedWithLog(logMessages, "br");
         }
 
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
 
             var (response, logMessages) = await InvokeMiddleware(100, new[] { encoding1, encoding2 }, responseType: TextPlain, configure: Configure);
 
-            CheckResponseCompressed(response, expectedBodyLength: 24, expectedEncoding: "gzip");
+            CheckResponseCompressed(response, expectedBodyLength: 30, expectedEncoding: "gzip");
             AssertCompressedWithLog(logMessages, "gzip");
         }
 
@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         {
             var (response, logMessages) = await InvokeMiddleware(uncompressedBodyLength: 100, requestAcceptEncodings: new[] { "gzip" }, contentType);
 
-            CheckResponseCompressed(response, expectedBodyLength: 24, expectedEncoding: "gzip");
+            CheckResponseCompressed(response, expectedBodyLength: 30, expectedEncoding: "gzip");
             AssertCompressedWithLog(logMessages, "gzip");
         }
 
@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
 
             var response = await client.SendAsync(request);
 
-            CheckResponseCompressed(response, expectedBodyLength: 123, expectedEncoding: "gzip");
+            CheckResponseCompressed(response, expectedBodyLength: 133, expectedEncoding: "gzip");
         }
 
         [Theory]
@@ -251,7 +251,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
 
             if (compress)
             {
-                CheckResponseCompressed(response, expectedBodyLength: 24, expectedEncoding: "gzip");
+                CheckResponseCompressed(response, expectedBodyLength: 30, expectedEncoding: "gzip");
                 AssertCompressedWithLog(logMessages, "gzip");
             }
             else
@@ -272,7 +272,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                     options.ExcludedMimeTypes = new[] { "text/*" };
                 });
 
-            CheckResponseCompressed(response, expectedBodyLength: 24, expectedEncoding: "gzip");
+            CheckResponseCompressed(response, expectedBodyLength: 30, expectedEncoding: "gzip");
             AssertCompressedWithLog(logMessages, "gzip");
         }
 
@@ -317,7 +317,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         {
             var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: new[] { "*" }, responseType: TextPlain);
 
-            CheckResponseCompressed(response, expectedBodyLength: 20, expectedEncoding: "br");
+            CheckResponseCompressed(response, expectedBodyLength: 21, expectedEncoding: "br");
             AssertCompressedWithLog(logMessages, "br");
         }
 
@@ -334,9 +334,9 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         }
 
         [Theory]
-        [InlineData(new[] { "identity;q=0.5", "gzip;q=1" }, 24)]
-        [InlineData(new[] { "identity;q=0", "gzip;q=0.8" }, 24)]
-        [InlineData(new[] { "identity;q=0.5", "gzip" }, 24)]
+        [InlineData(new[] { "identity;q=0.5", "gzip;q=1" }, 30)]
+        [InlineData(new[] { "identity;q=0", "gzip;q=0.8" }, 30)]
+        [InlineData(new[] { "identity;q=0.5", "gzip" }, 30)]
         public async Task Request_AcceptWithHigherCompressionQuality_Compressed(string[] acceptEncodings, int expectedBodyLength)
         {
             var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: acceptEncodings, responseType: TextPlain);
@@ -404,7 +404,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
 
         [Theory]
         [InlineData(false, 100)]
-        [InlineData(true, 24)]
+        [InlineData(true, 30)]
         public async Task Request_Https_CompressedIfEnabled(bool enableHttps, int expectedLength)
         {
             var sink = new TestSink(
@@ -908,7 +908,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
 
             var response = await client.SendAsync(request);
 
-            CheckResponseCompressed(response, expectedBodyLength: 40, expectedEncoding: "gzip");
+            CheckResponseCompressed(response, expectedBodyLength: 46, expectedEncoding: "gzip");
 
             Assert.False(fakeSendFile.Invoked);
         }

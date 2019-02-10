@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.Http.Internal
                 return HttpResponseFeature.Body.FlushAsync(cancellationToken);
             }
 
-            return HttpResponseStartFeature.StartAsync();
+            return HttpResponseStartFeature.StartAsync(cancellationToken);
         }
 
         struct FeatureInterfaces

@@ -117,6 +117,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             _collection[typeof(IHttpRequestFeature)] = CreateHttp1Connection();
             _collection[typeof(IHttpResponseFeature)] = CreateHttp1Connection();
+            _collection[typeof(IResponseBodyPipeFeature)] = CreateHttp1Connection();
             _collection[typeof(IHttpRequestIdentifierFeature)] = CreateHttp1Connection();
             _collection[typeof(IHttpRequestLifetimeFeature)] = CreateHttp1Connection();
             _collection[typeof(IHttpConnectionFeature)] = CreateHttp1Connection();
@@ -136,6 +137,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             _collection.Set<IHttpRequestFeature>(CreateHttp1Connection());
             _collection.Set<IHttpResponseFeature>(CreateHttp1Connection());
+            _collection.Set<IResponseBodyPipeFeature>(CreateHttp1Connection());
             _collection.Set<IHttpRequestIdentifierFeature>(CreateHttp1Connection());
             _collection.Set<IHttpRequestLifetimeFeature>(CreateHttp1Connection());
             _collection.Set<IHttpConnectionFeature>(CreateHttp1Connection());
@@ -173,6 +175,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             Assert.Same(_collection.Get<IHttpRequestFeature>(), _collection[typeof(IHttpRequestFeature)]);
             Assert.Same(_collection.Get<IHttpResponseFeature>(), _collection[typeof(IHttpResponseFeature)]);
+            Assert.Same(_collection.Get<IResponseBodyPipeFeature>(), _collection[typeof(IResponseBodyPipeFeature)]);
             Assert.Same(_collection.Get<IHttpRequestIdentifierFeature>(), _collection[typeof(IHttpRequestIdentifierFeature)]);
             Assert.Same(_collection.Get<IHttpRequestLifetimeFeature>(), _collection[typeof(IHttpRequestLifetimeFeature)]);
             Assert.Same(_collection.Get<IHttpConnectionFeature>(), _collection[typeof(IHttpConnectionFeature)]);

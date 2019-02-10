@@ -5,7 +5,6 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.ResponseCompression
 {
@@ -55,14 +54,20 @@ namespace Microsoft.AspNetCore.ResponseCompression
             var bodyStream = context.Response.Body;
             var originalBufferFeature = context.Features.Get<IHttpBufferingFeature>();
             var originalSendFileFeature = context.Features.Get<IHttpSendFileFeature>();
+            var originalStartFeature = context.Features.Get<IHttpResponseStartFeature>();
 
             var bodyWrapperStream = new BodyWrapperStream(context, bodyStream, _provider,
-                originalBufferFeature, originalSendFileFeature);
+                originalBufferFeature, originalSendFileFeature, originalStartFeature);
             context.Response.Body = bodyWrapperStream;
             context.Features.Set<IHttpBufferingFeature>(bodyWrapperStream);
             if (originalSendFileFeature != null)
             {
                 context.Features.Set<IHttpSendFileFeature>(bodyWrapperStream);
+            }
+
+            if (originalStartFeature != null)
+            {
+                context.Features.Set<IHttpResponseStartFeature>(bodyWrapperStream);
             }
 
             try
@@ -77,6 +82,11 @@ namespace Microsoft.AspNetCore.ResponseCompression
                 if (originalSendFileFeature != null)
                 {
                     context.Features.Set(originalSendFileFeature);
+                }
+
+                if (originalStartFeature != null)
+                {
+                    context.Features.Set(originalStartFeature);
                 }
             }
         }
