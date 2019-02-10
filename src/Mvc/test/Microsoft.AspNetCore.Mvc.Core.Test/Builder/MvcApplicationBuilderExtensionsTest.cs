@@ -2,9 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Builder.Internal;
 using Microsoft.AspNetCore.Mvc.Routing;
@@ -64,7 +62,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Builder
         }
 
         [Fact]
-        public void UseMvc_EndpointRoutingEnabled_NoEndpointInfos()
+        public void UseMvc_EndpointRoutingEnabled_AddsRoute()
         {
             // Arrange
             var services = new ServiceCollection();
@@ -85,9 +83,9 @@ namespace Microsoft.AspNetCore.Mvc.Core.Builder
             var routeOptions = appBuilder.ApplicationServices
                 .GetRequiredService<IOptions<RouteOptions>>();
 
-            var mvcEndpointDataSource = (MvcEndpointDataSource)Assert.Single(routeOptions.Value.EndpointDataSources, ds => ds is MvcEndpointDataSource);
+            var dataSource = (ActionEndpointDataSource)Assert.Single(routeOptions.Value.EndpointDataSources, ds => ds is ActionEndpointDataSource);
 
-            var endpointInfo = Assert.Single(mvcEndpointDataSource.Routes);
+            var endpointInfo = Assert.Single(dataSource.Routes);
             Assert.Equal("default", endpointInfo.RouteName);
             Assert.Equal("{controller=Home}/{action=Index}/{id?}", endpointInfo.Pattern.RawText);
         }

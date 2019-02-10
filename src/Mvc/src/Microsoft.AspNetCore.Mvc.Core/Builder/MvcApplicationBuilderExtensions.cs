@@ -88,8 +88,7 @@ namespace Microsoft.AspNetCore.Builder
 
             if (options.Value.EnableEndpointRouting)
             {
-                var mvcEndpointDataSource = app.ApplicationServices
-                    .GetRequiredService<MvcEndpointDataSource>();
+                var dataSource = app.ApplicationServices.GetRequiredService<ActionEndpointDataSource>();
 
                 var endpointRouteBuilder = new EndpointRouteBuilder(app);
 
@@ -101,14 +100,14 @@ namespace Microsoft.AspNetCore.Builder
                     // Sub-types could have additional customization that we can't knowingly convert
                     if (router is Route route && router.GetType() == typeof(Route))
                     {
-                        var endpointInfo = new ConventionalRouteEntry(
+                        var entry = new ConventionalRouteEntry(
                             route.Name,
                             route.RouteTemplate,
                             route.Defaults,
                             route.Constraints.ToDictionary(kvp => kvp.Key, kvp => (object)kvp.Value),
                             route.DataTokens);
 
-                        mvcEndpointDataSource.Routes.Add(endpointInfo);
+                        dataSource.AddRoute(entry);
                     }
                     else
                     {
@@ -122,7 +121,7 @@ namespace Microsoft.AspNetCore.Builder
                     // For back-compat register middleware so an endpoint is matched and then immediately used
                     app.UseRouting(routerBuilder =>
                     {
-                        routerBuilder.DataSources.Add(mvcEndpointDataSource);
+                        routerBuilder.DataSources.Add(dataSource);
                     });
                 }
 

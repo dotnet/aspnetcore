@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Routing.Patterns;
 
 namespace Microsoft.AspNetCore.Mvc.Performance
 {
-    public class MvcEndpointDataSourceBenchmark
+    public class ActionEndpointDataSourceBenchmark
     {
         private const string DefaultRoute = "{Controller=Home}/{Action=Index}/{id?}";
 
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc.Performance
         [Benchmark]
         public void AttributeRouteEndpoints()
         {
-            var endpointDataSource = CreateMvcEndpointDataSource(_attributeActionProvider);
+            var endpointDataSource = CreateDataSource(_attributeActionProvider);
             var endpoints = endpointDataSource.Endpoints;
 
             AssertHasEndpoints(endpoints);
@@ -64,10 +64,13 @@ namespace Microsoft.AspNetCore.Mvc.Performance
         [Benchmark]
         public void ConventionalEndpoints()
         {
-            var endpointDataSource = CreateMvcEndpointDataSource(_conventionalActionProvider);
-            endpointDataSource.Routes.AddRange(_routes);
-            var endpoints = endpointDataSource.Endpoints;
+            var dataSource = CreateDataSource(_conventionalActionProvider);
+            for (var i = 0; i < _routes.Count; i++)
+            {
+                dataSource.AddRoute(_routes[i]);
+            }
 
+            var endpoints = dataSource.Endpoints;
             AssertHasEndpoints(endpoints);
         }
 
@@ -107,10 +110,9 @@ namespace Microsoft.AspNetCore.Mvc.Performance
             };
         }
 
-        private MvcEndpointDataSource CreateMvcEndpointDataSource(
-            IActionDescriptorCollectionProvider actionDescriptorCollectionProvider)
+        private ActionEndpointDataSource CreateDataSource(IActionDescriptorCollectionProvider actionDescriptorCollectionProvider)
         {
-            var dataSource = new MvcEndpointDataSource(
+            var dataSource = new ActionEndpointDataSource(
                 actionDescriptorCollectionProvider,
                 new ActionEndpointFactory(
                     new MockRoutePatternTransformer(),
