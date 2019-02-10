@@ -10,7 +10,7 @@ namespace PlatformBenchmarks
     public interface IHttpConnection : IHttpHeadersHandler, IHttpRequestLineHandler
     {
         PipeReader Reader { get; set; }
-        PipeWriter Writer { get; set; }
+        PipeWriter Output { get; set; }
         Task ExecuteAsync();
         ValueTask OnReadCompletedAsync();
     }

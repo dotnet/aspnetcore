@@ -7,13 +7,13 @@ using System.Runtime.CompilerServices;
 
 namespace PlatformBenchmarks
 {
-    public ref struct BufferWriter<T> where T : IBufferWriter<byte>
+    public ref struct BufferWriter
     {
-        private T _output;
+        private MemoryWriter _output;
         private Span<byte> _span;
         private int _buffered;
 
-        public BufferWriter(T output)
+        public BufferWriter(MemoryWriter output)
         {
             _buffered = 0;
             _output = output;

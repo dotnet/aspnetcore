@@ -51,11 +51,11 @@ namespace PlatformBenchmarks
             _requestType = requestType;
         }
 
-        public ValueTask ProcessRequestAsync()
+        public Task ProcessRequestAsync()
         {
             if (_requestType == RequestType.PlainText)
             {
-                PlainText(Writer);
+                PlainText(_output);
             }
             else if (_requestType == RequestType.Json)
             {
@@ -63,15 +63,15 @@ namespace PlatformBenchmarks
             }
             else
             {
-                Default(Writer);
+                Default(_output);
             }
 
-            return default;
+            return Task.CompletedTask;
         }
 
-        private static void PlainText(PipeWriter pipeWriter)
+        private static void PlainText(MemoryWriter output)
         {
-            var writer = GetWriter(pipeWriter);
+            var writer = output.GetBufferWriter();
 
             // HTTP 1.1 OK
             writer.Write(_http11OK);
@@ -97,9 +97,9 @@ namespace PlatformBenchmarks
             writer.Commit();
         }
 
-        private static void Json(PipeWriter pipeWriter)
+        private static void Json(MemoryWriter output)
         {
-            var writer = GetWriter(pipeWriter);
+            var writer = output.GetBufferWriter();
 
             // HTTP 1.1 OK
             writer.Write(_http11OK);
@@ -126,9 +126,9 @@ namespace PlatformBenchmarks
             writer.Commit();
         }
 
-        private static void Default(PipeWriter pipeWriter)
+        private static void Default(MemoryWriter output)
         {
-            var writer = GetWriter(pipeWriter);
+            var writer = output.GetBufferWriter();
 
             // HTTP 1.1 OK
             writer.Write(_http11OK);

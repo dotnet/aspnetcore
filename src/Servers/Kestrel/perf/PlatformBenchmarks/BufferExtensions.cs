@@ -20,8 +20,7 @@ namespace PlatformBenchmarks
         private static byte[] _numericBytesScratch;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static unsafe void WriteNumeric<T>(ref this BufferWriter<T> buffer, uint number)
-             where T : struct, IBufferWriter<byte>
+        internal static unsafe void WriteNumeric(ref this BufferWriter buffer, uint number)
         {
             const byte AsciiDigitStart = (byte)'0';
 
@@ -69,8 +68,7 @@ namespace PlatformBenchmarks
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static void WriteNumericMultiWrite<T>(ref this BufferWriter<T> buffer, uint number)
-             where T : struct, IBufferWriter<byte>
+        private static void WriteNumericMultiWrite(ref this BufferWriter buffer, uint number)
         {
             const byte AsciiDigitStart = (byte)'0';
 

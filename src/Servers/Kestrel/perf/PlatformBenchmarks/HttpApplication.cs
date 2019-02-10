@@ -21,7 +21,7 @@ namespace PlatformBenchmarks
             var httpConnection = new TConnection
             {
                 Reader = connection.Transport.Input,
-                Writer = connection.Transport.Output
+                Output = connection.Transport.Output
             };
             return httpConnection.ExecuteAsync();
         }

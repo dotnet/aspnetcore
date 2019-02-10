@@ -4,7 +4,6 @@
 using System;
 using System.Buffers;
 using System.IO.Pipelines;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
@@ -13,9 +12,19 @@ namespace PlatformBenchmarks
     public partial class BenchmarkApplication : IHttpConnection
     {
         private State _state;
+        private PipeWriter _writer;
+        private MemoryWriter _output;
 
         public PipeReader Reader { get; set; }
-        public PipeWriter Writer { get; set; }
+        public PipeWriter Writer
+        {
+            get => _writer;
+            set
+            {
+                _writer = value;
+                _output = new MemoryWriter(value);
+            }
+        }
 
         private HttpParser<ParsingAdapter> Parser { get; } = new HttpParser<ParsingAdapter>();
 
@@ -127,6 +136,7 @@ namespace PlatformBenchmarks
 
         public async ValueTask OnReadCompletedAsync()
         {
+            _output.Commit();
             await Writer.FlushAsync();
         }
 
@@ -140,27 +150,6 @@ namespace PlatformBenchmarks
             StartLine,
             Headers,
             Body
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static BufferWriter<WriterAdapter> GetWriter(PipeWriter pipeWriter)
-            => new BufferWriter<WriterAdapter>(new WriterAdapter(pipeWriter));
-
-        private struct WriterAdapter : IBufferWriter<byte>
-        {
-            public PipeWriter Writer;
-
-            public WriterAdapter(PipeWriter writer)
-                => Writer = writer;
-
-            public void Advance(int count)
-                => Writer.Advance(count);
-
-            public Memory<byte> GetMemory(int sizeHint = 0)
-                => Writer.GetMemory(sizeHint);
-
-            public Span<byte> GetSpan(int sizeHint = 0)
-                => Writer.GetSpan(sizeHint);
         }
 
         private struct ParsingAdapter : IHttpRequestLineHandler, IHttpHeadersHandler
