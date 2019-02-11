@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             {
                 if (_lastFlushTask == null || _lastFlushTask.IsCompleted)
                 {
-                    _lastFlushTask = flushValueTask.GetAsTask();
+                    _lastFlushTask = flushValueTask.AsTask();
                 }
 
                 return TimeFlushAsync(minRate, count, outputAborter, cancellationToken);
