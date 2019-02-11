@@ -12,7 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Microsoft.AspNetCore.Builder
 {
     /// <summary>
-    /// Contains extension methods for using Controllers with <see cref="IEndpointRouteBuilder"/>
+    /// Contains extension methods for using Controllers with <see cref="IEndpointRouteBuilder"/>.
     /// </summary>
     public static class ControllerEndpointRouteBuilderExtensions
     {

@@ -14,7 +14,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.Routing
 {
-    internal abstract class ActionEndpointDataSourceBase : EndpointDataSource, IEndpointConventionBuilder
+    internal abstract class ActionEndpointDataSourceBase : EndpointDataSource, IEndpointConventionBuilder, IDisposable
     {
         private readonly IActionDescriptorCollectionProvider _actions;
 
@@ -26,6 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         private List<Endpoint> _endpoints;
         private CancellationTokenSource _cancellationTokenSource;
         private IChangeToken _changeToken;
+        private IDisposable _disposable;
 
         // Protected for READS and WRITES.
         private readonly List<Action<EndpointBuilder>> _conventions;
@@ -60,7 +61,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             // change notifications. If that's the case we won't process changes.
             if (_actions is ActionDescriptorCollectionProvider collectionProviderWithChangeToken)
             {
-                ChangeToken.OnChange(
+                _disposable = ChangeToken.OnChange(
                     () => collectionProviderWithChangeToken.GetChangeToken(),
                     UpdateEndpoints);
             }
@@ -85,6 +86,13 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             Debug.Assert(_changeToken != null);
             Debug.Assert(_endpoints != null);
             return _changeToken;
+        }
+
+        public void Dispose()
+        {
+            // Once disposed we won't process updates anymore, but we still allow access to the endpoints.
+            _disposable?.Dispose();
+            _disposable = null;
         }
 
         private void Initialize()

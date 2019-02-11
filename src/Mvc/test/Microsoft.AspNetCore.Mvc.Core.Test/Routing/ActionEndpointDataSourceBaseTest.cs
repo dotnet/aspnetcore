@@ -40,8 +40,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             Assert.Equal("/Template!", endpoint.RoutePattern.RawText);
         }
 
-        
-
         [Fact]
         public void Endpoints_CalledMultipleTimes_ReturnsSameInstance()
         {

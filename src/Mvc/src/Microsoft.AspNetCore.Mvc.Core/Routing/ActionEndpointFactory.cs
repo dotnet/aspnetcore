@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 // route values on the pattern.
                 foreach (var route in routes)
                 {
-                    // An 'endpointInfo' is applicable if:
+                    // A route is applicable if:
                     // 1. It has a parameter (or default value) for 'required' non-null route value
                     // 2. It does not have a parameter (or default value) for 'required' null route value
                     var updatedRoutePattern = _routePatternTransformer.SubstituteRequiredValues(route.Pattern, action.RouteValues);
