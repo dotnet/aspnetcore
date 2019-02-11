@@ -138,6 +138,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 var bytesWritten = producer._unflushedBytes + writer.BytesCommitted;
                 producer._unflushedBytes = 0;
 
+                // If there is an empty write, we still need to update the current chunk
+                _currentChunkMemoryUpdated = false;
+
                 return producer._flusher.FlushAsync(producer._minResponseDataRateFeature.MinDataRate, bytesWritten, producer, token);
             }
         }
@@ -233,11 +236,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         WriteCurrentMemoryToPipeWriter(ref writer);
                     }
-                    else
-                    {
-                        // If there is an empty write, we still need to update the current chunk
-                        _currentChunkMemoryUpdated = false;
-                    }
 
                     if (buffer.Length > 0)
                     {
@@ -249,11 +247,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                     writer.Commit();
                     _unflushedBytes += writer.BytesCommitted;
-                }
-                else
-                {
-                    // If there is an empty write, we still need to update the current chunk
-                    _currentChunkMemoryUpdated = false;
                 }
             }
 
@@ -442,9 +435,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             writer.WriteEndChunkBytes();
 
             _advancedBytesForChunk = 0;
-
-            // If there is an empty write, we still need to update the current chunk
-            _currentChunkMemoryUpdated = false;
         }
 
         private Memory<byte> GetFakeMemory(int sizeHint)
