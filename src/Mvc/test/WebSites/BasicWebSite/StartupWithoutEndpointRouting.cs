@@ -34,7 +34,6 @@ namespace BasicWebSite
                     // Filter that records a value in HttpContext.Items
                     options.Filters.Add(new TraceResourceFilter());
 
-                    // Remove when all URL generation tests are passing - https://github.com/aspnet/Routing/issues/590
                     options.EnableEndpointRouting = false;
                 })
                 .SetCompatibilityVersion(CompatibilityVersion.Latest)
