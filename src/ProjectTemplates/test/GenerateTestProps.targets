@@ -4,9 +4,9 @@
       <PropsProperties>
         RestoreSources=$([MSBuild]::Escape("$(RestoreSources);$(ArtifactsShippingPackagesDir);$(ArtifactsNonShippingPackagesDir)"));
         MicrosoftNETCoreAppPackageVersion=$(MicrosoftNETCoreAppPackageVersion);
+        MicrosoftNETCorePlatformsPackageVersion=$(MicrosoftNETCorePlatformsPackageVersion);
         MicrosoftNETSdkRazorPackageVersion=$(MicrosoftNETSdkRazorPackageVersion);
         MicrosoftAspNetCoreAppPackageVersion=$(SharedFxVersion);
-        MicrosoftAspNetCoreAppPackageVersion=$(SharedFxVersion)
       </PropsProperties>
     </PropertyGroup>
 

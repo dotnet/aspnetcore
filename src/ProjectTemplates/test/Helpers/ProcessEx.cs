@@ -1,17 +1,25 @@
-﻿using Microsoft.Extensions.Internal;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Internal;
 using Xunit.Abstractions;
 
 namespace Templates.Test.Helpers
 {
     internal class ProcessEx : IDisposable
     {
+        private static readonly string NUGET_PACKAGES = typeof(ProcessEx).Assembly
+            .GetCustomAttributes<AssemblyMetadataAttribute>()
+            .First(attribute => attribute.Key == "TestPackageRestorePath")
+            .Value;
+
         private readonly ITestOutputHelper _output;
         private readonly Process _process;
         private readonly StringBuilder _stderrCapture;
@@ -38,6 +46,8 @@ namespace Templates.Test.Helpers
                     startInfo.EnvironmentVariables[envVar.Key] = envVar.Value;
                 }
             }
+
+            startInfo.EnvironmentVariables["NUGET_PACKAGES"] = NUGET_PACKAGES;
 
             output.WriteLine($"==> {startInfo.FileName} {startInfo.Arguments} [{startInfo.WorkingDirectory}]");
             var proc = Process.Start(startInfo);
