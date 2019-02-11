@@ -28,20 +28,6 @@ namespace Microsoft.AspNetCore.Mvc
         Inherited = true)]
     public class ModelBinderAttribute : Attribute, IModelNameProvider, IBinderTypeProviderMetadata
     {
-        private static readonly BindingSource[] BindingSources = new[]
-        {
-            BindingSource.Body,
-            BindingSource.Custom,
-            BindingSource.Form,
-            BindingSource.FormFile,
-            BindingSource.Header,
-            BindingSource.ModelBinding,
-            BindingSource.Path,
-            BindingSource.Query,
-            BindingSource.Services,
-            BindingSource.Special,
-        };
-
         private BindingSource _bindingSource;
         private Type _binderType;
 
@@ -63,15 +49,12 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="bindingSource">
         /// The <see cref="BindingSourceKey"/> that indicates the value of the <see cref="BindingSource"/> property.
         /// </param>
+        /// <exception cref="InvalidEnumArgumentException">
+        /// Thrown if the <paramref name="bindingSource"/> is not a defined <see cref="BindingSourceKey"/> value.
+        /// </exception>
         public ModelBinderAttribute(BindingSourceKey bindingSource)
         {
-            var sourcesIndex = (int)bindingSource;
-            if (!Enum.IsDefined(typeof(BindingSourceKey), bindingSource))
-            {
-                throw new InvalidEnumArgumentException(nameof(bindingSource), sourcesIndex, typeof(BindingSourceKey));
-            }
-
-            _bindingSource = BindingSources[sourcesIndex];
+            _bindingSource = bindingSource.GetBindingSource();
         }
 
         /// <summary>

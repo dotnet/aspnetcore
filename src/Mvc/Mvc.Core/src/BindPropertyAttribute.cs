@@ -19,24 +19,8 @@ namespace Microsoft.AspNetCore.Mvc
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     public class BindPropertyAttribute : Attribute, IModelNameProvider, IBinderTypeProviderMetadata, IRequestPredicateProvider
     {
-        private static readonly BindingSource[] BindingSources = new[]
-        {
-            BindingSource.Body,
-            BindingSource.Custom,
-            BindingSource.Form,
-            BindingSource.FormFile,
-            BindingSource.Header,
-            BindingSource.ModelBinding,
-            BindingSource.Path,
-            BindingSource.Query,
-            BindingSource.Services,
-            BindingSource.Special,
-        };
-
         private static readonly Func<ActionContext, bool> _supportsAllRequests = (c) => true;
-
         private static readonly Func<ActionContext, bool> _supportsNonGetRequests = IsNonGetRequest;
-
         private BindingSource _bindingSource;
 
         /// <summary>
@@ -58,15 +42,12 @@ namespace Microsoft.AspNetCore.Mvc
         /// The <see cref="BindingSourceKey"/> that indicates the value of the
         /// <see cref="BindingSource"/> property.
         /// </param>
+        /// <exception cref="InvalidEnumArgumentException">
+        /// Thrown if the <paramref name="bindingSource"/> is not a defined <see cref="BindingSourceKey"/> value.
+        /// </exception>
         public BindPropertyAttribute(BindingSourceKey bindingSource)
         {
-            var sourcesIndex = (int)bindingSource;
-            if (!Enum.IsDefined(typeof(BindingSourceKey), bindingSource))
-            {
-                throw new InvalidEnumArgumentException(nameof(bindingSource), sourcesIndex, typeof(BindingSourceKey));
-            }
-
-            _bindingSource = BindingSources[sourcesIndex];
+            _bindingSource = bindingSource.GetBindingSource();
         }
 
         /// <summary>
