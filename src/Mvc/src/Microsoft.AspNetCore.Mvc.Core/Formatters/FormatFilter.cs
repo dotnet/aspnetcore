@@ -25,16 +25,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// Initializes an instance of <see cref="FormatFilter"/>.
         /// </summary>
         /// <param name="options">The <see cref="IOptions{MvcOptions}"/></param>
-        [Obsolete("This constructor is obsolete and will be removed in a future version.")]
-        public FormatFilter(IOptions<MvcOptions> options)
-            : this(options, NullLoggerFactory.Instance)
-        {
-        }
-
-        /// <summary>
-        /// Initializes an instance of <see cref="FormatFilter"/>.
-        /// </summary>
-        /// <param name="options">The <see cref="IOptions{MvcOptions}"/></param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         public FormatFilter(IOptions<MvcOptions> options, ILoggerFactory loggerFactory)
         {

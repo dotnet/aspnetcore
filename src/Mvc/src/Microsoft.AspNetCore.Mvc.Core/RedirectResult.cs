@@ -114,42 +114,5 @@ namespace Microsoft.AspNetCore.Mvc
             var executor = context.HttpContext.RequestServices.GetRequiredService<IActionResultExecutor<RedirectResult>>();
             return executor.ExecuteAsync(context, this);
         }
-
-#pragma warning disable CS0809
-        [Obsolete("This implementation will be removed in a future release, use ExecuteResultAsync.")]
-        public override void ExecuteResult(ActionContext context)
-        {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            var services = context.HttpContext.RequestServices;
-            var urlHelperFactory = services.GetRequiredService<IUrlHelperFactory>();
-            var logger = services.GetRequiredService<ILogger<RedirectResult>>();
-
-            var urlHelper = UrlHelper ?? urlHelperFactory.GetUrlHelper(context);
-
-            // IsLocalUrl is called to handle URLs starting with '~/'.
-            var destinationUrl = Url;
-            if (urlHelper.IsLocalUrl(destinationUrl))
-            {
-                destinationUrl = urlHelper.Content(Url);
-            }
-
-            logger.RedirectResultExecuting(destinationUrl);
-
-            if (PreserveMethod)
-            {
-                context.HttpContext.Response.StatusCode = Permanent ?
-                    StatusCodes.Status308PermanentRedirect : StatusCodes.Status307TemporaryRedirect;
-                context.HttpContext.Response.Headers[HeaderNames.Location] = destinationUrl;
-            }
-            else
-            {
-                context.HttpContext.Response.Redirect(destinationUrl, Permanent);
-            }
-        }
-#pragma warning restore CS0809
     }
 }

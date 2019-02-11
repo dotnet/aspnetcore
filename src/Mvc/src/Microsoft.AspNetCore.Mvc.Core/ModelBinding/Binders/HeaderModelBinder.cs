@@ -7,7 +7,6 @@ using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
@@ -18,18 +17,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     public class HeaderModelBinder : IModelBinder
     {
         private readonly ILogger _logger;
-
-        /// <summary>
-        /// <para>This constructor is obsolete and will be removed in a future version. The recommended alternative
-        /// is the overload that takes an <see cref="ILoggerFactory"/> and an <see cref="IModelBinder"/>.</para>
-        /// <para>Initializes a new instance of <see cref="HeaderModelBinder"/>.</para>
-        /// </summary>
-        [Obsolete("This constructor is obsolete and will be removed in a future version. The recommended alternative"
-            + " is the overload that takes an " + nameof(ILoggerFactory) + " and an " + nameof(IModelBinder) + ".")]
-        public HeaderModelBinder()
-            : this(NullLoggerFactory.Instance)
-        {
-        }
 
         /// <summary>
         /// Initializes a new instance of <see cref="HeaderModelBinder"/>.

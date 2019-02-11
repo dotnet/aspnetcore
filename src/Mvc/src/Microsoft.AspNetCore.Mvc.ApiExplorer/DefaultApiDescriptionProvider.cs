@@ -36,44 +36,6 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         /// <param name="constraintResolver">The <see cref="IInlineConstraintResolver"/> used for resolving inline
         /// constraints.</param>
         /// <param name="modelMetadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
-        [Obsolete("This constructor is obsolete and will be removed in a future release.")]
-        public DefaultApiDescriptionProvider(
-            IOptions<MvcOptions> optionsAccessor,
-            IInlineConstraintResolver constraintResolver,
-            IModelMetadataProvider modelMetadataProvider)
-            : this(optionsAccessor, constraintResolver, modelMetadataProvider, null)
-        {
-        }
-
-        /// <summary>
-        /// Creates a new instance of <see cref="DefaultApiDescriptionProvider"/>.
-        /// </summary>
-        /// <param name="optionsAccessor">The accessor for <see cref="MvcOptions"/>.</param>
-        /// <param name="constraintResolver">The <see cref="IInlineConstraintResolver"/> used for resolving inline
-        /// constraints.</param>
-        /// <param name="modelMetadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
-        /// <param name="mapper">The <see cref="IActionResultTypeMapper"/>.</param>
-        /// <remarks>The <paramref name="mapper"/> parameter is currently ignored.</remarks>
-        [Obsolete("This constructor is obsolete and will be removed in a future release.")]
-        public DefaultApiDescriptionProvider(
-            IOptions<MvcOptions> optionsAccessor,
-            IInlineConstraintResolver constraintResolver,
-            IModelMetadataProvider modelMetadataProvider,
-            IActionResultTypeMapper mapper)
-        {
-            _mvcOptions = optionsAccessor.Value;
-            _constraintResolver = constraintResolver;
-            _modelMetadataProvider = modelMetadataProvider;
-            _responseTypeProvider = new ApiResponseTypeProvider(modelMetadataProvider, mapper, _mvcOptions);
-        }
-
-        /// <summary>
-        /// Creates a new instance of <see cref="DefaultApiDescriptionProvider"/>.
-        /// </summary>
-        /// <param name="optionsAccessor">The accessor for <see cref="MvcOptions"/>.</param>
-        /// <param name="constraintResolver">The <see cref="IInlineConstraintResolver"/> used for resolving inline
-        /// constraints.</param>
-        /// <param name="modelMetadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
         /// <param name="mapper">The <see cref="IActionResultTypeMapper"/>.</param>
         /// <param name="routeOptions">The accessor for <see cref="RouteOptions"/>.</param>
         /// <remarks>The <paramref name="mapper"/> parameter is currently ignored.</remarks>
