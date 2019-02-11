@@ -4,8 +4,11 @@
 using System;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Razor.Hosting;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -25,6 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
             var razorPagesOptions = Options.Create(new RazorPagesOptions());
             var mvcOptions = Options.Create(new MvcOptions());
+            var endpointFactory = new ActionEndpointFactory(Mock.Of<RoutePatternTransformer>());
 
             var provider1 = new Mock<IPageApplicationModelProvider>();
             var provider2 = new Mock<IPageApplicationModelProvider>();
@@ -75,6 +79,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             var loader = new DefaultPageLoader(
                 providers,
                 compilerProvider,
+                endpointFactory,
                 razorPagesOptions,
                 mvcOptions);
 
@@ -87,6 +92,60 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         }
 
         [Fact]
+        public void Load_CreatesEndpoint_WithRoute()
+        {
+            // Arrange
+            var descriptor = new PageActionDescriptor()
+            {
+                AttributeRouteInfo = new AttributeRouteInfo()
+                {
+                    Template = "/test",
+                },
+            };
+
+            var transformer = new Mock<RoutePatternTransformer>();
+            transformer
+                .Setup(t => t.SubstituteRequiredValues(It.IsAny<RoutePattern>(), It.IsAny<object>()))
+                .Returns<RoutePattern, object>((p, v) => p);
+
+            var compilerProvider = GetCompilerProvider();
+
+            var razorPagesOptions = Options.Create(new RazorPagesOptions());
+            var mvcOptions = Options.Create(new MvcOptions());
+            var endpointFactory = new ActionEndpointFactory(transformer.Object);
+
+            var provider = new Mock<IPageApplicationModelProvider>();
+
+            var pageApplicationModel = new PageApplicationModel(descriptor, typeof(object).GetTypeInfo(), Array.Empty<object>());
+
+            provider.Setup(p => p.OnProvidersExecuting(It.IsAny<PageApplicationModelProviderContext>()))
+                .Callback((PageApplicationModelProviderContext c) =>
+                {
+                    Assert.Null(c.PageApplicationModel);
+                    c.PageApplicationModel = pageApplicationModel;
+                })
+                .Verifiable();
+
+            var providers = new[]
+            {
+                provider.Object,
+            };
+
+            var loader = new DefaultPageLoader(
+                providers,
+                compilerProvider,
+                endpointFactory,
+                razorPagesOptions,
+                mvcOptions);
+
+            // Act
+            var result = loader.Load(descriptor);
+
+            // Assert
+            Assert.NotNull(result.Endpoint);
+        }
+
+        [Fact]
         public void Load_InvokesApplicationModelProviders_WithTheRightOrder()
         {
             // Arrange
@@ -94,6 +153,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             var compilerProvider = GetCompilerProvider();
             var razorPagesOptions = Options.Create(new RazorPagesOptions());
             var mvcOptions = Options.Create(new MvcOptions());
+            var endpointFactory = new ActionEndpointFactory(Mock.Of<RoutePatternTransformer>());
 
             var provider1 = new Mock<IPageApplicationModelProvider>();
             provider1.SetupGet(p => p.Order).Returns(10);
@@ -138,6 +198,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             var loader = new DefaultPageLoader(
                 providers,
                 compilerProvider,
+                endpointFactory,
                 razorPagesOptions,
                 mvcOptions);
 

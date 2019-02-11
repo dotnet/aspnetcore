@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Routing
             for (var i = 0; i < endpoints.Count; i++)
             {
                 var metadata = endpoints[i].Metadata.GetMetadata<IDynamicEndpointMetadata>();
-                if (metadata.IsDynamic)
+                if (metadata?.IsDynamic == true)
                 {
                     return true;
                 }

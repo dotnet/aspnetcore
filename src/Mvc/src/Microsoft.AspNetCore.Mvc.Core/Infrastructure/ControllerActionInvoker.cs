@@ -27,11 +27,12 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         internal ControllerActionInvoker(
             ILogger logger,
             DiagnosticListener diagnosticListener,
+            IActionContextAccessor actionContextAccessor,
             IActionResultTypeMapper mapper,
             ControllerContext controllerContext,
             ControllerActionInvokerCacheEntry cacheEntry,
             IFilterMetadata[] filters)
-            : base(diagnosticListener, logger, mapper, controllerContext, filters, controllerContext.ValueProviderFactories)
+            : base(diagnosticListener, logger, actionContextAccessor, mapper, controllerContext, filters, controllerContext.ValueProviderFactories)
         {
             if (cacheEntry == null)
             {

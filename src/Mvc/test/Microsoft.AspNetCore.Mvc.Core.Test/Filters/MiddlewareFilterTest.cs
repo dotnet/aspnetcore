@@ -396,6 +396,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
                 : base(
                       logger,
                       diagnosticListener,
+                      ActionContextAccessor.Null,
                       mapper,
                       CreateControllerContext(actionContext, valueProviderFactories, maxAllowedErrorsInModelState),
                       CreateCacheEntry((ControllerActionDescriptor)actionContext.ActionDescriptor, controllerFactory),

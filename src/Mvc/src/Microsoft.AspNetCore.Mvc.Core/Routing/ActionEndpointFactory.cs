@@ -9,32 +9,25 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.Routing
 {
     internal class ActionEndpointFactory
     {
         private readonly RoutePatternTransformer _routePatternTransformer;
-        private readonly MvcEndpointInvokerFactory _invokerFactory;
 
-        public ActionEndpointFactory(
-            RoutePatternTransformer routePatternTransformer,
-            MvcEndpointInvokerFactory invokerFactory)
+        public ActionEndpointFactory(RoutePatternTransformer routePatternTransformer)
         {
             if (routePatternTransformer == null)
             {
                 throw new ArgumentNullException(nameof(routePatternTransformer));
             }
 
-            if (invokerFactory == null)
-            {
-                throw new ArgumentNullException(nameof(invokerFactory));
-            }
-
             _routePatternTransformer = routePatternTransformer;
-            _invokerFactory = invokerFactory;
         }
 
         public void AddEndpoints(
@@ -188,13 +181,27 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             bool suppressPathMatching,
             IReadOnlyList<Action<EndpointBuilder>> conventions)
         {
+
+            // We don't want to close over the retrieve the Invoker Factory in ActionEndpointFactory as
+            // that creates cycles in DI. Since we're creating this delegate at startup time
+            // we don't want to create all of the things we use at runtime until the action
+            // actually matches.
+            //
+            // The request delegate is already a closure here because we close over
+            // the action descriptor.
+            IActionInvokerFactory invokerFactory = null;
+
             RequestDelegate requestDelegate = (context) =>
             {
                 var routeData = context.GetRouteData();
-
                 var actionContext = new ActionContext(context, routeData, action);
 
-                var invoker = _invokerFactory.CreateInvoker(actionContext);
+                if (invokerFactory == null)
+                {
+                    invokerFactory = context.RequestServices.GetRequiredService<IActionInvokerFactory>();
+                }
+
+                var invoker = invokerFactory.CreateInvoker(actionContext);
                 return invoker.InvokeAsync();
             };
 
