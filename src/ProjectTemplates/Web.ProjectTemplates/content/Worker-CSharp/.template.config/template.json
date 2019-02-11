@@ -7,7 +7,7 @@
   ],
   "name": "Worker Service",
   "generatorVersions": "[1.0.0.0-*)",
-  "description": "An empty project template for creating a worker service. This template does not have any content in it.",
+  "description": "An empty project template for creating a worker service.",
   "groupIdentity": "Microsoft.Worker.Empty",
   "precedence": "5000",
   "identity": "Microsoft.Worker.Empty.CSharp.3.0",
