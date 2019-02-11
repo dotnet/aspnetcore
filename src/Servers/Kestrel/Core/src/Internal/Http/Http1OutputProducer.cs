@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 producer._unflushedBytes = 0;
 
                 // If there is an empty write, we still need to update the current chunk
-                _currentChunkMemoryUpdated = false;
+                producer._currentChunkMemoryUpdated = false;
 
                 return producer._flusher.FlushAsync(producer._minResponseDataRateFeature.MinDataRate, bytesWritten, producer, token);
             }
