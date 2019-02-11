@@ -100,7 +100,53 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public ValueTask<FlushResult> FlushAsync(CancellationToken cancellationToken = default)
         {
-            return WriteAsync(Constants.EmptyData, cancellationToken);
+            lock (_contextLock)
+            {
+                if (_pipeWriterCompleted)
+                {
+                    return default;
+                }
+
+                if (_autoChunk)
+                {
+                    if (_advancedBytesForChunk > 0)
+                    {
+                        // If there is data that was chunked before flushing (ex someone did GetMemory->Advance->FlushAsync)
+                        // make sure to write whatever was advanced first
+                        return FlushAsyncChunked(this, cancellationToken);
+                    }
+                    else
+                    {
+                        // If there is an empty write, we still need to update the current chunk
+                        _currentChunkMemoryUpdated = false;
+                    }
+                }
+
+                var bytesWritten = _unflushedBytes;
+                _unflushedBytes = 0;
+
+                return _flusher.FlushAsync(_minResponseDataRateFeature.MinDataRate, bytesWritten, this, cancellationToken);
+            }
+
+            ValueTask<FlushResult> FlushAsyncChunked(Http1OutputProducer producer, CancellationToken token)
+            {
+                // Local function so in the common-path the stack space for BufferWriter isn't reservered and cleared when it isn't used.
+
+                Debug.Assert(!producer._pipeWriterCompleted);
+                Debug.Assert(producer._autoChunk && producer._advancedBytesForChunk > 0);
+
+                var writer = new BufferWriter<PipeWriter>(producer._pipeWriter);
+                producer.WriteCurrentMemoryToPipeWriter(ref writer);
+                writer.Commit();
+
+                var bytesWritten = producer._unflushedBytes + writer.BytesCommitted;
+                producer._unflushedBytes = 0;
+
+                // If there is an empty write, we still need to update the current chunk
+                _currentChunkMemoryUpdated = false;
+
+                return producer._flusher.FlushAsync(producer._minResponseDataRateFeature.MinDataRate, bytesWritten, producer, token);
+            }
         }
 
         public Memory<byte> GetMemory(int sizeHint = 0)
@@ -187,17 +233,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 // Make sure any memory used with GetMemory/Advance is written before the chunk
                 // passed in.
-                WriteCurrentMemoryToPipeWriter();
-
-                if (buffer.Length > 0)
+                if (_advancedBytesForChunk > 0 || buffer.Length > 0)
                 {
                     var writer = new BufferWriter<PipeWriter>(_pipeWriter);
+                    if (_advancedBytesForChunk > 0)
+                    {
+                        WriteCurrentMemoryToPipeWriter(ref writer);
+                    }
 
-                    writer.WriteBeginChunkBytes(buffer.Length);
-                    writer.Write(buffer);
-                    writer.WriteEndChunkBytes();
+                    if (buffer.Length > 0)
+                    {
+
+                        writer.WriteBeginChunkBytes(buffer.Length);
+                        writer.Write(buffer);
+                        writer.WriteEndChunkBytes();
+                    }
+
                     writer.Commit();
-
                     _unflushedBytes += writer.BytesCommitted;
                 }
             }
@@ -297,23 +349,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     return default;
                 }
 
+                var writer = new BufferWriter<PipeWriter>(_pipeWriter);
                 if (_autoChunk)
                 {
-                    // If there is data that was chunked before writing (ex someone did GetMemory->Advance->WriteAsync)
-                    // make sure to write whatever was advanced first
-                    WriteCurrentMemoryToPipeWriter();
+                    if (_advancedBytesForChunk > 0)
+                    {
+                        // If there is data that was chunked before writing (ex someone did GetMemory->Advance->WriteAsync)
+                        // make sure to write whatever was advanced first
+                        WriteCurrentMemoryToPipeWriter(ref writer);
+                    }
+                    else
+                    {
+                        // If there is an empty write, we still need to update the current chunk
+                        _currentChunkMemoryUpdated = false;
+                    }
                 }
 
-                var writer = new BufferWriter<PipeWriter>(_pipeWriter);
                 if (buffer.Length > 0)
                 {
                     writer.Write(buffer);
-
-                    _unflushedBytes += buffer.Length;
                 }
                 writer.Commit();
 
-                var bytesWritten = _unflushedBytes;
+                var bytesWritten = _unflushedBytes + writer.BytesCommitted;
                 _unflushedBytes = 0;
 
                 return _flusher.FlushAsync(
@@ -342,7 +400,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (_advancedBytesForChunk >= memoryMaxLength - Math.Min(MemorySizeThreshold, sizeHint))
             {
                 // Chunk is completely written, commit it to the pipe so GetMemory will return a new chunk of memory.
-                WriteCurrentMemoryToPipeWriter();
+                var writer = new BufferWriter<PipeWriter>(_pipeWriter);
+                WriteCurrentMemoryToPipeWriter(ref writer);
+                writer.Commit();
+
+                _unflushedBytes += writer.BytesCommitted;
                 _currentChunkMemory = _pipeWriter.GetMemory(sizeHint);
                 _currentChunkMemoryUpdated = true;
             }
@@ -356,35 +418,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return actualMemory;
         }
 
-        private void WriteCurrentMemoryToPipeWriter()
+        private void WriteCurrentMemoryToPipeWriter(ref BufferWriter<PipeWriter> writer)
         {
-            var writer = new BufferWriter<PipeWriter>(_pipeWriter);
-
             Debug.Assert(_advancedBytesForChunk <= _currentChunkMemory.Length);
+            Debug.Assert(_advancedBytesForChunk > 0);
 
-            if (_advancedBytesForChunk > 0)
+            var bytesWritten = writer.WriteBeginChunkBytes(_advancedBytesForChunk);
+
+            Debug.Assert(bytesWritten <= BeginChunkLengthMax);
+
+            if (bytesWritten < BeginChunkLengthMax)
             {
-                var bytesWritten = writer.WriteBeginChunkBytes(_advancedBytesForChunk);
-
-                Debug.Assert(bytesWritten <= BeginChunkLengthMax);
-
-                if (bytesWritten < BeginChunkLengthMax)
-                {
-                    // If the current chunk of memory isn't completely utilized, we need to copy the contents forwards.
-                    // This occurs if someone uses less than 255 bytes of the current Memory segment.
-                    // Therefore, we need to copy it forwards by either 1 or 2 bytes (depending on number of bytes)
-                    _currentChunkMemory.Slice(BeginChunkLengthMax, _advancedBytesForChunk).CopyTo(_currentChunkMemory.Slice(bytesWritten));
-                }
-
-                writer.Advance(_advancedBytesForChunk);
-                writer.WriteEndChunkBytes();
-                writer.Commit();
-                _advancedBytesForChunk = 0;
-                _unflushedBytes += writer.BytesCommitted;
+                // If the current chunk of memory isn't completely utilized, we need to copy the contents forwards.
+                // This occurs if someone uses less than 255 bytes of the current Memory segment.
+                // Therefore, we need to copy it forwards by either 1 or 2 bytes (depending on number of bytes)
+                _currentChunkMemory.Slice(BeginChunkLengthMax, _advancedBytesForChunk).CopyTo(_currentChunkMemory.Slice(bytesWritten));
             }
 
-            // If there is an empty write, we still need to update the current chunk
-            _currentChunkMemoryUpdated = false;
+            writer.Advance(_advancedBytesForChunk);
+            writer.WriteEndChunkBytes();
+
+            _advancedBytesForChunk = 0;
         }
 
         private Memory<byte> GetFakeMemory(int sizeHint)
