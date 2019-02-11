@@ -31,10 +31,10 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             var httpContext = GetHttpContext();
             var options = new AntiforgeryOptions
             {
-#pragma warning disable CS0618
-                // obsolete property still forwards to correctly to the new API
-                RequireSsl = true
-#pragma warning restore CS0618
+                Cookie = new CookieBuilder
+                {
+                    SecurePolicy = CookieSecurePolicy.Always
+                }
             };
             var antiforgery = GetAntiforgery(httpContext, options);
 
