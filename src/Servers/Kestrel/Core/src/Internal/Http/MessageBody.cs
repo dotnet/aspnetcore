@@ -27,6 +27,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private bool _backpressure;
         private long _alreadyTimedBytes;
 
+
+
         protected MessageBody(HttpProtocol context, MinDataRate minRequestBodyDataRate)
         {
             _context = context;
@@ -44,6 +46,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public virtual bool IsEmpty => false;
 
         protected IKestrelTrace Log => _context.ServiceContext.Log;
+
+        //  Make these methods pipe-like
+
+        internal void AdvanceTo(SequencePosition consumed)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal void AdvanceTo(SequencePosition consumed, SequencePosition examined)
+        {
+            throw new NotImplementedException();
+        }
 
         public virtual async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default(CancellationToken))
         {

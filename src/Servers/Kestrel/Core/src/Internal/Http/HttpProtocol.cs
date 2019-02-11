@@ -31,6 +31,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected Streams _streams;
         private HttpResponsePipeWriter _originalPipeWriter;
+        private HttpRequestPipeReader _originalPipeReader;
         private Stack<KeyValuePair<Func<object, Task>, object>> _onStarting;
         private Stack<KeyValuePair<Func<object, Task>, object>> _onCompleted;
 
@@ -75,7 +76,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public IHttpResponseControl HttpResponseControl { get; set; }
 
-        public Pipe RequestBodyPipe { get; protected set; }
+        public Pipe RequestBodyPipe { get; protected set; } // TODO make sure this is removed or BodyPipe returns correct value
 
         public ServiceContext ServiceContext => _context.ServiceContext;
         private IPEndPoint LocalEndPoint => _context.LocalEndPoint;
@@ -193,6 +194,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public IHeaderDictionary RequestHeaders { get; set; }
         public Stream RequestBody { get; set; }
+        public PipeReader RequestPipeReader { get; set; }
 
         private int _statusCode;
         public int StatusCode
@@ -298,12 +300,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (_streams == null)
             {
                 var pipeWriter = new HttpResponsePipeWriter(this);
+                var pipeReader = new HttpRequestPipeReader(this);
                 _streams = new Streams(bodyControl: this, pipeWriter);
                 _originalPipeWriter = pipeWriter;
+                _originalPipeReader = pipeReader;
             }
 
             (RequestBody, ResponseBody) = _streams.Start(messageBody);
             ResponsePipeWriter = _originalPipeWriter;
+            RequestPipeReader = _originalPipeReader;
         }
 
         public void StopStreams() => _streams.Stop();
