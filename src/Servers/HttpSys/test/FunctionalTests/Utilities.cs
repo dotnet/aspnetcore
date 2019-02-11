@@ -162,7 +162,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 while (NextHttpsPort < MaxHttpsPort)
                 {
-
                     var port = NextHttpsPort++;
                     var prefix = UrlPrefix.Create("https", "localhost", port, basePath);
                     root = prefix.Scheme + "://" + prefix.Host + ":" + prefix.Port;
