@@ -191,7 +191,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             // Act & Assert
             var ex = Assert.Throws<InvalidOperationException>(
                 () => constraint.Match(
-                    new DefaultHttpContext(),
+                    GetHttpContext(),
                     Mock.Of<IRouter>(),
                     "area",
                     new RouteValueDictionary { { "area", "area" } },
