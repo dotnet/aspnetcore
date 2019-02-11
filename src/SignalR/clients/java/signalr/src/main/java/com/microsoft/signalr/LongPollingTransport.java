@@ -6,6 +6,7 @@ package com.microsoft.signalr;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +29,7 @@ class LongPollingTransport implements Transport {
     private Single<String> accessTokenProvider;
     private CompletableSubject receiveLoop = CompletableSubject.create();
     private ExecutorService threadPool;
-    private Boolean stopCalled = false;
+    private AtomicBoolean stopCalled = new AtomicBoolean(false);
 
     private final Logger logger = LoggerFactory.getLogger(LongPollingTransport.class);
 
@@ -82,7 +83,7 @@ class LongPollingTransport implements Transport {
     private Completable poll(String url) {
         if (this.active) {
             pollUrl = url + "&_=" + System.currentTimeMillis();
-            logger.debug("Polling {}", pollUrl);
+            logger.debug("Polling {}.", pollUrl);
             return this.updateHeaderToken().flatMapCompletable((x) -> {
                 HttpRequest request = new HttpRequest();
                 request.addHeaders(headers);
@@ -110,7 +111,7 @@ class LongPollingTransport implements Transport {
         } else {
             logger.debug("Long Polling transport polling complete.");
             receiveLoop.onComplete();
-            if (!stopCalled) {
+            if (!stopCalled.get()) {
                 return this.stop();
             }
             return Completable.complete();
@@ -147,17 +148,21 @@ class LongPollingTransport implements Transport {
 
     @Override
     public Completable stop() {
-        this.active = false;
-        return this.updateHeaderToken().flatMapCompletable((x) -> {
-            HttpRequest request = new HttpRequest();
-            request.addHeaders(headers);
-            this.pollingClient.delete(this.url, request);
-            CompletableSubject stopCompletableSubject = CompletableSubject.create();
-            return this.receiveLoop.andThen(Completable.defer(() -> {
-                logger.info("LongPolling transport stopped.");
-                this.onClose.invoke(this.closeError);
-                return Completable.complete();
-            })).subscribeWith(stopCompletableSubject);
-        });
+        if (!stopCalled.get()) {
+            this.stopCalled.set(true);
+            this.active = false;
+            return this.updateHeaderToken().flatMapCompletable((x) -> {
+                HttpRequest request = new HttpRequest();
+                request.addHeaders(headers);
+                this.pollingClient.delete(this.url, request);
+                CompletableSubject stopCompletableSubject = CompletableSubject.create();
+                return this.receiveLoop.andThen(Completable.defer(() -> {
+                    logger.info("LongPolling transport stopped.");
+                    this.onClose.invoke(this.closeError);
+                    return Completable.complete();
+                })).subscribeWith(stopCompletableSubject);
+            });
+        }
+        return Completable.complete();
     }
 }

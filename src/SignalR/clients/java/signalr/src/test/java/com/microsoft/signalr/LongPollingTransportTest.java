@@ -5,6 +5,7 @@ package com.microsoft.signalr;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.sql.Time;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -67,8 +68,8 @@ public class LongPollingTransportTest {
         });
 
         assertFalse(onClosedRan.get());
-        transport.start("http://example.com").timeout(100, TimeUnit.SECONDS).blockingAwait();
-        block.blockingAwait();
+        transport.start("http://example.com").timeout(1, TimeUnit.SECONDS).blockingAwait();
+        assertTrue(block.blockingAwait(1, TimeUnit.SECONDS));
         assertTrue(onClosedRan.get());
         assertFalse(transport.isActive());
     }
@@ -93,11 +94,10 @@ public class LongPollingTransportTest {
             onClosedRan.set(true);
             assertEquals("Unexpected response code 999.", error);
             blocker.onComplete();
-
         });
 
         transport.start("http://example.com").timeout(1, TimeUnit.SECONDS).blockingAwait();
-        blocker.blockingAwait();
+        assertTrue(blocker.blockingAwait(1, TimeUnit.SECONDS));
         assertFalse(transport.isActive());
         assertTrue(onClosedRan.get());
     }
@@ -153,7 +153,7 @@ public class LongPollingTransportTest {
         transport.setOnClose((error) -> {});
 
         transport.start("http://example.com").timeout(1, TimeUnit.SECONDS).blockingAwait();
-        block.blockingAwait(1,TimeUnit.SECONDS);
+        assertTrue(block.blockingAwait(1,TimeUnit.SECONDS));
         assertTrue(onReceiveCalled.get());
         assertEquals("TEST", message.get());
     }
@@ -195,7 +195,7 @@ public class LongPollingTransportTest {
         transport.setOnClose((error) -> {});
 
         transport.start("http://example.com").timeout(1, TimeUnit.SECONDS).blockingAwait();
-        blocker.blockingAwait(1, TimeUnit.SECONDS);
+        assertTrue(blocker.blockingAwait(1, TimeUnit.SECONDS));
         assertTrue(onReceiveCalled.get());
         assertEquals("FIRSTSECOND", message.get());
     }
@@ -211,7 +211,7 @@ public class LongPollingTransportTest {
                         requestCount.incrementAndGet();
                         return Single.just(new HttpResponse(200, "", ""));
                     }
-                    close.blockingAwait();
+                    assertTrue(close.blockingAwait(1, TimeUnit.SECONDS));
                     return Single.just(new HttpResponse(204, "", ""));
                 }).on("POST", (req) -> {
                     assertFalse(req.getHeaders().isEmpty());
@@ -225,7 +225,7 @@ public class LongPollingTransportTest {
         transport.setOnClose((error) -> {});
 
         transport.start("http://example.com").timeout(1, TimeUnit.SECONDS).blockingAwait();
-        transport.send("TEST").blockingAwait();
+        assertTrue(transport.send("TEST").blockingAwait(1, TimeUnit.SECONDS));
         close.onComplete();
         assertEquals(headerValue.get(), "VALUE");
     }
@@ -241,7 +241,7 @@ public class LongPollingTransportTest {
                         requestCount.incrementAndGet();
                         return Single.just(new HttpResponse(200, "", ""));
                     }
-                    close.blockingAwait();
+                    assertTrue(close.blockingAwait(1, TimeUnit.SECONDS));
                     return Single.just(new HttpResponse(204, "", ""));
                 })
                 .on("POST", (req) -> {
@@ -255,10 +255,78 @@ public class LongPollingTransportTest {
         LongPollingTransport transport = new LongPollingTransport(headers, client, tokenProvider);
         transport.setOnClose((error) -> {});
 
-        transport.start("http://example.com").timeout(100, TimeUnit.SECONDS).blockingAwait();
-        transport.send("TEST").blockingAwait();
+        transport.start("http://example.com").timeout(1, TimeUnit.SECONDS).blockingAwait();
+        assertTrue(transport.send("TEST").blockingAwait(1, TimeUnit.SECONDS));
         assertEquals(headerValue.get(), "Bearer TOKEN");
         assertEquals("Bearer TOKEN", client.getSentRequests().get(2).getHeaders().get("Authorization"));
         close.onComplete();
+    }
+
+    @Test
+    public void After204StopDoesNotTriggerOnClose() {
+        AtomicBoolean firstPoll = new AtomicBoolean(true);
+        CompletableSubject block = CompletableSubject.create();
+        TestHttpClient client = new TestHttpClient()
+                .on("GET", (req) -> {
+                    if (firstPoll.get()) {
+                        firstPoll.set(false);
+                        return Single.just(new HttpResponse(200, "", ""));
+                    }
+                    return Single.just(new HttpResponse(204, "", ""));
+                });
+
+        Map<String, String> headers = new HashMap<>();
+        LongPollingTransport transport = new LongPollingTransport(headers, client, Single.just(""));
+        AtomicBoolean onClosedRan = new AtomicBoolean(false);
+        AtomicInteger onCloseCount = new AtomicInteger(0);
+        transport.setOnClose((error) -> {
+            onClosedRan.set(true);
+            onCloseCount.incrementAndGet();
+            block.onComplete();
+        });
+
+        assertFalse(onClosedRan.get());
+        transport.start("http://example.com").timeout(1, TimeUnit.SECONDS).blockingAwait();
+        assertTrue(block.blockingAwait(1, TimeUnit.SECONDS));
+        assertEquals(1, onCloseCount.get());
+        assertTrue(onClosedRan.get());
+        assertFalse(transport.isActive());
+
+        assertTrue(transport.stop().blockingAwait(1, TimeUnit.SECONDS));
+        assertEquals(1, onCloseCount.get());
+    }
+
+    @Test
+    public void StoppingTransportRunsCloseHandlersOnce() {
+        AtomicBoolean firstPoll = new AtomicBoolean(true);
+        CompletableSubject block = CompletableSubject.create();
+        TestHttpClient client = new TestHttpClient()
+                .on("GET", (req) -> {
+                    if (firstPoll.get()) {
+                        firstPoll.set(false);
+                        return Single.just(new HttpResponse(200, "", ""));
+                    } else {
+                        assertTrue(block.blockingAwait(1, TimeUnit.SECONDS));
+                        return Single.just(new HttpResponse(204, "", ""));
+                    }
+                })
+                .on("DELETE", (req) ->{
+                    //Unblock the last poll when we sent the DELETE request.
+                   block.onComplete();
+                    return Single.just(new HttpResponse(200, "", ""));
+                });
+
+        Map<String, String> headers = new HashMap<>();
+        LongPollingTransport transport = new LongPollingTransport(headers, client, Single.just(""));
+        AtomicInteger onCloseCount = new AtomicInteger(0);
+        transport.setOnClose((error) -> {
+            onCloseCount.incrementAndGet();
+        });
+
+        assertEquals(0, onCloseCount.get());
+        transport.start("http://example.com").timeout(1, TimeUnit.SECONDS).blockingAwait();
+        assertTrue(transport.stop().blockingAwait(1, TimeUnit.SECONDS));
+        assertEquals(1, onCloseCount.get());
+        assertFalse(transport.isActive());
     }
 }
