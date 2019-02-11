@@ -142,8 +142,6 @@
     <MicrosoftAspNetWebApiClientPackageVersion>5.2.6</MicrosoftAspNetWebApiClientPackageVersion>
     <!-- Partner teams -->
     <MicrosoftAzureKeyVaultPackageVersion>2.3.2</MicrosoftAzureKeyVaultPackageVersion>
-    <MicrosoftAzureWebJobsPackageVersion>3.0.4</MicrosoftAzureWebJobsPackageVersion>
-    <MicrosoftAzureWebJobsExtensionsPackageVersion>3.0.1</MicrosoftAzureWebJobsExtensionsPackageVersion>
     <MicrosoftBuildFrameworkPackageVersion>15.8.166</MicrosoftBuildFrameworkPackageVersion>
     <MicrosoftBuildUtilitiesCorePackageVersion>15.8.166</MicrosoftBuildUtilitiesCorePackageVersion>
     <MicrosoftCodeAnalysisCommonPackageVersion>2.8.0</MicrosoftCodeAnalysisCommonPackageVersion>

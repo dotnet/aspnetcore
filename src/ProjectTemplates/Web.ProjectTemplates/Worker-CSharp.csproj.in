@@ -9,8 +9,8 @@
 
   <ItemGroup>
     <!--#if (WebJobs) -->
-    <PackageReference Include="Microsoft.Azure.WebJobs" Version="${MicrosoftAzureWebJobsPackageVersion}" />
-    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions" Version="${MicrosoftAzureWebJobsExtensionsPackageVersion}" />
+    <PackageReference Include="Microsoft.Azure.WebJobs" Version="3.0.2" /> <!--TODO Version-->
+    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions" Version="3.0.1" /> <!--TODO Version-->
     <!--#endif -->
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="${MicrosoftExtensionsHostingPackageVersion}" />
   </ItemGroup>
