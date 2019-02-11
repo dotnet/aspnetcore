@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-curl -o dotnet-install.sh -sSL https://dot.net/v1/dotnet-install.sh	wget https://dot.net/v1/dotnet-install.sh
+curl -o dotnet-install.sh -sSL https://dot.net/v1/dotnet-install.sh
 if [ $? -ne 0 ]; then	
     download_retries=3	
     while [ $download_retries -gt 0 ]; do	
