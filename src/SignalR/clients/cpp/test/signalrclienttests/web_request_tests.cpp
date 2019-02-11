@@ -8,7 +8,7 @@
 using namespace web;
 using namespace signalr;
 
-TEST(web_request_get_response, sends_request_receives_response)
+TEST(web_request_get_response, DISABLED_sends_request_receives_response)
 {
     web::uri url(_XPLATSTR("http://localhost:56000/web_request_test"));
     auto request_received = false;

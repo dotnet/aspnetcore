@@ -39,7 +39,7 @@ namespace signalr
         std::unique_ptr<web_request_factory> web_request_factory, std::unique_ptr<transport_factory> transport_factory)
         : m_base_url(url), m_query_string(query_string), m_connection_state(connection_state::disconnected), m_logger(log_writer, trace_level),
         m_transport(nullptr), m_web_request_factory(std::move(web_request_factory)), m_transport_factory(std::move(transport_factory)),
-        m_message_received([](const web::json::value&){}), m_disconnected([](){}), m_handshakeReceived(false)
+        m_message_received([](const utility::string_t&){}), m_disconnected([](){}), m_handshakeReceived(false)
     { }
 
     connection_impl::~connection_impl()
@@ -130,7 +130,7 @@ namespace signalr
                     if (task_canceled_exception)
                     {
                         connection->m_logger.log(trace_level::info,
-                            _XPLATSTR("starting the connection has been cancelled."));
+                            _XPLATSTR("starting the connection has been canceled."));
                     }
                     else
                     {
@@ -160,7 +160,7 @@ namespace signalr
         auto& logger = m_logger;
 
         auto process_response_callback =
-            [weak_connection, connect_request_tce, disconnect_cts, logger](const utility::string_t& response) mutable
+            [weak_connection, disconnect_cts, logger](const utility::string_t& response) mutable
             {
                 // When a connection is stopped we don't wait for its transport to stop. As a result if the same connection
                 // is immediately re-started the old transport can still invoke this callback. To prevent this we capture
@@ -177,7 +177,7 @@ namespace signalr
                 auto connection = weak_connection.lock();
                 if (connection)
                 {
-                    connection->process_response(response, connect_request_tce);
+                    connection->process_response(response);
                 }
             };
 
@@ -240,7 +240,7 @@ namespace signalr
                 try
                 {
                     connect_task.get();
-                    transport->send(_XPLATSTR("{\"protocol\":\"json\",\"version\":1}\x1e")).get();
+                    connect_request_tce.set();
                 }
                 catch (const std::exception& e)
                 {
@@ -256,109 +256,15 @@ namespace signalr
         return pplx::create_task(connect_request_tce);
     }
 
-    enum MessageType
-    {
-        Invocation = 1,
-        StreamItem,
-        Completion,
-        StreamInvocation,
-        CancelInvocation,
-        Ping,
-        Close,
-    };
-
-    void connection_impl::process_response(const utility::string_t& response, const pplx::task_completion_event<void>& connect_request_tce)
+    void connection_impl::process_response(const utility::string_t& response)
     {
         m_logger.log(trace_level::messages,
             utility::string_t(_XPLATSTR("processing message: ")).append(response));
 
-        try
-        {
-            auto pos = response.find('\x1e');
-            std::size_t lastPos = 0;
-            while (pos != utility::string_t::npos)
-            {
-                auto message = response.substr(lastPos, pos - lastPos);
-                const auto result = web::json::value::parse(message);
-
-                if (!result.is_object())
-                {
-                    m_logger.log(trace_level::info, utility::string_t(_XPLATSTR("unexpected response received from the server: "))
-                        .append(message));
-
-                    return;
-                }
-
-                if (!m_handshakeReceived)
-                {
-                    if (result.has_field(_XPLATSTR("error")))
-                    {
-                        auto error = result.at(_XPLATSTR("error")).as_string();
-                        m_logger.log(trace_level::errors, utility::string_t(_XPLATSTR("handshake error: "))
-                            .append(error));
-                        connect_request_tce.set_exception(signalr_exception(utility::string_t(_XPLATSTR("Received an error during handshake: ")).append(error)));
-                        return;
-                    }
-                    else
-                    {
-                        if (result.size() != 0)
-                        {
-                            connect_request_tce.set_exception(signalr_exception(utility::string_t(_XPLATSTR("Received unexpected message while waiting for the handshake response."))));
-                        }
-                        m_handshakeReceived = true;
-                        connect_request_tce.set();
-                        return;
-                    }
-                }
-
-                auto messageType = result.at(_XPLATSTR("type"));
-                switch (messageType.as_integer())
-                {
-                case MessageType::Invocation:
-                {
-                    invoke_message_received(result);
-                    break;
-                }
-                case MessageType::StreamInvocation:
-                    // Sent to server only, should not be received by client
-                    throw std::runtime_error("Received unexpected message type 'StreamInvocation'.");
-                case MessageType::StreamItem:
-                    // TODO
-                    break;
-                case MessageType::Completion:
-                {
-                    if (result.has_field(_XPLATSTR("error")) && result.has_field(_XPLATSTR("result")))
-                    {
-                        // TODO: error
-                    }
-                    invoke_message_received(result);
-                    break;
-                }
-                case MessageType::CancelInvocation:
-                    // Sent to server only, should not be received by client
-                    throw std::runtime_error("Received unexpected message type 'CancelInvocation'.");
-                case MessageType::Ping:
-                    // TODO
-                    break;
-                case MessageType::Close:
-                    // TODO
-                    break;
-                }
-
-                lastPos = pos + 1;
-                pos = response.find('\x1e', lastPos);
-            }
-        }
-        catch (const std::exception &e)
-        {
-            m_logger.log(trace_level::errors, utility::string_t(_XPLATSTR("error occured when parsing response: "))
-                .append(utility::conversions::to_string_t(e.what()))
-                .append(_XPLATSTR(". response: "))
-                .append(response));
-        }
+        invoke_message_received(response);
     }
 
-    void connection_impl::invoke_message_received(const web::json::value& message)
+    void connection_impl::invoke_message_received(const utility::string_t& message)
     {
         try
         {
@@ -520,16 +426,14 @@ namespace signalr
 
     void connection_impl::set_message_received_string(const std::function<void(const utility::string_t&)>& message_received)
     {
-        set_message_received_json([message_received](const web::json::value& payload)
-        {
-            message_received(payload.is_string() ? payload.as_string() : payload.serialize());
-        });
-    }
-
-    void connection_impl::set_message_received_json(const std::function<void(const web::json::value&)>& message_received)
-    {
         ensure_disconnected(_XPLATSTR("cannot set the callback when the connection is not in the disconnected state. "));
         m_message_received = message_received;
+    }
+
+    void connection_impl::set_message_received_json(const std::function<void(const web::json::value&)>& )
+    {
+        ensure_disconnected(_XPLATSTR("cannot set the callback when the connection is not in the disconnected state. "));
+        //m_message_received = message_received;
     }
 
     void connection_impl::set_connection_data(const utility::string_t& connection_data)

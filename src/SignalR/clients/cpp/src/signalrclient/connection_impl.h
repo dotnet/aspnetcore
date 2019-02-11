@@ -60,7 +60,7 @@ namespace signalr
         std::unique_ptr<web_request_factory> m_web_request_factory;
         std::unique_ptr<transport_factory> m_transport_factory;
 
-        std::function<void(const web::json::value&)> m_message_received;
+        std::function<void(const utility::string_t&)> m_message_received;
         std::function<void()> m_disconnected;
         signalr_client_config m_signalr_client_config;
 
@@ -80,14 +80,14 @@ namespace signalr
         pplx::task<void> send_connect_request(const std::shared_ptr<transport>& transport,
             const pplx::task_completion_event<void>& connect_request_tce);
 
-        void process_response(const utility::string_t& response, const pplx::task_completion_event<void>& connect_request_tce);
+        void process_response(const utility::string_t& response);
 
         pplx::task<void> shutdown();
 
         bool change_state(connection_state old_state, connection_state new_state);
         connection_state change_state(connection_state new_state);
         void handle_connection_state_change(connection_state old_state, connection_state new_state);
-        void invoke_message_received(const web::json::value& message);
+        void invoke_message_received(const utility::string_t& message);
 
         static utility::string_t translate_connection_state(connection_state state);
         void ensure_disconnected(const utility::string_t& error_message);
