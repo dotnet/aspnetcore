@@ -56,6 +56,7 @@ namespace signalr
         std::unordered_map<utility::string_t, std::function<void(const json::value &)>, case_insensitive_hash, case_insensitive_equals> m_subscriptions;
         bool m_handshakeReceived;
         pplx::task_completion_event<void> m_handshakeTask;
+        std::function<void()> m_disconnected;
 
         void initialize();
 

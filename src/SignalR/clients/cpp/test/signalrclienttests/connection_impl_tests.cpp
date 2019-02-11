@@ -445,7 +445,7 @@ TEST(connection_impl_set_message_received, callback_invoked_when_message_receive
     auto message = std::make_shared<utility::string_t>();
 
     auto message_received_event = std::make_shared<event>();
-    connection->set_message_received_string([message, message_received_event](const utility::string_t &m)
+    connection->set_message_received([message, message_received_event](const utility::string_t &m)
     {
         if (m == _XPLATSTR("Test"))
         {
@@ -487,7 +487,7 @@ TEST(connection_impl_set_message_received, exception_from_callback_caught_and_lo
     auto connection = create_connection(websocket_client, writer, trace_level::errors);
 
     auto message_received_event = std::make_shared<event>();
-    connection->set_message_received_string([message_received_event](const utility::string_t &m)
+    connection->set_message_received([message_received_event](const utility::string_t &m)
     {
         if (m == _XPLATSTR("throw"))
         {
@@ -533,7 +533,7 @@ TEST(connection_impl_set_message_received, non_std_exception_from_callback_caugh
     auto connection = create_connection(websocket_client, writer, trace_level::errors);
 
     auto message_received_event = std::make_shared<event>();
-    connection->set_message_received_string([message_received_event](const utility::string_t &m)
+    connection->set_message_received([message_received_event](const utility::string_t &m)
     {
         if (m == _XPLATSTR("throw"))
         {
@@ -580,7 +580,7 @@ TEST(connection_impl_set_message_received, DISABLED_error_logged_for_malformed_p
     auto connection = create_connection(websocket_client, writer, trace_level::errors);
 
     auto message_received_event = std::make_shared<event>();
-    connection->set_message_received_string([message_received_event](const utility::string_t&)
+    connection->set_message_received([message_received_event](const utility::string_t&)
     {
         // this is called only once because we have just one response with a message
         message_received_event->set();
@@ -620,7 +620,7 @@ TEST(connection_impl_set_message_received, DISABLED_unexpected_responses_logged)
     auto connection = create_connection(websocket_client, writer, trace_level::info);
 
     auto message_received_event = std::make_shared<event>();
-    connection->set_message_received_string([message_received_event](const utility::string_t&)
+    connection->set_message_received([message_received_event](const utility::string_t&)
     {
         // this is called only once because we have just one response with a message
         message_received_event->set();
@@ -656,17 +656,10 @@ void can_be_set_only_in_disconnected_state(std::function<void(connection_impl *)
     }
 }
 
-TEST(connection_impl_set_configuration, set_message_received_string_callback_can_be_set_only_in_disconnected_state)
+TEST(connection_impl_set_configuration, set_message_received_callback_can_be_set_only_in_disconnected_state)
 {
     can_be_set_only_in_disconnected_state(
-        [](connection_impl* connection) { connection->set_message_received_string([](const utility::string_t&){}); },
-        "cannot set the callback when the connection is not in the disconnected state. current connection state: connected");
-}
-
-TEST(connection_impl_set_configuration, set_message_received_json_callback_can_be_set_only_in_disconnected_state)
-{
-    can_be_set_only_in_disconnected_state(
-        [](connection_impl* connection) { connection->set_message_received_json([](const web::json::value&){}); },
+        [](connection_impl* connection) { connection->set_message_received([](const utility::string_t&){}); },
         "cannot set the callback when the connection is not in the disconnected state. current connection state: connected");
 }
 

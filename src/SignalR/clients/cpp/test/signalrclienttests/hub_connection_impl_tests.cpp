@@ -95,6 +95,55 @@ TEST(start, start_waits_for_handshake_response)
     ASSERT_EQ(connection_state::connected, hub_connection->get_connection_state());
 }
 
+TEST(start, start_fails_for_handshake_response_with_error)
+{
+    auto websocket_client = create_test_websocket_client(
+        /* receive function */ []() { return pplx::task_from_result(std::string("{\"error\":\"bad things\"}\x1e")); });
+    auto hub_connection = create_hub_connection(websocket_client);
+
+    try
+    {
+        hub_connection->start().get();
+        ASSERT_TRUE(false);
+    }
+    catch (std::exception ex)
+    {
+        ASSERT_STREQ("Received an error during handshake: bad things", ex.what());
+    }
+
+    ASSERT_EQ(connection_state::disconnected, hub_connection->get_connection_state());
+}
+
+TEST(start, start_fails_if_stop_called_before_handshake_response)
+{
+    pplx::task_completion_event<std::string> tce;
+    pplx::task_completion_event<void> tceWaitForSend;
+    auto websocket_client = create_test_websocket_client(
+        /* receive function */ [tce]() { return pplx::task<std::string>(tce); },
+        /* send function */ [tceWaitForSend](const utility::string_t &)
+        {
+            tceWaitForSend.set();
+            return pplx::task_from_result();
+        });
+    auto hub_connection = create_hub_connection(websocket_client);
+
+    auto startTask = hub_connection->start();
+    pplx::task<void>(tceWaitForSend).get();
+    hub_connection->stop();
+
+    try
+    {
+        startTask.get();
+        ASSERT_TRUE(false);
+    }
+    catch (std::exception ex)
+    {
+        ASSERT_STREQ("connection closed while handshake was in progress.", ex.what());
+    }
+
+    ASSERT_EQ(connection_state::disconnected, hub_connection->get_connection_state());
+}
+
 TEST(stop, stop_stops_connection)
 {
     auto websocket_client = create_test_websocket_client(

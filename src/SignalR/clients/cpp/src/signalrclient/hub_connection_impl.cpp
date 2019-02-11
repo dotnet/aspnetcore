@@ -54,12 +54,25 @@ namespace signalr
         // weak_ptr prevents a circular dependency leading to memory leak and other problems
         auto weak_hub_connection = std::weak_ptr<hub_connection_impl>(this_hub_connection);
 
-        m_connection->set_message_received_string([weak_hub_connection](const utility::string_t& message)
+        m_connection->set_message_received([weak_hub_connection](const utility::string_t& message)
         {
             auto connection = weak_hub_connection.lock();
             if (connection)
             {
                 connection->process_message(message);
+            }
+        });
+
+        m_connection->set_disconnected([weak_hub_connection]()
+        {
+            auto connection = weak_hub_connection.lock();
+            if (connection)
+            {
+                connection->m_handshakeTask.set_exception(signalr_exception(_XPLATSTR("connection closed while handshake was in progress.")));
+                if (connection->m_disconnected)
+                {
+                    connection->m_disconnected();
+                }
             }
         });
     }
@@ -112,6 +125,23 @@ namespace signalr
                     {
                         previous_task.get();
                         return pplx::task<void>(m_handshakeTask);
+                    })
+                    .then([weak_connection](pplx::task<void> previous_task)
+                    {
+                        try
+                        {
+                            previous_task.get();
+                            return previous_task;
+                        }
+                        catch (std::exception)
+                        {
+                            auto connection = weak_connection.lock();
+                            if (connection)
+                            {
+                                connection->stop();
+                            }
+                            throw;
+                        }
                     });
             });
     }
@@ -249,7 +279,7 @@ namespace signalr
                 [tce](const std::exception_ptr e) { tce.set_exception(e); }));
 
         invoke_hub_method(method_name, arguments, callback_id, nullptr,
-            [tce](const std::exception_ptr e){tce.set_exception(e); });
+            [tce](const std::exception_ptr e){ tce.set_exception(e); });
 
         return pplx::create_task(tce);
     }
@@ -325,7 +355,7 @@ namespace signalr
 
     void hub_connection_impl::set_disconnected(const std::function<void()>& disconnected)
     {
-        m_connection->set_disconnected(disconnected);
+        m_disconnected = disconnected;
     }
 
     // unnamed namespace makes it invisble outside this translation unit

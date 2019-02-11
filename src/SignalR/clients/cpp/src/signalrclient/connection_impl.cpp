@@ -39,7 +39,7 @@ namespace signalr
         std::unique_ptr<web_request_factory> web_request_factory, std::unique_ptr<transport_factory> transport_factory)
         : m_base_url(url), m_query_string(query_string), m_connection_state(connection_state::disconnected), m_logger(log_writer, trace_level),
         m_transport(nullptr), m_web_request_factory(std::move(web_request_factory)), m_transport_factory(std::move(transport_factory)),
-        m_message_received([](const utility::string_t&){}), m_disconnected([](){}), m_handshakeReceived(false)
+        m_message_received([](const utility::string_t&){}), m_disconnected([](){})
     { }
 
     connection_impl::~connection_impl()
@@ -364,7 +364,6 @@ namespace signalr
     // This function is called from the dtor so you must not use `shared_from_this` here (it will throw).
     pplx::task<void> connection_impl::shutdown()
     {
-        m_handshakeReceived = false;
         {
             std::lock_guard<std::mutex> lock(m_stop_lock);
             m_logger.log(trace_level::info, _XPLATSTR("acquired lock in shutdown()"));
@@ -424,16 +423,10 @@ namespace signalr
         return m_connection_id;
     }
 
-    void connection_impl::set_message_received_string(const std::function<void(const utility::string_t&)>& message_received)
+    void connection_impl::set_message_received(const std::function<void(const utility::string_t&)>& message_received)
     {
         ensure_disconnected(_XPLATSTR("cannot set the callback when the connection is not in the disconnected state. "));
         m_message_received = message_received;
-    }
-
-    void connection_impl::set_message_received_json(const std::function<void(const web::json::value&)>& )
-    {
-        ensure_disconnected(_XPLATSTR("cannot set the callback when the connection is not in the disconnected state. "));
-        //m_message_received = message_received;
     }
 
     void connection_impl::set_connection_data(const utility::string_t& connection_data)
