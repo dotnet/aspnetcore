@@ -26,16 +26,6 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         /// Creates a new instance of the <see cref="CorsService"/>.
         /// </summary>
         /// <param name="options">The option model representing <see cref="CorsOptions"/>.</param>
-        [Obsolete("This constructor is obsolete and will be removed in a future version.")]
-        public CorsService(IOptions<CorsOptions> options)
-            : this(options, loggerFactory: NullLoggerFactory.Instance)
-        {
-        }
-
-        /// <summary>
-        /// Creates a new instance of the <see cref="CorsService"/>.
-        /// </summary>
-        /// <param name="options">The option model representing <see cref="CorsOptions"/>.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         public CorsService(IOptions<CorsOptions> options, ILoggerFactory loggerFactory)
         {
