@@ -18,28 +18,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
     public class HeaderModelBinderTests
     {
-        public static TheoryData<HeaderModelBinder> HeaderModelBinderWithoutInnerBinderData
-        {
-            get
-            {
-                var data = new TheoryData<HeaderModelBinder>
-                {
-#pragma warning disable CS0618
-                    new HeaderModelBinder(),
-#pragma warning restore CS0618
-                    new HeaderModelBinder(NullLoggerFactory.Instance),
-                };
-
-                return data;
-            }
-        }
-
-        [Theory]
-        [MemberData(nameof(HeaderModelBinderWithoutInnerBinderData))]
-        public async Task HeaderBinder_BindsHeaders_ToStringCollection_WithoutInnerModelBinder(
-            HeaderModelBinder binder)
+        [Fact]
+        public async Task HeaderBinder_BindsHeaders_ToStringCollection_WithoutInnerModelBinder()
         {
             // Arrange
+            var binder = new HeaderModelBinder(NullLoggerFactory.Instance);
             var type = typeof(string[]);
             var header = "Accept";
             var headerValue = "application/json,text/json";
@@ -57,15 +40,16 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             Assert.Equal(headerValue.Split(','), bindingContext.Result.Model);
         }
 
-        [Theory]
-        [MemberData(nameof(HeaderModelBinderWithoutInnerBinderData))]
-        public async Task HeaderBinder_BindsHeaders_ToStringType_WithoutInnerModelBinder(HeaderModelBinder binder)
+        [Fact]
+        public async Task HeaderBinder_BindsHeaders_ToStringType_WithoutInnerModelBinder()
         {
             // Arrange
             var type = typeof(string);
             var header = "User-Agent";
             var headerValue = "UnitTest";
             var bindingContext = CreateContext(type);
+
+            var binder = new HeaderModelBinder(NullLoggerFactory.Instance);
 
             bindingContext.FieldName = header;
             bindingContext.HttpContext.Request.Headers.Add(header, new[] { headerValue });
@@ -91,9 +75,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // Arrange
             var header = "Accept";
             var headerValue = "application/json,text/json";
-#pragma warning disable CS0618
-            var binder = new HeaderModelBinder();
-#pragma warning restore CS0618
+            var binder = new HeaderModelBinder(NullLoggerFactory.Instance);
             var bindingContext = CreateContext(destinationType);
 
             bindingContext.FieldName = header;

@@ -11,7 +11,6 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
@@ -23,19 +22,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     {
         private static readonly IValueProvider EmptyValueProvider = new CompositeValueProvider();
         private Func<object> _modelCreator;
-
-        /// <summary>
-        /// <para>This constructor is obsolete and will be removed in a future version. The recommended alternative
-        /// is the overload that also takes an <see cref="ILoggerFactory"/>.</para>
-        /// <para>Creates a new <see cref="CollectionModelBinder{TElement}"/>.</para>
-        /// </summary>
-        /// <param name="elementBinder">The <see cref="IModelBinder"/> for binding elements.</param>
-        [Obsolete("This constructor is obsolete and will be removed in a future version. The recommended alternative"
-            + " is the overload that also takes an " + nameof(ILoggerFactory) + ".")]
-        public CollectionModelBinder(IModelBinder elementBinder)
-            : this(elementBinder, NullLoggerFactory.Instance)
-        {
-        }
 
         /// <summary>
         /// Creates a new <see cref="CollectionModelBinder{TElement}"/>.

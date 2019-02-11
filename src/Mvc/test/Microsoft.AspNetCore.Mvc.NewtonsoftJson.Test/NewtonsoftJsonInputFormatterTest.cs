@@ -27,51 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         private static readonly JsonSerializerSettings _serializerSettings = new JsonSerializerSettings();
 
         [Fact]
-        public async Task Version_2_0_Constructor_BuffersRequestBody_ByDefault()
-        {
-            // Arrange
-#pragma warning disable CS0618
-            var formatter = new NewtonsoftJsonInputFormatter(
-                GetLogger(),
-                _serializerSettings,
-                ArrayPool<char>.Shared,
-                _objectPoolProvider);
-#pragma warning restore CS0618
-
-            var content = "{name: 'Person Name', Age: '30'}";
-            var contentBytes = Encoding.UTF8.GetBytes(content);
-            var httpContext = new DefaultHttpContext();
-            httpContext.Features.Set<IHttpResponseFeature>(new TestResponseFeature());
-            httpContext.Request.Body = new NonSeekableReadStream(contentBytes);
-            httpContext.Request.ContentType = "application/json";
-
-            var formatterContext = CreateInputFormatterContext(typeof(User), httpContext);
-
-            // Act
-            var result = await formatter.ReadAsync(formatterContext);
-
-            // Assert
-            Assert.False(result.HasError);
-
-            var userModel = Assert.IsType<User>(result.Model);
-            Assert.Equal("Person Name", userModel.Name);
-            Assert.Equal(30, userModel.Age);
-
-            Assert.True(httpContext.Request.Body.CanSeek);
-            httpContext.Request.Body.Seek(0L, SeekOrigin.Begin);
-
-            result = await formatter.ReadAsync(formatterContext);
-
-            // Assert
-            Assert.False(result.HasError);
-
-            userModel = Assert.IsType<User>(result.Model);
-            Assert.Equal("Person Name", userModel.Name);
-            Assert.Equal(30, userModel.Age);
-        }
-
-        [Fact]
-        public async Task Version_2_1_Constructor_BuffersRequestBody_UsingDefaultOptions()
+        public async Task Constructor_BuffersRequestBody_UsingDefaultOptions()
         {
             // Arrange
             var formatter = new NewtonsoftJsonInputFormatter(
@@ -115,47 +71,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         }
 
         [Fact]
-        public async Task Version_2_0_Constructor_SuppressInputFormatterBufferingSetToTrue_DoesNotBufferRequestBody()
-        {
-            // Arrange
-#pragma warning disable CS0618
-            var formatter = new NewtonsoftJsonInputFormatter(
-                GetLogger(),
-                _serializerSettings,
-                ArrayPool<char>.Shared,
-                _objectPoolProvider,
-                suppressInputFormatterBuffering: true);
-#pragma warning restore CS0618
-
-            var content = "{name: 'Person Name', Age: '30'}";
-            var contentBytes = Encoding.UTF8.GetBytes(content);
-            var httpContext = new DefaultHttpContext();
-            httpContext.Features.Set<IHttpResponseFeature>(new TestResponseFeature());
-            httpContext.Request.Body = new NonSeekableReadStream(contentBytes);
-            httpContext.Request.ContentType = "application/json";
-
-            var formatterContext = CreateInputFormatterContext(typeof(User), httpContext);
-
-            // Act
-            var result = await formatter.ReadAsync(formatterContext);
-
-            // Assert
-            Assert.False(result.HasError);
-
-            var userModel = Assert.IsType<User>(result.Model);
-            Assert.Equal("Person Name", userModel.Name);
-            Assert.Equal(30, userModel.Age);
-
-            Assert.False(httpContext.Request.Body.CanSeek);
-            result = await formatter.ReadAsync(formatterContext);
-
-            // Assert
-            Assert.False(result.HasError);
-            Assert.Null(result.Model);
-        }
-
-        [Fact]
-        public async Task Version_2_1_Constructor_SuppressInputFormatterBuffering_UsingMvcOptions_DoesNotBufferRequestBody()
+        public async Task Constructor_SuppressInputFormatterBuffering_UsingMvcOptions_DoesNotBufferRequestBody()
         {
             // Arrange
             var mvcOptions = new MvcOptions()
