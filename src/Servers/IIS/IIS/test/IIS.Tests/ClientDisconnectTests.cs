@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
@@ -203,7 +204,16 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                     cancellationTokenSource.Cancel();
                     await requestCompletedCompletionSource.Task.DefaultTimeout();
                 }
-                Assert.IsType<OperationCanceledException>(exception);
+
+                try
+                {
+                    Assert.IsType<OperationCanceledException>(exception);
+                }
+                catch (Exception e)
+                {
+                    Logger.LogError(e, "Unexpected exception");
+                    throw;
+                }
             }
         }
 

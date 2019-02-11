@@ -19,14 +19,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     public partial class HttpProtocol : IHttpRequestFeature,
                                         IHttpResponseFeature,
+                                        IResponseBodyPipeFeature,
                                         IHttpUpgradeFeature,
                                         IHttpConnectionFeature,
                                         IHttpRequestLifetimeFeature,
                                         IHttpRequestIdentifierFeature,
                                         IHttpBodyControlFeature,
                                         IHttpMaxRequestBodySizeFeature,
-                                        IHttpResponseStartFeature,
-                                        IResponseBodyPipeFeature
+                                        IHttpResponseStartFeature
     {
         // NOTE: When feature interfaces are added to or removed from this HttpProtocol class implementation,
         // then the list of `implementedFeatures` in the generated code project MUST also be updated.
