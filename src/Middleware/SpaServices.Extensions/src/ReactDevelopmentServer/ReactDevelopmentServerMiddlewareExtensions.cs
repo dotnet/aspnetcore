@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.SpaServices.DevelopmentServer;
 using System;
 
 namespace Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer
@@ -21,23 +22,12 @@ namespace Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer
         /// </summary>
         /// <param name="spaBuilder">The <see cref="ISpaBuilder"/>.</param>
         /// <param name="npmScript">The name of the script in your package.json file that launches the create-react-app server.</param>
+        [Obsolete("Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer.ReactDevelopmentServerMiddlewareExtensions.UseReactDevelopmentServer is deprecated, please use Microsoft.AspNetCore.SpaServices.DevelopmentServer.DevelopmentServerMiddlewareExtensions.UseReactDevelopmentServer instead.")]
         public static void UseReactDevelopmentServer(
             this ISpaBuilder spaBuilder,
             string npmScript)
         {
-            if (spaBuilder == null)
-            {
-                throw new ArgumentNullException(nameof(spaBuilder));
-            }
-
-            var spaOptions = spaBuilder.Options;
-
-            if (string.IsNullOrEmpty(spaOptions.SourcePath))
-            {
-                throw new InvalidOperationException($"To use {nameof(UseReactDevelopmentServer)}, you must supply a non-empty value for the {nameof(SpaOptions.SourcePath)} property of {nameof(SpaOptions)} when calling {nameof(SpaApplicationBuilderExtensions.UseSpa)}.");
-            }
-
-            ReactDevelopmentServerMiddleware.Attach(spaBuilder, npmScript);
+            DevelopmentServerMiddlewareExtensions.UseReactDevelopmentServer(spaBuilder, npmScript);
         }
     }
 }

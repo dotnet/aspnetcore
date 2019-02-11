@@ -13,16 +13,18 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SpaServices.Extensions.Util;
 
-namespace Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer
+namespace Microsoft.AspNetCore.SpaServices.DevelopmentServer
 {
-    internal static class ReactDevelopmentServerMiddleware
+    internal static class DevelopmentServerMiddleware
     {
         private const string LogCategoryName = "Microsoft.AspNetCore.SpaServices";
         private static TimeSpan RegexMatchTimeout = TimeSpan.FromSeconds(5); // This is a development-time only feature, so a very long timeout is fine
 
         public static void Attach(
             ISpaBuilder spaBuilder,
-            string npmScriptName)
+            string npmScriptName,
+            string waitText,
+            string serverName = "App")
         {
             var sourcePath = spaBuilder.Options.SourcePath;
             if (string.IsNullOrEmpty(sourcePath))
@@ -38,7 +40,7 @@ namespace Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer
             // Start create-react-app and attach to middleware pipeline
             var appBuilder = spaBuilder.ApplicationBuilder;
             var logger = LoggerFinder.GetOrCreateLogger(appBuilder, LogCategoryName);
-            var portTask = StartCreateReactAppServerAsync(sourcePath, npmScriptName, logger);
+            var portTask = StartCreateAppServerAsync(sourcePath, npmScriptName, waitText, serverName, logger);
 
             // Everything we proxy is hardcoded to target http://localhost because:
             // - the requests are always from the local machine (we're not accepting remote
@@ -54,22 +56,22 @@ namespace Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer
                 // the first request times out, subsequent requests could still work.
                 var timeout = spaBuilder.Options.StartupTimeout;
                 return targetUriTask.WithTimeout(timeout,
-                    $"The create-react-app server did not start listening for requests " +
+                    $"The {serverName} server did not start listening for requests " +
                     $"within the timeout period of {timeout.Seconds} seconds. " +
                     $"Check the log output for error information.");
             });
         }
 
-        private static async Task<int> StartCreateReactAppServerAsync(
-            string sourcePath, string npmScriptName, ILogger logger)
+        private static async Task<int> StartCreateAppServerAsync(
+            string sourcePath, string npmScriptName, string waitText, string serverName, ILogger logger)
         {
             var portNumber = TcpPortFinder.FindAvailablePort();
-            logger.LogInformation($"Starting create-react-app server on port {portNumber}...");
+            logger.LogInformation($"Starting {serverName} server on port {portNumber}...");
 
             var envVars = new Dictionary<string, string>
             {
                 { "PORT", portNumber.ToString() },
-                { "BROWSER", "none" }, // We don't want create-react-app to open its own extra browser window pointing to the internal dev server port
+                { "BROWSER", "none" }, // We don't want the dev server to open its own extra browser window pointing to the internal dev server port
             };
             var npmScriptRunner = new NpmScriptRunner(
                 sourcePath, npmScriptName, null, envVars);
@@ -79,18 +81,18 @@ namespace Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer
             {
                 try
                 {
-                    // Although the React dev server may eventually tell us the URL it's listening on,
+                    // Although the dev server may eventually tell us the URL it's listening on,
                     // it doesn't do so until it's finished compiling, and even then only if there were
                     // no compiler warnings. So instead of waiting for that, consider it ready as soon
                     // as it starts listening for requests.
                     await npmScriptRunner.StdOut.WaitForMatch(
-                        new Regex("Starting the development server", RegexOptions.None, RegexMatchTimeout));
+                        new Regex(waitText, RegexOptions.None, RegexMatchTimeout));
                 }
                 catch (EndOfStreamException ex)
                 {
                     throw new InvalidOperationException(
                         $"The NPM script '{npmScriptName}' exited without indicating that the " +
-                        $"create-react-app server was listening for requests. The error output was: " +
+                        $"{serverName} server was listening for requests. The error output was: " +
                         $"{stdErrReader.ReadAsString()}", ex);
                 }
             }
