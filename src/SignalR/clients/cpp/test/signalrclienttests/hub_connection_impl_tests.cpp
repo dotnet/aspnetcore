@@ -58,6 +58,43 @@ TEST(start, start_starts_connection)
     ASSERT_EQ(connection_state::connected, hub_connection->get_connection_state());
 }
 
+TEST(start, start_sends_handshake)
+{
+    auto message = std::make_shared<utility::string_t>();
+    auto websocket_client = create_test_websocket_client(
+        /* receive function */ []() { return pplx::task_from_result(std::string("{ }\x1e")); },
+        /* send function */ [message](const utility::string_t& msg) { *message = msg; return pplx::task_from_result(); });
+    auto hub_connection = create_hub_connection(websocket_client);
+
+    hub_connection->start().get();
+
+    ASSERT_EQ(_XPLATSTR("{\"protocol\":\"json\",\"version\":1}\x1e"), *message);
+
+    ASSERT_EQ(connection_state::connected, hub_connection->get_connection_state());
+}
+
+TEST(start, start_waits_for_handshake_response)
+{
+    pplx::task_completion_event<void> tce;
+    pplx::task_completion_event<void> tceWaitForSend;
+    auto websocket_client = create_test_websocket_client(
+        /* receive function */ [tce, tceWaitForSend]()
+        {
+            tceWaitForSend.set();
+            pplx::task<void>(tce).get();
+            return pplx::task_from_result(std::string("{ }\x1e"));
+        });
+    auto hub_connection = create_hub_connection(websocket_client);
+
+    auto startTask = hub_connection->start();
+    pplx::task<void>(tceWaitForSend).get();
+    ASSERT_FALSE(startTask.is_done());
+    tce.set();
+    startTask.get();
+
+    ASSERT_EQ(connection_state::connected, hub_connection->get_connection_state());
+}
+
 TEST(stop, stop_stops_connection)
 {
     auto websocket_client = create_test_websocket_client(
