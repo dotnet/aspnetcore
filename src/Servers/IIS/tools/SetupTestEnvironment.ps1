@@ -8,7 +8,7 @@ Remove-Item "HKLM:\SOFTWARE\Microsoft\IIS Extensions\IIS AspNetCore Module V2\Pa
 
 if (!($DumpFolder))
 {
-    $DumpFolder = "$PSScriptRoot\..\..\..\..\artifacts\dumps"
+    $DumpFolder = "$PSScriptRoot\..\..\..\..\artifacts\logs\dumps"
 }
 if (!(Test-Path $DumpFolder))
 {
