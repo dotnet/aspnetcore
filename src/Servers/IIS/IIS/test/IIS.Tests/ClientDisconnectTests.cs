@@ -207,7 +207,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
                 try
                 {
-
                     Assert.IsType<OperationCanceledException>(exception);
                 }
                 catch (Exception e)
