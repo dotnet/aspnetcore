@@ -24,6 +24,7 @@
     <!-- These projects product packages that the templates depend on. See GenerateContent.targets -->
     <PackageVersionVariableReference Include="$(RepositoryRoot)src\Azure\AzureAD\Authentication.AzureAD.UI\src\Microsoft.AspNetCore.Authentication.AzureAD.UI.csproj" />
     <PackageVersionVariableReference Include="$(RepositoryRoot)src\Azure\AzureAD\Authentication.AzureADB2C.UI\src\Microsoft.AspNetCore.Authentication.AzureADB2C.UI.csproj" />
+    <PackageVersionVariableReference Include="$(RepositoryRoot)src\Components\Components\src\Microsoft.AspNetCore.Components.csproj" />
     <PackageVersionVariableReference Include="$(RepositoryRoot)src\Components\Browser\src\Microsoft.AspNetCore.Components.Browser.csproj" />
     <PackageVersionVariableReference Include="$(RepositoryRoot)src\Components\Build\src\Microsoft.AspNetCore.Components.Build.csproj" />
     <PackageVersionVariableReference Include="$(RepositoryRoot)src\Components\Server\src\Microsoft.AspNetCore.Components.Server.csproj" />
