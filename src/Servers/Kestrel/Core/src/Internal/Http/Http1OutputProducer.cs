@@ -5,7 +5,6 @@ using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.IO.Pipelines;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -16,10 +15,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     public class Http1OutputProducer : IHttpOutputProducer, IHttpOutputAborter, IDisposable
     {
-        private static readonly ReadOnlyMemory<byte> _continueBytes = new ReadOnlyMemory<byte>(Encoding.ASCII.GetBytes("HTTP/1.1 100 Continue\r\n\r\n"));
-        private static readonly byte[] _bytesHttpVersion11 = Encoding.ASCII.GetBytes("HTTP/1.1 ");
-        private static readonly byte[] _bytesEndHeaders = Encoding.ASCII.GetBytes("\r\n\r\n");
-        private static readonly ReadOnlyMemory<byte> _endChunkedResponseBytes = new ReadOnlyMemory<byte>(Encoding.ASCII.GetBytes("0\r\n\r\n"));
+        // Use C#7.3's ReadOnlySpan<byte> optimization for static data https://vcsjones.com/2019/02/01/csharp-readonly-span-bytes-static/
+        // "HTTP/1.1 100 Continue\r\n\r\n"
+        private static ReadOnlySpan<byte> ContinueBytes => new byte[] { (byte)'H', (byte)'T', (byte)'T', (byte)'P', (byte)'/', (byte)'1', (byte)'.', (byte)'1', (byte)' ', (byte)'1', (byte)'0', (byte)'0', (byte)' ', (byte)'C', (byte)'o', (byte)'n', (byte)'t', (byte)'i', (byte)'n', (byte)'u', (byte)'e', (byte)'\r', (byte)'\n', (byte)'\r', (byte)'\n' };
+        // "HTTP/1.1 "
+        private static ReadOnlySpan<byte> HttpVersion11Bytes => new byte[] { (byte)'H', (byte)'T', (byte)'T', (byte)'P', (byte)'/', (byte)'1', (byte)'.', (byte)'1', (byte)' ' };
+        // "\r\n\r\n"
+        private static ReadOnlySpan<byte> EndHeadersBytes => new byte[] { (byte)'\r', (byte)'\n', (byte)'\r', (byte)'\n' };
+        // "0\r\n\r\n"
+        private static ReadOnlySpan<byte> EndChunkedResponseBytes => new byte[] { (byte)'0', (byte)'\r', (byte)'\n', (byte)'\r', (byte)'\n' };
 
         private readonly string _connectionId;
         private readonly ConnectionContext _connectionContext;
@@ -91,7 +95,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public ValueTask<FlushResult> WriteStreamSuffixAsync()
         {
-            return WriteAsync(_endChunkedResponseBytes.Span);
+            return WriteAsync(EndChunkedResponseBytes);
         }
 
         public ValueTask<FlushResult> FlushAsync(CancellationToken cancellationToken = default)
@@ -213,11 +217,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 var buffer = _pipeWriter;
                 var writer = new BufferWriter<PipeWriter>(buffer);
 
-                writer.Write(_bytesHttpVersion11);
+                writer.Write(HttpVersion11Bytes);
                 var statusBytes = ReasonPhrases.ToStatusBytes(statusCode, reasonPhrase);
                 writer.Write(statusBytes);
                 responseHeaders.CopyTo(ref writer);
-                writer.Write(_bytesEndHeaders);
+                writer.Write(EndHeadersBytes);
 
                 writer.Commit();
 
@@ -279,7 +283,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public ValueTask<FlushResult> Write100ContinueAsync()
         {
-            return WriteAsync(_continueBytes.Span);
+            return WriteAsync(ContinueBytes);
         }
 
         private ValueTask<FlushResult> WriteAsync(
