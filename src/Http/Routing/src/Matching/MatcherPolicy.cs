@@ -1,6 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Matching;
 
 namespace Microsoft.AspNetCore.Routing
@@ -24,5 +27,30 @@ namespace Microsoft.AspNetCore.Routing
         /// property.
         /// </summary>
         public abstract int Order { get; }
+
+        /// <summary>
+        /// Returns a value that indicates whether the provided <paramref name="endpoints"/> contains
+        /// one or more dynamic endpoints.
+        /// </summary>
+        /// <param name="endpoints">The set of endpoints.</param>
+        /// <returns><c>true</c> if a dynamic endpoint is found; otherwise returns <c>false</c>.</returns>
+        protected static bool ContainsDynamicEndpoints(IReadOnlyList<Endpoint> endpoints)
+        {
+            if (endpoints == null)
+            {
+                throw new ArgumentNullException(nameof(endpoints));
+            }
+
+            for (var i = 0; i < endpoints.Count; i++)
+            {
+                var metadata = endpoints[i].Metadata.GetMetadata<IDynamicEndpointMetadata>();
+                if (metadata.IsDynamic)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
     }
 }
