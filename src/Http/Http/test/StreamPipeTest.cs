@@ -17,17 +17,21 @@ namespace System.IO.Pipelines.Tests
 
         public PipeReader Reader { get; set; }
 
+        public TestMemoryPool Pool { get; set; }
+
         protected StreamPipeTest()
         {
+            Pool = new TestMemoryPool();
             Stream = new MemoryStream();
-            Writer = new StreamPipeWriter(Stream, MinimumSegmentSize, new TestMemoryPool());
-            Reader = new StreamPipeReader(Stream, new StreamPipeReaderOptions(MinimumSegmentSize, minimumReadThreshold: 256, new TestMemoryPool()));
+            Writer = new StreamPipeWriter(Stream, MinimumSegmentSize, Pool);
+            Reader = new StreamPipeReader(Stream, new StreamPipeReaderOptions(MinimumSegmentSize, minimumReadThreshold: 256, Pool));
         }
 
         public void Dispose()
         {
             Writer.Complete();
             Reader.Complete();
+            Pool.Dispose();
         }
 
         public byte[] Read()

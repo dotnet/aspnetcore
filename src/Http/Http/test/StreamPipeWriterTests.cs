@@ -321,6 +321,24 @@ namespace System.IO.Pipelines.Tests
         }
 
         [Fact]
+        public void GetMemorySameAsTheMaxPoolSizeUsesThePool()
+        {
+            var memory = Writer.GetMemory(Pool.MaxBufferSize);
+
+            Assert.Equal(Pool.MaxBufferSize, memory.Length);
+            Assert.Equal(1, Pool.GetRentCount());
+        }
+
+        [Fact]
+        public void GetMemoryBiggerThanPoolSizeAllocatesUnpooledArray()
+        {
+            var memory = Writer.GetMemory(Pool.MaxBufferSize + 1);
+
+            Assert.Equal(Pool.MaxBufferSize + 1, memory.Length);
+            Assert.Equal(0, Pool.GetRentCount());
+        }
+
+        [Fact]
         public void CallComplete_GetMemoryThrows()
         {
             Writer.Complete();

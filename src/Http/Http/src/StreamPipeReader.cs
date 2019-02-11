@@ -15,7 +15,7 @@ namespace System.IO.Pipelines
     /// </summary>
     public class StreamPipeReader : PipeReader, IDisposable
     {
-        private readonly int _minimumSegmentSize;
+        private readonly int _bufferSize;
         private readonly int _minimumReadThreshold;
         private readonly MemoryPool<byte> _pool;
 
@@ -60,9 +60,9 @@ namespace System.IO.Pipelines
                 throw new ArgumentOutOfRangeException(nameof(options.MinimumReadThreshold));
             }
 
-            _minimumSegmentSize = options.MinimumSegmentSize;
             _minimumReadThreshold = Math.Min(options.MinimumReadThreshold, options.MinimumSegmentSize);
-            _pool = options.MemoryPool;
+            _pool = options.MemoryPool == MemoryPool<byte>.Shared ? null : options.MemoryPool;
+            _bufferSize = _pool == null ? options.MinimumSegmentSize : Math.Min(options.MinimumSegmentSize, _pool.MaxBufferSize);
         }
 
         /// <summary>
@@ -272,7 +272,7 @@ namespace System.IO.Pipelines
 
         private void ClearCancellationToken()
         {
-            lock(_lock)
+            lock (_lock)
             {
                 _internalTokenSource = null;
             }
@@ -328,8 +328,7 @@ namespace System.IO.Pipelines
             if (_readHead == null)
             {
                 Debug.Assert(_readTail == null);
-                _readHead = CreateBufferSegment();
-                _readHead.SetMemory(_pool.Rent(GetSegmentSize()));
+                _readHead = AllocateSegment();
                 _readTail = _readHead;
             }
             else if (_readTail.WritableBytes < _minimumReadThreshold)
@@ -340,18 +339,25 @@ namespace System.IO.Pipelines
 
         private void CreateNewTailSegment()
         {
-            var nextSegment = CreateBufferSegment();
-            nextSegment.SetMemory(_pool.Rent(GetSegmentSize()));
+            BufferSegment nextSegment = AllocateSegment();
             _readTail.SetNext(nextSegment);
             _readTail = nextSegment;
         }
 
-        private int GetSegmentSize() => Math.Min(_pool.MaxBufferSize, _minimumSegmentSize);
-
-        private BufferSegment CreateBufferSegment()
+        private BufferSegment AllocateSegment()
         {
-            // TODO this can pool buffer segment objects
-            return new BufferSegment();
+            var nextSegment = new BufferSegment();
+
+            if (_pool is null)
+            {
+                nextSegment.SetMemory(ArrayPool<byte>.Shared.Rent(_bufferSize));
+            }
+            else
+            {
+                nextSegment.SetMemory(_pool.Rent(_bufferSize));
+            }
+
+            return nextSegment;
         }
 
         private void Cancel()
