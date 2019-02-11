@@ -538,10 +538,11 @@ TEST(invoke_void, invoke_unblocks_task_when_server_completes_call)
 TEST(invoke_void, invoke_logs_if_callback_for_given_id_not_found)
 {
     auto message_received_event = std::make_shared<event>();
+    auto handshake_sent = std::make_shared<event>();
 
     int call_number = -1;
     auto websocket_client = create_test_websocket_client(
-        /* receive function */ [call_number, message_received_event]()
+        /* receive function */ [call_number, message_received_event, handshake_sent]()
         mutable {
         std::string responses[]
         {
@@ -549,6 +550,8 @@ TEST(invoke_void, invoke_logs_if_callback_for_given_id_not_found)
             "{ \"type\": 3, \"invocationId\": \"0\", \"error\": \"Ooops\" }\x1e"
             "{}"
         };
+
+        handshake_sent->wait(1000);
 
         call_number = std::min(call_number + 1, 2);
 
@@ -558,6 +561,11 @@ TEST(invoke_void, invoke_logs_if_callback_for_given_id_not_found)
         }
 
         return pplx::task_from_result(responses[call_number]);
+    },
+    [handshake_sent](const utility::string_t&)
+    {
+        handshake_sent->set();
+        return pplx::task_from_result();
     });
 
     std::shared_ptr<log_writer> writer(std::make_shared<memory_log_writer>());

@@ -44,7 +44,8 @@ namespace signalr
         std::unique_ptr<transport_factory> transport_factory)
         : m_connection(connection_impl::create(url, query_string, trace_level, log_writer,
         std::move(web_request_factory), std::move(transport_factory))),m_logger(log_writer, trace_level),
-        m_callback_manager(json::value::parse(_XPLATSTR("{ \"error\" : \"connection went out of scope before invocation result was received\"}")))
+        m_callback_manager(json::value::parse(_XPLATSTR("{ \"error\" : \"connection went out of scope before invocation result was received\"}"))),
+        m_disconnected([]() {})
     { }
 
     void hub_connection_impl::initialize()
@@ -69,10 +70,7 @@ namespace signalr
             if (connection)
             {
                 connection->m_handshakeTask.set_exception(signalr_exception(_XPLATSTR("connection closed while handshake was in progress.")));
-                if (connection->m_disconnected)
-                {
-                    connection->m_disconnected();
-                }
+                connection->m_disconnected();
             }
         });
     }
@@ -118,7 +116,8 @@ namespace signalr
                 auto connection = weak_connection.lock();
                 if (!connection)
                 {
-                    //TODO
+                    // The connection has been destructed
+                    return pplx::task_from_exception<void>(signalr_exception(_XPLATSTR("the hub connection has been deconstructed")));
                 }
                 return connection->send(_XPLATSTR("{\"protocol\":\"json\",\"version\":1}\x1e"))
                     .then([this](pplx::task<void> previous_task)
