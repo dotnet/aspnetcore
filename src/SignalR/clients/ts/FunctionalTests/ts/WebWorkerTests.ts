@@ -8,8 +8,8 @@ jasmine.DEFAULT_TIMEOUT_INTERVAL = 10 * 1000;
 
 describe("WebWorkers", () => {
     it("can use SignalR client", (done) => {
-        if ((window as any).Worker) {
-            const worker = new Worker("worker.js");
+        if (typeof window !== "undefined" && (window as any).Worker) {
+            const worker = new Worker(`${ENDPOINT_BASE_URL}/worker.js`);
             const testMessage = "Hello World!";
 
             worker.postMessage(ENDPOINT_BASE_URL);
