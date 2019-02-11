@@ -1,5 +1,17 @@
 #!/usr/bin/env bash
-wget https://dot.net/v1/dotnet-install.sh
+curl -o dotnet-install.sh -sSL https://dot.net/v1/dotnet-install.sh	wget https://dot.net/v1/dotnet-install.sh
+if [ $? -ne 0 ]; then	
+    download_retries=3	
+    while [ $download_retries -gt 0 ]; do	
+        curl -sSL https://dot.net/v1/dotnet-install.sh	
+        if [ $? -ne 0 ]; then	
+            let download_retries=download_retries-1	
+            echo -e "${YELLOW}Failed to download dotnet-install.sh. Retries left: $download_retries.${RESET}"	
+        else	
+            download_retries=0	
+        fi	
+    done	
+fi
 
 # Call "sync" between "chmod" and execution to prevent "text file busy" error in Docker (aufs)
 chmod +x "dotnet-install.sh"; sync
