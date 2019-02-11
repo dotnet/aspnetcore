@@ -5,7 +5,6 @@ package com.microsoft.signalr;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.sql.Time;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
