@@ -794,9 +794,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private ValueTask<FlushResult> FlushAsyncInternal(CancellationToken cancellationToken)
+        private Task FlushAsyncInternal()
         {
-            return Output.FlushAsync(cancellationToken);
+            return Output.FlushAsync(default).AsTask();
         }
 
         private void VerifyAndUpdateWrite(int count)
@@ -996,7 +996,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (!HasFlushedHeaders)
             {
                 _requestProcessingStatus = RequestProcessingStatus.HeadersFlushed;
-                return FlushAsyncInternal(default).AsTask();
+                return FlushAsyncInternal();
             }
 
             return Task.CompletedTask;
@@ -1354,7 +1354,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     if (data.Length == 0)
                     {
-                        return !firstWrite ? default : FlushAsyncInternal(cancellationToken);
+                        return !firstWrite ? default : Output.FlushAsync(cancellationToken);
                     }
 
                     return Output.WriteChunkAsync(data.Span, cancellationToken);
@@ -1368,7 +1368,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             else
             {
                 HandleNonBodyResponseWrite();
-                return !firstWrite ? default : FlushAsyncInternal(cancellationToken);
+                return !firstWrite ? default : Output.FlushAsync(cancellationToken);
             }
         }
 
@@ -1401,7 +1401,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     if (data.Length == 0)
                     {
-                        return await FlushAsyncInternal(cancellationToken);
+                        return await Output.FlushAsync(cancellationToken);
                     }
 
                     return await Output.WriteChunkAsync(data.Span, cancellationToken);
@@ -1415,7 +1415,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             else
             {
                 HandleNonBodyResponseWrite();
-                return await FlushAsyncInternal(cancellationToken);
+                return await Output.FlushAsync(cancellationToken);
             }
         }
     }
