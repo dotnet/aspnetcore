@@ -99,28 +99,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         /// Creates a new <see cref="LinkTagHelper"/>.
         /// </summary>
         /// <param name="hostingEnvironment">The <see cref="IHostingEnvironment"/>.</param>
-        /// <param name="cache">The <see cref="IMemoryCache"/>.</param>
-        /// <param name="htmlEncoder">The <see cref="HtmlEncoder"/>.</param>
-        /// <param name="javaScriptEncoder">The <see cref="JavaScriptEncoder"/>.</param>
-        /// <param name="urlHelperFactory">The <see cref="IUrlHelperFactory"/>.</param>
-        [Obsolete("This constructor is obsolete and will be removed in a future version.")]
-        public LinkTagHelper(
-            IHostingEnvironment hostingEnvironment,
-            IMemoryCache cache,
-            HtmlEncoder htmlEncoder,
-            JavaScriptEncoder javaScriptEncoder,
-            IUrlHelperFactory urlHelperFactory)
-            : base(urlHelperFactory, htmlEncoder)
-        {
-            HostingEnvironment = hostingEnvironment;
-            JavaScriptEncoder = javaScriptEncoder;
-            Cache = cache;
-        }
-
-        /// <summary>
-        /// Creates a new <see cref="LinkTagHelper"/>.
-        /// </summary>
-        /// <param name="hostingEnvironment">The <see cref="IHostingEnvironment"/>.</param>
         /// <param name="cacheProvider"></param>
         /// <param name="fileVersionProvider">The <see cref="IFileVersionProvider"/>.</param>
         /// <param name="htmlEncoder">The <see cref="HtmlEncoder"/>.</param>
@@ -128,7 +106,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         /// <param name="urlHelperFactory">The <see cref="IUrlHelperFactory"/>.</param>
         // Decorated with ActivatorUtilitiesConstructor since we want to influence tag helper activation
         // to use this constructor in the default case.
-        [ActivatorUtilitiesConstructor]
         public LinkTagHelper(
             IHostingEnvironment hostingEnvironment,
             TagHelperMemoryCacheProvider cacheProvider,
