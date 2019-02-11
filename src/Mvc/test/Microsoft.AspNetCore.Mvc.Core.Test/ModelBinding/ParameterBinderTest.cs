@@ -263,6 +263,47 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         [Fact]
+        public async Task BindModelAsync_SupportsIObjectModelValidatorForBackCompat()
+        {
+            // Arrange
+            var actionContext = GetControllerContext();
+
+            var mockValidator = new Mock<IObjectModelValidator>(MockBehavior.Strict);
+            mockValidator
+                .Setup(o => o.Validate(
+                    It.IsAny<ActionContext>(),
+                    It.IsAny<ValidationStateDictionary>(),
+                    It.IsAny<string>(),
+                    It.IsAny<object>()))
+                .Callback((ActionContext context, ValidationStateDictionary validationState, string prefix, object model) =>
+                {
+                    context.ModelState.AddModelError(prefix, "Test validation message");
+                });
+
+            var modelMetadata = CreateMockModelMetadata().Object;
+            var parameterBinder = CreateBackCompatParameterBinder(
+                modelMetadata,
+                mockValidator.Object);
+            var modelBindingResult = ModelBindingResult.Success(123);
+
+            // Act
+            var result = await parameterBinder.BindModelAsync(
+                actionContext,
+                CreateMockModelBinder(modelBindingResult),
+                CreateMockValueProvider(),
+                new ParameterDescriptor { Name = "myParam", ParameterType = typeof(Person) },
+                modelMetadata,
+                "ignored");
+
+            // Assert
+            Assert.False(actionContext.ModelState.IsValid);
+            Assert.Equal("myParam", actionContext.ModelState.Single().Key);
+            Assert.Equal(
+                "Test validation message",
+                actionContext.ModelState.Single().Value.Errors.Single().ErrorMessage);
+        }
+
+        [Fact]
         [ReplaceCulture]
         public async Task BindModelAsync_ForParameter_UsesValidationFromActualModel_WhenDerivedModelIsSet()
         {
@@ -743,6 +784,24 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                     }
                 });
             return validatorProvider.Object;
+        }
+
+        private static ParameterBinder CreateBackCompatParameterBinder(
+            ModelMetadata modelMetadata,
+            IObjectModelValidator validator)
+        {
+            var mockModelMetadataProvider = new Mock<IModelMetadataProvider>(MockBehavior.Strict);
+            mockModelMetadataProvider
+                .Setup(o => o.GetMetadataForType(typeof(Person)))
+                .Returns(modelMetadata);
+
+            var mockModelBinderFactory = new Mock<IModelBinderFactory>(MockBehavior.Strict);
+            return new ParameterBinder(
+                mockModelMetadataProvider.Object,
+                mockModelBinderFactory.Object,
+                validator,
+                _optionsAccessor,
+                NullLoggerFactory.Instance);
         }
 
         private static IValueProvider CreateMockValueProvider()
