@@ -15,6 +15,8 @@
         "Microsoft.Net.Component.4.6.1.TargetingPack",
         "Microsoft.VisualStudio.Component.Azure.Storage.Emulator",
         "Microsoft.VisualStudio.Component.VC.ATL",
+        "Microsoft.VisualStudio.Component.VC.Tools.14.16",
+        "Microsoft.VisualStudio.Component.VC.v141",
         "Microsoft.VisualStudio.Component.Windows10SDK.17134",
         "Microsoft.VisualStudio.Workload.ManagedDesktop",
         "Microsoft.VisualStudio.Workload.NetWeb",
