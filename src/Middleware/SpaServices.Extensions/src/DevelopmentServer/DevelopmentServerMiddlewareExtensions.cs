@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.SpaServices.DevelopmentServer
                 throw new InvalidOperationException($"To use {nameof(UseDevelopmentServer)}, you must supply a non-empty value for the {nameof(SpaOptions.SourcePath)} property of {nameof(SpaOptions)} when calling {nameof(SpaApplicationBuilderExtensions.UseSpa)}.");
             }
 
-            DevelopmentServerMiddleware.Attach(spaBuilder, npmScript);
+            DevelopmentServerMiddleware.Attach(spaBuilder, npmScript, waitText, serverName);
         }
 
         /// <summary>
