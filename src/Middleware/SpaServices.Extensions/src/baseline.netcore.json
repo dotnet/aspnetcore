@@ -477,7 +477,7 @@
       "GenericParameters": []
     },
     {
-      "Name": "Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer.ReactDevelopmentServerMiddlewareExtensions",
+      "Name": "Microsoft.AspNetCore.SpaServices.DevelopmentServer.DevelopmentServerMiddlewareExtensions",
       "Visibility": "Public",
       "Kind": "Class",
       "Abstract": true,
@@ -487,7 +487,53 @@
       "Members": [
         {
           "Kind": "Method",
+          "Name": "UseDevelopmentServer",
+          "Parameters": [
+            {
+              "Name": "spaBuilder",
+              "Type": "Microsoft.AspNetCore.SpaServices.ISpaBuilder"
+            },
+            {
+              "Name": "npmScript",
+              "Type": "System.String"
+            },
+            {
+              "Name": "waitText",
+              "Type": "System.String"
+            },
+            {
+              "Name": "serverName",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "UseReactDevelopmentServer",
+          "Parameters": [
+            {
+              "Name": "spaBuilder",
+              "Type": "Microsoft.AspNetCore.SpaServices.ISpaBuilder"
+            },
+            {
+              "Name": "npmScript",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UseVueDevelopmentServer",
           "Parameters": [
             {
               "Name": "spaBuilder",
