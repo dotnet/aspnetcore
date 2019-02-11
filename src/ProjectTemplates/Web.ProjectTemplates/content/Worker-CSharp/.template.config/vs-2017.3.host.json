@@ -6,7 +6,7 @@
     "id": "1011"
   },
   "description": {
-    "text": "A project template for creating a .NET Worker application. This template does not have any content in it.",
+    "text": "An empty project template for creating an .NET Worker application. This template does not have any content in it.",
     "package": "{0CD94836-1526-4E85-87D3-FB5274C5AFC9}",
     "id": "1012"
   },
@@ -15,12 +15,22 @@
   "learnMoreLink": "https://go.microsoft.com/fwlink/?LinkID=784883",
   "uiFilters": [ "oneaspnet" ],
   "supportsDocker": true,
-  "legacyTemplateIdentity": "Microsoft.NetCore.CSharp.Worker",
+  "legacyTemplateIdentity": "Microsoft.NetCore.CSharp.EmptyWorker",
   "supportedAuthentications": [
     {
       "auth": "None",
       "authenticationType": "NoAuth",
       "allowUnsecured": true
+    }
+  ],
+  "ports": [
+    {
+      "name": "HttpPort",
+      "useHttps": false
+    },
+    {
+      "name": "HttpsPort",
+      "useHttps": true
     }
   ],
   "excludeLaunchSettings": false,

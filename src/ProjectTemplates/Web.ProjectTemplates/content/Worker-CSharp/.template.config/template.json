@@ -7,10 +7,10 @@
   ],
   "name": ".NET Worker",
   "generatorVersions": "[1.0.0.0-*)",
-  "description": "A project template for creating a .NET Core worker application. This template does not have any content in it.",
-  "groupIdentity": "Microsoft.Net.Worker",
+  "description": "An empty project template for creating an .NET worker application. This template does not have any content in it.",
+  "groupIdentity": "Microsoft.Worker.Empty",
   "precedence": "5000",
-  "identity": "Microsoft.WorkerTemplate.CSharp.3.0",
+  "identity": "Microsoft.Worker.Empty.CSharp.3.0",
   "shortName": "worker",
   "tags": {
     "language": "C#",
@@ -19,7 +19,7 @@
   "sourceName": "Company.Application1",
   "preferNameDirectory": true,
   "guids": [
-    "a3bc9b9d-9d6a-45d4-8429-2a276177350a"
+    "53bc9b9d-9d6a-45d4-8429-2a2761773502"
   ],
   "sources": [
     {
