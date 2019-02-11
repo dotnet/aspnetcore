@@ -36,7 +36,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <GeneratedContent Include="Worker-CSharp.csproj.in" OutputPath="content/Worker-CSharp/Company.Application1.csproj" />
     <GeneratedContent Include="EmptyWeb-CSharp.csproj.in" OutputPath="content/EmptyWeb-CSharp/Company.WebApplication1.csproj" />
     <GeneratedContent Include="EmptyWeb-FSharp.fsproj.in" OutputPath="content/EmptyWeb-FSharp/Company.WebApplication1.fsproj" />
     <GeneratedContent Include="RazorComponentsWeb-CSharp.App.csproj.in" OutputPath="content/RazorComponentsWeb-CSharp/RazorComponentsWeb-CSharp.App/RazorComponentsWeb-CSharp.App.csproj" />
@@ -47,6 +46,7 @@
     <GeneratedContent Include="StarterWeb-FSharp.fsproj.in" OutputPath="content/StarterWeb-FSharp/Company.WebApplication1.fsproj" />
     <GeneratedContent Include="WebApi-CSharp.csproj.in" OutputPath="content/WebApi-CSharp/Company.WebApplication1.csproj" />
     <GeneratedContent Include="WebApi-FSharp.fsproj.in" OutputPath="content/WebApi-FSharp/Company.WebApplication1.fsproj" />
+    <GeneratedContent Include="Worker-CSharp.csproj.in" OutputPath="content/Worker-CSharp/Company.Application1.csproj" />
   </ItemGroup>
 
 </Project>
