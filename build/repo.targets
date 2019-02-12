@@ -2,7 +2,6 @@
   <Import Project="AzureIntegration.targets" />
   <Import Project="SharedFx.targets" />
   <Import Project="CodeSign.targets" />
-  <Import Project="..\eng\Workarounds.targets" />
 
   <PropertyGroup>
     <!-- Some projects need access to tasks bundled in KoreBuild. -->

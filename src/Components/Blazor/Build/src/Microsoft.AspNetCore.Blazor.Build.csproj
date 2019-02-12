@@ -28,7 +28,7 @@
       componentsversion=$(ComponentsPackageVersion);
       razorversion=$(MicrosoftAspNetCoreRazorDesignPackageVersion);
       blazormonoversion=$(MicrosoftAspNetCoreBlazorMonoPackageVersion);
-      repositorycommit=$(RepositoryCommit);</NuspecProperties>
+      repositorycommit=$(SourceRevisionId);</NuspecProperties>
     </PropertyGroup>
     <ItemGroup>
       <_TargetFramework Include="$(TargetFramework)" />

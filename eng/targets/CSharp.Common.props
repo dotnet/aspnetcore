@@ -2,6 +2,21 @@
 
   <PropertyGroup>
     <LangVersion>7.3</LangVersion>
+
+    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)..\AspNetCore.snk</AssemblyOriginatorKeyFile>
+    <SignAssembly>true</SignAssembly>
+
+     <!-- Instructs the compiler to use SHA256 instead of SHA1 when adding file hashes to PDBs. -->
+    <ChecksumAlgorithm>SHA256</ChecksumAlgorithm>
+
+    <!-- Enables Strict mode for Roslyn compiler -->
+    <Features>strict</Features>
+
+    <!-- Disables targets in Internal.AspNetCore.Sdk which are obsolete. -->
+    <GenerateSourceLinkFile>false</GenerateSourceLinkFile>
+    <GenerateRepositoryCommitUrlInDescription>false</GenerateRepositoryCommitUrlInDescription>
+    <GenerateCommitHashAttribute>false</GenerateCommitHashAttribute>
+    <GenerateInternalAspNetCoreAttributes>false</GenerateInternalAspNetCoreAttributes>
   </PropertyGroup>
 
   <ItemGroup>

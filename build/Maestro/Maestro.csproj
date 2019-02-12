@@ -23,15 +23,15 @@
   </Target>
 
   <Target Name="GenerateBuildAssetManifest"
-          DependsOnTargets="GetFilesToPublish;ResolveRepositoryBranch;ResolveCommitHash">
+          DependsOnTargets="GetFilesToPublish">
 
     <GenerateBuildManifest
       Artifacts="@(PackageToPublish)"
       OutputPath="$(ManifestsPath)aspnetcore-$(TargetRuntimeIdentifier)-$(PackageVersion).xml"
       BuildId="$(PackageVersion)"
-      RepoUri="$(RepositoryUrl)"
-      RepoBranch="$(RepositoryBranch)"
-      RepoCommit="$(RepositoryCommit)" />
+      RepoUri="$(BUILD_REPOSITORY_URI)"
+      RepoBranch="$(BUILD_SOURCEBRANCH)"
+      RepoCommit="$(BUILD_SOURCEVERSION)" />
   </Target>
 
 </Project>

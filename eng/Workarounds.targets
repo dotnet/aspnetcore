@@ -1,3 +1,9 @@
 <!-- Use this file to workaround issues. List the issue tracking the item to fix so we can remove the workaround when the issue is resolved. -->
 <Project>
+
+  <!-- Workaround https://github.com/aspnet/AspNetCore/issues/7503. This chains GenerateSourceLinkFile before razor component targets run. -->
+  <Target Name="_EnsureSourceLinkHappensBeforeRazorComponentGeneration"
+          BeforeTargets="PrepareForRazorComponentGenerate"
+          DependsOnTargets="GenerateSourceLinkFile" />
+
 </Project>
