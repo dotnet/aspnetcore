@@ -210,7 +210,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="eventHandlerId">The <see cref="RenderTreeFrame.AttributeEventHandlerId"/> value from the original event attribute.</param>
         /// <param name="eventArgs">Arguments to be passed to the event handler.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous execution operation.</returns>
-        public async Task DispatchEventAsync(int componentId, int eventHandlerId, UIEventArgs eventArgs)
+        public Task DispatchEventAsync(int componentId, int eventHandlerId, UIEventArgs eventArgs)
         {
             EnsureSynchronizationContext();
 
@@ -224,17 +224,14 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 {
                     _isBatchInProgress = true;
                     task = componentState.DispatchEventAsync(binding, eventArgs);
-                    await task;
-                }
-                catch (Exception ex) when (!task.IsCanceled)
-                {
-                    HandleException(ex);
                 }
                 finally
                 {
                     _isBatchInProgress = false;
                     ProcessRenderQueue();
                 }
+
+                return GetErrorHandledTask(task);
             }
             else
             {
