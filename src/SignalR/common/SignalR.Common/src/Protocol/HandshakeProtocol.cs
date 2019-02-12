@@ -17,16 +17,17 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
     /// </summary>
     public static class HandshakeProtocol
     {
+        // Use C#7.3's ReadOnlySpan<byte> optimization for static data https://vcsjones.com/2019/02/01/csharp-readonly-span-bytes-static/
         private const string ProtocolPropertyName = "protocol";
-        private static readonly byte[] ProtocolPropertyNameBytes = Encoding.UTF8.GetBytes(ProtocolPropertyName);
+        private static ReadOnlySpan<byte> ProtocolPropertyNameBytes => new byte[] { (byte)'p', (byte)'r', (byte)'o', (byte)'t', (byte)'o', (byte)'c', (byte)'o', (byte)'l' };
         private const string ProtocolVersionPropertyName = "version";
-        private static readonly byte[] ProtocolVersionPropertyNameBytes = Encoding.UTF8.GetBytes(ProtocolVersionPropertyName);
+        private static ReadOnlySpan<byte> ProtocolVersionPropertyNameBytes => new byte[] { (byte)'v', (byte)'e', (byte)'r', (byte)'s', (byte)'i', (byte)'o', (byte)'n' };
         private const string MinorVersionPropertyName = "minorVersion";
-        private static readonly byte[] MinorVersionPropertyNameBytes = Encoding.UTF8.GetBytes(MinorVersionPropertyName);
+        private static ReadOnlySpan<byte> MinorVersionPropertyNameBytes => new byte[] { (byte)'m', (byte)'i', (byte)'n', (byte)'o', (byte)'r', (byte)'V', (byte)'e', (byte)'r', (byte)'s', (byte)'i', (byte)'o', (byte)'n' };
         private const string ErrorPropertyName = "error";
-        private static readonly byte[] ErrorPropertyNameBytes = Encoding.UTF8.GetBytes(ErrorPropertyName);
+        private static ReadOnlySpan<byte> ErrorPropertyNameBytes => new byte[] { (byte)'e', (byte)'r', (byte)'r', (byte)'o', (byte)'r' };
         private const string TypePropertyName = "type";
-        private static readonly byte[] TypePropertyNameBytes = Encoding.UTF8.GetBytes(TypePropertyName);
+        private static ReadOnlySpan<byte> TypePropertyNameBytes => new byte[] { (byte)'t', (byte)'y', (byte)'p', (byte)'e' };
 
         private static ConcurrentDictionary<IHubProtocol, ReadOnlyMemory<byte>> _messageCache = new ConcurrentDictionary<IHubProtocol, ReadOnlyMemory<byte>>();
 
@@ -128,11 +129,11 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                     }
                     else if (memberName.SequenceEqual(ErrorPropertyNameBytes))
                     {
-                        error = reader.ReadAsString(ErrorPropertyNameBytes);
+                        error = reader.ReadAsString(ErrorPropertyName);
                     }
                     else if (memberName.SequenceEqual(MinorVersionPropertyNameBytes))
                     {
-                        minorVersion = reader.ReadAsInt32(MinorVersionPropertyNameBytes);
+                        minorVersion = reader.ReadAsInt32(MinorVersionPropertyName);
                     }
                     else
                     {
@@ -183,11 +184,11 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
                     if (memberName.SequenceEqual(ProtocolPropertyNameBytes))
                     {
-                        protocol = reader.ReadAsString(ProtocolPropertyNameBytes);
+                        protocol = reader.ReadAsString(ProtocolPropertyName);
                     }
                     else if (memberName.SequenceEqual(ProtocolVersionPropertyNameBytes))
                     {
-                        protocolVersion = reader.ReadAsInt32(ProtocolVersionPropertyNameBytes);
+                        protocolVersion = reader.ReadAsInt32(ProtocolVersionPropertyName);
                     }
                     else
                     {

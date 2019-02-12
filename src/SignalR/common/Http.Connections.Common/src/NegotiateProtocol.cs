@@ -13,24 +13,25 @@ namespace Microsoft.AspNetCore.Http.Connections
 {
     public static class NegotiateProtocol
     {
+        // Use C#7.3's ReadOnlySpan<byte> optimization for static data https://vcsjones.com/2019/02/01/csharp-readonly-span-bytes-static/
         private const string ConnectionIdPropertyName = "connectionId";
-        private static readonly byte[] ConnectionIdPropertyNameBytes = Encoding.UTF8.GetBytes(ConnectionIdPropertyName);
+        private static ReadOnlySpan<byte> ConnectionIdPropertyNameBytes => new byte[] { (byte)'c', (byte)'o', (byte)'n', (byte)'n', (byte)'e', (byte)'c', (byte)'t', (byte)'i', (byte)'o', (byte)'n', (byte)'I', (byte)'d' };
         private const string UrlPropertyName = "url";
-        private static readonly byte[] UrlPropertyNameBytes = Encoding.UTF8.GetBytes(UrlPropertyName);
+        private static ReadOnlySpan<byte> UrlPropertyNameBytes => new byte[] { (byte)'u', (byte)'r', (byte)'l' };
         private const string AccessTokenPropertyName = "accessToken";
-        private static readonly byte[] AccessTokenPropertyNameBytes = Encoding.UTF8.GetBytes(AccessTokenPropertyName);
+        private static ReadOnlySpan<byte> AccessTokenPropertyNameBytes => new byte[] { (byte)'a', (byte)'c', (byte)'c', (byte)'e', (byte)'s', (byte)'s', (byte)'T', (byte)'o', (byte)'k', (byte)'e', (byte)'n' };
         private const string AvailableTransportsPropertyName = "availableTransports";
-        private static readonly byte[] AvailableTransportsPropertyNameBytes = Encoding.UTF8.GetBytes(AvailableTransportsPropertyName);
+        private static ReadOnlySpan<byte> AvailableTransportsPropertyNameBytes => new byte[] { (byte)'a', (byte)'v', (byte)'a', (byte)'i', (byte)'l', (byte)'a', (byte)'b', (byte)'l', (byte)'e', (byte)'T', (byte)'r', (byte)'a', (byte)'n', (byte)'s', (byte)'p', (byte)'o', (byte)'r', (byte)'t', (byte)'s' };
         private const string TransportPropertyName = "transport";
-        private static readonly byte[] TransportPropertyNameBytes = Encoding.UTF8.GetBytes(TransportPropertyName);
+        private static ReadOnlySpan<byte> TransportPropertyNameBytes => new byte[] { (byte)'t', (byte)'r', (byte)'a', (byte)'n', (byte)'s', (byte)'p', (byte)'o', (byte)'r', (byte)'t' };
         private const string TransferFormatsPropertyName = "transferFormats";
-        private static readonly byte[] TransferFormatsPropertyNameBytes = Encoding.UTF8.GetBytes(TransferFormatsPropertyName);
+        private static ReadOnlySpan<byte> TransferFormatsPropertyNameBytes => new byte[] { (byte)'t', (byte)'r', (byte)'a', (byte)'n', (byte)'s', (byte)'f', (byte)'e', (byte)'r', (byte)'F', (byte)'o', (byte)'r', (byte)'m', (byte)'a', (byte)'t', (byte)'s' };
         private const string ErrorPropertyName = "error";
-        private static readonly byte[] ErrorPropertyNameBytes = Encoding.UTF8.GetBytes(ErrorPropertyName);
+        private static ReadOnlySpan<byte> ErrorPropertyNameBytes => new byte[] { (byte)'e', (byte)'r', (byte)'r', (byte)'o', (byte)'r' };
 
         // Used to detect ASP.NET SignalR Server connection attempt
         private const string ProtocolVersionPropertyName = "ProtocolVersion";
-        private static readonly byte[] ProtocolVersionPropertyNameBytes = Encoding.UTF8.GetBytes(ProtocolVersionPropertyName);
+        private static ReadOnlySpan<byte> ProtocolVersionPropertyNameBytes => new byte[] { (byte)'P', (byte)'r', (byte)'o', (byte)'t', (byte)'o', (byte)'c', (byte)'o', (byte)'l', (byte)'V', (byte)'e', (byte)'r', (byte)'s', (byte)'i', (byte)'o', (byte)'n' };
 
         public static void WriteResponse(NegotiationResponse response, IBufferWriter<byte> output)
         {
@@ -114,15 +115,15 @@ namespace Microsoft.AspNetCore.Http.Connections
 
                             if (memberName.SequenceEqual(UrlPropertyNameBytes))
                             {
-                                url = reader.ReadAsString(UrlPropertyNameBytes);
+                                url = reader.ReadAsString(UrlPropertyName);
                             }
                             else if (memberName.SequenceEqual(AccessTokenPropertyNameBytes))
                             {
-                                accessToken = reader.ReadAsString(AccessTokenPropertyNameBytes);
+                                accessToken = reader.ReadAsString(AccessTokenPropertyName);
                             }
                             else if (memberName.SequenceEqual(ConnectionIdPropertyNameBytes))
                             {
-                                connectionId = reader.ReadAsString(ConnectionIdPropertyNameBytes);
+                                connectionId = reader.ReadAsString(ConnectionIdPropertyName);
                             }
                             else if (memberName.SequenceEqual(AvailableTransportsPropertyNameBytes))
                             {
@@ -144,7 +145,7 @@ namespace Microsoft.AspNetCore.Http.Connections
                             }
                             else if (memberName.SequenceEqual(ErrorPropertyNameBytes))
                             {
-                                error = reader.ReadAsString(ErrorPropertyNameBytes);
+                                error = reader.ReadAsString(ErrorPropertyName);
                             }
                             else if (memberName.SequenceEqual(ProtocolVersionPropertyNameBytes))
                             {
@@ -215,7 +216,7 @@ namespace Microsoft.AspNetCore.Http.Connections
 
                         if (memberName.SequenceEqual(TransportPropertyNameBytes))
                         {
-                            availableTransport.Transport = reader.ReadAsString(TransportPropertyNameBytes);
+                            availableTransport.Transport = reader.ReadAsString(TransportPropertyName);
                         }
                         else if (memberName.SequenceEqual(TransferFormatsPropertyNameBytes))
                         {

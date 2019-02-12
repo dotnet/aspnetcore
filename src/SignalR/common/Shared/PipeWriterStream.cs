@@ -6,6 +6,7 @@ using System.Buffers;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Internal;
 
 namespace System.IO.Pipelines
 {
@@ -57,7 +58,7 @@ namespace System.IO.Pipelines
 
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            return WriteCoreAsync(buffer.AsMemory(offset, count), cancellationToken).AsTask();
+            return WriteCoreAsync(buffer.AsMemory(offset, count), cancellationToken).GetAsTask();
         }
 
 #if NETCOREAPP3_0

@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal;
 using Microsoft.Extensions.Logging;
@@ -125,7 +126,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
             var connection = _connections[connectionId];
             if (connection != null)
             {
-                return connection.WriteAsync(new InvocationMessage(methodName, args)).AsTask();
+                return connection.WriteAsync(new InvocationMessage(methodName, args)).GetAsTask();
             }
 
             var message = _protocol.WriteInvocation(methodName, args);
@@ -359,7 +360,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
                     {
                         if (invocation.ExcludedConnectionIds == null || !invocation.ExcludedConnectionIds.Contains(connection.ConnectionId))
                         {
-                            tasks.Add(connection.WriteAsync(invocation.Message).AsTask());
+                            tasks.Add(connection.WriteAsync(invocation.Message).GetAsTask());
                         }
                     }
 
@@ -429,7 +430,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
             channel.OnMessage(channelMessage =>
             {
                 var invocation = _protocol.ReadInvocation((byte[])channelMessage.Message);
-                return connection.WriteAsync(invocation.Message).AsTask();
+                return connection.WriteAsync(invocation.Message).GetAsTask();
             });
         }
 
@@ -450,7 +451,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
                         var tasks = new List<Task>();
                         foreach (var userConnection in subscriptions)
                         {
-                            tasks.Add(userConnection.WriteAsync(invocation.Message).AsTask());
+                            tasks.Add(userConnection.WriteAsync(invocation.Message).GetAsTask());
                         }
 
                         await Task.WhenAll(tasks);
@@ -481,7 +482,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis
                             continue;
                         }
 
-                        tasks.Add(groupConnection.WriteAsync(invocation.Message).AsTask());
+                        tasks.Add(groupConnection.WriteAsync(invocation.Message).GetAsTask());
                     }
 
                     await Task.WhenAll(tasks);

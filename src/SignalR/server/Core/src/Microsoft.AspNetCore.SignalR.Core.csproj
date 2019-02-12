@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <Compile Include="$(SignalRSharedSourceRoot)ReflectionHelper.cs" Link="ReflectionHelper.cs" />
+    <Compile Include="$(SignalRSharedSourceRoot)ValueTaskExtensions.cs" Link="ValueTaskExtensions.cs" />
     <Compile Include="$(SharedSourceRoot)ClosedGenericMatcher\*.cs" />
     <Compile Include="$(SharedSourceRoot)ObjectMethodExecutor\*.cs" />
   </ItemGroup>
