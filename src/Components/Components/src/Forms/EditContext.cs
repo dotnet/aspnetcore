@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// </summary>
     public class EditContext
     {
-        private Dictionary<FieldIdentifier, FieldState> _fieldStates = new Dictionary<FieldIdentifier, FieldState>();
+        private readonly Dictionary<FieldIdentifier, FieldState> _fieldStates = new Dictionary<FieldIdentifier, FieldState>();
 
         /// <summary>
         /// Constructs an instance of <see cref="EditContext"/>.
