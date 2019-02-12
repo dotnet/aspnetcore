@@ -1394,30 +1394,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             var responseHeaders = InitializeResponseFirstWrite(data.Length);
 
-            if (_canWriteResponseBody)
-            {
-                if (_autoChunk)
-                {
-                    if (data.Length == 0)
-                    {
-                        Output.WriteResponseHeaders(StatusCode, ReasonPhrase, responseHeaders, _autoChunk);
-                        return Output.FlushAsync(cancellationToken);
-                    }
-
-                    return Output.FirstWriteChunkedAsync(StatusCode, ReasonPhrase, responseHeaders, _autoChunk, data.Span, cancellationToken);
-                }
-                else
-                {
-                    CheckLastWrite();
-                    return Output.FirstWriteAsync(StatusCode, ReasonPhrase, responseHeaders, _autoChunk, data.Span, cancellationToken);
-                }
-            }
-            else
-            {
-                Output.WriteResponseHeaders(StatusCode, ReasonPhrase, responseHeaders, _autoChunk);
-                HandleNonBodyResponseWrite();
-                return Output.FlushAsync(cancellationToken);
-            }
+            return FirstWriteAsyncInternal(data, responseHeaders, cancellationToken);
         }
 
         private async ValueTask<FlushResult> FirstWriteAsyncAwaited(Task initializeTask, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
@@ -1426,6 +1403,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             var responseHeaders = InitializeResponseFirstWrite(data.Length);
 
+            return await FirstWriteAsyncInternal(data, responseHeaders, cancellationToken);
+        }
+
+        private async ValueTask<FlushResult> FirstWriteAsyncInternal(ReadOnlyMemory<byte> data, HttpResponseHeaders responseHeaders, CancellationToken cancellationToken)
+        {
             if (_canWriteResponseBody)
             {
                 if (_autoChunk)
