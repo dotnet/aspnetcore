@@ -316,5 +316,42 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 useSynchronizationContext: false,
                 minimumSegmentSize: KestrelMemoryPool.MinimumSegmentSize
             ));
+
+        public ValueTask<FlushResult> FirstWriteAsync(int statusCode, string reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, ReadOnlySpan<byte> data, CancellationToken cancellationToken)
+        {
+            lock (_dataWriterLock)
+            {
+                // The HPACK header compressor is stateful, if we compress headers for an aborted stream we must send them.
+                // Optimize for not compressing or sending them.
+                if (_completed)
+                {
+                    return default;
+                }
+
+                _frameWriter.WriteResponseHeaders(_streamId, statusCode, responseHeaders);
+
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return new ValueTask<FlushResult>(Task.FromCanceled<FlushResult>(cancellationToken));
+                }
+
+                // This length check is important because we don't want to set _startedWritingDataFrames unless a data
+                // frame will actually be written causing the headers to be flushed.
+                if (data.Length == 0)
+                {
+                    return default;
+                }
+
+                _startedWritingDataFrames = true;
+
+                _dataPipe.Writer.Write(data);
+                return _flusher.FlushAsync(this, cancellationToken);
+            }
+        }
+
+        public ValueTask<FlushResult> FirstWriteChunkedAsync(int statusCode, string reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, ReadOnlySpan<byte> data, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
