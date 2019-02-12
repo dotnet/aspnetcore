@@ -46,7 +46,9 @@
       Redhat.7.Amd64.Open;
       Fedora.27.Amd64.Open;
       Fedora.28.Amd64.Open;
+      Ubuntu.1604.Arm64.Open;
+      Ubuntu.1804.Arm64.Open;
+      Debian.9.Arm64.Open;
     </HelixTargetQueues>
-    <!--  TODO: re-enable Fedora.27.Amd64.Open and Fedora.28.Amd64.Open. See https://github.com/aspnet/AspNetCore/issues/7398   -->
   </PropertyGroup>
 </Project> 
