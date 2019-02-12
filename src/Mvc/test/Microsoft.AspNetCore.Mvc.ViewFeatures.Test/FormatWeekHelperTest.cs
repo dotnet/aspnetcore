@@ -25,9 +25,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             var detailsProvider = new DefaultCompositeMetadataDetailsProvider(
                 Enumerable.Empty<IMetadataDetailsProvider>());
             var key = ModelMetadataIdentity.ForType(typeof(DateTime));
-#pragma warning disable CS0618 // Type or member is obsolete
-            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0]));
-#pragma warning restore CS0618 // Type or member is obsolete
+            var cache = new DefaultMetadataDetails(key, new ModelAttributes(
+                Array.Empty<object>(),
+                Array.Empty<object>(),
+                Array.Empty<object>()));
 
             var provider = new EmptyModelMetadataProvider();
             var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);

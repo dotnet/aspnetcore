@@ -164,7 +164,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 _startedWritingDataFrames = true;
 
                 _dataPipe.Writer.Write(data);
-                return _flusher.FlushAsync(this, cancellationToken).AsTask();
+                return _flusher.FlushAsync(this, cancellationToken).GetAsTask();
             }
         }
 

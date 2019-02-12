@@ -33,32 +33,12 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         /// Creates a new <see cref="ImageTagHelper"/>.
         /// </summary>
         /// <param name="hostingEnvironment">The <see cref="IHostingEnvironment"/>.</param>
-        /// <param name="cache">The <see cref="IMemoryCache"/>.</param>
-        /// <param name="htmlEncoder">The <see cref="HtmlEncoder"/> to use.</param>
-        /// <param name="urlHelperFactory">The <see cref="IUrlHelperFactory"/>.</param>
-        [Obsolete("This constructor is obsolete and will be removed in a future version.")]
-        public ImageTagHelper(
-            IHostingEnvironment hostingEnvironment,
-            IMemoryCache cache,
-            HtmlEncoder htmlEncoder,
-            IUrlHelperFactory urlHelperFactory)
-            : base(urlHelperFactory, htmlEncoder)
-        {
-            HostingEnvironment = hostingEnvironment;
-            Cache = cache;
-        }
-
-        /// <summary>
-        /// Creates a new <see cref="ImageTagHelper"/>.
-        /// </summary>
-        /// <param name="hostingEnvironment">The <see cref="IHostingEnvironment"/>.</param>
         /// <param name="cacheProvider">The <see cref="TagHelperMemoryCacheProvider"/>.</param>
         /// <param name="fileVersionProvider">The <see cref="IFileVersionProvider"/>.</param>
         /// <param name="htmlEncoder">The <see cref="HtmlEncoder"/> to use.</param>
         /// <param name="urlHelperFactory">The <see cref="IUrlHelperFactory"/>.</param>
         // Decorated with ActivatorUtilitiesConstructor since we want to influence tag helper activation
         // to use this constructor in the default case.
-        [ActivatorUtilitiesConstructor]
         public ImageTagHelper(
             IHostingEnvironment hostingEnvironment,
             TagHelperMemoryCacheProvider cacheProvider,

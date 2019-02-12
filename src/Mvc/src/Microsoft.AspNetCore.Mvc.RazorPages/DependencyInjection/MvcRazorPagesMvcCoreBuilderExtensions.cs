@@ -87,6 +87,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 ServiceDescriptor.Singleton<IActionDescriptorProvider, PageActionDescriptorProvider>());
             services.TryAddEnumerable(
                 ServiceDescriptor.Singleton<IPageRouteModelProvider, CompiledPageRouteModelProvider>());
+            services.TryAddSingleton<PageActionEndpointDataSource>();
 
             services.TryAddEnumerable(
                 ServiceDescriptor.Singleton<IPageApplicationModelProvider, DefaultPageApplicationModelProvider>());
@@ -113,11 +114,6 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.TryAddSingleton<IPageLoader, DefaultPageLoader>();
             services.TryAddSingleton<IPageHandlerMethodSelector, DefaultPageHandlerMethodSelector>();
-
-            // Page model binding
-#pragma warning disable CS0618 // Type or member is obsolete
-            services.TryAddSingleton<PageArgumentBinder, DefaultPageArgumentBinder>();
-#pragma warning restore CS0618 // Type or member is obsolete
 
             // Action executors
             services.TryAddSingleton<PageResultExecutor>();

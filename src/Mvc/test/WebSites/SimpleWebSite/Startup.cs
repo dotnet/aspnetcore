@@ -26,7 +26,10 @@ namespace SimpleWebSite
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseMvcWithDefaultRoute();
+            app.UseRouting(routes =>
+            {
+                routes.MapDefaultControllerRoute();
+            });
         }
 
         public static void Main(string[] args)

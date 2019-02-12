@@ -1351,25 +1351,13 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
                 useStringLocalizer ? stringLocalizerFactory.Object : null);
         }
 
-        private ModelAttributes GetModelAttributes(IEnumerable<object> typeAttributes)
-        {
-#pragma warning disable CS0618 // Type or member is obsolete
-            var modelAttributes = new ModelAttributes(typeAttributes);
-#pragma warning restore CS0618 // Type or member is obsolete
-
-            return modelAttributes;
-        }
+        private ModelAttributes GetModelAttributes(IEnumerable<object> typeAttributes) 
+            => new ModelAttributes(typeAttributes, Array.Empty<object>(), Array.Empty<object>());
 
         private ModelAttributes GetModelAttributes(
             IEnumerable<object> typeAttributes,
-            IEnumerable<object> propertyAttributes)
-        {
-#pragma warning disable CS0618 // Type or member is obsolete
-            var modelAttributes = new ModelAttributes(propertyAttributes, typeAttributes);
-#pragma warning restore CS0618 // Type or member is obsolete
-
-            return modelAttributes;
-        }
+            IEnumerable<object> propertyAttributes) 
+            => new ModelAttributes(typeAttributes, propertyAttributes, Array.Empty<object>());
 
         private class KVPEnumGroupAndNameComparer : IEqualityComparer<KeyValuePair<EnumGroupAndName, string>>
         {

@@ -144,9 +144,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
                 "<TestLevelOne><SampleInt>" + expectedInt + "</SampleInt>" +
                 "<sampleString>" + expectedString + "</sampleString></TestLevelOne>";
 
-#pragma warning disable CS0618
-            var formatter = new XmlDataContractSerializerInputFormatter();
-#pragma warning restore CS0618
+            var formatter = new XmlDataContractSerializerInputFormatter(new MvcOptions());
 
             var contentBytes = Encoding.UTF8.GetBytes(input);
             var httpContext = new DefaultHttpContext();
@@ -191,9 +189,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
                 "<TestLevelOne><SampleInt>" + expectedInt + "</SampleInt>" +
                 "<sampleString>" + expectedString + "</sampleString></TestLevelOne>";
 
-#pragma warning disable CS0618
-            var formatter = new XmlDataContractSerializerInputFormatter(suppressInputFormatterBuffering: true);
-#pragma warning restore CS0618
+            var formatter = new XmlDataContractSerializerInputFormatter(new MvcOptions { SuppressInputFormatterBuffering = true });
 
             var contentBytes = Encoding.UTF8.GetBytes(input);
             var httpContext = new DefaultHttpContext();

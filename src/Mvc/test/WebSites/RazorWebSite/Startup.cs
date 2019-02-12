@@ -62,7 +62,11 @@ namespace RazorWebSite
                 }
             });
 
-            app.UseMvcWithDefaultRoute();
+            app.UseRouting(routes =>
+            {
+                routes.MapDefaultControllerRoute();
+                routes.MapRazorPages();
+            });
         }
     }
 }

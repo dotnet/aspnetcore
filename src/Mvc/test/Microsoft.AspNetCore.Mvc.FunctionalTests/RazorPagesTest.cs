@@ -18,18 +18,18 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class RazorPagesTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.Startup>>
+    public class RazorPagesTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.StartupWithoutEndpointRouting>>
     {
         private static readonly Assembly _resourcesAssembly = typeof(RazorPagesTest).GetTypeInfo().Assembly;
 
-        public RazorPagesTest(MvcTestFixture<RazorPagesWebSite.Startup> fixture)
+        public RazorPagesTest(MvcTestFixture<RazorPagesWebSite.StartupWithoutEndpointRouting> fixture)
         {
             var factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(ConfigureWebHostBuilder);
             Client = factory.CreateDefaultClient();
         }
 
         private static void ConfigureWebHostBuilder(IWebHostBuilder builder) =>
-            builder.UseStartup<RazorPagesWebSite.Startup>();
+            builder.UseStartup<RazorPagesWebSite.StartupWithoutEndpointRouting>();
 
         public HttpClient Client { get; }
 

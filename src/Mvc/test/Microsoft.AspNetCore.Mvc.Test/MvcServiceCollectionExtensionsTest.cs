@@ -209,10 +209,7 @@ namespace Microsoft.AspNetCore.Mvc
                 feature => Assert.IsType<ControllerFeatureProvider>(feature),
                 feature => Assert.IsType<ViewComponentFeatureProvider>(feature),
                 feature => Assert.IsType<TagHelperFeatureProvider>(feature),
-                feature => Assert.IsType<RazorCompiledItemFeatureProvider>(feature),
-#pragma warning disable CS0618 // Type or member is obsolete
-                feature => Assert.IsType<ViewsFeatureProvider>(feature));
-#pragma warning restore CS0618 // Type or member is obsolete
+                feature => Assert.IsType<RazorCompiledItemFeatureProvider>(feature));
         }
 
         [Fact]

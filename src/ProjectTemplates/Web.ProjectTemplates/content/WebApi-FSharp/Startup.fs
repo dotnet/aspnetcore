@@ -37,7 +37,7 @@ type Startup private () =
 
 #endif
         app.UseRouting(fun routes ->
-            routes.MapApplication() |> ignore
+            routes.MapControllers() |> ignore
             ) |> ignore
 
         app.UseAuthorization() |> ignore

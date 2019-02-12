@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
@@ -21,21 +20,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         private readonly IDictionary<ModelMetadata, IModelBinder> _propertyBinders;
         private readonly ILogger _logger;
         private Func<object> _modelCreator;
-
-        /// <summary>
-        /// <para>This constructor is obsolete and will be removed in a future version. The recommended alternative
-        /// is the overload that also takes an <see cref="ILoggerFactory"/>.</para>
-        /// <para>Creates a new <see cref="ComplexTypeModelBinder"/>.</para>
-        /// </summary>
-        /// <param name="propertyBinders">
-        /// The <see cref="IDictionary{TKey, TValue}"/> of binders to use for binding properties.
-        /// </param>
-        [Obsolete("This constructor is obsolete and will be removed in a future version. The recommended alternative"
-            + " is the overload that also takes an " + nameof(ILoggerFactory) + ".")]
-        public ComplexTypeModelBinder(IDictionary<ModelMetadata, IModelBinder> propertyBinders)
-            : this(propertyBinders, NullLoggerFactory.Instance)
-        {
-        }
 
         /// <summary>
         /// Creates a new <see cref="ComplexTypeModelBinder"/>.

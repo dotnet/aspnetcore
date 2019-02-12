@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 return Task.FromCanceled(cancellationToken);
             }
 
-            return WriteAsync(buffer, cancellationToken).AsTask();
+            return WriteAsync(buffer, cancellationToken).GetAsTask();
         }
 
         public ValueTask<FlushResult> WriteDataToPipeAsync(ReadOnlySpan<byte> buffer, CancellationToken cancellationToken = default)

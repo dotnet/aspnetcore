@@ -9,9 +9,9 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class RoutingWithoutRazorPagesTests : RoutingWithoutRazorPagesTestsBase<BasicWebSite.Startup>
+    public class RoutingWithoutRazorPagesTests : RoutingWithoutRazorPagesTestsBase<BasicWebSite.StartupWithoutEndpointRouting>
     {
-        public RoutingWithoutRazorPagesTests(MvcTestFixture<BasicWebSite.Startup> fixture)
+        public RoutingWithoutRazorPagesTests(MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting> fixture)
             : base(fixture)
         {
         }

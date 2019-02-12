@@ -30,116 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         private readonly MvcOptions _options;
         private readonly MvcNewtonsoftJsonOptions _jsonOptions;
 
-        // These fields are used when one of the legacy constructors is called that doesn't provide the MvcOptions or
-        // MvcJsonOptions.
-        private readonly bool _suppressInputFormatterBuffering;
-        private readonly bool _allowInputFormatterExceptionMessages;
-
         private ObjectPool<JsonSerializer> _jsonSerializerPool;
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="NewtonsoftJsonInputFormatter"/>.
-        /// </summary>
-        /// <param name="logger">The <see cref="ILogger"/>.</param>
-        /// <param name="serializerSettings">
-        /// The <see cref="JsonSerializerSettings"/>. Should be either the application-wide settings
-        /// (<see cref="MvcNewtonsoftJsonOptions.SerializerSettings"/>) or an instance
-        /// <see cref="JsonSerializerSettingsProvider.CreateSerializerSettings"/> initially returned.
-        /// </param>
-        /// <param name="charPool">The <see cref="ArrayPool{Char}"/>.</param>
-        /// <param name="objectPoolProvider">The <see cref="ObjectPoolProvider"/>.</param>
-        [Obsolete("This constructor is obsolete and will be removed in a future version.")]
-        public NewtonsoftJsonInputFormatter(
-            ILogger logger,
-            JsonSerializerSettings serializerSettings,
-            ArrayPool<char> charPool,
-            ObjectPoolProvider objectPoolProvider) :
-            this(logger, serializerSettings, charPool, objectPoolProvider, suppressInputFormatterBuffering: false)
-        {
-            // This constructor by default buffers the request body as its the most secure setting
-        }
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="NewtonsoftJsonInputFormatter"/>.
-        /// </summary>
-        /// <param name="logger">The <see cref="ILogger"/>.</param>
-        /// <param name="serializerSettings">
-        /// The <see cref="JsonSerializerSettings"/>. Should be either the application-wide settings
-        /// (<see cref="MvcNewtonsoftJsonOptions.SerializerSettings"/>) or an instance
-        /// <see cref="JsonSerializerSettingsProvider.CreateSerializerSettings"/> initially returned.
-        /// </param>
-        /// <param name="charPool">The <see cref="ArrayPool{Char}"/>.</param>
-        /// <param name="objectPoolProvider">The <see cref="ObjectPoolProvider"/>.</param>
-        /// <param name="suppressInputFormatterBuffering">Flag to buffer entire request body before deserializing it.</param>
-        [Obsolete("This constructor is obsolete and will be removed in a future version.")]
-        public NewtonsoftJsonInputFormatter(
-            ILogger logger,
-            JsonSerializerSettings serializerSettings,
-            ArrayPool<char> charPool,
-            ObjectPoolProvider objectPoolProvider,
-            bool suppressInputFormatterBuffering)
-            : this(logger, serializerSettings, charPool, objectPoolProvider, suppressInputFormatterBuffering, allowInputFormatterExceptionMessages: false)
-        {
-            // This constructor by default treats JSON deserialization exceptions as unsafe
-            // because this is the default in 2.0
-        }
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="NewtonsoftJsonInputFormatter"/>.
-        /// </summary>
-        /// <param name="logger">The <see cref="ILogger"/>.</param>
-        /// <param name="serializerSettings">
-        /// The <see cref="JsonSerializerSettings"/>. Should be either the application-wide settings
-        /// (<see cref="MvcNewtonsoftJsonOptions.SerializerSettings"/>) or an instance
-        /// <see cref="JsonSerializerSettingsProvider.CreateSerializerSettings"/> initially returned.
-        /// </param>
-        /// <param name="charPool">The <see cref="ArrayPool{Char}"/>.</param>
-        /// <param name="objectPoolProvider">The <see cref="ObjectPoolProvider"/>.</param>
-        /// <param name="suppressInputFormatterBuffering">Flag to buffer entire request body before deserializing it.</param>
-        /// <param name="allowInputFormatterExceptionMessages">If <see langword="true"/>, JSON deserialization exception messages will replaced by a generic message in model state.</param>
-        [Obsolete("This constructor is obsolete and will be removed in a future version.")]
-        public NewtonsoftJsonInputFormatter(
-            ILogger logger,
-            JsonSerializerSettings serializerSettings,
-            ArrayPool<char> charPool,
-            ObjectPoolProvider objectPoolProvider,
-            bool suppressInputFormatterBuffering,
-            bool allowInputFormatterExceptionMessages)
-        {
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-
-            if (serializerSettings == null)
-            {
-                throw new ArgumentNullException(nameof(serializerSettings));
-            }
-
-            if (charPool == null)
-            {
-                throw new ArgumentNullException(nameof(charPool));
-            }
-
-            if (objectPoolProvider == null)
-            {
-                throw new ArgumentNullException(nameof(objectPoolProvider));
-            }
-
-            _logger = logger;
-            SerializerSettings = serializerSettings;
-            _charPool = new JsonArrayPool<char>(charPool);
-            _objectPoolProvider = objectPoolProvider;
-            _suppressInputFormatterBuffering = suppressInputFormatterBuffering;
-            _allowInputFormatterExceptionMessages = allowInputFormatterExceptionMessages;
-
-            SupportedEncodings.Add(UTF8EncodingWithoutBOM);
-            SupportedEncodings.Add(UTF16EncodingLittleEndian);
-
-            SupportedMediaTypes.Add(MediaTypeHeaderValues.ApplicationJson);
-            SupportedMediaTypes.Add(MediaTypeHeaderValues.TextJson);
-            SupportedMediaTypes.Add(MediaTypeHeaderValues.ApplicationAnyJsonSyntax);
-        }
 
         /// <summary>
         /// Initializes a new instance of <see cref="NewtonsoftJsonInputFormatter"/>.
@@ -236,7 +127,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             var request = context.HttpContext.Request;
 
-            var suppressInputFormatterBuffering = _options?.SuppressInputFormatterBuffering ?? _suppressInputFormatterBuffering;
+            var suppressInputFormatterBuffering = _options.SuppressInputFormatterBuffering;
 
             if (!request.Body.CanSeek && !suppressInputFormatterBuffering)
             {
@@ -431,7 +322,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         {
             // In 2.0 and earlier we always gave a generic error message for errors that come from JSON.NET
             // We only allow it in 2.1 and newer if the app opts-in.
-            if (!(_jsonOptions?.AllowInputFormatterExceptionMessages ?? _allowInputFormatterExceptionMessages))
+            if (!_jsonOptions.AllowInputFormatterExceptionMessages)
             {
                 // This app is not opted-in to JSON.NET messages, return the original exception.
                 return exception;

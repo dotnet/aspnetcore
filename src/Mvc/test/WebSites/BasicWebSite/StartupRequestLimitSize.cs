@@ -37,7 +37,11 @@ namespace BasicWebSite
                 return next();
             });
 
-            app.UseMvcWithDefaultRoute();
+            app.UseRouting(routes =>
+            {
+                routes.MapDefaultControllerRoute();
+                routes.MapRazorPages();
+            });
         }
 
         private class RequestBodySizeCheckingStream : Stream

@@ -20,9 +20,9 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class TestingInfrastructureTests : IClassFixture<WebApplicationFactory<BasicWebSite.Startup>>
+    public class TestingInfrastructureTests : IClassFixture<WebApplicationFactory<BasicWebSite.StartupWithoutEndpointRouting>>
     {
-        public TestingInfrastructureTests(WebApplicationFactory<BasicWebSite.Startup> fixture)
+        public TestingInfrastructureTests(WebApplicationFactory<BasicWebSite.StartupWithoutEndpointRouting> fixture)
         {
             Factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(ConfigureWebHostBuilder);
             Client = Factory.CreateClient();
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         private static void ConfigureWebHostBuilder(IWebHostBuilder builder) =>
             builder.ConfigureTestServices(s => s.AddSingleton<TestService, OverridenService>());
 
-        public WebApplicationFactory<Startup> Factory { get; }
+        public WebApplicationFactory<StartupWithoutEndpointRouting> Factory { get; }
         public HttpClient Client { get; }
 
         [Fact]

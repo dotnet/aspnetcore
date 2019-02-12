@@ -796,7 +796,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         [MethodImpl(MethodImplOptions.NoInlining)]
         private Task FlushAsyncInternal()
         {
-            return Output.FlushAsync(default).AsTask();
+            return Output.FlushAsync(default).GetAsTask();
         }
 
         private void VerifyAndUpdateWrite(int count)
@@ -1374,7 +1374,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public Task FlushAsync(CancellationToken cancellationToken = default)
         {
-            return FlushPipeAsync(cancellationToken).AsTask();
+            return FlushPipeAsync(cancellationToken).GetAsTask();
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
@@ -1386,7 +1386,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public Task WriteAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default(CancellationToken))
         {
-            return WritePipeAsync(data, cancellationToken).AsTask();
+            return WritePipeAsync(data, cancellationToken).GetAsTask();
         }
 
         public async ValueTask<FlushResult> WriteAsyncAwaited(Task initializeTask, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)

@@ -47,7 +47,11 @@ namespace BasicWebSite
         public void Configure(IApplicationBuilder app)
         {
             app.UseDeveloperExceptionPage();
-            app.UseMvc();
+
+            app.UseRouting(routes =>
+            {
+                routes.MapControllers();
+            });
         }
     }
 }

@@ -642,9 +642,30 @@ namespace System.IO.Pipelines.Tests
             Assert.Equal(Stream, ((StreamPipeReader)Reader).InnerStream);
         }
 
+        [Fact]
+        public async Task BufferingDataPastEndOfStreamCanBeReadAgain()
+        {
+            var helloBytes = Encoding.ASCII.GetBytes("Hello World");
+            Write(helloBytes);
+
+            var readResult = await Reader.ReadAsync();
+            var buffer = readResult.Buffer;
+            Reader.AdvanceTo(buffer.Start, buffer.End);
+
+            // Make sure IsCompleted is true
+            readResult = await Reader.ReadAsync();
+            buffer = readResult.Buffer;
+            Reader.AdvanceTo(buffer.Start, buffer.End);
+            Assert.True(readResult.IsCompleted);
+
+            var value = await ReadFromPipeAsString();
+            Assert.Equal("Hello World", value);
+        }
+
         private async Task<string> ReadFromPipeAsString()
         {
             var readResult = await Reader.ReadAsync();
+            
             var result = Encoding.ASCII.GetString(readResult.Buffer.ToArray());
             Reader.AdvanceTo(readResult.Buffer.End);
             return result;

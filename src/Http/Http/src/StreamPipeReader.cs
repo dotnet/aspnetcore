@@ -21,7 +21,7 @@ namespace System.IO.Pipelines
 
         private CancellationTokenSource _internalTokenSource;
         private bool _isReaderCompleted;
-        private bool _isWriterCompleted;
+        private bool _isStreamCompleted;
         private ExceptionDispatchInfo _exceptionInfo;
 
         private BufferSegment _readHead;
@@ -206,11 +206,6 @@ namespace System.IO.Pipelines
         public override async ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
         {
             // TODO ReadyAsync needs to throw if there are overlapping reads.
-            if (_isWriterCompleted)
-            {
-                return new ReadResult(buffer: default, isCanceled: false, isCompleted: true);
-            }
-
             ThrowIfCompleted();
 
             // PERF: store InternalTokenSource locally to avoid querying it twice (which acquires a lock)
@@ -218,6 +213,11 @@ namespace System.IO.Pipelines
             if (TryReadInternal(tokenSource, out var readResult))
             {
                 return readResult;
+            }
+
+            if (_isStreamCompleted)
+            {
+                return new ReadResult(buffer: default, isCanceled: false, isCompleted: true);
             }
 
             var reg = new CancellationTokenRegistration();
@@ -251,7 +251,7 @@ namespace System.IO.Pipelines
 
                     if (length == 0)
                     {
-                        _isWriterCompleted = true;
+                        _isStreamCompleted = true;
                     }
                 }
                 catch (OperationCanceledException)
@@ -296,7 +296,7 @@ namespace System.IO.Pipelines
         private bool TryReadInternal(CancellationTokenSource source, out ReadResult result)
         {
             var isCancellationRequested = source.IsCancellationRequested;
-            if (isCancellationRequested || _bufferedBytes > 0 && !_examinedEverything)
+            if (isCancellationRequested || _bufferedBytes > 0 && (!_examinedEverything || _isStreamCompleted))
             {
                 // If TryRead/ReadAsync are called and cancellation is requested, we need to make sure memory is allocated for the ReadResult,
                 // otherwise if someone calls advance afterward on the ReadResult, it will throw.
@@ -368,7 +368,7 @@ namespace System.IO.Pipelines
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool IsCompletedOrThrow()
         {
-            if (!_isWriterCompleted)
+            if (!_isStreamCompleted)
             {
                 return false;
             }

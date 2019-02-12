@@ -28,20 +28,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         private readonly IServiceProvider _serviceProvider;
 
         /// <summary>
-        /// <para>This constructor is obsolete and will be removed in a future version. The recommended alternative
-        /// is the overload that also takes an <see cref="IServiceProvider"/>.</para>
-        /// <para>Creates a new <see cref="ModelBinderFactory"/>.</para>
-        /// </summary>
-        /// <param name="metadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
-        /// <param name="options">The <see cref="IOptions{TOptions}"/> for <see cref="MvcOptions"/>.</param>
-        [Obsolete("This constructor is obsolete and will be removed in a future version. The recommended alternative"
-            + " is the overload that also takes an " + nameof(IServiceProvider) + ".")]
-        public ModelBinderFactory(IModelMetadataProvider metadataProvider, IOptions<MvcOptions> options)
-            : this(metadataProvider, options, GetDefaultServices())
-        {
-        }
-
-        /// <summary>
         /// Creates a new <see cref="ModelBinderFactory"/>.
         /// </summary>
         /// <param name="metadataProvider">The <see cref="IModelMetadataProvider"/>.</param>

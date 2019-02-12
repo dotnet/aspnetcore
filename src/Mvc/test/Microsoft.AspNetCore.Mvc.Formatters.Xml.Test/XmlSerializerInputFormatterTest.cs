@@ -52,9 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
                 "<sampleString>" + expectedString + "</sampleString>" +
                 "<SampleDate>" + expectedDateTime + "</SampleDate></TestLevelOne>";
 
-#pragma warning disable CS0618
-            var formatter = new XmlSerializerInputFormatter();
-#pragma warning restore CS0618
+            var formatter = new XmlSerializerInputFormatter(new MvcOptions());
 
             var contentBytes = Encoding.UTF8.GetBytes(input);
             var httpContext = new DefaultHttpContext();
@@ -107,9 +105,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
                 "<sampleString>" + expectedString + "</sampleString>" +
                 "<SampleDate>" + expectedDateTime + "</SampleDate></TestLevelOne>";
 
-#pragma warning disable CS0618
-            var formatter = new XmlSerializerInputFormatter(suppressInputFormatterBuffering: true);
-#pragma warning restore CS0618
+            var formatter = new XmlSerializerInputFormatter(new MvcOptions { SuppressInputFormatterBuffering = true});
 
             var contentBytes = Encoding.UTF8.GetBytes(input);
             var httpContext = new DefaultHttpContext();

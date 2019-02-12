@@ -66,7 +66,7 @@ namespace Company.WebApplication1
 
             app.UseRouting(routes =>
             {
-                routes.MapApplication();
+                routes.MapControllers();
             });
 
 #if (OrganizationalAuth || IndividualAuth)

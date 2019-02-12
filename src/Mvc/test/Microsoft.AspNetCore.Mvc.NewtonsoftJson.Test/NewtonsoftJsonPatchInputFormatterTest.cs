@@ -25,52 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         private static readonly JsonSerializerSettings _serializerSettings = new JsonSerializerSettings();
 
         [Fact]
-        public async Task Version_2_0_Constructor_BuffersRequestBody_ByDefault()
-        {
-            // Arrange
-#pragma warning disable CS0618
-            var formatter = new NewtonsoftJsonPatchInputFormatter(
-                GetLogger(),
-                _serializerSettings,
-                ArrayPool<char>.Shared,
-                _objectPoolProvider);
-#pragma warning restore CS0618
-
-            var content = "[{\"op\":\"add\",\"path\":\"Customer/Name\",\"value\":\"John\"}]";
-            var contentBytes = Encoding.UTF8.GetBytes(content);
-
-            var httpContext = new DefaultHttpContext();
-            httpContext.Features.Set<IHttpResponseFeature>(new TestResponseFeature());
-            httpContext.Request.Body = new NonSeekableReadStream(contentBytes);
-            httpContext.Request.ContentType = "application/json";
-
-            var formatterContext = CreateInputFormatterContext(typeof(JsonPatchDocument<Customer>), httpContext);
-
-            // Act
-            var result = await formatter.ReadAsync(formatterContext);
-
-            // Assert
-            Assert.False(result.HasError);
-            var patchDocument = Assert.IsType<JsonPatchDocument<Customer>>(result.Model);
-            Assert.Equal("add", patchDocument.Operations[0].op);
-            Assert.Equal("Customer/Name", patchDocument.Operations[0].path);
-            Assert.Equal("John", patchDocument.Operations[0].value);
-
-            Assert.True(httpContext.Request.Body.CanSeek);
-            httpContext.Request.Body.Seek(0L, SeekOrigin.Begin);
-
-            result = await formatter.ReadAsync(formatterContext);
-
-            // Assert
-            Assert.False(result.HasError);
-            patchDocument = Assert.IsType<JsonPatchDocument<Customer>>(result.Model);
-            Assert.Equal("add", patchDocument.Operations[0].op);
-            Assert.Equal("Customer/Name", patchDocument.Operations[0].path);
-            Assert.Equal("John", patchDocument.Operations[0].value);
-        }
-
-        [Fact]
-        public async Task Version_2_1_Constructor_BuffersRequestBody_ByDefault()
+        public async Task Constructor_BuffersRequestBody_ByDefault()
         {
             // Arrange
             var formatter = new NewtonsoftJsonPatchInputFormatter(
@@ -115,49 +70,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         }
 
         [Fact]
-        public async Task Version_2_0_Constructor_SuppressInputFormatterBuffering_DoesNotBufferRequestBody()
-        {
-            // Arrange
-#pragma warning disable CS0618
-            var formatter = new NewtonsoftJsonPatchInputFormatter(
-                GetLogger(),
-                _serializerSettings,
-                ArrayPool<char>.Shared,
-                _objectPoolProvider,
-                suppressInputFormatterBuffering: true);
-#pragma warning restore CS0618
-
-            var content = "[{\"op\":\"add\",\"path\":\"Customer/Name\",\"value\":\"John\"}]";
-            var contentBytes = Encoding.UTF8.GetBytes(content);
-
-            var httpContext = new DefaultHttpContext();
-            httpContext.Features.Set<IHttpResponseFeature>(new TestResponseFeature());
-            httpContext.Request.Body = new NonSeekableReadStream(contentBytes);
-            httpContext.Request.ContentType = "application/json";
-
-            var context = CreateInputFormatterContext(typeof(JsonPatchDocument<Customer>), httpContext);
-
-            // Act
-            var result = await formatter.ReadAsync(context);
-
-            // Assert
-            Assert.False(result.HasError);
-
-            var patchDocument = Assert.IsType<JsonPatchDocument<Customer>>(result.Model);
-            Assert.Equal("add", patchDocument.Operations[0].op);
-            Assert.Equal("Customer/Name", patchDocument.Operations[0].path);
-            Assert.Equal("John", patchDocument.Operations[0].value);
-
-            Assert.False(httpContext.Request.Body.CanSeek);
-            result = await formatter.ReadAsync(context);
-
-            // Assert
-            Assert.False(result.HasError);
-            Assert.Null(result.Model);
-        }
-
-        [Fact]
-        public async Task Version_2_1_Constructor_SuppressInputFormatterBuffering_DoesNotBufferRequestBody()
+        public async Task Constructor_SuppressInputFormatterBuffering_DoesNotBufferRequestBody()
         {
             // Arrange
             var mvcOptions = new MvcOptions()

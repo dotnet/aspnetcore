@@ -2,8 +2,8 @@
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
         <Identity Id="Microsoft.VisualStudio.BlazorExtension" Version="|%CurrentProject%;GetBuildVersion|" Language="en-US" Publisher="Microsoft" />
-        <DisplayName>ASP.NET Core Blazor Language Services</DisplayName>
-        <Description xml:space="preserve">Provides Visual Studio support for ASP.NET Core Blazor</Description>
+        <DisplayName>Blazor</DisplayName>
+        <Description xml:space="preserve">Provides Visual Studio support for Blazor</Description>
         <License>Content\LICENSE.txt</License>
         <PackageId>Microsoft.VisualStudio.BlazorExtension</PackageId>
         <GettingStartedGuide>https://go.microsoft.com/fwlink/?linkid=870449</GettingStartedGuide>
