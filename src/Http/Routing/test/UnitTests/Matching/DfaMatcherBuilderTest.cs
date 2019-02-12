@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -231,7 +231,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
             Assert.Null(root.Parameters);
 
             var next = Assert.Single(root.Literals);
-            Assert.Equal("a", next.Key);
+            // Ignore case in 2.2 because EndpointComparer.ComparePattern does not specify a culture and running in the wrong culture
+            // change change the order of results, causing 'A' to be is used instead of 'a'
+            Assert.Equal("a", next.Key, ignoreCase: true);
 
             var a = next.Value;
             Assert.Null(a.Matches);
