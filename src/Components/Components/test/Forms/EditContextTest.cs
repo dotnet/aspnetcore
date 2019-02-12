@@ -49,16 +49,19 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
         {
             // Arrange
             var editContext = new EditContext(new object());
-            var field1 = editContext.Field("field1");
-            var field2 = editContext.Field("field2");
+            var fieldOnThisModel1 = editContext.Field("field1");
+            var fieldOnThisModel2 = editContext.Field("field2");
+            var fieldOnOtherModel = new FieldIdentifier(new object(), "field on other model");
 
             // Act
-            editContext.NotifyFieldChanged(field1);
+            editContext.NotifyFieldChanged(fieldOnThisModel1);
+            editContext.NotifyFieldChanged(fieldOnOtherModel);
 
             // Assert
             Assert.True(editContext.IsModified());
-            Assert.True(editContext.IsModified(field1));
-            Assert.False(editContext.IsModified(field2));
+            Assert.True(editContext.IsModified(fieldOnThisModel1));
+            Assert.False(editContext.IsModified(fieldOnThisModel2));
+            Assert.True(editContext.IsModified(fieldOnOtherModel));
         }
         
         [Fact]
@@ -66,18 +69,21 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
         {
             // Arrange
             var editContext = new EditContext(new object());
-            var field1 = editContext.Field("field1");
-            var field2 = editContext.Field("field2");
-            editContext.NotifyFieldChanged(field1);
-            editContext.NotifyFieldChanged(field2);
+            var fieldThatWasModified = editContext.Field("field1");
+            var fieldThatRemainsModified = editContext.Field("field2");
+            var fieldThatWasNeverModified = editContext.Field("field that was never modified");
+            editContext.NotifyFieldChanged(fieldThatWasModified);
+            editContext.NotifyFieldChanged(fieldThatRemainsModified);
 
             // Act
-            editContext.MarkAsUnmodified(field1);
+            editContext.MarkAsUnmodified(fieldThatWasModified);
+            editContext.MarkAsUnmodified(fieldThatWasNeverModified);
 
             // Assert
             Assert.True(editContext.IsModified());
-            Assert.False(editContext.IsModified(field1));
-            Assert.True(editContext.IsModified(field2));
+            Assert.False(editContext.IsModified(fieldThatWasModified));
+            Assert.True(editContext.IsModified(fieldThatRemainsModified));
+            Assert.False(editContext.IsModified(fieldThatWasNeverModified));
         }
 
         [Fact]
@@ -104,7 +110,7 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
         {
             // Arrange
             var editContext = new EditContext(new object());
-            var field1 = editContext.Field("field1");
+            var field1 = new FieldIdentifier(new object(), "fieldname"); // Shows it can be on a different model
             var didReceiveNotification = false;
             editContext.OnFieldChanged += (sender, changedFieldIdentifier) =>
             {
