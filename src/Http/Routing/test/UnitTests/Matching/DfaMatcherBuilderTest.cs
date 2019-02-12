@@ -232,7 +232,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             var next = Assert.Single(root.Literals);
             // Ignore case in 2.2 because EndpointComparer.ComparePattern does not specify a culture and running in the wrong culture
-            // change change the order of results, causing 'A' to be is used instead of 'a'
+            // will change the order of results. This causes 'A' to be is used instead of 'a'
             Assert.Equal("a", next.Key, ignoreCase: true);
 
             var a = next.Value;
