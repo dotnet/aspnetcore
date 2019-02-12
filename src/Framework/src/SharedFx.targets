@@ -199,7 +199,7 @@ This targets file should only be imported by .shfxproj files.
   <!-- Prepare the project to run crossgen. -->
   <Target Name="CopySharedFxToOutput" DependsOnTargets="_GetCopyToOutputItems;_BatchCopyToOutputIfNewer" />
 
-  <Target Name="_GetCopyToOutputItems" DependsOnTargets="RunResolvePackageDependencies;ResolveCopyLocalAssets">
+  <Target Name="_GetCopyToOutputItems" DependsOnTargets="RunResolvePackageDependencies;ComputeFilesToPublish">
     <ItemGroup>
       <NativeAssetsToPublish Include="@(_ResolvedCopyLocalPublishAssets)" Condition="'%(AssetType)' == 'native' " />
       <ResourceAssetsToPublish Include="@(_ResolvedCopyLocalPublishAssets)" Condition="'%(AssetType)' == 'resources'" />
