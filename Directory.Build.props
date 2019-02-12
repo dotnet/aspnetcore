@@ -78,12 +78,6 @@
     <DeterministicSourcePaths Condition="'$(IsSampleProject)' == 'true' OR '$(IsTestAssetProject)' == 'true'">false</DeterministicSourcePaths>
   </PropertyGroup>
 
-  <ItemGroup>
-    <!-- See https://github.com/dotnet/sourcelink -->
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="$(MicrosoftSourceLinkGitHubPackageVersion)" PrivateAssets="All" AllowExplicitReference="true" />
-    <PackageReference Include="Microsoft.SourceLink.Vsts.Git" Version="$(MicrosoftSourceLinkVstsGitPackageVersion)" PrivateAssets="All" AllowExplicitReference="true" />
-  </ItemGroup>
-
   <!-- Compilation options which apply to all languages. Language-specific options should be set in eng/targets/$(lang).Common.props -->
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -172,6 +166,7 @@
   <Import Project="eng\ProjectReferences.props" />
   <Import Project="eng\targets\Cpp.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.vcxproj'" />
   <Import Project="eng\targets\CSharp.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.csproj'" />
+  <Import Project="eng\targets\FSharp.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.fsproj'" />
   <Import Project="eng\targets\Wix.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.wixproj'" />
   <Import Project="eng\targets\Npm.Common.props"  Condition="'$(MSBuildProjectExtension)' == '.npmproj'" />
 

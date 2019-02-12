@@ -1,0 +1,15 @@
+<!--
+
+  Contains settings related to source link, which is only supported in some project types (.NET, C++).
+  This file should be imported only when source link is supported.
+
+-->
+<Project>
+
+  <ItemGroup>
+    <!-- See https://github.com/dotnet/sourcelink -->
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="$(MicrosoftSourceLinkGitHubPackageVersion)" PrivateAssets="All" AllowExplicitReference="true" />
+    <PackageReference Include="Microsoft.SourceLink.Vsts.Git" Version="$(MicrosoftSourceLinkVstsGitPackageVersion)" PrivateAssets="All" AllowExplicitReference="true" />
+  </ItemGroup>
+
+</Project>

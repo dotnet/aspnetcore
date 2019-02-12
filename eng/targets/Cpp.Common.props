@@ -1,6 +1,8 @@
 <!-- Targets for making .vcxproj better. -->
 <Project>
 
+  <Import Project="SourceLink.props" />
+
   <PropertyGroup>
     <SignOutput Condition=" '$(SignType)' != '' ">true</SignOutput>
     <IsPackable>false</IsPackable>
