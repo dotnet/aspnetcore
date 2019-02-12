@@ -1398,7 +1398,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Act
             var response = await Client.DeleteAsync(
-                $"ApiExplorerResponseTypeWithApiConventionController/DeleteProductAsync");
+                $"ApiExplorerResponseTypeWithApiConventionController/DeleteProduct");
             var responseBody = await response.EnsureSuccessStatusCode().Content.ReadAsStringAsync();
             var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(responseBody);
 

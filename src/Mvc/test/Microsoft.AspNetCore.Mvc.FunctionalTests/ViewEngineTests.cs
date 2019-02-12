@@ -417,7 +417,10 @@ Partial that does not specify Layout
 </layout-for-viewstart-with-layout>";
 
             // Act
-            var body = await Client.GetStringAsync("http://localhost/PartialsWithLayout/PartialsRenderedViaPartialAsync");
+            var response = await Client.GetAsync("http://localhost/PartialsWithLayout/PartialsRenderedViaPartial");
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+
+            var body = await response.Content.ReadAsStringAsync();
 
             // Assert
             Assert.Equal(expected, body.Trim(), ignoreLineEndingDifferences: true);
