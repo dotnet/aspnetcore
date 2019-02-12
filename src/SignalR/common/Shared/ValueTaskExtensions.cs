@@ -23,20 +23,5 @@ namespace Microsoft.AspNetCore.Internal
                 return valueTask.AsTask();
             }
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Task GetAsTask(this in ValueTask valueTask)
-        {
-            if (valueTask.IsCompletedSuccessfully)
-            {
-                // Signal consumption to the IValueTaskSource
-                valueTask.GetAwaiter().GetResult();
-                return Task.CompletedTask;
-            }
-            else
-            {
-                return valueTask.AsTask();
-            }
-        }
     }
 }

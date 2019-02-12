@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.SignalR
 
             public Task WriteToStream(object o)
             {
-                return _channel.Writer.WriteAsync((T)o).GetAsTask();
+                return _channel.Writer.WriteAsync((T)o).AsTask();
             }
 
             public void TryComplete(Exception ex)

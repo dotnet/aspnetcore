@@ -9,7 +9,6 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
@@ -100,7 +99,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
             protected override Task SerializeToStreamAsync(Stream stream, TransportContext context)
             {
-                return stream.WriteAsync(_buffer).GetAsTask();
+                return stream.WriteAsync(_buffer).AsTask();
             }
 
             protected override bool TryComputeLength(out long length)

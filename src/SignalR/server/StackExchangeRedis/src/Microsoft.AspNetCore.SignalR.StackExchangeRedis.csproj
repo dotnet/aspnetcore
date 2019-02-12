@@ -9,7 +9,6 @@
   <ItemGroup>
     <Compile Include="$(SignalRSharedSourceRoot)JsonUtils.cs" Link="Internal\JsonUtils.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)MemoryBufferWriter.cs" Link="Internal\MemoryBufferWriter.cs" />
-    <Compile Include="$(SignalRSharedSourceRoot)ValueTaskExtensions.cs" Link="Internal\ValueTaskExtensions.cs" />
   </ItemGroup>
 
   <ItemGroup>

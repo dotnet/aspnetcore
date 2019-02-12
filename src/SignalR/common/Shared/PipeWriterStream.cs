@@ -58,7 +58,7 @@ namespace System.IO.Pipelines
 
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            return WriteCoreAsync(buffer.AsMemory(offset, count), cancellationToken).GetAsTask();
+            return WriteCoreAsync(buffer.AsMemory(offset, count), cancellationToken).AsTask();
         }
 
 #if NETCOREAPP3_0

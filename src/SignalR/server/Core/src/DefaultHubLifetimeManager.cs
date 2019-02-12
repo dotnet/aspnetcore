@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.Logging;
@@ -113,7 +112,7 @@ namespace Microsoft.AspNetCore.SignalR
                         tasks = new List<Task>();
                     }
 
-                    tasks.Add(task.GetAsTask());
+                    tasks.Add(task.AsTask());
                 }
             }
 
@@ -152,7 +151,7 @@ namespace Microsoft.AspNetCore.SignalR
                         tasks = new List<Task>();
                     }
 
-                    tasks.Add(task.GetAsTask());
+                    tasks.Add(task.AsTask());
                 }
             }
         }
@@ -176,7 +175,7 @@ namespace Microsoft.AspNetCore.SignalR
             // Write message directly to connection without caching it in memory
             var message = CreateInvocationMessage(methodName, args);
 
-            return connection.WriteAsync(message).GetAsTask();
+            return connection.WriteAsync(message).AsTask();
         }
 
         /// <inheritdoc />
