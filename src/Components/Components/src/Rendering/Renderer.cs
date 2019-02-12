@@ -150,6 +150,10 @@ namespace Microsoft.AspNetCore.Components.Rendering
             try
             {
                 await ProcessAsynchronousWork();
+                if (_pendingTasks.Count != 0)
+                {
+                    throw new Exception();
+                }
                 Debug.Assert(_pendingTasks.Count == 0);
             }
             finally
@@ -170,26 +174,15 @@ namespace Microsoft.AspNetCore.Components.Rendering
             // which might trigger further renders.
             while (_pendingTasks.Count > 0)
             {
-                Task pendingWork;
                 // Create a Task that represents the remaining ongoing work for the rendering process
-                pendingWork = Task.WhenAll(_pendingTasks);
+                var pendingWork = Task.WhenAll(_pendingTasks);
 
                 // Clear all pending work.
                 _pendingTasks.Clear();
 
                 // new work might be added before we check again as a result of waiting for all
                 // the child components to finish executing SetParametersAsync
-
-                try
-                {
-                    await pendingWork;
-                }
-                catch when (!pendingWork.IsCanceled)
-                {
-                    // await will unwrap an AggregateException and throw exactly one inner exception.
-                    // Using pendingWork.Exception gives us access to all of the exception
-                    HandleException(pendingWork.Exception);
-                }
+                await pendingWork;
             }
         }
 
@@ -343,7 +336,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
                     {
                         return;
                     }
-                    _pendingTasks.Add(task);
+
+                    _pendingTasks.Add(GetErrorHandledTask(task));
                     break;
             }
         }
@@ -471,21 +465,13 @@ namespace Microsoft.AspNetCore.Components.Rendering
                     // The Task is incomplete.
                     // Queue up the task and we can inspect it later.
                     batch = batch ?? new List<Task>();
-                    batch.Add(task);
+                    batch.Add(GetErrorHandledTask(task));
                 }
             }
 
             if (batch != null)
             {
-                var aggregateTask = Task.WhenAll(batch);
-                try
-                {
-                    await aggregateTask;
-                }
-                catch when (!aggregateTask.IsCanceled)
-                {
-                    HandleException(aggregateTask.Exception);
-                }
+                await Task.WhenAll(batch);
             }
         }
 
@@ -529,6 +515,22 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 var eventHandlerIdsClone = eventHandlerIds.Clone();
                 afterTask.ContinueWith(_ =>
                     RemoveEventHandlerIds(eventHandlerIdsClone, Task.CompletedTask));
+            }
+        }
+
+        private async Task GetErrorHandledTask(Task taskToHandle)
+        {
+            try
+            {
+                await taskToHandle;
+            }
+            catch (Exception ex)
+            {
+                if (!taskToHandle.IsCanceled)
+                {
+                    // Ignore errors due to task cancellations.
+                    HandleException(ex);
+                }
             }
         }
 

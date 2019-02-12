@@ -203,7 +203,16 @@ namespace Microsoft.AspNetCore.Components
                 // async work is to be performed.
                 StateHasChanged();
 
-                await ProcessLifecycleTaskAsync(task);
+                try
+                {
+                    await task;
+                }
+                catch when (task.IsCanceled)
+                {
+                    // Ignore exceptions from task cancelletions.
+                }
+
+                // Don't call StateHasChanged here. CallOnParametersSetAsync should handle that for us.
             }
 
             await CallOnParametersSetAsync();
@@ -224,11 +233,11 @@ namespace Microsoft.AspNetCore.Components
             StateHasChanged();
 
             return shouldAwaitTask ?
-                ProcessLifecycleTaskAsync(task) :
+                CallStateHasChangedOnAsyncCompletion(task) :
                 Task.CompletedTask;
         }
 
-        private async Task ProcessLifecycleTaskAsync(Task task)
+        private async Task CallStateHasChangedOnAsyncCompletion(Task task)
         {
             try
             {
@@ -236,7 +245,7 @@ namespace Microsoft.AspNetCore.Components
             }
             catch when (task.IsCanceled)
             {
-                // Ignore task cancelation but don't bother issuing a state change.
+                // Ignore exceptions from task cancelletions, but don't bother issuing a state change.
                 return;
             }
 
@@ -255,7 +264,7 @@ namespace Microsoft.AspNetCore.Components
             StateHasChanged();
 
             return shouldAwaitTask ?
-                ProcessLifecycleTaskAsync(task) :
+                CallStateHasChangedOnAsyncCompletion(task) :
                 Task.CompletedTask;
         }
 

@@ -44,28 +44,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// Renders a component into a sequence of <see cref="string"/> fragments that represent the textual representation
         /// of the HTML produced by the component.
         /// </summary>
-        /// <typeparam name="TComponent">The type of the <see cref="IComponent"/>.</typeparam>
-        /// <param name="initialParameters">A <see cref="ParameterCollection"/> with the initial parameters to render the component.</param>
-        /// <returns>A sequence of <see cref="string"/> fragments that represent the HTML text of the component.</returns>
-        public IEnumerable<string> RenderComponent<TComponent>(ParameterCollection initialParameters) where TComponent : IComponent
-        {
-            return RenderComponent(typeof(TComponent), initialParameters);
-        }
-
-        /// <summary>
-        /// Renders a component into a sequence of <see cref="string"/> fragments that represent the textual representation
-        /// of the HTML produced by the component.
-        /// </summary>
-        /// <param name="componentType">The type of the <see cref="IComponent"/>.</param>
-        /// <param name="initialParameters">A <see cref="ParameterCollection"/> with the initial parameters to render the component.</param>
-        /// <returns>A sequence of <see cref="string"/> fragments that represent the HTML text of the component.</returns>
-        private IEnumerable<string> RenderComponent(Type componentType, ParameterCollection initialParameters)
-            => RenderComponentAsync(componentType, initialParameters).GetAwaiter().GetResult();
-
-        /// <summary>
-        /// Renders a component into a sequence of <see cref="string"/> fragments that represent the textual representation
-        /// of the HTML produced by the component.
-        /// </summary>
         /// <param name="componentType">The type of the <see cref="IComponent"/>.</param>
         /// <param name="initialParameters">A <see cref="ParameterCollection"/> with the initial parameters to render the component.</param>
         /// <returns>A <see cref="Task"/> that on completion returns a sequence of <see cref="string"/> fragments that represent the HTML text of the component.</returns>

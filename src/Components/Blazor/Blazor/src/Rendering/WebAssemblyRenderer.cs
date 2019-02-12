@@ -37,11 +37,13 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         /// </summary>
         /// <typeparam name="TComponent">The type of the component.</typeparam>
         /// <param name="domElementSelector">A CSS selector that uniquely identifies a DOM element.</param>
-        public void AddComponent<TComponent>(string domElementSelector)
-            where TComponent: IComponent
-        {
-            AddComponent(typeof(TComponent), domElementSelector);
-        }
+        /// <returns>A <see cref="Task"/> that represents the asynchronous rendering of the added component.</returns>
+        /// <remarks>
+        /// Callers of this method may choose to ignore the returned <see cref="Task"/> if they do not
+        /// want to await the rendering of the added component.
+        /// </remarks>
+        public Task AddComponentAsync<TComponent>(string domElementSelector) where TComponent : IComponent
+            => AddComponentAsync(typeof(TComponent), domElementSelector);
 
         /// <summary>
         /// Associates the <see cref="IComponent"/> with the <see cref="WebAssemblyRenderer"/>,
@@ -49,7 +51,12 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         /// </summary>
         /// <param name="componentType">The type of the component.</param>
         /// <param name="domElementSelector">A CSS selector that uniquely identifies a DOM element.</param>
-        public async void AddComponent(Type componentType, string domElementSelector)
+        /// <returns>A <see cref="Task"/> that represents the asynchronous rendering of the added component.</returns>
+        /// <remarks>
+        /// Callers of this method may choose to ignore the returned <see cref="Task"/> if they do not
+        /// want to await the rendering of the added component.
+        /// </remarks>
+        public Task AddComponentAsync(Type componentType, string domElementSelector)
         {
             var component = InstantiateComponent(componentType);
             var componentId = AssignRootComponentId(component);
@@ -65,8 +72,7 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
                 domElementSelector,
                 componentId);
 
-            // Dispatch the rendering. In the most common cases, this will finish synchronously
-            await RenderRootComponentAsync(componentId);
+            return RenderRootComponentAsync(componentId);
         }
 
         /// <inheritdoc />

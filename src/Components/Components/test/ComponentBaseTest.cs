@@ -168,10 +168,10 @@ namespace Microsoft.AspNetCore.Components.Test
             component.Counter = 2;
             parametersSetTask.SetResult(true);
 
+            await renderTask;
+
             // Component should be rendered again
             Assert.Equal(2, renderer.Batches.Count);
-
-            await renderTask;
         }
 
         [Fact]
@@ -194,26 +194,25 @@ namespace Microsoft.AspNetCore.Components.Test
             var renderTask = renderer.RenderRootComponentAsync(componentId);
 
             // Assert
+            // A rendering should have happened after the synchronous execution of Init
             Assert.Single(renderer.Batches);
 
             // Completes task started by OnInitAsync
             component.Counter = 2;
             initTask.SetResult(true);
 
-            // Component should be rendered again 2 times
-            // after on init async
-            // after set parameters
-            Assert.Equal(3, renderer.Batches.Count);
+            // Component should be rendered once, after set parameters
+            Assert.Equal(2, renderer.Batches.Count);
 
             // Completes task started by OnParametersSetAsync
             component.Counter = 3;
             parametersSetTask.SetResult(false);
 
+            await renderTask;
+
             // Component should be rendered again
             // after the async part of onparameterssetasync completes
-            Assert.Equal(4, renderer.Batches.Count);
-
-            await renderTask;
+            Assert.Equal(3, renderer.Batches.Count);
         }
 
         [Fact]
@@ -230,17 +229,18 @@ namespace Microsoft.AspNetCore.Components.Test
             var renderTask = renderer.RenderRootComponentAsync(componentId);
 
             // Assert
+            Assert.False(renderTask.IsCompleted);
             Assert.Single(renderer.Batches);
 
             // Cancel task started by OnInitAsync
             component.Counter = 2;
             initTask.SetCanceled();
 
+            await renderTask;
+
             // Component should only be rendered again due to
             // the call to StateHasChanged after SetParametersAsync
             Assert.Equal(2, renderer.Batches.Count);
-
-            await renderTask;
         }
 
         [Fact]
@@ -287,10 +287,11 @@ namespace Microsoft.AspNetCore.Components.Test
             component.Counter = 2;
             onParametersSetTask.SetCanceled();
 
+            await renderTask;
+
             // Component should not be rendered again
             Assert.Single(renderer.Batches);
 
-            await renderTask;
         }
 
         [Fact]
