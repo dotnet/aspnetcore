@@ -160,6 +160,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="xunit.assert" Version="$(XunitAssertPackageVersion)" />
     <LatestPackageReference Include="xunit.extensibility.core" Version="$(XunitExtensibilityCorePackageVersion)" />
     <LatestPackageReference Include="xunit.extensibility.execution" Version="$(XunitExtensibilityExecutionPackageVersion)" />
+    <LatestPackageReference Include="xunit.runner.console" Version="$(XunitRunnerConsolePackageVersion)" />
     <LatestPackageReference Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualStudioPackageVersion)" />
     <LatestPackageReference Include="xunit" Version="$(XunitPackageVersion)" />
   </ItemGroup>
