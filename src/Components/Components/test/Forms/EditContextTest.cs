@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Components.Forms;
 using System;
+using System.Linq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Tests.Forms
@@ -124,6 +125,64 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
 
             // Assert
             Assert.True(didReceiveNotification);
+        }
+
+        [Fact]
+        public void CanEnumerateValidationMessagesAcrossAllStoresForSingleField()
+        {
+            // Arrange
+            var editContext = new EditContext(new object());
+            var store1 = new ValidationMessageStore(editContext);
+            var store2 = new ValidationMessageStore(editContext);
+            var field = new FieldIdentifier(new object(), "field");
+            var fieldWithNoState = new FieldIdentifier(new object(), "field with no state");
+            store1.Add(field, "Store 1 message 1");
+            store1.Add(field, "Store 1 message 2");
+            store1.Add(new FieldIdentifier(new object(), "otherfield"), "Message for other field that should not appear in results");
+            store2.Add(field, "Store 2 message 1");
+
+            // Act/Assert: Can pick out the messages for a field
+            Assert.Equal(new[]
+            {
+                "Store 1 message 1",
+                "Store 1 message 2",
+                "Store 2 message 1",
+            }, editContext.GetValidationMessages(field).OrderBy(x => x)); // Sort because the order isn't defined
+
+            // Act/Assert: It's fine to ask for messages for a field with no associated state
+            Assert.Empty(editContext.GetValidationMessages(fieldWithNoState));
+
+            // Act/Assert: After clearing a single store, we only see the results from other stores
+            store1.Clear(field);
+            Assert.Equal(new[] { "Store 2 message 1", }, editContext.GetValidationMessages(field));
+        }
+
+        [Fact]
+        public void CanEnumerateValidationMessagesAcrossAllStoresForAllFields()
+        {
+            // Arrange
+            var editContext = new EditContext(new object());
+            var store1 = new ValidationMessageStore(editContext);
+            var store2 = new ValidationMessageStore(editContext);
+            var field1 = new FieldIdentifier(new object(), "field1");
+            var field2 = new FieldIdentifier(new object(), "field2");
+            store1.Add(field1, "Store 1 field 1 message 1");
+            store1.Add(field1, "Store 1 field 1 message 2");
+            store1.Add(field2, "Store 1 field 2 message 1");
+            store2.Add(field1, "Store 2 field 1 message 1");
+
+            // Act/Assert
+            Assert.Equal(new[]
+            {
+                "Store 1 field 1 message 1",
+                "Store 1 field 1 message 2",
+                "Store 1 field 2 message 1",
+                "Store 2 field 1 message 1",
+            }, editContext.GetValidationMessages().OrderBy(x => x)); // Sort because the order isn't defined
+
+            // Act/Assert: After clearing a single store, we only see the results from other stores
+            store1.Clear();
+            Assert.Equal(new[] { "Store 2 field 1 message 1", }, editContext.GetValidationMessages());
         }
     }
 }
