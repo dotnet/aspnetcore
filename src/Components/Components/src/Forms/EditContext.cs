@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.AspNetCore.Components.Forms
 {
@@ -10,6 +12,8 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// </summary>
     public class EditContext
     {
+        private Dictionary<FieldIdentifier, FieldState> _fieldStates = new Dictionary<FieldIdentifier, FieldState>();
+
         /// <summary>
         /// Constructs an instance of <see cref="EditContext"/>.
         /// </summary>
@@ -21,6 +25,11 @@ namespace Microsoft.AspNetCore.Components.Forms
             // simplifies things for all consumers of EditContext.
             Model = model ?? throw new ArgumentNullException(nameof(model));
         }
+
+        /// <summary>
+        /// An event that is raised when a field value changes.
+        /// </summary>
+        public event EventHandler<FieldIdentifier> OnFieldChanged;
 
         /// <summary>
         /// Supplies a <see cref="FieldIdentifier"/> corresponding to a specified field name
@@ -37,12 +46,37 @@ namespace Microsoft.AspNetCore.Components.Forms
         public object Model { get; }
 
         /// <summary>
-        /// Signals that the specified field within this <see cref="EditContext"/> has been changed.
+        /// Signals that the value for the specified field has changed.
         /// </summary>
         /// <param name="fieldIdentifier">Identifies the field whose value has been changed.</param>
         public void NotifyFieldChanged(FieldIdentifier fieldIdentifier)
         {
-            throw new NotImplementedException();
+            var state = GetOrCreateFieldState(fieldIdentifier);
+            state.IsModified = true;
+            OnFieldChanged?.Invoke(this, fieldIdentifier);
+        }
+
+        /// <summary>
+        /// Clears any modification flag that may be tracked for the specified field.
+        /// </summary>
+        /// <param name="fieldIdentifier">Identifies the field whose modification flag (if any) should be cleared.</param>
+        public void MarkAsUnmodified(FieldIdentifier fieldIdentifier)
+        {
+            if (_fieldStates.TryGetValue(fieldIdentifier, out var state))
+            {
+                state.IsModified = false;
+            }
+        }
+
+        /// <summary>
+        /// Clears all modification flags within this <see cref="EditContext"/>.
+        /// </summary>
+        public void MarkAsUnmodified()
+        {
+            foreach (var state in _fieldStates.Values)
+            {
+                state.IsModified = false;
+            }
         }
 
         /// <summary>
@@ -50,17 +84,28 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// </summary>
         /// <returns>True if any of the fields in this <see cref="EditContext"/> have been modified; otherwise false.</returns>
         public bool IsModified()
-        {
-            return false;
-        }
+            // If necessary, we could consider caching the overall "is modified" state and only recomputing
+            // when there's a call to NotifyFieldModified/NotifyFieldUnmodified
+            => _fieldStates.Values.Any(state => state.IsModified);
 
         /// <summary>
         /// Determines whether the specified fields in this <see cref="EditContext"/> has been modified.
         /// </summary>
         /// <returns>True if the field has been modified; otherwise false.</returns>
         public bool IsModified(FieldIdentifier fieldIdentifier)
+            => _fieldStates.TryGetValue(fieldIdentifier, out var state)
+            ? state.IsModified
+            : false;
+
+        private FieldState GetOrCreateFieldState(FieldIdentifier fieldIdentifier)
         {
-            return false;
+            if (!_fieldStates.TryGetValue(fieldIdentifier, out var state))
+            {
+                state = new FieldState();
+                _fieldStates.Add(fieldIdentifier, state);
+            }
+
+            return state;
         }
     }
 }

@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// Uniquely identifies a single field that can be edited. This may correspond to a property on a
     /// model object, or can be any other named value.
     /// </summary>
-    public struct FieldIdentifier
+    public readonly struct FieldIdentifier
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="FieldIdentifier"/> structure.

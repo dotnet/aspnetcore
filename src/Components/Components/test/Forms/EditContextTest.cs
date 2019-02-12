@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
         }
 
         [Fact]
-        public void TracksFieldsAsModifiedWhenChanged()
+        public void TracksFieldsAsModifiedWhenValueChanged()
         {
             // Arrange
             var editContext = new EditContext(new object());
@@ -59,6 +59,65 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
             Assert.True(editContext.IsModified());
             Assert.True(editContext.IsModified(field1));
             Assert.False(editContext.IsModified(field2));
+        }
+        
+        [Fact]
+        public void CanClearIndividualModifications()
+        {
+            // Arrange
+            var editContext = new EditContext(new object());
+            var field1 = editContext.Field("field1");
+            var field2 = editContext.Field("field2");
+            editContext.NotifyFieldChanged(field1);
+            editContext.NotifyFieldChanged(field2);
+
+            // Act
+            editContext.MarkAsUnmodified(field1);
+
+            // Assert
+            Assert.True(editContext.IsModified());
+            Assert.False(editContext.IsModified(field1));
+            Assert.True(editContext.IsModified(field2));
+        }
+
+        [Fact]
+        public void CanClearAllModifications()
+        {
+            // Arrange
+            var editContext = new EditContext(new object());
+            var field1 = editContext.Field("field1");
+            var field2 = editContext.Field("field2");
+            editContext.NotifyFieldChanged(field1);
+            editContext.NotifyFieldChanged(field2);
+
+            // Act
+            editContext.MarkAsUnmodified();
+
+            // Assert
+            Assert.False(editContext.IsModified());
+            Assert.False(editContext.IsModified(field1));
+            Assert.False(editContext.IsModified(field2));
+        }
+
+        [Fact]
+        public void RaisesEventWhenFieldIsChanged()
+        {
+            // Arrange
+            var editContext = new EditContext(new object());
+            var field1 = editContext.Field("field1");
+            var didReceiveNotification = false;
+            editContext.OnFieldChanged += (sender, changedFieldIdentifier) =>
+            {
+                Assert.Same(editContext, sender);
+                Assert.Equal(field1, changedFieldIdentifier);
+                didReceiveNotification = true;
+            };
+
+            // Act
+            editContext.NotifyFieldChanged(field1);
+
+            // Assert
+            Assert.True(didReceiveNotification);
         }
     }
 }
