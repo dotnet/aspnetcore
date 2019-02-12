@@ -32,6 +32,7 @@ namespace Microsoft.CodeAnalysis
 
         private static IEnumerable<string> ResolvePaths(CompilationLibrary library)
         {
+#if NETFRAMEWORK
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
             for (var i = 0; i < assemblies.Length; i++)
             {
@@ -40,6 +41,7 @@ namespace Microsoft.CodeAnalysis
                     return new[] { assemblies[i].Location };
                 }
             }
+#endif
 
             try
             {

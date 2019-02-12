@@ -37,5 +37,25 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 Path.Combine(IntermediateOutputPath, "SimpleMvc21.TagHelpers.output.cache"),
                 @"""Name"":""SimpleMvc.SimpleTagHelper""");
         }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc21")]
+        public async Task Publish_NETCoreApp21TargetingProject()
+        {
+            TargetFramework = "netcoreapp2.1";
+
+            var result = await DotnetMSBuild("Publish");
+
+            Assert.BuildPassed(result);
+
+            Assert.FileExists(result, PublishOutputPath, "SimpleMvc21.dll");
+            Assert.FileExists(result, PublishOutputPath, "SimpleMvc21.pdb");
+            Assert.FileExists(result, PublishOutputPath, "SimpleMvc21.Views.dll");
+            Assert.FileExists(result, PublishOutputPath, "SimpleMvc21.Views.pdb");
+
+            // By default refs and .cshtml files will not be copied on publish
+            Assert.FileCountEquals(result, 0, Path.Combine(PublishOutputPath, "refs"), "*.dll");
+            Assert.FileCountEquals(result, 0, Path.Combine(PublishOutputPath, "Views"), "*.cshtml");
+        }
     }
 }

@@ -235,7 +235,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
         [Fact]
         [InitializeTestProject("SimpleMvc")]
-        public async Task Build_WithViews_ProducesDepsFileWithCompilationContext()
+        public async Task Build_WithViews_ProducesDepsFileWithCompilationContext_ButNoReferences()
         {
             var customDefine = "RazorSdkTest";
             var result = await DotnetMSBuild("Build", $"/p:DefineConstants={customDefine}");
@@ -247,13 +247,16 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var dependencyContext = ReadDependencyContext(depsFilePath);
 
             // Pick a couple of libraries and ensure they have some compile references
-            var packageReference = dependencyContext.CompileLibraries.First(l => l.Name == "Microsoft.NETCore.App");
+            var packageReference = dependencyContext.CompileLibraries.First(l => l.Name == "System.Diagnostics.DiagnosticSource");
             Assert.NotEmpty(packageReference.Assemblies);
 
             var projectReference = dependencyContext.CompileLibraries.First(l => l.Name == "SimpleMvc");
             Assert.NotEmpty(projectReference.Assemblies);
 
             Assert.Contains(customDefine, dependencyContext.CompilationOptions.Defines);
+
+            // Verify no refs folder is produced
+            Assert.FileCountEquals(result, 0, Path.Combine(PublishOutputPath, "refs"), "*.dll");
         }
 
         [Fact]

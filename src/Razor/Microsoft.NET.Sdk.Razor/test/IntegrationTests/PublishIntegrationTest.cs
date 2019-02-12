@@ -247,6 +247,30 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileCountEquals(result, 8, Path.Combine(PublishOutputPath, "Views"), "*.cshtml");
         }
 
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
+        public async Task Publish_WithCopySettingsInProjectFile_CopiesFiles()
+        {
+            AddProjectFileContent(@"
+            <PropertyGroup>
+                <CopyRefAssembliesToPublishDirectory>true</CopyRefAssembliesToPublishDirectory>
+                <CopyRazorGenerateFilesToPublishDirectory>true</CopyRazorGenerateFilesToPublishDirectory>
+            </PropertyGroup>");
+
+            var result = await DotnetMSBuild("Publish");
+
+            Assert.BuildPassed(result);
+
+            Assert.FileExists(result, PublishOutputPath, "SimpleMvc.dll");
+            Assert.FileExists(result, PublishOutputPath, "SimpleMvc.pdb");
+            Assert.FileExists(result, PublishOutputPath, "SimpleMvc.Views.dll");
+            Assert.FileExists(result, PublishOutputPath, "SimpleMvc.Views.pdb");
+
+            // By default refs and .cshtml files will not be copied on publish
+            Assert.FileExists(result, PublishOutputPath, "refs", "mscorlib.dll");
+            Assert.FileCountEquals(result, 8, Path.Combine(PublishOutputPath, "Views"), "*.cshtml");
+        }
+
         [Fact] // Tests old MvcPrecompilation behavior that we support for compat.
         [InitializeTestProject("SimpleMvc")]
         public async Task Publish_MvcRazorExcludeFilesFromPublish_False_CopiesFiles()

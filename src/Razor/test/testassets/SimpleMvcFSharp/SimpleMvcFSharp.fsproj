@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NETCore.App" IsImplicitlyDefined="true" />
+    <FrameworkReference Include="Microsoft.NETCore.App" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(BinariesRoot)'==''">
