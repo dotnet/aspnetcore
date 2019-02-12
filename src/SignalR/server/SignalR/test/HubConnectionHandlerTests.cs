@@ -3041,20 +3041,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public async Task UploadStreamClosesStreamsOnServerWhenMethodCompletes()
         {
-            bool errorLogged = false;
-            bool ExpectedErrors(WriteContext writeContext)
-            {
-                if (writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.HubConnectionHandler" &&
-                       writeContext.EventId.Name == "ErrorProcessingRequest")
-                {
-                    errorLogged = true;
-                    return true;
-                }
-
-                return false;
-            }
-
-            using (StartVerifiableLog(ExpectedErrors))
+            using (StartVerifiableLog())
             {
                 var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(loggerFactory: LoggerFactory);
                 var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
@@ -3071,8 +3058,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     var simpleCompletion = Assert.IsType<CompletionMessage>(result);
                     Assert.Null(simpleCompletion.Result);
 
-                    // This will log an error on the server as the hub method has completed and will complete all associated streams
+                    // This will log a warning on the server as the hub method has completed and will complete all associated streams
                     await client.SendHubMessageAsync(new StreamItemMessage("id", "error!")).OrTimeout();
+
+                    // Check that the connection hasn't been closed
+                    await client.SendInvocationAsync("VoidMethod").OrTimeout();
 
                     // Shut down
                     client.Dispose();
@@ -3080,28 +3070,12 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     await connectionHandlerTask.OrTimeout();
                 }
             }
-
-            // Check that the stream has been completed by noting the existance of an error
-            Assert.True(errorLogged);
         }
 
         [Fact]
         public async Task UploadStreamAndStreamingMethodClosesStreamsOnServerWhenMethodCompletes()
         {
-            bool errorLogged = false;
-            bool ExpectedErrors(WriteContext writeContext)
-            {
-                if (writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.HubConnectionHandler" &&
-                       writeContext.EventId.Name == "ErrorProcessingRequest")
-                {
-                    errorLogged = true;
-                    return true;
-                }
-
-                return false;
-            }
-
-            using (StartVerifiableLog(ExpectedErrors))
+            using (StartVerifiableLog())
             {
                 var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(loggerFactory: LoggerFactory);
                 var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
@@ -3118,8 +3092,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     var simpleCompletion = Assert.IsType<CompletionMessage>(result);
                     Assert.Null(simpleCompletion.Result);
 
-                    // This will log an error on the server as the hub method has completed and will complete all associated streams
+                    // This will log a warning on the server as the hub method has completed and will complete all associated streams
                     await client.SendHubMessageAsync(new StreamItemMessage("id", "error!")).OrTimeout();
+
+                    // Check that the connection hasn't been closed
+                    await client.SendInvocationAsync("VoidMethod").OrTimeout();
 
                     // Shut down
                     client.Dispose();
@@ -3127,9 +3104,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     await connectionHandlerTask.OrTimeout();
                 }
             }
-
-            // Check that the stream has been completed by noting the existance of an error
-            Assert.True(errorLogged);
         }
 
         [Theory]

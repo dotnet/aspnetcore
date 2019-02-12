@@ -348,12 +348,12 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                     case HubProtocolConstants.StreamItemMessageType:
                         if (itemToken != null)
                         {
-                            var returnType = binder.GetReturnType(invocationId);
                             try
                             {
-                                item = itemToken.ToObject(returnType, PayloadSerializer);
+                                var itemType = binder.GetStreamItemType(invocationId);
+                                item = itemToken.ToObject(itemType, PayloadSerializer);
                             }
-                            catch (JsonSerializationException ex)
+                            catch (Exception ex)
                             {
                                 message =  new StreamBindingFailureMessage(invocationId, ExceptionDispatchInfo.Capture(ex));
                                 break;

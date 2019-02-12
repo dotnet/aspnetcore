@@ -156,7 +156,15 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
             var message = CompletionMessage.WithError(bindingFailureMessage.Id, errorString);
             Log.ClosingStreamWithBindingError(_logger, message);
-            connection.StreamTracker.Complete(message);
+            try
+            {
+                connection.StreamTracker.Complete(message);
+            }
+            catch (KeyNotFoundException)
+            {
+            }
+
+            // TODO: Send stream completion message to client when we add it
 
             return Task.CompletedTask;
         }
