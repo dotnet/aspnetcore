@@ -52,8 +52,6 @@ $(MSBuildProjectName) provides a default set of APIs for building an ASP.NET Cor
     <NoPackageAnalysis>true</NoPackageAnalysis>
   </PropertyGroup>
 
-  <Import Project="..\Microsoft.AspNetCore.App.props" />
-
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
   <Import Project="SharedFx.targets" />
 

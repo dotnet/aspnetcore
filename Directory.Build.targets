@@ -20,6 +20,13 @@
     <IsPackable Condition="'$(IsPackable)' == '' AND ( '$(IsTestProject)' == 'true' OR '$(IsTestAssetProject)' == 'true' OR '$(IsBenchmarkProject)' == 'true' OR '$(IsSampleProject)' == 'true' ) ">false</IsPackable>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!-- Do not produce NuGet packages for assemblies which are only available by referencing the shared framework. -->
+
+    <!-- TODO - re-enable as a part of completing https://github.com/aspnet/AspNetCore/issues/4257 -->
+    <!-- <IsPackable Condition="'$(IsAspNetCoreApp)' == 'true' AND '$(IsShippingPackage)' != 'true'">false</IsPackable> -->
+  </PropertyGroup>
+
   <Import Project="eng\Baseline.Designer.props" />
 
   <PropertyGroup Condition=" '$(IsPackable)' != 'false' AND '$(AspNetCorePatchVersion)' != '0' ">

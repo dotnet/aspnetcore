@@ -1,6 +1,4 @@
 <Project>
-  <Import Project="SharedFrameworkOnly.props" />
-
   <PropertyGroup>
     <TargetRuntimeIdentifier Condition="'$(TargetRuntimeIdentifier)' == ''">$(TargetOsName)-$(TargetArchitecture)</TargetRuntimeIdentifier>
   </PropertyGroup>
@@ -180,6 +178,7 @@
   </Choose>
 
   <Import Project="..\eng\Versions.props" />
+  <Import Project="..\src\Framework\Microsoft.AspNetCore.App.props" />
   <Import Project="runtimes.props" />
   <Import Project="CodeSign.props" />
 </Project>
