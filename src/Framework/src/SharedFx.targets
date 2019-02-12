@@ -199,12 +199,12 @@ This targets file should only be imported by .shfxproj files.
   <!-- Prepare the project to run crossgen. -->
   <Target Name="CopySharedFxToOutput" DependsOnTargets="_GetCopyToOutputItems;_BatchCopyToOutputIfNewer" />
 
-  <Target Name="_GetCopyToOutputItems" DependsOnTargets="RunResolvePackageDependencies;RunResolvePublishAssemblies">
+  <Target Name="_GetCopyToOutputItems" DependsOnTargets="RunResolvePackageDependencies;ResolveCopyLocalAssets">
     <ItemGroup>
-      <NativeAssetsToPublish Include="@(ResolvedAssembliesToPublish)" Condition="'%(AssetType)' == 'native' " />
-      <ResourceAssetsToPublish Include="@(ResolvedAssembliesToPublish)" Condition="'%(AssetType)' == 'resources'" />
-      <RuntimeAssetsToPublish Include="@(ResolvedAssembliesToPublish)" Condition="'%(AssetType)' == 'runtime'" />
-      <OtherAssemblies Include="@(ResolvedAssembliesToPublish)" Exclude="@(NativeAssetsToPublish);@(ResourceAssetsToPublish);@(RuntimeAssetsToPublish)" />
+      <NativeAssetsToPublish Include="@(_ResolvedCopyLocalPublishAssets)" Condition="'%(AssetType)' == 'native' " />
+      <ResourceAssetsToPublish Include="@(_ResolvedCopyLocalPublishAssets)" Condition="'%(AssetType)' == 'resources'" />
+      <RuntimeAssetsToPublish Include="@(_ResolvedCopyLocalPublishAssets)" Condition="'%(AssetType)' == 'runtime'" />
+      <OtherAssemblies Include="@(_ResolvedCopyLocalPublishAssets)" Exclude="@(NativeAssetsToPublish);@(ResourceAssetsToPublish);@(RuntimeAssetsToPublish)" />
     </ItemGroup>
 
     <Error Text="Unaccounted shared framework assemblies found: @(OtherAssemblies). These files have an unknown asset type." Condition="'@(OtherAssemblies)' != ''" />
