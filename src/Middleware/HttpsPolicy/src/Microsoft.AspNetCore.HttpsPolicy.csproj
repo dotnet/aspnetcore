@@ -5,6 +5,7 @@
       ASP.NET Core basic middleware for supporting HTTPS Redirection and HTTP Strict-Transport-Security.
     </Description>
     <TargetFramework>netcoreapp3.0</TargetFramework>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;https;hsts</PackageTags>
@@ -15,6 +16,6 @@
     <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
     <Reference Include="Microsoft.Extensions.Configuration.Binder" />
     <Reference Include="Microsoft.Extensions.Options" />
-    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" /> 
+    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
   </ItemGroup>
 </Project>
