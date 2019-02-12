@@ -356,6 +356,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     return default;
                 }
 
+                // Uses same BufferWriter to write response headers and response
                 var writer = new BufferWriter<PipeWriter>(_pipeWriter);
 
                 WriteResponseHeadersInternal(ref writer, statusCode, reasonPhrase, responseHeaders, autoChunk);
@@ -373,6 +374,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     return default;
                 }
 
+                // Uses same BufferWriter to write response headers and chunk
                 var writer = new BufferWriter<PipeWriter>(_pipeWriter);
 
                 WriteResponseHeadersInternal(ref writer, statusCode, reasonPhrase, responseHeaders, autoChunk);
