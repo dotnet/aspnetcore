@@ -20,7 +20,7 @@ Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper</Description>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Html.Abstractions" />
-    <Reference Include="Microsoft.Extensions.HashCodeCombiner.Sources" PrivateAssets="All" />
+    <Reference Include="Microsoft.Extensions.HashCodeCombiner.Sources" SharedSources="true" />
   </ItemGroup>
 
 </Project>

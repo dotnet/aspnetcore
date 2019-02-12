@@ -13,6 +13,7 @@
     <AspNetCoreAppReference Update="@(AspNetCoreAppReference)" Version="$(PackageVersion)" />
 
     <!-- Dependencies built as packages in other repos that we definitely want in the shared framework. -->
+    <!-- Dependencies from aspnet/Extensions -->
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Caching.Abstractions"                    Version="$(MicrosoftExtensionsCachingAbstractionsPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Caching.Memory"                          Version="$(MicrosoftExtensionsCachingMemoryPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Configuration.Abstractions"              Version="$(MicrosoftExtensionsConfigurationAbstractionsPackageVersion)" />
@@ -54,6 +55,14 @@
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Primitives"                              Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.WebEncoders"                             Version="$(MicrosoftExtensionsWebEncodersPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.JSInterop"                                          Version="$(MicrosoftJSInteropPackageVersion)" />
+    <!-- Dependencies from dotnet/corefx -->
+    <ExternalAspNetCoreAppReference Include="System.IO.Pipelines"                                          Version="$(SystemIOPipelinesPackageVersion)" />
+    <ExternalAspNetCoreAppReference Include="System.Runtime.CompilerServices.Unsafe"                       Version="$(SystemRuntimeCompilerServicesUnsafePackageVersion)" />
+    <ExternalAspNetCoreAppReference Include="System.Security.Cryptography.Xml"                             Version="$(SystemSecurityCryptographyXmlPackageVersion)" />
+    <ExternalAspNetCoreAppReference Include="System.Text.Encodings.Web"                                    Version="$(SystemTextEncodingsWebPackageVersion)" />
+    <ExternalAspNetCoreAppReference Include="System.Threading.Channels"                                    Version="$(SystemThreadingChannelsPackageVersion)" />
+    <!-- Dependencies from dotnet/core-setup -->
+    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.DependencyModel"                         Version="$(MicrosoftExtensionsDependencyModelPackageVersion)" />
 
     <!--
       Transitive dependencies of other assemblies in the shared framework. These are listed separately and should not be included directly
@@ -62,15 +71,9 @@
       it is okay to remove these transitive dependencies.
     -->
     <_TransitiveExternalAspNetCoreAppReference Include="Microsoft.DotNet.PlatformAbstractions"              Version="$(MicrosoftDotNetPlatformAbstractionsPackageVersion)" />
-    <_TransitiveExternalAspNetCoreAppReference Include="Microsoft.Extensions.DependencyModel"               Version="$(MicrosoftExtensionsDependencyModelPackageVersion)" />
     <_TransitiveExternalAspNetCoreAppReference Include="Newtonsoft.Json"                                    Version="$(NewtonsoftJsonPackageVersion)" />
-    <_TransitiveExternalAspNetCoreAppReference Include="System.IO.Pipelines"                                Version="$(SystemIOPipelinesPackageVersion)" />
-    <_TransitiveExternalAspNetCoreAppReference Include="System.Runtime.CompilerServices.Unsafe"             Version="$(SystemRuntimeCompilerServicesUnsafePackageVersion)" />
     <_TransitiveExternalAspNetCoreAppReference Include="System.Security.Cryptography.Pkcs"                  Version="$(SystemSecurityCryptographyPkcsPackageVersion)" />
-    <_TransitiveExternalAspNetCoreAppReference Include="System.Security.Cryptography.Xml"                   Version="$(SystemSecurityCryptographyXmlPackageVersion)" />
     <_TransitiveExternalAspNetCoreAppReference Include="System.Security.Permissions"                        Version="$(SystemSecurityPermissionsPackageVersion)" />
-    <_TransitiveExternalAspNetCoreAppReference Include="System.Text.Encodings.Web"                          Version="$(SystemTextEncodingsWebPackageVersion)" />
-    <_TransitiveExternalAspNetCoreAppReference Include="System.Threading.Channels"                          Version="$(SystemThreadingChannelsPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(IsServicingBuild)' == 'true' ">

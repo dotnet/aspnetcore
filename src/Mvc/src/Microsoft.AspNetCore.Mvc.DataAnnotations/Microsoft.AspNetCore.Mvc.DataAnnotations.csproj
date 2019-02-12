@@ -11,8 +11,6 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
-
     <Reference Include="Microsoft.Extensions.Localization" />
-    <Reference Include="System.ComponentModel.Annotations" />
   </ItemGroup>
 </Project>

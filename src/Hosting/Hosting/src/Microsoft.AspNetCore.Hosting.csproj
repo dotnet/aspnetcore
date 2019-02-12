@@ -26,9 +26,7 @@
     <Reference Include="Microsoft.Extensions.Hosting.Abstractions" />
     <Reference Include="Microsoft.Extensions.Logging" />
     <Reference Include="Microsoft.Extensions.Options" />
-    <Reference Include="Microsoft.Extensions.TypeNameHelper.Sources" PrivateAssets="All" />
-    <Reference Include="System.Diagnostics.DiagnosticSource" />
-    <Reference Include="System.Reflection.Metadata" />
+    <Reference Include="Microsoft.Extensions.TypeNameHelper.Sources" SharedSources="true" />
   </ItemGroup>
 
 </Project>

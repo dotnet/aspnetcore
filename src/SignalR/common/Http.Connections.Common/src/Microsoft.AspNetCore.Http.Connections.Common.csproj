@@ -17,10 +17,12 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
-    <Reference Include="System.Buffers" />
-    <Reference Include="Microsoft.Bcl.Json.Sources" Condition="'$(TargetFramework)' == 'netstandard2.0'">
-      <PrivateAssets>All</PrivateAssets>
-    </Reference>
-    <Reference Include="System.Runtime.CompilerServices.Unsafe" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
+    <Reference Include="System.Runtime.CompilerServices.Unsafe" />
   </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'" >
+    <Reference Include="Microsoft.Bcl.Json.Sources" SharedSources="true" />
+    <Reference Include="System.Buffers" />
+  </ItemGroup>
+
 </Project>

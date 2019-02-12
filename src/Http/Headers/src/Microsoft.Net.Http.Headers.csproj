@@ -12,7 +12,6 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.Primitives" />
-    <Reference Include="System.Buffers" />
   </ItemGroup>
 
 </Project>

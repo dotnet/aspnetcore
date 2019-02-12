@@ -24,9 +24,7 @@
     <Reference Include="Microsoft.Extensions.FileProviders.Physical" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="Microsoft.Extensions.Options" />
-    <Reference Include="Microsoft.Extensions.TypeNameHelper.Sources" PrivateAssets="All" />
-    <Reference Include="System.Diagnostics.DiagnosticSource" />
-    <Reference Include="System.Reflection.Metadata" />
+    <Reference Include="Microsoft.Extensions.TypeNameHelper.Sources" SharedSources="true" />
   </ItemGroup>
 
 </Project>
