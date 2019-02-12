@@ -73,9 +73,12 @@ namespace CorsWebSite
             });
         }
 
-        public void Configure(IApplicationBuilder app)
+        public virtual void Configure(IApplicationBuilder app)
         {
-            app.UseMvc();
+            app.UseRouting(routes =>
+            {
+                routes.MapControllers();
+            });
         }
 
         protected virtual void ConfigureMvcOptions(MvcOptions options)

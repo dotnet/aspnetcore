@@ -5,9 +5,9 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class AsyncActionsTests : IClassFixture<MvcTestFixture<BasicWebSite.Startup>>
+    public class AsyncActionsTests : IClassFixture<MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting>>
     {
-        public AsyncActionsTests(MvcTestFixture<BasicWebSite.Startup> fixture)
+        public AsyncActionsTests(MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting> fixture)
         {
             Client = fixture.CreateDefaultClient();
         }

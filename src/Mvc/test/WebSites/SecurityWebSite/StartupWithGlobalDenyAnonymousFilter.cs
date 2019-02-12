@@ -35,7 +35,10 @@ namespace SecurityWebSite
         {
             app.UseAuthentication();
 
-            app.UseMvcWithDefaultRoute();
+            app.UseRouting(routes =>
+            {
+                routes.MapDefaultControllerRoute();
+            });
         }
     }
 }

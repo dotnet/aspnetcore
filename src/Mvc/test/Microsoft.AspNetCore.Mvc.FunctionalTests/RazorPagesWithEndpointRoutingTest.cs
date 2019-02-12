@@ -8,9 +8,9 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class RazorPagesWithEndpointRoutingTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.StartupWithEndpointRouting>>
+    public class RazorPagesWithEndpointRoutingTest : IClassFixture<MvcTestFixture<RazorPagesWebSite.Startup>>
     {
-        public RazorPagesWithEndpointRoutingTest(MvcTestFixture<RazorPagesWebSite.StartupWithEndpointRouting> fixture)
+        public RazorPagesWithEndpointRoutingTest(MvcTestFixture<RazorPagesWebSite.Startup> fixture)
         {
             Client = fixture.CreateDefaultClient();
         }

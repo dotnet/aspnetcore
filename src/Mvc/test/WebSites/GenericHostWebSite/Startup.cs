@@ -40,18 +40,17 @@ namespace GenericHostWebSite
 
             app.UseStaticFiles();
 
-            // Add MVC to the request pipeline
-            app.UseMvc(routes =>
+            app.UseRouting(routes =>
             {
-                routes.MapRoute(
+                routes.MapControllerRoute(
                     "areaRoute",
                     "{area:exists}/{controller}/{action}",
                     new { controller = "Home", action = "Index" });
 
-                routes.MapRoute("ActionAsMethod", "{controller}/{action}",
+                routes.MapControllerRoute("ActionAsMethod", "{controller}/{action}",
                     defaults: new { controller = "Home", action = "Index" });
 
-                routes.MapRoute("PageRoute", "{controller}/{action}/{page}");
+                routes.MapControllerRoute("PageRoute", "{controller}/{action}/{page}");
             });
         }
     }

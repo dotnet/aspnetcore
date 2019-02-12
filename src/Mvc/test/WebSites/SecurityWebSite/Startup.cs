@@ -32,11 +32,9 @@ namespace SecurityWebSite
         {
             app.UseAuthentication();
 
-            app.UseMvc(routes =>
+            app.UseRouting(routes =>
             {
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                routes.MapDefaultControllerRoute();
             });
         }
     }

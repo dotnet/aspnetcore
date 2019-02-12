@@ -11,9 +11,9 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class ComponentRenderingFunctionalTests : IClassFixture<MvcTestFixture<BasicWebSite.Startup>>
+    public class ComponentRenderingFunctionalTests : IClassFixture<MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting>>
     {
-        public ComponentRenderingFunctionalTests(MvcTestFixture<BasicWebSite.Startup> fixture)
+        public ComponentRenderingFunctionalTests(MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting> fixture)
         {
             Client = Client ?? CreateClient(fixture);
         }
@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         {
         }
 
-        private HttpClient CreateClient(MvcTestFixture<BasicWebSite.Startup> fixture)
+        private HttpClient CreateClient(MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting> fixture)
         {
             var loopHandler = new LoopHttpHandler();
 

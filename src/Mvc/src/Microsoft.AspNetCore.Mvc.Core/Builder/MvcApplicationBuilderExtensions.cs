@@ -88,10 +88,7 @@ namespace Microsoft.AspNetCore.Builder
 
             if (options.Value.EnableEndpointRouting)
             {
-                var mvcEndpointDataSource = app.ApplicationServices
-                    .GetRequiredService<MvcEndpointDataSource>();
-                var parameterPolicyFactory = app.ApplicationServices
-                    .GetRequiredService<ParameterPolicyFactory>();
+                var dataSource = app.ApplicationServices.GetRequiredService<ActionEndpointDataSource>();
 
                 var endpointRouteBuilder = new EndpointRouteBuilder(app);
 
@@ -103,15 +100,14 @@ namespace Microsoft.AspNetCore.Builder
                     // Sub-types could have additional customization that we can't knowingly convert
                     if (router is Route route && router.GetType() == typeof(Route))
                     {
-                        var endpointInfo = new MvcEndpointInfo(
+                        var entry = new ConventionalRouteEntry(
                             route.Name,
                             route.RouteTemplate,
                             route.Defaults,
                             route.Constraints.ToDictionary(kvp => kvp.Key, kvp => (object)kvp.Value),
-                            route.DataTokens,
-                            parameterPolicyFactory);
+                            route.DataTokens);
 
-                        mvcEndpointDataSource.ConventionalEndpointInfos.Add(endpointInfo);
+                        dataSource.AddRoute(entry);
                     }
                     else
                     {
@@ -119,20 +115,13 @@ namespace Microsoft.AspNetCore.Builder
                     }
                 }
 
-                // Include all controllers with attribute routing and Razor pages
-                var defaultEndpointConventionBuilder = new DefaultEndpointConventionBuilder();
-                mvcEndpointDataSource.AttributeRoutingConventionResolvers.Add((actionDescriptor) =>
-                {
-                    return defaultEndpointConventionBuilder;
-                });
-
                 if (!app.Properties.TryGetValue(EndpointRoutingRegisteredKey, out _))
                 {
                     // Matching middleware has not been registered yet
                     // For back-compat register middleware so an endpoint is matched and then immediately used
                     app.UseRouting(routerBuilder =>
                     {
-                        routerBuilder.DataSources.Add(mvcEndpointDataSource);
+                        routerBuilder.DataSources.Add(dataSource);
                     });
                 }
 

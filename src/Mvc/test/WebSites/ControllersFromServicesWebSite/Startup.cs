@@ -64,9 +64,9 @@ namespace ControllersFromServicesWebSite
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseMvc(routes =>
+            app.UseRouting(routes =>
             {
-                routes.MapRoute("default", "{controller}/{action}/{id}");
+                routes.MapDefaultControllerRoute();
             });
         }
 

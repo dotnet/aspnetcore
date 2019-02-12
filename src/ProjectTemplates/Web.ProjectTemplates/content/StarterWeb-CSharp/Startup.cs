@@ -159,10 +159,10 @@ namespace Company.WebApplication1
 
             app.UseRouting(routes =>
             {
-                routes.MapApplication();
                 routes.MapControllerRoute(
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
+                routes.MapRazorPages();
             });
 
             app.UseCookiePolicy();

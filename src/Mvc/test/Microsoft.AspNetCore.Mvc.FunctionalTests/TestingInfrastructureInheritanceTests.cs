@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public void TestingInfrastructure_WebHost_WithWebHostBuilderRespectsCustomizations()
         {
             // Act
-            var factory = new CustomizedFactory<BasicWebSite.Startup>();
+            var factory = new CustomizedFactory<BasicWebSite.StartupWithoutEndpointRouting>();
             var customized = factory
                 .WithWebHostBuilder(builder => factory.ConfigureWebHostCalled.Add("Customization"))
                 .WithWebHostBuilder(builder => factory.ConfigureWebHostCalled.Add("FurtherCustomization"));

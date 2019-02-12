@@ -21,9 +21,12 @@ namespace VersioningWebSite
             services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
         }
 
-        public void Configure(IApplicationBuilder app)
+        public virtual void Configure(IApplicationBuilder app)
         {
-            app.UseMvcWithDefaultRoute();
+            app.UseRouting(routes =>
+            {
+                routes.MapDefaultControllerRoute();
+            });
         }
 
         protected virtual void ConfigureMvcOptions(MvcOptions options)

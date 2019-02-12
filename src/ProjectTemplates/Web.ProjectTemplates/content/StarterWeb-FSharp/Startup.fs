@@ -41,11 +41,11 @@ type Startup private () =
         app.UseStaticFiles() |> ignore
 
         app.UseRouting(fun routes ->
-            routes.MapApplication() |> ignore
             routes.MapControllerRoute(
                 name = "default",
                 template = "{controller=Home}/{action=Index}/{id?}") |> ignore
             ) |> ignore
+            routes.MapRazorPages() |> ignore
 
         app.UseAuthorization() |> ignore
 

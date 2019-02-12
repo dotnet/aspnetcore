@@ -27,14 +27,12 @@ namespace ApplicationModelWebSite
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseMvc(routes =>
+            app.UseRouting(routes =>
             {
-                routes.MapRoute(name: "areaRoute",
-                  template: "{area:exists}/{controller=Home}/{action=Index}");
+                routes.MapControllerRoute(name: "areaRoute", template: "{area:exists}/{controller=Home}/{action=Index}");
+                routes.MapControllerRoute(name: "default", template: "{controller}/{action}/{id?}");
 
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller}/{action}/{id?}");
+                routes.MapRazorPages();
             });
         }
 

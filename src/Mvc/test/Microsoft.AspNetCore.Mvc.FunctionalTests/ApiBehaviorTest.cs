@@ -17,9 +17,9 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class ApiBehaviorTest : IClassFixture<MvcTestFixture<BasicWebSite.Startup>>
+    public class ApiBehaviorTest : IClassFixture<MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting>>
     {
-        public ApiBehaviorTest(MvcTestFixture<BasicWebSite.Startup> fixture)
+        public ApiBehaviorTest(MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting> fixture)
         {
             Client = fixture.CreateDefaultClient();
 
