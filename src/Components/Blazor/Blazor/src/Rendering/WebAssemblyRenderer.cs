@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         /// Constructs an instance of <see cref="WebAssemblyRenderer"/>.
         /// </summary>
         /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to use when initializing components.</param>
-        public WebAssemblyRenderer(IServiceProvider serviceProvider): base(serviceProvider)
+        public WebAssemblyRenderer(IServiceProvider serviceProvider) : base(serviceProvider)
         {
             // The browser renderer registers and unregisters itself with the static
             // registry. This works well with the WebAssembly runtime, and is simple for the
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
                 foreach (var innerException in aggregateException.Flatten().InnerExceptions)
                 {
                     Console.Error.WriteLine(innerException);
-    }
+                }
             }
             else
             {
