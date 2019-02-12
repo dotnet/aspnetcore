@@ -18,10 +18,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private readonly HttpRequestStream _emptyRequest;
         private readonly Stream _upgradeStream;
 
-        public Streams(IHttpBodyControlFeature bodyControl, HttpResponsePipeWriter writer)
+        public Streams(IHttpBodyControlFeature bodyControl, HttpResponsePipeWriter writer, HttpRequestPipeReader reader)
         {
-            _request = new HttpRequestStream(bodyControl);
-            _emptyRequest = new HttpRequestStream(bodyControl);
+            _request = new HttpRequestStream(bodyControl, reader);
+            _emptyRequest = new HttpRequestStream(bodyControl, new HttpRequestPipeReader());
             _response = new HttpResponseStream(bodyControl, writer);
             _upgradeableResponse = new WrappingStream(_response);
             _upgradeStream = new HttpUpgradeStream(_request, _response);

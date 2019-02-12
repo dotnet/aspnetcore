@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var body = Http1MessageBody.For(httpVersion, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
                 var mockBodyControl = new Mock<IHttpBodyControlFeature>();
                 mockBodyControl.Setup(m => m.AllowSynchronousIO).Returns(true);
-                var stream = new HttpRequestStream(mockBodyControl.Object);
+                var stream = new HttpRequestStream(mockBodyControl.Object, new HttpRequestPipeReader());
                 stream.StartAcceptingReads(body);
 
                 input.Add("Hello");
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             using (var input = new TestInput())
             {
                 var body = Http1MessageBody.For(httpVersion, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
-                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
+                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), new HttpRequestPipeReader());
                 stream.StartAcceptingReads(body);
 
                 input.Add("Hello");
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Http1Connection);
                 var mockBodyControl = new Mock<IHttpBodyControlFeature>();
                 mockBodyControl.Setup(m => m.AllowSynchronousIO).Returns(true);
-                var stream = new HttpRequestStream(mockBodyControl.Object);
+                var stream = new HttpRequestStream(mockBodyControl.Object, new HttpRequestPipeReader());
                 stream.StartAcceptingReads(body);
 
                 input.Add("5\r\nHello\r\n");
@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             using (var input = new TestInput())
             {
                 var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Http1Connection);
-                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
+                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), new HttpRequestPipeReader());
                 stream.StartAcceptingReads(body);
 
                 input.Add("5\r\nHello\r\n");
@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             using (var input = new TestInput())
             {
                 var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Http1Connection);
-                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
+                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), new HttpRequestPipeReader());
                 stream.StartAcceptingReads(body);
 
                 input.Add("5;\r\0");
@@ -167,7 +167,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             using (var input = new TestInput())
             {
                 var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Http1Connection);
-                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
+                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), new HttpRequestPipeReader());
                 stream.StartAcceptingReads(body);
 
                 input.Add("80000000\r\n");
@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             using (var input = new TestInput())
             {
                 var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Http1Connection);
-                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
+                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), new HttpRequestPipeReader());
                 stream.StartAcceptingReads(body);
 
                 input.Add("012345678\r");
@@ -215,7 +215,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var body = Http1MessageBody.For(httpVersion, new HttpRequestHeaders { HeaderConnection = "upgrade" }, input.Http1Connection);
                 var mockBodyControl = new Mock<IHttpBodyControlFeature>();
                 mockBodyControl.Setup(m => m.AllowSynchronousIO).Returns(true);
-                var stream = new HttpRequestStream(mockBodyControl.Object);
+                var stream = new HttpRequestStream(mockBodyControl.Object, new HttpRequestPipeReader());
                 stream.StartAcceptingReads(body);
 
                 input.Add("Hello");
@@ -241,7 +241,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             using (var input = new TestInput())
             {
                 var body = Http1MessageBody.For(httpVersion, new HttpRequestHeaders { HeaderConnection = "upgrade" }, input.Http1Connection);
-                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
+                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), new HttpRequestPipeReader());
                 stream.StartAcceptingReads(body);
 
                 input.Add("Hello");
@@ -269,7 +269,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var body = Http1MessageBody.For(httpVersion, new HttpRequestHeaders(), input.Http1Connection);
                 var mockBodyControl = new Mock<IHttpBodyControlFeature>();
                 mockBodyControl.Setup(m => m.AllowSynchronousIO).Returns(true);
-                var stream = new HttpRequestStream(mockBodyControl.Object);
+                var stream = new HttpRequestStream(mockBodyControl.Object, new HttpRequestPipeReader());
                 stream.StartAcceptingReads(body);
 
                 input.Add("Hello");
@@ -289,7 +289,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             using (var input = new TestInput())
             {
                 var body = Http1MessageBody.For(httpVersion, new HttpRequestHeaders(), input.Http1Connection);
-                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
+                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), new HttpRequestPipeReader());
                 stream.StartAcceptingReads(body);
 
                 input.Add("Hello");
@@ -307,7 +307,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             using (var input = new TestInput())
             {
                 var body = Http1MessageBody.For(HttpVersion.Http10, new HttpRequestHeaders { HeaderContentLength = "8197" }, input.Http1Connection);
-                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
+                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), new HttpRequestPipeReader());
                 stream.StartAcceptingReads(body);
 
                 // Input needs to be greater than 4032 bytes to allocate a block not backed by a slab.
@@ -495,7 +495,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             using (var input = new TestInput())
             {
                 var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderConnection = headerConnection }, input.Http1Connection);
-                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
+                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), new HttpRequestPipeReader());
                 stream.StartAcceptingReads(body);
 
                 input.Add("Hello");
@@ -522,7 +522,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             using (var input = new TestInput())
             {
                 var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderConnection = headerConnection, ContentLength = 0 }, input.Http1Connection);
-                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
+                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), new HttpRequestPipeReader());
                 stream.StartAcceptingReads(body);
 
                 input.Add("Hello");
@@ -544,7 +544,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             using (var input = new TestInput())
             {
                 var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderContentLength = "2" }, input.Http1Connection);
-                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
+                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), new HttpRequestPipeReader());
                 stream.StartAcceptingReads(body);
 
                 // Add some input and consume it to ensure PumpAsync is running
@@ -659,7 +659,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 input.Http1Connection.TraceIdentifier = "RequestId";
 
                 var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderContentLength = "2" }, input.Http1Connection);
-                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
+                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), new HttpRequestPipeReader());
                 stream.StartAcceptingReads(body);
 
                 // Add some input and consume it to ensure PumpAsync is running
@@ -690,7 +690,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 input.Http1Connection.TraceIdentifier = "RequestId";
 
                 var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderContentLength = "2" }, input.Http1Connection);
-                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
+                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), new HttpRequestPipeReader());
                 stream.StartAcceptingReads(body);
 
                 // Add some input and consume it to ensure PumpAsync is running

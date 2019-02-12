@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task StreamsThrowAfterAbort()
         {
-            var streams = new Streams(Mock.Of<IHttpBodyControlFeature>(), new HttpResponsePipeWriter(Mock.Of<IHttpResponseControl>()));
+            var streams = new Streams(Mock.Of<IHttpBodyControlFeature>(), new HttpResponsePipeWriter(Mock.Of<IHttpResponseControl>()), new HttpRequestPipeReader());
             var (request, response) = streams.Start(new MockMessageBody());
 
             var ex = new Exception("My error");
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task StreamsThrowOnAbortAfterUpgrade()
         {
-            var streams = new Streams(Mock.Of<IHttpBodyControlFeature>(), new HttpResponsePipeWriter(Mock.Of<IHttpResponseControl>()));
+            var streams = new Streams(Mock.Of<IHttpBodyControlFeature>(), new HttpResponsePipeWriter(Mock.Of<IHttpResponseControl>()), new HttpRequestPipeReader());
             var (request, response) = streams.Start(new MockMessageBody(upgradeable: true));
 
             var upgrade = streams.Upgrade();
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task StreamsThrowOnUpgradeAfterAbort()
         {
-            var streams = new Streams(Mock.Of<IHttpBodyControlFeature>(), new HttpResponsePipeWriter(Mock.Of<IHttpResponseControl>()));
+            var streams = new Streams(Mock.Of<IHttpBodyControlFeature>(), new HttpResponsePipeWriter(Mock.Of<IHttpResponseControl>()), new HttpRequestPipeReader());
 
             var (request, response) = streams.Start(new MockMessageBody(upgradeable: true));
             var ex = new Exception("My error");

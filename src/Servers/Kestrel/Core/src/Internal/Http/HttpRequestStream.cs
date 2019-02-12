@@ -3,57 +3,34 @@
 
 using System;
 using System.IO;
-using System.Runtime.CompilerServices;
-using System.Runtime.ExceptionServices;
+using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    internal class HttpRequestStream : ReadOnlyStream
+    internal class HttpRequestStream : ReadOnlyPipeStream
     {
+        private HttpRequestPipeReader _pipeReader;
         private readonly IHttpBodyControlFeature _bodyControl;
-        private MessageBody _body;
-        private HttpStreamState _state;
-        private Exception _error;
 
-        public HttpRequestStream(IHttpBodyControlFeature bodyControl)
+        public HttpRequestStream(IHttpBodyControlFeature bodyControl, HttpRequestPipeReader pipeReader)
+            : base (pipeReader)
         {
             _bodyControl = bodyControl;
-            _state = HttpStreamState.Closed;
+            _pipeReader = pipeReader;
         }
 
-        public override bool CanSeek => false;
-
-        public override long Length
-            => throw new NotSupportedException();
-
-        public override long Position
+        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            get => throw new NotSupportedException();
-            set => throw new NotSupportedException();
+            return ReadAsyncInternal(new Memory<byte>(buffer, offset, count), cancellationToken).AsTask();
         }
 
-        public override void Flush()
+        public override ValueTask<int> ReadAsync(Memory<byte> destination, CancellationToken cancellationToken = default)
         {
-        }
-
-        public override Task FlushAsync(CancellationToken cancellationToken)
-        {
-            return Task.CompletedTask;
-        }
-
-        public override long Seek(long offset, SeekOrigin origin)
-        {
-            throw new NotSupportedException();
-        }
-
-        public override void SetLength(long value)
-        {
-            throw new NotSupportedException();
+            return ReadAsyncInternal(destination, cancellationToken);
         }
 
         public override int Read(byte[] buffer, int offset, int count)
@@ -66,96 +43,46 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return ReadAsync(buffer, offset, count).GetAwaiter().GetResult();
         }
 
-        public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)
+        public void StartAcceptingReads(MessageBody body)
         {
-            var task = ReadAsync(buffer, offset, count, default, state);
-            if (callback != null)
-            {
-                task.ContinueWith(t => callback.Invoke(t));
-            }
-            return task;
+            _pipeReader.StartAcceptingReads(body);
         }
 
-        public override int EndRead(IAsyncResult asyncResult)
+        public void StopAcceptingReads()
         {
-            return ((Task<int>)asyncResult).GetAwaiter().GetResult();
+            _pipeReader.StopAcceptingReads();
         }
 
-        private Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken, object state)
+        public void Abort(Exception exception = null)
         {
-            var tcs = new TaskCompletionSource<int>(state);
-            var task = ReadAsync(buffer, offset, count, cancellationToken);
-            task.ContinueWith((task2, state2) =>
-            {
-                var tcs2 = (TaskCompletionSource<int>)state2;
-                if (task2.IsCanceled)
-                {
-                    tcs2.SetCanceled();
-                }
-                else if (task2.IsFaulted)
-                {
-                    tcs2.SetException(task2.Exception);
-                }
-                else
-                {
-                    tcs2.SetResult(task2.Result);
-                }
-            }, tcs, cancellationToken);
-            return tcs.Task;
-        }
-
-        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-        {
-            ValidateState(cancellationToken);
-
-            return ReadAsyncInternal(new Memory<byte>(buffer, offset, count), cancellationToken).AsTask();
-        }
-
-        public override ValueTask<int> ReadAsync(Memory<byte> destination, CancellationToken cancellationToken = default)
-        {
-            ValidateState(cancellationToken);
-
-            return ReadAsyncInternal(destination, cancellationToken);
+            _pipeReader.Abort(exception);
         }
 
         private async ValueTask<int> ReadAsyncInternal(Memory<byte> buffer, CancellationToken cancellationToken)
         {
             try
             {
-                return await _body.ReadAsync(buffer, cancellationToken);
+                // TODO why await here.
+                return await _pipeReader.ReadAsyncForStream(buffer, cancellationToken);
             }
             catch (ConnectionAbortedException ex)
             {
                 throw new TaskCanceledException("The request was aborted", ex);
             }
+        }
+
+        public override void Flush()
+        {
+        }
+
+        public override Task FlushAsync(CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
         }
 
         public override Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
         {
-            if (destination == null)
-            {
-                throw new ArgumentNullException(nameof(destination));
-            }
-            if (bufferSize <= 0)
-            {
-                throw new ArgumentException(CoreStrings.PositiveNumberRequired, nameof(bufferSize));
-            }
-
-            ValidateState(cancellationToken);
-
-            return CopyToAsyncInternal(destination, cancellationToken);
-        }
-
-        private async Task CopyToAsyncInternal(Stream destination, CancellationToken cancellationToken)
-        {
-            try
-            {
-                await _body.CopyToAsync(destination, cancellationToken);
-            }
-            catch (ConnectionAbortedException ex)
-            {
-                throw new TaskCanceledException("The request was aborted", ex);
-            }
+            return _pipeReader.CopyToAsync(destination, bufferSize, cancellationToken);
         }
     }
 }

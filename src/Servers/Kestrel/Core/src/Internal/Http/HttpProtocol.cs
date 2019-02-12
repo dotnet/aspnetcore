@@ -299,9 +299,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             if (_streams == null)
             {
+                // TODO really drop the streams stuff. It's broken
                 var pipeWriter = new HttpResponsePipeWriter(this);
-                var pipeReader = new HttpRequestPipeReader(this);
-                _streams = new Streams(bodyControl: this, pipeWriter);
+                var pipeReader = new HttpRequestPipeReader();
+                _streams = new Streams(bodyControl: this, pipeWriter, pipeReader);
                 _originalPipeWriter = pipeWriter;
                 _originalPipeReader = pipeReader;
             }

@@ -2,32 +2,26 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    internal class HttpRequestPipeReader : PipeReader
+    public class HttpRequestPipeReader : PipeReader
     {
         private MessageBody _body;
         private HttpStreamState _state;
         private Exception _error;
 
-        // All of these will just call into MessageBody
         public HttpRequestPipeReader()
         {
             _state = HttpStreamState.Closed;
-        }
-
-        private HttpProtocol httpProtocol;
-
-        public HttpRequestPipeReader(HttpProtocol httpProtocol)
-        {
-            this.httpProtocol = httpProtocol;
         }
 
         public override void AdvanceTo(SequencePosition consumed)
@@ -42,27 +36,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public override void CancelPendingRead()
         {
-            throw new NotImplementedException();
+            _body.CancelPendingRead();
         }
 
         public override void Complete(Exception exception = null)
         {
-            throw new NotImplementedException();
+            // TODO going to let this noop for now, I think we can support it but avoiding for now.
+            //throw new NotImplementedException();
         }
 
         public override void OnWriterCompleted(Action<Exception, object> callback, object state)
         {
-            throw new NotImplementedException();
+            _body.OnWriterCompleted(callback, state);
         }
 
         public override ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            ValidateState(cancellationToken);
+
+            return _body.ReadAsync(cancellationToken);
         }
 
         public override bool TryRead(out ReadResult result)
         {
-            throw new NotImplementedException();
+            // TODO validate state
+            return _body.TryRead(out result);
         }
 
         public void StartAcceptingReads(MessageBody body)
@@ -73,6 +71,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 _state = HttpStreamState.Open;
                 _body = body;
             }
+        }
+
+        public ValueTask<int> ReadAsyncForStream(Memory<byte> buffer, CancellationToken cancellationToken)
+        {
+            ValidateState(cancellationToken);
+
+            return _body.ReadAsync(buffer, cancellationToken);
         }
 
         public void StopAcceptingReads()
@@ -121,6 +126,34 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             void ThrowObjectDisposedException() => throw new ObjectDisposedException(nameof(HttpRequestStream));
             void ThrowTaskCanceledException() => throw new TaskCanceledException();
+        }
+
+        public Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
+        {
+            if (destination == null)
+            {
+                throw new ArgumentNullException(nameof(destination));
+            }
+            if (bufferSize <= 0)
+            {
+                throw new ArgumentException(CoreStrings.PositiveNumberRequired, nameof(bufferSize));
+            }
+
+            ValidateState(cancellationToken);
+
+            return CopyToAsyncInternal(destination, cancellationToken);
+        }
+
+        private async Task CopyToAsyncInternal(Stream destination, CancellationToken cancellationToken)
+        {
+            try
+            {
+                await _body.CopyToAsync(destination, cancellationToken);
+            }
+            catch (ConnectionAbortedException ex)
+            {
+                throw new TaskCanceledException("The request was aborted", ex);
+            }
         }
     }
 }

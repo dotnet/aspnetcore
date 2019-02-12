@@ -17,49 +17,49 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void CanReadReturnsTrue()
         {
-            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
+            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), new HttpRequestPipeReader());
             Assert.True(stream.CanRead);
         }
 
         [Fact]
         public void CanSeekReturnsFalse()
         {
-            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
+            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), new HttpRequestPipeReader());
             Assert.False(stream.CanSeek);
         }
 
         [Fact]
         public void CanWriteReturnsFalse()
         {
-            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
+            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), new HttpRequestPipeReader());
             Assert.False(stream.CanWrite);
         }
 
         [Fact]
         public void SeekThrows()
         {
-            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
+            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), new HttpRequestPipeReader());
             Assert.Throws<NotSupportedException>(() => stream.Seek(0, SeekOrigin.Begin));
         }
 
         [Fact]
         public void LengthThrows()
         {
-            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
+            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), new HttpRequestPipeReader());
             Assert.Throws<NotSupportedException>(() => stream.Length);
         }
 
         [Fact]
         public void SetLengthThrows()
         {
-            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
+            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), new HttpRequestPipeReader());
             Assert.Throws<NotSupportedException>(() => stream.SetLength(0));
         }
 
         [Fact]
         public void PositionThrows()
         {
-            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
+            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), new HttpRequestPipeReader());
             Assert.Throws<NotSupportedException>(() => stream.Position);
             Assert.Throws<NotSupportedException>(() => stream.Position = 0);
         }
@@ -67,21 +67,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void WriteThrows()
         {
-            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
+            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), new HttpRequestPipeReader());
             Assert.Throws<NotSupportedException>(() => stream.Write(new byte[1], 0, 1));
         }
 
         [Fact]
         public void WriteByteThrows()
         {
-            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
+            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), new HttpRequestPipeReader());
             Assert.Throws<NotSupportedException>(() => stream.WriteByte(0));
         }
 
         [Fact]
         public async Task WriteAsyncThrows()
         {
-            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
+            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), new HttpRequestPipeReader());
             await Assert.ThrowsAsync<NotSupportedException>(() => stream.WriteAsync(new byte[1], 0, 1));
         }
 
@@ -89,14 +89,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         // Read-only streams should support Flush according to https://github.com/dotnet/corefx/pull/27327#pullrequestreview-98384813
         public void FlushDoesNotThrow()
         {
-            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
+            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), new HttpRequestPipeReader());
             stream.Flush();
         }
 
         [Fact]
         public async Task FlushAsyncDoesNotThrow()
         {
-            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
+            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), new HttpRequestPipeReader());
             await stream.FlushAsync();
         }
 
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var mockMessageBody = new Mock<MessageBody>(null, null);
             mockMessageBody.Setup(m => m.ReadAsync(It.IsAny<Memory<byte>>(), CancellationToken.None)).Returns(new ValueTask<int>(0));
 
-            var stream = new HttpRequestStream(mockBodyControl.Object);
+            var stream = new HttpRequestStream(mockBodyControl.Object, new HttpRequestPipeReader());
             stream.StartAcceptingReads(mockMessageBody.Object);
 
             Assert.Equal(0, await stream.ReadAsync(new byte[1], 0, 1));
@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task AbortCausesReadToCancel()
         {
-            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
+            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), new HttpRequestPipeReader());
             stream.StartAcceptingReads(null);
             stream.Abort();
             await Assert.ThrowsAsync<TaskCanceledException>(() => stream.ReadAsync(new byte[1], 0, 1));
@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task AbortWithErrorCausesReadToCancel()
         {
-            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
+            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), new HttpRequestPipeReader());
             stream.StartAcceptingReads(null);
             var error = new Exception();
             stream.Abort(error);
@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void StopAcceptingReadsCausesReadToThrowObjectDisposedException()
         {
-            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
+            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), new HttpRequestPipeReader());
             stream.StartAcceptingReads(null);
             stream.StopAcceptingReads();
             Assert.Throws<ObjectDisposedException>(() => { stream.ReadAsync(new byte[1], 0, 1); });
@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task AbortCausesCopyToAsyncToCancel()
         {
-            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
+            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), new HttpRequestPipeReader());
             stream.StartAcceptingReads(null);
             stream.Abort();
             await Assert.ThrowsAsync<TaskCanceledException>(() => stream.CopyToAsync(Mock.Of<Stream>()));
@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task AbortWithErrorCausesCopyToAsyncToCancel()
         {
-            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
+            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), new HttpRequestPipeReader());
             stream.StartAcceptingReads(null);
             var error = new Exception();
             stream.Abort(error);
@@ -176,7 +176,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void StopAcceptingReadsCausesCopyToAsyncToThrowObjectDisposedException()
         {
-            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
+            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), new HttpRequestPipeReader());
             stream.StartAcceptingReads(null);
             stream.StopAcceptingReads();
             Assert.Throws<ObjectDisposedException>(() => { stream.CopyToAsync(Mock.Of<Stream>()); });
@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void NullDestinationCausesCopyToAsyncToThrowArgumentNullException()
         {
-            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
+            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), new HttpRequestPipeReader());
             stream.StartAcceptingReads(null);
             Assert.Throws<ArgumentNullException>(() => { stream.CopyToAsync(null); });
         }
@@ -193,7 +193,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void ZeroBufferSizeCausesCopyToAsyncToThrowArgumentException()
         {
-            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
+            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), new HttpRequestPipeReader());
             stream.StartAcceptingReads(null);
             Assert.Throws<ArgumentException>(() => { stream.CopyToAsync(Mock.Of<Stream>(), 0); });
         }

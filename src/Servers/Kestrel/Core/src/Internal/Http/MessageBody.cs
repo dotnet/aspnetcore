@@ -27,8 +27,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private bool _backpressure;
         private long _alreadyTimedBytes;
 
-
-
         protected MessageBody(HttpProtocol context, MinDataRate minRequestBodyDataRate)
         {
             _context = context;
@@ -51,12 +49,45 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         internal void AdvanceTo(SequencePosition consumed)
         {
-            throw new NotImplementedException();
+            _context.RequestBodyPipe.Reader.AdvanceTo(consumed);
         }
 
         internal void AdvanceTo(SequencePosition consumed, SequencePosition examined)
         {
-            throw new NotImplementedException();
+            _context.RequestBodyPipe.Reader.AdvanceTo(consumed, examined);
+        }
+
+        public virtual async ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
+        {
+            TryStart();
+
+            while (true)
+            {
+                var result = await StartTimingReadAsync(cancellationToken);
+                var readableBuffer = result.Buffer;
+                var readableBufferLength = readableBuffer.Length;
+                StopTimingRead(readableBufferLength);
+
+                try
+                {
+                    if (readableBufferLength != 0)
+                    {
+                        return result;
+                    }
+
+                    if (result.IsCompleted)
+                    {
+                        TryStop();
+                        return result;
+                    }
+                }
+                finally
+                {
+                    // Update the flow-control window after advancing the pipe reader, so we don't risk overfilling
+                    // the pipe despite the client being well-behaved.
+                    OnDataRead(readableBuffer.Length);
+                }
+            }
         }
 
         public virtual async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default(CancellationToken))
@@ -106,6 +137,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
             }
         }
+
+        public virtual bool TryRead(out ReadResult result)
+        {
+            return _context.RequestBodyPipe.Reader.TryRead(out result);
+        }
+
+        public virtual void OnWriterCompleted(Action<Exception, object> callback, object state)
+        {
+            _context.RequestBodyPipe.Reader.OnWriterCompleted(callback, state);
+        }
+
+        public virtual void CancelPendingRead()
+        {
+            _context.RequestBodyPipe.Reader.CancelPendingRead();
+        }
+
+        // I think this can be removed or modified.
+        // Also how do we care about timing.
 
         public virtual async Task CopyToAsync(Stream destination, CancellationToken cancellationToken = default(CancellationToken))
         {
