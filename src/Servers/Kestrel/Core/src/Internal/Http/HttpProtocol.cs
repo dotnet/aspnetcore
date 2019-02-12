@@ -29,9 +29,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private static readonly byte[] _bytesTransferEncodingChunked = Encoding.ASCII.GetBytes("\r\nTransfer-Encoding: chunked");
         private static readonly byte[] _bytesServer = Encoding.ASCII.GetBytes("\r\nServer: " + Constants.ServerName);
 
-        protected Streams _streams;
-        private HttpResponsePipeWriter _originalPipeWriter;
-        private HttpRequestPipeReader _originalPipeReader;
+        protected BodyControl bodyControl;
         private Stack<KeyValuePair<Func<object, Task>, object>> _onStarting;
         private Stack<KeyValuePair<Func<object, Task>, object>> _onCompleted;
 
@@ -295,24 +293,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        public void InitializeStreams(MessageBody messageBody)
+        public void InitializeBodyControl(MessageBody messageBody)
         {
-            if (_streams == null)
+            if (bodyControl == null)
             {
-                // TODO really drop the streams stuff. It's broken
-                var pipeWriter = new HttpResponsePipeWriter(this);
-                var pipeReader = new HttpRequestPipeReader();
-                _streams = new Streams(bodyControl: this, pipeWriter, pipeReader);
-                _originalPipeWriter = pipeWriter;
-                _originalPipeReader = pipeReader;
+                bodyControl = new BodyControl(bodyControl: this, this);
             }
 
-            (RequestBody, ResponseBody) = _streams.Start(messageBody);
-            ResponsePipeWriter = _originalPipeWriter;
-            RequestPipeReader = _originalPipeReader;
+            (RequestBody, ResponseBody, RequestPipeReader, ResponsePipeWriter) = bodyControl.Start(messageBody);
         }
 
-        public void StopStreams() => _streams.Stop();
+        public void StopBodies() => bodyControl.Stop();
 
         // For testing
         internal void ResetState()
@@ -466,7 +457,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected void PoisonRequestBodyStream(Exception abortReason)
         {
-            _streams?.Abort(abortReason);
+            bodyControl?.Abort(abortReason);
         }
 
         // Prevents the RequestAborted token from firing for the duration of the request.
@@ -572,7 +563,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 IsUpgradableRequest = messageBody.RequestUpgrade;
 
-                InitializeStreams(messageBody);
+                InitializeBodyControl(messageBody);
 
                 var context = application.CreateContext(this);
 
@@ -614,7 +605,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 // At this point all user code that needs use to the request or response streams has completed.
                 // Using these streams in the OnCompleted callback is not allowed.
-                StopStreams();
+                StopBodies();
 
                 // 4XX responses are written by TryProduceInvalidRequestResponse during connection tear down.
                 if (_requestRejectedException == null)

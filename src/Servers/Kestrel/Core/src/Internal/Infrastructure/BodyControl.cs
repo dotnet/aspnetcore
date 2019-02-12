@@ -3,26 +3,34 @@
 
 using System;
 using System.IO;
+using System.IO.Pipelines;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
-    public class Streams
+    public class BodyControl
     {
         private static readonly ThrowingWasUpgradedWriteOnlyStream _throwingResponseStream
             = new ThrowingWasUpgradedWriteOnlyStream();
         private readonly HttpResponseStream _response;
+        private readonly HttpResponsePipeWriter _responseWriter;
+        private readonly HttpRequestPipeReader _requestReader;
         private readonly HttpRequestStream _request;
+        private readonly HttpRequestPipeReader _emptyRequestReader;
         private readonly WrappingStream _upgradeableResponse;
         private readonly HttpRequestStream _emptyRequest;
         private readonly Stream _upgradeStream;
 
-        public Streams(IHttpBodyControlFeature bodyControl, HttpResponsePipeWriter writer, HttpRequestPipeReader reader)
+        public BodyControl(IHttpBodyControlFeature bodyControl, IHttpResponseControl responseControl)
         {
-            _request = new HttpRequestStream(bodyControl, reader);
-            _emptyRequest = new HttpRequestStream(bodyControl, new HttpRequestPipeReader());
-            _response = new HttpResponseStream(bodyControl, writer);
+            _requestReader = new HttpRequestPipeReader();
+            _request = new HttpRequestStream(bodyControl, _requestReader);
+            _emptyRequestReader = new HttpRequestPipeReader();
+            _emptyRequest = new HttpRequestStream(bodyControl, _emptyRequestReader);
+
+            _responseWriter = new HttpResponsePipeWriter(responseControl);
+            _response = new HttpResponseStream(bodyControl, _responseWriter);
             _upgradeableResponse = new WrappingStream(_response);
             _upgradeStream = new HttpUpgradeStream(_request, _response);
         }
@@ -35,37 +43,37 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             return _upgradeStream;
         }
 
-        public (Stream request, Stream response) Start(MessageBody body)
+        public (Stream request, Stream response, PipeReader reader, PipeWriter writer) Start(MessageBody body)
         {
-            _request.StartAcceptingReads(body);
-            _emptyRequest.StartAcceptingReads(MessageBody.ZeroContentLengthClose);
-            _response.StartAcceptingWrites();
+            _requestReader.StartAcceptingReads(body);
+            _emptyRequestReader.StartAcceptingReads(MessageBody.ZeroContentLengthClose);
+            _responseWriter.StartAcceptingWrites();
 
             if (body.RequestUpgrade)
             {
                 // until Upgrade() is called, context.Response.Body should use the normal output stream
                 _upgradeableResponse.SetInnerStream(_response);
                 // upgradeable requests should never have a request body
-                return (_emptyRequest, _upgradeableResponse);
+                return (_emptyRequest, _upgradeableResponse, _emptyRequestReader, _responseWriter);
             }
             else
             {
-                return (_request, _response);
+                return (_request, _response, _requestReader, _responseWriter);
             }
         }
 
         public void Stop()
         {
-            _request.StopAcceptingReads();
-            _emptyRequest.StopAcceptingReads();
-            _response.StopAcceptingWrites();
+            _requestReader.StopAcceptingReads();
+            _emptyRequestReader.StopAcceptingReads();
+            _responseWriter.StopAcceptingWrites();
         }
 
         public void Abort(Exception error)
         {
-            _request.Abort(error);
-            _emptyRequest.Abort(error);
-            _response.Abort();
+            _requestReader.Abort(error);
+            _emptyRequestReader.Abort(error);
+            _responseWriter.Abort();
         }
     }
 }

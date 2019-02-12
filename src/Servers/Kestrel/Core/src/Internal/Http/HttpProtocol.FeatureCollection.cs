@@ -307,7 +307,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             await FlushAsync();
 
-            return _streams.Upgrade();
+            return bodyControl.Upgrade();
         }
 
         void IHttpRequestLifetimeFeature.Abort()

@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             });
 
             http1Connection.Reset();
-            http1Connection.InitializeStreams(MessageBody.ZeroContentLengthKeepAlive);
+            http1Connection.InitializeBodyControl(MessageBody.ZeroContentLengthKeepAlive);
             serviceContext.DateHeaderValueManager.OnHeartbeat(DateTimeOffset.UtcNow);
 
             return http1Connection;

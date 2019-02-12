@@ -353,7 +353,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             // Arrange
             var messageBody = Http1MessageBody.For(Kestrel.Core.Internal.Http.HttpVersion.Http11, (HttpRequestHeaders)_http1Connection.RequestHeaders, _http1Connection);
-            _http1Connection.InitializeStreams(messageBody);
+            _http1Connection.InitializeBodyControl(messageBody);
 
             var originalRequestBody = _http1Connection.RequestBody;
             var originalResponseBody = _http1Connection.ResponseBody;
@@ -361,7 +361,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _http1Connection.ResponseBody = new MemoryStream();
 
             // Act
-            _http1Connection.InitializeStreams(messageBody);
+            _http1Connection.InitializeBodyControl(messageBody);
 
             // Assert
             Assert.Same(originalRequestBody, _http1Connection.RequestBody);
