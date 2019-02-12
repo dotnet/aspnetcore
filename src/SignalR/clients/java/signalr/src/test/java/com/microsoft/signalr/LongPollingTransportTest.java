@@ -257,7 +257,6 @@ public class LongPollingTransportTest {
         transport.start("http://example.com").timeout(1, TimeUnit.SECONDS).blockingAwait();
         assertTrue(transport.send("TEST").blockingAwait(1, TimeUnit.SECONDS));
         assertEquals(headerValue.get(), "Bearer TOKEN");
-        assertEquals("Bearer TOKEN", client.getSentRequests().get(2).getHeaders().get("Authorization"));
         close.onComplete();
     }
 
