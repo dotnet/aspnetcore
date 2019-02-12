@@ -42,6 +42,8 @@ namespace Microsoft.AspNetCore.Components.Forms
 
         /// <summary>
         /// Gets the validation messages within this <see cref="ValidationMessageStore"/> for the specified field.
+        ///
+        /// To get the validation messages across all validation message stores, use <see cref="EditContext.GetValidationMessages(FieldIdentifier)"/> instead
         /// </summary>
         /// <param name="fieldIdentifier">The identifier for the field.</param>
         /// <returns>The validation messages for the specified field within this <see cref="ValidationMessageStore"/>.</returns>
@@ -54,14 +56,24 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// Removes all messages within this <see cref="ValidationMessageStore"/>.
         /// </summary>
         public void Clear()
-            => _messages.Clear();
+        {
+            foreach (var fieldIdentifier in _messages.Keys)
+            {
+                DissociateFromField(fieldIdentifier);
+            }
+
+            _messages.Clear();
+        }
 
         /// <summary>
         /// Removes all messages within this <see cref="ValidationMessageStore"/> for the specified field.
         /// </summary>
         /// <param name="fieldIdentifier">The identifier for the field.</param>
         public void Clear(FieldIdentifier fieldIdentifier)
-            => _messages.Remove(fieldIdentifier);
+        {
+            DissociateFromField(fieldIdentifier);
+            _messages.Remove(fieldIdentifier);
+        }
 
         private List<string> GetOrCreateMessagesListForField(FieldIdentifier fieldIdentifier)
         {
@@ -69,9 +81,16 @@ namespace Microsoft.AspNetCore.Components.Forms
             {
                 messagesForField = new List<string>();
                 _messages.Add(fieldIdentifier, messagesForField);
+                AssociateWithField(fieldIdentifier);
             }
 
             return messagesForField;
         }
+
+        private void AssociateWithField(FieldIdentifier fieldIdentifier)
+            => _editContext.GetFieldState(fieldIdentifier, ensureExists: true).AssociateWithValidationMessageStore(this);
+
+        private void DissociateFromField(FieldIdentifier fieldIdentifier)
+            => _editContext.GetFieldState(fieldIdentifier, ensureExists: false)?.DissociateFromValidationMessageStore(this);
     }
 }

@@ -52,8 +52,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <param name="fieldIdentifier">Identifies the field whose value has been changed.</param>
         public void NotifyFieldChanged(FieldIdentifier fieldIdentifier)
         {
-            var state = GetOrCreateFieldState(fieldIdentifier);
-            state.IsModified = true;
+            GetFieldState(fieldIdentifier, ensureExists: true).IsModified = true;
             OnFieldChanged?.Invoke(this, fieldIdentifier);
         }
 
@@ -90,6 +89,27 @@ namespace Microsoft.AspNetCore.Components.Forms
             => _fieldStates.Values.Any(state => state.IsModified);
 
         /// <summary>
+        /// Gets the current validation messages across all fields.
+        ///
+        /// This method does not perform validation itself. It only returns messages determined by previous validation actions.
+        /// </summary>
+        /// <returns>The current validation messages.</returns>
+        public IEnumerable<string> GetValidationMessages()
+            // Since we're only enumerating the fields for which we have a non-null state, the cost of this grows
+            // based on how many fields have been modified or have associated validation messages
+            => _fieldStates.Values.SelectMany(state => state.GetValidationMessages());
+
+        /// <summary>
+        /// Gets the current validation messages for the specified field.
+        ///
+        /// This method does not perform validation itself. It only returns messages determined by previous validation actions.
+        /// </summary>
+        /// <param name="fieldIdentifier">Identifies the field whose current validation messages should be returned.</param>
+        /// <returns>The current validation messages for the specified field.</returns>
+        public IEnumerable<string> GetValidationMessages(FieldIdentifier fieldIdentifier)
+            => _fieldStates.TryGetValue(fieldIdentifier, out var state) ? state.GetValidationMessages() : Enumerable.Empty<string>();
+
+        /// <summary>
         /// Determines whether the specified fields in this <see cref="EditContext"/> has been modified.
         /// </summary>
         /// <returns>True if the field has been modified; otherwise false.</returns>
@@ -98,11 +118,11 @@ namespace Microsoft.AspNetCore.Components.Forms
             ? state.IsModified
             : false;
 
-        private FieldState GetOrCreateFieldState(FieldIdentifier fieldIdentifier)
+        internal FieldState GetFieldState(FieldIdentifier fieldIdentifier, bool ensureExists)
         {
-            if (!_fieldStates.TryGetValue(fieldIdentifier, out var state))
+            if (!_fieldStates.TryGetValue(fieldIdentifier, out var state) && ensureExists)
             {
-                state = new FieldState();
+                state = new FieldState(fieldIdentifier);
                 _fieldStates.Add(fieldIdentifier, state);
             }
 
