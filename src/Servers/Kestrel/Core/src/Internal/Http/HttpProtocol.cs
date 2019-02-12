@@ -1406,7 +1406,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return await FirstWriteAsyncInternal(data, responseHeaders, cancellationToken);
         }
 
-        private async ValueTask<FlushResult> FirstWriteAsyncInternal(ReadOnlyMemory<byte> data, HttpResponseHeaders responseHeaders, CancellationToken cancellationToken)
+        private ValueTask<FlushResult> FirstWriteAsyncInternal(ReadOnlyMemory<byte> data, HttpResponseHeaders responseHeaders, CancellationToken cancellationToken)
         {
             if (_canWriteResponseBody)
             {
@@ -1415,22 +1415,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if (data.Length == 0)
                     {
                         Output.WriteResponseHeaders(StatusCode, ReasonPhrase, responseHeaders, _autoChunk);
-                        return await Output.FlushAsync(cancellationToken);
+                        return Output.FlushAsync(cancellationToken);
                     }
 
-                    return await Output.FirstWriteChunkedAsync(StatusCode, ReasonPhrase, responseHeaders, _autoChunk, data.Span, cancellationToken);
+                    return Output.FirstWriteChunkedAsync(StatusCode, ReasonPhrase, responseHeaders, _autoChunk, data.Span, cancellationToken);
                 }
                 else
                 {
                     CheckLastWrite();
-                    return await Output.FirstWriteAsync(StatusCode, ReasonPhrase, responseHeaders, _autoChunk, data.Span, cancellationToken);
+                    return Output.FirstWriteAsync(StatusCode, ReasonPhrase, responseHeaders, _autoChunk, data.Span, cancellationToken);
                 }
             }
             else
             {
                 Output.WriteResponseHeaders(StatusCode, ReasonPhrase, responseHeaders, _autoChunk);
                 HandleNonBodyResponseWrite();
-                return await Output.FlushAsync(cancellationToken);
+                return Output.FlushAsync(cancellationToken);
             }
         }
 
