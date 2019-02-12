@@ -3,7 +3,8 @@
   "author": "Microsoft",
   "classifications": [
     "Common",
-    "Worker"
+    "Worker",
+    "Web"
   ],
   "name": "Worker Service",
   "generatorVersions": "[1.0.0.0-*)",
