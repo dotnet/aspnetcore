@@ -14,8 +14,7 @@
   "icon": "vs-2017.3/Empty.png",
   "learnMoreLink": "https://go.microsoft.com/fwlink/?linkid=2072778",
   "uiFilters": [ "oneaspnet" ],
-  "supportsDocker": false,
-  "legacyTemplateIdentity": "Microsoft.NetCore.CSharp.EmptyWorker",
+  "supportsDocker": true,
   "excludeLaunchSettings": false,
   "minFullFrameworkVersion": "4.6.1"
 }
