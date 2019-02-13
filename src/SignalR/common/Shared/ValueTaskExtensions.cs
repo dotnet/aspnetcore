@@ -12,6 +12,7 @@ namespace Microsoft.AspNetCore.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Task GetAsTask(this in ValueTask<FlushResult> valueTask)
         {
+            // Try to avoid the allocation from AsTask
             if (valueTask.IsCompletedSuccessfully)
             {
                 // Signal consumption to the IValueTaskSource
