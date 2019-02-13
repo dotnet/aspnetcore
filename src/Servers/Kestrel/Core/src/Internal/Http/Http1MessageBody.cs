@@ -18,129 +18,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     {
         private readonly Http1Connection _context;
 
-        private volatile bool _canceled;
-        private Task _pumpTask;
-
         protected Http1MessageBody(Http1Connection context)
             : base(context, context.MinRequestBodyDataRate)
         {
             _context = context;
         }
 
-        private async Task PumpAsync()
-        {
-            Debug.Assert(!RequestUpgrade, "Upgraded connections should never use this code path!");
-
-            Exception error = null;
-
-            try
-            {
-                var awaitable = _context.Input.ReadAsync();
-
-                if (!awaitable.IsCompleted)
-                {
-                    TryProduceContinue();
-                }
-
-                while (true)
-                {
-                    var result = await awaitable;
-
-                    if (_context.RequestTimedOut)
-                    {
-                        BadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTimeout);
-                    }
-
-                    var readableBuffer = result.Buffer;
-                    var consumed = readableBuffer.Start;
-                    var examined = readableBuffer.Start;
-
-                    try
-                    {
-                        if (_canceled)
-                        {
-                            break;
-                        }
-
-                        if (!readableBuffer.IsEmpty)
-                        {
-                            bool done;
-                            done = Read(readableBuffer, _context.RequestBodyPipe.Writer, out consumed, out examined);
-
-                            await _context.RequestBodyPipe.Writer.FlushAsync();
-
-                            if (done)
-                            {
-                                break;
-                            }
-                        }
-
-                        // Read() will have already have greedily consumed the entire request body if able.
-                        if (result.IsCompleted)
-                        {
-                            // OnInputOrOutputCompleted() is an idempotent method that closes the connection. Sometimes
-                            // input completion is observed here before the Input.OnWriterCompleted() callback is fired,
-                            // so we call OnInputOrOutputCompleted() now to prevent a race in our tests where a 400
-                            // response is written after observing the unexpected end of request content instead of just
-                            // closing the connection without a response as expected.
-                            _context.OnInputOrOutputCompleted();
-
-                            BadHttpRequestException.Throw(RequestRejectionReason.UnexpectedEndOfRequestContent);
-                        }
-                    }
-                    finally
-                    {
-                        _context.Input.AdvanceTo(consumed, examined);
-                    }
-
-                    awaitable = _context.Input.ReadAsync();
-                }
-            }
-            catch (Exception ex)
-            {
-                error = ex;
-            }
-            finally
-            {
-                _context.RequestBodyPipe.Writer.Complete(error);
-            }
-        }
-
-        protected override Task OnStopAsync()
-        {
-            if (!_context.HasStartedConsumingRequestBody)
-            {
-                return Task.CompletedTask;
-            }
-
-            // PumpTask catches all Exceptions internally.
-            if (_pumpTask.IsCompleted)
-            {
-                // At this point both the request body pipe reader and writer should be completed.
-                _context.RequestBodyPipe.Reset();
-                return Task.CompletedTask;
-            }
-
-            return StopAsyncAwaited();
-        }
-
-        private async Task StopAsyncAwaited()
-        {
-            _canceled = true;
-            _context.Input.CancelPendingRead();
-            await _pumpTask;
-
-            // At this point both the request body pipe reader and writer should be completed.
-            _context.RequestBodyPipe.Reset();
-        }
-
         protected override Task OnConsumeAsync()
         {
             try
             {
-                if (_context.RequestBodyPipe.Reader.TryRead(out var readResult))
+                if (_context.RequestBodyPipeReader.TryRead(out var readResult))
                 {
-                    _context.RequestBodyPipe.Reader.AdvanceTo(readResult.Buffer.End);
+                    _context.RequestBodyPipeReader.AdvanceTo(readResult.Buffer.End);
 
                     if (readResult.IsCompleted)
                     {
@@ -175,8 +65,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 ReadResult result;
                 do
                 {
-                    result = await _context.RequestBodyPipe.Reader.ReadAsync();
-                    _context.RequestBodyPipe.Reader.AdvanceTo(result.Buffer.End);
+                    result = await _context.RequestBodyPipeReader.ReadAsync();
+                    _context.RequestBodyPipeReader.AdvanceTo(result.Buffer.End);
                 } while (!result.IsCompleted);
             }
             catch (BadHttpRequestException ex)
@@ -208,10 +98,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        protected override void OnReadStarted()
-        {
-            _pumpTask = PumpAsync();
-        }
+        public abstract void Advance(long consumedBytes);
+
 
         protected virtual bool Read(ReadOnlySequence<byte> readableBuffer, PipeWriter writableBuffer, out SequencePosition consumed, out SequencePosition examined)
         {
@@ -242,6 +130,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     BadHttpRequestException.Throw(RequestRejectionReason.UpgradeRequestCannotHavePayload);
                 }
 
+                context.RequestBodyPipeReader = new HttpRequestPipeReader();
                 return new ForUpgrade(context);
             }
 
@@ -261,6 +150,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     BadHttpRequestException.Throw(RequestRejectionReason.FinalTransferCodingNotChunked, in transferEncoding);
                 }
 
+                context.RequestBodyPipeReader = new HttpRequestPipeReader();
                 return new ForChunkedEncoding(keepAlive, context);
             }
 
@@ -273,6 +163,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     return keepAlive ? MessageBody.ZeroContentLengthKeepAlive : MessageBody.ZeroContentLengthClose;
                 }
 
+                context.RequestBodyPipeReader = new HttpRequestPipeReader();
                 return new ForContentLength(keepAlive, contentLength, context);
             }
 
@@ -320,6 +211,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
             {
                 _context.Input.AdvanceTo(consumed, examined);
+            }
+
+            public override void Advance(long consumedBytes)
+            {
             }
 
             public override void Complete(Exception exception)

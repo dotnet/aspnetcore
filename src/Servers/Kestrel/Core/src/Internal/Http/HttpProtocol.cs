@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public IHttpResponseControl HttpResponseControl { get; set; }
 
-        public Pipe RequestBodyPipe { get; protected set; }
+        public PipeReader RequestBodyPipeReader { get; set; }
 
         public ServiceContext ServiceContext => _context.ServiceContext;
         private IPEndPoint LocalEndPoint => _context.LocalEndPoint;
@@ -649,10 +649,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 if (HasStartedConsumingRequestBody)
                 {
-                    RequestBodyPipe.Reader.Complete();
+                    RequestBodyPipeReader.Complete();
 
                     // Wait for Http1MessageBody.PumpAsync() to call RequestBodyPipe.Writer.Complete().
-                    await messageBody.StopAsync();
+                    messageBody.Stop();
                 }
             }
         }
