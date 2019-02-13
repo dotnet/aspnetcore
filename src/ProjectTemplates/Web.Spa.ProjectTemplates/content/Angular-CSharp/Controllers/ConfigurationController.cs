@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.ApiAuthorization.IdentityServer;
 using Microsoft.AspNetCore.Mvc;
 
-namespace angular.Controllers
+namespace Company.WebApplication1.Controllers
 {
     public class ConfigurationController : Controller
     {
@@ -16,7 +16,6 @@ namespace angular.Controllers
         public IActionResult GetClientRequestParameters([FromRoute]string clientId)
         {
             var parameters = ClientRequestParametersProvider.GetClientParameters(HttpContext, clientId);
-            parameters["post_logout_redirect_uri"] = parameters["post_logout_redirect_uri"].Replace("login-callback", "logout-callback");
             return Ok(parameters);
         }
     }

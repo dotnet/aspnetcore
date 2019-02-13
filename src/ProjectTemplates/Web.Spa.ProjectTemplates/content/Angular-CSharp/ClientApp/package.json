@@ -29,6 +29,9 @@
     "aspnet-prerendering": "^3.0.1",
     "bootstrap": "^4.1.3",
     "jquery": "3.3.1",
+////#if (IndividualLocalAuth)
+//    "oidc-client": "^1.6.1",
+////#endif
     "popper.js": "^1.14.3"
   },
   "devDependencies": {

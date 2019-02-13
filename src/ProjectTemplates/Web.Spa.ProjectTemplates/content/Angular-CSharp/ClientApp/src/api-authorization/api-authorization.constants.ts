@@ -1,4 +1,4 @@
-export const ApplicationName = 'angular';
+export const ApplicationName = 'Company.WebApplication1';
 
 export const ReturnUrlType = 'returnUrl';
 

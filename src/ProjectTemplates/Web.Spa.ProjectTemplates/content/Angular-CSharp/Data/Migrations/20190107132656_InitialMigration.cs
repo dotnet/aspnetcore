@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace angular.Data.Migrations
+namespace Company.WebApplication1.Data.Migrations
 {
     public partial class InitialMigration : Migration
     {
