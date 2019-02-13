@@ -120,7 +120,7 @@ build of ASP.NET Core 2.1.x. Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.TestHost" Version="2.1.1" />
   <Package Id="Microsoft.AspNetCore.WebSockets" Version="2.1.7" />
   <Package Id="Microsoft.AspNetCore.WebUtilities" Version="2.1.1" />
-  <Package Id="Microsoft.AspNetCore" Version="2.1.6" />
+  <Package Id="Microsoft.AspNetCore" Version="2.1.7" />
   <Package Id="Microsoft.CodeAnalysis.Razor" Version="2.1.2" />
   <Package Id="Microsoft.Extensions.Identity.Core" Version="2.1.6" />
   <Package Id="Microsoft.Extensions.Identity.Stores" Version="2.1.6" />
