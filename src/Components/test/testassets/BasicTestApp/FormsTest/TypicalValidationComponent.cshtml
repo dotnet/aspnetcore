@@ -1,0 +1,39 @@
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+
+<EditForm Model="@person" OnValidSubmit="@HandleValidSubmitAsync">
+    <DataAnnotationsValidator />
+
+    <p>
+        Name: <input bind="@person.Name" />
+    </p>
+    <p>
+        Age (years): <input type="number" bind="@person.AgeInYears" />
+    </p>
+
+    <button type="submit">Submit</button>
+
+    <ValidationSummary />
+</EditForm>
+
+<ul>@foreach (var entry in submissionLog) { <li>@entry</li> }</ul>
+
+@functions {
+    // Usually this would be in a different file
+    class Person
+    {
+        [Required] public string Name { get; set; }
+
+        [Required, Range(0, 200)] public int AgeInYears { get; set; }
+    }
+
+    Person person = new Person();
+    List<string> submissionLog = new List<string>(); // So we can assert about the callbacks
+
+    Task HandleValidSubmitAsync(EditContext editContext)
+    {
+        submissionLog.Add("OnValidSubmit");
+        StateHasChanged(); // Temporary workaround for event routing bug
+        return Task.CompletedTask;
+    }
+}

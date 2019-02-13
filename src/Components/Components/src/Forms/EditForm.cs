@@ -135,10 +135,6 @@ namespace Microsoft.AspNetCore.Components.Forms
                 // Otherwise, the system implicitly runs validation on form submission
                 var isValid = _fixedEditContext.Validate(); // This will likely become ValidateAsync later
 
-                var task = isValid
-                    ? OnValidSubmit?.Invoke(_fixedEditContext)
-                    : OnInvalidSubmit?.Invoke(_fixedEditContext);
-
                 if (isValid && OnValidSubmit != null)
                 {
                     await OnValidSubmit(_fixedEditContext);
