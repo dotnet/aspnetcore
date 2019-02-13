@@ -87,12 +87,6 @@
     <Reference Remove="@(Reference)" />
   </ItemGroup>
 
-  <ItemDefinitionGroup>
-    <Reference>
-      <SharedSources>false</SharedSources>
-    </Reference>
-  </ItemDefinitionGroup>
-
   <!--
     This target resolves remaining Referene items to Packages, if possible. If not, they are left as Reference items fo the SDK to resolve.
     This target helps ensure projects within the shared framework do no unintentionally add new references,
@@ -104,7 +98,11 @@
     <Error Condition="@(_InvalidReferenceToSharedFxOnlyAssembly->Count()) != 0"
            Text="Cannot reference &quot;%(_InvalidReferenceToSharedFxOnlyAssembly.Identity)&quot; directly because it is part of the shared framework and this project is not. Use &lt;FrameworkReference Include=&quot;Microsoft.AspNetCore.App&quot; /&gt; instead." />
 
-    <Error Condition="@(_InvalidReferenceToNonSharedFxAssembly->Count()) != 0 AND '%(_InvalidReferenceToNonSharedFxAssembly.SharedSources)' != 'true'"
+    <ItemGroup>
+      <_InvalidReferenceToNonSharedFxAssembly Remove="@(_InvalidReferenceToNonSharedFxAssembly)" Condition="$([System.String]::new('%(Identity)').EndsWith('.Sources'))" />
+    </ItemGroup>
+
+    <Error Condition="@(_InvalidReferenceToNonSharedFxAssembly->Count()) != 0"
            Text="Cannot reference &quot;%(_InvalidReferenceToNonSharedFxAssembly.Identity)&quot;. This dependency is not in the shared framework. See docs/SharedFramework.md for instructions on how to modify what is in the shared framework." />
   </Target>
 
@@ -119,8 +117,8 @@
 
       <!-- Ensure only content asset are consumed from .Sources packages -->
       <Reference>
-        <IncludeAssets Condition="'%(SharedSources)' == 'true'">ContentFiles</IncludeAssets>
-        <PrivateAssets Condition="'%(SharedSources)' == 'true'">All</PrivateAssets>
+        <IncludeAssets Condition="$([System.String]::new('%(Identity)').EndsWith('.Sources'))">ContentFiles</IncludeAssets>
+        <PrivateAssets Condition="$([System.String]::new('%(Identity)').EndsWith('.Sources'))">All</PrivateAssets>
       </Reference>
 
       <!-- Identify if any references were present in the last release of this package, but have been removed. -->
