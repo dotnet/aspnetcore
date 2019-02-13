@@ -58,6 +58,11 @@ namespace Microsoft.AspNetCore.Components.Forms
         public event EventHandler<FieldIdentifier> OnFieldChanged;
 
         /// <summary>
+        /// An event that is raised when validation is requested.
+        /// </summary>
+        public event EventHandler OnValidationRequested;
+
+        /// <summary>
         /// Supplies a <see cref="FieldIdentifier"/> corresponding to a specified field name
         /// on this <see cref="EditContext"/>'s <see cref="Model"/>.
         /// </summary>
@@ -142,6 +147,16 @@ namespace Microsoft.AspNetCore.Components.Forms
             => _fieldStates.TryGetValue(fieldIdentifier, out var state)
             ? state.IsModified
             : false;
+
+        /// <summary>
+        /// Validates this <see cref="EditContext"/>.
+        /// </summary>
+        /// <returns>True if there are no validation messages after validation; otherwise false.</returns>
+        public bool Validate()
+        {
+            OnValidationRequested?.Invoke(this, null);
+            return !GetValidationMessages().Any();
+        }
 
         internal FieldState GetFieldState(FieldIdentifier fieldIdentifier, bool ensureExists)
         {

@@ -184,5 +184,58 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
             store1.Clear();
             Assert.Equal(new[] { "Store 2 field 1 message 1", }, editContext.GetValidationMessages());
         }
+
+        [Fact]
+        public void IsValidWithNoValidationMessages()
+        {
+            // Arrange
+            var editContext = new EditContext(new object());
+
+            // Act
+            var isValid = editContext.Validate();
+
+            // assert
+            Assert.True(isValid);
+        }
+
+        [Fact]
+        public void IsInvalidWithValidationMessages()
+        {
+            // Arrange
+            var editContext = new EditContext(new object());
+            var messages = new ValidationMessageStore(editContext);
+            messages.Add(
+                new FieldIdentifier(new object(), "some field"),
+                "Some message");
+
+            // Act
+            var isValid = editContext.Validate();
+
+            // assert
+            Assert.False(isValid);
+        }
+
+        [Fact]
+        public void RequestsValidationWhenValidateIsCalled()
+        {
+            // Arrange
+            var editContext = new EditContext(new object());
+            var messages = new ValidationMessageStore(editContext);
+            editContext.OnValidationRequested += (sender, eventArgs) =>
+            {
+                Assert.Same(editContext, sender);
+                Assert.Null(eventArgs); // Not currently used
+                messages.Add(
+                    new FieldIdentifier(new object(), "some field"),
+                    "Some message");
+            };
+
+            // Act
+            var isValid = editContext.Validate();
+
+            // assert
+            Assert.False(isValid);
+            Assert.Equal(new[] { "Some message" }, editContext.GetValidationMessages());
+        }
     }
 }
