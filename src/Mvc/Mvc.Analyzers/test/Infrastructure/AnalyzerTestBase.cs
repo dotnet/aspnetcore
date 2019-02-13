@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers.Infrastructure
         protected Project CreateProjectFromFile([CallerMemberName] string fileName = "")
         {
             var solutionDirectory = TestPathUtilities.GetSolutionRootDirectory("Mvc");
-            var projectDirectory = Path.Combine(solutionDirectory, "test", GetType().Assembly.GetName().Name);
+            var projectDirectory = Path.Combine(solutionDirectory, "Mvc.Analyzers", "test");
 
             var filePath = Path.Combine(projectDirectory, "TestFiles", fileName + ".cs");
             if (!File.Exists(filePath))
