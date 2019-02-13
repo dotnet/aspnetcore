@@ -7,6 +7,31 @@ using System.Linq;
 
 namespace Microsoft.AspNetCore.Components.Forms
 {
+    /* Async validation plan
+     * =====================
+     * - Add method: editContext.AddValidationTask(FieldIdentifier f, Task t)
+     *   It adds the task to a HashSet<Task> on both the FieldState and the EditContext,
+     *   so we can easily get all the tasks for a given field and across the whole EditContext
+     *   Also it awaits the task completion, and then regardless of outcome (success/fail/cancel),
+     *   it removes the task from those hashsets.
+     * - Add method: editContext.WhenAllValidationTasks()
+     *   Add method: editContext.WhenAllValidationTasks(FieldIdentifier f)
+     *   These return Task.WhenAll(hashSet.Values), or Task.Completed if there are none
+     * - Optionally also add editContext.HasPendingValidationTasks()
+     * - Add method: editContext.ValidateAsync() that awaits all the validation tasks then
+     *   returns true if there are no validation messages, false otherwise
+     * - Now a validation library can register tasks whenever it starts an async validation process,
+     *   can cancel them if it wants, and can still issue ValidationResultsChanged notifications when
+     *   each task completes. So a UI can determine whether to show "pending" state on a per-field
+     *   and per-form basis, and will re-render as each field's results arrive.
+     * - Note: it's unclear why we'd need WhenAllValidationTasks(FieldIdentifier) (i.e., per-field),
+     *   since you wouldn't "await" this to get per-field updates (rather, you'd use ValidationResultsChanged).
+     *   Maybe WhenAllValidationTasks can be private, and only called by ValidateAsync. We just expose
+     *   public HasPendingValidationTasks (per-field and per-edit-context).
+     * Will implement this shortly after getting more of the system in place, assuming it still
+     * appears to be the correct design.
+     */
+
     /// <summary>
     /// Holds metadata related to a data editing process, such as flags to indicate which
     /// fields have been modified and the current set of validation messages.
