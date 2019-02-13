@@ -4,10 +4,8 @@
 #pragma once
 
 #include <stdexcept>
-#include "cpprest/details/basic_types.h"
-#include "cpprest/json.h"
-#include "cpprest/asyncrt_utils.h"
 #include "signalr_exception.h"
+#include "cpprest/details/basic_types.h"
 
 namespace signalr
 {

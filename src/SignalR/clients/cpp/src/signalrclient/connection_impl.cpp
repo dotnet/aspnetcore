@@ -4,7 +4,6 @@
 #include "stdafx.h"
 #include <thread>
 #include <algorithm>
-#include "cpprest/asyncrt_utils.h"
 #include "constants.h"
 #include "connection_impl.h"
 #include "request_sender.h"
