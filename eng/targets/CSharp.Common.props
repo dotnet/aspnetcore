@@ -17,6 +17,7 @@
     <GenerateRepositoryCommitUrlInDescription>false</GenerateRepositoryCommitUrlInDescription>
     <GenerateCommitHashAttribute>false</GenerateCommitHashAttribute>
     <GenerateInternalAspNetCoreAttributes>false</GenerateInternalAspNetCoreAttributes>
+    <DisableDeterministicSourceRoot>true</DisableDeterministicSourceRoot>
   </PropertyGroup>
 
   <ItemGroup>

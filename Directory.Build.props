@@ -158,6 +158,12 @@
   <Import Project="build\tasks\RepoTasks.tasks" Condition="'$(MSBuildProjectName)' != 'RepoTasks' AND '$(DesignTimeBuild)' != 'true'" />
 
   <PropertyGroup>
+    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+    <!--
+      Disable deterministic source paths in test assets and samples.
+      In order for the debugger to find source files when debugging a locally built binary the PDB must contain original, unmapped local paths
+    -->
+    <DeterministicSourcePaths Condition="'$(IsSampleProject)' == 'true' OR '$(IsTestAssetProject)' == 'true'">false</DeterministicSourcePaths>
     <!-- Projects which reference Microsoft.AspNetCore.Mvc.Testing should import this targets file to ensure dependency .deps.json files are copied into test output. -->
     <MvcTestingTargets>$(MSBuildThisFileDirectory)src\Mvc\src\Microsoft.AspNetCore.Mvc.Testing\Microsoft.AspNetCore.Mvc.Testing.targets</MvcTestingTargets>
     <!-- IIS native projects can only be built on Windows for x86 and x64. -->
