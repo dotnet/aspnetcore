@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public IHttpResponseControl HttpResponseControl { get; set; }
 
-        public Pipe RequestBodyPipe { get; protected set; } // TODO make sure this is removed or BodyPipe returns correct value
+        public Pipe RequestBodyPipe { get; protected set; }
 
         public ServiceContext ServiceContext => _context.ServiceContext;
         private IPEndPoint LocalEndPoint => _context.LocalEndPoint;

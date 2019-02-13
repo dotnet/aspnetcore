@@ -697,7 +697,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 await server.StopAsync();
             }
 
-            await Assert.ThrowsAsync<TaskCanceledException>(async () => await readTcs.Task);
+            await Assert.ThrowsAsync<ConnectionAbortedException>(async () => await readTcs.Task);
 
             // The cancellation token for only the last request should be triggered.
             var abortedRequestId = await registrationTcs.Task.DefaultTimeout();

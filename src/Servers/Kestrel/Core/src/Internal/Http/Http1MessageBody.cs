@@ -160,11 +160,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 _context.SetBadRequestState(ex);
                 return Task.CompletedTask;
             }
-            catch (Exception)
-            {
-                //_context.SetBadRequestState(ex);
-                return Task.CompletedTask;
-            }
 
             return OnConsumeAsyncAwaited();
         }
