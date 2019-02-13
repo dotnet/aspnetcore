@@ -2,7 +2,7 @@
 <Project>
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-    <AspNetCoreBaselineVersion>2.1.7</AspNetCoreBaselineVersion>
+    <AspNetCoreBaselineVersion>2.1.8</AspNetCoreBaselineVersion>
   </PropertyGroup>
   <!-- Package: dotnet-dev-certs-->
   <PropertyGroup Condition=" '$(PackageId)' == 'dotnet-dev-certs' ">
@@ -120,7 +120,7 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Authentication.Google-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Google' ">
-    <BaselinePackageVersion>2.1.2</BaselinePackageVersion>
+    <BaselinePackageVersion>2.1.8</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Google' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.OAuth" Version="[2.1.2, )" />

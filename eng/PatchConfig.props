@@ -19,4 +19,8 @@ Later on, this will be checked using this condition:
     </PackagesInPatch>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.9' ">
+    <PackagesInPatch>
+    </PackagesInPatch>
+  </PropertyGroup>
 </Project>
