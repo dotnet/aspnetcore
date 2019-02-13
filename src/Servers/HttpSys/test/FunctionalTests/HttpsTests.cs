@@ -1,12 +1,16 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Net.Http;
+using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections.Features;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
@@ -15,40 +19,38 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 {
     public class HttpsTests
     {
-        private const string Address = "https://localhost:9090/";
-
-        [ConditionalFact(Skip = "TODO: Add trait filtering support so these SSL tests don't get run on teamcity or the command line."), Trait("scheme", "https")]
+        [ConditionalFact]
         public async Task Https_200OK_Success()
         {
-            using (Utilities.CreateHttpsServer(httpContext =>
+            using (Utilities.CreateDynamicHttpsServer(out var address, httpContext =>
             {
                 return Task.FromResult(0);
             }))
             {
-                string response = await SendRequestAsync(Address);
+                string response = await SendRequestAsync(address);
                 Assert.Equal(string.Empty, response);
             }
         }
 
-        [ConditionalFact(Skip = "TODO: Add trait filtering support so these SSL tests don't get run on teamcity or the command line."), Trait("scheme", "https")]
+        [ConditionalFact]
         public async Task Https_SendHelloWorld_Success()
         {
-            using (Utilities.CreateHttpsServer(httpContext =>
+            using (Utilities.CreateDynamicHttpsServer(out var address, httpContext =>
             {
                 byte[] body = Encoding.UTF8.GetBytes("Hello World");
                 httpContext.Response.ContentLength = body.Length;
                 return httpContext.Response.Body.WriteAsync(body, 0, body.Length);
             }))
             {
-                string response = await SendRequestAsync(Address);
+                string response = await SendRequestAsync(address);
                 Assert.Equal("Hello World", response);
             }
         }
 
-        [ConditionalFact(Skip = "TODO: Add trait filtering support so these SSL tests don't get run on teamcity or the command line."), Trait("scheme", "https")]
+        [ConditionalFact]
         public async Task Https_EchoHelloWorld_Success()
         {
-            using (Utilities.CreateHttpsServer(httpContext =>
+            using (Utilities.CreateDynamicHttpsServer(out var address, httpContext =>
             {
                 string input = new StreamReader(httpContext.Request.Body).ReadToEnd();
                 Assert.Equal("Hello World", input);
@@ -58,15 +60,15 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 return Task.FromResult(0);
             }))
             {
-                string response = await SendRequestAsync(Address, "Hello World");
+                string response = await SendRequestAsync(address, "Hello World");
                 Assert.Equal("Hello World", response);
             }
         }
 
-        [ConditionalFact(Skip = "TODO: Add trait filtering support so these SSL tests don't get run on teamcity or the command line."), Trait("scheme", "https")]
+        [ConditionalFact]
         public async Task Https_ClientCertNotSent_ClientCertNotPresent()
         {
-            using (Utilities.CreateHttpsServer(async httpContext =>
+            using (Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
             {
                 var tls = httpContext.Features.Get<ITlsConnectionFeature>();
                 Assert.NotNull(tls);
@@ -75,15 +77,15 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 Assert.Null(tls.ClientCertificate);
             }))
             {
-                string response = await SendRequestAsync(Address);
+                string response = await SendRequestAsync(address);
                 Assert.Equal(string.Empty, response);
             }
         }
 
-        [ConditionalFact(Skip = "TODO: Add trait filtering support so these SSL tests don't get run on teamcity or the command line."), Trait("scheme", "https")]
+        [ConditionalFact(Skip = "Manual test only, client certs are not always available.")]
         public async Task Https_ClientCertRequested_ClientCertPresent()
         {
-            using (Utilities.CreateHttpsServer(async httpContext =>
+            using (Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
             {
                 var tls = httpContext.Features.Get<ITlsConnectionFeature>();
                 Assert.NotNull(tls);
@@ -94,7 +96,37 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 X509Certificate2 cert = FindClientCert();
                 Assert.NotNull(cert);
-                string response = await SendRequestAsync(Address, cert);
+                string response = await SendRequestAsync(address, cert);
+                Assert.Equal(string.Empty, response);
+            }
+        }
+
+        [ConditionalFact]
+        public async Task Https_SetsITlsHandshakeFeature()
+        {
+            using (Utilities.CreateDynamicHttpsServer(out var address, httpContext =>
+            {
+                try
+                {
+                    var tlsFeature = httpContext.Features.Get<ITlsHandshakeFeature>();
+                    Assert.NotNull(tlsFeature);
+                    Assert.True(tlsFeature.Protocol > SslProtocols.None, "Protocol");
+                    Assert.True(Enum.IsDefined(typeof(SslProtocols), tlsFeature.Protocol), "Defined"); // Mapping is required, make sure it's current
+                    Assert.True(tlsFeature.CipherAlgorithm > CipherAlgorithmType.Null, "Cipher");
+                    Assert.True(tlsFeature.CipherStrength > 0, "CipherStrength");
+                    Assert.True(tlsFeature.HashAlgorithm > HashAlgorithmType.None, "HashAlgorithm");
+                    Assert.True(tlsFeature.HashStrength >= 0, "HashStrength"); // May be 0 for some algorithms
+                    Assert.True(tlsFeature.KeyExchangeAlgorithm > ExchangeAlgorithmType.None, "KeyExchangeAlgorithm");
+                    Assert.True(tlsFeature.KeyExchangeStrength > 0, "KeyExchangeStrength");
+                }
+                catch (Exception ex)
+                {
+                    return httpContext.Response.WriteAsync(ex.ToString());
+                }
+                return Task.FromResult(0);
+            }))
+            {
+                string response = await SendRequestAsync(address);
                 Assert.Equal(string.Empty, response);
             }
         }
