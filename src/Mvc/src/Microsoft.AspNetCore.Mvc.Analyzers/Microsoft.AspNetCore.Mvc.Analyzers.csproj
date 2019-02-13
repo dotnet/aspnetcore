@@ -28,7 +28,7 @@
         projectUrl=$(PackageProjectUrl);
         iconUrl=$(PackageIconUrl);
         repositoryUrl=$(RepositoryUrl);
-        repositoryCommit=$(RepositoryCommit);
+        repositoryCommit=$(SourceRevisionId);
         copyright=$(Copyright);
 
         OutputBinary=$(OutputPath)$(AssemblyName).dll;

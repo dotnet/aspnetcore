@@ -17,7 +17,7 @@
     <PropertyGroup>
       <NuspecProperties>
         version=$(PackageVersion);
-        repositorycommit=$(RepositoryCommit);
+        repositorycommit=$(SourceRevisionId);
       </NuspecProperties>
     </PropertyGroup>
   </Target>

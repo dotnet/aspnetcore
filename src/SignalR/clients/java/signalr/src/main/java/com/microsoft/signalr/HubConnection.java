@@ -3,14 +3,7 @@
 
 package com.microsoft.signalr;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -46,7 +39,7 @@ public class HubConnection {
     private Single<String> accessTokenProvider;
     private final Map<String, String> headers = new HashMap<>();
     private ConnectionState connectionState = null;
-    private final HttpClient httpClient;
+    private HttpClient httpClient;
     private String stopError;
     private Timer pingTimer = null;
     private final AtomicLong nextServerTimeout = new AtomicLong();
@@ -56,6 +49,7 @@ public class HubConnection {
     private long tickRate = 1000;
     private CompletableSubject handshakeResponseSubject;
     private long handshakeResponseTimeout = 15*1000;
+    private TransportEnum transportEnum = TransportEnum.ALL;
     private final Logger logger = LoggerFactory.getLogger(HubConnection.class);
 
     /**
@@ -100,7 +94,7 @@ public class HubConnection {
     }
 
     HubConnection(String url, Transport transport, boolean skipNegotiate, HttpClient httpClient,
-                  Single<String> accessTokenProvider, long handshakeResponseTimeout, Map<String, String> headers) {
+                  Single<String> accessTokenProvider, long handshakeResponseTimeout, Map<String, String> headers, TransportEnum transportEnum) {
         if (url == null || url.isEmpty()) {
             throw new IllegalArgumentException("A valid url is required.");
         }
@@ -122,6 +116,8 @@ public class HubConnection {
 
         if (transport != null) {
             this.transport = transport;
+        } else if (transportEnum != null) {
+            this.transportEnum = transportEnum;
         }
 
         if (handshakeResponseTimeout > 0) {
@@ -301,7 +297,13 @@ public class HubConnection {
         negotiate.flatMapCompletable(url -> {
             logger.debug("Starting HubConnection.");
             if (transport == null) {
-                transport = new WebSocketTransport(headers, httpClient);
+                switch (transportEnum) {
+                    case LONG_POLLING:
+                        transport = new LongPollingTransport(headers, httpClient, accessTokenProvider);
+                        break;
+                    default:
+                        transport = new WebSocketTransport(headers, httpClient);
+                }
             }
 
             transport.setOnReceive(this.callback);
@@ -311,37 +313,20 @@ public class HubConnection {
                 String handshake = HandshakeProtocol.createHandshakeRequestMessage(
                         new HandshakeRequestMessage(protocol.getName(), protocol.getVersion()));
 
+                connectionState = new ConnectionState(this);
+
                 return transport.send(handshake).andThen(Completable.defer(() -> {
                     timeoutHandshakeResponse(handshakeResponseTimeout, TimeUnit.MILLISECONDS);
                     return handshakeResponseSubject.andThen(Completable.defer(() -> {
                         hubConnectionStateLock.lock();
                         try {
-                            connectionState = new ConnectionState(this);
                             hubConnectionState = HubConnectionState.CONNECTED;
                             logger.info("HubConnection started.");
-
                             resetServerTimeout();
-                            this.pingTimer = new Timer();
-                            this.pingTimer.schedule(new TimerTask() {
-                                @Override
-                                public void run() {
-                                    try {
-                                        if (System.currentTimeMillis() > nextServerTimeout.get()) {
-                                            stop("Server timeout elapsed without receiving a message from the server.");
-                                            return;
-                                        }
-
-                                        if (System.currentTimeMillis() > nextPingActivation.get()) {
-                                            sendHubMessage(PingMessage.getInstance());
-                                        }
-                                    } catch (Exception e) {
-                                        logger.warn("Error sending ping: {}.", e.getMessage());
-                                        // The connection is probably in a bad or closed state now, cleanup the timer so
-                                        // it stops triggering
-                                        pingTimer.cancel();
-                                    }
-                                }
-                            }, new Date(0), tickRate);
+                            //Don't send pings if we're using long polling.
+                            if (transportEnum != TransportEnum.LONG_POLLING) {
+                                activatePingTimer();
+                            }
                         } finally {
                             hubConnectionStateLock.unlock();
                         }
@@ -356,6 +341,30 @@ public class HubConnection {
         return start;
     }
 
+    private void activatePingTimer() {
+        this.pingTimer = new Timer();
+        this.pingTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                try {
+                    if (System.currentTimeMillis() > nextServerTimeout.get()) {
+                        stop("Server timeout elapsed without receiving a message from the server.");
+                        return;
+                    }
+
+                    if (System.currentTimeMillis() > nextPingActivation.get()) {
+                        sendHubMessage(PingMessage.getInstance());
+                    }
+                } catch (Exception e) {
+                    logger.warn("Error sending ping: {}.", e.getMessage());
+                    // The connection is probably in a bad or closed state now, cleanup the timer so
+                    // it stops triggering
+                    pingTimer.cancel();
+                }
+            }
+        }, new Date(0), tickRate);
+    }
+
     private Single<String> startNegotiate(String url, int negotiateAttempts) {
         if (hubConnectionState != HubConnectionState.DISCONNECTED) {
             return Single.just(null);
@@ -367,7 +376,10 @@ public class HubConnection {
             }
 
             if (response.getRedirectUrl() == null) {
-                if (!response.getAvailableTransports().contains("WebSockets")) {
+                Set<String> transports = response.getAvailableTransports();
+                if ((this.transportEnum == TransportEnum.ALL && !(transports.contains("WebSockets") || transports.contains("LongPolling"))) ||
+                        (this.transportEnum == TransportEnum.WEBSOCKETS && !transports.contains("WebSockets")) ||
+                        (this.transportEnum == TransportEnum.LONG_POLLING && !transports.contains("LongPolling"))) {
                     throw new RuntimeException("There were no compatible transports on the server.");
                 }
 
@@ -563,7 +575,7 @@ public class HubConnection {
         } else {
             logger.debug("Sending {} message.", message.getMessageType().name());
         }
-        transport.send(serializedMessage);
+        transport.send(serializedMessage).subscribeWith(CompletableSubject.create());
 
         resetKeepAlive();
     }

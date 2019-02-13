@@ -46,7 +46,7 @@
         licenseUrl=$(PackageLicenseUrl);
         owners=$(Company);
         projectUrl=$(PackageProjectUrl);
-        repositoryCommit=$(RepositoryCommit);
+        repositoryCommit=$(SourceRevisionId);
         repositoryUrl=$(RepositoryUrl);
         tags=$(PackageTags.Replace(';', ' '));
         version=$(PackageVersion);
