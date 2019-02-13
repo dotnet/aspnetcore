@@ -150,10 +150,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
             try
             {
                 await ProcessAsynchronousWork();
-                if (_pendingTasks.Count != 0)
-                {
-                    throw new Exception();
-                }
                 Debug.Assert(_pendingTasks.Count == 0);
             }
             finally
@@ -276,8 +272,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             // This is for example when we run on a system with a single thread, like WebAssembly.
             if (_dispatcher == null)
             {
-                workItem();
-                return Task.CompletedTask;
+                return workItem();
             }
 
             if (SynchronizationContext.Current == _dispatcher)
@@ -420,7 +415,10 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
                 var batch = _batchBuilder.ToBatch();
                 updateDisplayTask = UpdateDisplayAsync(batch);
-                InvokeRenderCompletedCalls(batch.UpdatedComponents);
+
+                // Fire off the execution of OnAfterRenderAsync, but don't wait for it
+                // if there is async work to be done.
+                _ = InvokeRenderCompletedCalls(batch.UpdatedComponents);
             }
             finally
             {
@@ -430,7 +428,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             }
         }
 
-        private async void InvokeRenderCompletedCalls(ArrayRange<RenderTreeDiff> updatedComponents)
+        private Task InvokeRenderCompletedCalls(ArrayRange<RenderTreeDiff> updatedComponents)
         {
             List<Task> batch = null;
             var array = updatedComponents.Array;
@@ -466,10 +464,9 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 }
             }
 
-            if (batch != null)
-            {
-                await Task.WhenAll(batch);
-            }
+            return batch != null ?
+                Task.WhenAll(batch) :
+                Task.CompletedTask;
         }
 
         private void RenderInExistingBatch(RenderQueueEntry renderQueueEntry)
