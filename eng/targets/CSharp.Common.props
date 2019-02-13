@@ -1,7 +1,5 @@
 <Project>
 
-  <Import Project="SourceLink.props" />
-
   <PropertyGroup>
     <LangVersion>7.3</LangVersion>
 

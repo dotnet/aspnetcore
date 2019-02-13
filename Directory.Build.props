@@ -76,7 +76,15 @@
       In order for the debugger to find source files when debugging a locally built binary the PDB must contain original, unmapped local paths
     -->
     <DeterministicSourcePaths Condition="'$(IsSampleProject)' == 'true' OR '$(IsTestAssetProject)' == 'true'">false</DeterministicSourcePaths>
+
+    <DisableSourceLink Condition="'$(MSBuildProjectExtension)' == '.wixproj' OR '$(MSBuildProjectExtension)' == '.zipproj' OR '$(MSBuildProjectExtension)' == '.debproj' OR '$(MSBuildProjectExtension)' == '.rpmproj'">true</DisableSourceLink>
   </PropertyGroup>
+
+  <ItemGroup Condition="'$(DisableSourceLink)' != 'true'">
+    <!-- See https://github.com/dotnet/sourcelink -->
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="$(MicrosoftSourceLinkGitHubPackageVersion)" PrivateAssets="All" AllowExplicitReference="true" />
+    <PackageReference Include="Microsoft.SourceLink.Vsts.Git" Version="$(MicrosoftSourceLinkVstsGitPackageVersion)" PrivateAssets="All" AllowExplicitReference="true" />
+  </ItemGroup>
 
   <!-- Compilation options which apply to all languages. Language-specific options should be set in eng/targets/$(lang).Common.props -->
   <PropertyGroup>

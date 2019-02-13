@@ -1,5 +1,2 @@
 <Project>
-
-  <Import Project="SourceLink.props" />
-
 </Project>
