@@ -296,7 +296,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             }
             else
             {
-                actionModel.ActionName = methodInfo.Name;
+                actionModel.ActionName = CanonicalizeActionName(methodInfo.Name);
             }
 
             var apiVisibility = attributes.OfType<IApiDescriptionVisibilityProvider>().FirstOrDefault();
@@ -369,6 +369,19 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             AddRange(actionModel.Selectors, CreateSelectors(applicableAttributes));
 
             return actionModel;
+        }
+
+        private string CanonicalizeActionName(string actionName)
+        {
+            const string Suffix = "Async";
+
+            if (_mvcOptions.SuppressAsyncSuffixInActionNames &&
+                actionName.EndsWith(Suffix, StringComparison.Ordinal))
+            {
+                actionName = actionName.Substring(0, actionName.Length - Suffix.Length);
+            }
+
+            return actionName;
         }
 
         /// <summary>

@@ -3,7 +3,6 @@
 
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
@@ -58,7 +57,7 @@ After flush inside partial<form action=""/FlushPoint/PageWithoutLayout"" method=
 
         [Theory]
         [InlineData("PageWithPartialsAndViewComponents", "FlushAsync invoked inside RenderSection")]
-        [InlineData("PageWithRenderSectionAsync", "FlushAsync invoked inside RenderSectionAsync")]
+        [InlineData("PageWithRenderSection", "FlushAsync invoked inside RenderSectionAsync")]
         public async Task FlushPointsAreExecutedForPagesWithComponentsPartialsAndSections(string action, string title)
         {
             var expected = $@"<title>{ title }</title>

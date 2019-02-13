@@ -1,6 +1,4 @@
 <Project>
-  <Import Project="SharedFrameworkOnly.props" />
-
   <PropertyGroup>
     <TargetRuntimeIdentifier Condition="'$(TargetRuntimeIdentifier)' == ''">$(TargetOsName)-$(TargetArchitecture)</TargetRuntimeIdentifier>
   </PropertyGroup>
@@ -180,6 +178,8 @@
   </Choose>
 
   <Import Project="..\eng\Versions.props" />
+  <Import Project="..\eng\SharedFramework.Local.props" />
+  <Import Project="..\eng\SharedFramework.External.props" />
   <Import Project="runtimes.props" />
   <Import Project="CodeSign.props" />
 </Project>

@@ -25,14 +25,11 @@
     <MicrosoftBclJsonSourcesPackageVersion>4.6.0-preview.19107.9</MicrosoftBclJsonSourcesPackageVersion>
     <MicrosoftCSharpPackageVersion>4.6.0-preview.19107.9</MicrosoftCSharpPackageVersion>
     <MicrosoftWin32RegistryPackageVersion>4.6.0-preview.19107.9</MicrosoftWin32RegistryPackageVersion>
-    <SystemComponentModelAnnotationsPackageVersion>4.6.0-preview.19107.9</SystemComponentModelAnnotationsPackageVersion>
     <SystemDataSqlClientPackageVersion>4.7.0-preview.19107.9</SystemDataSqlClientPackageVersion>
-    <SystemDiagnosticsDiagnosticSourcePackageVersion>4.6.0-preview.19107.9</SystemDiagnosticsDiagnosticSourcePackageVersion>
     <SystemDiagnosticsEventLogPackageVersion>4.6.0-preview.19107.9</SystemDiagnosticsEventLogPackageVersion>
     <SystemIOPipelinesPackageVersion>4.6.0-preview.19107.9</SystemIOPipelinesPackageVersion>
     <SystemNetHttpWinHttpHandlerPackageVersion>4.6.0-preview.19107.9</SystemNetHttpWinHttpHandlerPackageVersion>
     <SystemNetWebSocketsWebSocketProtocolPackageVersion>4.6.0-preview.19107.9</SystemNetWebSocketsWebSocketProtocolPackageVersion>
-    <SystemNumericsVectorsPackageVersion>4.6.0-preview.19107.9</SystemNumericsVectorsPackageVersion>
     <SystemReflectionMetadataPackageVersion>1.7.0-preview.19107.9</SystemReflectionMetadataPackageVersion>
     <SystemRuntimeCompilerServicesUnsafePackageVersion>4.6.0-preview.19107.9</SystemRuntimeCompilerServicesUnsafePackageVersion>
     <SystemSecurityCryptographyCngPackageVersion>4.6.0-preview.19107.9</SystemSecurityCryptographyCngPackageVersion>
@@ -43,7 +40,7 @@
     <SystemServiceProcessServiceControllerPackageVersion>4.6.0-preview.19107.9</SystemServiceProcessServiceControllerPackageVersion>
     <SystemTextEncodingsWebPackageVersion>4.6.0-preview.19107.9</SystemTextEncodingsWebPackageVersion>
     <SystemThreadingChannelsPackageVersion>4.6.0-preview.19107.9</SystemThreadingChannelsPackageVersion>
-    <!-- Only listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
+      <!-- Only listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
     <MicrosoftNETCorePlatformsPackageVersion>3.0.0-preview.19107.9</MicrosoftNETCorePlatformsPackageVersion>
     <!-- Packages from aspnet/Extensions -->
     <InternalAspNetCoreAnalyzersPackageVersion>3.0.0-preview3.19108.3</InternalAspNetCoreAnalyzersPackageVersion>
@@ -138,7 +135,6 @@
     <!-- Stable dotnet/corefx packages no longer updated for .NET Core 3 -->
     <SystemBuffersPackageVersion>4.5.0</SystemBuffersPackageVersion>
     <SystemCodeDomPackageVersion>4.4.0</SystemCodeDomPackageVersion>
-    <SystemMemoryPackageVersion>4.5.2</SystemMemoryPackageVersion>
     <SystemNetHttpPackageVersion>4.3.2</SystemNetHttpPackageVersion>
     <SystemThreadingTasksExtensionsPackageVersion>4.5.2</SystemThreadingTasksExtensionsPackageVersion>
     <!-- Packages developed by @aspnet, but manually updated as necessary. -->

@@ -289,15 +289,7 @@
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>c2bbb6a5ee5ff67e5e8353e154d7b4c4f2f83143</Sha>
     </Dependency>
-    <Dependency Name="System.ComponentModel.Annotations" Version="4.6.0-preview.19107.9">
-      <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>c2bbb6a5ee5ff67e5e8353e154d7b4c4f2f83143</Sha>
-    </Dependency>
     <Dependency Name="System.Data.SqlClient" Version="4.7.0-preview.19107.9">
-      <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>c2bbb6a5ee5ff67e5e8353e154d7b4c4f2f83143</Sha>
-    </Dependency>
-    <Dependency Name="System.Diagnostics.DiagnosticSource" Version="4.6.0-preview.19107.9">
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>c2bbb6a5ee5ff67e5e8353e154d7b4c4f2f83143</Sha>
     </Dependency>
@@ -314,10 +306,6 @@
       <Sha>c2bbb6a5ee5ff67e5e8353e154d7b4c4f2f83143</Sha>
     </Dependency>
     <Dependency Name="System.Net.WebSockets.WebSocketProtocol" Version="4.6.0-preview.19107.9">
-      <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>c2bbb6a5ee5ff67e5e8353e154d7b4c4f2f83143</Sha>
-    </Dependency>
-    <Dependency Name="System.Numerics.Vectors" Version="4.6.0-preview.19107.9">
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>c2bbb6a5ee5ff67e5e8353e154d7b4c4f2f83143</Sha>
     </Dependency>

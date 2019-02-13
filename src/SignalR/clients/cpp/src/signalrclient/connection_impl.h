@@ -44,8 +44,7 @@ namespace signalr
         connection_state get_connection_state() const;
         utility::string_t get_connection_id() const;
 
-        void set_message_received_string(const std::function<void(const utility::string_t&)>& message_received);
-        void set_message_received_json(const std::function<void(const web::json::value&)>& message_received);
+        void set_message_received(const std::function<void(const utility::string_t&)>& message_received);
         void set_disconnected(const std::function<void()>& disconnected);
         void set_client_config(const signalr_client_config& config);
 
@@ -60,7 +59,7 @@ namespace signalr
         std::unique_ptr<web_request_factory> m_web_request_factory;
         std::unique_ptr<transport_factory> m_transport_factory;
 
-        std::function<void(const web::json::value&)> m_message_received;
+        std::function<void(const utility::string_t&)> m_message_received;
         std::function<void()> m_disconnected;
         signalr_client_config m_signalr_client_config;
 
@@ -71,7 +70,6 @@ namespace signalr
         utility::string_t m_connection_data;
         utility::string_t m_message_id;
         utility::string_t m_groups_token;
-        bool m_handshakeReceived;
 
         connection_impl(const utility::string_t& url, const utility::string_t& query_string, trace_level trace_level, const std::shared_ptr<log_writer>& log_writer,
             std::unique_ptr<web_request_factory> web_request_factory, std::unique_ptr<transport_factory> transport_factory);
@@ -80,14 +78,14 @@ namespace signalr
         pplx::task<void> send_connect_request(const std::shared_ptr<transport>& transport,
             const pplx::task_completion_event<void>& connect_request_tce);
 
-        void process_response(const utility::string_t& response, const pplx::task_completion_event<void>& connect_request_tce);
+        void process_response(const utility::string_t& response);
 
         pplx::task<void> shutdown();
 
         bool change_state(connection_state old_state, connection_state new_state);
         connection_state change_state(connection_state new_state);
         void handle_connection_state_change(connection_state old_state, connection_state new_state);
-        void invoke_message_received(const web::json::value& message);
+        void invoke_message_received(const utility::string_t& message);
 
         static utility::string_t translate_connection_state(connection_state state);
         void ensure_disconnected(const utility::string_t& error_message);

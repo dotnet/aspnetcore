@@ -5,8 +5,6 @@
     <RootNamespace>Microsoft.AspNetCore</RootNamespace>
   </PropertyGroup>
 
-  <Import Project="..\Microsoft.AspNetCore.App.props" />
-
   <ItemGroup>
     <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
       <_Parameter1>PackageVersion</_Parameter1>
@@ -41,7 +39,7 @@
     <ItemGroup>
       <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
         <_Parameter1>SharedFxDependencies</_Parameter1>
-        <_Parameter2>@(Dependency);@(ExternalDependency);@(_TransitiveExternalDependency)</_Parameter2>
+        <_Parameter2>@(AspNetCoreAppReference);@(AspNetCoreAppReferenceAndPackage);@(ExternalAspNetCoreAppReference);@(_TransitiveExternalAspNetCoreAppReference)</_Parameter2>
       </AssemblyAttribute>
       <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
         <_Parameter1>MetadataOutputPath</_Parameter1>

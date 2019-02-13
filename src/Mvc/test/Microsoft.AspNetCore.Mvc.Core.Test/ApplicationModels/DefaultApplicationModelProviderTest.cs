@@ -294,6 +294,66 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         }
 
         [Fact]
+        public void OnProvidersExecuting_RemovesAsyncSuffix_WhenOptionIsSet()
+        {
+            // Arrange
+            var options = new MvcOptions();
+            var provider = new TestApplicationModelProvider(options, new EmptyModelMetadataProvider());
+            var typeInfo = typeof(AsyncActionController).GetTypeInfo();
+            var methodInfo = typeInfo.GetMethod(nameof(AsyncActionController.GetPersonAsync));
+
+            var context = new ApplicationModelProviderContext(new[] { typeInfo });
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            var controllerModel = Assert.Single(context.Result.Controllers);
+            var action = Assert.Single(controllerModel.Actions, a => a.ActionMethod == methodInfo);
+            Assert.Equal("GetPerson", action.ActionName);
+        }
+
+        [Fact]
+        public void OnProvidersExecuting_DoesNotRemoveAsyncSuffix_WhenOptionIsDisabled()
+        {
+            // Arrange
+            var options = new MvcOptions { SuppressAsyncSuffixInActionNames = false };
+            var provider = new TestApplicationModelProvider(options, new EmptyModelMetadataProvider());
+            var typeInfo = typeof(AsyncActionController).GetTypeInfo();
+            var methodInfo = typeInfo.GetMethod(nameof(AsyncActionController.GetPersonAsync));
+
+            var context = new ApplicationModelProviderContext(new[] { typeInfo });
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            var controllerModel = Assert.Single(context.Result.Controllers);
+            var action = Assert.Single(controllerModel.Actions, a => a.ActionMethod == methodInfo);
+            Assert.Equal(nameof(AsyncActionController.GetPersonAsync), action.ActionName);
+        }
+
+        [Fact]
+        public void OnProvidersExecuting_DoesNotRemoveAsyncSuffix_WhenActionNameIsSpecifiedUsingActionNameAttribute()
+        {
+            // Arrange
+            var options = new MvcOptions();
+            var provider = new TestApplicationModelProvider(options, new EmptyModelMetadataProvider());
+            var typeInfo = typeof(AsyncActionController).GetTypeInfo();
+            var methodInfo = typeInfo.GetMethod(nameof(AsyncActionController.GetAddressAsync));
+
+            var context = new ApplicationModelProviderContext(new[] { typeInfo });
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            var controllerModel = Assert.Single(context.Result.Controllers);
+            var action = Assert.Single(controllerModel.Actions, a => a.ActionMethod == methodInfo);
+            Assert.Equal("GetRealAddressAsync", action.ActionName);
+        }
+
+        [Fact]
         public void CreateControllerModel_DerivedFromControllerClass_HasFilter()
         {
             // Arrange
@@ -1772,6 +1832,14 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             [RouteAndConstraint("R1")]
             [RouteAndConstraint("R2")]
             public void Edit() { }
+        }
+
+        private class AsyncActionController : Controller
+        {
+            public Task<IActionResult> GetPersonAsync() => null;
+
+            [ActionName("GetRealAddressAsync")]
+            public Task<IActionResult> GetAddressAsync() => null;
         }
 
         private class TestApplicationModelProvider : DefaultApplicationModelProvider

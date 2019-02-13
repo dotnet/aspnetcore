@@ -20,6 +20,16 @@
   },
   "sourceName": "Company.RazorClassLibrary1",
   "preferNameDirectory": true,
+  "sources": [
+    {
+      "modifiers": [{
+        "condition": "(!SupportPagesAndViews)",
+        "exclude": [
+          "Areas/**"
+        ]
+      }]
+    }
+  ],
   "symbols": {
     "Framework": {
       "type": "parameter",
@@ -42,6 +52,12 @@
       "datatype": "bool",
       "description": "If specified, skips the automatic restore of the project on create.",
       "defaultValue": "false"
+    },
+    "SupportPagesAndViews": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "true",
+      "description": "Whether to support adding traditional Razor pages and Views in addition to components to this library."
     }
   },
   "primaryOutputs": [

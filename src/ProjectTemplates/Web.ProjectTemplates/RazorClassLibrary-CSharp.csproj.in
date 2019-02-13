@@ -1,12 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework Condition="'$(SupportPagesAndViews)' == 'True'">netcoreapp3.0</TargetFramework>
+    <TargetFramework Condition="'$(SupportPagesAndViews)' != 'True'">netstandard2.0</TargetFramework>
     <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">Company.RazorClassLibrary1</RootNamespace>
   </PropertyGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(SupportPagesAndViews)' == 'True'">
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(SupportPagesAndViews)' != 'True'">
+    <PackageReference Include="Microsoft.AspNetCore.Components" Version="${MicrosoftAspNetCoreComponentsPackageVersion}" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Build" Version="${MicrosoftAspNetCoreComponentsBuildPackageVersion}" PrivateAssets="all" />
   </ItemGroup>
 
 </Project>
