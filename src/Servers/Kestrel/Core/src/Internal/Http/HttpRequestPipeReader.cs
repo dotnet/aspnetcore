@@ -25,26 +25,36 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public override void AdvanceTo(SequencePosition consumed)
         {
+            ValidateState();
+
             _body.AdvanceTo(consumed);
         }
 
         public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
         {
+            ValidateState();
+
             _body.AdvanceTo(consumed, examined);
         }
 
         public override void CancelPendingRead()
         {
+            ValidateState();
+
             _body.CancelPendingRead();
         }
 
         public override void Complete(Exception exception = null)
         {
+            ValidateState();
+
             _body.Complete(exception);
         }
 
         public override void OnWriterCompleted(Action<Exception, object> callback, object state)
         {
+            ValidateState();
+
             _body.OnWriterCompleted(callback, state);
         }
 
@@ -57,6 +67,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public override bool TryRead(out ReadResult result)
         {
+            ValidateState();
+
             return _body.TryRead(out result);
         }
 
@@ -91,7 +103,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void ValidateState(CancellationToken cancellationToken)
+        private void ValidateState(CancellationToken cancellationToken = default)
         {
             var state = _state;
             if (state == HttpStreamState.Open)

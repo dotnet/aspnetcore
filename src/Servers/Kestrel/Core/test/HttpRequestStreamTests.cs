@@ -111,8 +111,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var mockMessageBody = new Mock<MessageBody>(null, null);
             mockMessageBody.Setup(m => m.ReadAsync(CancellationToken.None)).Returns(new ValueTask<ReadResult>(new ReadResult(default, isCanceled: false, isCompleted: true)));
 
-            var stream = new HttpRequestStream(mockBodyControl.Object, new HttpRequestPipeReader());
-            stream.StartAcceptingReads(mockMessageBody.Object);
+            var pipeReader = new HttpRequestPipeReader();
+            var stream = new HttpRequestStream(mockBodyControl.Object, pipeReader);
+            pipeReader.StartAcceptingReads(mockMessageBody.Object);
 
             Assert.Equal(0, await stream.ReadAsync(new byte[1], 0, 1));
 
@@ -129,19 +130,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task AbortCausesReadToCancel()
         {
-            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), new HttpRequestPipeReader());
-            stream.StartAcceptingReads(null);
-            stream.Abort();
+            var pipeReader = new HttpRequestPipeReader();
+
+            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), pipeReader);
+            pipeReader.StartAcceptingReads(null);
+            pipeReader.Abort();
             await Assert.ThrowsAsync<TaskCanceledException>(() => stream.ReadAsync(new byte[1], 0, 1));
         }
 
         [Fact]
         public async Task AbortWithErrorCausesReadToCancel()
         {
-            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), new HttpRequestPipeReader());
-            stream.StartAcceptingReads(null);
+            var pipeReader = new HttpRequestPipeReader();
+
+            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), pipeReader);
+            pipeReader.StartAcceptingReads(null);
             var error = new Exception();
-            stream.Abort(error);
+            pipeReader.Abort(error);
             var exception = await Assert.ThrowsAsync<Exception>(() => stream.ReadAsync(new byte[1], 0, 1));
             Assert.Same(error, exception);
         }
@@ -149,9 +154,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task StopAcceptingReadsCausesReadToThrowObjectDisposedException()
         {
-            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), new HttpRequestPipeReader());
-            stream.StartAcceptingReads(null);
-            stream.StopAcceptingReads();
+            var pipeReader = new HttpRequestPipeReader();
+            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), pipeReader);
+            pipeReader.StartAcceptingReads(null);
+            pipeReader.StopAcceptingReads();
 
             // Validation for ReadAsync occurs in an async method in ReadOnlyPipeStream.
             await Assert.ThrowsAsync<ObjectDisposedException>(async () => { await stream.ReadAsync(new byte[1], 0, 1); });
@@ -160,19 +166,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task AbortCausesCopyToAsyncToCancel()
         {
-            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), new HttpRequestPipeReader());
-            stream.StartAcceptingReads(null);
-            stream.Abort();
+            var pipeReader = new HttpRequestPipeReader();
+            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), pipeReader);
+            pipeReader.StartAcceptingReads(null);
+            pipeReader.Abort();
             await Assert.ThrowsAsync<TaskCanceledException>(() => stream.CopyToAsync(Mock.Of<Stream>()));
         }
 
         [Fact]
         public async Task AbortWithErrorCausesCopyToAsyncToCancel()
         {
-            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), new HttpRequestPipeReader());
-            stream.StartAcceptingReads(null);
+            var pipeReader = new HttpRequestPipeReader();
+            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), pipeReader);
+            pipeReader.StartAcceptingReads(null);
             var error = new Exception();
-            stream.Abort(error);
+            pipeReader.Abort(error);
             var exception = await Assert.ThrowsAsync<Exception>(() => stream.CopyToAsync(Mock.Of<Stream>()));
             Assert.Same(error, exception);
         }
@@ -180,9 +188,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task StopAcceptingReadsCausesCopyToAsyncToThrowObjectDisposedException()
         {
-            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), new HttpRequestPipeReader());
-            stream.StartAcceptingReads(null);
-            stream.StopAcceptingReads();
+            var pipeReader = new HttpRequestPipeReader();
+            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), pipeReader);
+            pipeReader.StartAcceptingReads(null);
+            pipeReader.StopAcceptingReads();
             // Validation for CopyToAsync occurs in an async method in ReadOnlyPipeStream. 
             await Assert.ThrowsAsync<ObjectDisposedException>(async () => { await stream.CopyToAsync(Mock.Of<Stream>()); });
         }
@@ -190,16 +199,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void NullDestinationCausesCopyToAsyncToThrowArgumentNullException()
         {
-            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), new HttpRequestPipeReader());
-            stream.StartAcceptingReads(null);
+            var pipeReader = new HttpRequestPipeReader();
+            var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), pipeReader);
+            pipeReader.StartAcceptingReads(null);
             Assert.Throws<ArgumentNullException>(() => { stream.CopyToAsync(null); });
         }
 
         [Fact]
         public void ZeroBufferSizeCausesCopyToAsyncToThrowArgumentException()
         {
+            var pipeReader = new HttpRequestPipeReader();
             var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), new HttpRequestPipeReader());
-            stream.StartAcceptingReads(null);
+            pipeReader.StartAcceptingReads(null);
             // This is technically a breaking change, to throw an ArgumentoutOfRangeException rather than an ArgumentException
             Assert.Throws<ArgumentOutOfRangeException>(() => { stream.CopyToAsync(Mock.Of<Stream>(), 0); });
         }

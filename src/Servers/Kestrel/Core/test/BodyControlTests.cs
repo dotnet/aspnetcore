@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public async Task BodyControlThrowAfterAbort()
         {
             var bodyControl = new BodyControl(Mock.Of<IHttpBodyControlFeature>(), Mock.Of<IHttpResponseControl>());
-            var (request, response, _, _) = bodyControl.Start(new MockMessageBody());
+            var (request, response, requestPipe, responsePipe) = bodyControl.Start(new MockMessageBody());
 
             var ex = new Exception("My error");
             bodyControl.Abort(ex);
@@ -25,13 +25,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await response.WriteAsync(new byte[1], 0, 1);
             Assert.Same(ex,
                 await Assert.ThrowsAsync<Exception>(() => request.ReadAsync(new byte[1], 0, 1)));
+            Assert.Same(ex,
+                await Assert.ThrowsAsync<Exception>(async () => await requestPipe.ReadAsync()));
         }
 
         [Fact]
-        public async Task StreamsThrowOnAbortAfterUpgrade()
+        public async Task BodyControlThrowOnAbortAfterUpgrade()
         {
             var bodyControl = new BodyControl(Mock.Of<IHttpBodyControlFeature>(), Mock.Of<IHttpResponseControl>());
-            var (request, response, _, _) = bodyControl.Start(new MockMessageBody(upgradeable: true));
+            var (request, response, requestPipe, responsePipe) = bodyControl.Start(new MockMessageBody(upgradeable: true));
 
             var upgrade = bodyControl.Upgrade();
             var ex = new Exception("My error");
@@ -46,15 +48,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Same(ex,
                 await Assert.ThrowsAsync<Exception>(() => upgrade.ReadAsync(new byte[1], 0, 1)));
 
+            Assert.Same(ex,
+                await Assert.ThrowsAsync<Exception>(async () => await requestPipe.ReadAsync()));
+
             await upgrade.WriteAsync(new byte[1], 0, 1);
         }
 
         [Fact]
-        public async Task StreamsThrowOnUpgradeAfterAbort()
+        public async Task BodyControlThrowOnUpgradeAfterAbort()
         {
             var bodyControl = new BodyControl(Mock.Of<IHttpBodyControlFeature>(), Mock.Of<IHttpResponseControl>());
 
-            var (request, response, _, _) = bodyControl.Start(new MockMessageBody(upgradeable: true));
+            var (request, response, requestPipe, responsePipe) = bodyControl.Start(new MockMessageBody(upgradeable: true));
             var ex = new Exception("My error");
             bodyControl.Abort(ex);
 
@@ -68,9 +73,73 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Assert.Same(ex,
                 await Assert.ThrowsAsync<Exception>(() => upgrade.ReadAsync(new byte[1], 0, 1)));
+            Assert.Same(ex,
+                await Assert.ThrowsAsync<Exception>(async () => await requestPipe.ReadAsync()));
 
             await upgrade.WriteAsync(new byte[1], 0, 1);
         }
+
+        [Fact]
+        public async Task RequestPipeMethodsThrowAfterAbort()
+        {
+            var bodyControl = new BodyControl(Mock.Of<IHttpBodyControlFeature>(), Mock.Of<IHttpResponseControl>());
+
+            var (_, response, requestPipe, responsePipe) = bodyControl.Start(new MockMessageBody(upgradeable: true));
+            var ex = new Exception("My error");
+            bodyControl.Abort(ex);
+
+            await response.WriteAsync(new byte[1], 0, 1);
+            Assert.Same(ex,
+                Assert.Throws<Exception>(() => requestPipe.AdvanceTo(new SequencePosition())));
+            Assert.Same(ex,
+                Assert.Throws<Exception>(() => requestPipe.AdvanceTo(new SequencePosition(), new SequencePosition())));
+            Assert.Same(ex,
+                Assert.Throws<Exception>(() => requestPipe.CancelPendingRead()));
+            Assert.Same(ex,
+                Assert.Throws<Exception>(() => requestPipe.TryRead(out var res)));
+            Assert.Same(ex,
+                Assert.Throws<Exception>(() => requestPipe.Complete()));
+            Assert.Same(ex,
+                Assert.Throws<Exception>(() => requestPipe.OnWriterCompleted(null, null)));
+        }
+
+        [Fact]
+        public async Task RequestPipeThrowsObjectDisposedExceptionAfterStop()
+        {
+            var bodyControl = new BodyControl(Mock.Of<IHttpBodyControlFeature>(), Mock.Of<IHttpResponseControl>());
+
+            var (_, response, requestPipe, responsePipe) = bodyControl.Start(new MockMessageBody());
+
+            bodyControl.Stop();
+
+            Assert.Throws<ObjectDisposedException>(() => requestPipe.AdvanceTo(new SequencePosition()));
+            Assert.Throws<ObjectDisposedException>(() => requestPipe.AdvanceTo(new SequencePosition(), new SequencePosition()));
+            Assert.Throws<ObjectDisposedException>(() => requestPipe.CancelPendingRead());
+            Assert.Throws<ObjectDisposedException>(() => requestPipe.TryRead(out var res));
+            Assert.Throws<ObjectDisposedException>(() => requestPipe.Complete());
+            Assert.Throws<ObjectDisposedException>(() => requestPipe.OnWriterCompleted(null, null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(async () => await requestPipe.ReadAsync());
+        }
+
+        [Fact]
+        public async Task ResponsePipeThrowsObjectDisposedExceptionAfterStop()
+        {
+            var bodyControl = new BodyControl(Mock.Of<IHttpBodyControlFeature>(), Mock.Of<IHttpResponseControl>());
+
+            var (_, response, requestPipe, responsePipe) = bodyControl.Start(new MockMessageBody());
+
+            bodyControl.Stop();
+
+            Assert.Throws<ObjectDisposedException>(() => responsePipe.Advance(1));
+            Assert.Throws<ObjectDisposedException>(() => responsePipe.CancelPendingFlush());
+            Assert.Throws<ObjectDisposedException>(() => responsePipe.GetMemory());
+            Assert.Throws<ObjectDisposedException>(() => responsePipe.GetSpan());
+            Assert.Throws<ObjectDisposedException>(() => responsePipe.Complete());
+            Assert.Throws<ObjectDisposedException>(() => responsePipe.OnReaderCompleted(null, null));
+            await Assert.ThrowsAsync<ObjectDisposedException>(async () => await responsePipe.WriteAsync(new Memory<byte>()));
+            await Assert.ThrowsAsync<ObjectDisposedException>(async () => await responsePipe.FlushAsync());
+        }
+
 
         private class MockMessageBody : MessageBody
         {

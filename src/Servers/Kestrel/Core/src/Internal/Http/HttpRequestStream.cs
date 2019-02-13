@@ -43,21 +43,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return ReadAsync(buffer, offset, count).GetAwaiter().GetResult();
         }
 
-        public void StartAcceptingReads(MessageBody body)
-        {
-            _pipeReader.StartAcceptingReads(body);
-        }
-
-        public void StopAcceptingReads()
-        {
-            _pipeReader.StopAcceptingReads();
-        }
-
-        public void Abort(Exception exception = null)
-        {
-            _pipeReader.Abort(exception);
-        }
-
         private ValueTask<int> ReadAsyncInternal(Memory<byte> buffer, CancellationToken cancellationToken)
         {
             try
