@@ -8,8 +8,8 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <!-- Required to make NuGet happy -->
-    <TargetFramework>net461</TargetFramework>
+    <TargetFrameworkMoniker>Native,Version=v0.0</TargetFrameworkMoniker>
+
     <MSBuildProjectExtensionsPath>$(BaseIntermediateOutputPath)</MSBuildProjectExtensionsPath>
     <MSBuildProjectExtensionsPath Condition="'$(MSBuildProjectExtensionsPath)' == ''">$(MSBuildProjectDir)\obj\</MSBuildProjectExtensionsPath>
     <!-- IsRunningFromVisualStudio may be true even when running msbuild.exe from command line. This generally means that MSBUild is Visual Studio installation and therefore we need to find NuGet.targets in a different location.  -->

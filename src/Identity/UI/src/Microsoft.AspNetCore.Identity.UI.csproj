@@ -39,24 +39,6 @@
   </ItemGroup>
 
   <ItemGroup>
-
-    <RazorAssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(BuildNumber)' != ''">
-      <_Parameter1>BuildNumber</_Parameter1>
-      <_Parameter2>$(BuildNumber)</_Parameter2>
-    </RazorAssemblyAttribute>
-
-    <RazorTargetAssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(BuildNumber)' != ''">
-      <_Parameter1>BuildNumber</_Parameter1>
-      <_Parameter2>$(BuildNumber)</_Parameter2>
-    </RazorTargetAssemblyAttribute>
-  </ItemGroup>
-
-  <ItemGroup>
-    <RazorCompile Include="$(GeneratedCommitHashAttributeFile)" />
-    <RazorCompile Include="$(GeneratedInternalAspNetCoreAttributeFile)" />
-  </ItemGroup>
-
-  <ItemGroup>
     <UIFrameworkVersionMoniker Include="V3" />
     <UIFrameworkVersionMoniker Include="V4" />
   </ItemGroup>

@@ -174,9 +174,9 @@ This targets file should only be imported by .shfxproj files.
   </Target>
 
   <!-- Generates the .version file in the shared framework -->
-  <Target Name="GenerateSharedFxVersionsFile">
+  <Target Name="GenerateSharedFxVersionsFile" DependsOnTargets="InitializeSourceControlInformation">
     <ItemGroup>
-      <VersionLines Include="$(RepositoryCommit)" />
+      <VersionLines Include="$(SourceRevisionId)" />
       <VersionLines Include="$(PackageVersion)" />
     </ItemGroup>
 
@@ -369,7 +369,7 @@ This targets file should only be imported by .shfxproj files.
         projectUrl=$(PackageProjectUrl);
         iconUrl=$(PackageIconUrl);
         repositoryUrl=$(RepositoryUrl);
-        repositoryCommit=$(RepositoryCommit);
+        repositoryCommit=$(SourceRevisionId);
         copyright=$(Copyright);
         targetFramework=$(TargetFramework);
         symbolsAssets=$([MSBuild]::NormalizeDirectory($(SymbolsOutputPath)));
