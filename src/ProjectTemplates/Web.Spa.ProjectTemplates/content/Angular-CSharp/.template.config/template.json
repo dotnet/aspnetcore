@@ -52,19 +52,19 @@
         {
           "condition": "(IndividualLocalAuth && UseLocalDB)",
           "rename": {
-            "Data/SqlServer/": "Data/Migrations/"
+            "Data/SQLServer/": "Data/Migrations/"
           },
           "exclude": [
-            "Data/SqlLite/**"
+            "Data/SQLite/**"
           ]
         },
         {
           "condition": "(IndividualLocalAuth && !UseLocalDB)",
           "rename": {
-            "Data/SqlLite/": "Data/Migrations/"
+            "Data/SQLite/": "Data/Migrations/"
           },
           "exclude": [
-            "Data/SqlServer/**"
+            "Data/SQLServer/**"
           ]
         }
       ]
