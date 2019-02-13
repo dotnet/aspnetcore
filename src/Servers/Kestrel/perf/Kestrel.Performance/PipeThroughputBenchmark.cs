@@ -7,7 +7,6 @@ using System.IO.Pipelines;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
-using BenchmarkDotNet.Order;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
@@ -15,6 +14,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
     [GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByMethod)]
     public class PipeThroughputBenchmark
     {
+        private const int InnerLoopCount = 512;
+
         private PipeReader _reader;
         private PipeWriter _writer;
         private MemoryPool<byte> _memoryPool;
@@ -42,13 +43,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             _writer = pipe.Writer;
         }
 
-        [Params(128, 4096, 8192)]
+        [Params(128, 4096)]
         public int Length { get; set; }
 
-        [Params(2, 4, 16)]
+        [Params(1, 2, 4, 16)]
         public int Chunks { get; set; }
 
-        [Benchmark]
+        [Benchmark(OperationsPerInvoke = InnerLoopCount)]
         public Task Parse_ParallelAsync()
         {
             // Seperate implementation to ensure tiered compilation can compile while "in-flow"
@@ -61,18 +62,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             {
                 var chunks = Chunks;
                 var chunkLength = Length / chunks;
-                for (var c = 0; c < chunks; c++)
-                {
-                    _writer.GetMemory(chunkLength);
-                    _writer.Advance(chunkLength);
-                }
 
-                await _writer.FlushAsync();
+                for (int i = 0; i < InnerLoopCount; i++)
+                {
+                    for (var c = 0; c < chunks; c++)
+                    {
+                        _writer.GetMemory(chunkLength);
+                        _writer.Advance(chunkLength);
+                    }
+
+                    await _writer.FlushAsync();
+                }
             });
 
             var reading = Task.Run(async () =>
             {
-                long remaining = Length;
+                long remaining = Length * InnerLoopCount;
                 while (remaining != 0)
                 {
                     var result = await _reader.ReadAsync();
@@ -84,7 +89,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             return Task.WhenAll(writing, reading);
         }
 
-        [Benchmark]
+        [Benchmark(OperationsPerInvoke = InnerLoopCount)]
         public Task Parse_SequentialAsync()
         {
             // Seperate implementation to ensure tiered compilation can compile while "in-flow"
@@ -96,16 +101,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             var chunks = Chunks;
             var chunkLength = Length / chunks;
 
-            for (var c = 0; c < chunks; c++)
+            for (int i = 0; i < InnerLoopCount; i++)
             {
-                _writer.GetMemory(chunkLength);
-                _writer.Advance(chunkLength);
+                for (var c = 0; c < chunks; c++)
+                {
+                    _writer.GetMemory(chunkLength);
+                    _writer.Advance(chunkLength);
+                }
+
+                await _writer.FlushAsync();
+
+                var result = await _reader.ReadAsync();
+                _reader.AdvanceTo(result.Buffer.End, result.Buffer.End);
             }
-
-            await _writer.FlushAsync();
-
-            var result = await _reader.ReadAsync();
-            _reader.AdvanceTo(result.Buffer.End, result.Buffer.End);
         }
 
         [GlobalCleanup]
