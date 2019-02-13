@@ -176,7 +176,10 @@ namespace Microsoft.AspNetCore.Http.Features
                     {
                         // Parse the content disposition here and pass it further to avoid reparsings
                         ContentDispositionHeaderValue contentDisposition;
-                        ContentDispositionHeaderValue.TryParse(section.ContentDisposition, out contentDisposition);
+                        if (!ContentDispositionHeaderValue.TryParse (section.ContentDisposition, out contentDisposition))
+                        {
+                            throw new InvalidDataException ("Form section has invalid Content-Disposition value.");
+                        }
 
                         if (contentDisposition.IsFileDisposition())
                         {
