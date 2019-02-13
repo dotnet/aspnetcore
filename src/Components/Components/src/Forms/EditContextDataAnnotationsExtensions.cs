@@ -48,6 +48,8 @@ namespace Microsoft.AspNetCore.Components.Forms
                     messages.Add(editContext.Field(memberName), validationResult.ErrorMessage);
                 }
             }
+
+            editContext.NotifyValidationStateChanged();
         }
     }
 }

@@ -71,6 +71,32 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
             Assert.True(editContext.Validate());
         }
 
+        [Fact]
+        public void NotifiesValidationStateChangedAfterObjectValidation()
+        {
+            // Arrange
+            var model = new TestModel { IntFrom1To100 = 101 };
+            var editContext = new EditContext(model).AddDataAnnotationsValidation();
+            var onValidationStateChangedCount = 0;
+            editContext.OnValidationStateChanged += (sender, eventArgs) => onValidationStateChangedCount++;
+
+            // Act/Assert 1: Notifies after invalid results
+            Assert.False(editContext.Validate());
+            Assert.Equal(1, onValidationStateChangedCount);
+
+            // Act/Assert 2: Notifies after valid results
+            model.RequiredString = "Hello";
+            model.IntFrom1To100 = 100;
+            Assert.True(editContext.Validate());
+            Assert.Equal(2, onValidationStateChangedCount);
+
+            // Act/Assert 3: Notifies even if results haven't changed. Later we might change the
+            // logic to track the previous results and compare with the new ones, but that's just
+            // an optimization. It's legal to notify regardless.
+            Assert.True(editContext.Validate());
+            Assert.Equal(3, onValidationStateChangedCount);
+        }
+
         class TestModel
         {
             [Required] public string RequiredString { get; set; }

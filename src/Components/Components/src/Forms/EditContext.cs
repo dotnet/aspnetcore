@@ -63,6 +63,11 @@ namespace Microsoft.AspNetCore.Components.Forms
         public event EventHandler OnValidationRequested;
 
         /// <summary>
+        /// An event that is raised when validation state has changed.
+        /// </summary>
+        public event EventHandler OnValidationStateChanged;
+
+        /// <summary>
         /// Supplies a <see cref="FieldIdentifier"/> corresponding to a specified field name
         /// on this <see cref="EditContext"/>'s <see cref="Model"/>.
         /// </summary>
@@ -84,6 +89,14 @@ namespace Microsoft.AspNetCore.Components.Forms
         {
             GetFieldState(fieldIdentifier, ensureExists: true).IsModified = true;
             OnFieldChanged?.Invoke(this, fieldIdentifier);
+        }
+
+        /// <summary>
+        /// Signals that some aspect of validation state has changed.
+        /// </summary>
+        public void NotifyValidationStateChanged()
+        {
+            OnValidationStateChanged?.Invoke(this, null);
         }
 
         /// <summary>
