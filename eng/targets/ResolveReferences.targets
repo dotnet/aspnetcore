@@ -84,14 +84,16 @@
     <!--
       Turn Reference items into a ProjectReference when UseProjectReferences is true.
       Order matters. This comes before package resolution because projects should be used when possible instead of packages.
+
+      ProjectReferenceByAssemblyName can be used by project targets to determine which references were resolved to projects.
     -->
-    <_ProjectReferenceByAssemblyName Condition="'$(UseProjectReferences)' == 'true'"
+    <ProjectReferenceByAssemblyName Condition="'$(UseProjectReferences)' == 'true'"
       Include="@(ProjectReferenceProvider)"
       Exclude="@(_UnusedProjectReferenceProvider)" />
 
-    <ProjectReference Include="@(_ProjectReferenceByAssemblyName->'%(ProjectPath)')" />
+    <ProjectReference Include="@(ProjectReferenceByAssemblyName->'%(ProjectPath)')" />
 
-    <Reference Remove="@(_ProjectReferenceByAssemblyName)" />
+    <Reference Remove="@(ProjectReferenceByAssemblyName)" />
 
     <!-- Use _ReferenceTemp to workaround issues in Visual Studio which causes a conflict between Reference, packages, and projects. -->
     <_ReferenceTemp Include="@(Reference)" />
@@ -129,7 +131,7 @@
       </Reference>
 
       <!-- Identify if any references were present in the last release of this package, but have been removed. -->
-      <UnusedBaselinePackageReference Include="@(BaselinePackageReference)" Exclude="@(Reference);@(_ProjectReferenceByAssemblyName);@(PackageReference)" />
+      <UnusedBaselinePackageReference Include="@(BaselinePackageReference)" Exclude="@(Reference);@(ProjectReferenceByAssemblyName);@(PackageReference)" />
 
       <!--
         MSBuild does not provide a way to join on matching identities in a Condition,

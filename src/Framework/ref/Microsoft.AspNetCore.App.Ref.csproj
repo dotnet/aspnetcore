@@ -35,6 +35,9 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
     <!-- This project should not be referenced via the `<Reference>` impementation. -->
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
+
+    <PackageConflictManifestFileName>Microsoft.AspNetCore.App.PackageOverrides.txt</PackageConflictManifestFileName>
+    <PackageConflictManifestPackagePath>build/$(TargetFramework)/</PackageConflictManifestPackagePath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -47,6 +50,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   <PropertyGroup>
     <BuildDependsOn>
       $(BuildDependsOn);
+      GeneratePackageConflictManifest;
       _ResolveTargetingPackContent;
       _BatchCopyToOutputDirectory;
     </BuildDependsOn>
@@ -83,7 +87,23 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       <RefPackContent Include="@(AspNetCoreReferenceDocXml)" />
 
       <_PackageFiles Include="@(RefPackContent)" PackagePath="$(RefAssemblyPackagePath)" />
+      <_PackageFiles Include="$(TargetDir)$(PackageConflictManifestFileName)" PackagePath="$(PackageConflictManifestPackagePath)" />
     </ItemGroup>
+  </Target>
+
+  <Target Name="GeneratePackageConflictManifest"
+          DependsOnTargets="ResolveReferences"
+          Inputs="$(MSBuildAllProjects)"
+          Outputs="$(TargetDir)$(PackageConflictManifestFileName)">
+    <ItemGroup>
+      <_AspNetCoreAppPackageOverrides Include="@(PackageReference->'%(Identity)|%(Version)')" Condition=" '%(PackageReference.PrivateAssets)' != 'All' " />
+      <_AspNetCoreAppPackageOverrides Include="@(ProjectReferenceByAssemblyName->'%(Identity)|$(SharedFxVersion)')" />
+    </ItemGroup>
+
+    <WriteLinesToFile
+        Lines="@(_AspNetCoreAppPackageOverrides)"
+        File="$(TargetDir)$(PackageConflictManifestFileName)"
+        Overwrite="true" />
   </Target>
 
   <!-- Written to take advantage of target batching in MSBuild. -->
