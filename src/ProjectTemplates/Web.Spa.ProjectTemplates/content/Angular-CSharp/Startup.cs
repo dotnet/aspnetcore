@@ -23,6 +23,27 @@ namespace Company.WebApplication1
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddDbContext<ApplicationDbContext>(
+                o => o.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
+
+            services.AddDefaultIdentity<ApplicationUser>()
+                .AddDefaultUI(UIFramework.Bootstrap4)
+                .AddEntityFrameworkStores<ApplicationDbContext>();
+
+            services.AddIdentityServer()
+                .AddApiAuthorization<ApplicationUser, ApplicationDbContext>(
+                    ao => ao.Clients.AddIdentityServerSPA(
+                        "angular",
+                        spa =>
+                        {
+                            spa
+                            .WithRedirectUri("/authentication/login-callback")
+                            .WithLogoutRedirectUri("/authentication/logout-callback");
+                        }));
+
+            services.AddAuthentication()
+                .AddIdentityServerJwt();
+
             services.AddMvc()
                 .AddNewtonsoftJson();
 
