@@ -210,6 +210,9 @@ namespace Microsoft.AspNetCore.Components
                 catch when (task.IsCanceled)
                 {
                     // Ignore exceptions from task cancelletions.
+                    // Awaiting a canceled task may produce either an OperationCanceledException (if produced as a consequence of 
+                    // CancellationToken.ThrowIfCancellationRequested()) or a TaskCanceledException (produced as a consequence of awaiting Task.FromCanceled). 
+                    // It's much easier to check the state of the Task (i.e. Task.IsCanceled) rather than catch two distinct exceptions.
                 }
 
                 // Don't call StateHasChanged here. CallOnParametersSetAsync should handle that for us.
