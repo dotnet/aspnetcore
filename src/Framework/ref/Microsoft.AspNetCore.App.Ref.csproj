@@ -96,8 +96,9 @@ This package is an internal implementation of the .NET Core SDK and is not meant
           Inputs="$(MSBuildAllProjects)"
           Outputs="$(TargetDir)$(PackageConflictManifestFileName)">
     <ItemGroup>
-      <_AspNetCoreAppPackageOverrides Include="@(PackageReference->'%(Identity)|%(Version)')" Condition=" '%(PackageReference.PrivateAssets)' != 'All' " />
       <_AspNetCoreAppPackageOverrides Include="@(ProjectReferenceByAssemblyName->'%(Identity)|$(SharedFxVersion)')" />
+      <_AspNetCoreAppPackageOverrides Include="@(PackageReference->'%(Identity)|%(Version)')" Condition=" '%(PackageReference.PrivateAssets)' != 'All' " />
+      <_AspNetCoreAppPackageOverrides Include="@(_TransitiveExternalAspNetCoreAppReference->'%(Identity)|%(Version)')" />
     </ItemGroup>
 
     <WriteLinesToFile
