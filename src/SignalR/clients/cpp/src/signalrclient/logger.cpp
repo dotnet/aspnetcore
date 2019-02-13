@@ -8,11 +8,11 @@
 
 namespace signalr
 {
-    logger::logger(const std::shared_ptr<log_writer>& log_writer, trace_level trace_level)
+    logger::logger(const std::shared_ptr<log_writer>& log_writer, trace_level trace_level) noexcept
         : m_log_writer(log_writer), m_trace_level(trace_level)
     { }
 
-    void logger::log(trace_level level, const utility::string_t& entry)
+    void logger::log(trace_level level, const utility::string_t& entry) const
     {
         if ((level & m_trace_level) != trace_level::none)
         {

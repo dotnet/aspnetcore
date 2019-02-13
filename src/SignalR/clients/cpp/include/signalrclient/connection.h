@@ -41,7 +41,7 @@ namespace signalr
 
         SIGNALRCLIENT_API pplx::task<void> __cdecl stop();
 
-        SIGNALRCLIENT_API connection_state __cdecl get_connection_state() const;
+        SIGNALRCLIENT_API connection_state __cdecl get_connection_state() const noexcept;
         SIGNALRCLIENT_API utility::string_t __cdecl get_connection_id() const;
 
     private:

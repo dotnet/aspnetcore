@@ -46,7 +46,7 @@ namespace signalr
         return m_pImpl->stop();
     }
 
-    connection_state connection::get_connection_state() const
+    connection_state connection::get_connection_state() const noexcept
     {
         return m_pImpl->get_connection_state();
     }

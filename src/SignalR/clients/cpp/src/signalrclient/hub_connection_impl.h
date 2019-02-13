@@ -39,7 +39,7 @@ namespace signalr
         pplx::task<void> start();
         pplx::task<void> stop();
 
-        connection_state get_connection_state() const;
+        connection_state get_connection_state() const noexcept;
         utility::string_t get_connection_id() const;
 
         void set_client_config(const signalr_client_config& config);

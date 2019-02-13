@@ -64,7 +64,7 @@ TEST(connection_impl_start, connection_state_is_connecting_when_connection_is_be
 
     auto connection = create_connection(websocket_client, writer, trace_level::errors);
 
-    connection->start()
+    auto startTask = connection->start()
         // this test is not set up to connect successfully so we have to observe exceptions otherwise
         // other tests may fail due to an unobserved exception from the outstanding start task
         .then([](pplx::task<void> start_task)
@@ -78,6 +78,7 @@ TEST(connection_impl_start, connection_state_is_connecting_when_connection_is_be
         });
 
     ASSERT_EQ(connection->get_connection_state(), connection_state::connecting);
+    startTask.get();
 }
 
 TEST(connection_impl_start, connection_state_is_connected_when_connection_established_succesfully)

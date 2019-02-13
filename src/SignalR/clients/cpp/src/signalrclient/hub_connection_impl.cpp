@@ -45,7 +45,7 @@ namespace signalr
         : m_connection(connection_impl::create(url, query_string, trace_level, log_writer,
         std::move(web_request_factory), std::move(transport_factory))),m_logger(log_writer, trace_level),
         m_callback_manager(json::value::parse(_XPLATSTR("{ \"error\" : \"connection went out of scope before invocation result was received\"}"))),
-        m_disconnected([]() {})
+        m_disconnected([]() noexcept {}), m_handshakeReceived(false)
     { }
 
     void hub_connection_impl::initialize()
@@ -343,7 +343,7 @@ namespace signalr
             });
     }
 
-    connection_state hub_connection_impl::get_connection_state() const
+    connection_state hub_connection_impl::get_connection_state() const noexcept
     {
         return m_connection->get_connection_state();
     }

@@ -321,7 +321,7 @@ TEST(send, creates_correct_payload)
             if (handshakeReceived)
             {
                 payload = m;
-                return pplx::task_from_exception<void>(std::runtime_error("error"));
+                return pplx::task_from_result();
             }
             handshakeReceived = true;
             return pplx::task_from_result();
