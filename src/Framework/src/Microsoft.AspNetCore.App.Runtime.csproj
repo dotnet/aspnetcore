@@ -95,12 +95,16 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="@(Dependency);@(ExternalDependency)" />
+    <!-- Note: do not add _TransitiveExternalAspNetCoreAppReference to this list. This is intentionally not listed as a direct package reference. -->
+    <Reference Include="@(AspNetCoreAppReference);@(AspNetCoreAppReferenceAndPackage);@(ExternalAspNetCoreAppReference)">
+      <IncludeAssets>Runtime;Native</IncludeAssets>
+    </Reference>
+
     <ProjectReference Condition="'$(BuildIisNativeProjects)' == 'true' AND '$(BuildNative)' != 'false'" Include="$(RepositoryRoot)src\Servers\IIS\AspNetCoreModuleV2\InProcessRequestHandler\InProcessRequestHandler.vcxproj">
       <SetPlatform>Platform=$(TargetArchitecture)</SetPlatform>
       <SetPlatform Condition="'$(TargetArchitecture)' == 'x86'">Platform=Win32</SetPlatform>
-      <!-- This instructs the ProjectRef protocol to collect symbols as well as built output -->
-      <Targets>Build;BuiltProjectOutputGroup;DebugSymbolsProjectOutputGroup</Targets>
+      <!-- Suppress NuGet compatibility checks. We compensate for flowing .dll/.pdb files with the _ResolveCopyLocalNativeReference target. -->
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <!-- Optimization. Native projects don't have a .NET TargetFramework -->
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
       <UndefineProperties>TargetFramework</UndefineProperties>
@@ -173,6 +177,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   <Target Name="_ResolveCopyLocalNativeReference">
     <ItemGroup>
       <ReferenceCopyLocalPaths Include="@(_ResolvedNativeProjectReferencePaths)" IsNativeImage="true" />
+      <ReferenceCopyLocalPaths Include="@(_ResolvedNativeProjectReferencePaths->'%(RootDir)%(Directory)%(FileName).pdb')" IsNativeImage="true" />
     </ItemGroup>
   </Target>
 
@@ -215,7 +220,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
           DependsOnTargets="ResolveReferences">
     <ItemGroup>
       <!-- Native files are included in _PackageFile instead because they belong in a separate package folder.r -->
-      <Content Include="@(ReferenceCopyLocalPaths)" PackagePath="$(NativeAssetsPackagePath)" Condition=" '%(ReferenceCopyLocalPaths.IsNativeImage)' == 'true' " />
+      <Content Include="@(ReferenceCopyLocalPaths)" PackagePath="$(NativeAssetsPackagePath)" Condition=" '%(ReferenceCopyLocalPaths.IsNativeImage)' == 'true' AND '%(ReferenceCopyLocalPaths.Extension)' != '.pdb' " />
     </ItemGroup>
   </Target>
 
