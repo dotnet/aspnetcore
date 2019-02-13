@@ -1,0 +1,58 @@
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+
+<EditForm Model="@this" OnValidSubmit="@HandleValidSubmitAsync" OnInvalidSubmit="@HandleInvalidSubmitAsync">
+    <DataAnnotationsValidator />
+
+    <p>
+        User name: <input bind="@UserName" />
+    </p>
+    <p>
+        Accept terms: <input type="checkbox" bind="@AcceptsTerms" />
+    </p>
+
+    <button type="submit">Submit</button>
+
+    @* Could use <ValidationSummary /> instead, but this shows it can be done manually *@
+    <ul class="validation-errors">
+        @foreach (var message in context.GetValidationMessages())
+        {
+            <li>@message</li>
+        }
+    </ul>
+
+</EditForm>
+
+@if (lastCallback != null)
+{
+    <span id="last-callback">@lastCallback</span>
+}
+
+@functions {
+    string lastCallback;
+
+    [Required]
+    public string UserName { get; set; }
+
+    [Required]
+    [Range(typeof(bool), "true", "true", ErrorMessage = "You must accept the terms")]
+    public bool AcceptsTerms { get; set; }
+
+    Task HandleValidSubmitAsync(EditContext editContext)
+    {
+        lastCallback = "OnValidSubmit";
+
+        StateHasChanged(); // This is only needed as a temporary workaround to the event routing issue
+
+        return Task.CompletedTask;
+    }
+
+    Task HandleInvalidSubmitAsync(EditContext editContext)
+    {
+        lastCallback = "OnInvalidSubmit";
+
+        StateHasChanged(); // This is only needed as a temporary workaround to the event routing issue
+
+        return Task.CompletedTask;
+    }
+}
