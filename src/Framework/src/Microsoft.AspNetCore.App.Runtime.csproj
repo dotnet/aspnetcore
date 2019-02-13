@@ -202,7 +202,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
   <!-- This target resolves files into the BuiltProjectOutputGroupOutput which NuGet uses to generate the package files. -->
   <Target Name="_ResolveRuntimePackBuildOutput"
-          DependsOnTargets="ResolveReferences">
+          DependsOnTargets="ResolveReferences;Crossgen">
     <ItemGroup>
       <BuiltProjectOutputGroupOutput Include="$(ProjectDepsFilePath)" />
       <BuiltProjectOutputGroupOutput Include="@(ReferenceCopyLocalPaths)" Condition=" '%(ReferenceCopyLocalPaths.IsNativeImage)' != 'true' " />
