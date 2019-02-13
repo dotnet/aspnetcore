@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             try
             {
                 // TODO why await here.
-                return await _pipeReader.ReadAsyncForStream(buffer, cancellationToken);
+                return await _pipeReader.ReadAsync(buffer, cancellationToken);
             }
             catch (ConnectionAbortedException ex)
             {
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public override Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
         {
-            return _pipeReader.CopyToAsync(destination, bufferSize, cancellationToken);
+            return _pipeReader.CopyToStreamAsync(destination, bufferSize, cancellationToken);
         }
     }
 }

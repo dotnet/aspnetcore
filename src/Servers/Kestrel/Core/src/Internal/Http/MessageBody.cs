@@ -45,11 +45,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected IKestrelTrace Log => _context.ServiceContext.Log;
 
-        //  Make these methods pipe-like
-
         public virtual void AdvanceTo(SequencePosition consumed)
         {
-            _context.RequestBodyPipe.Reader.AdvanceTo(consumed);
+            AdvanceTo(consumed, consumed);
         }
 
         public virtual void AdvanceTo(SequencePosition consumed, SequencePosition examined)
@@ -67,6 +65,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public virtual void OnWriterCompleted(Action<Exception, object> callback, object state)
         {
             _context.RequestBodyPipe.Reader.OnWriterCompleted(callback, state);
+        }
+
+        public virtual void Complete(Exception exception)
+        {
+            _context.RequestBodyPipe.Reader.Complete(exception);
         }
 
         public virtual void CancelPendingRead()
@@ -329,11 +332,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             public override bool IsEmpty => true;
 
-            public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default(CancellationToken)) => new ValueTask<int>(0);
-
             public override ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default(CancellationToken)) => new ValueTask<ReadResult>(new ReadResult(default, isCanceled: false, isCompleted: true));
-
-            public override Task CopyToAsync(Stream destination, CancellationToken cancellationToken = default(CancellationToken)) => Task.CompletedTask;
 
             public override Task ConsumeAsync() => Task.CompletedTask;
 
@@ -350,6 +349,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             public override void OnWriterCompleted(Action<Exception, object> callback, object state) { }
+
+            public override void Complete(Exception ex) { }
 
             public override void CancelPendingRead() { }
         }

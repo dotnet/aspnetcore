@@ -40,8 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public override void Complete(Exception exception = null)
         {
-            // TODO going to let this noop for now, I think we can support it but avoiding for now.
-            //throw new NotImplementedException();
+            _body.Complete(exception);
         }
 
         public override void OnWriterCompleted(Action<Exception, object> callback, object state)
@@ -58,8 +57,47 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public override bool TryRead(out ReadResult result)
         {
-            // TODO validate state
             return _body.TryRead(out result);
+        }
+
+        // Leaving stream APIs in HttpRequestPipeReader
+        // Upgrade overrides stream.ReadAsync and CopyToAsync to directly access the connection
+        // Also want to keep validation in the same place (only have HttpRequestPipeReader access the MessageBody).
+
+        // TODO we can probably remove ForUpgrade.ReadAsync/CopyToAsync and use the ReadOnlyPipeStream for everything.
+        public ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken)
+        {
+            ValidateState(cancellationToken);
+
+            return _body.ReadAsync(buffer, cancellationToken);
+        }
+
+        public Task CopyToStreamAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
+        {
+            if (destination == null)
+            {
+                throw new ArgumentNullException(nameof(destination));
+            }
+            if (bufferSize <= 0)
+            {
+                throw new ArgumentException(CoreStrings.PositiveNumberRequired, nameof(bufferSize));
+            }
+
+            ValidateState(cancellationToken);
+
+            return CopyToAsyncInternal(destination, cancellationToken);
+        }
+
+        private async Task CopyToAsyncInternal(Stream destination, CancellationToken cancellationToken)
+        {
+            try
+            {
+                await _body.CopyToAsync(destination, cancellationToken);
+            }
+            catch (ConnectionAbortedException ex)
+            {
+                throw new TaskCanceledException("The request was aborted", ex);
+            }
         }
 
         public void StartAcceptingReads(MessageBody body)
@@ -70,13 +108,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 _state = HttpStreamState.Open;
                 _body = body;
             }
-        }
-
-        public ValueTask<int> ReadAsyncForStream(Memory<byte> buffer, CancellationToken cancellationToken)
-        {
-            ValidateState(cancellationToken);
-
-            return _body.ReadAsync(buffer, cancellationToken);
         }
 
         public void StopAcceptingReads()
@@ -125,34 +156,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             void ThrowObjectDisposedException() => throw new ObjectDisposedException(nameof(HttpRequestStream));
             void ThrowTaskCanceledException() => throw new TaskCanceledException();
-        }
-
-        public Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
-        {
-            if (destination == null)
-            {
-                throw new ArgumentNullException(nameof(destination));
-            }
-            if (bufferSize <= 0)
-            {
-                throw new ArgumentException(CoreStrings.PositiveNumberRequired, nameof(bufferSize));
-            }
-
-            ValidateState(cancellationToken);
-
-            return CopyToAsyncInternal(destination, cancellationToken);
-        }
-
-        private async Task CopyToAsyncInternal(Stream destination, CancellationToken cancellationToken)
-        {
-            try
-            {
-                await _body.CopyToAsync(destination, cancellationToken);
-            }
-            catch (ConnectionAbortedException ex)
-            {
-                throw new TaskCanceledException("The request was aborted", ex);
-            }
         }
     }
 }
