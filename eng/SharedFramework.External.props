@@ -1,18 +1,12 @@
 <!--
 
-  This lists all assemblies which are part of the Microsoft.AspNetCore.App metapackage and shared framework.
+  This lists all assemblies which are part of the Microsoft.AspNetCore.App shared framework
+  and are built as packages in another repo.
 
 -->
 <Project>
 
-  <Import Project="LocalDependencies.props" />
-
   <ItemGroup>
-    <!-- We still be the shared framework but running restore against packages we just built. This sets the version to match the current build number. -->
-    <AspNetCoreAppReferenceAndPackage Update="@(AspNetCoreAppReferenceAndPackage)" Version="$(PackageVersion)" />
-    <AspNetCoreAppReference Update="@(AspNetCoreAppReference)" Version="$(PackageVersion)" />
-
-    <!-- Dependencies built as packages in other repos that we definitely want in the shared framework. -->
     <!-- Dependencies from aspnet/Extensions -->
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Caching.Abstractions"                    Version="$(MicrosoftExtensionsCachingAbstractionsPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Caching.Memory"                          Version="$(MicrosoftExtensionsCachingMemoryPackageVersion)" />
@@ -55,20 +49,25 @@
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Primitives"                              Version="$(MicrosoftExtensionsPrimitivesPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.WebEncoders"                             Version="$(MicrosoftExtensionsWebEncodersPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.JSInterop"                                          Version="$(MicrosoftJSInteropPackageVersion)" />
+
     <!-- Dependencies from dotnet/corefx -->
     <ExternalAspNetCoreAppReference Include="System.IO.Pipelines"                                          Version="$(SystemIOPipelinesPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="System.Runtime.CompilerServices.Unsafe"                       Version="$(SystemRuntimeCompilerServicesUnsafePackageVersion)" />
     <ExternalAspNetCoreAppReference Include="System.Security.Cryptography.Xml"                             Version="$(SystemSecurityCryptographyXmlPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="System.Text.Encodings.Web"                                    Version="$(SystemTextEncodingsWebPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="System.Threading.Channels"                                    Version="$(SystemThreadingChannelsPackageVersion)" />
+
     <!-- Dependencies from dotnet/core-setup -->
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.DependencyModel"                         Version="$(MicrosoftExtensionsDependencyModelPackageVersion)" />
 
     <!--
       Transitive dependencies of other assemblies in the shared framework. These are listed separately and should not be included directly
       when setting `<Reference>`. These are listed for the purpose of tests and servicing builds only.
+
       If implementation details change and these assemblies are no longer showing up in the shared framework as a result of that,
       it is okay to remove these transitive dependencies.
+
+      If these are needed as direct dependencies, it is okay to change them to ExternalAspNetCoreAppReference and move up into sections above.
     -->
     <_TransitiveExternalAspNetCoreAppReference Include="Microsoft.DotNet.PlatformAbstractions"              Version="$(MicrosoftDotNetPlatformAbstractionsPackageVersion)" />
     <_TransitiveExternalAspNetCoreAppReference Include="Newtonsoft.Json"                                    Version="$(NewtonsoftJsonPackageVersion)" />
@@ -86,12 +85,11 @@
   </ItemGroup>
 
   <!--
-    These compilation references are necessary to compile ns2.0 assemblies in the shared framework, but the runtime assemblies are part of netcoreapp3.0.
-    The preferred solution to reference problems with shared framework assemblies is to reference netcoreapp3.0 and not use System.* references,
-    but in some edge cases, this is not reasonable.
+    These compilation references are necessary to compile netstandard2.0 assemblies which are in the shared framework.
+    This references are part of Microsoft.NETCore.App, so are listed here as references to be used during compilation only.
   -->
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
-    <_FrameworkProvidedReference Include="System.Buffers" />
+    <_CompilationOnlyReference Include="System.Buffers" />
   </ItemGroup>
 
   <!--
@@ -99,9 +97,9 @@
     is actually present at runtime. See https://github.com/dotnet/corefx/issues/34906
   -->
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
-    <_FrameworkProvidedReference Include="Microsoft.Win32.Registry" />
-    <_FrameworkProvidedReference Include="System.Security.Cryptography.Cng" />
-    <_FrameworkProvidedReference Include="System.Security.Principal.Windows" />
+    <_CompilationOnlyReference Include="Microsoft.Win32.Registry" />
+    <_CompilationOnlyReference Include="System.Security.Cryptography.Cng" />
+    <_CompilationOnlyReference Include="System.Security.Principal.Windows" />
   </ItemGroup>
 
 </Project>

@@ -93,7 +93,7 @@
     <WriteLinesToFile File="$(ProjectListFile)" Lines="$(ProjectListContent)" Overwrite="true" />
 
     <PropertyGroup>
-      <SharedFxDepList>$(MSBuildThisFileDirectory)..\src\Framework\LocalDependencies.props</SharedFxDepList>
+      <SharedFxDepList>$(MSBuildThisFileDirectory)..\eng\SharedFramework.Local.props</SharedFxDepList>
       <SharedFxDepListContent>
       <![CDATA[
 <!--

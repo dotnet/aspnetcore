@@ -30,6 +30,10 @@
       <AllowExplicitVersion>true</AllowExplicitVersion>
     </PackageReference>
 
+    <!-- Add version metadata. These are expected to match the metapackage version. -->
+    <AspNetCoreAppReferenceAndPackage Update="@(AspNetCoreAppReferenceAndPackage)" Version="$(SharedFxVersion)" />
+    <AspNetCoreAppReference Update="@(AspNetCoreAppReference)" Version="$(SharedFxVersion)" />
+
     <!-- Note: do not add _TransitiveExternalAspNetCoreAppReference to this list. This is intentionally not listed as a direct package reference. -->
     <PackageReference Include="@(AspNetCoreAppReference);@(AspNetCoreAppReferenceAndPackage);@(ExternalAspNetCoreAppReference)" />
   </ItemGroup>

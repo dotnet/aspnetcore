@@ -58,9 +58,16 @@
 
     <_UnusedProjectReferenceProvider Include="@(ProjectReferenceProvider)" Exclude="@(Reference)" />
 
+    <_CompilationOnlyReference Condition="'$(TargetFramework)' == 'netstandard2.0'" Include="@(Reference->WithMetadataValue('NuGetPackageId','NETStandard.Library'))" />
+
     <_InvalidReferenceToNonSharedFxAssembly Condition="'$(IsAspNetCoreApp)' == 'true'"
       Include="@(Reference)"
-      Exclude="Newtonsoft.Json;@(AspNetCoreAppReference);@(AspNetCoreAppReferenceAndPackage);@(ExternalAspNetCoreAppReference);@(_FrameworkProvidedReference);@(Reference->WithMetadataValue('NuGetPackageId','NETStandard.Library'))" />
+      Exclude="
+        Newtonsoft.Json;
+        @(AspNetCoreAppReference);
+        @(AspNetCoreAppReferenceAndPackage);
+        @(ExternalAspNetCoreAppReference);
+        @(_CompilationOnlyReference)" />
     <!-- TODO: remove Newtonsoft.Json from this list once https://github.com/aspnet/AspNetCore/issues/4260 is resolved -->
 
     <!--
