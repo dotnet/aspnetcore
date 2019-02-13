@@ -98,7 +98,7 @@ fi
 commit_hash="$(git rev-parse HEAD || true)"
 
 if [ ! -z "$commit_hash" ]; then
-    build_args[${#build_args[*]}]="-p:RepositoryCommit=$commit_hash"
+    build_args[${#build_args[*]}]="-p:SourceRevisionId=$commit_hash"
 fi
 
 dockerfile="$DIR/build/docker/$image.Dockerfile"
@@ -118,6 +118,9 @@ docker run \
     -e TEAMCITY_VERSION \
     -e BUILD_NUMBER \
     -e BUILD_BUILDNUMBER \
+    -e BUILD_REPOSITORY_URI \
+    -e BUILD_SOURCEVERSION \
+    -e BUILD_SOURCEBRANCH \
     -e DOTNET_CLI_TELEMETRY_OPTOUT \
     -e Configuration \
     -v "$DIR:/code/build" \

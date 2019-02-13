@@ -67,6 +67,7 @@
     <BuildHelixPayload Condition="'$(BuildHelixPayload)' == '' AND '$(IsTestProject)' == 'true'">true</BuildHelixPayload>
   </PropertyGroup>
 
+  <Import Project="eng\Workarounds.targets" />
   <Import Project="eng\targets\ResolveIisReferences.targets" Condition=" '$(MSBuildProjectExtension)' != '.vcxproj' " />
   <Import Project="eng\targets\Cpp.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.vcxproj'" />
   <Import Project="eng\targets\CSharp.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.csproj'" />

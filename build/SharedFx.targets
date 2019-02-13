@@ -21,7 +21,7 @@
 
   <Target Name="BuildSharedFx" DependsOnTargets="$(BuildSharedFxDependsOn)" />
 
-  <Target Name="_BuildSharedFxProjects" DependsOnTargets="ResolveCommitHash">
+  <Target Name="_BuildSharedFxProjects">
 
     <PropertyGroup>
       <_RestoreGraphProjectInput>@(FxProjectToBuild)</_RestoreGraphProjectInput>

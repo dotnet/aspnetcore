@@ -3,6 +3,7 @@
 
   <PropertyGroup>
     <ANCM-Setup Condition="$(ANCM-Setup) == ''">$(MSBuildThisFileDirectory)..\</ANCM-Setup>
+    <EnableSourceLink>false</EnableSourceLink>
   </PropertyGroup>
 
   <PropertyGroup>
