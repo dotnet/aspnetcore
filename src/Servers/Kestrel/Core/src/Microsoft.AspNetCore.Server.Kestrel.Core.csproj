@@ -3,6 +3,7 @@
   <PropertyGroup>
     <Description>Core components of ASP.NET Core Kestrel cross-platform web server.</Description>
     <TargetFramework>netcoreapp3.0</TargetFramework>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;kestrel</PackageTags>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -22,11 +23,8 @@
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="Microsoft.Extensions.Options" />
     <Reference Include="Microsoft.Net.Http.Headers" />
-    <Reference Include="System.Memory" />
-    <Reference Include="System.Numerics.Vectors" />
     <Reference Include="System.Runtime.CompilerServices.Unsafe" />
     <Reference Include="System.Security.Cryptography.Cng" />
-    <Reference Include="System.Threading.Tasks.Extensions" />
   </ItemGroup>
 
   <ItemGroup>

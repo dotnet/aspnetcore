@@ -139,8 +139,12 @@ This targets file should only be imported by .shfxproj files.
       <AllowExplicitVersion>true</AllowExplicitVersion>
     </PackageReference>
 
-    <!-- Note: do not add _TransitiveExternalDependency to this list. This is intentionally not listed as a direct package reference. -->
-    <PackageReference Include="@(Dependency);@(ExternalDependency)">
+    <!-- Add version metadata. These are expected to match the metapackage version. -->
+    <AspNetCoreAppReferenceAndPackage Update="@(AspNetCoreAppReferenceAndPackage)" Version="$(SharedFxVersion)" />
+    <AspNetCoreAppReference Update="@(AspNetCoreAppReference)" Version="$(SharedFxVersion)" />
+
+    <!-- Note: do not add _TransitiveExternalAspNetCoreAppReference to this list. This is intentionally not listed as a direct package reference. -->
+    <PackageReference Include="@(AspNetCoreAppReference);@(AspNetCoreAppReferenceAndPackage);@(ExternalAspNetCoreAppReference)">
       <IncludeAssets>Runtime;Native</IncludeAssets>
       <Publish>true</Publish>
     </PackageReference>

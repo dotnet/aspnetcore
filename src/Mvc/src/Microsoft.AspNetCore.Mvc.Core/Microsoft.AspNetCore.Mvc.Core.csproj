@@ -11,6 +11,7 @@ Microsoft.AspNetCore.Mvc.FromFormAttribute
 Microsoft.AspNetCore.Mvc.RequireHttpsAttribute
 Microsoft.AspNetCore.Mvc.RouteAttribute</Description>
     <TargetFramework>netcoreapp3.0</TargetFramework>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;aspnetcoremvc</PackageTags>
@@ -40,14 +41,12 @@ Microsoft.AspNetCore.Mvc.RouteAttribute</Description>
     <Reference Include="Microsoft.Extensions.DependencyModel" />
     <Reference Include="Microsoft.Extensions.FileProviders.Abstractions" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
-    <Reference Include="System.Diagnostics.DiagnosticSource" />
-    <Reference Include="System.Threading.Tasks.Extensions" />
   </ItemGroup>
 
   <ItemGroup Label="Sources packages">
-    <Reference Include="Microsoft.Extensions.ParameterDefaultValue.Sources" PrivateAssets="All" />
-    <Reference Include="Microsoft.Extensions.TypeNameHelper.Sources" PrivateAssets="All" />
-    <Reference Include="Microsoft.Extensions.ValueStopwatch.Sources" PrivateAssets="All" />
+    <Reference Include="Microsoft.Extensions.ParameterDefaultValue.Sources" SharedSources="true" />
+    <Reference Include="Microsoft.Extensions.TypeNameHelper.Sources" SharedSources="true" />
+    <Reference Include="Microsoft.Extensions.ValueStopwatch.Sources" SharedSources="true" />
   </ItemGroup>
 
 </Project>

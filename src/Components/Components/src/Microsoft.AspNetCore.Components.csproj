@@ -5,6 +5,7 @@
     <Description>Components feature for ASP.NET Core.</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <IsShippingPackage>true</IsShippingPackage>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
   </PropertyGroup>
 
   <ItemGroup>

@@ -5,6 +5,7 @@
 Commonly used types:
 Microsoft.AspNetCore.Mvc.IActionResult</Description>
     <TargetFramework>netcoreapp3.0</TargetFramework>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;aspnetcoremvc</PackageTags>
@@ -20,7 +21,7 @@ Microsoft.AspNetCore.Mvc.IActionResult</Description>
   </ItemGroup>
 
   <ItemGroup Label="Sources packages">
-    <Reference Include="Microsoft.Extensions.HashCodeCombiner.Sources" PrivateAssets="All" />
+    <Reference Include="Microsoft.Extensions.HashCodeCombiner.Sources" SharedSources="true" />
   </ItemGroup>
 
 </Project>

@@ -30,8 +30,12 @@
       <AllowExplicitVersion>true</AllowExplicitVersion>
     </PackageReference>
 
-    <!-- Note: do not add _TransitiveExternalDependency to this list. This is intentionally not listed as a direct package reference. -->
-    <PackageReference Include="@(Dependency);@(ExternalDependency)" />
+    <!-- Add version metadata. These are expected to match the metapackage version. -->
+    <AspNetCoreAppReferenceAndPackage Update="@(AspNetCoreAppReferenceAndPackage)" Version="$(SharedFxVersion)" />
+    <AspNetCoreAppReference Update="@(AspNetCoreAppReference)" Version="$(SharedFxVersion)" />
+
+    <!-- Note: do not add _TransitiveExternalAspNetCoreAppReference to this list. This is intentionally not listed as a direct package reference. -->
+    <PackageReference Include="@(AspNetCoreAppReference);@(AspNetCoreAppReferenceAndPackage);@(ExternalAspNetCoreAppReference)" />
   </ItemGroup>
 
   <ItemDefinitionGroup>
@@ -71,8 +75,9 @@
   <Target Name="GenerateBuildProps" BeforeTargets="BeforeBuild" DependsOnTargets="PrepareOutputPaths">
 
     <ItemGroup>
-      <_AspNetAppPackageConflictOverrides Include="@(Dependency->'%(Identity)|%(Version)')" Condition=" '%(Dependency.Version)' != '' " />
-      <_AspNetAppPackageConflictOverrides Include="@(ExternalDependency->'%(Identity)|%(Version)')" Condition=" '%(ExternalDependency.Version)' != '' " />
+      <_AspNetAppPackageConflictOverrides Include="@(AspNetCoreAppReference->'%(Identity)|%(Version)')" Condition=" '%(AspNetCoreAppReference.Version)' != '' " />
+      <_AspNetAppPackageConflictOverrides Include="@(AspNetCoreAppReferenceAndPackage->'%(Identity)|%(Version)')" Condition=" '%(AspNetCoreAppReferenceAndPackage.Version)' != '' " />
+      <_AspNetAppPackageConflictOverrides Include="@(ExternalAspNetCoreAppReference->'%(Identity)|%(Version)')" Condition=" '%(ExternalAspNetCoreAppReference.Version)' != '' " />
     </ItemGroup>
 
     <PropertyGroup>
