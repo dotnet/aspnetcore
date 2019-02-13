@@ -429,13 +429,6 @@ namespace signalr
         m_message_received = message_received;
     }
 
-    void connection_impl::set_connection_data(const utility::string_t& connection_data)
-    {
-        _ASSERTE(get_connection_state() == connection_state::disconnected);
-
-        m_connection_data = connection_data;
-    }
-
     void connection_impl::set_client_config(const signalr_client_config& config)
     {
         ensure_disconnected(_XPLATSTR("cannot set client config when the connection is not in the disconnected state. "));

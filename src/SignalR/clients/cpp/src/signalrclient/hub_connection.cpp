@@ -37,24 +37,24 @@ namespace signalr
         return m_pImpl->on(event_name, handler);
     }
 
-    pplx::task<web::json::value> hub_connection::invoke_json(const utility::string_t& method_name, const web::json::value& arguments)
+    pplx::task<web::json::value> hub_connection::invoke(const utility::string_t& method_name, const web::json::value& arguments)
     {
         if (!m_pImpl)
         {
             throw signalr_exception(_XPLATSTR("invoke() cannot be called on uninitialized hub_connection instance"));
         }
 
-        return m_pImpl->invoke_json(method_name, arguments);
+        return m_pImpl->invoke(method_name, arguments);
     }
 
-    pplx::task<void> hub_connection::invoke_void(const utility::string_t& method_name, const web::json::value& arguments)
+    pplx::task<void> hub_connection::send(const utility::string_t& method_name, const web::json::value& arguments)
     {
         if (!m_pImpl)
         {
-            throw signalr_exception(_XPLATSTR("invoke() cannot be called on uninitialized hub_connection instance"));
+            throw signalr_exception(_XPLATSTR("send() cannot be called on uninitialized hub_connection instance"));
         }
 
-        return m_pImpl->invoke_void(method_name, arguments);
+        return m_pImpl->send(method_name, arguments);
     }
 
     connection_state hub_connection::get_connection_state() const

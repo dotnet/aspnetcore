@@ -48,8 +48,6 @@ namespace signalr
         void set_disconnected(const std::function<void()>& disconnected);
         void set_client_config(const signalr_client_config& config);
 
-        void set_connection_data(const utility::string_t& connection_data);
-
     private:
         web::uri m_base_url;
         utility::string_t m_query_string;

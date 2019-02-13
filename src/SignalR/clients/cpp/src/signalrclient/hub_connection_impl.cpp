@@ -267,7 +267,7 @@ namespace signalr
         return true;
     }
 
-    pplx::task<json::value> hub_connection_impl::invoke_json(const utility::string_t& method_name, const json::value& arguments)
+    pplx::task<json::value> hub_connection_impl::invoke(const utility::string_t& method_name, const json::value& arguments)
     {
         _ASSERTE(arguments.is_array());
 
@@ -283,7 +283,7 @@ namespace signalr
         return pplx::create_task(tce);
     }
 
-    pplx::task<void> hub_connection_impl::invoke_void(const utility::string_t& method_name, const json::value& arguments)
+    pplx::task<void> hub_connection_impl::send(const utility::string_t& method_name, const json::value& arguments)
     {
         _ASSERTE(arguments.is_array());
 
