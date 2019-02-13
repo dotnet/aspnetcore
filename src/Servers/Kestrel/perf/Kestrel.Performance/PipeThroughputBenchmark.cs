@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,10 +6,13 @@ using System.Buffers;
 using System.IO.Pipelines;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Order;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
+    [GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByMethod)]
     public class PipeThroughputBenchmark
     {
         private PipeReader _reader;
@@ -39,11 +42,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             _writer = pipe.Writer;
         }
 
-        [Params(1, 2, 4, 8, 16)]
-        public int Chunks { get; set; }
-
-        [Params(128, 256)]
+        [Params(128, 4096, 8192)]
         public int Length { get; set; }
+
+        [Params(2, 4, 16)]
+        public int Chunks { get; set; }
 
         [Benchmark]
         public Task Parse_ParallelAsync()
