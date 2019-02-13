@@ -48,7 +48,17 @@
     <UseProjectReferences Condition=" '$(UseProjectReferences)' == '' ">false</UseProjectReferences>
   </PropertyGroup>
 
+  <ItemDefinitionGroup>
+    <Reference>
+      <IsSharedSource></IsSharedSource>
+    </Reference>
+  </ItemDefinitionGroup>
+
   <ItemGroup>
+    <Reference Update="@(Reference)">
+      <IsSharedSource Condition="'%(IsSharedSource)' == '' AND $([System.String]::new('%(Identity)').EndsWith('.Sources'))">true</IsSharedSource>
+    </Reference>
+
     <!-- Packages which are implicitly defined by the .NET Core SDK. -->
     <_ImplicitPackageReference Include="@(PackageReference->WithMetadataValue('IsImplicitlyDefined', 'true'))" />
     <!-- Capture a list of references which were set explicitly in the project. -->
@@ -67,7 +77,8 @@
         @(AspNetCoreAppReference);
         @(AspNetCoreAppReferenceAndPackage);
         @(ExternalAspNetCoreAppReference);
-        @(_CompilationOnlyReference)" />
+        @(_CompilationOnlyReference);
+        @(Reference->WithMetadataValue('IsSharedSource', 'true'))" />
     <!-- TODO: remove Newtonsoft.Json from this list once https://github.com/aspnet/AspNetCore/issues/4260 is resolved -->
 
     <!--
@@ -98,10 +109,6 @@
     <Error Condition="@(_InvalidReferenceToSharedFxOnlyAssembly->Count()) != 0"
            Text="Cannot reference &quot;%(_InvalidReferenceToSharedFxOnlyAssembly.Identity)&quot; directly because it is part of the shared framework and this project is not. Use &lt;FrameworkReference Include=&quot;Microsoft.AspNetCore.App&quot; /&gt; instead." />
 
-    <ItemGroup>
-      <_InvalidReferenceToNonSharedFxAssembly Remove="@(_InvalidReferenceToNonSharedFxAssembly)" Condition="$([System.String]::new('%(Identity)').EndsWith('.Sources'))" />
-    </ItemGroup>
-
     <Error Condition="@(_InvalidReferenceToNonSharedFxAssembly->Count()) != 0"
            Text="Cannot reference &quot;%(_InvalidReferenceToNonSharedFxAssembly.Identity)&quot;. This dependency is not in the shared framework. See docs/SharedFramework.md for instructions on how to modify what is in the shared framework." />
   </Target>
@@ -117,8 +124,8 @@
 
       <!-- Ensure only content asset are consumed from .Sources packages -->
       <Reference>
-        <IncludeAssets Condition="$([System.String]::new('%(Identity)').EndsWith('.Sources'))">ContentFiles</IncludeAssets>
-        <PrivateAssets Condition="$([System.String]::new('%(Identity)').EndsWith('.Sources'))">All</PrivateAssets>
+        <IncludeAssets Condition="'%(IsSharedSource)' == 'true'">ContentFiles</IncludeAssets>
+        <PrivateAssets Condition="'%(IsSharedSource)' == 'true'">All</PrivateAssets>
       </Reference>
 
       <!-- Identify if any references were present in the last release of this package, but have been removed. -->
