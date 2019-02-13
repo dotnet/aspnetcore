@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.IO.Pipelines;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Configs;
@@ -56,37 +57,43 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             return Parse_ParallelAsyncImpl();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         private Task Parse_ParallelAsyncImpl()
         {
-            var writing = Task.Run(async () =>
-            {
-                var chunks = Chunks;
-                var chunkLength = Length / chunks;
-
-                for (int i = 0; i < InnerLoopCount; i++)
-                {
-                    for (var c = 0; c < chunks; c++)
-                    {
-                        _writer.GetMemory(chunkLength);
-                        _writer.Advance(chunkLength);
-                    }
-
-                    await _writer.FlushAsync();
-                }
-            });
-
-            var reading = Task.Run(async () =>
-            {
-                long remaining = Length * InnerLoopCount;
-                while (remaining != 0)
-                {
-                    var result = await _reader.ReadAsync();
-                    remaining -= result.Buffer.Length;
-                    _reader.AdvanceTo(result.Buffer.End, result.Buffer.End);
-                }
-            });
+            var writing = Task.Run(ParallelWriter);
+            var reading = Task.Run(ParallelReader);
 
             return Task.WhenAll(writing, reading);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        async Task ParallelWriter()
+        {
+            var chunks = Chunks;
+            var chunkLength = Length / chunks;
+
+            for (int i = 0; i<InnerLoopCount; i++)
+            {
+                for (var c = 0; c<chunks; c++)
+                {
+                    _writer.GetMemory(chunkLength);
+                    _writer.Advance(chunkLength);
+                }
+
+                await _writer.FlushAsync();
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        async Task ParallelReader()
+        {
+            long remaining = Length * InnerLoopCount;
+            while (remaining != 0)
+            {
+                var result = await _reader.ReadAsync();
+                remaining -= result.Buffer.Length;
+                _reader.AdvanceTo(result.Buffer.End, result.Buffer.End);
+            }
         }
 
         [Benchmark(OperationsPerInvoke = InnerLoopCount)]
@@ -96,6 +103,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             return Parse_SequentialAsyncImpl();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
         private async Task Parse_SequentialAsyncImpl()
         {
             var chunks = Chunks;
