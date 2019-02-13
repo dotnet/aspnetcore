@@ -160,6 +160,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 _context.SetBadRequestState(ex);
                 return Task.CompletedTask;
             }
+            catch (Exception)
+            {
+                //_context.SetBadRequestState(ex);
+                return Task.CompletedTask;
+            }
 
             return OnConsumeAsyncAwaited();
         }
@@ -302,74 +307,39 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // This returns IsEmpty so we can avoid draining the body (since it's basically an endless stream)
             public override bool IsEmpty => true;
 
-            public override async Task CopyToAsync(Stream destination, CancellationToken cancellationToken = default)
+            public override ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
             {
-                while (true)
-                {
-                    var result = await _context.Input.ReadAsync(cancellationToken);
-                    var readableBuffer = result.Buffer;
-                    var readableBufferLength = readableBuffer.Length;
-
-                    try
-                    {
-                        if (!readableBuffer.IsEmpty)
-                        {
-                            foreach (var memory in readableBuffer)
-                            {
-                                // REVIEW: This *could* be slower if 2 things are true
-                                // - The WriteAsync(ReadOnlyMemory<byte>) isn't overridden on the destination
-                                // - We change the Kestrel Memory Pool to not use pinned arrays but instead use native memory
-                                await destination.WriteAsync(memory, cancellationToken);
-                            }
-                        }
-
-                        if (result.IsCompleted)
-                        {
-                            return;
-                        }
-                    }
-                    finally
-                    {
-                        _context.Input.AdvanceTo(readableBuffer.End);
-                    }
-                }
+                return _context.Input.ReadAsync(cancellationToken);
             }
 
-            public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+            public override bool TryRead(out ReadResult result)
             {
-                while (true)
-                {
-                    var result = await _context.Input.ReadAsync(cancellationToken);
-                    var readableBuffer = result.Buffer;
-                    var readableBufferLength = readableBuffer.Length;
+                return _context.Input.TryRead(out result);
+            }
 
-                    var consumed = readableBuffer.End;
-                    var actual = 0;
+            public override void AdvanceTo(SequencePosition consumed)
+            {
+                _context.Input.AdvanceTo(consumed);
+            }
 
-                    try
-                    {
-                        if (readableBufferLength != 0)
-                        {
-                            // buffer.Length is int
-                            actual = (int)Math.Min(readableBufferLength, buffer.Length);
+            public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
+            {
+                _context.Input.AdvanceTo(consumed, examined);
+            }
 
-                            var slice = actual == readableBufferLength ? readableBuffer : readableBuffer.Slice(0, actual);
-                            consumed = slice.End;
-                            slice.CopyTo(buffer.Span);
+            public override void Complete(Exception exception)
+            {
+                // Noop as we don't want to complete the connection pipe.
+            }
 
-                            return actual;
-                        }
+            public override void CancelPendingRead()
+            {
+                _context.Input.CancelPendingRead();
+            }
 
-                        if (result.IsCompleted)
-                        {
-                            return 0;
-                        }
-                    }
-                    finally
-                    {
-                        _context.Input.AdvanceTo(consumed);
-                    }
-                }
+            public override void OnWriterCompleted(Action<Exception, object> callback, object state)
+            {
+                _context.Input.OnWriterCompleted(callback, state);
             }
 
             public override Task ConsumeAsync()

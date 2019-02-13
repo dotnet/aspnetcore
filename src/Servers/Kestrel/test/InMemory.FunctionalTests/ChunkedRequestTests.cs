@@ -325,6 +325,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 while (!result.IsCompleted)
                 {
                     request.BodyPipe.AdvanceTo(result.Buffer.End);
+                    result = await request.BodyPipe.ReadAsync();
                 }
 
                 if (requestsReceived < requestCount)

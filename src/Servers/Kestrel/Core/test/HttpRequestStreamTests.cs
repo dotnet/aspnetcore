@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
@@ -104,10 +105,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public async Task SynchronousReadsThrowIfDisallowedByIHttpBodyControlFeature()
         {
             var allowSynchronousIO = false;
+
             var mockBodyControl = new Mock<IHttpBodyControlFeature>();
             mockBodyControl.Setup(m => m.AllowSynchronousIO).Returns(() => allowSynchronousIO);
             var mockMessageBody = new Mock<MessageBody>(null, null);
-            mockMessageBody.Setup(m => m.ReadAsync(It.IsAny<Memory<byte>>(), CancellationToken.None)).Returns(new ValueTask<int>(0));
+            mockMessageBody.Setup(m => m.ReadAsync(CancellationToken.None)).Returns(new ValueTask<ReadResult>(new ReadResult(default, isCanceled: false, isCompleted: true)));
 
             var stream = new HttpRequestStream(mockBodyControl.Object, new HttpRequestPipeReader());
             stream.StartAcceptingReads(mockMessageBody.Object);
@@ -145,12 +147,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public void StopAcceptingReadsCausesReadToThrowObjectDisposedException()
+        public async Task StopAcceptingReadsCausesReadToThrowObjectDisposedException()
         {
             var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), new HttpRequestPipeReader());
             stream.StartAcceptingReads(null);
             stream.StopAcceptingReads();
-            Assert.Throws<ObjectDisposedException>(() => { stream.ReadAsync(new byte[1], 0, 1); });
+
+            // Validation for ReadAsync occurs in an async method in ReadOnlyPipeStream.
+            await Assert.ThrowsAsync<ObjectDisposedException>(async () => { await stream.ReadAsync(new byte[1], 0, 1); });
         }
 
         [Fact]
@@ -174,12 +178,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public void StopAcceptingReadsCausesCopyToAsyncToThrowObjectDisposedException()
+        public async Task StopAcceptingReadsCausesCopyToAsyncToThrowObjectDisposedException()
         {
             var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), new HttpRequestPipeReader());
             stream.StartAcceptingReads(null);
             stream.StopAcceptingReads();
-            Assert.Throws<ObjectDisposedException>(() => { stream.CopyToAsync(Mock.Of<Stream>()); });
+            // Validation for CopyToAsync occurs in an async method in ReadOnlyPipeStream. 
+            await Assert.ThrowsAsync<ObjectDisposedException>(async () => { await stream.CopyToAsync(Mock.Of<Stream>()); });
         }
 
         [Fact]
@@ -195,7 +200,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), new HttpRequestPipeReader());
             stream.StartAcceptingReads(null);
-            Assert.Throws<ArgumentException>(() => { stream.CopyToAsync(Mock.Of<Stream>(), 0); });
+            // This is technically a breaking change, to throw an ArgumentoutOfRangeException rather than an ArgumentException
+            Assert.Throws<ArgumentOutOfRangeException>(() => { stream.CopyToAsync(Mock.Of<Stream>(), 0); });
         }
     }
 }

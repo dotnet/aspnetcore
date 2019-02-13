@@ -58,12 +58,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _pipeReader.Abort(exception);
         }
 
-        private async ValueTask<int> ReadAsyncInternal(Memory<byte> buffer, CancellationToken cancellationToken)
+        private ValueTask<int> ReadAsyncInternal(Memory<byte> buffer, CancellationToken cancellationToken)
         {
             try
             {
-                // TODO why await here.
-                return await _pipeReader.ReadAsync(buffer, cancellationToken);
+                return base.ReadAsync(buffer, cancellationToken);
             }
             catch (ConnectionAbortedException ex)
             {
@@ -78,11 +77,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public override Task FlushAsync(CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
-        }
-
-        public override Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
-        {
-            return _pipeReader.CopyToStreamAsync(destination, bufferSize, cancellationToken);
         }
     }
 }

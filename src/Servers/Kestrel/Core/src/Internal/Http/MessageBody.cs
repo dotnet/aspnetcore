@@ -45,6 +45,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected IKestrelTrace Log => _context.ServiceContext.Log;
 
+        private ReadResult _previousReadResult;
+
         public virtual void AdvanceTo(SequencePosition consumed)
         {
             AdvanceTo(consumed, consumed);
@@ -52,14 +54,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public virtual void AdvanceTo(SequencePosition consumed, SequencePosition examined)
         {
+            var dataLength = _previousReadResult.Buffer.Slice(_previousReadResult.Buffer.Start, consumed).Length;
             _context.RequestBodyPipe.Reader.AdvanceTo(consumed, examined);
+            OnDataRead(dataLength);
         }
 
-        public virtual bool TryRead(out ReadResult result)
+        public virtual bool TryRead(out ReadResult readResult)
         {
             TryStart();
 
-            return _context.RequestBodyPipe.Reader.TryRead(out result);
+            var hasReadResult = _context.RequestBodyPipe.Reader.TryRead(out _previousReadResult);
+            readResult = _previousReadResult;
+
+            return hasReadResult;
         }
 
         public virtual void OnWriterCompleted(Action<Exception, object> callback, object state)
@@ -83,118 +90,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             while (true)
             {
-                var result = await StartTimingReadAsync(cancellationToken);
-                var readableBuffer = result.Buffer;
+                _previousReadResult = await StartTimingReadAsync(cancellationToken);
+                var readableBuffer = _previousReadResult.Buffer;
                 var readableBufferLength = readableBuffer.Length;
                 StopTimingRead(readableBufferLength);
 
-                try
+                if (readableBufferLength != 0)
                 {
-                    if (readableBufferLength != 0)
-                    {
-                        return result;
-                    }
-
-                    if (result.IsCompleted)
-                    {
-                        TryStop();
-                        return result;
-                    }
+                    return _previousReadResult;
                 }
-                finally
+
+                if (_previousReadResult.IsCompleted)
                 {
-                    // Update the flow-control window after advancing the pipe reader, so we don't risk overfilling
-                    // the pipe despite the client being well-behaved.
-                    OnDataRead(readableBuffer.Length);
-                }
-            }
-        }
-
-        public virtual async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            TryStart();
-
-            while (true)
-            {
-                var result = await StartTimingReadAsync(cancellationToken);
-                var readableBuffer = result.Buffer;
-                var readableBufferLength = readableBuffer.Length;
-                StopTimingRead(readableBufferLength);
-
-                var consumed = readableBuffer.End;
-                var actual = 0;
-
-                try
-                {
-                    if (readableBufferLength != 0)
-                    {
-                        // buffer.Length is int
-                        actual = (int)Math.Min(readableBufferLength, buffer.Length);
-
-                        // Make sure we don't double-count bytes on the next read.
-                        _alreadyTimedBytes = readableBufferLength - actual;
-
-                        var slice = actual == readableBufferLength ? readableBuffer : readableBuffer.Slice(0, actual);
-                        consumed = slice.End;
-                        slice.CopyTo(buffer.Span);
-
-                        return actual;
-                    }
-
-                    if (result.IsCompleted)
-                    {
-                        TryStop();
-                        return 0;
-                    }
-                }
-                finally
-                {
-                    _context.RequestBodyPipe.Reader.AdvanceTo(consumed);
-
-                    // Update the flow-control window after advancing the pipe reader, so we don't risk overfilling
-                    // the pipe despite the client being well-behaved.
-                    OnDataRead(actual);
-                }
-            }
-        }
-
-        public virtual async Task CopyToAsync(Stream destination, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            TryStart();
-
-            while (true)
-            {
-                var result = await StartTimingReadAsync(cancellationToken);
-                var readableBuffer = result.Buffer;
-                var readableBufferLength = readableBuffer.Length;
-                StopTimingRead(readableBufferLength);
-
-                try
-                {
-                    if (readableBufferLength != 0)
-                    {
-                        foreach (var memory in readableBuffer)
-                        {
-                            // REVIEW: This *could* be slower if 2 things are true
-                            // - The WriteAsync(ReadOnlyMemory<byte>) isn't overridden on the destination
-                            // - We change the Kestrel Memory Pool to not use pinned arrays but instead use native memory
-                            await destination.WriteAsync(memory, cancellationToken);
-                        }
-                    }
-
-                    if (result.IsCompleted)
-                    {
-                        TryStop();
-                        return;
-                    }
-                }
-                finally
-                {
-                    _context.RequestBodyPipe.Reader.AdvanceTo(readableBuffer.End);
-
-                    // Update the flow-control window after advancing the pipe reader, so we don't risk overfilling
-                    // the pipe despite the client being well-behaved.
-                    OnDataRead(readableBufferLength);
+                    TryStop();
+                    return _previousReadResult;
                 }
             }
         }
