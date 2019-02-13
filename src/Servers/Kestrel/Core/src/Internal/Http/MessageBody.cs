@@ -47,14 +47,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         //  Make these methods pipe-like
 
-        internal void AdvanceTo(SequencePosition consumed)
+        public virtual void AdvanceTo(SequencePosition consumed)
         {
             _context.RequestBodyPipe.Reader.AdvanceTo(consumed);
         }
 
-        internal void AdvanceTo(SequencePosition consumed, SequencePosition examined)
+        public virtual void AdvanceTo(SequencePosition consumed, SequencePosition examined)
         {
             _context.RequestBodyPipe.Reader.AdvanceTo(consumed, examined);
+        }
+
+        public virtual bool TryRead(out ReadResult result)
+        {
+            TryStart();
+
+            return _context.RequestBodyPipe.Reader.TryRead(out result);
+        }
+
+        public virtual void OnWriterCompleted(Action<Exception, object> callback, object state)
+        {
+            _context.RequestBodyPipe.Reader.OnWriterCompleted(callback, state);
+        }
+
+        public virtual void CancelPendingRead()
+        {
+            _context.RequestBodyPipe.Reader.CancelPendingRead();
         }
 
         public virtual async ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
@@ -137,24 +154,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
             }
         }
-
-        public virtual bool TryRead(out ReadResult result)
-        {
-            return _context.RequestBodyPipe.Reader.TryRead(out result);
-        }
-
-        public virtual void OnWriterCompleted(Action<Exception, object> callback, object state)
-        {
-            _context.RequestBodyPipe.Reader.OnWriterCompleted(callback, state);
-        }
-
-        public virtual void CancelPendingRead()
-        {
-            _context.RequestBodyPipe.Reader.CancelPendingRead();
-        }
-
-        // I think this can be removed or modified.
-        // Also how do we care about timing.
 
         public virtual async Task CopyToAsync(Stream destination, CancellationToken cancellationToken = default(CancellationToken))
         {
@@ -332,11 +331,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default(CancellationToken)) => new ValueTask<int>(0);
 
+            public override ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default(CancellationToken)) => new ValueTask<ReadResult>(new ReadResult(default, isCanceled: false, isCompleted: true));
+
             public override Task CopyToAsync(Stream destination, CancellationToken cancellationToken = default(CancellationToken)) => Task.CompletedTask;
 
             public override Task ConsumeAsync() => Task.CompletedTask;
 
             public override Task StopAsync() => Task.CompletedTask;
+
+            public override void AdvanceTo(SequencePosition consumed) { }
+
+            public override void AdvanceTo(SequencePosition consumed, SequencePosition examined) { }
+
+            public override bool TryRead(out ReadResult result)
+            {
+                result = new ReadResult(default, isCanceled: false, isCompleted: true);
+                return true;
+            }
+
+            public override void OnWriterCompleted(Action<Exception, object> callback, object state) { }
+
+            public override void CancelPendingRead() { }
         }
     }
 }

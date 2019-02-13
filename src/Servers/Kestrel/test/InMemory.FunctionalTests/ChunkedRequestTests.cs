@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -35,6 +36,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
+        private async Task PipeApp(HttpContext httpContext)
+        {
+            var request = httpContext.Request;
+            var response = httpContext.Response;
+            while (true)
+            {
+                var readResult = await request.BodyPipe.ReadAsync();
+                if (readResult.IsCompleted)
+                {
+                    break;
+                }
+                // Need to copy here.
+                await response.BodyPipe.WriteAsync(readResult.Buffer.ToArray());
+
+                request.BodyPipe.AdvanceTo(readResult.Buffer.End);
+            }
+        }
+
         private async Task AppChunked(HttpContext httpContext)
         {
             var request = httpContext.Request;
@@ -53,6 +72,35 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var testContext = new TestServiceContext(LoggerFactory);
 
             using (var server = new TestServer(App, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "POST / HTTP/1.0",
+                        "Host:",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "5", "Hello",
+                        "6", " World",
+                        "0",
+                        "",
+                        "");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 200 OK",
+                        "Connection: close",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "",
+                        "Hello World");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task Http10TransferEncodingPipes()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            using (var server = new TestServer(PipeApp, testContext))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -261,6 +309,92 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
+        [Fact]
+        public async Task TrailingHeadersAreParsedWithPipe()
+        {
+            var requestCount = 10;
+            var requestsReceived = 0;
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                var response = httpContext.Response;
+                var request = httpContext.Request;
+
+                var buffer = new byte[200];
+                var result = await request.BodyPipe.ReadAsync();
+                while (!result.IsCompleted)
+                {
+                    request.BodyPipe.AdvanceTo(result.Buffer.End);
+                }
+
+                if (requestsReceived < requestCount)
+                {
+                    Assert.Equal(new string('a', requestsReceived), request.Headers["X-Trailer-Header"].ToString());
+                }
+                else
+                {
+                    Assert.True(string.IsNullOrEmpty(request.Headers["X-Trailer-Header"]));
+                }
+
+                requestsReceived++;
+
+                response.Headers["Content-Length"] = new[] { "11" };
+
+                await response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello World"), 0, 11);
+            }, new TestServiceContext(LoggerFactory)))
+            {
+                var response = string.Join("\r\n", new string[] {
+                    "HTTP/1.1 200 OK",
+                    $"Date: {server.Context.DateHeaderValue}",
+                    "Content-Length: 11",
+                    "",
+                    "Hello World"});
+
+                var expectedFullResponse = string.Join("", Enumerable.Repeat(response, requestCount + 1));
+
+                IEnumerable<string> sendSequence = new string[] {
+                    "POST / HTTP/1.1",
+                    "Host:",
+                    "Transfer-Encoding: chunked",
+                    "",
+                    "C",
+                    "HelloChunked",
+                    "0",
+                    ""};
+
+                for (var i = 1; i < requestCount; i++)
+                {
+                    sendSequence = sendSequence.Concat(new string[] {
+                        "POST / HTTP/1.1",
+                        "Host:",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "C",
+                        $"HelloChunk{i:00}",
+                        "0",
+                        string.Concat("X-Trailer-Header: ", new string('a', i)),
+                        "" });
+                }
+
+                sendSequence = sendSequence.Concat(new string[] {
+                    "POST / HTTP/1.1",
+                    "Host:",
+                    "Content-Length: 7",
+                    "",
+                    "Goodbye"
+                });
+
+                var fullRequest = sendSequence.ToArray();
+
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(fullRequest);
+                    await connection.Receive(expectedFullResponse);
+                }
+
+                await server.StopAsync();
+            }
+        }
         [Fact]
         public async Task TrailingHeadersCountTowardsHeadersTotalSizeLimit()
         {

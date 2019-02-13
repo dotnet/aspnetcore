@@ -650,6 +650,57 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
+        public async Task ZeroContentLengthAssumedOnNonKeepAliveRequestsWithoutContentLengthOrTransferEncodingHeaderPipeReader()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                var readResult = await httpContext.Request.BodyPipe.ReadAsync().AsTask().DefaultTimeout();
+                // This will hang if 0 content length is not assumed by the server
+                Assert.True(readResult.IsCompleted);
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    // Use Send instead of SendEnd to ensure the connection will remain open while
+                    // the app runs and reads 0 bytes from the body nonetheless. This checks that
+                    // https://github.com/aspnet/KestrelHttpServer/issues/1104 is not regressing.
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "Connection: close",
+                        "",
+                        "");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 200 OK",
+                        "Connection: close",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.0",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 200 OK",
+                        "Connection: close",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
         public async Task ConnectionClosesWhenFinReceivedBeforeRequestCompletes()
         {
             var testContext = new TestServiceContext(LoggerFactory);
