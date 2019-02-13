@@ -15,6 +15,7 @@ namespace ErrorPageMiddlewareWebSite
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc()
+                .AddRazorRuntimeCompilation()
                 .SetCompatibilityVersion(CompatibilityVersion.Latest);
         }
 
