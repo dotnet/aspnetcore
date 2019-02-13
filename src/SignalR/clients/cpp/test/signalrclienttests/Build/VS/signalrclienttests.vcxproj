@@ -76,6 +76,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\src\SignalRClient\Build\VS\SignalRClient.vcxproj">
+      <CopyLocal>true</CopyLocal>
       <Project>{87ed3ad4-d820-48cd-8382-a12564213a12}</Project>
     </ProjectReference>
     <ProjectReference Include="..\..\..\gtest\gtest.vcxproj">
