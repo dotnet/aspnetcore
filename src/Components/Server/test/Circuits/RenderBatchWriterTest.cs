@@ -377,6 +377,11 @@ namespace Microsoft.AspNetCore.Components.Server
             {
             }
 
+            protected override void HandleException(Exception exception)
+            {
+                throw new NotImplementedException();
+            }
+
             protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
                 => throw new NotImplementedException();
         }

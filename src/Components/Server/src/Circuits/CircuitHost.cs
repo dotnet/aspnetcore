@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 for (var i = 0; i < builder.Entries.Count; i++)
                 {
                     var (componentType, domElementSelector) = builder.Entries[i];
-                    Renderer.AddComponent(componentType, domElementSelector);
+                    await Renderer.AddComponentAsync(componentType, domElementSelector);
                 }
 
                 for (var i = 0; i < _circuitHandlers.Length; i++)
