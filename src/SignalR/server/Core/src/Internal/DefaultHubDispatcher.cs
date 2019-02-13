@@ -119,12 +119,11 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 case CompletionMessage streamCompleteMessage:
                     // closes channels, removes from Lookup dict
                     // user's method can see the channel is complete and begin wrapping up
-                    try
+                    if (connection.StreamTracker.TryComplete(streamCompleteMessage))
                     {
-                        connection.StreamTracker.Complete(streamCompleteMessage);
                         Log.CompletingStream(_logger, streamCompleteMessage);
                     }
-                    catch (KeyNotFoundException)
+                    else
                     {
                         Log.UnexpectedStreamCompletion(_logger);
                     }
@@ -156,13 +155,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
             var message = CompletionMessage.WithError(bindingFailureMessage.Id, errorString);
             Log.ClosingStreamWithBindingError(_logger, message);
-            try
-            {
-                connection.StreamTracker.Complete(message);
-            }
-            catch (KeyNotFoundException)
-            {
-            }
+            connection.StreamTracker.TryComplete(message);
 
             // TODO: Send stream completion message to client when we add it
 
@@ -387,12 +380,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             {
                 foreach (var stream in hubMessage.StreamIds)
                 {
-                    try
-                    {
-                        connection.StreamTracker.Complete(CompletionMessage.Empty(stream));
-                    }
-                    // ignore failures, it means the client already completed the streams
-                    catch (KeyNotFoundException) { }
+                    connection.StreamTracker.TryComplete(CompletionMessage.Empty(stream));
                 }
             }
         }

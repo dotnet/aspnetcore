@@ -49,14 +49,15 @@ namespace Microsoft.AspNetCore.SignalR
             return TryGetConverter(streamId).GetItemType();
         }
 
-        public void Complete(CompletionMessage message)
+        public bool TryComplete(CompletionMessage message)
         {
             _lookup.TryRemove(message.InvocationId, out var converter);
             if (converter == null)
             {
-                throw new KeyNotFoundException($"No stream with id '{message.InvocationId}' could be found.");
+                return false;
             }
             converter.TryComplete(message.HasResult || message.Error == null ? null : new Exception(message.Error));
+            return true;
         }
 
         private static IStreamConverter BuildStream<T>()
