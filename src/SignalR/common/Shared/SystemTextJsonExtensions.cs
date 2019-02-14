@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Text;
 using System.Text.Json;
@@ -70,19 +71,19 @@ namespace Microsoft.AspNetCore.Internal
             }
         }
 
-        public static string ReadAsString(this ref Utf8JsonReader reader, byte[] propertyName)
+        public static string ReadAsString(this ref Utf8JsonReader reader, string propertyName)
         {
             reader.Read();
 
             if (reader.TokenType != JsonTokenType.String)
             {
-                throw new InvalidDataException($"Expected '{Encoding.UTF8.GetString(propertyName)}' to be of type {JsonTokenType.String}.");
+                throw new InvalidDataException($"Expected '{propertyName}' to be of type {JsonTokenType.String}.");
             }
 
             return reader.GetString();
         }
 
-        public static int? ReadAsInt32(this ref Utf8JsonReader reader, byte[] propertyName)
+        public static int? ReadAsInt32(this ref Utf8JsonReader reader, string propertyName)
         {
             reader.Read();
 
@@ -93,7 +94,7 @@ namespace Microsoft.AspNetCore.Internal
 
             if (reader.TokenType != JsonTokenType.Number)
             {
-                throw new InvalidDataException($"Expected '{Encoding.UTF8.GetString(propertyName)}' to be of type {JsonTokenType.Number}.");
+                throw new InvalidDataException($"Expected '{propertyName}' to be of type {JsonTokenType.Number}.");
             }
 
             return reader.GetInt32();
