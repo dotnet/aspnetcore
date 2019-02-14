@@ -119,12 +119,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public override void OnWriterCompleted(Action<Exception, object> callback, object state)
         {
-            throw new NotImplementedException();
+            _context.RequestPipe.Reader.OnWriterCompleted(callback, state);
         }
 
         public override void CancelPendingRead()
         {
-            throw new NotImplementedException();
+            _context.RequestPipe.Reader.CancelPendingRead();
         }
 
         protected override Task OnStopAsync()
@@ -134,7 +134,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 return Task.CompletedTask;
             }
 
-            // call complete here on the reader
             _context.RequestPipe.Reader.Complete();
 
             return Task.CompletedTask;

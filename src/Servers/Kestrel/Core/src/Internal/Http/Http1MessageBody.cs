@@ -1,12 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.IO.Pipelines;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     public abstract class Http1MessageBody : MessageBody
@@ -17,65 +11,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             : base(context, context.MinRequestBodyDataRate)
         {
             _context = context;
-        }
-
-        protected override Task OnConsumeAsync()
-        {
-            try
-            {
-                if (TryRead(out var readResult))
-                {
-                    AdvanceTo(readResult.Buffer.End);
-
-                    if (readResult.IsCompleted)
-                    {
-                        return Task.CompletedTask;
-                    }
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                // TryRead can throw OperationCanceledException https://github.com/dotnet/corefx/issues/32029
-                // because of buggy logic, this works around that for now
-            }
-            catch (BadHttpRequestException ex)
-            {
-                // At this point, the response has already been written, so this won't result in a 4XX response;
-                // however, we still need to stop the request processing loop and log.
-                _context.SetBadRequestState(ex);
-                return Task.CompletedTask;
-            }
-
-            return OnConsumeAsyncAwaited();
-        }
-
-        private async Task OnConsumeAsyncAwaited()
-        {
-            Log.RequestBodyNotEntirelyRead(_context.ConnectionIdFeature, _context.TraceIdentifier);
-
-            _context.TimeoutControl.SetTimeout(Constants.RequestBodyDrainTimeout.Ticks, TimeoutReason.RequestBodyDrain);
-
-            try
-            {
-                ReadResult result;
-                do
-                {
-                    result = await ReadAsync();
-                    AdvanceTo(result.Buffer.End);
-                } while (!result.IsCompleted);
-            }
-            catch (BadHttpRequestException ex)
-            {
-                _context.SetBadRequestState(ex);
-            }
-            catch (ConnectionAbortedException)
-            {
-                Log.RequestBodyDrainTimedOut(_context.ConnectionIdFeature, _context.TraceIdentifier);
-            }
-            finally
-            {
-                _context.TimeoutControl.CancelTimeout();
-            }
         }
 
         public static MessageBody For(

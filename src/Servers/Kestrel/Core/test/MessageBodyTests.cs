@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -42,6 +43,99 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 count = stream.Read(buffer, 0, buffer.Length);
                 Assert.Equal(0, count);
+
+                await body.StopAsync();
+            }
+        }
+
+        [Theory]
+        [InlineData(HttpVersion.Http10)]
+        [InlineData(HttpVersion.Http11)]
+        public async Task CanReadFromContentLengthPipeApis(HttpVersion httpVersion)
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(httpVersion, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
+                var reader = new HttpRequestPipeReader();
+                reader.StartAcceptingReads(body);
+
+                input.Add("Hello");
+
+                var readResult = await reader.ReadAsync();
+
+                Assert.Equal(5, readResult.Buffer.Length);
+                AssertASCII("Hello", readResult.Buffer);
+                reader.AdvanceTo(readResult.Buffer.End);
+
+                readResult = await reader.ReadAsync();
+                Assert.True(readResult.IsCompleted);
+                reader.AdvanceTo(readResult.Buffer.End);
+
+                await body.StopAsync();
+            }
+        }
+
+        [Theory]
+        [InlineData(HttpVersion.Http10)]
+        [InlineData(HttpVersion.Http11)]
+        public async Task CanTryReadFromContentLengthPipeApis(HttpVersion httpVersion)
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(httpVersion, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
+                var reader = new HttpRequestPipeReader();
+                reader.StartAcceptingReads(body);
+
+                input.Add("Hello");
+                Assert.True(reader.TryRead(out var readResult));
+
+                Assert.Equal(5, readResult.Buffer.Length);
+                AssertASCII("Hello", readResult.Buffer);
+                reader.AdvanceTo(readResult.Buffer.End);
+
+                reader.TryRead(out readResult);
+                Assert.True(readResult.IsCompleted);
+                reader.AdvanceTo(readResult.Buffer.End);
+
+                await body.StopAsync();
+            }
+        }
+
+        [Theory]
+        [InlineData(HttpVersion.Http10)]
+        [InlineData(HttpVersion.Http11)]
+        public async Task ReadAsyncWithoutAdvanceFromContentLengthThrows(HttpVersion httpVersion)
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(httpVersion, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
+                var reader = new HttpRequestPipeReader();
+                reader.StartAcceptingReads(body);
+
+                input.Add("Hello");
+                var readResult = await reader.ReadAsync();
+
+                await Assert.ThrowsAsync<InvalidOperationException>(async () => await reader.ReadAsync());
+
+                await body.StopAsync();
+            }
+        }
+
+        [Theory]
+        [InlineData(HttpVersion.Http10)]
+        [InlineData(HttpVersion.Http11)]
+        public async Task TryReadWithoutAdvanceFromContentLengthThrows(HttpVersion httpVersion)
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(httpVersion, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
+                var reader = new HttpRequestPipeReader();
+                reader.StartAcceptingReads(body);
+
+                input.Add("Hello");
+                Assert.True(reader.TryRead(out var readResult));
+
+                Assert.Throws<InvalidOperationException>(() => reader.TryRead(out readResult));
 
                 await body.StopAsync();
             }
@@ -384,26 +478,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             }
         }
 
-        //[Fact]
-        //public async Task CopyToAsyncDoesNotCompletePipeReader()
-        //{
-        //    using (var input = new TestInput())
-        //    {
-        //        var body = Http1MessageBody.For(HttpVersion.Http10, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
+        [Fact]
+        public async Task CopyToAsyncDoesNotCompletePipeReader()
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(HttpVersion.Http10, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
+                var reader = new HttpRequestPipeReader();
+                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), reader);
 
-        //        input.Add("Hello");
+                input.Add("Hello");
 
-        //        using (var ms = new MemoryStream())
-        //        {
-        //            await body.CopyToAsync(ms);
-        //        }
+                using (var ms = new MemoryStream())
+                {
+                    await stream.CopyToAsync(ms);
+                }
 
-        //        Assert.Equal(0, await body.ReadAsync(new ArraySegment<byte>(new byte[1])));
+                Assert.Equal(0, await stream.ReadAsync(new ArraySegment<byte>(new byte[1])));
 
-        //        
-        //        await body.StopAsync();
-        //    }
-        //}
+                await body.StopAsync();
+            }
+        }
 
         [Fact]
         public async Task ConsumeAsyncConsumesAllRemainingInput()
@@ -416,84 +511,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 await body.ConsumeAsync();
 
-                // TODO should this throw an exception or not?
                 Assert.True((await body.ReadAsync()).IsCompleted);
-
 
                 await body.StopAsync();
             }
         }
 
-        //[Fact]
-        //public async Task CopyToAsyncDoesNotCopyBlocks()
-        //{
-        //    var writeCount = 0;
-        //    var writeTcs = new TaskCompletionSource<(byte[], int, int)>(TaskCreationOptions.RunContinuationsAsynchronously);
-        //    var mockDestination = new Mock<Stream> { CallBase = true };
+        [Fact]
+        public async Task ConsumeAsyncConsumesAllRemainingInputAfterStartingTryReadWithoutAdvance()
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(HttpVersion.Http10, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
 
-        //    mockDestination
-        //        .Setup(m => m.WriteAsync(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>(), CancellationToken.None))
-        //        .Callback((byte[] buffer, int offset, int count, CancellationToken cancellationToken) =>
-        //        {
-        //            writeTcs.SetResult((buffer, offset, count));
-        //            writeCount++;
-        //        })
-        //        .Returns(Task.CompletedTask);
+                input.Add("Hello");
+                body.TryRead(out var readResult);
 
-        //    using (var memoryPool = KestrelMemoryPool.Create())
-        //    {
-        //        var options = new PipeOptions(pool: memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
-        //        var pair = DuplexPipe.CreateConnectionPair(options, options);
-        //        var transport = pair.Transport;
-        //        var http1ConnectionContext = new HttpConnectionContext
-        //        {
-        //            ServiceContext = new TestServiceContext(),
-        //            ConnectionFeatures = new FeatureCollection(),
-        //            Transport = transport,
-        //            MemoryPool = memoryPool,
-        //            TimeoutControl = Mock.Of<ITimeoutControl>()
-        //        };
-        //        var http1Connection = new Http1Connection(http1ConnectionContext)
-        //        {
-        //            HasStartedConsumingRequestBody = true
-        //        };
+                await body.ConsumeAsync(); // This will throw because someone called try read without advance.
 
-        //        var headers = new HttpRequestHeaders { HeaderContentLength = "12" };
-        //        var body = Http1MessageBody.For(HttpVersion.Http11, headers, http1Connection);
+                Assert.True((await body.ReadAsync()).IsCompleted);
 
-        //        var copyToAsyncTask = body.CopyToAsync(mockDestination.Object);
-
-        //        var bytes = Encoding.ASCII.GetBytes("Hello ");
-        //        var buffer = http1Connection.RequestBodyPipe.Writer.GetMemory(2048);
-        //        Assert.True(MemoryMarshal.TryGetArray(buffer, out ArraySegment<byte> segment));
-        //        Buffer.BlockCopy(bytes, 0, segment.Array, segment.Offset, bytes.Length);
-        //        http1Connection.RequestBodyPipe.Writer.Advance(bytes.Length);
-        //        await http1Connection.RequestBodyPipe.Writer.FlushAsync();
-
-        //        // Verify the block passed to Stream.WriteAsync() is the same one incoming data was written into.
-        //        Assert.Equal((segment.Array, segment.Offset, bytes.Length), await writeTcs.Task);
-
-        //        // Verify the again when GetMemory returns the tail space of the same block.
-        //        writeTcs = new TaskCompletionSource<(byte[], int, int)>(TaskCreationOptions.RunContinuationsAsynchronously);
-        //        bytes = Encoding.ASCII.GetBytes("World!");
-        //        buffer = http1Connection.RequestBodyPipe.Writer.GetMemory(2048);
-        //        Assert.True(MemoryMarshal.TryGetArray(buffer, out segment));
-        //        Buffer.BlockCopy(bytes, 0, segment.Array, segment.Offset, bytes.Length);
-        //        http1Connection.RequestBodyPipe.Writer.Advance(bytes.Length);
-        //        await http1Connection.RequestBodyPipe.Writer.FlushAsync();
-
-        //        Assert.Equal((segment.Array, segment.Offset, bytes.Length), await writeTcs.Task);
-
-        //        http1Connection.RequestBodyPipe.Writer.Complete();
-
-        //        await copyToAsyncTask;
-
-        //        Assert.Equal(2, writeCount);
-
-        //        // Don't call body.StopAsync() because PumpAsync() was never called.
-        //        http1Connection.RequestBodyPipeReader.Complete();
-        //    }
-        //}
+                await body.StopAsync();
+            }
+        }
 
         [Theory]
         [InlineData("keep-alive, upgrade")]
@@ -517,7 +557,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 AssertASCII("Hello", new ArraySegment<byte>(buffer, 0, 5));
 
                 input.Fin();
-
 
                 await body.StopAsync();
             }
@@ -546,7 +585,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 input.Fin();
 
-
                 await body.StopAsync();
             }
         }
@@ -570,7 +608,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 // Add more input and verify is read
                 input.Add("b");
                 Assert.Equal(1, await stream.ReadAsync(new byte[1], 0, 1));
-
 
                 await body.StopAsync();
             }
@@ -598,7 +635,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 var exception = await Assert.ThrowsAsync<BadHttpRequestException>(async () => await body.ReadAsync());
                 Assert.Equal(StatusCodes.Status408RequestTimeout, exception.StatusCode);
-
 
                 await body.StopAsync();
             }
@@ -634,39 +670,39 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     It.IsAny<string>(),
                     It.Is<BadHttpRequestException>(ex => ex.Reason == RequestRejectionReason.RequestBodyTimeout)));
 
-
                 await body.StopAsync();
             }
         }
 
-        //[Fact]
-        //public async Task CopyToAsyncThrowsOnTimeout()
-        //{
-        //    using (var input = new TestInput())
-        //    {
-        //        var mockTimeoutControl = new Mock<ITimeoutControl>();
+        [Fact]
+        public async Task CopyToAsyncThrowsOnTimeout()
+        {
+            using (var input = new TestInput())
+            {
+                var mockTimeoutControl = new Mock<ITimeoutControl>();
 
-        //        input.Http1ConnectionContext.TimeoutControl = mockTimeoutControl.Object;
+                input.Http1ConnectionContext.TimeoutControl = mockTimeoutControl.Object;
 
-        //        var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
+                var reader = new HttpRequestPipeReader();
+                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), reader);
 
-        //        // Add some input and read it to start PumpAsync
-        //        input.Add("a");
-        //        Assert.Equal(1, (await body.ReadAsync()).Buffer.Length);
+                // Add some input and read it to start PumpAsync
+                input.Add("a");
+                Assert.Equal(1, (await body.ReadAsync()).Buffer.Length);
 
-        //        // Time out on the next read
-        //        input.Http1Connection.SendTimeoutResponse();
+                // Time out on the next read
+                input.Http1Connection.SendTimeoutResponse();
 
-        //        using (var ms = new MemoryStream())
-        //        {
-        //            var exception = await Assert.ThrowsAsync<BadHttpRequestException>(() => body.CopyToAsync(ms));
-        //            Assert.Equal(StatusCodes.Status408RequestTimeout, exception.StatusCode);
-        //        }
+                using (var ms = new MemoryStream())
+                {
+                    var exception = await Assert.ThrowsAsync<BadHttpRequestException>(() => stream.CopyToAsync(ms));
+                    Assert.Equal(StatusCodes.Status408RequestTimeout, exception.StatusCode);
+                }
 
-        //        
-        //        await body.StopAsync();
-        //    }
-        //}
+                await body.StopAsync();
+            }
+        }
 
         [Fact]
         public async Task LogsWhenStartsReadingRequestBody()
@@ -690,7 +726,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 mockLogger.Verify(logger => logger.RequestBodyStart("ConnectionId", "RequestId"));
 
                 input.Fin();
-
 
                 await body.StopAsync();
             }
@@ -720,7 +755,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 Assert.Equal(1, await stream.ReadAsync(new byte[1], 0, 1));
 
                 input.Fin();
-
 
                 await body.StopAsync();
 
@@ -784,7 +818,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 input.Add("a");
                 await readTask;
 
-
                 await body.StopAsync();
             }
         }
@@ -821,7 +854,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 mockTimeoutControl.Verify(timeoutControl => timeoutControl.StopTimingRead(), Times.Never);
                 mockTimeoutControl.Verify(timeoutControl => timeoutControl.StartTimingRead(), Times.Never);
 
-
                 await body.StopAsync();
             }
         }
@@ -834,6 +866,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             for (var index = 0; index < bytes.Length; index++)
             {
                 Assert.Equal(bytes[index], actual.Array[actual.Offset + index]);
+            }
+        }
+
+        private void AssertASCII(string expected, ReadOnlySequence<byte> actual)
+        {
+            var arr = actual.ToArray();
+            var encoding = Encoding.ASCII;
+            var bytes = encoding.GetBytes(expected);
+            Assert.Equal(bytes.Length, actual.Length);
+            for (var index = 0; index < bytes.Length; index++)
+            {
+                Assert.Equal(bytes[index], arr[index]);
             }
         }
 

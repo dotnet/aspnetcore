@@ -650,11 +650,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 if (HasStartedConsumingRequestBody)
                 {
-                    // This shouldn't be happening for http1 content length.
-                    // Maybe we can go through the body?
-                    //InternalRequestBodyPipeReader?.Complete();
-
-                    // Wait for Http1MessageBody.PumpAsync() to call RequestBodyPipe.Writer.Complete().
                     await messageBody.StopAsync();
                 }
             }
@@ -1249,7 +1244,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _requestRejectedException = ex;
         }
 
-        protected void ReportApplicationError(Exception ex)
+        public void ReportApplicationError(Exception ex)
         {
             if (_applicationException == null)
             {

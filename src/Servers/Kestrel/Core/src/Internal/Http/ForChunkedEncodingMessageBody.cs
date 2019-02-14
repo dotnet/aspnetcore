@@ -190,6 +190,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 _context.SetBadRequestState(ex);
                 return Task.CompletedTask;
             }
+            catch (InvalidOperationException ex)
+            {
+                var connectionAbortedException = new ConnectionAbortedException(CoreStrings.ConnectionAbortedByApplication, ex);
+                _context.ReportApplicationError(connectionAbortedException);
+
+                // Have to abort the connection because we can't finish draining the request
+                _context.StopProcessingNextRequest();
+                return Task.CompletedTask;
+            }
 
             return OnConsumeAsyncAwaited();
         }
@@ -216,6 +225,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             catch (ConnectionAbortedException)
             {
                 Log.RequestBodyDrainTimedOut(_context.ConnectionIdFeature, _context.TraceIdentifier);
+            }
+            catch (InvalidOperationException ex)
+            {
+                var connectionAbortedException = new ConnectionAbortedException(CoreStrings.ConnectionAbortedByApplication, ex);
+                _context.ReportApplicationError(connectionAbortedException);
+
+                // Have to abort the connection because we can't finish draining the request
+                _context.StopProcessingNextRequest();
             }
             finally
             {

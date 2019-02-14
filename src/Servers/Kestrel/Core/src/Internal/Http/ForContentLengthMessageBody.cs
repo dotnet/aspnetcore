@@ -6,6 +6,8 @@ using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
@@ -16,6 +18,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private long _inputLength;
         private ReadResult _readResult; // TODO we can probably make this in Http1MessageBody or even MessageBody
         private bool _completed;
+        private int _userCanceled;
 
         public ForContentLength(bool keepAlive, long contentLength, Http1Connection context)
             : base(context)
@@ -35,35 +38,52 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             TryStart();
 
-            // This isn't great. The issue is that TryRead can get a canceled read result
-            // which is unknown to StartTimingReadAsync.
-            if (_context.RequestTimedOut)
+            while (true)
             {
-                BadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTimeout);
-            }
+                // This isn't great. The issue is that TryRead can get a canceled read result
+                // which is unknown to StartTimingReadAsync. 
+                if (_context.RequestTimedOut)
+                {
+                    BadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTimeout);
+                }
 
-            _readResult = await StartTimingReadAsync(cancellationToken);
+                _readResult = await StartTimingReadAsync(cancellationToken);
 
-            if (_context.RequestTimedOut)
-            {
-                Debug.Assert(_readResult.IsCanceled);
-                BadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTimeout);
-            }
+                if (_context.RequestTimedOut)
+                {
+                    Debug.Assert(_readResult.IsCanceled);
+                    BadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTimeout);
+                }
 
-            var readableBuffer = _readResult.Buffer;
-            var readableBufferLength = readableBuffer.Length;
-            StopTimingRead(readableBufferLength);
+                if (_readResult.IsCanceled)
+                {
+                    if (Interlocked.CompareExchange(ref _userCanceled, 0, 1) == 1)
+                    {
+                        // Ignore the readResult if it wasn't by the user.
+                        break;
+                    }
+                }
 
-            if (_readResult.IsCompleted)
-            {
-                // OnInputOrOutputCompleted() is an idempotent method that closes the connection. Sometimes
-                // input completion is observed here before the Input.OnWriterCompleted() callback is fired,
-                // so we call OnInputOrOutputCompleted() now to prevent a race in our tests where a 400
-                // response is written after observing the unexpected end of request content instead of just
-                // closing the connection without a response as expected.
-                _context.OnInputOrOutputCompleted();
+                var readableBuffer = _readResult.Buffer;
+                var readableBufferLength = readableBuffer.Length;
+                StopTimingRead(readableBufferLength);
 
-                BadHttpRequestException.Throw(RequestRejectionReason.UnexpectedEndOfRequestContent);
+                if (_readResult.IsCompleted)
+                {
+                    // OnInputOrOutputCompleted() is an idempotent method that closes the connection. Sometimes
+                    // input completion is observed here before the Input.OnWriterCompleted() callback is fired,
+                    // so we call OnInputOrOutputCompleted() now to prevent a race in our tests where a 400
+                    // response is written after observing the unexpected end of request content instead of just
+                    // closing the connection without a response as expected.
+                    _context.OnInputOrOutputCompleted();
+
+                    BadHttpRequestException.Throw(RequestRejectionReason.UnexpectedEndOfRequestContent);
+                }
+
+                if (readableBufferLength > 0)
+                {
+                    break;
+                }
             }
 
             // handle cases where we send more data than the content length
@@ -89,12 +109,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             if (_inputLength == 0 || _completed)
             {
-                // TODO should this muck with _readResult
-                readResult = default;
+                readResult = new ReadResult(default, isCanceled: false, isCompleted: true);
                 return false;
             }
 
-            var res = _context.Input.TryRead(out _readResult);
+            TryStart();
+
+            var boolResult = _context.Input.TryRead(out _readResult);
 
             if (_readResult.Buffer.Length > _inputLength)
             {
@@ -107,7 +128,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             readResult = _readResult;
-            return res;
+
+            if (_readResult.IsCompleted)
+            {
+                TryStop();
+            }
+
+            return boolResult;
         }
 
         public override void AdvanceTo(SequencePosition consumed)
@@ -121,6 +148,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 return;
             }
+
             var dataLength = _readResult.Buffer.Slice(_readResult.Buffer.Start, consumed).Length;
             _inputLength -= dataLength;
             _context.Input.AdvanceTo(consumed, examined);
@@ -164,20 +192,101 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public override void Complete(Exception exception)
         {
-            // Make this noop for now TODO
+            _context.ReportApplicationError(exception);
             _completed = true;
         }
 
         public override void OnWriterCompleted(Action<Exception, object> callback, object state)
         {
-            throw new NotImplementedException();
+            // TODO make this work with ContentLength.
         }
 
         public override void CancelPendingRead()
         {
-            throw new NotImplementedException();
+            Interlocked.Exchange(ref _userCanceled, 1);
+            _context.Input.CancelPendingRead();
         }
 
-        // TODO maybe override OnStopAsync here.
+        protected override Task OnStopAsync()
+        {
+            Complete(null);
+            return Task.CompletedTask;
+        }
+
+        protected override Task OnConsumeAsync()
+        {
+            try
+            {
+                if (TryRead(out var readResult))
+                {
+                    AdvanceTo(readResult.Buffer.End);
+
+                    if (readResult.IsCompleted)
+                    {
+                        return Task.CompletedTask;
+                    }
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // TryRead can throw OperationCanceledException https://github.com/dotnet/corefx/issues/32029
+                // because of buggy logic, this works around that for now
+            }
+            catch (BadHttpRequestException ex)
+            {
+                // At this point, the response has already been written, so this won't result in a 4XX response;
+                // however, we still need to stop the request processing loop and log.
+                _context.SetBadRequestState(ex);
+                return Task.CompletedTask;
+            }
+            catch (InvalidOperationException ex)
+            {
+                var connectionAbortedException = new ConnectionAbortedException(CoreStrings.ConnectionAbortedByApplication, ex);
+                _context.ReportApplicationError(connectionAbortedException);
+
+                // Have to abort the connection because we can't finish draining the request
+                _context.StopProcessingNextRequest();
+                return Task.CompletedTask;
+            }
+
+            return OnConsumeAsyncAwaited();
+        }
+
+        private async Task OnConsumeAsyncAwaited()
+        {
+            Log.RequestBodyNotEntirelyRead(_context.ConnectionIdFeature, _context.TraceIdentifier);
+
+            _context.TimeoutControl.SetTimeout(Constants.RequestBodyDrainTimeout.Ticks, TimeoutReason.RequestBodyDrain);
+
+            try
+            {
+                ReadResult result;
+                do
+                {
+                    result = await ReadAsync();
+                    AdvanceTo(result.Buffer.End);
+                } while (!result.IsCompleted);
+            }
+            catch (BadHttpRequestException ex)
+            {
+                _context.SetBadRequestState(ex);
+            }
+            catch (ConnectionAbortedException)
+            {
+                Log.RequestBodyDrainTimedOut(_context.ConnectionIdFeature, _context.TraceIdentifier);
+            }
+            catch (InvalidOperationException ex)
+            {
+                var connectionAbortedException = new ConnectionAbortedException(CoreStrings.ConnectionAbortedByApplication, ex);
+                _context.ReportApplicationError(connectionAbortedException);
+
+                // Have to abort the connection because we can't finish draining the request
+                _context.StopProcessingNextRequest();
+            }
+            finally
+            {
+                _context.TimeoutControl.CancelTimeout();
+            }
+        }
     }
 }

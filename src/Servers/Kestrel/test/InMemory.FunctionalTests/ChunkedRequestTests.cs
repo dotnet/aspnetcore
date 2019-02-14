@@ -817,4 +817,3 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
     }
 }
-

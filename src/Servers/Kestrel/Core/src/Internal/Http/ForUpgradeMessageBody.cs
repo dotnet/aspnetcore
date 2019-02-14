@@ -46,6 +46,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public override void Complete(Exception exception)
         {
             // Noop as we don't want to complete the connection pipe.
+            // actually we should complete this, just keep it internal
         }
 
         public override void CancelPendingRead()
