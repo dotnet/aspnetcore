@@ -154,14 +154,18 @@ export class HubConnection {
     public stream<T = any>(methodName: string, ...args: any[]): IStreamResult<T> {
         const invocationDescriptor = this.createStreamInvocation(methodName, args);
 
-        const subject = new Subject<T>(() => {
+        let promiseQueue: Promise<void>;
+        const subject = new Subject<T>();
+        subject.cancelCallback = () => {
             const cancelInvocation: CancelInvocationMessage = this.createCancelInvocation(invocationDescriptor.invocationId);
             const cancelMessage: any = this.protocol.writeMessage(cancelInvocation);
 
             delete this.callbacks[invocationDescriptor.invocationId];
 
-            return this.sendMessage(cancelMessage);
-        });
+            return promiseQueue.then(() => {
+                return this.sendMessage(cancelMessage);
+            });
+        };
 
         this.callbacks[invocationDescriptor.invocationId] = (invocationEvent: CompletionMessage | StreamItemMessage | null, error?: Error) => {
             if (error) {
@@ -183,7 +187,7 @@ export class HubConnection {
 
         const message = this.protocol.writeMessage(invocationDescriptor);
 
-        this.sendMessage(message)
+        promiseQueue = this.sendMessage(message)
             .catch((e) => {
                 subject.error(e);
                 delete this.callbacks[invocationDescriptor.invocationId];

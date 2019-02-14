@@ -3,6 +3,7 @@
 
 using System;
 using System.Reactive.Linq;
+using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Connections;
@@ -20,6 +21,13 @@ namespace FunctionalTests
 
     public class TestHub : Hub
     {
+        private readonly IHubContext<TestHub> _context;
+
+        public TestHub(IHubContext<TestHub> context)
+        {
+            _context = context;
+        }
+
         public string Echo(string message)
         {
             return message;
@@ -47,6 +55,19 @@ namespace FunctionalTests
             channel.Writer.TryWrite("b");
             channel.Writer.TryWrite("c");
             channel.Writer.Complete();
+            return channel.Reader;
+        }
+
+        public ChannelReader<string> InfiniteStream(CancellationToken token)
+        {
+            var channel = Channel.CreateUnbounded<string>();
+            var connectionId = Context.ConnectionId;
+
+            token.Register(async (state) =>
+            {
+                await ((IHubContext<TestHub>)state).Clients.Client(connectionId).SendAsync("StreamCanceled");
+            }, _context);
+
             return channel.Reader;
         }
 

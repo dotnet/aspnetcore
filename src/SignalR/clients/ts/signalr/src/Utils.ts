@@ -107,11 +107,10 @@ export function createLogger(logger?: ILogger | LogLevel) {
 /** @private */
 export class Subject<T> implements IStreamResult<T> {
     public observers: Array<IStreamSubscriber<T>>;
-    public cancelCallback: () => Promise<void>;
+    public cancelCallback?: () => Promise<void>;
 
-    constructor(cancelCallback: () => Promise<void>) {
+    constructor() {
         this.observers = [];
-        this.cancelCallback = cancelCallback;
     }
 
     public next(item: T): void {
@@ -158,7 +157,7 @@ export class SubjectSubscription<T> implements ISubscription<T> {
             this.subject.observers.splice(index, 1);
         }
 
-        if (this.subject.observers.length === 0) {
+        if (this.subject.observers.length === 0 && this.subject.cancelCallback) {
             this.subject.cancelCallback().catch((_) => { });
         }
     }
