@@ -36,7 +36,7 @@ namespace signalr
         {}
     }
 
-    transport_type websocket_transport::get_transport_type() const
+    transport_type websocket_transport::get_transport_type() const noexcept
     {
         return transport_type::websockets;
     }
@@ -236,7 +236,7 @@ namespace signalr
     std::shared_ptr<websocket_client> websocket_transport::safe_get_websocket_client()
     {
         {
-            std::lock_guard<std::mutex> lock(m_websocket_client_lock);
+            const std::lock_guard<std::mutex> lock(m_websocket_client_lock);
             auto websocket_client = m_websocket_client;
 
             return websocket_client;

@@ -43,20 +43,11 @@ namespace signalr
 
         SIGNALRCLIENT_API void __cdecl on(const utility::string_t& event_name, const method_invoked_handler& handler);
 
-        pplx::task<web::json::value> invoke(const utility::string_t& method_name, const web::json::value& arguments = web::json::value::array())
-        {
-            return invoke_json(method_name, arguments);
-        }
+        SIGNALRCLIENT_API pplx::task<web::json::value> invoke(const utility::string_t& method_name, const web::json::value& arguments = web::json::value::array());
 
-        pplx::task<void> send(const utility::string_t& method_name, const web::json::value& arguments = web::json::value::array())
-        {
-            return invoke_void(method_name, arguments);
-        }
+        SIGNALRCLIENT_API pplx::task<void> send(const utility::string_t& method_name, const web::json::value& arguments = web::json::value::array());
 
     private:
         std::shared_ptr<hub_connection_impl> m_pImpl;
-
-        SIGNALRCLIENT_API pplx::task<web::json::value> __cdecl invoke_json(const utility::string_t& method_name, const web::json::value& arguments);
-        SIGNALRCLIENT_API pplx::task<void> __cdecl invoke_void(const utility::string_t& method_name, const web::json::value& arguments);
     };
 }

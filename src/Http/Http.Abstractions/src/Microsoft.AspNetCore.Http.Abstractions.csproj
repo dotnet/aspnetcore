@@ -21,7 +21,7 @@ Microsoft.AspNetCore.Http.HttpResponse</Description>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Http.Features" />
-    <Reference Include="Microsoft.Extensions.ActivatorUtilities.Sources" SharedSources="true" />
+    <Reference Include="Microsoft.Extensions.ActivatorUtilities.Sources" />
     <Reference Include="System.Text.Encodings.Web" />
   </ItemGroup>
 

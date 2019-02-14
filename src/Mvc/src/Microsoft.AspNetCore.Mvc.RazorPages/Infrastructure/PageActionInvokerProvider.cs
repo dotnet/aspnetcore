@@ -38,6 +38,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         private readonly DiagnosticListener _diagnosticListener;
         private readonly ILogger<PageActionInvoker> _logger;
         private readonly IActionResultTypeMapper _mapper;
+        private readonly IActionContextAccessor _actionContextAccessor;
+
         private volatile InnerCache _currentCache;
 
         public PageActionInvokerProvider(
@@ -57,6 +59,45 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             DiagnosticListener diagnosticListener,
             ILoggerFactory loggerFactory,
             IActionResultTypeMapper mapper)
+            : this(
+                  loader,
+                  pageFactoryProvider,
+                  modelFactoryProvider,
+                  razorPageFactoryProvider,
+                  collectionProvider,
+                  filterProviders,
+                  parameterBinder,
+                  modelMetadataProvider,
+                  modelBinderFactory,
+                  tempDataFactory,
+                  mvcOptions,
+                  htmlHelperOptions,
+                  selector,
+                  diagnosticListener,
+                  loggerFactory,
+                  mapper,
+                  actionContextAccessor: null)
+        {
+        }
+
+        public PageActionInvokerProvider(
+            IPageLoader loader,
+            IPageFactoryProvider pageFactoryProvider,
+            IPageModelFactoryProvider modelFactoryProvider,
+            IRazorPageFactoryProvider razorPageFactoryProvider,
+            IActionDescriptorCollectionProvider collectionProvider,
+            IEnumerable<IFilterProvider> filterProviders,
+            ParameterBinder parameterBinder,
+            IModelMetadataProvider modelMetadataProvider,
+            IModelBinderFactory modelBinderFactory,
+            ITempDataDictionaryFactory tempDataFactory,
+            IOptions<MvcOptions> mvcOptions,
+            IOptions<HtmlHelperOptions> htmlHelperOptions,
+            IPageHandlerMethodSelector selector,
+            DiagnosticListener diagnosticListener,
+            ILoggerFactory loggerFactory,
+            IActionResultTypeMapper mapper,
+            IActionContextAccessor actionContextAccessor)
         {
             _loader = loader;
             _pageFactoryProvider = pageFactoryProvider;
@@ -75,6 +116,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             _diagnosticListener = diagnosticListener;
             _logger = loggerFactory.CreateLogger<PageActionInvoker>();
             _mapper = mapper;
+            _actionContextAccessor = actionContextAccessor ?? ActionContextAccessor.Null;
         }
 
         public int Order { get; } = -1000;
@@ -154,6 +196,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 _selector,
                 _diagnosticListener,
                 _logger,
+                _actionContextAccessor,
                 _mapper,
                 pageContext,
                 filters,

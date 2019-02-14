@@ -107,14 +107,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
                     {
 
                     }
-                    await Task.Delay(1000);
-
+                    await Task.Delay(1000); 
                 }
             });
 
             try
             {
-                waitForStart.TimeoutAfter(Timeout).Wait();
+                waitForStart.TimeoutAfter(Timeout).Wait(1000);
             }
             catch (Exception ex)
             {

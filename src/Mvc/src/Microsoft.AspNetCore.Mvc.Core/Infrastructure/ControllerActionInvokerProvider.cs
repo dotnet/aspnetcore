@@ -21,6 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         private readonly ILogger _logger;
         private readonly DiagnosticListener _diagnosticListener;
         private readonly IActionResultTypeMapper _mapper;
+        private readonly IActionContextAccessor _actionContextAccessor;
 
         public ControllerActionInvokerProvider(
             ControllerActionInvokerCache controllerActionInvokerCache,
@@ -28,6 +29,17 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             ILoggerFactory loggerFactory,
             DiagnosticListener diagnosticListener,
             IActionResultTypeMapper mapper)
+            : this(controllerActionInvokerCache, optionsAccessor, loggerFactory, diagnosticListener, mapper, null)
+        {
+        }
+
+        public ControllerActionInvokerProvider(
+            ControllerActionInvokerCache controllerActionInvokerCache,
+            IOptions<MvcOptions> optionsAccessor,
+            ILoggerFactory loggerFactory,
+            DiagnosticListener diagnosticListener,
+            IActionResultTypeMapper mapper,
+            IActionContextAccessor actionContextAccessor)
         {
             _controllerActionInvokerCache = controllerActionInvokerCache;
             _valueProviderFactories = optionsAccessor.Value.ValueProviderFactories.ToArray();
@@ -35,6 +47,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             _logger = loggerFactory.CreateLogger<ControllerActionInvoker>();
             _diagnosticListener = diagnosticListener;
             _mapper = mapper;
+            _actionContextAccessor = actionContextAccessor ?? ActionContextAccessor.Null;
         }
 
         public int Order => -1000;
@@ -61,6 +74,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 var invoker = new ControllerActionInvoker(
                     _logger,
                     _diagnosticListener,
+                    _actionContextAccessor,
                     _mapper,
                     controllerContext,
                     cacheEntry,

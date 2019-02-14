@@ -21,6 +21,9 @@ Suppress running restore on projects.
 .PARAMETER NoBuild
 Suppress re-compile projects. (Implies -NoRestore)
 
+.PARAMETER NoBuildDeps
+Do not build project-to-project references and only build the specified project.
+
 .PARAMETER Pack
 Produce packages.
 
@@ -88,6 +91,7 @@ param(
     [switch]$Restore,
     [switch]$NoRestore, # Suppress restore
     [switch]$NoBuild, # Suppress compiling
+    [switch]$NoBuildDeps, # Suppress project to project dependencies
     [switch]$Pack, # Produce packages
     [switch]$Test, # Run tests
     [switch]$Sign, # Code sign
@@ -268,6 +272,8 @@ if ($BuildManaged) { $MSBuildArguments += "/p:BuildManaged=true" }
 if ($BuildNative) { $MSBuildArguments += "/p:BuildNative=true" }
 if ($BuildNodeJS) { $MSBuildArguments += "/p:BuildNodeJS=true" }
 if ($BuildJava) { $MSBuildArguments += "/p:BuildJava=true" }
+
+if ($NoBuildDeps) { $MSBuildArguments += "/p:BuildProjectReferences=false" }
 
 if ($NoBuildInstallers) { $MSBuildArguments += "/p:BuildInstallers=false" }
 if ($NoBuildManaged) { $MSBuildArguments += "/p:BuildManaged=false" }

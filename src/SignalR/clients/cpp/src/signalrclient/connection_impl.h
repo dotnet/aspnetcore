@@ -41,14 +41,12 @@ namespace signalr
         pplx::task<void> send(const utility::string_t &data);
         pplx::task<void> stop();
 
-        connection_state get_connection_state() const;
+        connection_state get_connection_state() const noexcept;
         utility::string_t get_connection_id() const;
 
         void set_message_received(const std::function<void(const utility::string_t&)>& message_received);
         void set_disconnected(const std::function<void()>& disconnected);
         void set_client_config(const signalr_client_config& config);
-
-        void set_connection_data(const utility::string_t& connection_data);
 
     private:
         web::uri m_base_url;
@@ -74,7 +72,7 @@ namespace signalr
         connection_impl(const utility::string_t& url, const utility::string_t& query_string, trace_level trace_level, const std::shared_ptr<log_writer>& log_writer,
             std::unique_ptr<web_request_factory> web_request_factory, std::unique_ptr<transport_factory> transport_factory);
 
-        pplx::task<std::shared_ptr<transport>> start_transport(negotiation_response negotiation_response);
+        pplx::task<std::shared_ptr<transport>> start_transport();
         pplx::task<void> send_connect_request(const std::shared_ptr<transport>& transport,
             const pplx::task_completion_event<void>& connect_request_tce);
 

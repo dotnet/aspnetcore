@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
     {
         protected readonly DiagnosticListener _diagnosticListener;
         protected readonly ILogger _logger;
+        protected readonly IActionContextAccessor _actionContextAccessor;
         protected readonly IActionResultTypeMapper _mapper;
         protected readonly ActionContext _actionContext;
         protected readonly IFilterMetadata[] _filters;
@@ -39,6 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         public ResourceInvoker(
             DiagnosticListener diagnosticListener,
             ILogger logger,
+            IActionContextAccessor actionContextAccessor,
             IActionResultTypeMapper mapper,
             ActionContext actionContext,
             IFilterMetadata[] filters,
@@ -46,6 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         {
             _diagnosticListener = diagnosticListener ?? throw new ArgumentNullException(nameof(diagnosticListener));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _actionContextAccessor = actionContextAccessor ?? throw new ArgumentNullException(nameof(actionContextAccessor));
             _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             _actionContext = actionContext ?? throw new ArgumentNullException(nameof(actionContext));
 
@@ -58,6 +61,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         {
             try
             {
+                _actionContextAccessor.ActionContext = _actionContext;
+
                 _diagnosticListener.BeforeAction(
                     _actionContext.ActionDescriptor,
                     _actionContext.HttpContext,

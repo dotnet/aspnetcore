@@ -56,8 +56,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             ILoggerFactory loggerFactory = null,
             object diagnosticListener = null)
         {
-            var actionContextAccessor = new ActionContextAccessor();
-
             if (actionDescriptor == null)
             {
                 var mockAction = new Mock<ActionDescriptor>();
@@ -105,8 +103,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 invokerFactory,
                 actionSelector,
                 diagnosticSource,
-                loggerFactory,
-                actionContextAccessor);
+                loggerFactory);
         }
 
         private RouteContext CreateRouteContext()

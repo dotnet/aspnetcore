@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         /// Initializes a new instance of the <see cref="HttpConnection"/> class.
         /// </summary>
         /// <param name="url">The URL to connect to.</param>
-        /// <param name="transports">A bitmask comprised of one or more <see cref="HttpTransportType"/> that specify what transports the client should use.</param>
+        /// <param name="transports">A bitmask combining one or more <see cref="HttpTransportType"/> values that specify what transports the client should use.</param>
         public HttpConnection(Uri url, HttpTransportType transports)
             : this(url, transports, loggerFactory: null)
         {
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         /// Initializes a new instance of the <see cref="HttpConnection"/> class.
         /// </summary>
         /// <param name="url">The URL to connect to.</param>
-        /// <param name="transports">A bitmask comprised of one or more <see cref="HttpTransportType"/> that specify what transports the client should use.</param>
+        /// <param name="transports">A bitmask combining one or more <see cref="HttpTransportType"/> values that specify what transports the client should use.</param>
         /// <param name="loggerFactory">The logger factory.</param>
         public HttpConnection(Uri url, HttpTransportType transports, ILoggerFactory loggerFactory)
             : this(CreateHttpOptions(url, transports), loggerFactory)

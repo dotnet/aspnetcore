@@ -32,111 +32,12 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             });
 
             Services = serviceCollection.BuildServiceProvider();
-            InvokerFactory = new Mock<IActionInvokerFactory>(MockBehavior.Strict);
-            Factory = new ActionEndpointFactory(
-                Services.GetRequiredService<RoutePatternTransformer>(),
-                new MvcEndpointInvokerFactory(InvokerFactory.Object));
+            Factory = new ActionEndpointFactory(Services.GetRequiredService<RoutePatternTransformer>());
         }
 
         internal ActionEndpointFactory Factory { get; }
 
-        internal Mock<IActionInvokerFactory> InvokerFactory { get; }
-
         internal IServiceProvider Services { get; }
-
-        [Fact]
-        public async Task AddEndpoints_AttributeRouted_UsesActionInvoker()
-        {
-            // Arrange
-            var values = new
-            {
-                action = "Test",
-                controller = "Test",
-                page = (string)null,
-            };
-
-            var action = CreateActionDescriptor(values, pattern: "/Test");
-
-            var endpointFeature = new EndpointSelectorContext
-            {
-                RouteValues = new RouteValueDictionary()
-            };
-
-            var featureCollection = new FeatureCollection();
-            featureCollection.Set<IEndpointFeature>(endpointFeature);
-            featureCollection.Set<IRouteValuesFeature>(endpointFeature);
-            featureCollection.Set<IRoutingFeature>(endpointFeature);
-
-            var httpContextMock = new Mock<HttpContext>();
-            httpContextMock.Setup(m => m.Features).Returns(featureCollection);
-
-            var actionInvokerCalled = false;
-            var actionInvokerMock = new Mock<IActionInvoker>();
-            actionInvokerMock.Setup(m => m.InvokeAsync()).Returns(() =>
-            {
-                actionInvokerCalled = true;
-                return Task.CompletedTask;
-            });
-            
-            InvokerFactory
-                .Setup(m => m.CreateInvoker(It.IsAny<ActionContext>()))
-                .Returns(actionInvokerMock.Object);
-
-            // Act
-            var endpoint = CreateAttributeRoutedEndpoint(action);
-
-            // Assert
-            await endpoint.RequestDelegate(httpContextMock.Object);
-
-            Assert.True(actionInvokerCalled);
-        }
-
-        [Fact]
-        public async Task AddEndpoints_ConventionalRouted_UsesActionInvoker()
-        {
-            // Arrange
-            var values = new
-            {
-                action = "Test",
-                controller = "Test",
-                page = (string)null,
-            };
-
-            var action = CreateActionDescriptor(values);
-
-            var endpointFeature = new EndpointSelectorContext
-            {
-                RouteValues = new RouteValueDictionary()
-            };
-
-            var featureCollection = new FeatureCollection();
-            featureCollection.Set<IEndpointFeature>(endpointFeature);
-            featureCollection.Set<IRouteValuesFeature>(endpointFeature);
-            featureCollection.Set<IRoutingFeature>(endpointFeature);
-
-            var httpContextMock = new Mock<HttpContext>();
-            httpContextMock.Setup(m => m.Features).Returns(featureCollection);
-
-            var actionInvokerCalled = false;
-            var actionInvokerMock = new Mock<IActionInvoker>();
-            actionInvokerMock.Setup(m => m.InvokeAsync()).Returns(() =>
-            {
-                actionInvokerCalled = true;
-                return Task.CompletedTask;
-            });
-
-            InvokerFactory
-                .Setup(m => m.CreateInvoker(It.IsAny<ActionContext>()))
-                .Returns(actionInvokerMock.Object);
-
-            // Act
-            var endpoint = CreateConventionalRoutedEndpoint(action, "{controller}/{action}");
-
-            // Assert
-            await endpoint.RequestDelegate(httpContextMock.Object);
-
-            Assert.True(actionInvokerCalled);
-        }
 
         [Fact]
         public void AddEndpoints_ConventionalRouted_WithEmptyRouteName_CreatesMetadataWithEmptyRouteName()

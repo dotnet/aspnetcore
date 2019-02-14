@@ -22,10 +22,10 @@ namespace signalr
         SIGNALRCLIENT_API web::http::client::http_client_config __cdecl get_http_client_config() const;
         SIGNALRCLIENT_API void __cdecl set_http_client_config(const web::http::client::http_client_config& http_client_config);
 
-        SIGNALRCLIENT_API web::websockets::client::websocket_client_config __cdecl get_websocket_client_config() const;
+        SIGNALRCLIENT_API web::websockets::client::websocket_client_config __cdecl get_websocket_client_config() const noexcept;
         SIGNALRCLIENT_API void __cdecl set_websocket_client_config(const web::websockets::client::websocket_client_config& websocket_client_config);
 
-        SIGNALRCLIENT_API web::http::http_headers __cdecl get_http_headers() const;
+        SIGNALRCLIENT_API web::http::http_headers __cdecl get_http_headers() const noexcept;
         SIGNALRCLIENT_API void __cdecl set_http_headers(const web::http::http_headers& http_headers);
 
     private:

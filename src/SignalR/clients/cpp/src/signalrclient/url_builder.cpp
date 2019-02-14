@@ -15,8 +15,8 @@ namespace signalr
             _ASSERTE(transport == transport_type::websockets || transport == transport_type::long_polling);
 
             return transport == transport_type::websockets
-                ? _XPLATSTR("webSockets")
-                : _XPLATSTR("longPolling");
+                ? utility::string_t(_XPLATSTR("webSockets"))
+                : utility::string_t(_XPLATSTR("longPolling"));
         }
 
         void append_transport(web::uri_builder &builder, transport_type transport)

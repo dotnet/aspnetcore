@@ -148,9 +148,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
             var serviceProvider = services.BuildServiceProvider();
 
-            var endpointFactory = new ActionEndpointFactory(
-                    serviceProvider.GetRequiredService<RoutePatternTransformer>(),
-                    new MvcEndpointInvokerFactory(new ActionInvokerFactory(Array.Empty<IActionInvokerProvider>())));
+            var endpointFactory = new ActionEndpointFactory(serviceProvider.GetRequiredService<RoutePatternTransformer>());
 
             return CreateDataSource(actions, endpointFactory);
         }

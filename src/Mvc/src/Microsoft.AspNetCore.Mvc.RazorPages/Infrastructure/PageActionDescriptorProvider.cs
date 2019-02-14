@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
@@ -106,6 +107,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                     descriptor.RouteValues.Add("page", model.ViewEnginePath);
                 }
 
+                // Mark all pages as a "dynamic endpoint" - this is how we deal with the compilation of pages
+                // in endpoint routing.
+                descriptor.EndpointMetadata.Add(new DynamicEndpointMetadata());
+
                 actions.Add(descriptor);
             }
         }
@@ -137,6 +142,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
             // Combine transformed page route with template
             return AttributeRouteModel.CombineTemplates(transformedPageRoute, pageRouteMetadata.RouteTemplate);
+        }
+
+        private class DynamicEndpointMetadata : IDynamicEndpointMetadata
+        {
+            public bool IsDynamic => true;
         }
     }
 }
