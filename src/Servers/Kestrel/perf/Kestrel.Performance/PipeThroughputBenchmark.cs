@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         [Params(128, 4096)]
         public int Length { get; set; }
 
-        [Params(1, 2, 4, 16)]
+        [Params(1, 16)]
         public int Chunks { get; set; }
 
         [Benchmark(OperationsPerInvoke = InnerLoopCount)]
