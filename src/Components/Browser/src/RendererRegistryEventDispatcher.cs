@@ -22,11 +22,7 @@ namespace Microsoft.AspNetCore.Components.Browser
         {
             var eventArgs = ParseEventArgsJson(eventDescriptor.EventArgsType, eventArgsJson);
             var renderer = RendererRegistry.Current.Find(eventDescriptor.BrowserRendererId);
-
-            return renderer.DispatchEventAsync(
-                eventDescriptor.ComponentId,
-                eventDescriptor.EventHandlerId,
-                eventArgs);
+            return renderer.DispatchEventAsync(eventDescriptor.EventHandlerId, eventArgs);
         }
 
         private static UIEventArgs ParseEventArgsJson(string eventArgsType, string eventArgsJson)
@@ -71,11 +67,6 @@ namespace Microsoft.AspNetCore.Components.Browser
             /// For framework use only.
             /// </summary>
             public int BrowserRendererId { get; set; }
-
-            /// <summary>
-            /// For framework use only.
-            /// </summary>
-            public int ComponentId { get; set; }
 
             /// <summary>
             /// For framework use only.
