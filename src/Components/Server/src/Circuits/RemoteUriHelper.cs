@@ -14,15 +14,10 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
     /// </summary>
     public class RemoteUriHelper : UriHelperBase
     {
-        private readonly IJSRuntime _jsRuntime;
+        private IJSRuntime _jsRuntime;
 
-        /// <summary>
-        /// Creates a new <see cref="RemoteUriHelper"/>.
-        /// </summary>
-        /// <param name="jsRuntime"></param>
-        public RemoteUriHelper(IJSRuntime jsRuntime)
+        public RemoteUriHelper()
         {
-            _jsRuntime = jsRuntime;
         }
 
         /// <summary>
@@ -30,17 +25,37 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         /// </summary>
         /// <param name="uriAbsolute">The absolute URI of the current page.</param>
         /// <param name="baseUriAbsolute">The absolute base URI of the current page.</param>
+        /// <param name="jsRuntime">The <see cref="IJSRuntime"/> to use for interoperability.</param>
         public void Initialize(string uriAbsolute, string baseUriAbsolute)
         {
             SetAbsoluteBaseUri(baseUriAbsolute);
             SetAbsoluteUri(uriAbsolute);
             TriggerOnLocationChanged();
+        }
+
+        /// <summary>
+        /// Initializes the <see cref="RemoteUriHelper"/>.
+        /// </summary>
+        /// <param name="uriAbsolute">The absolute URI of the current page.</param>
+        /// <param name="baseUriAbsolute">The absolute base URI of the current page.</param>
+        /// <param name="jsRuntime">The <see cref="IJSRuntime"/> to use for interoperability.</param>
+        public void Initialize(string uriAbsolute, string baseUriAbsolute, IJSRuntime jsRuntime)
+        {
+            if (_jsRuntime != null)
+            {
+                throw new InvalidOperationException("JavaScript runtime already initialized.");
+            }
+
+            _jsRuntime = jsRuntime;
+
+            Initialize(uriAbsolute, baseUriAbsolute);
 
             _jsRuntime.InvokeAsync<object>(
-                Interop.EnableNavigationInterception,
-                typeof(RemoteUriHelper).Assembly.GetName().Name,
-                nameof(NotifyLocationChanged));
+                    Interop.EnableNavigationInterception,
+                    typeof(RemoteUriHelper).Assembly.GetName().Name,
+                    nameof(NotifyLocationChanged));
         }
+
 
         /// <summary>
         /// For framework use only.
@@ -61,9 +76,12 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             uriHelper.TriggerOnLocationChanged();
         }
 
-        /// <inheritdoc />
         protected override void NavigateToCore(string uri, bool forceLoad)
         {
+            if (_jsRuntime == null)
+            {
+                throw new InvalidOperationException("JavaScript runtime already initialized.");
+            }
             _jsRuntime.InvokeAsync<object>(Interop.NavigateTo, uri, forceLoad);
         }
     }

@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using BasicTestApp;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace TestServer
 {
@@ -24,7 +26,7 @@ namespace TestServer
             {
                 options.AddPolicy("AllowAll", _ => { /* Controlled below */ });
             });
-            services.AddRazorComponents<BasicTestApp.Startup>();
+            services.AddRazorComponents();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -47,8 +49,11 @@ namespace TestServer
                 // we're not relying on any extra magic inside UseServerSideBlazor, since it's
                 // important that people can set up these bits of middleware manually (e.g., to
                 // swap in UseAzureSignalR instead of UseSignalR).
-                subdirApp.UseSignalR(route => route.MapHub<ComponentsHub>(ComponentsHub.DefaultPath));
-                subdirApp.UseBlazor<BasicTestApp.Startup>();
+                subdirApp.UseRouting(routes => routes.MapComponentsHub<Index>(ComponentsHub.DefaultPath, selector: "root"));
+
+                subdirApp.MapWhen(
+                    ctx => ctx.Features.Get<IEndpointFeature>()?.Endpoint == null,
+                    blazorBuilder => blazorBuilder.UseBlazor<BasicTestApp.Startup>());
             });
         }
 

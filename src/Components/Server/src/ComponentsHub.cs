@@ -58,11 +58,13 @@ namespace Microsoft.AspNetCore.Components.Server
         /// </summary>
         public async Task StartCircuit(string uriAbsolute, string baseUriAbsolute)
         {
-            var circuitHost = _circuitFactory.CreateCircuitHost(Context.GetHttpContext(), Clients.Caller);
-            circuitHost.UnhandledException += CircuitHost_UnhandledException;
+            var circuitHost = _circuitFactory.CreateCircuitHost(
+                Context.GetHttpContext(),
+                Clients.Caller,
+                uriAbsolute,
+                baseUriAbsolute);
 
-            var uriHelper = (RemoteUriHelper)circuitHost.Services.GetRequiredService<IUriHelper>();
-            uriHelper.Initialize(uriAbsolute, baseUriAbsolute);
+            circuitHost.UnhandledException += CircuitHost_UnhandledException;
 
             // If initialization fails, this will throw. The caller will fail if they try to call into any interop API.
             await circuitHost.InitializeAsync(Context.ConnectionAborted);
@@ -92,7 +94,7 @@ namespace Microsoft.AspNetCore.Components.Server
             try
             {
                 _logger.LogWarning((Exception)e.ExceptionObject, "Unhandled Server-Side exception");
-                await circuitHost.Client.SendAsync("JS.Error", e.ExceptionObject);
+                await circuitHost.Client?.SendAsync("JS.Error", e.ExceptionObject);
 
                 // We generally can't abort the connection here since this is an async
                 // callback. The Hub has already been torn down. We'll rely on the

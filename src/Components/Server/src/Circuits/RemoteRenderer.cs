@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
 using MessagePack;
@@ -15,20 +16,21 @@ using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Browser.Rendering
 {
-    internal class RemoteRenderer : Renderer
+    internal class RemoteRenderer : HtmlRenderer
     {
         // The purpose of the timeout is just to ensure server resources are released at some
         // point if the client disconnects without sending back an ACK after a render
         private const int TimeoutMilliseconds = 60 * 1000;
 
         private readonly int _id;
-        private readonly IClientProxy _client;
+        private IClientProxy _client;
         private readonly IJSRuntime _jsRuntime;
         private readonly RendererRegistry _rendererRegistry;
         private readonly ConcurrentDictionary<long, AutoCancelTaskCompletionSource<object>> _pendingRenders
             = new ConcurrentDictionary<long, AutoCancelTaskCompletionSource<object>>();
         private readonly ILogger _logger;
         private long _nextRenderId = 1;
+        private bool _prerrenderMode;
 
         /// <summary>
         /// Notifies when a rendering exception occured.
@@ -49,8 +51,9 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
             IJSRuntime jsRuntime,
             IClientProxy client,
             IDispatcher dispatcher,
+            HtmlEncoder encoder,
             ILogger logger)
-            : base(serviceProvider, dispatcher)
+            : base(serviceProvider, encoder.Encode, dispatcher)
         {
             _rendererRegistry = rendererRegistry;
             _jsRuntime = jsRuntime;
@@ -97,6 +100,11 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
             }
         }
 
+        internal void StartPrerrender()
+        {
+            _prerrenderMode = true;
+        }
+
         /// <inheritdoc />
         protected override void Dispose(bool disposing)
         {
@@ -107,6 +115,14 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
         /// <inheritdoc />
         protected override Task UpdateDisplayAsync(in RenderBatch batch)
         {
+            if (_prerrenderMode)
+            {
+                // Nothing to do in prerrender mode for right now.
+                // In the future we will capture all the serialized render batches and
+                // resend them to the client upon the initial reconnect.
+                return Task.CompletedTask;
+            }
+
             // Note that we have to capture the data as a byte[] synchronously here, because
             // SignalR's SendAsync can wait an arbitrary duration before serializing the params.
             // The RenderBatch buffer will get reused by subsequent renders, so we need to

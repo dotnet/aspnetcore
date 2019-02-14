@@ -1,3 +1,8 @@
+@page "{*clientroutes}"
+@using ComponentsApp.App
+@model ComponentsApp.Server.Pages.IndexModel
+@{
+}
 <!DOCTYPE html>
 <html>
 <head>
@@ -9,8 +14,9 @@
     <link href="css/site.css" rel="stylesheet" />
 </head>
 <body>
-    <app>Loading...</app>
+    <app>@(await Html.RenderComponentAsync<App>())</app>
 
     <script src="_framework/components.server.js"></script>
 </body>
 </html>
+

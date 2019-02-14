@@ -5,7 +5,9 @@ using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
+#pragma warning disable CS0618 // Type or member is obsolete
     internal class DefaultJSRuntimeAccessor : IJSRuntimeAccessor
+#pragma warning restore CS0618 // Type or member is obsolete
     {
         public IJSRuntime JSRuntime { get; set; }
     }

@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Components.Browser" />
+    <Reference Include="Microsoft.AspNetCore.Components.Server.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.SignalR" />
     <Reference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" />
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
@@ -30,7 +30,7 @@
   <ItemGroup Condition="'$(BuildNodeJS)' != 'false'">
     <!-- We need .Browser.JS to build first so we can embed its .js output -->
     <ProjectReference Include="..\..\Browser.JS\src\Microsoft.AspNetCore.Components.Browser.JS.npmproj" ReferenceOutputAssembly="false" />
-    <EmbeddedResource Include="..\..\Browser.JS\src\dist\components.server.js" LogicalName="frameworkFiles\%(Filename)%(Extension)" />
+    <EmbeddedResource Include="..\..\Browser.JS\src\dist\components.server.js" LogicalName="_framework\%(Filename)%(Extension)" />
   </ItemGroup>
 
 </Project>

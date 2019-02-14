@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Browser;
 using Microsoft.AspNetCore.Components.Browser.Rendering;
-using Microsoft.AspNetCore.Components.Builder;
-using Microsoft.AspNetCore.Components.Hosting;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
@@ -18,10 +18,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
     {
         private static readonly AsyncLocal<CircuitHost> _current = new AsyncLocal<CircuitHost>();
         private readonly IServiceScope _scope;
+        private readonly IDispatcher _dispatcher;
         private readonly CircuitHandler[] _circuitHandlers;
         private bool _initialized;
-
-        private Action<IComponentsApplicationBuilder> _configure;
 
         /// <summary>
         /// Gets the current <see cref="Circuit"/>, if any.
@@ -53,17 +52,19 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             IClientProxy client,
             RendererRegistry rendererRegistry,
             RemoteRenderer renderer,
-            Action<IComponentsApplicationBuilder> configure,
+            IList<ComponentDescriptor> descriptors,
+            IDispatcher dispatcher,
             IJSRuntime jsRuntime,
             CircuitHandler[] circuitHandlers)
         {
             _scope = scope ?? throw new ArgumentNullException(nameof(scope));
-            Client = client ?? throw new ArgumentNullException(nameof(client));
+            _dispatcher = dispatcher;
+            Client = client;
             RendererRegistry = rendererRegistry ?? throw new ArgumentNullException(nameof(rendererRegistry));
+            Descriptors = descriptors ?? throw new ArgumentNullException(nameof(descriptors));
             Renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
-            _configure = configure ?? throw new ArgumentNullException(nameof(configure));
             JSRuntime = jsRuntime ?? throw new ArgumentNullException(nameof(jsRuntime));
-
+            
             Services = scope.ServiceProvider;
 
             Circuit = new Circuit(this);
@@ -77,15 +78,26 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         public Circuit Circuit { get; }
 
-        public IClientProxy Client { get; }
+        public IClientProxy Client { get; set; }
 
         public IJSRuntime JSRuntime { get; }
 
         public RemoteRenderer Renderer { get; }
 
         public RendererRegistry RendererRegistry { get; }
-
+        public IList<ComponentDescriptor> Descriptors { get; }
         public IServiceProvider Services { get; }
+
+        public Task<IEnumerable<string>> PrerrenderComponentAsync(Type componentType, ParameterCollection parameters)
+        {
+            return _dispatcher.InvokeAsync(async () =>
+            {
+                Renderer.StartPrerrender();
+                var result = await Renderer.RenderComponentAsync(componentType, parameters);
+                return result;
+            });
+        }
+
 
         public async Task InitializeAsync(CancellationToken cancellationToken)
         {
@@ -93,13 +105,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             {
                 SetCurrentCircuitHost(this);
 
-                var builder = new ServerSideComponentsApplicationBuilder(Services);
-
-                _configure(builder);
-
-                for (var i = 0; i < builder.Entries.Count; i++)
+                for (var i = 0; i < Descriptors.Count; i++)
                 {
-                    var (componentType, domElementSelector) = builder.Entries[i];
+                    var (componentType, domElementSelector) = Descriptors[i];
                     await Renderer.AddComponentAsync(componentType, domElementSelector);
                 }
 

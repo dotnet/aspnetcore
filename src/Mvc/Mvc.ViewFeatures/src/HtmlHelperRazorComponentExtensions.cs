@@ -1,14 +1,13 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
-using System.IO;
-using System.Text.Encodings.Web;
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponents;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures
@@ -16,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
     /// <summary>
     /// Extensions for rendering components.
     /// </summary>
-    public static class HtmlHelperComponentExtensions
+    public static class HtmlHelperRazorComponentExtensions
     {
         /// <summary>
         /// Renders the <typeparamref name="TComponent"/> <see cref="IComponent"/>.
@@ -27,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         {
             if (htmlHelper == null)
             {
-                throw new System.ArgumentNullException(nameof(htmlHelper));
+                throw new ArgumentNullException(nameof(htmlHelper));
             }
 
             return htmlHelper.RenderComponentAsync<TComponent>(null);
@@ -46,39 +45,21 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         {
             if (htmlHelper == null)
             {
-                throw new System.ArgumentNullException(nameof(htmlHelper));
+                throw new ArgumentNullException(nameof(htmlHelper));
             }
 
-            var serviceProvider = htmlHelper.ViewContext.HttpContext.RequestServices;
-            var encoder = serviceProvider.GetRequiredService<HtmlEncoder>();
-            var dispatcher = Renderer.CreateDefaultDispatcher();
-            using (var htmlRenderer = new HtmlRenderer(serviceProvider, encoder.Encode, dispatcher))
+            var httpContext = htmlHelper.ViewContext.HttpContext;
+            var serviceProvider = httpContext.RequestServices;
+            var prerrenderer = serviceProvider.GetRequiredService<IComponentPrerrenderer>();
+
+            var result =  await prerrenderer.PrerrenderComponentAsync(new ComponentPrerrenderingContext
             {
-                var result = await dispatcher.InvokeAsync(() => htmlRenderer.RenderComponentAsync<TComponent>(
-                    parameters == null ?
-                        ParameterCollection.Empty :
-                        ParameterCollection.FromDictionary(HtmlHelper.ObjectToDictionary(parameters))));
+                Context = httpContext,
+                ComponentType = typeof(TComponent),
+                Parameters = parameters == null ? ParameterCollection.Empty : ParameterCollection.FromDictionary(HtmlHelper.ObjectToDictionary(parameters))
+            });
 
-                return new ComponentHtmlContent(result);
-            }
-        }
-
-        private class ComponentHtmlContent : IHtmlContent
-        {
-            private readonly IEnumerable<string> _componentResult;
-
-            public ComponentHtmlContent(IEnumerable<string> componentResult)
-            {
-                _componentResult = componentResult;
-            }
-
-            public void WriteTo(TextWriter writer, HtmlEncoder encoder)
-            {
-                foreach (var element in _componentResult)
-                {
-                    writer.Write(element);
-                }
-            }
+            return new ComponentHtmlContent(result);
         }
     }
 }

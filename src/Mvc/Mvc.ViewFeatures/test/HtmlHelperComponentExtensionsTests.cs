@@ -2,15 +2,18 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Server;
+using Microsoft.AspNetCore.Components.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponents;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.JSInterop;
 using Moq;
 using Xunit;
 
@@ -52,6 +55,79 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
             // Assert
             Assert.Equal("<p>Hello Steve!</p>", content);
         }
+
+        [Fact]
+        public async Task CanCatch_ComponentWithSynchronousException()
+        {
+            // Arrange
+            var helper = CreateHelper();
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => helper.RenderComponentAsync<ExceptionComponent>(new
+            {
+                IsAsync = false
+            }));
+
+            // Assert
+            Assert.Equal("Threw an exception synchronously", exception.Message);
+        }
+
+        [Fact]
+        public async Task CanCatch_ComponentWithAsynchronousException()
+        {
+            // Arrange
+            var helper = CreateHelper();
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => helper.RenderComponentAsync<ExceptionComponent>(new
+            {
+                IsAsync = true
+            }));
+
+            // Assert
+            Assert.Equal("Threw an exception asynchronously", exception.Message);
+        }
+
+        [Fact]
+        public async Task Rendering_ComponentWithJsInteropThrows()
+        {
+            // Arrange
+            var helper = CreateHelper();
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => helper.RenderComponentAsync<ExceptionComponent>(new
+            {
+                JsInterop = true
+            }));
+
+            // Assert
+            Assert.Equal("JavaScript interoperability is not supported in the current environment.", exception.Message);
+        }
+
+        [Fact]
+        public async Task UriHelperRedirect_ThrowsInvalidOperationException()
+        {
+            // Arrange
+            var ctx = new DefaultHttpContext();
+            ctx.Request.Scheme = "http";
+            ctx.Request.Host = new HostString("localhost");
+            ctx.Request.PathBase = "/base";
+            ctx.Request.Path = "/path";
+            ctx.Request.QueryString = new QueryString("?query=value");
+
+            var helper = CreateHelper(ctx);
+            var writer = new StringWriter();
+
+            // Act
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => helper.RenderComponentAsync<RedirectComponent>(new
+            {
+                RedirectUri = "http://localhost/redirect"
+            }));
+
+            Assert.Equal("Redirects are not supported on a prerrendering environment.", exception.Message);
+        }
+
+
 
         [Fact]
         public async Task CanRender_AsyncComponent()
@@ -108,23 +184,32 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
             var content = writer.ToString();
 
             // Assert
-            Assert.Equal(expectedContent.Replace("\r\n","\n"), content);
+            Assert.Equal(expectedContent.Replace("\r\n", "\n"), content);
         }
 
-        private static IHtmlHelper CreateHelper(Action<IServiceCollection> configureServices = null)
+        private static IHtmlHelper CreateHelper(HttpContext ctx = null, Action<IServiceCollection> configureServices = null)
         {
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton<HtmlEncoder>(HtmlEncoder.Default);
-            configureServices?.Invoke(serviceCollection);
+            var services = new ServiceCollection();
+            services.AddSingleton(HtmlEncoder.Default);
+            services.AddSingleton<IJSRuntime,UnsupportedJavaScriptRuntime>();
+            services.AddSingleton<IUriHelper,HttpUriHelper>();
+            services.AddSingleton<IComponentPrerrenderer, MvcRazorComponentPrerrenderer>();
+
+            configureServices?.Invoke(services);
 
             var helper = new Mock<IHtmlHelper>();
+            var context = ctx ?? new DefaultHttpContext();
+            context.RequestServices = services.BuildServiceProvider();
+            context.Request.Scheme = "http";
+            context.Request.Host = new HostString("localhost");
+            context.Request.PathBase = "/base";
+            context.Request.Path = "/path";
+            context.Request.QueryString = QueryString.FromUriComponent("?query=value");
+
             helper.Setup(h => h.ViewContext)
                 .Returns(new ViewContext()
                 {
-                    HttpContext = new DefaultHttpContext()
-                    {
-                        RequestServices = serviceCollection.BuildServiceProvider()
-                    }
+                    HttpContext = context
                 });
             return helper.Object;
         }
@@ -148,6 +233,47 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
                     builder.CloseElement();
                 });
                 return Task.CompletedTask;
+            }
+        }
+
+        private class RedirectComponent : ComponentBase
+        {
+            [Inject] IUriHelper UriHelper { get; set; }
+
+            [Parameter] public string RedirectUri { get; set; }
+
+            [Parameter] public bool Force { get; set; }
+
+            protected override void OnInit()
+            {
+                UriHelper.NavigateTo(RedirectUri, Force);
+            }
+        }
+
+        private class ExceptionComponent : ComponentBase
+        {
+            [Parameter] bool IsAsync { get; set; }
+
+            [Parameter] bool JsInterop { get; set; }
+
+            [Inject] IJSRuntime JsRuntime { get; set; }
+
+            protected override async Task OnParametersSetAsync()
+            {
+                if (JsInterop)
+                {
+                    await JsRuntime.InvokeAsync<int>("window.alert", "Interop!");
+                }
+
+                if (!IsAsync)
+                {
+                    throw new InvalidOperationException("Threw an exception synchronously");
+                }
+                else
+                {
+                    await Task.Yield();
+                    throw new InvalidOperationException("Threw an exception asynchronously");
+                }
             }
         }
 
