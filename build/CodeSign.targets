@@ -15,7 +15,7 @@
 
   <Target Name="CollectFileSignInfo">
     <PropertyGroup>
-      <BaseRedistNetCorePath>$(IntermediateDir)ar\</BaseRedistNetCorePath>
+      <BaseRedistNetCorePath>$(ArtifactsDir)obj\ar\</BaseRedistNetCorePath>
       <RedistNetCorePath>$(BaseRedistNetCorePath)$(TargetRuntimeIdentifier)\</RedistNetCorePath>
     </PropertyGroup>
 
