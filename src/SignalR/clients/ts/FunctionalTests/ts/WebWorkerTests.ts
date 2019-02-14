@@ -12,10 +12,18 @@ describe("WebWorkers", () => {
             const worker = new Worker(`${ENDPOINT_BASE_URL}/worker.js`);
             const testMessage = "Hello World!";
 
+            const initWorkerTimeout = setTimeout(() => {
+                console.log("Web workers are supported by this browser, but don't work!?");
+                worker.terminate();
+                done();
+            }, jasmine.DEFAULT_TIMEOUT_INTERVAL / 2);
+
             worker.postMessage(ENDPOINT_BASE_URL);
 
             worker.onmessage = (e) => {
-                if (e.data === "connected") {
+                if (e.data === "initialized") {
+                    clearTimeout(initWorkerTimeout);
+                } else if (e.data === "connected") {
                     worker.postMessage(testMessage);
                 } else {
                     expect(e.data).toBe(`Received message: ${testMessage}`);

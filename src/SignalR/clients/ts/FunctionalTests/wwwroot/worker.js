@@ -4,6 +4,8 @@ var connection = null;
 
 onmessage = function (e) {
     if (connection === null) {
+        postMessage('initialized');
+
         connection = new signalR.HubConnectionBuilder()
             .withUrl(e.data + '/testhub')
             .build();
