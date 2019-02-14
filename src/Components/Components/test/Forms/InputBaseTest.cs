@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
         {
             // Arrange
             var model = new TestModel();
-            var rootComponent = new TestInputHostComponent<string> { EditContext = new EditContext(model), ValueExpression = () => model.StringProperty };
+            var rootComponent = new TestInputHostComponent<string, TestInputComponent<string>> { EditContext = new EditContext(model), ValueExpression = () => model.StringProperty };
             await RenderAndGetTestInputComponentAsync(rootComponent);
 
             // Act/Assert
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
         {
             // Arrange
             var model = new TestModel();
-            var rootComponent = new TestInputHostComponent<string> { EditContext = new EditContext(model) };
+            var rootComponent = new TestInputHostComponent<string, TestInputComponent<string>> { EditContext = new EditContext(model) };
 
             // Act/Assert
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => RenderAndGetTestInputComponentAsync(rootComponent));
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
         {
             // Arrange
             var model = new TestModel();
-            var rootComponent = new TestInputHostComponent<string>
+            var rootComponent = new TestInputHostComponent<string, TestInputComponent<string>>
             {
                 EditContext = new EditContext(model),
                 Value = "some value",
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
         {
             // Arrange
             var model = new TestModel();
-            var rootComponent = new TestInputHostComponent<string>
+            var rootComponent = new TestInputHostComponent<string, TestInputComponent<string>>
             {
                 EditContext = new EditContext(model),
                 Value = "some value",
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
         {
             // Arrange
             var model = new TestModel();
-            var rootComponent = new TestInputHostComponent<string>
+            var rootComponent = new TestInputHostComponent<string, TestInputComponent<string>>
             {
                 EditContext = new EditContext(model),
                 Value = "some value",
@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
         {
             // Arrange
             var model = new TestModel();
-            var rootComponent = new TestInputHostComponent<string>
+            var rootComponent = new TestInputHostComponent<string, TestInputComponent<string>>
             {
                 EditContext = new EditContext(model),
                 Value = "initial value",
@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
             // Arrange
             var model = new TestModel();
             var valueChangedCallLog = new List<string>();
-            var rootComponent = new TestInputHostComponent<string>
+            var rootComponent = new TestInputHostComponent<string, TestInputComponent<string>>
             {
                 EditContext = new EditContext(model),
                 Value = "initial value",
@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
             // Arrange
             var model = new TestModel();
             var valueChangedCallLog = new List<string>();
-            var rootComponent = new TestInputHostComponent<string>
+            var rootComponent = new TestInputHostComponent<string, TestInputComponent<string>>
             {
                 EditContext = new EditContext(model),
                 Value = "initial value",
@@ -184,7 +184,7 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
         {
             // Arrange
             var model = new TestModel();
-            var rootComponent = new TestInputHostComponent<string>
+            var rootComponent = new TestInputHostComponent<string, TestInputComponent<string>>
             {
                 EditContext = new EditContext(model),
                 Value = "initial value",
@@ -205,7 +205,7 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
         {
             // Arrange
             var model = new TestModel();
-            var rootComponent = new TestInputHostComponent<string>
+            var rootComponent = new TestInputHostComponent<string, TestInputComponent<string>>
             {
                 EditContext = new EditContext(model),
                 ValueExpression = () => model.StringProperty
@@ -234,24 +234,121 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
             Assert.Equal("valid", inputComponent.CssClass);
         }
 
-        private static TestInputComponent<TValue> FindInputComponent<TValue>(CapturedBatch batch)
+        [Fact]
+        public async Task CannotUseCurrentValueAsStringWithoutOverridingTryParseValueFromString()
+        {
+            // Arrange
+            var model = new TestModel();
+            var rootComponent = new TestInputHostComponent<string, TestInputComponent<string>> { EditContext = new EditContext(model), ValueExpression = () => model.StringProperty };
+            var inputComponent = await RenderAndGetTestInputComponentAsync(rootComponent);
+
+            // Act/Assert
+            var ex = Assert.Throws<NotImplementedException>(() => { inputComponent.CurrentValueAsString = "something"; });
+            Assert.Contains($"must override TryParseValueFromString", ex.Message);
+        }
+
+        [Fact]
+        public async Task SuppliesCurrentValueAsStringWithFormatting()
+        {
+            // Arrange
+            var model = new TestModel();
+            var rootComponent = new TestInputHostComponent<DateTime, TestDateInputComponent>
+            {
+                EditContext = new EditContext(model),
+                Value = new DateTime(1915, 3, 2),
+                ValueExpression = () => model.DateProperty
+            };
+            var inputComponent = await RenderAndGetTestInputComponentAsync(rootComponent);
+
+            // Act/Assert
+            Assert.Equal("1915/03/02", inputComponent.CurrentValueAsString);
+        }
+
+        [Fact]
+        public async Task ParsesCurrentValueAsStringWhenChanged_Valid()
+        {
+            // Arrange
+            var model = new TestModel();
+            var valueChangedArgs = new List<DateTime>();
+            var rootComponent = new TestInputHostComponent<DateTime, TestDateInputComponent>
+            {
+                EditContext = new EditContext(model),
+                ValueChanged = valueChangedArgs.Add,
+                ValueExpression = () => model.DateProperty
+            };
+            var fieldIdentifier = FieldIdentifier.Create(() => model.DateProperty);
+            var inputComponent = await RenderAndGetTestInputComponentAsync(rootComponent);
+            var numValidationStateChanges = 0;
+            rootComponent.EditContext.OnValidationStateChanged += (sender, eventArgs) => { numValidationStateChanges++; };
+
+            // Act
+            inputComponent.CurrentValueAsString = "1991/11/20";
+
+            // Assert
+            var receivedParsedValue = valueChangedArgs.Single();
+            Assert.Equal(1991, receivedParsedValue.Year);
+            Assert.Equal(11, receivedParsedValue.Month);
+            Assert.Equal(20, receivedParsedValue.Day);
+            Assert.True(rootComponent.EditContext.IsModified(fieldIdentifier));
+            Assert.Empty(rootComponent.EditContext.GetValidationMessages(fieldIdentifier));
+            Assert.Equal(0, numValidationStateChanges);
+        }
+
+        [Fact]
+        public async Task ParsesCurrentValueAsStringWhenChanged_Invalid()
+        {
+            // Arrange
+            var model = new TestModel();
+            var valueChangedArgs = new List<DateTime>();
+            var rootComponent = new TestInputHostComponent<DateTime, TestDateInputComponent>
+            {
+                EditContext = new EditContext(model),
+                ValueChanged = valueChangedArgs.Add,
+                ValueExpression = () => model.DateProperty
+            };
+            var fieldIdentifier = FieldIdentifier.Create(() => model.DateProperty);
+            var inputComponent = await RenderAndGetTestInputComponentAsync(rootComponent);
+            var numValidationStateChanges = 0;
+            rootComponent.EditContext.OnValidationStateChanged += (sender, eventArgs) => { numValidationStateChanges++; };
+
+            // Act/Assert 1: Transition to invalid
+            inputComponent.CurrentValueAsString = "1991/11/40";
+            Assert.Empty(valueChangedArgs);
+            Assert.True(rootComponent.EditContext.IsModified(fieldIdentifier));
+            Assert.Equal(new[] { "Bad date value" }, rootComponent.EditContext.GetValidationMessages(fieldIdentifier));
+            Assert.Equal(1, numValidationStateChanges);
+
+            // Act/Assert 2: Transition to valid
+            inputComponent.CurrentValueAsString = "1991/11/20";
+            var receivedParsedValue = valueChangedArgs.Single();
+            Assert.Equal(1991, receivedParsedValue.Year);
+            Assert.Equal(11, receivedParsedValue.Month);
+            Assert.Equal(20, receivedParsedValue.Day);
+            Assert.True(rootComponent.EditContext.IsModified(fieldIdentifier));
+            Assert.Empty(rootComponent.EditContext.GetValidationMessages(fieldIdentifier));
+            Assert.Equal(2, numValidationStateChanges);
+        }
+
+        private static TComponent FindComponent<TComponent>(CapturedBatch batch)
             => batch.ReferenceFrames
                     .Where(f => f.FrameType == RenderTreeFrameType.Component)
                     .Select(f => f.Component)
-                    .OfType<TestInputComponent<TValue>>()
+                    .OfType<TComponent>()
                     .Single();
 
-        private static async Task<TestInputComponent<TValue>> RenderAndGetTestInputComponentAsync<TValue>(TestInputHostComponent<TValue> hostComponent)
+        private static async Task<TComponent> RenderAndGetTestInputComponentAsync<TValue, TComponent>(TestInputHostComponent<TValue, TComponent> hostComponent) where TComponent: TestInputComponent<TValue>
         {
             var testRenderer = new TestRenderer();
             var componentId = testRenderer.AssignRootComponentId(hostComponent);
             await testRenderer.RenderRootComponentAsync(componentId);
-            return FindInputComponent<TValue>(testRenderer.Batches.Single());
+            return FindComponent<TComponent>(testRenderer.Batches.Single());
         }
 
         class TestModel
         {
             public string StringProperty { get; set; }
+
+            public DateTime DateProperty { get; set; }
         }
 
         class TestInputComponent<T> : InputBase<T>
@@ -264,6 +361,12 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
                 set { base.CurrentValue = value; }
             }
 
+            public new string CurrentValueAsString
+            {
+                get => base.CurrentValueAsString;
+                set { base.CurrentValueAsString = value; }
+            }
+
             public new EditContext EditContext => base.EditContext;
 
             public new FieldIdentifier FieldIdentifier => base.FieldIdentifier;
@@ -271,15 +374,35 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
             public new string CssClass => base.CssClass;
         }
 
-        class TestInputHostComponent<T> : AutoRenderComponent
+        class TestDateInputComponent : TestInputComponent<DateTime>
+        {
+            protected override string FormatValueAsString(DateTime value)
+                => value.ToString("yyyy/MM/dd");
+
+            protected override bool TryParseValueFromString(string value, out DateTime result, out string validationErrorMessage)
+            {
+                if (DateTime.TryParse(value, out result))
+                {
+                    validationErrorMessage = null;
+                    return true;
+                }
+                else
+                {
+                    validationErrorMessage = "Bad date value";
+                    return false;
+                }
+            }
+        }
+
+        class TestInputHostComponent<TValue, TComponent> : AutoRenderComponent where TComponent: TestInputComponent<TValue>
         {
             public EditContext EditContext { get; set; }
 
-            public T Value { get; set; }
+            public TValue Value { get; set; }
 
-            public Action<T> ValueChanged { get; set; }
+            public Action<TValue> ValueChanged { get; set; }
 
-            public Expression<Func<T>> ValueExpression { get; set; }
+            public Expression<Func<TValue>> ValueExpression { get; set; }
 
             protected override void BuildRenderTree(RenderTreeBuilder builder)
             {
@@ -287,7 +410,7 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
                 builder.AddAttribute(1, "Value", EditContext);
                 builder.AddAttribute(2, RenderTreeBuilder.ChildContent, new RenderFragment(childBuilder =>
                 {
-                    childBuilder.OpenComponent<TestInputComponent<T>>(0);
+                    childBuilder.OpenComponent<TComponent>(0);
                     childBuilder.AddAttribute(0, "Value", Value);
                     childBuilder.AddAttribute(1, "ValueChanged", ValueChanged);
                     childBuilder.AddAttribute(2, "ValueExpression", ValueExpression);
