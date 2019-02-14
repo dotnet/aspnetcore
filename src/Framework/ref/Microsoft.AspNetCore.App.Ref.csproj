@@ -36,8 +36,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <!-- This project should not be referenced via the `<Reference>` impementation. -->
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
 
-    <PackageConflictManifestFileName>Microsoft.AspNetCore.App.PackageOverrides.txt</PackageConflictManifestFileName>
-    <PackageConflictManifestPackagePath>build/$(TargetFramework)/</PackageConflictManifestPackagePath>
+    <PackageConflictManifestFileName>PackageOverrides.txt</PackageConflictManifestFileName>
+    <PackageConflictManifestPackagePath>data/</PackageConflictManifestPackagePath>
   </PropertyGroup>
 
   <ItemGroup>
