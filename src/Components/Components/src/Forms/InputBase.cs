@@ -16,14 +16,32 @@ namespace Microsoft.AspNetCore.Components.Forms
     {
         [CascadingParameter] EditContext CascadedEditContext { get; set; }
 
+        /// <summary>
+        /// Gets or sets the value of the input. This should be used with two-way binding.
+        /// </summary>
+        /// <example>
+        /// bind-Value="@model.PropertyName"
+        /// </example>
         [Parameter] T Value { get; set; }
 
+        /// <summary>
+        /// Gets or sets a callback that updates the bound value.
+        /// </summary>
         [Parameter] Action<T> ValueChanged { get; set; }
 
+        /// <summary>
+        /// Gets or sets an expression that identifies the bound value.
+        /// </summary>
         [Parameter] Expression<Func<T>> ValueExpression { get; set; }
 
+        /// <summary>
+        /// Gets the associated <see cref="Microsoft.AspNetCore.Components.Forms.EditContext"/>.
+        /// </summary>
         protected EditContext EditContext { get; private set; }
 
+        /// <summary>
+        /// Gets the <see cref="FieldIdentifier"/> for the bound value.
+        /// </summary>
         protected FieldIdentifier FieldIdentifier { get; private set; }
 
         /// <summary>
