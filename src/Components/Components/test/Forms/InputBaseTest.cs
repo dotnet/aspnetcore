@@ -30,172 +30,198 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
         }
 
         [Fact]
-        public void ThrowsIfEditContextChanges()
+        public async Task ThrowsIfEditContextChanges()
         {
             // Arrange
-            var context = new TestRenderingContext<TestInputComponent<string>>();
             var model = new TestModel();
-            context.SupplyParameters(new EditContext(model), valueExpression: () => model.StringProperty);
+            var rootComponent = new TestInputHostComponent<string> { EditContext = new EditContext(model), ValueExpression = () => model.StringProperty };
+            await RenderAndGetTestInputComponentAsync(rootComponent);
 
             // Act/Assert
-            var ex = Assert.Throws<InvalidOperationException>(() =>
-            {
-                context.SupplyParameters(new EditContext(model), valueExpression: () => model.StringProperty);
-            });
+            rootComponent.EditContext = new EditContext(model);
+            var ex = Assert.Throws<InvalidOperationException>(() => rootComponent.TriggerRender());
             Assert.StartsWith($"{typeof(TestInputComponent<string>)} does not support changing the EditContext dynamically", ex.Message);
         }
 
         [Fact]
-        public void ThrowsIfNoValueExpressionIsSupplied()
+        public async Task ThrowsIfNoValueExpressionIsSupplied()
         {
             // Arrange
-            var context = new TestRenderingContext<TestInputComponent<string>>();
             var model = new TestModel();
+            var rootComponent = new TestInputHostComponent<string> { EditContext = new EditContext(model) };
 
             // Act/Assert
-            var ex = Assert.ThrowsAny<Exception>(() =>
-            {
-                context.SupplyParameters<object>(new EditContext(model), valueExpression: null);
-            });
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => RenderAndGetTestInputComponentAsync(rootComponent));
             Assert.Contains($"{typeof(TestInputComponent<string>)} requires a value for the 'ValueExpression' parameter. Normally this is provided automatically when using 'bind-Value'.", ex.Message);
         }
 
         [Fact]
-        public void GetsCurrentValueFromValueParameter()
+        public async Task GetsCurrentValueFromValueParameter()
         {
             // Arrange
-            var context = new TestRenderingContext<TestInputComponent<string>>();
             var model = new TestModel();
+            var rootComponent = new TestInputHostComponent<string>
+            {
+                EditContext = new EditContext(model),
+                Value = "some value",
+                ValueExpression = () => model.StringProperty
+            };
 
             // Act
-            context.SupplyParameters(new EditContext(model), value: "some value", valueExpression: () => model.StringProperty);
+            var inputComponent = await RenderAndGetTestInputComponentAsync(rootComponent);
 
             // Assert
-            Assert.Equal("some value", context.Component.RenderedStates.Single().CurrentValue);
+            Assert.Equal("some value", inputComponent.CurrentValue);
         }
 
         [Fact]
-        public void ExposesEditContextToSubclass()
+        public async Task ExposesEditContextToSubclass()
         {
             // Arrange
-            var context = new TestRenderingContext<TestInputComponent<string>>();
             var model = new TestModel();
-            var editContext = new EditContext(model);
+            var rootComponent = new TestInputHostComponent<string>
+            {
+                EditContext = new EditContext(model),
+                Value = "some value",
+                ValueExpression = () => model.StringProperty
+            };
 
             // Act
-            context.SupplyParameters(editContext, valueExpression: () => model.StringProperty);
+            var inputComponent = await RenderAndGetTestInputComponentAsync(rootComponent);
 
             // Assert
-            Assert.Same(editContext, context.Component.EditContext);
+            Assert.Same(rootComponent.EditContext, inputComponent.EditContext);
         }
 
         [Fact]
-        public void ExposesFieldIdentifierToSubclass()
+        public async Task ExposesFieldIdentifierToSubclass()
         {
             // Arrange
-            var context = new TestRenderingContext<TestInputComponent<string>>();
             var model = new TestModel();
-            var editContext = new EditContext(model);
+            var rootComponent = new TestInputHostComponent<string>
+            {
+                EditContext = new EditContext(model),
+                Value = "some value",
+                ValueExpression = () => model.StringProperty
+            };
 
             // Act
-            context.SupplyParameters(editContext, valueExpression: () => model.StringProperty);
+            var inputComponent = await RenderAndGetTestInputComponentAsync(rootComponent);
 
             // Assert
-            Assert.Equal(FieldIdentifier.Create(() => model.StringProperty), context.Component.FieldIdentifier);
+            Assert.Equal(FieldIdentifier.Create(() => model.StringProperty), inputComponent.FieldIdentifier);
         }
 
         [Fact]
-        public void CanReadBackChangesToCurrentValue()
+        public async Task CanReadBackChangesToCurrentValue()
         {
             // Arrange
-            var context = new TestRenderingContext<TestInputComponent<string>>();
             var model = new TestModel();
-            context.SupplyParameters(new EditContext(model), value: "some value", valueExpression: () => model.StringProperty);
-            Assert.Single(context.Component.RenderedStates);
+            var rootComponent = new TestInputHostComponent<string>
+            {
+                EditContext = new EditContext(model),
+                Value = "initial value",
+                ValueExpression = () => model.StringProperty
+            };
+            var inputComponent = await RenderAndGetTestInputComponentAsync(rootComponent);
+            Assert.Equal("initial value", inputComponent.CurrentValue);
 
             // Act
-            context.Component.CurrentValue = "new value";
+            inputComponent.CurrentValue = "new value";
 
             // Assert
-            Assert.Equal("new value", context.Component.CurrentValue);
-            Assert.Single(context.Component.RenderedStates); // Writing to CurrentValue doesn't inherently trigger a render (though the fact that it invokes ValueChanged might)
+            Assert.Equal("new value", inputComponent.CurrentValue);
         }
 
         [Fact]
-        public void WritingToCurrentValueInvokesValueChangedIfDifferent()
+        public async Task WritingToCurrentValueInvokesValueChangedIfDifferent()
         {
             // Arrange
-            var context = new TestRenderingContext<TestInputComponent<string>>();
             var model = new TestModel();
             var valueChangedCallLog = new List<string>();
-            Action<string> valueChanged = val => valueChangedCallLog.Add(val);
-            context.SupplyParameters(new EditContext(model), valueChanged: valueChanged, valueExpression: () => model.StringProperty);
-            Assert.Single(context.Component.RenderedStates);
+            var rootComponent = new TestInputHostComponent<string>
+            {
+                EditContext = new EditContext(model),
+                Value = "initial value",
+                ValueChanged = val => valueChangedCallLog.Add(val),
+                ValueExpression = () => model.StringProperty
+            };
+            var inputComponent = await RenderAndGetTestInputComponentAsync(rootComponent);
+            Assert.Empty(valueChangedCallLog);
 
             // Act
-            context.Component.CurrentValue = "new value";
+            inputComponent.CurrentValue = "new value";
 
             // Assert
             Assert.Single(valueChangedCallLog, "new value");
         }
 
         [Fact]
-        public void WritingToCurrentValueDoesNotInvokeValueChangedIfUnchanged()
+        public async Task WritingToCurrentValueDoesNotInvokeValueChangedIfUnchanged()
         {
             // Arrange
-            var context = new TestRenderingContext<TestInputComponent<string>>();
             var model = new TestModel();
             var valueChangedCallLog = new List<string>();
-            Action<string> valueChanged = val => valueChangedCallLog.Add(val);
-            context.SupplyParameters(new EditContext(model), value: "initial value", valueChanged: valueChanged, valueExpression: () => model.StringProperty);
-            Assert.Single(context.Component.RenderedStates);
+            var rootComponent = new TestInputHostComponent<string>
+            {
+                EditContext = new EditContext(model),
+                Value = "initial value",
+                ValueChanged = val => valueChangedCallLog.Add(val),
+                ValueExpression = () => model.StringProperty
+            };
+            var inputComponent = await RenderAndGetTestInputComponentAsync(rootComponent);
+            Assert.Empty(valueChangedCallLog);
 
             // Act
-            context.Component.CurrentValue = "initial value";
+            inputComponent.CurrentValue = "initial value";
 
             // Assert
             Assert.Empty(valueChangedCallLog);
         }
 
         [Fact]
-        public void WritingToCurrentValueNotifiesEditContext()
+        public async Task WritingToCurrentValueNotifiesEditContext()
         {
             // Arrange
-            var context = new TestRenderingContext<TestInputComponent<string>>();
             var model = new TestModel();
-            var editContext = new EditContext(model);
-            context.SupplyParameters(editContext, valueExpression: () => model.StringProperty);
-            Assert.False(editContext.IsModified(() => model.StringProperty));
+            var rootComponent = new TestInputHostComponent<string>
+            {
+                EditContext = new EditContext(model),
+                Value = "initial value",
+                ValueExpression = () => model.StringProperty
+            };
+            var inputComponent = await RenderAndGetTestInputComponentAsync(rootComponent);
+            Assert.False(rootComponent.EditContext.IsModified(() => model.StringProperty));
 
             // Act
-            context.Component.CurrentValue = "new value";
+            inputComponent.CurrentValue = "new value";
 
             // Assert
-            Assert.True(editContext.IsModified(() => model.StringProperty));
+            Assert.True(rootComponent.EditContext.IsModified(() => model.StringProperty));
+        }
+
+        private static TestInputComponent<TValue> FindInputComponent<TValue>(CapturedBatch batch)
+            => batch.ReferenceFrames
+                    .Where(f => f.FrameType == RenderTreeFrameType.Component)
+                    .Select(f => f.Component)
+                    .OfType<TestInputComponent<TValue>>()
+                    .Single();
+
+        private static async Task<TestInputComponent<TValue>> RenderAndGetTestInputComponentAsync<TValue>(TestInputHostComponent<TValue> hostComponent)
+        {
+            var testRenderer = new TestRenderer();
+            var componentId = testRenderer.AssignRootComponentId(hostComponent);
+            await testRenderer.RenderRootComponentAsync(componentId);
+            return FindInputComponent<TValue>(testRenderer.Batches.Single());
         }
 
         class TestModel
         {
             public string StringProperty { get; set; }
-
-            public string AnotherStringProperty { get; set; }
         }
 
-        class TestInputComponent<T> : InputBase<T> where T: IEquatable<T>
+        class TestInputComponent<T> : InputBase<T>
         {
-            public List<StateWhenRendering> RenderedStates { get; } = new List<StateWhenRendering>();
-
-            protected override void BuildRenderTree(RenderTreeBuilder builder)
-            {
-                // No need to actually render anything. We just want to assert about what data is given to derived classes.
-                RenderedStates.Add(new StateWhenRendering { CurrentValue = CurrentValue });
-            }
-
-            public class StateWhenRendering
-            {
-                public T CurrentValue { get; set; }
-            }
-
             // Expose publicly for tests
             public new T CurrentValue
             {
@@ -208,70 +234,29 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
             public new FieldIdentifier FieldIdentifier => base.FieldIdentifier;
         }
 
-        class TestComponent : AutoRenderComponent
+        class TestInputHostComponent<T> : AutoRenderComponent
         {
-            private readonly RenderFragment _renderFragment;
+            public EditContext EditContext { get; set; }
 
-            public TestComponent(RenderFragment renderFragment)
-            {
-                _renderFragment = renderFragment;
-            }
+            public T Value { get; set; }
+
+            public Action<T> ValueChanged { get; set; }
+
+            public Expression<Func<T>> ValueExpression { get; set; }
 
             protected override void BuildRenderTree(RenderTreeBuilder builder)
-                => _renderFragment(builder);
-        }
-
-        class TestRenderingContext<TComponent> where TComponent: IComponent
-        {
-            private readonly TestRenderer _renderer = new TestRenderer();
-            private readonly TestComponent _rootComponent;
-            private RenderFragment _renderFragment;
-
-            public TestRenderingContext()
             {
-                _rootComponent = new TestComponent(builder => builder.AddContent(0, _renderFragment));
-            }
-
-            public TComponent Component { get; private set; }
-
-            public void SupplyParameters<T>(EditContext editContext, T value = default, Action<T> valueChanged = default, Expression<Func<T>> valueExpression = default)
-            {
-                _renderFragment = builder =>
+                builder.OpenComponent<CascadingValue<EditContext>>(0);
+                builder.AddAttribute(1, "Value", EditContext);
+                builder.AddAttribute(2, RenderTreeBuilder.ChildContent, new RenderFragment(childBuilder =>
                 {
-                    builder.OpenComponent<CascadingValue<EditContext>>(0);
-                    builder.AddAttribute(1, "Value", editContext);
-                    builder.AddAttribute(2, RenderTreeBuilder.ChildContent, new RenderFragment(childBuilder =>
-                    {
-                        childBuilder.OpenComponent<TComponent>(0);
-                        childBuilder.AddAttribute(0, "Value", value);
-                        childBuilder.AddAttribute(1, "ValueChanged", valueChanged);
-                        childBuilder.AddAttribute(2, "ValueExpression", valueExpression);
-                        childBuilder.CloseComponent();
-                    }));
-                    builder.CloseComponent();
-                };
-
-                if (Component == null)
-                {
-                    var rootComponentId = _renderer.AssignRootComponentId(_rootComponent);
-                    var renderTask = _renderer.RenderRootComponentAsync(rootComponentId);
-                    if (renderTask.IsFaulted)
-                    {
-                        throw renderTask.Exception;
-                    }
-                    Assert.True(renderTask.IsCompletedSuccessfully); // Everything's synchronous here
-
-                    var batch = _renderer.Batches.Single();
-                    Component = batch.ReferenceFrames
-                        .Where(f => f.FrameType == RenderTreeFrameType.Component)
-                        .Select(f => f.Component)
-                        .OfType<TComponent>()
-                        .Single();
-                }
-                else
-                {
-                    _rootComponent.TriggerRender();
-                }
+                    childBuilder.OpenComponent<TestInputComponent<T>>(0);
+                    childBuilder.AddAttribute(0, "Value", Value);
+                    childBuilder.AddAttribute(1, "ValueChanged", ValueChanged);
+                    childBuilder.AddAttribute(2, "ValueExpression", ValueExpression);
+                    childBuilder.CloseComponent();
+                }));
+                builder.CloseComponent();
             }
         }
     }
