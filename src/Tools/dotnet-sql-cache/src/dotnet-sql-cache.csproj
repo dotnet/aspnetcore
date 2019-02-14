@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" PrivateAssets="All" />
+    <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" />
     <Reference Include="System.Data.SqlClient" />
   </ItemGroup>
 

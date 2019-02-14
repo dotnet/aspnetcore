@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits
@@ -17,10 +18,12 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
     {
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly DefaultCircuitFactoryOptions _options;
+        private readonly ILoggerFactory _loggerFactory;
 
         public DefaultCircuitFactory(
             IServiceScopeFactory scopeFactory,
-            IOptions<DefaultCircuitFactoryOptions> options)
+            IOptions<DefaultCircuitFactoryOptions> options,
+            ILoggerFactory loggerFactory)
         {
             if (options == null)
             {
@@ -29,6 +32,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             _scopeFactory = scopeFactory ?? throw new ArgumentNullException(nameof(scopeFactory));
             _options = options.Value;
+            _loggerFactory = loggerFactory;
         }
 
         public override CircuitHost CreateCircuitHost(HttpContext httpContext, IClientProxy client)
@@ -48,7 +52,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 rendererRegistry,
                 jsRuntime,
                 client,
-                dispatcher);
+                dispatcher,
+                _loggerFactory.CreateLogger<RemoteRenderer>());
 
             var circuitHandlers = scope.ServiceProvider.GetServices<CircuitHandler>()
                 .OrderBy(h => h.Order)

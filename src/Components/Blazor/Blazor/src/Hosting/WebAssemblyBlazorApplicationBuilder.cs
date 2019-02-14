@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Blazor.Rendering;
 using Microsoft.AspNetCore.Components.Builder;
 
@@ -35,13 +36,13 @@ namespace Microsoft.AspNetCore.Blazor.Hosting
             Entries.Add((componentType, domElementSelector));
         }
 
-        public WebAssemblyRenderer CreateRenderer()
+        public async Task<WebAssemblyRenderer> CreateRendererAsync()
         {
             var renderer = new WebAssemblyRenderer(Services);
             for (var i = 0; i < Entries.Count; i++)
             {
-                var entry = Entries[i];
-                renderer.AddComponent(entry.componentType, entry.domElementSelector);
+                var (componentType, domElementSelector) = Entries[i];
+                await renderer.AddComponentAsync(componentType, domElementSelector);
             }
 
             return renderer;

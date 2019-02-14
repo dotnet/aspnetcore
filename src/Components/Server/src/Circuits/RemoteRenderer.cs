@@ -7,8 +7,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using MessagePack;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Browser.Rendering
@@ -25,6 +27,7 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
         private readonly RendererRegistry _rendererRegistry;
         private readonly ConcurrentDictionary<long, AutoCancelTaskCompletionSource<object>> _pendingRenders
             = new ConcurrentDictionary<long, AutoCancelTaskCompletionSource<object>>();
+        private readonly ILogger _logger;
         private long _nextRenderId = 1;
 
         /// <summary>
@@ -45,7 +48,8 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
             RendererRegistry rendererRegistry,
             IJSRuntime jsRuntime,
             IClientProxy client,
-            IDispatcher dispatcher)
+            IDispatcher dispatcher,
+            ILogger logger)
             : base(serviceProvider, dispatcher)
         {
             _rendererRegistry = rendererRegistry;
@@ -53,18 +57,7 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
             _client = client;
 
             _id = _rendererRegistry.Add(this);
-        }
-
-        /// <summary>
-        /// Attaches a new root component to the renderer,
-        /// causing it to be displayed in the specified DOM element.
-        /// </summary>
-        /// <typeparam name="TComponent">The type of the component.</typeparam>
-        /// <param name="domElementSelector">A CSS selector that uniquely identifies a DOM element.</param>
-        public void AddComponent<TComponent>(string domElementSelector)
-            where TComponent : IComponent
-        {
-            AddComponent(typeof(TComponent), domElementSelector);
+            _logger = logger;
         }
 
         /// <summary>
@@ -73,7 +66,7 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
         /// </summary>
         /// <param name="componentType">The type of the component.</param>
         /// <param name="domElementSelector">A CSS selector that uniquely identifies a DOM element.</param>
-        public void AddComponent(Type componentType, string domElementSelector)
+        public Task AddComponentAsync(Type componentType, string domElementSelector)
         {
             var component = InstantiateComponent(componentType);
             var componentId = AssignRootComponentId(component);
@@ -85,7 +78,23 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
                 componentId);
             CaptureAsyncExceptions(attachComponentTask);
 
-            RenderRootComponent(componentId);
+            return RenderRootComponentAsync(componentId);
+        }
+
+        /// <inheritdoc />
+        protected override void HandleException(Exception exception)
+        {
+            if (exception is AggregateException aggregateException)
+            {
+                foreach (var innerException in aggregateException.Flatten().InnerExceptions)
+                {
+                    _logger.UnhandledExceptionRenderingComponent(innerException);
+                }
+            }
+            else
+            {
+                _logger.UnhandledExceptionRenderingComponent(exception);
+            }
         }
 
         /// <inheritdoc />
