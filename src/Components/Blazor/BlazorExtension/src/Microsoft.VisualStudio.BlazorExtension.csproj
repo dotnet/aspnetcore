@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
 
@@ -6,6 +6,8 @@
     <VSSDKTargetPlatformRegRootSuffix>RoslynDev</VSSDKTargetPlatformRegRootSuffix>
 
     <!-- Required to run the project localy -->
+    <StartAction>Program</StartAction>
+    <StartProgram>$(DevEnvDir)devenv.exe</StartProgram>
     <StartArguments>/rootsuffix $(VSSDKTargetPlatformRegRootSuffix) /log</StartArguments>
 
     <!--
@@ -25,7 +27,7 @@
 
     <IsPackable>false</IsPackable>
     <UseCodebase>true</UseCodebase>
-    <DeployExtension>false</DeployExtension>
+    <DeployExtension Condition="'$(CI)' == 'true'">false</DeployExtension>
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
   </PropertyGroup>
 
