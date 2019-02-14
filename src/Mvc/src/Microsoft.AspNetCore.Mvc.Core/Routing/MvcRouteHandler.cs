@@ -13,7 +13,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 {
     internal class MvcRouteHandler : IRouter
     {
-        private readonly IActionContextAccessor _actionContextAccessor;
         private readonly IActionInvokerFactory _actionInvokerFactory;
         private readonly IActionSelector _actionSelector;
         private readonly ILogger _logger;
@@ -24,21 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             IActionSelector actionSelector,
             DiagnosticListener diagnosticListener,
             ILoggerFactory loggerFactory)
-            : this(actionInvokerFactory, actionSelector, diagnosticListener, loggerFactory, actionContextAccessor: null)
         {
-        }
-
-        public MvcRouteHandler(
-            IActionInvokerFactory actionInvokerFactory,
-            IActionSelector actionSelector,
-            DiagnosticListener diagnosticListener,
-            ILoggerFactory loggerFactory,
-            IActionContextAccessor actionContextAccessor)
-        {
-            // The IActionContextAccessor is optional. We want to avoid the overhead of using CallContext
-            // if possible.
-            _actionContextAccessor = actionContextAccessor;
-
             _actionInvokerFactory = actionInvokerFactory;
             _actionSelector = actionSelector;
             _diagnosticListener = diagnosticListener;
@@ -82,11 +67,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 var routeData = c.GetRouteData();
 
                 var actionContext = new ActionContext(context.HttpContext, routeData, actionDescriptor);
-                if (_actionContextAccessor != null)
-                {
-                    _actionContextAccessor.ActionContext = actionContext;
-                }
-
                 var invoker = _actionInvokerFactory.CreateInvoker(actionContext);
                 if (invoker == null)
                 {

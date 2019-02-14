@@ -41,6 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             IPageHandlerMethodSelector handlerMethodSelector,
             DiagnosticListener diagnosticListener,
             ILogger logger,
+            IActionContextAccessor actionContextAccessor,
             IActionResultTypeMapper mapper,
             PageContext pageContext,
             IFilterMetadata[] filterMetadata,
@@ -51,6 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             : base(
                   diagnosticListener,
                   logger,
+                  actionContextAccessor,
                   mapper,
                   pageContext,
                   filterMetadata,

@@ -5,10 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
-using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
@@ -17,12 +19,14 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
     {
         private readonly IPageApplicationModelProvider[] _applicationModelProviders;
         private readonly IViewCompilerProvider _viewCompilerProvider;
+        private readonly ActionEndpointFactory _endpointFactory;
         private readonly PageConventionCollection _conventions;
         private readonly FilterCollection _globalFilters;
 
         public DefaultPageLoader(
             IEnumerable<IPageApplicationModelProvider> applicationModelProviders,
             IViewCompilerProvider viewCompilerProvider,
+            ActionEndpointFactory endpointFactory,
             IOptions<RazorPagesOptions> pageOptions,
             IOptions<MvcOptions> mvcOptions)
         {
@@ -30,6 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 .OrderBy(p => p.Order)
                 .ToArray();
             _viewCompilerProvider = viewCompilerProvider;
+            _endpointFactory = endpointFactory;
             _conventions = pageOptions.Value.Conventions;
             _globalFilters = mvcOptions.Value.Filters;
         }
@@ -59,7 +64,20 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
             ApplyConventions(_conventions, context.PageApplicationModel);
 
-            return CompiledPageActionDescriptorBuilder.Build(context.PageApplicationModel, _globalFilters);
+            var compiled = CompiledPageActionDescriptorBuilder.Build(context.PageApplicationModel, _globalFilters);
+            
+            // We need to create an endpoint for routing to use and attach it to the CompiledPageActionDescriptor...
+            // routing for pages is two-phase. First we perform routing using the route info - we can do this without
+            // compiling/loading the page. Then once we have a match we load the page and we can create an endpoint
+            // with all of the information we get from the compiled action descriptor.
+            var endpoints = new List<Endpoint>();
+            _endpointFactory.AddEndpoints(endpoints, compiled, Array.Empty<ConventionalRouteEntry>(), Array.Empty<Action<EndpointBuilder>>());
+
+            // In some test scenarios there's no route so the endpoint isn't created. This is fine because
+            // it won't happen for real.
+            compiled.Endpoint = endpoints.SingleOrDefault();
+
+            return compiled;
         }
 
         internal static void ApplyConventions(

@@ -1519,6 +1519,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 selector.Object,
                 diagnosticListener ?? new DiagnosticListener("Microsoft.AspNetCore"),
                 logger ?? NullLogger.Instance,
+                ActionContextAccessor.Null,
                 new ActionResultTypeMapper(),
                 pageContext,
                 filters ?? Array.Empty<IFilterMetadata>(),

@@ -1343,6 +1343,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             var invoker = new ControllerActionInvoker(
                 new NullLoggerFactory().CreateLogger<ControllerActionInvoker>(),
                 new DiagnosticListener("Microsoft.AspNetCore"),
+                ActionContextAccessor.Null,
                 new ActionResultTypeMapper(),
                 controllerContext,
                 cacheEntry,
@@ -1623,6 +1624,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             var invoker = new ControllerActionInvoker(
                 logger,
                 diagnosticSource,
+                ActionContextAccessor.Null,
                 new ActionResultTypeMapper(),
                 controllerContext,
                 cacheEntry,
