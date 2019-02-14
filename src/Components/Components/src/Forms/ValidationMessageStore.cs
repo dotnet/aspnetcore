@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 
 namespace Microsoft.AspNetCore.Components.Forms
 {
@@ -48,9 +49,17 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <param name="fieldIdentifier">The identifier for the field.</param>
         /// <returns>The validation messages for the specified field within this <see cref="ValidationMessageStore"/>.</returns>
         public IEnumerable<string> this[FieldIdentifier fieldIdentifier]
-        {
-            get => _messages.TryGetValue(fieldIdentifier, out var messages) ? messages : Enumerable.Empty<string>();
-        }
+            => _messages.TryGetValue(fieldIdentifier, out var messages) ? messages : Enumerable.Empty<string>();
+
+        /// <summary>
+        /// Gets the validation messages within this <see cref="ValidationMessageStore"/> for the specified field.
+        ///
+        /// To get the validation messages across all validation message stores, use <see cref="EditContext.GetValidationMessages(FieldIdentifier)"/> instead
+        /// </summary>
+        /// <param name="accessor">The identifier for the field.</param>
+        /// <returns>The validation messages for the specified field within this <see cref="ValidationMessageStore"/>.</returns>
+        public IEnumerable<string> this[Expression<Func<object>> accessor]
+            => this[new FieldIdentifier(accessor)];
 
         /// <summary>
         /// Removes all messages within this <see cref="ValidationMessageStore"/>.
