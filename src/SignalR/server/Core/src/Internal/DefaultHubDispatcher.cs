@@ -155,6 +155,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
             var message = CompletionMessage.WithError(bindingFailureMessage.Id, errorString);
             Log.ClosingStreamWithBindingError(_logger, message);
+
+            // ignore failure, it means the client already completed the stream or the stream never existed on the server
             connection.StreamTracker.TryComplete(message);
 
             // TODO: Send stream completion message to client when we add it
