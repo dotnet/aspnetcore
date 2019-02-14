@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
@@ -59,6 +60,26 @@ namespace Microsoft.AspNetCore.Components.Forms
                     Value = value;
                     ValueChanged?.Invoke(value);
                     EditContext.NotifyFieldChanged(FieldIdentifier);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets a string that indicates the status of the field being edited. This will include
+        /// some combination of "modified", "valid", or "invalid", depending on the status of the field.
+        /// </summary>
+        protected string CssClass
+        {
+            get
+            {
+                var isValid = !EditContext.GetValidationMessages(FieldIdentifier).Any();
+                if (EditContext.IsModified(FieldIdentifier))
+                {
+                    return isValid ? "modified valid" : "modified invalid";
+                }
+                else
+                {
+                    return isValid ? "valid" : "invalid";
                 }
             }
         }

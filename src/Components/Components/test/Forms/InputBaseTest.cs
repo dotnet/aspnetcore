@@ -200,6 +200,40 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
             Assert.True(rootComponent.EditContext.IsModified(() => model.StringProperty));
         }
 
+        [Fact]
+        public async Task SuppliesCssClassCorrespondingToFieldState()
+        {
+            // Arrange
+            var model = new TestModel();
+            var rootComponent = new TestInputHostComponent<string>
+            {
+                EditContext = new EditContext(model),
+                ValueExpression = () => model.StringProperty
+            };
+            var fieldIdentifier = FieldIdentifier.Create(() => model.StringProperty);
+
+            // Act/Assert: Initally, it's valid and unmodified
+            var inputComponent = await RenderAndGetTestInputComponentAsync(rootComponent);
+            Assert.Equal("valid", inputComponent.CssClass);
+
+            // Act/Assert: Modify the field
+            rootComponent.EditContext.NotifyFieldChanged(fieldIdentifier);
+            Assert.Equal("modified valid", inputComponent.CssClass);
+
+            // Act/Assert: Make it invalid
+            var messages = new ValidationMessageStore(rootComponent.EditContext);
+            messages.Add(fieldIdentifier, "I do not like this value");
+            Assert.Equal("modified invalid", inputComponent.CssClass);
+
+            // Act/Assert: Clear the modification flag
+            rootComponent.EditContext.MarkAsUnmodified(fieldIdentifier);
+            Assert.Equal("invalid", inputComponent.CssClass);
+
+            // Act/Assert: Make it valid
+            messages.Clear();
+            Assert.Equal("valid", inputComponent.CssClass);
+        }
+
         private static TestInputComponent<TValue> FindInputComponent<TValue>(CapturedBatch batch)
             => batch.ReferenceFrames
                     .Where(f => f.FrameType == RenderTreeFrameType.Component)
@@ -222,7 +256,8 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
 
         class TestInputComponent<T> : InputBase<T>
         {
-            // Expose publicly for tests
+            // Expose protected members publicly for tests
+
             public new T CurrentValue
             {
                 get => base.CurrentValue;
@@ -232,6 +267,8 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
             public new EditContext EditContext => base.EditContext;
 
             public new FieldIdentifier FieldIdentifier => base.FieldIdentifier;
+
+            public new string CssClass => base.CssClass;
         }
 
         class TestInputHostComponent<T> : AutoRenderComponent
