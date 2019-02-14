@@ -263,7 +263,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 // don't leak the exception
                 catch (ConnectionResetException)
                 {
-                    AbortIO(isConnectionReset: true);
+                    AbortIO(clientDisconnect: true);
                 }
             }
 
