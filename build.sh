@@ -25,6 +25,7 @@ run_build=true
 run_pack=false
 run_tests=false
 build_all=false
+build_deps=true
 build_managed=''
 build_native=''
 build_nodejs=''
@@ -60,6 +61,7 @@ Options:
 
     --projects             A list of projects to build. (Must be an absolute path.)
                            Globbing patterns are supported, such as \"$(pwd)/**/*.csproj\".
+    --no-build-deps        Do not build project-to-project references and only build the specified project.
 
     --all                  Build all project types.
     --[no-]build-native    Build native projects (C, C++).
@@ -190,6 +192,9 @@ while [[ $# -gt 0 ]]; do
             # --no-build implies --no-restore
             run_restore=false
             ;;
+        --no-build-deps)
+            build_deps=false
+            ;;
         --pack|-[Pp]ack)
             run_pack=true
             ;;
@@ -296,6 +301,10 @@ elif [ -z "$build_managed" ] && [ -z "$build_nodejs" ] && [ -z "$build_java" ] &
     # We believe the most common thing our contributors will work on is C#, so if no other build group was picked, build the C# projects.
     __warn "No default group of projects was specified, so building the 'managed' subset of projects. Run ``build.sh -help`` for more details."
     build_managed=true
+fi
+
+if [ "$build_deps" = false ]; then
+    msbuild_args[${#msbuild_args[*]}]="-p:BuildProjectReferences=false"
 fi
 
 # Only set these MSBuild properties if they were explicitly set by build parameters.

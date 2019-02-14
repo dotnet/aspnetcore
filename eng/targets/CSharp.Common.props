@@ -28,13 +28,14 @@
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="$(MicrosoftNETFrameworkReferenceAssembliesPackageVersion)" PrivateAssets="All" AllowExplicitReference="true" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(AddImplicitReferences)' != 'false' AND '$(IsTestProject)' == 'true' ">
+  <ItemGroup Condition=" '$(IsTestProject)' == 'true' ">
     <Reference Include="Microsoft.AspNetCore.Testing" />
     <Reference Include="Microsoft.NET.Test.Sdk" />
     <Reference Include="Moq" />
     <Reference Include="xunit" />
     <Reference Include="xunit.analyzers" />
     <Reference Include="xunit.runner.visualstudio" />
+    <Reference Include="xunit.runner.console" Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' AND '$(IsHelixJob)' == 'true' " />
   </ItemGroup>
 
 </Project>
