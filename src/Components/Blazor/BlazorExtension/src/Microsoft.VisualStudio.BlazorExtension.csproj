@@ -27,6 +27,7 @@
 
     <IsPackable>false</IsPackable>
     <UseCodebase>true</UseCodebase>
+    <GeneratePkgDefFile>true</GeneratePkgDefFile>
     <DeployExtension Condition="'$(CI)' == 'true'">false</DeployExtension>
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
   </PropertyGroup>
