@@ -443,14 +443,14 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert: Event can be fired
             var eventArgs = new UIEventArgs();
-            var task = renderer.DispatchEventAsync(componentId, eventHandlerId, eventArgs);
+            var task = renderer.DispatchEventAsync(eventHandlerId, eventArgs);
 
             // This should always be run synchronously
             Assert.True(task.IsCompletedSuccessfully);
         }
 
         [Fact]
-        public void CanDispatchEventsToTopLevelComponents()
+        public async Task CanDispatchEventsToTopLevelComponents()
         {
             // Arrange: Render a component with an event handler
             var renderer = new TestRenderer();
@@ -473,14 +473,15 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert: Event can be fired
             var eventArgs = new UIEventArgs();
-            var renderTask = renderer.DispatchEventAsync(componentId, eventHandlerId, eventArgs);
-
+            var renderTask = renderer.DispatchEventAsync(eventHandlerId, eventArgs);
             Assert.True(renderTask.IsCompletedSuccessfully);
             Assert.Same(eventArgs, receivedArgs);
+
+            await renderTask; // Does not throw
         }
 
         [Fact]
-        public void CanDispatchTypedEventsToTopLevelComponents()
+        public async Task CanDispatchTypedEventsToTopLevelComponents()
         {
             // Arrange: Render a component with an event handler
             var renderer = new TestRenderer();
@@ -503,14 +504,15 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert: Event can be fired
             var eventArgs = new UIMouseEventArgs();
-            var renderTask = renderer.DispatchEventAsync(componentId, eventHandlerId, eventArgs);
-
+            var renderTask = renderer.DispatchEventAsync(eventHandlerId, eventArgs);
             Assert.True(renderTask.IsCompletedSuccessfully);
             Assert.Same(eventArgs, receivedArgs);
+
+            await renderTask; // does not throw
         }
 
         [Fact]
-        public void CanDispatchActionEventsToTopLevelComponents()
+        public async Task CanDispatchActionEventsToTopLevelComponents()
         {
             // Arrange: Render a component with an event handler
             var renderer = new TestRenderer();
@@ -533,14 +535,15 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert: Event can be fired
             var eventArgs = new UIMouseEventArgs();
-            var renderTask = renderer.DispatchEventAsync(componentId, eventHandlerId, eventArgs);
-
+            var renderTask = renderer.DispatchEventAsync(eventHandlerId, eventArgs);
             Assert.True(renderTask.IsCompletedSuccessfully);
             Assert.NotNull(receivedArgs);
+
+            await renderTask; // does not throw
         }
 
         [Fact]
-        public void CanDispatchEventsToNestedComponents()
+        public async Task CanDispatchEventsToNestedComponents()
         {
             UIEventArgs receivedArgs = null;
 
@@ -574,25 +577,33 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert: Event can be fired
             var eventArgs = new UIEventArgs();
-            var renderTask = renderer.DispatchEventAsync(nestedComponentId, eventHandlerId, eventArgs);
-
+            var renderTask = renderer.DispatchEventAsync(eventHandlerId, eventArgs);
             Assert.True(renderTask.IsCompletedSuccessfully);
             Assert.Same(eventArgs, receivedArgs);
+
+            await renderTask; // does not throw
         }
 
         [Fact]
-        public void ThrowsIfComponentDoesNotHandleEvents()
+        public async Task CanAsyncDispatchEventsToTopLevelComponents()
         {
             // Arrange: Render a component with an event handler
             var renderer = new TestRenderer();
-            Action<UIEventArgs> handler = args => throw new NotImplementedException();
-            var component = new TestComponent(builder =>
-            {
-                builder.OpenElement(0, "mybutton");
-                builder.AddAttribute(1, "onclick", handler);
-                builder.CloseElement();
-            });
+            UIEventArgs receivedArgs = null;
 
+            var state = 0;
+            var tcs = new TaskCompletionSource<object>();
+
+            var component = new EventComponent
+            {
+                OnTestAsync = async (args) =>
+                {
+                    receivedArgs = args;
+                    state = 1;
+                    await tcs.Task;
+                    state = 2;
+                },
+            };
             var componentId = renderer.AssignRootComponentId(component);
             component.TriggerRender();
 
@@ -600,29 +611,1140 @@ namespace Microsoft.AspNetCore.Components.Test
                 .ReferenceFrames
                 .First(frame => frame.AttributeValue != null)
                 .AttributeEventHandlerId;
-            var eventArgs = new UIEventArgs();
 
-            // Act/Assert
-            var ex = Assert.Throws<InvalidOperationException>(() =>
-            {
-                // Verifies that the exception is thrown synchronously.
-                _ = renderer.DispatchEventAsync(componentId, eventHandlerId, eventArgs);
-            });
-            Assert.Equal($"The component of type {typeof(TestComponent).FullName} cannot receive " +
-                $"events because it does not implement {typeof(IHandleEvent).FullName}.", ex.Message);
+            // Assert: Event not yet fired
+            Assert.Null(receivedArgs);
+
+            // Act/Assert: Event can be fired
+            var eventArgs = new UIEventArgs();
+            var task = renderer.DispatchEventAsync(eventHandlerId, eventArgs);
+            Assert.Equal(1, state);
+            Assert.Same(eventArgs, receivedArgs);
+
+            tcs.SetResult(null);
+            await task;
+
+            Assert.Equal(2, state);
         }
 
         [Fact]
-        public void CannotDispatchEventsToUnknownComponents()
+        public async Task CanAsyncDispatchTypedEventsToTopLevelComponents()
+        {
+            // Arrange: Render a component with an event handler
+            var renderer = new TestRenderer();
+            UIMouseEventArgs receivedArgs = null;
+
+            var state = 0;
+            var tcs = new TaskCompletionSource<object>();
+
+            var component = new EventComponent
+            {
+                OnClickAsync = async (args) =>
+                {
+                    receivedArgs = args;
+                    state = 1;
+                    await tcs.Task;
+                    state = 2;
+                }
+            };
+            var componentId = renderer.AssignRootComponentId(component);
+            component.TriggerRender();
+
+            var eventHandlerId = renderer.Batches.Single()
+                .ReferenceFrames
+                .First(frame => frame.AttributeValue != null)
+                .AttributeEventHandlerId;
+
+            // Assert: Event not yet fired
+            Assert.Null(receivedArgs);
+
+            // Act/Assert: Event can be fired
+            var eventArgs = new UIMouseEventArgs();
+            var task = renderer.DispatchEventAsync(eventHandlerId, eventArgs);
+            Assert.Equal(1, state);
+            Assert.Same(eventArgs, receivedArgs);
+
+            tcs.SetResult(null);
+            await task;
+
+            Assert.Equal(2, state);
+        }
+
+        [Fact]
+        public async Task CanAsyncDispatchActionEventsToTopLevelComponents()
+        {
+            // Arrange: Render a component with an event handler
+            var renderer = new TestRenderer();
+            object receivedArgs = null;
+
+            var state = 0;
+            var tcs = new TaskCompletionSource<object>();
+
+            var component = new EventComponent
+            {
+                OnClickAsyncAction = async () =>
+                {
+                    receivedArgs = new object();
+                    state = 1;
+                    await tcs.Task;
+                    state = 2;
+                }
+            };
+            var componentId = renderer.AssignRootComponentId(component);
+            component.TriggerRender();
+
+            var eventHandlerId = renderer.Batches.Single()
+                .ReferenceFrames
+                .First(frame => frame.AttributeValue != null)
+                .AttributeEventHandlerId;
+
+            // Assert: Event not yet fired
+            Assert.Null(receivedArgs);
+
+            // Act/Assert: Event can be fired
+            var eventArgs = new UIMouseEventArgs();
+            var task = renderer.DispatchEventAsync(eventHandlerId, eventArgs);
+            Assert.Equal(1, state);
+            Assert.NotNull(receivedArgs);
+
+            tcs.SetResult(null);
+            await task;
+
+            Assert.Equal(2, state);
+        }
+
+        [Fact]
+        public async Task CanAsyncDispatchEventsToNestedComponents()
+        {
+            UIEventArgs receivedArgs = null;
+
+            var state = 0;
+            var tcs = new TaskCompletionSource<object>();
+
+            // Arrange: Render parent component
+            var renderer = new TestRenderer();
+            var parentComponent = new TestComponent(builder =>
+            {
+                builder.OpenComponent<EventComponent>(0);
+                builder.CloseComponent();
+            });
+            var parentComponentId = renderer.AssignRootComponentId(parentComponent);
+            parentComponent.TriggerRender();
+
+            // Arrange: Render nested component
+            var nestedComponentFrame = renderer.Batches.Single()
+                .ReferenceFrames
+                .Single(frame => frame.FrameType == RenderTreeFrameType.Component);
+            var nestedComponent = (EventComponent)nestedComponentFrame.Component;
+            nestedComponent.OnTestAsync = async (args) =>
+            {
+                receivedArgs = args;
+                state = 1;
+                await tcs.Task;
+                state = 2;
+            };
+            var nestedComponentId = nestedComponentFrame.ComponentId;
+            nestedComponent.TriggerRender();
+
+            // Find nested component's event handler ID
+            var eventHandlerId = renderer.Batches[1]
+                .ReferenceFrames
+                .First(frame => frame.AttributeValue != null)
+                .AttributeEventHandlerId;
+
+            // Assert: Event not yet fired
+            Assert.Null(receivedArgs);
+
+            // Act/Assert: Event can be fired
+            var eventArgs = new UIEventArgs();
+            var task = renderer.DispatchEventAsync(eventHandlerId, eventArgs);
+            Assert.Equal(1, state);
+            Assert.Same(eventArgs, receivedArgs);
+
+            tcs.SetResult(null);
+            await task;
+
+            Assert.Equal(2, state);
+        }
+
+        // This tests the behaviour of dispatching an event when the event-handler
+        // delegate is a bound-delegate with a target that points to the parent component.
+        //
+        // This is a very common case when a component accepts a delegate parameter that
+        // will be hooked up to a DOM event handler. It's essential that this will dispatch
+        // to the parent component so that manual StateHasChanged calls are not necessary.
+        [Fact]
+        public async Task EventDispatching_DelegateParameter_MethodToDelegateConversion()
+        {
+            // Arrange
+            var outerStateChangeCount = 0;
+
+            var renderer = new TestRenderer();
+            var parentComponent = new OuterEventComponent();
+            parentComponent.RenderFragment = (builder) =>
+            {
+                builder.OpenComponent<EventComponent>(0);
+                builder.AddAttribute(1, nameof(EventComponent.OnClickAction), parentComponent.SomeMethod);
+                builder.CloseComponent();
+            };
+            parentComponent.OnEvent = () =>
+            {
+                outerStateChangeCount++;
+            };
+
+            var parentComponentId = renderer.AssignRootComponentId(parentComponent);
+            await parentComponent.TriggerRenderAsync();
+
+            var eventHandlerId = renderer.Batches[0]
+                .ReferenceFrames
+                .First(frame => frame.AttributeName == "onclickaction")
+                .AttributeEventHandlerId;
+
+            // Act
+            var eventArgs = new UIMouseEventArgs();
+            await renderer.DispatchEventAsync(eventHandlerId, eventArgs);
+
+            // Assert
+            Assert.Equal(1, parentComponent.SomeMethodCallCount);
+            Assert.Equal(1, outerStateChangeCount);
+        }
+
+        // This is the inverse case of EventDispatching_DelegateParameter_MethodToDelegateConversion
+        // where the event-handling delegate has a target that is not a component.
+        //
+        // This is a degenerate case that we don't expect to occur in applications often,
+        // but it's important to verify the semantics.
+        [Fact]
+        public async Task EventDispatching_DelegateParameter_NoTargetLambda()
+        {
+            // Arrange
+            var outerStateChangeCount = 0;
+
+            var renderer = new TestRenderer();
+            var parentComponent = new OuterEventComponent();
+            parentComponent.RenderFragment = (builder) =>
+            {
+                builder.OpenComponent<EventComponent>(0);
+                builder.AddAttribute(1, nameof(EventComponent.OnClickAction), () =>
+                {
+                    parentComponent.SomeMethod();
+                });
+                builder.CloseComponent();
+            };
+            parentComponent.OnEvent = () =>
+            {
+                outerStateChangeCount++;
+            };
+
+            var parentComponentId = renderer.AssignRootComponentId(parentComponent);
+            await parentComponent.TriggerRenderAsync();
+
+            var eventHandlerId = renderer.Batches[0]
+                .ReferenceFrames
+                .First(frame => frame.AttributeName == "onclickaction")
+                .AttributeEventHandlerId;
+
+            // Act
+            var eventArgs = new UIMouseEventArgs();
+            await renderer.DispatchEventAsync(eventHandlerId, eventArgs);
+
+            // Assert
+            Assert.Equal(1, parentComponent.SomeMethodCallCount);
+            Assert.Equal(0, outerStateChangeCount);
+        }
+
+        // This is a similar case to EventDispatching_DelegateParameter_MethodToDelegateConversion
+        // but uses our event handling infrastructure to achieve the same effect. The call to CreateDelegate
+        // is not necessary for correctness in this case - it should just no op.
+        [Fact]
+        public async Task EventDispatching_EventCallback_MethodToDelegateConversion()
+        {
+            // Arrange
+            var outerStateChangeCount = 0;
+
+            var renderer = new TestRenderer();
+            var parentComponent = new OuterEventComponent();
+            parentComponent.RenderFragment = (builder) =>
+            {
+                builder.OpenComponent<EventComponent>(0);
+                builder.AddAttribute(1, nameof(EventComponent.OnClickEventCallback), EventCallback.Factory.Create(parentComponent, (Action)parentComponent.SomeMethod));
+                builder.CloseComponent();
+            };
+            parentComponent.OnEvent = () =>
+            {
+                outerStateChangeCount++;
+            };
+
+            var parentComponentId = renderer.AssignRootComponentId(parentComponent);
+            await parentComponent.TriggerRenderAsync();
+
+            var eventHandlerId = renderer.Batches[0]
+                .ReferenceFrames
+                .First(frame => frame.AttributeName == "onclick")
+                .AttributeEventHandlerId;
+
+            // Act
+            var eventArgs = new UIMouseEventArgs();
+            await renderer.DispatchEventAsync(eventHandlerId, eventArgs);
+
+            // Assert
+            Assert.Equal(1, parentComponent.SomeMethodCallCount);
+            Assert.Equal(1, outerStateChangeCount);
+        }
+
+        // This is a similar case to EventDispatching_DelegateParameter_NoTargetLambda but it uses
+        // our event-handling infrastructure to avoid the need for a manual StateHasChanged()
+        [Fact]
+        public async Task EventDispatching_EventCallback_NoTargetLambda()
+        {
+            // Arrange
+            var outerStateChangeCount = 0;
+
+            var renderer = new TestRenderer();
+            var parentComponent = new OuterEventComponent();
+            parentComponent.RenderFragment = (builder) =>
+            {
+                builder.OpenComponent<EventComponent>(0);
+                builder.AddAttribute(1, nameof(EventComponent.OnClickEventCallback), EventCallback.Factory.Create(parentComponent, (Action)(() =>
+                {
+                    parentComponent.SomeMethod();
+                })));
+                builder.CloseComponent();
+            };
+            parentComponent.OnEvent = () =>
+            {
+                outerStateChangeCount++;
+            };
+
+            var parentComponentId = renderer.AssignRootComponentId(parentComponent);
+            await parentComponent.TriggerRenderAsync();
+
+            var eventHandlerId = renderer.Batches[0]
+                .ReferenceFrames
+                .First(frame => frame.AttributeName == "onclick")
+                .AttributeEventHandlerId;
+
+            // Act
+            var eventArgs = new UIMouseEventArgs();
+            await renderer.DispatchEventAsync(eventHandlerId, eventArgs);
+
+            // Assert
+            Assert.Equal(1, parentComponent.SomeMethodCallCount);
+            Assert.Equal(1, outerStateChangeCount);
+        }
+
+        // This is a similar case to EventDispatching_DelegateParameter_NoTargetLambda but it uses
+        // our event-handling infrastructure to avoid the need for a manual StateHasChanged()
+        [Fact]
+        public async Task EventDispatching_EventCallback_AsyncNoTargetLambda()
+        {
+            // Arrange
+            var outerStateChangeCount = 0;
+
+            var renderer = new TestRenderer();
+            var parentComponent = new OuterEventComponent();
+            parentComponent.RenderFragment = (builder) =>
+            {
+                builder.OpenComponent<EventComponent>(0);
+                builder.AddAttribute(1, nameof(EventComponent.OnClickEventCallback), EventCallback.Factory.Create(parentComponent, (Func<Task>)(() =>
+                {
+                    parentComponent.SomeMethod();
+                    return Task.CompletedTask;
+                })));
+                builder.CloseComponent();
+            };
+            parentComponent.OnEvent = () =>
+            {
+                outerStateChangeCount++;
+            };
+
+            var parentComponentId = renderer.AssignRootComponentId(parentComponent);
+            await parentComponent.TriggerRenderAsync();
+
+            var eventHandlerId = renderer.Batches[0]
+                .ReferenceFrames
+                .First(frame => frame.AttributeName == "onclick")
+                .AttributeEventHandlerId;
+
+            // Act
+            var eventArgs = new UIMouseEventArgs();
+            await renderer.DispatchEventAsync(eventHandlerId, eventArgs);
+
+            // Assert
+            Assert.Equal(1, parentComponent.SomeMethodCallCount);
+            Assert.Equal(1, outerStateChangeCount);
+        }
+
+        [Fact]
+        public async Task EventDispatching_EventCallbackOfT_MethodToDelegateConversion()
+        {
+            // Arrange
+            var outerStateChangeCount = 0;
+
+            var renderer = new TestRenderer();
+            var parentComponent = new OuterEventComponent();
+            parentComponent.RenderFragment = (builder) =>
+            {
+                builder.OpenComponent<EventComponent>(0);
+                builder.AddAttribute(1, nameof(EventComponent.OnClickEventCallbackOfT), EventCallback.Factory.Create<UIMouseEventArgs>(parentComponent, (Action)parentComponent.SomeMethod));
+                builder.CloseComponent();
+            };
+            parentComponent.OnEvent = () =>
+            {
+                outerStateChangeCount++;
+            };
+
+            var parentComponentId = renderer.AssignRootComponentId(parentComponent);
+            await parentComponent.TriggerRenderAsync();
+
+            var eventHandlerId = renderer.Batches[0]
+                .ReferenceFrames
+                .First(frame => frame.AttributeName == "onclick")
+                .AttributeEventHandlerId;
+
+            // Act
+            var eventArgs = new UIMouseEventArgs();
+            await renderer.DispatchEventAsync(eventHandlerId, eventArgs);
+
+            // Assert
+            Assert.Equal(1, parentComponent.SomeMethodCallCount);
+            Assert.Equal(1, outerStateChangeCount);
+        }
+
+        // This is a similar case to EventDispatching_DelegateParameter_NoTargetLambda but it uses
+        // our event-handling infrastructure to avoid the need for a manual StateHasChanged()
+        [Fact]
+        public async Task EventDispatching_EventCallbackOfT_NoTargetLambda()
+        {
+            // Arrange
+            var outerStateChangeCount = 0;
+
+            var renderer = new TestRenderer();
+            var parentComponent = new OuterEventComponent();
+            parentComponent.RenderFragment = (builder) =>
+            {
+                builder.OpenComponent<EventComponent>(0);
+                builder.AddAttribute(1, nameof(EventComponent.OnClickEventCallbackOfT), EventCallback.Factory.Create<UIMouseEventArgs>(parentComponent, (Action)(() =>
+                {
+                    parentComponent.SomeMethod();
+                })));
+                builder.CloseComponent();
+            };
+            parentComponent.OnEvent = () =>
+            {
+                outerStateChangeCount++;
+            };
+
+            var parentComponentId = renderer.AssignRootComponentId(parentComponent);
+            await parentComponent.TriggerRenderAsync();
+
+            var eventHandlerId = renderer.Batches[0]
+                .ReferenceFrames
+                .First(frame => frame.AttributeName == "onclick")
+                .AttributeEventHandlerId;
+
+            // Act
+            var eventArgs = new UIMouseEventArgs();
+            await renderer.DispatchEventAsync(eventHandlerId, eventArgs);
+
+            // Assert
+            Assert.Equal(1, parentComponent.SomeMethodCallCount);
+            Assert.Equal(1, outerStateChangeCount);
+        }
+
+        // This is a similar case to EventDispatching_DelegateParameter_NoTargetLambda but it uses
+        // our event-handling infrastructure to avoid the need for a manual StateHasChanged()
+        [Fact]
+        public async Task EventDispatching_EventCallbackOfT_AsyncNoTargetLambda()
+        {
+            // Arrange
+            var outerStateChangeCount = 0;
+
+            var renderer = new TestRenderer();
+            var parentComponent = new OuterEventComponent();
+            parentComponent.RenderFragment = (builder) =>
+            {
+                builder.OpenComponent<EventComponent>(0);
+                builder.AddAttribute(1, nameof(EventComponent.OnClickEventCallbackOfT), EventCallback.Factory.Create<UIMouseEventArgs>(parentComponent, (Func<Task>)(() =>
+                {
+                    parentComponent.SomeMethod();
+                    return Task.CompletedTask;
+                })));
+                builder.CloseComponent();
+            };
+            parentComponent.OnEvent = () =>
+            {
+                outerStateChangeCount++;
+            };
+
+            var parentComponentId = renderer.AssignRootComponentId(parentComponent);
+            await parentComponent.TriggerRenderAsync();
+
+            var eventHandlerId = renderer.Batches[0]
+                .ReferenceFrames
+                .First(frame => frame.AttributeName == "onclick")
+                .AttributeEventHandlerId;
+
+            // Act
+            var eventArgs = new UIMouseEventArgs();
+            await renderer.DispatchEventAsync(eventHandlerId, eventArgs);
+
+            // Assert
+            Assert.Equal(1, parentComponent.SomeMethodCallCount);
+            Assert.Equal(1, outerStateChangeCount);
+        }
+
+        [Fact]
+        public async Task DispatchEventAsync_Delegate_SynchronousCompletion()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var parentComponent = new OuterEventComponent();
+            parentComponent.RenderFragment = (builder) =>
+            {
+                builder.OpenComponent<EventComponent>(0);
+                builder.AddAttribute(1, nameof(EventComponent.OnClickAction), () =>
+                {
+                    // Do nothing.
+                });
+                builder.CloseComponent();
+            };
+
+            var parentComponentId = renderer.AssignRootComponentId(parentComponent);
+            await parentComponent.TriggerRenderAsync();
+
+            var eventHandlerId = renderer.Batches[0]
+                .ReferenceFrames
+                .First(frame => frame.AttributeName == "onclickaction")
+                .AttributeEventHandlerId;
+
+            // Act
+            var task = renderer.DispatchEventAsync(eventHandlerId, new UIMouseEventArgs());
+
+            // Assert
+            Assert.Equal(TaskStatus.RanToCompletion, task.Status);
+            await task; // Does not throw
+        }
+
+        [Fact]
+        public async Task DispatchEventAsync_EventCallback_SynchronousCompletion()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var parentComponent = new OuterEventComponent();
+            parentComponent.RenderFragment = (builder) =>
+            {
+                builder.OpenComponent<EventComponent>(0);
+                builder.AddAttribute(1, nameof(EventComponent.OnClickEventCallback), EventCallback.Factory.Create(parentComponent, (Action)(() =>
+                {
+                    // Do nothing.
+                })));
+                builder.CloseComponent();
+            };
+
+            var parentComponentId = renderer.AssignRootComponentId(parentComponent);
+            await parentComponent.TriggerRenderAsync();
+
+            var eventHandlerId = renderer.Batches[0]
+                .ReferenceFrames
+                .First(frame => frame.AttributeName == "onclick")
+                .AttributeEventHandlerId;
+
+            // Act
+            var task = renderer.DispatchEventAsync(eventHandlerId, new UIMouseEventArgs());
+
+            // Assert
+            Assert.Equal(TaskStatus.RanToCompletion, task.Status);
+            await task; // Does not throw
+        }
+
+        [Fact]
+        public async Task DispatchEventAsync_EventCallbackOfT_SynchronousCompletion()
+        {
+            // Arrange
+            UIMouseEventArgs arg = null;
+
+            var renderer = new TestRenderer();
+            var parentComponent = new OuterEventComponent();
+            parentComponent.RenderFragment = (builder) =>
+            {
+                builder.OpenComponent<EventComponent>(0);
+                builder.AddAttribute(1, nameof(EventComponent.OnClickEventCallbackOfT), EventCallback.Factory.Create(parentComponent, (Action<UIMouseEventArgs>)((e) =>
+                {
+                    arg = e;
+                })));
+                builder.CloseComponent();
+            };
+
+            var parentComponentId = renderer.AssignRootComponentId(parentComponent);
+            await parentComponent.TriggerRenderAsync();
+
+            var eventHandlerId = renderer.Batches[0]
+                .ReferenceFrames
+                .First(frame => frame.AttributeName == "onclick")
+                .AttributeEventHandlerId;
+
+            // Act
+            var task = renderer.DispatchEventAsync(eventHandlerId, new UIMouseEventArgs());
+
+            // Assert
+            Assert.NotNull(arg);
+            Assert.Equal(TaskStatus.RanToCompletion, task.Status);
+            await task; // Does not throw
+        }
+
+        [Fact]
+        public async Task DispatchEventAsync_Delegate_SynchronousCancellation()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var parentComponent = new OuterEventComponent();
+            parentComponent.RenderFragment = (builder) =>
+            {
+                builder.OpenComponent<EventComponent>(0);
+                builder.AddAttribute(1, nameof(EventComponent.OnClickAction), (Action)(() =>
+                {
+                    throw new OperationCanceledException();
+                }));
+                builder.CloseComponent();
+            };
+
+            var parentComponentId = renderer.AssignRootComponentId(parentComponent);
+            await parentComponent.TriggerRenderAsync();
+
+            var eventHandlerId = renderer.Batches[0]
+                .ReferenceFrames
+                .First(frame => frame.AttributeName == "onclickaction")
+                .AttributeEventHandlerId;
+
+            // Act
+            var task = renderer.DispatchEventAsync(eventHandlerId, new UIMouseEventArgs());
+
+            // Assert
+            Assert.Equal(TaskStatus.Canceled, task.Status);
+            await Assert.ThrowsAsync<TaskCanceledException>(() => task);
+        }
+
+        [Fact]
+        public async Task DispatchEventAsync_EventCallback_SynchronousCancellation()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var parentComponent = new OuterEventComponent();
+            parentComponent.RenderFragment = (builder) =>
+            {
+                builder.OpenComponent<EventComponent>(0);
+                builder.AddAttribute(1, nameof(EventComponent.OnClickEventCallback), EventCallback.Factory.Create(parentComponent, (Action)(() =>
+                {
+                    throw new OperationCanceledException();
+                })));
+                builder.CloseComponent();
+            };
+
+            var parentComponentId = renderer.AssignRootComponentId(parentComponent);
+            await parentComponent.TriggerRenderAsync();
+
+            var eventHandlerId = renderer.Batches[0]
+                .ReferenceFrames
+                .First(frame => frame.AttributeName == "onclick")
+                .AttributeEventHandlerId;
+
+            // Act
+            var task = renderer.DispatchEventAsync(eventHandlerId, new UIMouseEventArgs());
+
+            // Assert
+            Assert.Equal(TaskStatus.Canceled, task.Status);
+            await Assert.ThrowsAsync<TaskCanceledException>(() => task);
+        }
+
+        [Fact]
+        public async Task DispatchEventAsync_EventCallbackOfT_SynchronousCancellation()
+        {
+            // Arrange
+            UIMouseEventArgs arg = null;
+
+            var renderer = new TestRenderer();
+            var parentComponent = new OuterEventComponent();
+            parentComponent.RenderFragment = (builder) =>
+            {
+                builder.OpenComponent<EventComponent>(0);
+                builder.AddAttribute(1, nameof(EventComponent.OnClickEventCallbackOfT), EventCallback.Factory.Create(parentComponent, (Action<UIMouseEventArgs>)((e) =>
+                {
+                    arg = e;
+                    throw new OperationCanceledException();
+                })));
+                builder.CloseComponent();
+            };
+
+            var parentComponentId = renderer.AssignRootComponentId(parentComponent);
+            await parentComponent.TriggerRenderAsync();
+
+            var eventHandlerId = renderer.Batches[0]
+                .ReferenceFrames
+                .First(frame => frame.AttributeName == "onclick")
+                .AttributeEventHandlerId;
+
+            // Act
+            var task = renderer.DispatchEventAsync(eventHandlerId, new UIMouseEventArgs());
+
+            // Assert
+            Assert.NotNull(arg);
+            Assert.Equal(TaskStatus.Canceled, task.Status);
+            await Assert.ThrowsAsync<TaskCanceledException>(() => task);
+        }
+
+        [Fact]
+        public async Task DispatchEventAsync_Delegate_SynchronousException()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var parentComponent = new OuterEventComponent();
+            parentComponent.RenderFragment = (builder) =>
+            {
+                builder.OpenComponent<EventComponent>(0);
+                builder.AddAttribute(1, nameof(EventComponent.OnClickAction), (Action)(() =>
+                {
+                    throw new InvalidTimeZoneException();
+                }));
+                builder.CloseComponent();
+            };
+
+            var parentComponentId = renderer.AssignRootComponentId(parentComponent);
+            await parentComponent.TriggerRenderAsync();
+
+            var eventHandlerId = renderer.Batches[0]
+                .ReferenceFrames
+                .First(frame => frame.AttributeName == "onclickaction")
+                .AttributeEventHandlerId;
+
+            // Act
+            var task = renderer.DispatchEventAsync(eventHandlerId, new UIMouseEventArgs());
+
+            // Assert
+            Assert.Equal(TaskStatus.Faulted, task.Status);
+            await Assert.ThrowsAsync<InvalidTimeZoneException>(() => task);
+        }
+
+        [Fact]
+        public async Task DispatchEventAsync_EventCallback_SynchronousException()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var parentComponent = new OuterEventComponent();
+            parentComponent.RenderFragment = (builder) =>
+            {
+                builder.OpenComponent<EventComponent>(0);
+                builder.AddAttribute(1, nameof(EventComponent.OnClickEventCallback), EventCallback.Factory.Create(parentComponent, (Action)(() =>
+                {
+                    throw new InvalidTimeZoneException();
+                })));
+                builder.CloseComponent();
+            };
+
+            var parentComponentId = renderer.AssignRootComponentId(parentComponent);
+            await parentComponent.TriggerRenderAsync();
+
+            var eventHandlerId = renderer.Batches[0]
+                .ReferenceFrames
+                .First(frame => frame.AttributeName == "onclick")
+                .AttributeEventHandlerId;
+
+            // Act
+            var task = renderer.DispatchEventAsync(eventHandlerId, new UIMouseEventArgs());
+
+            // Assert
+            Assert.Equal(TaskStatus.Faulted, task.Status);
+            await Assert.ThrowsAsync<InvalidTimeZoneException>(() => task);
+        }
+
+        [Fact]
+        public async Task DispatchEventAsync_EventCallbackOfT_SynchronousException()
+        {
+            // Arrange
+            UIMouseEventArgs arg = null;
+
+            var renderer = new TestRenderer();
+            var parentComponent = new OuterEventComponent();
+            parentComponent.RenderFragment = (builder) =>
+            {
+                builder.OpenComponent<EventComponent>(0);
+                builder.AddAttribute(1, nameof(EventComponent.OnClickEventCallbackOfT), EventCallback.Factory.Create<UIMouseEventArgs>(parentComponent, (Action<UIMouseEventArgs>)((e) =>
+                {
+                    arg = e;
+                    throw new InvalidTimeZoneException();
+                })));
+                builder.CloseComponent();
+            };
+
+            var parentComponentId = renderer.AssignRootComponentId(parentComponent);
+            await parentComponent.TriggerRenderAsync();
+
+            var eventHandlerId = renderer.Batches[0]
+                .ReferenceFrames
+                .First(frame => frame.AttributeName == "onclick")
+                .AttributeEventHandlerId;
+
+            // Act
+            var task = renderer.DispatchEventAsync(eventHandlerId, new UIMouseEventArgs());
+
+            // Assert
+            Assert.NotNull(arg);
+            Assert.Equal(TaskStatus.Faulted, task.Status);
+            await Assert.ThrowsAsync<InvalidTimeZoneException>(() => task);
+        }
+
+        [Fact]
+        public async Task DispatchEventAsync_Delegate_AsynchronousCompletion()
+        {
+            // Arrange
+            var tcs = new TaskCompletionSource<object>();
+
+            var renderer = new TestRenderer();
+            var parentComponent = new OuterEventComponent();
+            parentComponent.RenderFragment = (builder) =>
+            {
+                builder.OpenComponent<EventComponent>(0);
+                builder.AddAttribute(1, nameof(EventComponent.OnClickAsyncAction), async () =>
+                {
+                    await tcs.Task;
+                });
+                builder.CloseComponent();
+            };
+
+            var parentComponentId = renderer.AssignRootComponentId(parentComponent);
+            await parentComponent.TriggerRenderAsync();
+
+            var eventHandlerId = renderer.Batches[0]
+                .ReferenceFrames
+                .First(frame => frame.AttributeName == "onclickaction")
+                .AttributeEventHandlerId;
+
+            // Act
+            var task = renderer.DispatchEventAsync(eventHandlerId, new UIMouseEventArgs());
+
+            // Assert
+            Assert.Equal(TaskStatus.WaitingForActivation, task.Status);
+            tcs.SetResult(null);
+            await task; // Does not throw
+        }
+
+        [Fact]
+        public async Task DispatchEventAsync_EventCallback_AsynchronousCompletion()
+        {
+            // Arrange
+            var tcs = new TaskCompletionSource<object>();
+
+            var renderer = new TestRenderer();
+            var parentComponent = new OuterEventComponent();
+            parentComponent.RenderFragment = (builder) =>
+            {
+                builder.OpenComponent<EventComponent>(0);
+                builder.AddAttribute(1, nameof(EventComponent.OnClickEventCallback), EventCallback.Factory.Create(parentComponent, async () =>
+                {
+                    await tcs.Task;
+                }));
+                builder.CloseComponent();
+            };
+
+            var parentComponentId = renderer.AssignRootComponentId(parentComponent);
+            await parentComponent.TriggerRenderAsync();
+
+            var eventHandlerId = renderer.Batches[0]
+                .ReferenceFrames
+                .First(frame => frame.AttributeName == "onclick")
+                .AttributeEventHandlerId;
+
+            // Act
+            var task = renderer.DispatchEventAsync(eventHandlerId, new UIMouseEventArgs());
+
+            // Assert
+            Assert.Equal(TaskStatus.WaitingForActivation, task.Status);
+            tcs.SetResult(null);
+            await task; // Does not throw
+        }
+
+        [Fact]
+        public async Task DispatchEventAsync_EventCallbackOfT_AsynchronousCompletion()
+        {
+            // Arrange
+            var tcs = new TaskCompletionSource<object>();
+
+            UIMouseEventArgs arg = null;
+
+            var renderer = new TestRenderer();
+            var parentComponent = new OuterEventComponent();
+            parentComponent.RenderFragment = (builder) =>
+            {
+                builder.OpenComponent<EventComponent>(0);
+                builder.AddAttribute(1, nameof(EventComponent.OnClickEventCallbackOfT), EventCallback.Factory.Create<UIMouseEventArgs>(parentComponent, async (e) =>
+                {
+                    arg = e;
+                    await tcs.Task;
+                }));
+                builder.CloseComponent();
+            };
+
+            var parentComponentId = renderer.AssignRootComponentId(parentComponent);
+            await parentComponent.TriggerRenderAsync();
+
+            var eventHandlerId = renderer.Batches[0]
+                .ReferenceFrames
+                .First(frame => frame.AttributeName == "onclick")
+                .AttributeEventHandlerId;
+
+            // Act
+            var task = renderer.DispatchEventAsync(eventHandlerId, new UIMouseEventArgs());
+
+            // Assert
+            Assert.NotNull(arg);
+            Assert.Equal(TaskStatus.WaitingForActivation, task.Status);
+            tcs.SetResult(null);
+            await task; // Does not throw
+        }
+
+        [Fact]
+        public async Task DispatchEventAsync_Delegate_AsynchronousCancellation()
+        {
+            // Arrange
+            var tcs = new TaskCompletionSource<object>();
+
+            var renderer = new TestRenderer();
+            var parentComponent = new OuterEventComponent();
+            parentComponent.RenderFragment = (builder) =>
+            {
+                builder.OpenComponent<EventComponent>(0);
+                builder.AddAttribute(1, nameof(EventComponent.OnClickAsyncAction), async () =>
+                {
+                    await tcs.Task;
+                    throw new TaskCanceledException();
+                });
+                builder.CloseComponent();
+            };
+
+            var parentComponentId = renderer.AssignRootComponentId(parentComponent);
+            await parentComponent.TriggerRenderAsync();
+
+            var eventHandlerId = renderer.Batches[0]
+                .ReferenceFrames
+                .First(frame => frame.AttributeName == "onclickaction")
+                .AttributeEventHandlerId;
+
+            // Act
+            var task = renderer.DispatchEventAsync(eventHandlerId, new UIMouseEventArgs());
+
+            // Assert
+            Assert.Equal(TaskStatus.WaitingForActivation, task.Status);
+            tcs.SetResult(null);
+
+            await task; // Does not throw
+            Assert.Empty(renderer.HandledExceptions);
+        }
+
+        [Fact]
+        public async Task DispatchEventAsync_EventCallback_AsynchronousCancellation()
+        {
+            // Arrange
+            var tcs = new TaskCompletionSource<object>();
+
+            var renderer = new TestRenderer();
+            var parentComponent = new OuterEventComponent();
+            parentComponent.RenderFragment = (builder) =>
+            {
+                builder.OpenComponent<EventComponent>(0);
+                builder.AddAttribute(1, nameof(EventComponent.OnClickEventCallback), EventCallback.Factory.Create(parentComponent, async () =>
+                {
+                    await tcs.Task;
+                    throw new TaskCanceledException();
+                }));
+                builder.CloseComponent();
+            };
+
+            var parentComponentId = renderer.AssignRootComponentId(parentComponent);
+            await parentComponent.TriggerRenderAsync();
+
+            var eventHandlerId = renderer.Batches[0]
+                .ReferenceFrames
+                .First(frame => frame.AttributeName == "onclick")
+                .AttributeEventHandlerId;
+
+            // Act
+            var task = renderer.DispatchEventAsync(eventHandlerId, new UIMouseEventArgs());
+
+            // Assert
+            Assert.Equal(TaskStatus.WaitingForActivation, task.Status);
+            tcs.SetResult(null);
+
+            await task; // Does not throw
+            Assert.Empty(renderer.HandledExceptions);
+        }
+
+        [Fact]
+        public async Task DispatchEventAsync_EventCallbackOfT_AsynchronousCancellation()
+        {
+            // Arrange
+            var tcs = new TaskCompletionSource<object>();
+
+            UIMouseEventArgs arg = null;
+
+            var renderer = new TestRenderer();
+            var parentComponent = new OuterEventComponent();
+            parentComponent.RenderFragment = (builder) =>
+            {
+                builder.OpenComponent<EventComponent>(0);
+                builder.AddAttribute(1, nameof(EventComponent.OnClickEventCallbackOfT), EventCallback.Factory.Create<UIMouseEventArgs>(parentComponent, async (e) =>
+                {
+                    arg = e;
+                    await tcs.Task;
+                    throw new TaskCanceledException();
+                }));
+                builder.CloseComponent();
+            };
+
+            var parentComponentId = renderer.AssignRootComponentId(parentComponent);
+            await parentComponent.TriggerRenderAsync();
+
+            var eventHandlerId = renderer.Batches[0]
+                .ReferenceFrames
+                .First(frame => frame.AttributeName == "onclick")
+                .AttributeEventHandlerId;
+
+            // Act
+            var task = renderer.DispatchEventAsync(eventHandlerId, new UIMouseEventArgs());
+
+            // Assert
+            Assert.NotNull(arg);
+            Assert.Equal(TaskStatus.WaitingForActivation, task.Status);
+            tcs.SetResult(null);
+
+            await task; // Does not throw
+            Assert.Empty(renderer.HandledExceptions);
+        }
+
+        [Fact]
+        public async Task DispatchEventAsync_Delegate_AsynchronousException()
+        {
+            // Arrange
+            var tcs = new TaskCompletionSource<object>();
+
+            var renderer = new TestRenderer();
+            var parentComponent = new OuterEventComponent();
+            parentComponent.RenderFragment = (builder) =>
+            {
+                builder.OpenComponent<EventComponent>(0);
+                builder.AddAttribute(1, nameof(EventComponent.OnClickAsyncAction), async () =>
+                {
+                    await tcs.Task;
+                    throw new InvalidTimeZoneException();
+                });
+                builder.CloseComponent();
+            };
+
+            var parentComponentId = renderer.AssignRootComponentId(parentComponent);
+            await parentComponent.TriggerRenderAsync();
+
+            var eventHandlerId = renderer.Batches[0]
+                .ReferenceFrames
+                .First(frame => frame.AttributeName == "onclickaction")
+                .AttributeEventHandlerId;
+
+            // Act
+            var task = renderer.DispatchEventAsync(eventHandlerId, new UIMouseEventArgs());
+
+            // Assert
+            Assert.Equal(TaskStatus.WaitingForActivation, task.Status);
+            tcs.SetResult(null);
+
+            await Assert.ThrowsAsync<InvalidTimeZoneException>(() => task);
+        }
+
+        [Fact]
+        public async Task DispatchEventAsync_EventCallback_AsynchronousException()
+        {
+            // Arrange
+            var tcs = new TaskCompletionSource<object>();
+
+            var renderer = new TestRenderer();
+            var parentComponent = new OuterEventComponent();
+            parentComponent.RenderFragment = (builder) =>
+            {
+                builder.OpenComponent<EventComponent>(0);
+                builder.AddAttribute(1, nameof(EventComponent.OnClickEventCallback), EventCallback.Factory.Create(parentComponent, async () =>
+                {
+                    await tcs.Task;
+                    throw new InvalidTimeZoneException();
+                }));
+                builder.CloseComponent();
+            };
+
+            var parentComponentId = renderer.AssignRootComponentId(parentComponent);
+            await parentComponent.TriggerRenderAsync();
+
+            var eventHandlerId = renderer.Batches[0]
+                .ReferenceFrames
+                .First(frame => frame.AttributeName == "onclick")
+                .AttributeEventHandlerId;
+
+            // Act
+            var task = renderer.DispatchEventAsync(eventHandlerId, new UIMouseEventArgs());
+
+            // Assert
+            Assert.Equal(TaskStatus.WaitingForActivation, task.Status);
+            tcs.SetResult(null);
+
+            await Assert.ThrowsAsync<InvalidTimeZoneException>(() => task);
+        }
+
+        [Fact]
+        public async Task DispatchEventAsync_EventCallbackOfT_AsynchronousException()
+        {
+            // Arrange
+            var tcs = new TaskCompletionSource<object>();
+
+            UIMouseEventArgs arg = null;
+
+            var renderer = new TestRenderer();
+            var parentComponent = new OuterEventComponent();
+            parentComponent.RenderFragment = (builder) =>
+            {
+                builder.OpenComponent<EventComponent>(0);
+                builder.AddAttribute(1, nameof(EventComponent.OnClickEventCallbackOfT), EventCallback.Factory.Create<UIMouseEventArgs>(parentComponent, async (e) =>
+                {
+                    arg = e;
+                    await tcs.Task;
+                    throw new InvalidTimeZoneException();
+                }));
+                builder.CloseComponent();
+            };
+
+            var parentComponentId = renderer.AssignRootComponentId(parentComponent);
+            await parentComponent.TriggerRenderAsync();
+
+            var eventHandlerId = renderer.Batches[0]
+                .ReferenceFrames
+                .First(frame => frame.AttributeName == "onclick")
+                .AttributeEventHandlerId;
+
+            // Act
+            var task = renderer.DispatchEventAsync(eventHandlerId, new UIMouseEventArgs());
+
+            // Assert
+            Assert.NotNull(arg);
+            Assert.Equal(TaskStatus.WaitingForActivation, task.Status);
+            tcs.SetResult(null);
+
+            await Assert.ThrowsAsync<InvalidTimeZoneException>(() => task);
+        }
+
+        [Fact]
+        public async Task CannotDispatchEventsWithUnknownEventHandlers()
         {
             // Arrange
             var renderer = new TestRenderer();
 
             // Act/Assert
-            Assert.Throws<ArgumentException>(() =>
+            await Assert.ThrowsAsync<ArgumentException>(() =>
             {
-                // Intentionally written this way to verify that the exception is thrown synchronously.
-                _ = renderer.DispatchEventAsync(123, 0, new UIEventArgs());
+                return renderer.DispatchEventAsync(0, new UIEventArgs());
             });
         }
 
@@ -825,7 +1947,7 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public void DisposesEventHandlersWhenAttributeValueChanged()
+        public async Task DisposesEventHandlersWhenAttributeValueChanged()
         {
             // Arrange
             var renderer = new TestRenderer();
@@ -842,9 +1964,10 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert 1: Event handler fires when we trigger it
             Assert.Equal(0, eventCount);
-            var renderTask = renderer.DispatchEventAsync(componentId, origEventHandlerId, args: null);
+            var renderTask = renderer.DispatchEventAsync(origEventHandlerId, args: null);
             Assert.True(renderTask.IsCompletedSuccessfully);
             Assert.Equal(1, eventCount);
+            await renderTask;
 
             // Now change the attribute value
             var newEventCount = 0;
@@ -852,21 +1975,21 @@ namespace Microsoft.AspNetCore.Components.Test
             component.TriggerRender();
 
             // Act/Assert 2: Can no longer fire the original event, but can fire the new event
-            Assert.Throws<ArgumentException>(() =>
+            await Assert.ThrowsAsync<ArgumentException>(() =>
             {
-                // Verifies that the exception is thrown synchronously.
-                _ = renderer.DispatchEventAsync(componentId, origEventHandlerId, args: null);
+                return renderer.DispatchEventAsync(origEventHandlerId, args: null);
             });
 
             Assert.Equal(1, eventCount);
             Assert.Equal(0, newEventCount);
-            renderTask = renderer.DispatchEventAsync(componentId, origEventHandlerId + 1, args: null);
+            renderTask = renderer.DispatchEventAsync(origEventHandlerId + 1, args: null);
             Assert.True(renderTask.IsCompletedSuccessfully);
             Assert.Equal(1, newEventCount);
+            await renderTask;
         }
 
         [Fact]
-        public void DisposesEventHandlersWhenAttributeRemoved()
+        public async Task DisposesEventHandlersWhenAttributeRemoved()
         {
             // Arrange
             var renderer = new TestRenderer();
@@ -883,25 +2006,25 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert 1: Event handler fires when we trigger it
             Assert.Equal(0, eventCount);
-            var renderTask = renderer.DispatchEventAsync(componentId, origEventHandlerId, args: null);
+            var renderTask = renderer.DispatchEventAsync(origEventHandlerId, args: null);
             Assert.True(renderTask.IsCompletedSuccessfully);
             Assert.Equal(1, eventCount);
+            await renderTask;
 
             // Now remove the event attribute
             component.OnTest = null;
             component.TriggerRender();
 
             // Act/Assert 2: Can no longer fire the original event
-            Assert.Throws<ArgumentException>(() =>
+            await Assert.ThrowsAsync<ArgumentException>(() =>
             {
-                // Verifies that the exception is thrown synchronously.
-                _ = renderer.DispatchEventAsync(componentId, origEventHandlerId, args: null);
+                return renderer.DispatchEventAsync(origEventHandlerId, args: null);
             });
             Assert.Equal(1, eventCount);
         }
 
         [Fact]
-        public void DisposesEventHandlersWhenOwnerComponentRemoved()
+        public async Task DisposesEventHandlersWhenOwnerComponentRemoved()
         {
             // Arrange
             var renderer = new TestRenderer();
@@ -934,25 +2057,25 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert 1: Event handler fires when we trigger it
             Assert.Equal(0, eventCount);
-            var renderTask = renderer.DispatchEventAsync(childComponentId, eventHandlerId, args: null);
+            var renderTask = renderer.DispatchEventAsync(eventHandlerId, args: null);
             Assert.True(renderTask.IsCompletedSuccessfully);
             Assert.Equal(1, eventCount);
+            await renderTask;
 
             // Now remove the EventComponent
             component.IncludeChild = false;
             component.TriggerRender();
 
             // Act/Assert 2: Can no longer fire the original event
-            Assert.Throws<ArgumentException>(() =>
+            await Assert.ThrowsAsync<ArgumentException>(() =>
             {
-                // Verifies that the exception is thrown synchronously.
-                _ = renderer.DispatchEventAsync(eventHandlerId, eventHandlerId, args: null);
+                return renderer.DispatchEventAsync(eventHandlerId, args: null);
             });
             Assert.Equal(1, eventCount);
         }
 
         [Fact]
-        public void DisposesEventHandlersWhenAncestorElementRemoved()
+        public async Task DisposesEventHandlersWhenAncestorElementRemoved()
         {
             // Arrange
             var renderer = new TestRenderer();
@@ -969,25 +2092,25 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert 1: Event handler fires when we trigger it
             Assert.Equal(0, eventCount);
-            var renderTask = renderer.DispatchEventAsync(componentId, origEventHandlerId, args: null);
+            var renderTask = renderer.DispatchEventAsync(origEventHandlerId, args: null);
             Assert.True(renderTask.IsCompletedSuccessfully);
             Assert.Equal(1, eventCount);
+            await renderTask;
 
             // Now remove the ancestor element
             component.SkipElement = true;
             component.TriggerRender();
 
             // Act/Assert 2: Can no longer fire the original event
-            Assert.Throws<ArgumentException>(() =>
+            await Assert.ThrowsAsync<ArgumentException>(() =>
             {
-                // Verifies that the exception is thrown synchronously.
-                _ = renderer.DispatchEventAsync(componentId, origEventHandlerId, args: null);
+                return renderer.DispatchEventAsync(origEventHandlerId, args: null);
             });
             Assert.Equal(1, eventCount);
         }
 
         [Fact]
-        public void AllRendersTriggeredSynchronouslyDuringEventHandlerAreHandledAsSingleBatch()
+        public async Task AllRendersTriggeredSynchronouslyDuringEventHandlerAreHandledAsSingleBatch()
         {
             // Arrange: A root component with a child whose event handler explicitly queues
             // a re-render of both the root component and the child
@@ -1021,10 +2144,12 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.Single(renderer.Batches);
 
             // Act
-            var renderTask = renderer.DispatchEventAsync(childComponentId, origEventHandlerId, args: null);
+            var renderTask = renderer.DispatchEventAsync(origEventHandlerId, args: null);
 
             // Assert
             Assert.True(renderTask.IsCompletedSuccessfully);
+            await renderTask;
+
             Assert.Equal(2, renderer.Batches.Count);
             var batch = renderer.Batches.Last();
             Assert.Collection(batch.DiffsInOrder,
@@ -1212,7 +2337,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act
             // The fact that there's no error here is the main thing we're testing
-            var renderTask = renderer.DispatchEventAsync(childComponentId, origEventHandlerId, args: null);
+            var renderTask = renderer.DispatchEventAsync(origEventHandlerId, args: null);
 
             // Assert: correct render result
             Assert.True(renderTask.IsCompletedSuccessfully);
@@ -1228,7 +2353,7 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public void CanCombineBindAndConditionalAttribute()
+        public async Task CanCombineBindAndConditionalAttribute()
         {
             // This test represents https://github.com/aspnet/Blazor/issues/624
 
@@ -1244,7 +2369,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act: Toggle the checkbox
             var eventArgs = new UIChangeEventArgs { Value = true };
-            var renderTask =  renderer.DispatchEventAsync(componentId, checkboxChangeEventHandlerId, eventArgs);
+            var renderTask =  renderer.DispatchEventAsync(checkboxChangeEventHandlerId, eventArgs);
 
             Assert.True(renderTask.IsCompletedSuccessfully);
             var latestBatch = renderer.Batches.Last();
@@ -1257,6 +2382,8 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.Contains(latestDiff.Edits, edit =>
                 edit.SiblingIndex == 1
                 && edit.RemovedAttributeName == "disabled");
+
+            await renderTask;
         }
 
         [Fact]
@@ -1427,14 +2554,14 @@ namespace Microsoft.AspNetCore.Components.Test
             // Act/Assert 1: Event can be fired for the first time
             var render1TCS = new TaskCompletionSource<object>();
             renderer.NextUpdateDisplayReturnTask = render1TCS.Task;
-            await renderer.DispatchEventAsync(componentId, eventHandlerId, new UIEventArgs());
+            await renderer.DispatchEventAsync(eventHandlerId, new UIEventArgs());
             Assert.Equal(1, numEventsFired);
 
             // Act/Assert 2: *Same* event handler ID can be reused prior to completion of
             // preceding UI update
             var render2TCS = new TaskCompletionSource<object>();
             renderer.NextUpdateDisplayReturnTask = render2TCS.Task;
-            await renderer.DispatchEventAsync(componentId, eventHandlerId, new UIEventArgs());
+            await renderer.DispatchEventAsync(eventHandlerId, new UIEventArgs());
             Assert.Equal(2, numEventsFired);
 
             // Act/Assert 3: After we complete the first UI update in which a given
@@ -1442,7 +2569,9 @@ namespace Microsoft.AspNetCore.Components.Test
             render1TCS.SetResult(null);
             await Task.Delay(500); // From here we can't see when the async disposal is completed. Just give it plenty of time (Task.Yield isn't enough).
             var ex = await Assert.ThrowsAsync<ArgumentException>(() =>
-                renderer.DispatchEventAsync(componentId, eventHandlerId, new UIEventArgs()));
+            {
+                return renderer.DispatchEventAsync(eventHandlerId, new UIEventArgs());
+            });
             Assert.Equal($"There is no event handler with ID {eventHandlerId}", ex.Message);
             Assert.Equal(2, numEventsFired);
         }
@@ -2035,10 +3164,25 @@ namespace Microsoft.AspNetCore.Components.Test
             internal Action<UIEventArgs> OnTest { get; set; }
 
             [Parameter]
+            internal Func<UIEventArgs, Task> OnTestAsync { get; set; }
+
+            [Parameter]
             internal Action<UIMouseEventArgs> OnClick { get; set; }
 
             [Parameter]
+            internal Func<UIMouseEventArgs, Task> OnClickAsync { get; set; }
+
+            [Parameter]
             internal Action OnClickAction { get; set; }
+
+            [Parameter]
+            internal Func<Task> OnClickAsyncAction { get; set; }
+
+            [Parameter]
+            internal EventCallback OnClickEventCallback { get; set; }
+
+            [Parameter]
+            internal EventCallback<UIMouseEventArgs> OnClickEventCallbackOfT { get; set; }
 
             public bool SkipElement { get; set; }
             private int renderCount = 0;
@@ -2050,17 +3194,40 @@ namespace Microsoft.AspNetCore.Components.Test
                 {
                     builder.OpenElement(1, "parent");
                     builder.OpenElement(2, "some element");
+
                     if (OnTest != null)
                     {
                         builder.AddAttribute(3, "ontest", OnTest);
                     }
+                    else if (OnTestAsync != null)
+                    {
+                        builder.AddAttribute(3, "ontest", OnTestAsync);
+                    }
+
                     if (OnClick != null)
                     {
                         builder.AddAttribute(4, "onclick", OnClick);
                     }
+                    else if (OnClickAsync != null)
+                    {
+                        builder.AddAttribute(4, "onclick", OnClickAsync);
+                    }
+                    else if (OnClickEventCallback.HasDelegate)
+                    {
+                        builder.AddAttribute(4, "onclick", OnClickEventCallback);
+                    }
+                    else if (OnClickEventCallbackOfT.HasDelegate)
+                    {
+                        builder.AddAttribute(4, "onclick", OnClickEventCallbackOfT);
+                    }
+
                     if (OnClickAction != null)
                     {
                         builder.AddAttribute(5, "onclickaction", OnClickAction);
+                    }
+                    else if (OnClickAsyncAction != null)
+                    {
+                        builder.AddAttribute(5, "onclickaction", OnClickAsyncAction);
                     }
                     builder.CloseElement();
                     builder.CloseElement();
@@ -2069,10 +3236,10 @@ namespace Microsoft.AspNetCore.Components.Test
                 builder.AddContent(6, $"Render count: {++renderCount}");
             }
 
-            public Task HandleEventAsync(EventHandlerInvoker binding, UIEventArgs args)
+            public Task HandleEventAsync(EventCallbackWorkItem callback, object arg)
             {
-                binding.Invoke(args);
-                return Task.CompletedTask;
+                // Notice, we don't re-render.
+                return callback.InvokeAsync(arg);
             }
         }
 
@@ -2140,10 +3307,11 @@ namespace Microsoft.AspNetCore.Components.Test
                 return Task.CompletedTask;
             }
 
-            public async Task HandleEventAsync(EventHandlerInvoker binding, UIEventArgs args)
+            public Task HandleEventAsync(EventCallbackWorkItem callback, object arg)
             {
-                await binding.Invoke(args);
+                var task = callback.InvokeAsync(arg);
                 Render();
+                return task;
             }
 
             private void Render()
@@ -2185,11 +3353,11 @@ namespace Microsoft.AspNetCore.Components.Test
             public bool CheckboxEnabled;
             public string SomeStringProperty;
 
-            public Task HandleEventAsync(EventHandlerInvoker binding, UIEventArgs args)
+            public Task HandleEventAsync(EventCallbackWorkItem callback, object arg)
             {
-                binding.Invoke(args);
+                var task = callback.InvokeAsync(arg);
                 TriggerRender();
-                return Task.CompletedTask;
+                return task;
             }
 
             protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -2296,6 +3464,41 @@ namespace Microsoft.AspNetCore.Components.Test
                     builder.CloseElement();
                 }
             }
+        }
+
+        private class OuterEventComponent : IComponent, IHandleEvent
+        {
+            private RenderHandle _renderHandle;
+
+            public RenderFragment RenderFragment { get; set; }
+
+            public Action OnEvent { get; set; }
+
+            public int SomeMethodCallCount { get; set; }
+
+            public void SomeMethod()
+            {
+                SomeMethodCallCount++;
+            }
+
+            public void Configure(RenderHandle renderHandle)
+            {
+                _renderHandle = renderHandle;
+            }
+
+            public Task HandleEventAsync(EventCallbackWorkItem callback, object arg)
+            {
+                var task = callback.InvokeAsync(arg);
+                OnEvent?.Invoke();
+                return task;
+            }
+
+            public Task SetParametersAsync(ParameterCollection parameters)
+            {
+                return TriggerRenderAsync();
+            }
+
+            public Task TriggerRenderAsync() => _renderHandle.Invoke(() => _renderHandle.Render(RenderFragment));
         }
 
         private void AssertStream(int expectedId, (int id, NestedAsyncComponent.EventType @event)[] logStream)

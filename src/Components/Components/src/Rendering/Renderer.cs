@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         private readonly ComponentFactory _componentFactory;
         private readonly Dictionary<int, ComponentState> _componentStateById = new Dictionary<int, ComponentState>();
         private readonly RenderBatchBuilder _batchBuilder = new RenderBatchBuilder();
-        private readonly Dictionary<int, EventHandlerInvoker> _eventBindings = new Dictionary<int, EventHandlerInvoker>();
+        private readonly Dictionary<int, EventCallback> _eventBindings = new Dictionary<int, EventCallback>();
         private IDispatcher _dispatcher;
 
         private int _nextComponentId = 0; // TODO: change to 'long' when Mono .NET->JS interop supports it
@@ -200,39 +200,44 @@ namespace Microsoft.AspNetCore.Components.Rendering
         protected abstract Task UpdateDisplayAsync(in RenderBatch renderBatch);
 
         /// <summary>
-        /// Notifies the specified component that an event has occurred.
+        /// Notifies the renderer that an event has occurred.
         /// </summary>
-        /// <param name="componentId">The unique identifier for the component within the scope of this <see cref="Renderer"/>.</param>
         /// <param name="eventHandlerId">The <see cref="RenderTreeFrame.AttributeEventHandlerId"/> value from the original event attribute.</param>
         /// <param name="eventArgs">Arguments to be passed to the event handler.</param>
-        /// <returns>A <see cref="Task"/> representing the asynchronous execution operation.</returns>
-        public Task DispatchEventAsync(int componentId, int eventHandlerId, UIEventArgs eventArgs)
+        /// <returns>
+        /// A <see cref="Task"/> which will complete once all asynchronous processing related to the event
+        /// has completed.
+        /// </returns>
+        public Task DispatchEventAsync(int eventHandlerId, UIEventArgs eventArgs)
         {
             EnsureSynchronizationContext();
 
-            if (_eventBindings.TryGetValue(eventHandlerId, out var binding))
-            {
-                // The event handler might request multiple renders in sequence. Capture them
-                // all in a single batch.
-                var componentState = GetRequiredComponentState(componentId);
-                Task task = null;
-                try
-                {
-                    _isBatchInProgress = true;
-                    task = componentState.DispatchEventAsync(binding, eventArgs);
-                }
-                finally
-                {
-                    _isBatchInProgress = false;
-                    ProcessRenderQueue();
-                }
-
-                return GetErrorHandledTask(task);
-            }
-            else
+            if (!_eventBindings.TryGetValue(eventHandlerId, out var callback))
             {
                 throw new ArgumentException($"There is no event handler with ID {eventHandlerId}");
             }
+
+            Task task = null;
+            try
+            {
+                // The event handler might request multiple renders in sequence. Capture them
+                // all in a single batch.
+                _isBatchInProgress = true;
+
+                task = callback.InvokeAsync(eventArgs);
+            }
+            finally
+            {
+                _isBatchInProgress = false;
+
+                // Since the task has yielded - process any queued rendering work before we return control
+                // to the caller.
+                ProcessRenderQueue();
+            }
+
+            // Task completed synchronously or is still running. We already processed all of the rendering
+            // work that was queued so let our error handler deal with it.
+            return GetErrorHandledTask(task);
         }
 
         /// <summary>
@@ -338,10 +343,27 @@ namespace Microsoft.AspNetCore.Components.Rendering
         {
             var id = ++_lastEventHandlerId;
 
-            if (frame.AttributeValue is MulticastDelegate @delegate)
+            if (frame.AttributeValue is EventCallback callback)
             {
-                _eventBindings.Add(id, new EventHandlerInvoker(@delegate));
+                // We hit this case when a EventCallback object is produced that needs an explicit receiver.
+                // Common cases for this are "chained bind" or "chained event handler" when a component
+                // accepts a delegate as a parameter and then hooks it up to a DOM event.
+                //
+                // When that happens we intentionally box the EventCallback because we need to hold on to
+                // the receiver.
+                _eventBindings.Add(id, callback);
             }
+            else if (frame.AttributeValue is MulticastDelegate @delegate)
+            {
+                // This is the common case for a delegate, where the receiver of the event
+                // is the same as delegate.Target. In this case since the receiver is implicit we can
+                // avoid boxing the EventCallback object and just re-hydrate it on the other side of the
+                // render tree.
+                _eventBindings.Add(id, new EventCallback(@delegate.Target as IHandleEvent, @delegate));
+            }
+
+            // NOTE: we do not to handle EventCallback<T> here. EventCallback<T> is only used when passing
+            // a callback to a component, and never when used to attaching a DOM event handler.
 
             frame = frame.WithAttributeEventHandlerId(id);
         }

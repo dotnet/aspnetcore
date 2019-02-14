@@ -93,20 +93,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
             }
         }
 
-        public Task DispatchEventAsync(EventHandlerInvoker binding, UIEventArgs eventArgs)
-        {
-            if (Component is IHandleEvent handleEventComponent)
-            {
-                return handleEventComponent.HandleEventAsync(binding, eventArgs);
-            }
-            else
-            {
-                throw new InvalidOperationException(
-                    $"The component of type {Component.GetType().FullName} cannot receive " +
-                    $"events because it does not implement {typeof(IHandleEvent).FullName}.");
-            }
-        }
-
         public Task NotifyRenderCompletedAsync()
         {
             if (Component is IHandleAfterRender handlerAfterRender)
