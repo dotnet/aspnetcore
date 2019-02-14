@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO.Pipelines;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
@@ -147,6 +149,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 : base(null, null)
             {
                 RequestUpgrade = upgradeable;
+            }
+
+            public override void AdvanceTo(SequencePosition consumed)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override bool TryRead(out ReadResult readResult)
+            {
+                throw new NotImplementedException();
             }
         }
     }

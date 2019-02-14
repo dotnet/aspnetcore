@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Buffers;
-using System.IO;
 using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,9 +21,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private long _consumedBytes;
         private bool _stopped;
 
-        private bool _timingEnabled;
-        private bool _backpressure;
-        private long _alreadyTimedBytes;
+        protected bool _timingEnabled;
+        protected bool _backpressure;
+        protected long _alreadyTimedBytes;
 
         protected MessageBody(HttpProtocol context, MinDataRate minRequestBodyDataRate)
         {
@@ -45,68 +43,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected IKestrelTrace Log => _context.ServiceContext.Log;
 
-        private ReadResult _previousReadResult;
+        public abstract void AdvanceTo(SequencePosition consumed);
 
-        public virtual void AdvanceTo(SequencePosition consumed)
-        {
-            AdvanceTo(consumed, consumed);
-        }
+        public abstract void AdvanceTo(SequencePosition consumed, SequencePosition examined);
 
-        public virtual void AdvanceTo(SequencePosition consumed, SequencePosition examined)
-        {
-            var dataLength = _previousReadResult.Buffer.Slice(_previousReadResult.Buffer.Start, consumed).Length;
-            _context.RequestBodyPipe.Reader.AdvanceTo(consumed, examined);
-            OnDataRead(dataLength);
-        }
-
-        public virtual bool TryRead(out ReadResult readResult)
-        {
-            TryStart();
-
-            var hasReadResult = _context.RequestBodyPipe.Reader.TryRead(out _previousReadResult);
-            readResult = _previousReadResult;
-
-            return hasReadResult;
-        }
+        public abstract bool TryRead(out ReadResult readResult);
 
         public virtual void OnWriterCompleted(Action<Exception, object> callback, object state)
         {
-            _context.RequestBodyPipe.Reader.OnWriterCompleted(callback, state);
+            _context.RequestBodyPipeReader.OnWriterCompleted(callback, state);
         }
 
         public virtual void Complete(Exception exception)
         {
-            _context.RequestBodyPipe.Reader.Complete(exception);
+            _context.RequestBodyPipeReader.Complete(exception);
         }
 
         public virtual void CancelPendingRead()
         {
-            _context.RequestBodyPipe.Reader.CancelPendingRead();
         }
 
-        public virtual async ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
-        {
-            TryStart();
-
-            while (true)
-            {
-                _previousReadResult = await StartTimingReadAsync(cancellationToken);
-                var readableBuffer = _previousReadResult.Buffer;
-                var readableBufferLength = readableBuffer.Length;
-                StopTimingRead(readableBufferLength);
-
-                if (readableBufferLength != 0)
-                {
-                    return _previousReadResult;
-                }
-
-                if (_previousReadResult.IsCompleted)
-                {
-                    TryStop();
-                    return _previousReadResult;
-                }
-            }
-        }
+        public abstract ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default);
 
         public virtual Task ConsumeAsync()
         {
@@ -135,7 +92,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        private void TryStart()
+        protected void TryStart()
         {
             if (_context.HasStartedConsumingRequestBody)
             {
@@ -159,7 +116,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             OnReadStarted();
         }
 
-        private void TryStop()
+        protected void TryStop()
         {
             if (_stopped)
             {
@@ -204,64 +161,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 BadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
             }
-        }
-
-        private ValueTask<ReadResult> StartTimingReadAsync(CancellationToken cancellationToken)
-        {
-            var readAwaitable = _context.RequestBodyPipe.Reader.ReadAsync(cancellationToken);
-
-            if (!readAwaitable.IsCompleted && _timingEnabled)
-            {
-                _backpressure = true;
-                _context.TimeoutControl.StartTimingRead();
-            }
-
-            return readAwaitable;
-        }
-
-        private void StopTimingRead(long bytesRead)
-        {
-            _context.TimeoutControl.BytesRead(bytesRead - _alreadyTimedBytes);
-            _alreadyTimedBytes = 0;
-
-            if (_backpressure)
-            {
-                _backpressure = false;
-                _context.TimeoutControl.StopTimingRead();
-            }
-        }
-
-        private class ForZeroContentLength : MessageBody
-        {
-            public ForZeroContentLength(bool keepAlive)
-                : base(null, null)
-            {
-                RequestKeepAlive = keepAlive;
-            }
-
-            public override bool IsEmpty => true;
-
-            public override ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default(CancellationToken)) => new ValueTask<ReadResult>(new ReadResult(default, isCanceled: false, isCompleted: true));
-
-            public override Task ConsumeAsync() => Task.CompletedTask;
-
-            public override Task StopAsync() => Task.CompletedTask;
-
-            public override void AdvanceTo(SequencePosition consumed) { }
-
-            public override void AdvanceTo(SequencePosition consumed, SequencePosition examined) { }
-
-            public override bool TryRead(out ReadResult result)
-            {
-                result = new ReadResult(default, isCanceled: false, isCompleted: true);
-                return true;
-            }
-
-            public override void OnWriterCompleted(Action<Exception, object> callback, object state) { }
-
-            public override void Complete(Exception ex) { }
-
-            public override void CancelPendingRead() { }
         }
     }
 }

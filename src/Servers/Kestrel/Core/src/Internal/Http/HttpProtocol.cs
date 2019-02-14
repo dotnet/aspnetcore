@@ -652,7 +652,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     RequestBodyPipeReader.Complete();
 
                     // Wait for Http1MessageBody.PumpAsync() to call RequestBodyPipe.Writer.Complete().
-                    messageBody.Stop();
+                    await messageBody.StopAsync();
                 }
             }
         }
