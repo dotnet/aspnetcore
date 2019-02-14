@@ -16,7 +16,7 @@
 
   <PropertyGroup Condition="'$(DirectoryToSign)' != ''">
     <OutDir>$([MSBuild]::NormalizeDirectory($(DirectoryToSign)))</OutDir>
-    <IntermediateOutputPath>$(RepositoryRoot)obj\$(MSBuildProjectName)\</IntermediateOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(OutDir)' != ''">
