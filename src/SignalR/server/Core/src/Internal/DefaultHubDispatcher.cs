@@ -164,24 +164,13 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         private Task ProcessStreamItem(HubConnectionContext connection, StreamItemMessage message)
         {
-            var processTask = connection.StreamTracker.ProcessItem(message);
-            // Review: This is kind of ugly and relies on the fact that the exception will be thrown from the synchronous code path
-            if (processTask.IsFaulted)
+            if (!connection.StreamTracker.TryProcessItem(message, out var processTask))
             {
-                try
-                {
-                    processTask.GetAwaiter().GetResult();
-                }
-                catch (KeyNotFoundException)
-                {
-                    Log.UnexpectedStreamItem(_logger);
-                    return Task.CompletedTask;
-                }
+                Log.UnexpectedStreamItem(_logger);
+                return Task.CompletedTask;
             }
-            else
-            {
-                Log.ReceivedStreamItem(_logger, message);
-            }
+
+            Log.ReceivedStreamItem(_logger, message);
             return processTask;
         }
 
