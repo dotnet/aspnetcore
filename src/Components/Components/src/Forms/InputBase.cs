@@ -45,31 +45,34 @@ namespace Microsoft.AspNetCore.Components.Forms
         }
 
         /// <inheritdoc />
-        protected override void OnInit()
-        {
-            if (CascadedEditContext == null)
-            {
-                throw new InvalidOperationException($"{GetType()} requires a cascading parameter " +
-                    $"of type {nameof(Forms.EditContext)}. For example, you can use {GetType().FullName} inside " +
-                    $"an {nameof(EditForm)}.");
-            }
-
-            if (ValueExpression == null)
-            {
-                throw new InvalidOperationException($"{GetType()} requires a value for the 'ValueExpression' " +
-                    $"parameter. Normally this is provided automatically when using 'bind-Value'.");
-            }
-
-            EditContext = CascadedEditContext;
-            FieldIdentifier = FieldIdentifier.Create(ValueExpression);
-        }
-
-        /// <inheritdoc />
         protected override void OnParametersSet()
         {
-            if (CascadedEditContext != EditContext)
+            if (EditContext == null)
             {
-                // We're not supporting it just because it's messy to be clearing up state and event
+                // This is the first render
+                // Could put this logic in OnInit, but its nice to avoid forcing people who override OnInit to call base.OnInit()
+
+                if (CascadedEditContext == null)
+                {
+                    throw new InvalidOperationException($"{GetType()} requires a cascading parameter " +
+                        $"of type {nameof(Forms.EditContext)}. For example, you can use {GetType().FullName} inside " +
+                        $"an {nameof(EditForm)}.");
+                }
+
+                if (ValueExpression == null)
+                {
+                    throw new InvalidOperationException($"{GetType()} requires a value for the 'ValueExpression' " +
+                        $"parameter. Normally this is provided automatically when using 'bind-Value'.");
+                }
+
+                EditContext = CascadedEditContext;
+                FieldIdentifier = FieldIdentifier.Create(ValueExpression);
+            }
+            else if (CascadedEditContext != EditContext)
+            {
+                // Not the first render
+
+                // We don't support changing EditContext because it's messy to be clearing up state and event
                 // handlers for the previous one, and there's no strong use case. If a strong use case
                 // emerges, we can consider changing this.
                 throw new InvalidOperationException($"{GetType()} does not support changing the " +
