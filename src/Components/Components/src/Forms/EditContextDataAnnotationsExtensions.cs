@@ -2,8 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Reflection;
 
 namespace Microsoft.AspNetCore.Components.Forms
 {
@@ -12,6 +15,9 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// </summary>
     public static class EditContextDataAnnotationsExtensions
     {
+        private static ConcurrentDictionary<FieldIdentifier, PropertyInfo> _propertyInfoCache
+            = new ConcurrentDictionary<FieldIdentifier, PropertyInfo>();
+
         /// <summary>
         /// Adds DataAnnotations validation support to the <see cref="EditContext"/>.
         /// </summary>
@@ -25,10 +31,13 @@ namespace Microsoft.AspNetCore.Components.Forms
 
             var messages = new ValidationMessageStore(editContext);
 
-            editContext.OnValidationRequested += (object sender, EventArgs e) =>
-            {
-                ValidateModel((EditContext)sender, messages);
-            };
+            // Perform object-level validation on request
+            editContext.OnValidationRequested +=
+                (sender, eventArgs) => ValidateModel((EditContext)sender, messages);
+
+            // Perform per-field validation on each field edit
+            editContext.OnFieldChanged +=
+                (sender, fieldIdentifier) => ValidateField(editContext, messages, fieldIdentifier);
 
             return editContext;
         }
@@ -50,6 +59,42 @@ namespace Microsoft.AspNetCore.Components.Forms
             }
 
             editContext.NotifyValidationStateChanged();
+        }
+
+        private static void ValidateField(EditContext editContext, ValidationMessageStore messages, FieldIdentifier fieldIdentifier)
+        {
+            if (TryGetValidatableProperty(fieldIdentifier, out var propertyInfo))
+            {
+                var propertyValue = propertyInfo.GetValue(fieldIdentifier.Model);
+                var validationContext = new ValidationContext(fieldIdentifier.Model)
+                {
+                    MemberName = propertyInfo.Name
+                };
+                var results = new List<ValidationResult>();
+
+                Validator.TryValidateProperty(propertyValue, validationContext, results);
+                messages.Clear(fieldIdentifier);
+                messages.AddRange(fieldIdentifier, results.Select(result => result.ErrorMessage));
+
+                // We have to notify even if there were no messages before and are still no messages now,
+                // because the "state" that changed might be the completion of some async validation task
+                editContext.NotifyValidationStateChanged();
+            }
+        }
+
+        private static bool TryGetValidatableProperty(FieldIdentifier fieldIdentifier, out PropertyInfo propertyInfo)
+        {
+            if (!_propertyInfoCache.TryGetValue(fieldIdentifier, out propertyInfo))
+            {
+                // DataAnnotations only validates public properties, so that's all we'll look for
+                // If we can't find it, cache 'null' so we don't have to try again next time
+                propertyInfo = fieldIdentifier.Model.GetType().GetProperty(fieldIdentifier.FieldName);
+
+                // No need to lock, because it doesn't matter if we write the same value twice
+                _propertyInfoCache[fieldIdentifier] = propertyInfo;
+            }
+
+            return propertyInfo != null;
         }
     }
 }

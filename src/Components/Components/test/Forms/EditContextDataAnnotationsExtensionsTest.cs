@@ -97,11 +97,75 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
             Assert.Equal(3, onValidationStateChangedCount);
         }
 
+        [Fact]
+        public void PerformsPerPropertyValidationOnFieldChange()
+        {
+            // Arrange
+            var model = new TestModel { IntFrom1To100 = 101 };
+            var independentTopLevelModel = new object(); // To show we can validate things on any model, not just the top-level one
+            var editContext = new EditContext(independentTopLevelModel).AddDataAnnotationsValidation();
+            var onValidationStateChangedCount = 0;
+            var requiredStringIdentifier = new FieldIdentifier(model, nameof(TestModel.RequiredString));
+            var intFrom1To100Identifier = new FieldIdentifier(model, nameof(TestModel.IntFrom1To100));
+            editContext.OnValidationStateChanged += (sender, eventArgs) => onValidationStateChangedCount++;
+
+            // Act/Assert 1: Notify about RequiredString
+            // Only RequiredString gets validated, even though IntFrom1To100 also holds an invalid value
+            editContext.NotifyFieldChanged(requiredStringIdentifier);
+            Assert.Equal(1, onValidationStateChangedCount);
+            Assert.Equal(new[] { "The RequiredString field is required." }, editContext.GetValidationMessages());
+
+            // Act/Assert 2: Fix RequiredString, but only notify about IntFrom1To100
+            // Only IntFrom1To100 gets validated; messages for RequiredString are left unchanged
+            model.RequiredString = "This string is very cool and very legal";
+            editContext.NotifyFieldChanged(intFrom1To100Identifier);
+            Assert.Equal(2, onValidationStateChangedCount);
+            Assert.Equal(new string[]
+                {
+                    "The RequiredString field is required.",
+                    "The field IntFrom1To100 must be between 1 and 100."
+                },
+                editContext.GetValidationMessages());
+
+            // Act/Assert 3: Notify about RequiredString
+            editContext.NotifyFieldChanged(requiredStringIdentifier);
+            Assert.Equal(3, onValidationStateChangedCount);
+            Assert.Equal(new[] { "The field IntFrom1To100 must be between 1 and 100." }, editContext.GetValidationMessages());
+        }
+
+        [Theory]
+        [InlineData(nameof(TestModel.ThisWillNotBeValidatedBecauseItIsAField))]
+        [InlineData(nameof(TestModel.ThisWillNotBeValidatedBecauseItIsInternal))]
+        [InlineData("ThisWillNotBeValidatedBecauseItIsPrivate")]
+        [InlineData("This does not correspond to anything")]
+        [InlineData("")]
+        public void IgnoresFieldChangesThatDoNotCorrespondToAValidatableProperty(string fieldName)
+        {
+            // Arrange
+            var editContext = new EditContext(new TestModel()).AddDataAnnotationsValidation();
+            var onValidationStateChangedCount = 0;
+            editContext.OnValidationStateChanged += (sender, eventArgs) => onValidationStateChangedCount++;
+
+            // Act/Assert: Ignores field changes that don't correspond to a validatable property
+            editContext.NotifyFieldChanged(editContext.Field(fieldName));
+            Assert.Equal(0, onValidationStateChangedCount);
+
+            // Act/Assert: For sanity, observe that we would have validated if it was a validatable property
+            editContext.NotifyFieldChanged(editContext.Field(nameof(TestModel.RequiredString)));
+            Assert.Equal(1, onValidationStateChangedCount);
+        }
+
         class TestModel
         {
             [Required] public string RequiredString { get; set; }
 
             [Range(1, 100)] public int IntFrom1To100 { get; set; }
+
+#pragma warning disable 649
+            [Required] public string ThisWillNotBeValidatedBecauseItIsAField;
+            [Required] string ThisWillNotBeValidatedBecauseItIsPrivate { get; set; }
+            [Required] internal string ThisWillNotBeValidatedBecauseItIsInternal { get; set; }
+#pragma warning restore 649
         }
     }
 }
