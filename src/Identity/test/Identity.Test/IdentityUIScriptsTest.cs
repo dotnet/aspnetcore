@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             using (var alg256 = SHA256.Create())
             using (var alg384 = SHA384.Create())
             {
-                string hash;
+                byte[] hash;
                 if(isSha256)
                 {
                     hash = alg256.ComputeHash(respStream);
