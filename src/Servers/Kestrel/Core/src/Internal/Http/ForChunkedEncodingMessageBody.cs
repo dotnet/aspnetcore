@@ -38,6 +38,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             // For now, chunking will use the request body pipe
             _requestBodyPipe = CreateRequestBodyPipe(context);
+            context.InternalRequestBodyPipeReader = _requestBodyPipe.Reader;
         }
 
         private Pipe CreateRequestBodyPipe(Http1Connection context)
@@ -523,25 +524,91 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             BadHttpRequestException.Throw(RequestRejectionReason.BadChunkSizeData);
             return -1; // can't happen, but compiler complains
         }
+        private ReadResult _previousReadResult;
 
         public override void AdvanceTo(SequencePosition consumed)
         {
-            throw new NotImplementedException();
+            AdvanceTo(consumed, consumed);
         }
 
         public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
         {
-            throw new NotImplementedException();
+            var dataLength = _previousReadResult.Buffer.Slice(_previousReadResult.Buffer.Start, consumed).Length;
+            _context.InternalRequestBodyPipeReader.AdvanceTo(consumed, examined);
+            OnDataRead(dataLength);
         }
 
         public override bool TryRead(out ReadResult readResult)
         {
-            throw new NotImplementedException();
+            TryStart();
+
+            var res =_requestBodyPipe.Reader.TryRead(out _previousReadResult);
+            readResult = _previousReadResult;
+
+            if (_previousReadResult.IsCompleted)
+            {
+                TryStop();
+            }
+            return res;
         }
 
-        public override ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
+        public override async ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            TryStart();
+
+            while (true)
+            {
+                _previousReadResult = await StartTimingReadAsync(cancellationToken);
+                var readableBuffer = _previousReadResult.Buffer;
+                var readableBufferLength = readableBuffer.Length;
+                StopTimingRead(readableBufferLength);
+
+                if (readableBufferLength != 0)
+                {
+                    break;
+                }
+
+                if (_previousReadResult.IsCompleted)
+                {
+                    TryStop();
+                    break;
+                }
+            }
+
+            return _previousReadResult;
+        }
+
+        private ValueTask<ReadResult> StartTimingReadAsync(CancellationToken cancellationToken)
+        {
+            // The only difference is which reader to use. Let's do the following.
+            // Make an internal reader that will always be used for whatever operation is needed here
+            // Keep external one the same always.
+            var readAwaitable = _context.InternalRequestBodyPipeReader.ReadAsync(cancellationToken);
+
+            if (!readAwaitable.IsCompleted && _timingEnabled)
+            {
+                _backpressure = true;
+                _context.TimeoutControl.StartTimingRead();
+            }
+
+            return readAwaitable;
+        }
+
+        private void StopTimingRead(long bytesRead)
+        {
+            _context.TimeoutControl.BytesRead(bytesRead - _alreadyTimedBytes);
+            _alreadyTimedBytes = 0;
+
+            if (_backpressure)
+            {
+                _backpressure = false;
+                _context.TimeoutControl.StopTimingRead();
+            }
+        }
+
+        public override void Complete(Exception exception)
+        {
+            _context.InternalRequestBodyPipeReader.Complete(exception);
         }
 
         private enum Mode

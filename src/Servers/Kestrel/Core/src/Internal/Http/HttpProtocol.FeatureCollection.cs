@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     minimumSegmentSize: KestrelMemoryPool.MinimumSegmentSize,
                     minimumReadThreshold: KestrelMemoryPool.MinimumSegmentSize / 4,
                     _context.MemoryPool));
-                RequestPipeReader = requestPipeReader;
+                RequestBodyPipeReader = requestPipeReader;
 
                 // The StreamPipeWrapper needs to be disposed as it hold onto blocks of memory
                 if (_wrapperObjectsToDispose == null)
@@ -121,12 +121,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get
             {
-                return RequestPipeReader;
+                return RequestBodyPipeReader;
             }
             set
             {
-                RequestPipeReader = value;
-                RequestBody = new ReadOnlyPipeStream(RequestPipeReader);
+                RequestBodyPipeReader = value;
+                RequestBody = new ReadOnlyPipeStream(RequestBodyPipeReader);
             }
         }
 

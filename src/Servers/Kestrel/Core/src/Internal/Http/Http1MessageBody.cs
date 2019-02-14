@@ -23,9 +23,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             try
             {
-                if (_context.RequestBodyPipeReader.TryRead(out var readResult))
+                if (TryRead(out var readResult))
                 {
-                    _context.RequestBodyPipeReader.AdvanceTo(readResult.Buffer.End);
+                    AdvanceTo(readResult.Buffer.End);
 
                     if (readResult.IsCompleted)
                     {
@@ -60,8 +60,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 ReadResult result;
                 do
                 {
-                    result = await _context.RequestBodyPipeReader.ReadAsync();
-                    _context.RequestBodyPipeReader.AdvanceTo(result.Buffer.End);
+                    result = await ReadAsync();
+                    AdvanceTo(result.Buffer.End);
                 } while (!result.IsCompleted);
             }
             catch (BadHttpRequestException ex)
@@ -102,7 +102,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     BadHttpRequestException.Throw(RequestRejectionReason.UpgradeRequestCannotHavePayload);
                 }
 
-                context.RequestBodyPipeReader = new HttpRequestPipeReader();
                 return new ForUpgrade(context);
             }
 
@@ -122,7 +121,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     BadHttpRequestException.Throw(RequestRejectionReason.FinalTransferCodingNotChunked, in transferEncoding);
                 }
 
-                context.RequestBodyPipeReader = new HttpRequestPipeReader();
                 // TODO may push more into the wrapper rather than just calling into the message body
                 // NBD for now.
                 return new ForChunkedEncoding(keepAlive, context);
@@ -137,7 +135,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     return keepAlive ? MessageBody.ZeroContentLengthKeepAlive : MessageBody.ZeroContentLengthClose;
                 }
 
-                context.RequestBodyPipeReader = new HttpRequestPipeReader();
                 return new ForContentLength(keepAlive, contentLength, context);
             }
 

@@ -142,7 +142,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await Assert.ThrowsAsync<ObjectDisposedException>(async () => await responsePipe.FlushAsync());
         }
 
-
         private class MockMessageBody : MessageBody
         {
             public MockMessageBody(bool upgradeable = false)
@@ -157,6 +156,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             }
 
             public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void Complete(Exception exception)
             {
                 throw new NotImplementedException();
             }

@@ -74,6 +74,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public override async ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
         {
+            TryStart();
+
             _previousReadResult = await StartTimingReadAsync(cancellationToken);
             StopTimingRead(_previousReadResult.Buffer.Length);
 
@@ -108,6 +110,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 _backpressure = false;
                 _context.TimeoutControl.StopTimingRead();
             }
+        }
+
+        public override void Complete(Exception exception)
+        {
+            _context.RequestBodyPipe.Reader.Complete(exception);
         }
     }
 }

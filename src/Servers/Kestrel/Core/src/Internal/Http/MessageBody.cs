@@ -51,13 +51,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public virtual void OnWriterCompleted(Action<Exception, object> callback, object state)
         {
-            _context.RequestBodyPipeReader.OnWriterCompleted(callback, state);
+            _context.InternalRequestBodyPipeReader.OnWriterCompleted(callback, state);
         }
 
-        public virtual void Complete(Exception exception)
-        {
-            _context.RequestBodyPipeReader.Complete(exception);
-        }
+        public abstract void Complete(Exception exception);
 
         public virtual void CancelPendingRead()
         {

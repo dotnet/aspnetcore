@@ -621,6 +621,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [MemberData(nameof(ConnectionAdapterData))]
         public async Task RequestsCanBeAbortedMidRead(ListenOptions listenOptions)
         {
+            // This needs a timeout.
             const int applicationAbortedConnectionId = 34;
 
             var testContext = new TestServiceContext(LoggerFactory);
