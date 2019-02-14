@@ -50,9 +50,18 @@ namespace Microsoft.AspNetCore.Identity.Test
             var isSha256 = scriptTag.Integrity.StartsWith("sha256");
             var prefix = isSha256 ? "sha256" : "sha384";
             using (var respStream = await _httpClient.GetStreamAsync(scriptTag.Src))
-            using (var alg = isSha256 ? SHA256.Create() : SHA384.Create())
+            using (var alg256 = SHA256.Create())
+            using (var alg384 = SHA384.Create())
             {
-                var hash = alg.ComputeHash(respStream);
+                string hash;
+                if(isSha256)
+                {
+                    hash = alg256.ComputeHash(respStream);
+                }
+                else
+                {
+                    hash = alg384.ComputeHash(respStream);
+                }
                 return $"{prefix}-" + Convert.ToBase64String(hash);
             }
         }
