@@ -81,7 +81,7 @@
 
   <Target Name="PrepareForTestAssetPublish" BeforeTargets="PrepareForPublish" Condition="'@(TestAssetPublishProfile->Count())' != '0'">
     <PropertyGroup Condition="'$(HasTestAssetProfile)' == 'true'">
-      <PublishDir>$(OutputPath)$(PublishDirName)\$(TestAssetOutputName)-$(TestAssetProfile)\</PublishDir>
+      <PublishDir>$(PublishDir)\$(TestAssetOutputName)-$(TestAssetProfile)\</PublishDir>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(HasTestAssetProfile)' != 'true'">
@@ -90,7 +90,7 @@
     </PropertyGroup>
   </Target>
 
-  <Target Name="PublishTestsAssets" AfterTargets="Build;Publish" Condition="'$(TestAssetProfile)' == '' AND '@(TestAssetPublishProfile->Count())' != '0'">
+  <Target Name="PublishTestsAssets" Condition="'$(TestAssetProfile)' == '' AND '@(TestAssetPublishProfile->Count())' != '0'">
 
     <!--
       _InsidePublishTestsAssets is to avoid invoking this target recursively

@@ -31,4 +31,17 @@
     <Reference Include="System.Diagnostics.EventLog" />
   </ItemGroup>
 
+  <Target Name="BuildAssets" AfterTargets="Build">
+    <MSBuild Projects="@(ProjectReference)" Targets="PublishTestsAssets" SkipNonexistentTargets="true" BuildInParallel="True" />
+  </Target>
+
+  <Target Name="PublishAssets" AfterTargets="Publish">
+
+    <ConvertToAbsolutePath Paths="$(PublishDir)">
+      <Output TaskParameter="AbsolutePaths" PropertyName="PublishAbsoluteDir" />
+    </ConvertToAbsolutePath>
+
+    <MSBuild Projects="@(ProjectReference)" Targets="PublishTestsAssets" SkipNonexistentTargets="true" BuildInParallel="True" Properties="PublishDir=$(PublishAbsoluteDir)" />
+  </Target>
+
 </Project>
