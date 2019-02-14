@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp2.2;net461</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)Razor\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Mvc.TagHelpers" />
+    <ProjectReference Include="..\..\shared\Mvc.Views.TestCommon\Microsoft.AspNetCore.Mvc.Views.TestCommon.csproj" />
+  </ItemGroup>
+
+</Project>
