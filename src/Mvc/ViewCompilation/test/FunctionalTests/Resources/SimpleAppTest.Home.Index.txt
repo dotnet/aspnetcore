@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Home Page - SimpleApp</title>
 
-
-
+    
+    
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" />
 <meta name="x-stylesheet-fallback-test" content="" class="sr-only" /><script>!function(a,b,c,d){var e,f=document,g=f.getElementsByTagName("SCRIPT"),h=g[g.length-1].previousElementSibling,i=f.defaultView&&f.defaultView.getComputedStyle?f.defaultView.getComputedStyle(h):h.currentStyle;if(i&&i[a]!==b)for(e=0;e<c.length;e++)f.write('<link href="'+c[e]+'" '+d+"/>")}("position","absolute",["\/lib\/bootstrap\/dist\/css\/bootstrap.min.css"], "rel=\u0022stylesheet\u0022 ");</script>
         <link rel="stylesheet" href="/css/site.min.css" />
-
+    
 </head>
 <body>
     <div class="navbar navbar-inverse navbar-fixed-top">
@@ -34,7 +34,7 @@
         </div>
     </div>
     <div class="container body-content">
-
+        
 SimpleApp.PrecompiledViews, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
 <div id="myCarousel" class="carousel slide" data-ride="carousel" data-interval="6000">
     <ol class="carousel-indicators">
@@ -148,8 +148,8 @@ SimpleApp.PrecompiledViews, Version=1.0.0.0, Culture=neutral, PublicKeyToken=nul
         </footer>
     </div>
 
-
-
+    
+    
         <script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-2.2.0.min.js">
         </script>
 <script>(window.jQuery||document.write("\u003Cscript src=\u0022\/lib\/jquery\/dist\/jquery.min.js\u0022\u003E\u003C\/script\u003E"));</script>
