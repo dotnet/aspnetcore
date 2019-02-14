@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.Http.Features
                     while (section != null)
                     {
                         // Parse the content disposition here and pass it further to avoid reparsings
-                        if (!ContentDispositionHeaderValue.TryParse (section.ContentDisposition, out var contentDisposition))
+                        if (!ContentDispositionHeaderValue.TryParse(section.ContentDisposition, out var contentDisposition))
                         {
                             throw new InvalidDataException ("Form section has invalid Content-Disposition value.");
                         }
