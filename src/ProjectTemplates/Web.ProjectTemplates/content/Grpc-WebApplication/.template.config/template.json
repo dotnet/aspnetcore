@@ -1,0 +1,90 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Microsoft",
+  "classifications": [
+    "gRPC",
+    "ASP.NET"
+  ],
+  "name": "ASP.NET Core gRPC Web Application",
+  "generatorVersions": "[1.0.0.0-*)",
+  "description": "A project template for creating a gRPC ASP.NET Core application.",
+  "groupIdentity": "Microsoft.Grpc.Web",
+  "precedence": "5000",
+  "identity": "Microsoft.Grpc.WebApplication.CSharp.3.0",
+  "shortName": "grpc-web",
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "sourceName": "Company.WebApplication1",
+  "preferNameDirectory": true,
+  "guids": [
+    "53bc9b9d-9d6a-45d4-8429-2a2761773502"
+  ],
+  "sources": [
+    {
+      "modifiers": [
+        {
+          "condition": "(ExcludeLaunchSettings)",
+          "exclude": [
+            "Properties/launchSettings.json"
+          ]
+        }
+      ]
+    }
+  ],
+  "symbols": {
+    "ExcludeLaunchSettings": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Whether to exclude launchSettings.json from the generated template."
+    },
+    "Framework": {
+      "type": "parameter",
+      "description": "The target framework for the project.",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "netcoreapp3.0",
+          "description": "Target netcoreapp3.0"
+        }
+      ],
+      "replaces": "netcoreapp3.0",
+      "defaultValue": "netcoreapp3.0"
+    },
+    "copyrightYear": {
+      "type": "generated",
+      "generator": "now",
+      "replaces": "copyrightYear",
+      "parameters": {
+        "format": "yyyy"
+      }
+    },
+    "skipRestore": {
+      "type": "parameter",
+      "datatype": "bool",
+      "description": "If specified, skips the automatic restore of the project on create.",
+      "defaultValue": "false"
+    }
+  },
+  "primaryOutputs": [
+    {
+      "path": "Company.WebApplication1.csproj"
+    }
+  ],
+  "defaultName": "gRPC-WebApplication1",
+  "postActions": [
+    {
+      "condition": "(!skipRestore)",
+      "description": "Restore NuGet packages required by this project.",
+      "manualInstructions": [
+        {
+          "text": "Run 'dotnet restore'"
+        }
+      ],
+      "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
+      "continueOnError": true
+    }
+  ]
+}

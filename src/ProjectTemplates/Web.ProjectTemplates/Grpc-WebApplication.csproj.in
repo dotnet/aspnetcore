@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Protobuf Include="Protos\*.proto" GrpcServices="Server" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Grpc.AspNetCore.Server" Version="1.0.0" />
+    <PackageReference Include="Google.Protobuf" Version="3.6.1" />
+
+    <PackageReference Include="Grpc.Tools" Version="1.19.0-dev" PrivateAssets="All" />
+  </ItemGroup>
+
+</Project>
