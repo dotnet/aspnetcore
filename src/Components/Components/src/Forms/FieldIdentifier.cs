@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Microsoft.AspNetCore.Components.Forms
 {
@@ -36,6 +38,19 @@ namespace Microsoft.AspNetCore.Components.Forms
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="FieldIdentifier"/> structure.
+        /// </summary>
+        /// <param name="accessor">An expression that identifies an object member.</param>
+        public FieldIdentifier(Expression<Func<object>> accessor)
+        {
+            ParseAccessor(accessor, out var model, out var fieldName);
+
+            // Copy to self, enforcing the same invariants as the other constructor
+            var result = new FieldIdentifier(model, fieldName);
+            (Model, FieldName) = (result.Model, result.FieldName);
+        }
+
+        /// <summary>
         /// Gets the object that owns the editable field.
         /// </summary>
         public object Model { get; }
@@ -54,5 +69,47 @@ namespace Microsoft.AspNetCore.Components.Forms
             => obj is FieldIdentifier otherIdentifier
             && otherIdentifier.Model == Model
             && string.Equals(otherIdentifier.FieldName, FieldName, StringComparison.Ordinal);
+
+        private static void ParseAccessor(Expression<Func<object>> accessor, out object model, out string fieldName)
+        {
+            var accessorBody = accessor.Body;
+
+            // Unwrap casts to object
+            if (accessorBody is UnaryExpression unaryExpression
+                && unaryExpression.NodeType == ExpressionType.Convert
+                && unaryExpression.Type == typeof(object))
+            {
+                accessorBody = unaryExpression.Operand;
+            }
+
+            if (!(accessorBody is MemberExpression memberExpression))
+            {
+                throw new ArgumentException("The accessor is not supported because its body is not a MemberExpression");
+            }
+
+            // Identify the field name. We don't mind whether it's a property or field, or even something else.
+            fieldName = memberExpression.Member.Name;
+
+            // Get a reference to the model object
+            // i.e., given an value like "(something).MemberName", determine the runtime value of "(something)",
+            switch (memberExpression.Expression)
+            {
+                case ConstantExpression constantExpression:
+                    model = constantExpression.Value;
+                    break;
+                case MemberExpression nestedMemberExpression:
+                    // It would be great to cache this somehow, but it's unclear there's a reasonable way to do
+                    // so, given that it embeds captured values such as "this". We could consider special-casing
+                    // for "() => something.Member" and building a cache keyed by "something.GetType()" with values
+                    // of type Func<object, object> so we can cheaply map from "something" to "something.Member".
+                    var modelLambda = Expression.Lambda(nestedMemberExpression);
+                    var modelLambdaCompiled = (Func<object>)modelLambda.Compile();
+                    model = modelLambdaCompiled();
+                    break;
+                default:
+                    // An error message that might help us work out what extra expression types need to be supported
+                    throw new InvalidOperationException($"The accessor is not supported because the model value cannot be parsed from it. Expression: '{memberExpression.Expression}', type: '{memberExpression.Expression.GetType().FullName}'");
+            }
+        }
     }
 }

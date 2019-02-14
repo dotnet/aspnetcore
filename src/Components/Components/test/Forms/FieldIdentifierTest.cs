@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Components.Forms;
 using System;
+using System.Linq.Expressions;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Tests.Forms
@@ -101,6 +102,55 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
             Assert.Equal("Field", fieldIdentifierPascal.FieldName);
             Assert.NotEqual(fieldIdentifierLower.GetHashCode(), fieldIdentifierPascal.GetHashCode());
             Assert.False(fieldIdentifierLower.Equals(fieldIdentifierPascal));
+        }
+
+        [Fact]
+        public void CanConstructFromExpression_Property()
+        {
+            var model = new TestModel();
+            var fieldIdentifier = new FieldIdentifier(() => model.StringProperty);
+            Assert.Same(model, fieldIdentifier.Model);
+            Assert.Equal(nameof(model.StringProperty), fieldIdentifier.FieldName);
+        }
+
+        [Fact]
+        public void CanConstructFromExpression_Field()
+        {
+            var model = new TestModel();
+            var fieldIdentifier = new FieldIdentifier(() => model.StringField);
+            Assert.Same(model, fieldIdentifier.Model);
+            Assert.Equal(nameof(model.StringField), fieldIdentifier.FieldName);
+        }
+
+        [Fact]
+        public void CanConstructFromExpression_WithCastToObject()
+        {
+            // This case is needed because value types will implicitly be cast to object
+            var model = new TestModel();
+            var fieldIdentifier = new FieldIdentifier(() => model.IntProperty);
+            Assert.Same(model, fieldIdentifier.Model);
+            Assert.Equal(nameof(model.IntProperty), fieldIdentifier.FieldName);
+        }
+
+        [Fact]
+        public void CanConstructFromExpression_MemberOfConstantExpression()
+        {
+            var fieldIdentifier = new FieldIdentifier(() => StringPropertyOnThisClass);
+            Assert.Same(this, fieldIdentifier.Model);
+            Assert.Equal(nameof(StringPropertyOnThisClass), fieldIdentifier.FieldName);
+        }
+
+        string StringPropertyOnThisClass { get; set; }
+
+        class TestModel
+        {
+            public string StringProperty { get; set; }
+
+            public int IntProperty { get; set; }
+
+#pragma warning disable 649
+            public string StringField;
+#pragma warning restore 649
         }
     }
 }
