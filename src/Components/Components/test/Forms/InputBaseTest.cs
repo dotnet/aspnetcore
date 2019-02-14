@@ -185,11 +185,6 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
         {
             public List<StateWhenRendering> RenderedStates { get; } = new List<StateWhenRendering>();
 
-            protected override void OnInit()
-            {
-                // Explicitly *not* calling base.OnInit() just to prove derived types don't have to
-            }
-
             protected override void BuildRenderTree(RenderTreeBuilder builder)
             {
                 // No need to actually render anything. We just want to assert about what data is given to derived classes.

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Components.Forms
 {
@@ -63,11 +64,13 @@ namespace Microsoft.AspNetCore.Components.Forms
         }
 
         /// <inheritdoc />
-        protected override void OnParametersSet()
+        public override Task SetParametersAsync(ParameterCollection parameters)
         {
+            parameters.SetParameterProperties(this);
+
             if (EditContext == null)
             {
-                // This is the first render
+                // This is the first run
                 // Could put this logic in OnInit, but its nice to avoid forcing people who override OnInit to call base.OnInit()
 
                 if (CascadedEditContext == null)
@@ -88,7 +91,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             }
             else if (CascadedEditContext != EditContext)
             {
-                // Not the first render
+                // Not the first run
 
                 // We don't support changing EditContext because it's messy to be clearing up state and event
                 // handlers for the previous one, and there's no strong use case. If a strong use case
@@ -96,6 +99,9 @@ namespace Microsoft.AspNetCore.Components.Forms
                 throw new InvalidOperationException($"{GetType()} does not support changing the " +
                     $"{nameof(Forms.EditContext)} dynamically.");
             }
+
+            // For derived components, retain the usual lifecycle with OnInit/OnParametersSet/etc.
+            return base.SetParametersAsync(ParameterCollection.Empty);
         }
     }
 }
