@@ -15,6 +15,9 @@
     <ExtensionInstallationRoot>CommonExtensions</ExtensionInstallationRoot>
     <ExtensionInstallationFolder>Microsoft\Blazor</ExtensionInstallationFolder>
 
+    <!-- This should be set as true if we're ever building the VSIX for inclusion by the VS installer. -->
+    <IsProductComponent Condition="'$(IsProductComponent)'==''">false</IsProductComponent>
+
     <!-- Update the VSToolsPath to ensure VSIX builds -->
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
     <!-- Other projects should not reference this assembly. It is only meaning to be used in Visual Studio. -->
