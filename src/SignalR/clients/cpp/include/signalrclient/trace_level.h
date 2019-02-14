@@ -16,12 +16,12 @@ namespace signalr
         all = messages | events | state_changes | errors | info
     };
 
-    inline trace_level operator|(trace_level lhs, trace_level rhs)
+    inline trace_level operator|(trace_level lhs, trace_level rhs) noexcept
     {
         return static_cast<trace_level>(static_cast<int>(lhs) | static_cast<int>(rhs));
     }
 
-    inline trace_level operator&(trace_level lhs, trace_level rhs)
+    inline trace_level operator&(trace_level lhs, trace_level rhs) noexcept
     {
         return static_cast<trace_level>(static_cast<int>(lhs) & static_cast<int>(rhs));
     }

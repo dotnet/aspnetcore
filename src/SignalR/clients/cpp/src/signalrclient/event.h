@@ -19,7 +19,7 @@ namespace signalr
 
         static const unsigned int timeout_infinite = 0xFFFFFFFF;
 
-        event()
+        event() noexcept
             : m_signaled(false)
         {
         }
@@ -42,13 +42,13 @@ namespace signalr
             std::unique_lock<std::mutex> lock(m_lock);
             if (timeout == event::timeout_infinite)
             {
-                m_condition.wait(lock, [this]() { return m_signaled; });
+                m_condition.wait(lock, [this]() noexcept { return m_signaled; });
                 return 0;
             }
             else
             {
-                std::chrono::milliseconds period(timeout);
-                auto status = m_condition.wait_for(lock, period, [this]() { return m_signaled; });
+                const std::chrono::milliseconds period(timeout);
+                const auto status = m_condition.wait_for(lock, period, [this]() noexcept { return m_signaled; });
                 assert(status == m_signaled);
                 // Return 0 if the wait completed as a result of signaling the event. Otherwise, return timeout_infinite
                 return status ? 0 : event::timeout_infinite;

@@ -45,7 +45,7 @@ namespace signalr
         : m_connection(connection_impl::create(url, query_string, trace_level, log_writer,
         std::move(web_request_factory), std::move(transport_factory))),m_logger(log_writer, trace_level),
         m_callback_manager(json::value::parse(_XPLATSTR("{ \"error\" : \"connection went out of scope before invocation result was received\"}"))),
-        m_disconnected([]() {})
+        m_disconnected([]() noexcept {}), m_handshakeReceived(false)
     { }
 
     void hub_connection_impl::initialize()
@@ -108,9 +108,9 @@ namespace signalr
 
         m_handshakeTask = pplx::task_completion_event<void>();
         m_handshakeReceived = false;
-        auto weak_connection = m_connection->weak_from_this();
+        auto weak_connection = weak_from_this();
         return m_connection->start()
-            .then([weak_connection, this](pplx::task<void> startTask)
+            .then([weak_connection](pplx::task<void> startTask)
             {
                 startTask.get();
                 auto connection = weak_connection.lock();
@@ -119,11 +119,17 @@ namespace signalr
                     // The connection has been destructed
                     return pplx::task_from_exception<void>(signalr_exception(_XPLATSTR("the hub connection has been deconstructed")));
                 }
-                return connection->send(_XPLATSTR("{\"protocol\":\"json\",\"version\":1}\x1e"))
-                    .then([this](pplx::task<void> previous_task)
+                return connection->m_connection->send(_XPLATSTR("{\"protocol\":\"json\",\"version\":1}\x1e"))
+                    .then([weak_connection](pplx::task<void> previous_task)
                     {
+                        auto connection = weak_connection.lock();
+                        if (!connection)
+                        {
+                            // The connection has been destructed
+                            return pplx::task_from_exception<void>(signalr_exception(_XPLATSTR("the hub connection has been deconstructed")));
+                        }
                         previous_task.get();
-                        return pplx::task<void>(m_handshakeTask);
+                        return pplx::task<void>(connection->m_handshakeTask);
                     })
                     .then([weak_connection](pplx::task<void> previous_task)
                     {
@@ -137,7 +143,7 @@ namespace signalr
                             auto connection = weak_connection.lock();
                             if (connection)
                             {
-                                connection->stop();
+                                connection->m_connection->stop();
                             }
                             throw;
                         }
@@ -267,7 +273,7 @@ namespace signalr
         return true;
     }
 
-    pplx::task<json::value> hub_connection_impl::invoke_json(const utility::string_t& method_name, const json::value& arguments)
+    pplx::task<json::value> hub_connection_impl::invoke(const utility::string_t& method_name, const json::value& arguments)
     {
         _ASSERTE(arguments.is_array());
 
@@ -283,7 +289,7 @@ namespace signalr
         return pplx::create_task(tce);
     }
 
-    pplx::task<void> hub_connection_impl::invoke_void(const utility::string_t& method_name, const json::value& arguments)
+    pplx::task<void> hub_connection_impl::send(const utility::string_t& method_name, const json::value& arguments)
     {
         _ASSERTE(arguments.is_array());
 
@@ -337,7 +343,7 @@ namespace signalr
             });
     }
 
-    connection_state hub_connection_impl::get_connection_state() const
+    connection_state hub_connection_impl::get_connection_state() const noexcept
     {
         return m_connection->get_connection_state();
     }

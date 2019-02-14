@@ -12,7 +12,7 @@ namespace signalr
     class default_websocket_client : public websocket_client
     {
     public:
-        explicit default_websocket_client(const signalr_client_config& signalr_client_config = signalr_client_config{});
+        explicit default_websocket_client(const signalr_client_config& signalr_client_config = signalr_client_config{}) noexcept;
 
         pplx::task<void> connect(const web::uri &url) override;
 

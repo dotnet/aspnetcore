@@ -26,7 +26,7 @@ namespace signalr
                     negotiation_response_json[_XPLATSTR("availableTransports")],
                 };
 
-                return response;
+                return std::move(response);
             });
         }
     }

@@ -33,13 +33,13 @@ namespace signalr
 
         void on(const utility::string_t& event_name, const std::function<void(const json::value &)>& handler);
 
-        pplx::task<json::value> invoke_json(const utility::string_t& method_name, const json::value& arguments);
-        pplx::task<void> invoke_void(const utility::string_t& method_name, const json::value& arguments);
+        pplx::task<json::value> invoke(const utility::string_t& method_name, const json::value& arguments);
+        pplx::task<void> send(const utility::string_t& method_name, const json::value& arguments);
 
         pplx::task<void> start();
         pplx::task<void> stop();
 
-        connection_state get_connection_state() const;
+        connection_state get_connection_state() const noexcept;
         utility::string_t get_connection_id() const;
 
         void set_client_config(const signalr_client_config& config);
