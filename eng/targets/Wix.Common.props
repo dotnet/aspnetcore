@@ -17,7 +17,7 @@
     <NuGetRestoreTargets Condition="'$(NuGetRestoreTargets)'==''">$(MSBuildToolsPath)\NuGet.targets</NuGetRestoreTargets>
   </PropertyGroup>
 
-  <Import Project="$(MSBuildProjectExtensionsPath)$(MSBuildProjectFile).*.props" />
+  <Import Project="$(MSBuildProjectExtensionsPath)$(MSBuildProjectFile).*.props" Condition="'$(_ProjectExtensionsWereImported)' != 'true'" />
 
   <ItemGroup>
     <PackageReference Include="Wix" Version="$(WixVersion)" />

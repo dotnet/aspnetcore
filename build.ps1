@@ -285,7 +285,10 @@ $RunRestore = if ($NoRestore) { $false }
     else { $true }
 
 # Target selection
-$MSBuildArguments += "/p:_RunRestore=$RunRestore"
+if ($RunRestore) {
+    $MSBuildArguments += "/restore"
+}
+
 $MSBuildArguments += "/p:_RunBuild=$RunBuild"
 $MSBuildArguments += "/p:_RunPack=$Pack"
 $MSBuildArguments += "/p:_RunTests=$Test"

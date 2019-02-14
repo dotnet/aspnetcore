@@ -304,7 +304,7 @@ fi
 [ ! -z "$build_nodejs" ] && msbuild_args[${#msbuild_args[*]}]="-p:BuildNodeJS=$build_nodejs"
 [ ! -z "$build_managed" ] && msbuild_args[${#msbuild_args[*]}]="-p:BuildManaged=$build_managed"
 
-msbuild_args[${#msbuild_args[*]}]="-p:_RunRestore=$run_restore"
+[ "$run_restore" = true ] && msbuild_args[${#msbuild_args[*]}]="-restore"
 msbuild_args[${#msbuild_args[*]}]="-p:_RunBuild=$run_build"
 msbuild_args[${#msbuild_args[*]}]="-p:_RunPack=$run_pack"
 msbuild_args[${#msbuild_args[*]}]="-p:_RunTests=$run_tests"
