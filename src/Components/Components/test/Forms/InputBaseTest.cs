@@ -75,6 +75,36 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
         }
 
         [Fact]
+        public void ExposesEditContextToSubclass()
+        {
+            // Arrange
+            var context = new TestRenderingContext<TestInputComponent<string>>();
+            var model = new TestModel();
+            var editContext = new EditContext(model);
+
+            // Act
+            context.SupplyParameters(editContext, valueExpression: () => model.StringProperty);
+
+            // Assert
+            Assert.Same(editContext, context.Component.EditContext);
+        }
+
+        [Fact]
+        public void ExposesFieldIdentifierToSubclass()
+        {
+            // Arrange
+            var context = new TestRenderingContext<TestInputComponent<string>>();
+            var model = new TestModel();
+            var editContext = new EditContext(model);
+
+            // Act
+            context.SupplyParameters(editContext, valueExpression: () => model.StringProperty);
+
+            // Assert
+            Assert.Equal(FieldIdentifier.Create(() => model.StringProperty), context.Component.FieldIdentifier);
+        }
+
+        [Fact]
         public void CanReadBackChangesToCurrentValue()
         {
             // Arrange
@@ -127,6 +157,23 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
             Assert.Empty(valueChangedCallLog);
         }
 
+        [Fact]
+        public void WritingToCurrentValueNotifiesEditContext()
+        {
+            // Arrange
+            var context = new TestRenderingContext<TestInputComponent<string>>();
+            var model = new TestModel();
+            var editContext = new EditContext(model);
+            context.SupplyParameters(editContext, valueExpression: () => model.StringProperty);
+            Assert.False(editContext.IsModified(() => model.StringProperty));
+
+            // Act
+            context.Component.CurrentValue = "new value";
+
+            // Assert
+            Assert.True(editContext.IsModified(() => model.StringProperty));
+        }
+
         class TestModel
         {
             public string StringProperty { get; set; }
@@ -155,6 +202,10 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
                 get => base.CurrentValue;
                 set { base.CurrentValue = value; }
             }
+
+            public new EditContext EditContext => base.EditContext;
+
+            public new FieldIdentifier FieldIdentifier => base.FieldIdentifier;
         }
 
         class TestComponent : AutoRenderComponent

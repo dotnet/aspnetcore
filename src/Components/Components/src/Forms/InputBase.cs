@@ -14,16 +14,17 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// </summary>
     public abstract class InputBase<T> : ComponentBase
     {
-        private EditContext _fixedEditContext;
-        private FieldIdentifier _fieldIdentifier;
-
-        [CascadingParameter] EditContext EditContext { get; set; }
+        [CascadingParameter] EditContext CascadedEditContext { get; set; }
 
         [Parameter] T Value { get; set; }
 
         [Parameter] Action<T> ValueChanged { get; set; }
 
         [Parameter] Expression<Func<T>> ValueExpression { get; set; }
+
+        protected EditContext EditContext { get; private set; }
+
+        protected FieldIdentifier FieldIdentifier { get; private set; }
 
         /// <summary>
         /// Gets or sets the current value of the input.
@@ -38,6 +39,7 @@ namespace Microsoft.AspNetCore.Components.Forms
                 {
                     Value = value;
                     ValueChanged?.Invoke(value);
+                    EditContext.NotifyFieldChanged(FieldIdentifier);
                 }
             }
         }
@@ -45,7 +47,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <inheritdoc />
         protected override void OnInit()
         {
-            if (EditContext == null)
+            if (CascadedEditContext == null)
             {
                 throw new InvalidOperationException($"{GetType()} requires a cascading parameter " +
                     $"of type {nameof(Forms.EditContext)}. For example, you can use {GetType().FullName} inside " +
@@ -58,14 +60,14 @@ namespace Microsoft.AspNetCore.Components.Forms
                     $"parameter. Normally this is provided automatically when using 'bind-Value'.");
             }
 
-            _fixedEditContext = EditContext;
-            _fieldIdentifier = FieldIdentifier.Create(ValueExpression);
+            EditContext = CascadedEditContext;
+            FieldIdentifier = FieldIdentifier.Create(ValueExpression);
         }
 
         /// <inheritdoc />
         protected override void OnParametersSet()
         {
-            if (EditContext != _fixedEditContext)
+            if (CascadedEditContext != EditContext)
             {
                 // We're not supporting it just because it's messy to be clearing up state and event
                 // handlers for the previous one, and there's no strong use case. If a strong use case
