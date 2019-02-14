@@ -9,7 +9,7 @@
     </ItemGroup>
     <MSBuild Projects="@(ProjectsToTest)"
               Targets="CreateHelixPayload"
-              BuildInParallel="true">
+              BuildInParallel="$(BuildInParallel)">
       <Output TaskParameter="TargetOutputs" ItemName="HelixPayload" />
     </MSBuild>
     <ItemGroup>
@@ -22,6 +22,7 @@
   </Target>
 
   <PropertyGroup>
+    <BuildInParallel>true</BuildInParallel>
     <!-- helix SDK issue https://github.com/dotnet/arcade/issues/1605 -->
     <SkipInvalidConfigurations>true</SkipInvalidConfigurations>
     <HelixSource>pr/aspnet/aspnetcore</HelixSource>

@@ -81,6 +81,8 @@
 
   <Target Name="PrepareForTestAssetPublish" BeforeTargets="PrepareForPublish" Condition="'@(TestAssetPublishProfile->Count())' != '0'">
     <PropertyGroup Condition="'$(HasTestAssetProfile)' == 'true'">
+      <!-- Remove  RuntimeIdentifier from default PublishDir -->
+      <PublishDir Condition="'$(PublishDir)' == '$(OutputPath)$(RuntimeIdentifier)\$(PublishDirName)\'">$(OutputPath)$(PublishDirName)</PublishDir>
       <PublishDir>$(PublishDir)\$(TestAssetOutputName)-$(TestAssetProfile)\</PublishDir>
     </PropertyGroup>
 
