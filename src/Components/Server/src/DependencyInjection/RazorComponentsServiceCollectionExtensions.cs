@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Components.Environment;
 using Microsoft.AspNetCore.Components.Hosting;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Server.Circuits;
@@ -97,11 +98,15 @@ namespace Microsoft.Extensions.DependencyInjection
             // user's configuration. So even if the user has multiple independent server-side
             // Components entrypoints, this lot is the same and repeated registrations are a no-op.
             services.TryAddSingleton<CircuitFactory, DefaultCircuitFactory>();
-            services.TryAddScoped<ICircuitAccessor, DefaultCircuitAccessor>();
             services.TryAddScoped(s => s.GetRequiredService<ICircuitAccessor>().Circuit);
+            services.TryAddScoped<ICircuitAccessor, DefaultCircuitAccessor>();
+
+#pragma warning disable CS0618 // Type or member is obsolete
             services.TryAddScoped<IJSRuntimeAccessor, DefaultJSRuntimeAccessor>();
-            services.TryAddScoped(s => s.GetRequiredService<IJSRuntimeAccessor>().JSRuntime);
-            services.TryAddScoped<IUriHelper, RemoteUriHelper>();
+#pragma warning restore CS0618 // Type or member is obsolete
+            services.TryAddScoped<ComponentEnvironment>();
+            services.TryAddScoped(s => s.GetRequiredService<ComponentEnvironment>().JSRuntime);
+            services.TryAddScoped(s => s.GetRequiredService<ComponentEnvironment>().UriHelper);
 
             // We've discussed with the SignalR team and believe it's OK to have repeated
             // calls to AddSignalR (making the nonfirst ones no-ops). If we want to change

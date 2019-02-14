@@ -1,11 +1,11 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Environment;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         {
             if (htmlHelper == null)
             {
-                throw new System.ArgumentNullException(nameof(htmlHelper));
+                throw new ArgumentNullException(nameof(htmlHelper));
             }
 
             return htmlHelper.RenderComponentAsync<TComponent>(null);
@@ -46,11 +46,19 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         {
             if (htmlHelper == null)
             {
-                throw new System.ArgumentNullException(nameof(htmlHelper));
+                throw new ArgumentNullException(nameof(htmlHelper));
             }
 
-            var serviceProvider = htmlHelper.ViewContext.HttpContext.RequestServices;
-            var encoder = serviceProvider.GetRequiredService<HtmlEncoder>();
+            var httpContext = htmlHelper.ViewContext.HttpContext;
+            var serviceProvider = httpContext.RequestServices;
+            var prerrenderContext = serviceProvider.GetRequiredService<MvcPrerrenderingContext>();
+            var encoder = prerrenderContext.Encoder;
+            prerrenderContext.Environment.Name = ComponentEnvironment.Prerrender;
+            // Add our custom JSRuntime that throws upon invocation. We might need an option here to not throw or log a warning
+            // message instead.
+            prerrenderContext.Environment.JSRuntime = new UnsupportedJavaScriptRuntime();
+            prerrenderContext.Environment.UriHelper = new HttpUriHelper(httpContext);
+
             var dispatcher = Renderer.CreateDefaultDispatcher();
             using (var htmlRenderer = new HtmlRenderer(serviceProvider, encoder.Encode, dispatcher))
             {
@@ -58,26 +66,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                     parameters == null ?
                         ParameterCollection.Empty :
                         ParameterCollection.FromDictionary(HtmlHelper.ObjectToDictionary(parameters))));
-
                 return new ComponentHtmlContent(result);
-            }
-        }
-
-        private class ComponentHtmlContent : IHtmlContent
-        {
-            private readonly IEnumerable<string> _componentResult;
-
-            public ComponentHtmlContent(IEnumerable<string> componentResult)
-            {
-                _componentResult = componentResult;
-            }
-
-            public void WriteTo(TextWriter writer, HtmlEncoder encoder)
-            {
-                foreach (var element in _componentResult)
-                {
-                    writer.Write(element);
-                }
             }
         }
     }

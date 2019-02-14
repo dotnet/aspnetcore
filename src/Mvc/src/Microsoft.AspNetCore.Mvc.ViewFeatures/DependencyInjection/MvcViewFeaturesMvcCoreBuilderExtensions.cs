@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Linq;
+using Microsoft.AspNetCore.Components.Environment;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
@@ -19,6 +20,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures.Filters;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
+using Microsoft.JSInterop;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -199,6 +201,13 @@ namespace Microsoft.Extensions.DependencyInjection
                 ServiceDescriptor.Transient<IApplicationModelProvider, ViewDataAttributeApplicationModelProvider>());
             services.TryAddSingleton<SaveTempDataFilter>();
 
+            //
+            // Component prerrendering
+            //
+            services.TryAddScoped<MvcPrerrenderingContext>();
+            services.TryAddScoped<ComponentEnvironment>();
+            services.TryAddScoped(sp => sp.GetRequiredService<ComponentEnvironment>().JSRuntime);
+            services.TryAddScoped(sp => sp.GetRequiredService<ComponentEnvironment>().UriHelper);
 
             services.TryAddTransient<ControllerSaveTempDataPropertyFilter>();
 

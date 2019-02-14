@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
 
             // On Windows/Linux, we don't need to set opts.BinaryLocation
             // But for Travis Mac builds we do
-            var binaryLocation = Environment.GetEnvironmentVariable("TEST_CHROME_BINARY");
+            var binaryLocation = System.Environment.GetEnvironmentVariable("TEST_CHROME_BINARY");
             if (!string.IsNullOrEmpty(binaryLocation))
             {
                 opts.BinaryLocation = binaryLocation;

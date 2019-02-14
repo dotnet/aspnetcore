@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using Microsoft.AspNetCore.Components.Browser;
 using Microsoft.AspNetCore.Components.Browser.Rendering;
+using Microsoft.AspNetCore.Components.Environment;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
@@ -44,13 +45,15 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
 
             var scope = _scopeFactory.CreateScope();
-            var jsRuntime = new RemoteJSRuntime(client);
+            var environment = scope.ServiceProvider.GetRequiredService<ComponentEnvironment>();
+            InitializeEnvironment(environment, client);
+
             var rendererRegistry = new RendererRegistry();
             var dispatcher = Renderer.CreateDefaultDispatcher();
             var renderer = new RemoteRenderer(
                 scope.ServiceProvider,
                 rendererRegistry,
-                jsRuntime,
+                environment.JSRuntime,
                 client,
                 dispatcher,
                 _loggerFactory.CreateLogger<RemoteRenderer>());
@@ -65,14 +68,23 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 rendererRegistry,
                 renderer,
                 config,
-                jsRuntime,
+                environment.JSRuntime,
                 circuitHandlers);
 
             // Initialize per-circuit data that services need
-            (circuitHost.Services.GetRequiredService<IJSRuntimeAccessor>() as DefaultJSRuntimeAccessor).JSRuntime = jsRuntime;
+#pragma warning disable CS0618 // Type or member is obsolete
+            (circuitHost.Services.GetRequiredService<IJSRuntimeAccessor>() as DefaultJSRuntimeAccessor).JSRuntime = environment.JSRuntime;
+#pragma warning restore CS0618 // Type or member is obsolete
             (circuitHost.Services.GetRequiredService<ICircuitAccessor>() as DefaultCircuitAccessor).Circuit = circuitHost.Circuit;
 
             return circuitHost;
+        }
+
+        private static void InitializeEnvironment(ComponentEnvironment environment, IClientProxy client)
+        {
+            environment.Name = ComponentEnvironment.Remote;
+            environment.JSRuntime = new RemoteJSRuntime(client);
+            environment.UriHelper = new RemoteUriHelper(environment.JSRuntime);
         }
     }
 }
