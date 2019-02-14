@@ -49,16 +49,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public abstract bool TryRead(out ReadResult readResult);
 
-        public virtual void OnWriterCompleted(Action<Exception, object> callback, object state)
-        {
-            _context.InternalRequestBodyPipeReader.OnWriterCompleted(callback, state);
-        }
+        public abstract void OnWriterCompleted(Action<Exception, object> callback, object state);
 
         public abstract void Complete(Exception exception);
 
-        public virtual void CancelPendingRead()
-        {
-        }
+        public abstract void CancelPendingRead();
 
         public abstract ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default);
 

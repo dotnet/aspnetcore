@@ -160,7 +160,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 throw new NotImplementedException();
             }
 
+            public override void CancelPendingRead()
+            {
+                throw new NotImplementedException();
+            }
+
             public override void Complete(Exception exception)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void OnWriterCompleted(Action<Exception, object> callback, object state)
             {
                 throw new NotImplementedException();
             }

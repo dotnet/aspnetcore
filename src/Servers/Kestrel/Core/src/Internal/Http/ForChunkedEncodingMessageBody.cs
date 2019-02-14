@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             // For now, chunking will use the request body pipe
             _requestBodyPipe = CreateRequestBodyPipe(context);
-            context.InternalRequestBodyPipeReader = _requestBodyPipe.Reader;
+            //context.InternalRequestBodyPipeReader = _requestBodyPipe.Reader;
         }
 
         private Pipe CreateRequestBodyPipe(Http1Connection context)
@@ -139,6 +139,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 return Task.CompletedTask;
             }
 
+            // call complete here on the reader
+            _requestBodyPipe.Reader.Complete();
+
             // PumpTask catches all Exceptions internally.
             if (_pumpTask.IsCompleted)
             {
@@ -147,6 +150,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 return Task.CompletedTask;
             }
 
+            // Should I call complete here?
             return StopAsyncAwaited();
         }
 
@@ -534,7 +538,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
         {
             var dataLength = _previousReadResult.Buffer.Slice(_previousReadResult.Buffer.Start, consumed).Length;
-            _context.InternalRequestBodyPipeReader.AdvanceTo(consumed, examined);
+            _requestBodyPipe.Reader.AdvanceTo(consumed, examined);
             OnDataRead(dataLength);
         }
 
@@ -583,7 +587,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // The only difference is which reader to use. Let's do the following.
             // Make an internal reader that will always be used for whatever operation is needed here
             // Keep external one the same always.
-            var readAwaitable = _context.InternalRequestBodyPipeReader.ReadAsync(cancellationToken);
+            var readAwaitable = _requestBodyPipe.Reader.ReadAsync(cancellationToken);
 
             if (!readAwaitable.IsCompleted && _timingEnabled)
             {
@@ -608,7 +612,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public override void Complete(Exception exception)
         {
-            _context.InternalRequestBodyPipeReader.Complete(exception);
+            _requestBodyPipe.Reader.Complete(exception);
+        }
+
+        public override void OnWriterCompleted(Action<Exception, object> callback, object state)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void CancelPendingRead()
+        {
+            throw new NotImplementedException();
         }
 
         private enum Mode

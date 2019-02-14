@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private readonly StreamInputFlowControl _inputFlowControl;
         private readonly StreamOutputFlowControl _outputFlowControl;
 
-        public Pipe RequestBodyPipe { get; }
+        public Pipe RequestPipe { get; }
 
         internal long DrainExpirationTicks { get; set; }
 
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 this,
                 context.ServiceContext.Log);
 
-            RequestBodyPipe = CreateRequestBodyPipe(context.ServerPeerSettings.InitialWindowSize);
+            RequestPipe = CreateRequestBodyPipe(context.ServerPeerSettings.InitialWindowSize);
             Output = _http2Output;
         }
 
@@ -101,13 +101,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     {
                         // Don't block on IO. This never faults.
                         _ = _http2Output.WriteRstStreamAsync(Http2ErrorCode.NO_ERROR);
-                        RequestBodyPipe.Writer.Complete();
+                        RequestPipe.Writer.Complete();
                     }
                 }
 
                 _http2Output.Dispose();
 
-                RequestBodyPipe.Reader.Complete();
+                RequestPipe.Reader.Complete();
 
                 // The app can no longer read any more of the request body, so return any bytes that weren't read to the
                 // connection's flow-control window.
@@ -366,9 +366,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     {
                         foreach (var segment in dataPayload)
                         {
-                            RequestBodyPipe.Writer.Write(segment.Span);
+                            RequestPipe.Writer.Write(segment.Span);
                         }
-                        var flushTask = RequestBodyPipe.Writer.FlushAsync();
+                        var flushTask = RequestPipe.Writer.FlushAsync();
 
                         // It shouldn't be possible for the RequestBodyPipe to fill up an return an incomplete task if
                         // _inputFlowControl.Advance() didn't throw.
@@ -398,7 +398,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 }
             }
 
-            RequestBodyPipe.Writer.Complete();
+            RequestPipe.Writer.Complete();
 
             _inputFlowControl.StopWindowUpdates();
         }
@@ -472,7 +472,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             // Unblock the request body.
             PoisonRequestBodyStream(abortReason);
-            RequestBodyPipe.Writer.Complete(abortReason);
+            RequestPipe.Writer.Complete(abortReason);
 
             _inputFlowControl.Abort();
         }

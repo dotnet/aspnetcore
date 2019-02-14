@@ -167,5 +167,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // Make this noop for now TODO
             _completed = true;
         }
+
+        public override void OnWriterCompleted(Action<Exception, object> callback, object state)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void CancelPendingRead()
+        {
+            throw new NotImplementedException();
+        }
+
+        // TODO maybe override OnStopAsync here.
     }
 }

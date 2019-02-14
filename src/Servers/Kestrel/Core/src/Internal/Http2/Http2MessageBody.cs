@@ -63,13 +63,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
         {
             var dataLength = _previousReadResult.Buffer.Slice(_previousReadResult.Buffer.Start, consumed).Length;
-            _context.RequestBodyPipe.Reader.AdvanceTo(consumed, examined);
+            _context.RequestPipe.Reader.AdvanceTo(consumed, examined);
             OnDataRead(dataLength);
         }
 
         public override bool TryRead(out ReadResult readResult)
         {
-            return _context.RequestBodyPipe.Reader.TryRead(out readResult);
+            return _context.RequestPipe.Reader.TryRead(out readResult);
         }
 
         public override async ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         private ValueTask<ReadResult> StartTimingReadAsync(CancellationToken cancellationToken)
         {
-            var readAwaitable = _context.RequestBodyPipe.Reader.ReadAsync(cancellationToken);
+            var readAwaitable = _context.RequestPipe.Reader.ReadAsync(cancellationToken);
 
             if (!readAwaitable.IsCompleted && _timingEnabled)
             {
@@ -114,7 +114,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public override void Complete(Exception exception)
         {
-            _context.RequestBodyPipe.Reader.Complete(exception);
+            _context.RequestPipe.Reader.Complete(exception);
+        }
+
+        public override void OnWriterCompleted(Action<Exception, object> callback, object state)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void CancelPendingRead()
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override Task OnStopAsync()
+        {
+            if (!_context.HasStartedConsumingRequestBody)
+            {
+                return Task.CompletedTask;
+            }
+
+            // call complete here on the reader
+            _context.RequestPipe.Reader.Complete();
+
+            return Task.CompletedTask;
         }
     }
 }

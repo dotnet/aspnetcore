@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public IHttpResponseControl HttpResponseControl { get; set; }
 
-        public PipeReader InternalRequestBodyPipeReader { get; set; }
+        //public PipeReader InternalRequestBodyPipeReader { get; set; }
 
         public ServiceContext ServiceContext => _context.ServiceContext;
         private IPEndPoint LocalEndPoint => _context.LocalEndPoint;
@@ -193,7 +193,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public IHeaderDictionary RequestHeaders { get; set; }
         public Stream RequestBody { get; set; }
-        public PipeReader RequestBodyPipeReader { get; set; }
+        public PipeReader RequestBodyPipe { get; set; }
 
         private int _statusCode;
         public int StatusCode
@@ -301,7 +301,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 bodyControl = new BodyControl(bodyControl: this, this);
             }
 
-            (RequestBody, ResponseBody, RequestBodyPipeReader, ResponsePipeWriter) = bodyControl.Start(messageBody);
+            (RequestBody, ResponseBody, RequestBodyPipe, ResponsePipeWriter) = bodyControl.Start(messageBody);
         }
 
         public void StopBodies() => bodyControl.Stop();
@@ -652,7 +652,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     // This shouldn't be happening for http1 content length.
                     // Maybe we can go through the body?
-                    InternalRequestBodyPipeReader?.Complete();
+                    //InternalRequestBodyPipeReader?.Complete();
 
                     // Wait for Http1MessageBody.PumpAsync() to call RequestBodyPipe.Writer.Complete().
                     await messageBody.StopAsync();
@@ -695,7 +695,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 return FireOnStartingMayAwait(onStarting);
             }
-
         }
 
         private Task FireOnStartingMayAwait(Stack<KeyValuePair<Func<object, Task>, object>> onStarting)
