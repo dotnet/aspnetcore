@@ -50,14 +50,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         [ConditionalFact]
         public async Task Https_EchoHelloWorld_Success()
         {
-            using (Utilities.CreateDynamicHttpsServer(out var address, httpContext =>
+            using (Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
             {
-                string input = new StreamReader(httpContext.Request.Body).ReadToEnd();
+                var input = await new StreamReader(httpContext.Request.Body).ReadToEndAsync();
                 Assert.Equal("Hello World", input);
-                byte[] body = Encoding.UTF8.GetBytes("Hello World");
+                var body = Encoding.UTF8.GetBytes("Hello World");
                 httpContext.Response.ContentLength = body.Length;
-                httpContext.Response.Body.Write(body, 0, body.Length);
-                return Task.FromResult(0);
+                await httpContext.Response.Body.WriteAsync(body, 0, body.Length);
             }))
             {
                 string response = await SendRequestAsync(address, "Hello World");
