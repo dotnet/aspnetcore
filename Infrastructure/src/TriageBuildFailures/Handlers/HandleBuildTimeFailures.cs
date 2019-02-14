@@ -31,7 +31,8 @@ namespace TriageBuildFailures.Handlers
             "Number of tests 0 is 1 less than the provided threshold",
             "SSL_ERROR_SYSCALL",
             "API rate limit exceeded for user ID",
-            "##[error]"
+            "##[error]",
+            "Missing required variable"
         };
 
         public override async Task<bool> CanHandleFailure(ICIBuild build)
