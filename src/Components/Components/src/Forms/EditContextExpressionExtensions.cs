@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <param name="accessor">Identifies the field whose current validation messages should be returned.</param>
         /// <returns>The current validation messages for the specified field.</returns>
         public static IEnumerable<string> GetValidationMessages(this EditContext editContext, Expression<Func<object>> accessor)
-            => editContext.GetValidationMessages(new FieldIdentifier(accessor));
+            => editContext.GetValidationMessages(FieldIdentifier.Create(accessor));
 
         /// <summary>
         /// Determines whether the specified fields in this <see cref="EditContext"/> has been modified.
@@ -30,6 +30,6 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <param name="accessor">Identifies the field whose current validation messages should be returned.</param>
         /// <returns>True if the field has been modified; otherwise false.</returns>
         public static bool IsModified(this EditContext editContext, Expression<Func<object>> accessor)
-            => editContext.IsModified(new FieldIdentifier(accessor));
+            => editContext.IsModified(FieldIdentifier.Create(accessor));
     }
 }

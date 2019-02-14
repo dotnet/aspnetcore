@@ -3,7 +3,6 @@
 
 using System;
 using System.Linq.Expressions;
-using System.Reflection;
 
 namespace Microsoft.AspNetCore.Components.Forms
 {
@@ -13,6 +12,16 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// </summary>
     public readonly struct FieldIdentifier
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FieldIdentifier"/> structure.
+        /// </summary>
+        /// <param name="accessor">An expression that identifies an object member.</param>
+        public static FieldIdentifier Create<T>(Expression<Func<T>> accessor)
+        {
+            ParseAccessor(accessor, out var model, out var fieldName);
+            return new FieldIdentifier(model, fieldName);
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="FieldIdentifier"/> structure.
         /// </summary>
@@ -38,19 +47,6 @@ namespace Microsoft.AspNetCore.Components.Forms
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="FieldIdentifier"/> structure.
-        /// </summary>
-        /// <param name="accessor">An expression that identifies an object member.</param>
-        public FieldIdentifier(Expression<Func<object>> accessor)
-        {
-            ParseAccessor(accessor, out var model, out var fieldName);
-
-            // Copy to self, enforcing the same invariants as the other constructor
-            var result = new FieldIdentifier(model, fieldName);
-            (Model, FieldName) = (result.Model, result.FieldName);
-        }
-
-        /// <summary>
         /// Gets the object that owns the editable field.
         /// </summary>
         public object Model { get; }
@@ -70,7 +66,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             && otherIdentifier.Model == Model
             && string.Equals(otherIdentifier.FieldName, FieldName, StringComparison.Ordinal);
 
-        private static void ParseAccessor(Expression<Func<object>> accessor, out object model, out string fieldName)
+        private static void ParseAccessor<T>(Expression<Func<T>> accessor, out object model, out string fieldName)
         {
             var accessorBody = accessor.Body;
 

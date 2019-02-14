@@ -105,37 +105,39 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
         }
 
         [Fact]
-        public void CanConstructFromExpression_Property()
+        public void CanCreateFromExpression_Property()
         {
             var model = new TestModel();
-            var fieldIdentifier = new FieldIdentifier(() => model.StringProperty);
+            var fieldIdentifier = FieldIdentifier.Create(() => model.StringProperty);
             Assert.Same(model, fieldIdentifier.Model);
             Assert.Equal(nameof(model.StringProperty), fieldIdentifier.FieldName);
         }
 
         [Fact]
-        public void CanConstructFromExpression_Field()
+        public void CanCreateFromExpression_Field()
         {
             var model = new TestModel();
-            var fieldIdentifier = new FieldIdentifier(() => model.StringField);
+            var fieldIdentifier = FieldIdentifier.Create(() => model.StringField);
             Assert.Same(model, fieldIdentifier.Model);
             Assert.Equal(nameof(model.StringField), fieldIdentifier.FieldName);
         }
 
         [Fact]
-        public void CanConstructFromExpression_WithCastToObject()
+        public void CanCreateFromExpression_WithCastToObject()
         {
-            // This case is needed because value types will implicitly be cast to object
+            // This case is needed because, if a component is declared as receiving
+            // an Expression<Func<object>>, then any value types will be implicitly cast
             var model = new TestModel();
-            var fieldIdentifier = new FieldIdentifier(() => model.IntProperty);
+            Expression<Func<object>> accessor = () => model.IntProperty;
+            var fieldIdentifier = FieldIdentifier.Create(accessor);
             Assert.Same(model, fieldIdentifier.Model);
             Assert.Equal(nameof(model.IntProperty), fieldIdentifier.FieldName);
         }
 
         [Fact]
-        public void CanConstructFromExpression_MemberOfConstantExpression()
+        public void CanCreateFromExpression_MemberOfConstantExpression()
         {
-            var fieldIdentifier = new FieldIdentifier(() => StringPropertyOnThisClass);
+            var fieldIdentifier = FieldIdentifier.Create(() => StringPropertyOnThisClass);
             Assert.Same(this, fieldIdentifier.Model);
             Assert.Equal(nameof(StringPropertyOnThisClass), fieldIdentifier.FieldName);
         }

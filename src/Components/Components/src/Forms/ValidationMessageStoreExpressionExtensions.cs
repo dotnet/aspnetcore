@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <param name="accessor">Identifies the field for which to add the message.</param>
         /// <param name="message">The validation message.</param>
         public static void Add(this ValidationMessageStore store, Expression<Func<object>> accessor, string message)
-            => store.Add(new FieldIdentifier(accessor), message);
+            => store.Add(FieldIdentifier.Create(accessor), message);
 
         /// <summary>
         /// Adds the messages from the specified collection for the specified field.
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <param name="accessor">Identifies the field for which to add the messages.</param>
         /// <param name="messages">The validation messages to be added.</param>
         public static void AddRange(this ValidationMessageStore store, Expression<Func<object>> accessor, IEnumerable<string> messages)
-            => store.AddRange(new FieldIdentifier(accessor), messages);
+            => store.AddRange(FieldIdentifier.Create(accessor), messages);
 
         /// <summary>
         /// Removes all messages within this <see cref="ValidationMessageStore"/> for the specified field.
@@ -36,6 +36,6 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <param name="store">The <see cref="ValidationMessageStore"/>.</param>
         /// <param name="accessor">Identifies the field for which to remove the messages.</param>
         public static void Clear(this ValidationMessageStore store, Expression<Func<object>> accessor)
-            => store.Clear(new FieldIdentifier(accessor));
+            => store.Clear(FieldIdentifier.Create(accessor));
     }
 }

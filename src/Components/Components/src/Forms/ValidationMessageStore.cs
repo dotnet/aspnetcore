@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <param name="accessor">The identifier for the field.</param>
         /// <returns>The validation messages for the specified field within this <see cref="ValidationMessageStore"/>.</returns>
         public IEnumerable<string> this[Expression<Func<object>> accessor]
-            => this[new FieldIdentifier(accessor)];
+            => this[FieldIdentifier.Create(accessor)];
 
         /// <summary>
         /// Removes all messages within this <see cref="ValidationMessageStore"/>.
