@@ -11,10 +11,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Grpc.Core" Version="1.19.0-dev" />
-    <PackageReference Include="Google.Protobuf" Version="3.6.1" />
+    <PackageReference Include="Grpc.Core" Version="${GrpcCorePackageVersion}" />
+    <PackageReference Include="Google.Protobuf" Version="${GoogleProtobufPackageVersion}" />
 
-    <PackageReference Include="Grpc.Tools" Version="1.19.0-dev" PrivateAssets="All" />
+    <PackageReference Include="Grpc.Tools" Version="${GrpcToolsPackageVersion}" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>

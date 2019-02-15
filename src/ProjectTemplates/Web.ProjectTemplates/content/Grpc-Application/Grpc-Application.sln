@@ -6,7 +6,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Grpc-Application.Server", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Grpc-Application.Client", "Grpc-Application.Client\Grpc-Application.Client.csproj", "{5990939C-7E7B-4CFA-86FF-44CA5756498A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Protos", "Protos", "{AC41B2B2-62D9-454E-8521-F71E331B07F3}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Protos", "Protos", "{AC41B2B2-62D9-454E-8521-F71E331B07F3}"
 	ProjectSection(SolutionItems) = preProject
 		Protos\greet.proto = Protos\greet.proto
 	EndProjectSection
