@@ -1,19 +1,14 @@
 <Project DefaultTargets="Test">
 
-  <Import Project="$(RepositoryRoot)\eng\targets\Helix.Common.props" />
-  <Import Project="$(RepositoryRoot)\build\repo.props" />
-
   <!-- Version included until we get global.json generation to support this SDK. -->
   <Sdk Name="Microsoft.DotNet.Helix.Sdk" Version="2.0.0-beta.19073.6" />
 
-  <Target Name="Gather" BeforeTargets="Test">
-    <MSBuild Projects="@(ProjectToBuild)"
-              Targets="CreateHelixPayload"
-              BuildInParallel="$(BuildInParallel)"
-              SkipNonexistentTargets="true">
-      <Output TaskParameter="TargetOutputs" ItemName="HelixWorkItem" />
-    </MSBuild>
-  </Target>
+  <Import Project="$(RepositoryRoot)\eng\targets\Helix.Common.props" />
+  <Import Project="$(RepositoryRoot)\build\repo.props" />
+
+  <ItemGroup>
+    <HelixTargetQueue Include="@(HelixAvailibleTargetQueue)" />
+  </ItemGroup>
 
   <PropertyGroup>
     <BuildInParallel>true</BuildInParallel>
@@ -30,4 +25,14 @@
     <IsExternal>true</IsExternal>
     <Creator>aspnetcore</Creator>
   </PropertyGroup>
+
+  <Target Name="Gather" BeforeTargets="Test">
+    <MSBuild Projects="@(ProjectToBuild)"
+              Targets="CreateHelixPayload"
+              BuildInParallel="$(BuildInParallel)"
+              SkipNonexistentTargets="true">
+      <Output TaskParameter="TargetOutputs" ItemName="HelixWorkItem" />
+    </MSBuild>
+  </Target>
+
 </Project>
