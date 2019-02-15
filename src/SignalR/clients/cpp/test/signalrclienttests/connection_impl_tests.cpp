@@ -321,6 +321,42 @@ TEST(connection_impl_start, start_fails_if_negotiate_response_has_error)
     }
 }
 
+TEST(connection_impl_start, start_fails_if_negotiate_response_does_not_have_websockets)
+{
+    std::shared_ptr<log_writer> writer(std::make_shared<memory_log_writer>());
+
+    auto web_request_factory = std::make_unique<test_web_request_factory>([](const web::uri & url)
+    {
+        auto response_body =
+            url.path() == _XPLATSTR("/negotiate")
+            ? _XPLATSTR("{ \"availableTransports\": [ { \"transport\": \"ServerSentEvents\" } ] }")
+            : _XPLATSTR("");
+
+        return std::unique_ptr<web_request>(new web_request_stub((unsigned short)200, _XPLATSTR("OK"), response_body));
+    });
+
+    pplx::task_completion_event<void> tce;
+    auto websocket_client = std::make_shared<test_websocket_client>();
+    websocket_client->set_connect_function([tce](const web::uri&) mutable
+    {
+        return pplx::task<void>(tce);
+    });
+
+    auto connection =
+        connection_impl::create(create_uri(), _XPLATSTR(""), trace_level::messages, writer,
+            std::move(web_request_factory), std::make_unique<test_transport_factory>(websocket_client));
+
+    try
+    {
+        connection->start().get();
+        ASSERT_TRUE(false); // exception not thrown
+    }
+    catch (const signalr_exception & e)
+    {
+        ASSERT_STREQ("bad negotiate", e.what());
+    }
+}
+
 TEST(connection_impl_start, start_fails_if_connect_request_times_out)
 {
     std::shared_ptr<log_writer> writer(std::make_shared<memory_log_writer>());

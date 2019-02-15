@@ -112,9 +112,26 @@ namespace signalr
                     return pplx::task_from_exception<void>(signalr_exception(negotiation_response.error));
                 }
 
+                // TODO: redirect response
+
                 connection->m_connection_id = std::move(negotiation_response.connectionId);
 
-                // TODO: check available transports
+                // TODO: fallback logic
+
+                bool foundWebsockets = false;
+                for (auto availableTransport : negotiation_response.availableTransports)
+                {
+                    if (availableTransport.transport == _XPLATSTR("WebSockets"))
+                    {
+                        foundWebsockets = true;
+                        break;
+                    }
+                }
+
+                if (!foundWebsockets)
+                {
+                    return pplx::task_from_exception<void>(signalr_exception(_XPLATSTR("WebSockets is the only supported transport currently")));
+                }
 
                 return connection->start_transport()
                     .then([weak_connection](std::shared_ptr<transport> transport)

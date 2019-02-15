@@ -20,11 +20,11 @@ class logger : public signalr::log_writer
 void send_message(signalr::hub_connection& connection, const utility::string_t& name, const utility::string_t& message)
 {
     web::json::value args{};
-    args[0] = web::json::value::string(name);
-    args[1] = web::json::value(message);
+    //args[0] = web::json::value::string(name);
+    args[0] = web::json::value(message);
 
     // if you get an internal compiler error uncomment the lambda below or install VS Update 4
-    connection.invoke(U("Invoke"), args/*, [](const web::json::value&){}*/)
+    connection.invoke(U("Send"), args/*, [](const web::json::value&){}*/)
         .then([](pplx::task<web::json::value> invoke_task)  // fire and forget but we need to observe exceptions
     {
         try
