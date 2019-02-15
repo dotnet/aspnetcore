@@ -8,6 +8,7 @@
 <Project DefaultTargets="Build" InitialTargets="CheckForRequiredProperties">
   <PropertyGroup>
     <SignType>$([MSBuild]::ValueOrDefault($(SignType),'real'))</SignType>
+    <OutputInRepoRoot>true</OutputInRepoRoot>
   </PropertyGroup>
 
   <Import Project="..\..\..\Directory.Build.props" />
