@@ -23,7 +23,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <HelixContent Include="$(RepositoryRoot)eng\scrips\RunPowershell.cmd" />
+        <HelixContent Include="$(RepositoryRoot)eng\scripts\RunPowershell.cmd" />
         <HelixContent Include="$(RepositoryRoot)eng\helix\xunit\runtests.cmd" />
         <HelixContent Include="$(RepositoryRoot)eng\helix\vstest\runtests.sh" />
         <HelixContent Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' AND '$(XunitConsoleRunnerDir)' != ''" Include="$(XunitConsoleRunnerDir)/**/*" />

@@ -1,7 +1,7 @@
 <Project>
 
   <ItemGroup>
-    <Content Include="@(HelixContext)" />
+    <Content Include="@(HelixContent)" />
   </ItemGroup>
 
   <!-- Build the actual helix work items to send to helix queues -->
@@ -26,9 +26,15 @@
 
   </Target>
 
+  <Target Name="_PublishHelixArchive" DependsOnTargets="Publish">
+
+        <ZipDirectory SourceDirectory="$(PublishDir)" DestinationFile="$(PublishDir)../Helix.zip" Overwrite="true" />
+
+  </Target>
+
   <Target Name="_CreateHelixWorkItem" Condition="$(CreateHelixPayload)">
 
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" RemoveProperties="HelixTargetQueue" />
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_PublishHelixArchive" RemoveProperties="HelixTargetQueue" />
 
     <ConvertToAbsolutePath Paths="$(PublishDir)">
       <Output TaskParameter="AbsolutePaths" PropertyName="PublishAbsoluteDir" />
@@ -36,7 +42,7 @@
 
     <ItemGroup>
       <HelixWorkItem Include="$(MSBuildProjectName)-$(TargetFramework)">
-        <PayloadDirectory>$(PublishAbsoluteDir)</PayloadDirectory>
+        <PayloadArchive>$(PublishAbsoluteDir)../Helix.zip</PayloadArchive>
         <TestAssembly>$(TargetFileName)</TestAssembly>
         <PreCommands>@(HelixPreCommand)</PreCommands>
         <PostCommands>@(HelixPostCommand)</PostCommands>
