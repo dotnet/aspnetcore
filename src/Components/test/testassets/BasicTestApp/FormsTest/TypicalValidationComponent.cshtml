@@ -11,6 +11,9 @@
         Age (years): <InputNumber bind-Value="@person.AgeInYears" ValueExpression="@(() => person.AgeInYears)" />
     </p>
     <p>
+        Description: <InputTextArea bind-Value="@person.Description" ValueExpression="@(() => person.Description)" />
+    </p>
+    <p>
         Accepts terms: <InputCheckbox bind-Value="@person.AcceptsTerms" ValueExpression="@(() => person.AcceptsTerms)" />
     </p>
 
@@ -27,7 +30,7 @@
     // Usually this would be in a different file
     class Person
     {
-        [Required]
+        [Required, StringLength(10)]
         public string Name { get; set; }
 
         [Range(0, 200)]
@@ -35,6 +38,9 @@
 
         [Required, Range(typeof(bool), "true", "true", ErrorMessage = "Must accept terms")]
         public bool AcceptsTerms { get; set; }
+
+        [Required, StringLength(20)]
+        public string Description { get; set; }
     }
 
     List<string> submissionLog = new List<string>(); // So we can assert about the callbacks
