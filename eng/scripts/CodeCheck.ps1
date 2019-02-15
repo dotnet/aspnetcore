@@ -16,6 +16,9 @@ $repoRoot = Resolve-Path "$PSScriptRoot/../.."
 [string[]] $errors = @()
 
 function LogError([string]$message) {
+    if ($env:TF_BUILD) {
+        Write-Host "##vso[task.logissue type=error]$message"
+    }
     Write-Host -f Red "error: $message"
     $script:errors += $message
 }
@@ -27,6 +30,7 @@ try {
 
     if ($ci) {
         & $repoRoot/build.ps1 -ci -norestore /t:InstallDotNet
+        . "$repoRoot/activate.ps1"
     }
 
     Write-Host "Checking that Versions.props and Version.Details.xml match"
