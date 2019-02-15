@@ -30,7 +30,7 @@
   </ItemGroup>
 
   <Target Name="PopulateNuspec">
-    <MSBuild Projects="../dotnet-getdocument/dotnet-getdocument.csproj"
+    <MSBuild Projects="../../dotnet-getdocument/src/dotnet-getdocument.csproj"
         BuildInParallel="$(BuildInParallel)"
         RemoveProperties="RuntimeIdentifier;TargetFrameworks;TargetFramework"
         Targets="Publish" />

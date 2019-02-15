@@ -89,6 +89,7 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.WebSockets" ProjectPath="$(RepositoryRoot)src\Middleware\WebSockets\src\Microsoft.AspNetCore.WebSockets.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Razor.Runtime" ProjectPath="$(RepositoryRoot)src\Razor\Razor.Runtime\src\Microsoft.AspNetCore.Razor.Runtime.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Razor" ProjectPath="$(RepositoryRoot)src\Razor\Razor\src\Microsoft.AspNetCore.Razor.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.Extensions.ApiDescription.Tasks" ProjectPath="$(RepositoryRoot)src\Mvc\Extensions.ApiDescription.Design\src\Microsoft.Extensions.ApiDescription.Design.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Abstractions" ProjectPath="$(RepositoryRoot)src\Mvc\Mvc.Abstractions\src\Microsoft.AspNetCore.Mvc.Abstractions.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.ApiExplorer" ProjectPath="$(RepositoryRoot)src\Mvc\Mvc.ApiExplorer\src\Microsoft.AspNetCore.Mvc.ApiExplorer.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Core" ProjectPath="$(RepositoryRoot)src\Mvc\Mvc.Core\src\Microsoft.AspNetCore.Mvc.Core.csproj" />
@@ -105,7 +106,6 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Testing" ProjectPath="$(RepositoryRoot)src\Mvc\Mvc.Testing\src\Microsoft.AspNetCore.Mvc.Testing.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.ViewFeatures" ProjectPath="$(RepositoryRoot)src\Mvc\Mvc.ViewFeatures\src\Microsoft.AspNetCore.Mvc.ViewFeatures.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc" ProjectPath="$(RepositoryRoot)src\Mvc\Mvc\src\Microsoft.AspNetCore.Mvc.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.Extensions.ApiDescription.Tasks" ProjectPath="$(RepositoryRoot)src\Mvc\Extensions.ApiDescription.Design\src\Microsoft.Extensions.ApiDescription.Design.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Authentication.AzureAD.UI" ProjectPath="$(RepositoryRoot)src\Azure\AzureAD\Authentication.AzureAD.UI\src\Microsoft.AspNetCore.Authentication.AzureAD.UI.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Authentication.AzureADB2C.UI" ProjectPath="$(RepositoryRoot)src\Azure\AzureAD\Authentication.AzureADB2C.UI\src\Microsoft.AspNetCore.Authentication.AzureADB2C.UI.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" ProjectPath="$(RepositoryRoot)src\Azure\AzureAppServices.HostingStartup\src\Microsoft.AspNetCore.AzureAppServices.HostingStartup.csproj" />
