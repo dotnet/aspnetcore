@@ -23,10 +23,6 @@ namespace Company.WebApplication1
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder.ConfigureKestrel(options =>
-                    {
-                        options.Limits.MinRequestBodyDataRate = null;
-                    });
                     webBuilder.UseStartup<Startup>();
                 });
     }
