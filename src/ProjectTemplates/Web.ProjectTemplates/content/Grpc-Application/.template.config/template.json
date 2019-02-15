@@ -5,21 +5,24 @@
     "gRPC",
     "ASP.NET"
   ],
-  "name": "ASP.NET Core gRPC Web Application",
+  "name": "ASP.NET Core gRPC Application",
   "generatorVersions": "[1.0.0.0-*)",
   "description": "A project template for creating a gRPC ASP.NET Core application.",
-  "groupIdentity": "Microsoft.Grpc.Web",
+  "groupIdentity": "Microsoft.Grpc",
   "precedence": "5000",
-  "identity": "Microsoft.Grpc.WebApplication.CSharp.3.0",
-  "shortName": "grpc-web",
+  "identity": "Microsoft.Grpc.Application.CSharp.3.0",
+  "shortName": "grpc",
   "tags": {
     "language": "C#",
     "type": "project"
   },
-  "sourceName": "Company.WebApplication1",
+  "sourceName": "Grpc-Application",
   "preferNameDirectory": true,
   "guids": [
-    "53bc9b9d-9d6a-45d4-8429-2a2761773502"
+    "4C26868E-5E7C-458D-82E3-040509D0C71F",
+    "5990939C-7E7B-4CFA-86FF-44CA5756498A",
+    "650B3CE7-2E93-4CC4-9F46-466686815EAA",
+    "AC41B2B2-62D9-454E-8521-F71E331B07F3"
   ],
   "sources": [
     {
@@ -40,27 +43,6 @@
       "defaultValue": "false",
       "description": "Whether to exclude launchSettings.json from the generated template."
     },
-    "Framework": {
-      "type": "parameter",
-      "description": "The target framework for the project.",
-      "datatype": "choice",
-      "choices": [
-        {
-          "choice": "netcoreapp3.0",
-          "description": "Target netcoreapp3.0"
-        }
-      ],
-      "replaces": "netcoreapp3.0",
-      "defaultValue": "netcoreapp3.0"
-    },
-    "copyrightYear": {
-      "type": "generated",
-      "generator": "now",
-      "replaces": "copyrightYear",
-      "parameters": {
-        "format": "yyyy"
-      }
-    },
     "skipRestore": {
       "type": "parameter",
       "datatype": "bool",
@@ -70,10 +52,10 @@
   },
   "primaryOutputs": [
     {
-      "path": "Company.WebApplication1.csproj"
+      "path": "Grpc-Application.sln"
     }
   ],
-  "defaultName": "gRPC-WebApplication1",
+  "defaultName": "gRPC-Application1",
   "postActions": [
     {
       "condition": "(!skipRestore)",
