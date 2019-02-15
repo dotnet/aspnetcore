@@ -42,6 +42,6 @@ TEST(request_sender_negotiate, negotiation_request_sent_and_response_serialized)
 
     auto response = request_sender::negotiate(request_factory, web::uri{ _XPLATSTR("http://fake/signalr") }, _XPLATSTR("")).get();
 
-    ASSERT_EQ(_XPLATSTR("f7707523-307d-4cba-9abf-3eef701241e8"), response.connection_id);
+    ASSERT_EQ(_XPLATSTR("f7707523-307d-4cba-9abf-3eef701241e8"), response.connectionId);
     // TODO: response.availableTransports
 }

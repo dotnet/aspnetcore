@@ -20,11 +20,45 @@ namespace signalr
                 .then([](utility::string_t body)
             {
                 auto negotiation_response_json = web::json::value::parse(body);
-                negotiation_response response
+
+                negotiation_response response;
+
+                if (negotiation_response_json.has_field(_XPLATSTR("error")))
                 {
-                    negotiation_response_json[_XPLATSTR("connectionId")].as_string(),
-                    negotiation_response_json[_XPLATSTR("availableTransports")],
-                };
+                    response.error = negotiation_response_json[_XPLATSTR("error")].as_string();
+                    return std::move(response);
+                }
+
+                if (negotiation_response_json.has_field(_XPLATSTR("connectionId")))
+                {
+                    response.connectionId = negotiation_response_json[_XPLATSTR("connectionId")].as_string();
+                }
+
+                if (negotiation_response_json.has_field(_XPLATSTR("availableTransports")))
+                {
+                    for (auto transportData : negotiation_response_json[_XPLATSTR("availableTransports")].as_array())
+                    {
+                        available_transport transport;
+                        transport.transport = transportData[_XPLATSTR("transport")].as_string();
+
+                        for (auto format : transportData[_XPLATSTR("transferFormats")].as_array())
+                        {
+                            transport.transfer_formats.push_back(format.as_string());
+                        }
+
+                        response.availableTransports.push_back(transport);
+                    }
+                }
+
+                if (negotiation_response_json.has_field(_XPLATSTR("url")))
+                {
+                    response.url = negotiation_response_json[_XPLATSTR("url")].as_string();
+
+                    if (negotiation_response_json.has_field(_XPLATSTR("accessToken")))
+                    {
+                        response.accessToken = negotiation_response_json[_XPLATSTR("accessToken")].as_string();
+                    }
+                }
 
                 return std::move(response);
             });

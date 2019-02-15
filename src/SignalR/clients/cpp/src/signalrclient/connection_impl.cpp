@@ -106,7 +106,13 @@ namespace signalr
                 {
                     return pplx::task_from_exception<void>(_XPLATSTR("connection no longer exists"));
                 }
-                connection->m_connection_id = std::move(negotiation_response.connection_id);
+
+                if (!negotiation_response.error.empty())
+                {
+                    return pplx::task_from_exception<void>(signalr_exception(negotiation_response.error));
+                }
+
+                connection->m_connection_id = std::move(negotiation_response.connectionId);
 
                 // TODO: check available transports
 
