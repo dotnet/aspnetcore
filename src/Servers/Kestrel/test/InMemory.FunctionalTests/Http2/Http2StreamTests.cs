@@ -728,6 +728,110 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public async Task ContentLength_Received_MultipleDataFrame_ReadViaPipe_Verified()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.ContentLength, "12"),
+            };
+            await InitializeConnectionAsync(async context =>
+            {
+                var readResult = await context.Request.BodyPipe.ReadAsync();
+                while (!readResult.IsCompleted)
+                {
+                    context.Request.BodyPipe.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
+                    readResult = await context.Request.BodyPipe.ReadAsync();
+                }
+
+                Assert.Equal(12, readResult.Buffer.Length);
+                context.Request.BodyPipe.AdvanceTo(readResult.Buffer.End);
+            });
+
+            await StartStreamAsync(1, headers, endStream: false);
+            await SendDataAsync(1, new byte[1], endStream: false);
+            await SendDataAsync(1, new byte[3], endStream: false);
+            await SendDataAsync(1, new byte[8], endStream: true);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 55,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
+
+            Assert.Equal(3, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+            Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
+        }
+
+        [Fact]
+        public async Task ContentLength_Received_MultipleDataFrame_ReadViaPipeAndStream_Verified()
+        {
+            var tcs = new TaskCompletionSource<object>();
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.ContentLength, "12"),
+            };
+            await InitializeConnectionAsync(async context =>
+            {
+                var readResult = await context.Request.BodyPipe.ReadAsync();
+                Assert.Equal(1, readResult.Buffer.Length);
+                context.Request.BodyPipe.AdvanceTo(readResult.Buffer.End);
+
+                tcs.SetResult(null);
+
+                var buffer = new byte[100];
+
+                var read = await context.Request.Body.ReadAsync(buffer, 0, buffer.Length);
+                var total = read;
+                while (read > 0)
+                {
+                    read = await context.Request.Body.ReadAsync(buffer, total, buffer.Length - total);
+                    total += read;
+                }
+
+                Assert.Equal(11, total);
+            });
+
+            await StartStreamAsync(1, headers, endStream: false);
+            await SendDataAsync(1, new byte[1], endStream: false);
+            await tcs.Task;
+            await SendDataAsync(1, new byte[3], endStream: false);
+            await SendDataAsync(1, new byte[8], endStream: true);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 55,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
+
+            Assert.Equal(3, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+            Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
+        }
+
+        [Fact]
         public async Task ContentLength_Received_NoDataFrames_Reset()
         {
             var headers = new[]
@@ -909,6 +1013,53 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.NotNull(thrownEx);
             Assert.Equal(expectedError.Message, thrownEx.Message);
             Assert.IsType<Http2StreamErrorException>(thrownEx.InnerException);
+        }
+
+        [Fact]
+        public async Task ContentLength_Received_ReadViaPipes()
+        {
+            await InitializeConnectionAsync(async context =>
+            {
+                var readResult = await context.Request.BodyPipe.ReadAsync();
+                Assert.Equal(12, readResult.Buffer.Length);
+                Assert.True(readResult.IsCompleted);
+                context.Request.BodyPipe.AdvanceTo(readResult.Buffer.End);
+
+                readResult = await context.Request.BodyPipe.ReadAsync();
+                Assert.True(readResult.IsCompleted);
+            });
+
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>("a", _4kHeaderValue),
+                new KeyValuePair<string, string>("b", _4kHeaderValue),
+                new KeyValuePair<string, string>("c", _4kHeaderValue),
+                new KeyValuePair<string, string>("d", _4kHeaderValue),
+                new KeyValuePair<string, string>(HeaderNames.ContentLength, "12"),
+            };
+            await StartStreamAsync(1, headers, endStream: false);
+            await SendDataAsync(1, new byte[12], endStream: true);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 55,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
+
+            Assert.Equal(3, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+            Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
         }
 
         [Fact] // TODO https://github.com/aspnet/AspNetCore/issues/7034

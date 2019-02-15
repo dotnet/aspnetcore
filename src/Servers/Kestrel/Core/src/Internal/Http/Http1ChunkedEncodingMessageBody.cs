@@ -87,6 +87,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public override void Complete(Exception exception)
         {
             _requestBodyPipe.Reader.Complete(exception);
+            _context.ReportApplicationError(exception);
         }
 
         public override void OnWriterCompleted(Action<Exception, object> callback, object state)
