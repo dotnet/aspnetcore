@@ -9,7 +9,38 @@ jasmine.DEFAULT_TIMEOUT_INTERVAL = 10 * 1000;
 describe("WebWorkers", () => {
     it("can use SignalR client", (done) => {
         if (typeof window !== "undefined" && (window as any).Worker) {
-            const worker = new Worker(`${ENDPOINT_BASE_URL}/worker.js`);
+            const workerSrc = `
+                var connection = null;
+
+                onmessage = function (e) {
+                    if (connection === null) {
+                        postMessage('initialized');
+
+                        importScripts(e.data + '/lib/signalr-webworker/signalr.js');
+
+                        connection = new signalR.HubConnectionBuilder()
+                            .withUrl(e.data + '/testhub')
+                            .build();
+
+                        connection.on('message', function (message) {
+                            postMessage('Received message: ' + message);
+                        });
+
+                        connection.start().then(function () {
+                            postMessage('connected');
+                        });
+                    } else if (connection.connectionState == signalR.HubConnectionState.Connected) {
+                        connection.invoke('invokeWithString', e.data);
+                    } else {
+                        postMessage('Attempted to send message while disconnected.')
+                    }
+                }`;
+
+            // Load worker from a blob since workers MUST come from the same origin despite CORS configuration.
+            // https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers#Spawning_subworkers
+            const blob = new Blob([workerSrc], { type: "application/javascript" });
+            const worker = new Worker(URL.createObjectURL(blob));
+
             const testMessage = "Hello World!";
 
             const initWorkerTimeout = setTimeout(() => {
