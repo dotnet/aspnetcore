@@ -11,8 +11,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     public abstract class MessageBody
     {
-        private static readonly MessageBody _zeroContentLengthClose = new ForZeroContentLength(keepAlive: false);
-        private static readonly MessageBody _zeroContentLengthKeepAlive = new ForZeroContentLength(keepAlive: true);
+        private static readonly MessageBody _zeroContentLengthClose = new ZeroContentLengthMessageBody(keepAlive: false);
+        private static readonly MessageBody _zeroContentLengthKeepAlive = new ZeroContentLengthMessageBody(keepAlive: true);
 
         private readonly HttpProtocol _context;
         private readonly MinDataRate _minRequestBodyDataRate;

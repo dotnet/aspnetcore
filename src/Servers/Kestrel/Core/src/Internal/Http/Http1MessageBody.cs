@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     BadHttpRequestException.Throw(RequestRejectionReason.UpgradeRequestCannotHavePayload);
                 }
 
-                return new ForUpgrade(context);
+                return new Http1UpgradeMessageBody(context);
             }
 
             if (headers.HasTransferEncoding)
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 // TODO may push more into the wrapper rather than just calling into the message body
                 // NBD for now.
-                return new ForChunkedEncoding(keepAlive, context);
+                return new Http1ChunkedEncodingMessageBody(keepAlive, context);
             }
 
             if (headers.ContentLength.HasValue)
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     return keepAlive ? MessageBody.ZeroContentLengthKeepAlive : MessageBody.ZeroContentLengthClose;
                 }
 
-                return new ForContentLength(keepAlive, contentLength, context);
+                return new Http1ContentLengthMessageBody(keepAlive, contentLength, context);
             }
 
             // If we got here, request contains no Content-Length or Transfer-Encoding header.

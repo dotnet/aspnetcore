@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    public class ForZeroContentLength : MessageBody
+    public class ZeroContentLengthMessageBody : MessageBody
     {
-        public ForZeroContentLength(bool keepAlive)
+        public ZeroContentLengthMessageBody(bool keepAlive)
             : base(null, null)
         {
             RequestKeepAlive = keepAlive;

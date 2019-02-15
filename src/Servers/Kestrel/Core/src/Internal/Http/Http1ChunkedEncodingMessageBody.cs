@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     /// <summary>
     ///   http://tools.ietf.org/html/rfc2616#section-3.6.1
     /// </summary>
-    public class ForChunkedEncoding : Http1MessageBody
+    public class Http1ChunkedEncodingMessageBody : Http1MessageBody
     {
         // byte consts don't have a data type annotation so we pre-cast it
         private const byte ByteCR = (byte)'\r';
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private Pipe _requestBodyPipe;
         private ReadResult _readResult;
 
-        public ForChunkedEncoding(bool keepAlive, Http1Connection context)
+        public Http1ChunkedEncodingMessageBody(bool keepAlive, Http1Connection context)
             : base(context)
         {
             RequestKeepAlive = keepAlive;
@@ -56,14 +56,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             TryStart();
 
-            var res = _requestBodyPipe.Reader.TryRead(out _readResult);
+            var boolResult = _requestBodyPipe.Reader.TryRead(out _readResult);
+
             readResult = _readResult;
 
             if (_readResult.IsCompleted)
             {
                 TryStop();
             }
-            return res;
+
+            return boolResult;
         }
 
         public override async ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
@@ -72,9 +74,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             _readResult = await StartTimingReadAsync(cancellationToken);
 
-            var readableBuffer = _readResult.Buffer;
-            var readableBufferLength = readableBuffer.Length;
-            StopTimingRead(readableBufferLength);
+            StopTimingRead(_readResult.Buffer.Length);
 
             if (_readResult.IsCompleted)
             {

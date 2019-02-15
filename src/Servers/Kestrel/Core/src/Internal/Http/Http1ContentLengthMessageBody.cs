@@ -11,16 +11,15 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    // Think this is close to good
-    public class ForContentLength : Http1MessageBody
+    public class Http1ContentLengthMessageBody : Http1MessageBody
     {
         private readonly long _contentLength;
         private long _inputLength;
-        private ReadResult _readResult; // TODO we can probably make this in Http1MessageBody or even MessageBody
+        private ReadResult _readResult;
         private bool _completed;
         private int _userCanceled;
 
-        public ForContentLength(bool keepAlive, long contentLength, Http1Connection context)
+        public Http1ContentLengthMessageBody(bool keepAlive, long contentLength, Http1Connection context)
             : base(context)
         {
             RequestKeepAlive = keepAlive;
@@ -30,10 +29,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public override async ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
         {
-            if (_completed)
-            {
-                throw new InvalidOperationException("Reading is not allowed after the reader was completed.");
-            }
+            ThrowIfCompleted();
 
             if (_inputLength == 0)
             {
@@ -95,31 +91,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
             }
 
-            // handle cases where we send more data than the content length
-            if (_readResult.Buffer.Length > _inputLength)
-            {
-                _readResult = new ReadResult(_readResult.Buffer.Slice(0, _inputLength), _readResult.IsCanceled, isCompleted: true);
-
-            }
-            else if (_readResult.Buffer.Length == _inputLength)
-            {
-                _readResult = new ReadResult(_readResult.Buffer, _readResult.IsCanceled, isCompleted: true);
-            }
-
-            if (_readResult.IsCompleted)
-            {
-                TryStop();
-            }
+            _readResult = CreateReadResultFromConnectionReadResult();
 
             return _readResult;
         }
 
         public override bool TryRead(out ReadResult readResult)
         {
-            if (_completed)
-            {
-                throw new InvalidOperationException("Reading is not allowed after the reader was completed.");
-            }
+            ThrowIfCompleted();
 
             if (_inputLength == 0)
             {
@@ -131,6 +110,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             var boolResult = _context.Input.TryRead(out _readResult);
 
+            readResult = CreateReadResultFromConnectionReadResult();
+
+            return boolResult;
+        }
+
+        private void ThrowIfCompleted()
+        {
+            if (_completed)
+            {
+                throw new InvalidOperationException("Reading is not allowed after the reader was completed.");
+            }
+        }
+
+        private ReadResult CreateReadResultFromConnectionReadResult()
+        {
+            ReadResult readResult;
             if (_readResult.Buffer.Length > _inputLength)
             {
                 _readResult = new ReadResult(_readResult.Buffer.Slice(0, _inputLength), _readResult.IsCanceled, isCompleted: true);
@@ -148,7 +143,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 TryStop();
             }
 
-            return boolResult;
+            return readResult;
         }
 
         public override void AdvanceTo(SequencePosition consumed)
@@ -164,8 +159,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             var dataLength = _readResult.Buffer.Slice(_readResult.Buffer.Start, consumed).Length;
+
             _inputLength -= dataLength;
+
             _context.Input.AdvanceTo(consumed, examined);
+
             OnDataRead(dataLength);
         }
 
