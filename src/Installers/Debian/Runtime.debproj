@@ -9,7 +9,7 @@
 
   <!-- Output paths -->
   <PropertyGroup>
-    <BaseIntermediateOutputPath>$(RepositoryRoot)obj\Debian\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+    <BaseIntermediateOutputPath>$(ArtifactsObjDir)Debian\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(TargetRuntimeIdentifier)\</IntermediateOutputPath>
     <!-- Must be named "package_root/". This is expected by the build.sh script in this project. -->
     <IntermediatePackageRoot>$(IntermediateOutputPath)package_root\</IntermediatePackageRoot>
