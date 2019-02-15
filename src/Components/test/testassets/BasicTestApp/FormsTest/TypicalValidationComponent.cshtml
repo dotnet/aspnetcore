@@ -17,6 +17,15 @@
         Renewal date: <InputDate bind-Value="@person.RenewalDate" ValueExpression="@(() => person.RenewalDate)" />
     </p>
     <p>
+        Ticket class:
+        <InputSelect bind-Value="@person.TicketClass" ValueExpression="@(() => person.TicketClass)">
+            <option>(select)</option>
+            <option value="@TicketClass.Economy">Economy class</option>
+            <option value="@TicketClass.Premium">Premium class</option>
+            <option value="@TicketClass.First">First class</option>
+        </InputSelect>
+    </p>
+    <p>
         Accepts terms: <InputCheckbox bind-Value="@person.AcceptsTerms" ValueExpression="@(() => person.AcceptsTerms)" />
     </p>
 
@@ -46,7 +55,12 @@
 
         [Required, StringLength(20)]
         public string Description { get; set; }
+
+        [Required, EnumDataType(typeof(TicketClass))]
+        public TicketClass TicketClass { get; set; }
     }
+
+    enum TicketClass { Economy, Premium, First }
 
     List<string> submissionLog = new List<string>(); // So we can assert about the callbacks
 
