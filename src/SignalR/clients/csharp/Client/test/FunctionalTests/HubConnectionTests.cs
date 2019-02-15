@@ -903,7 +903,12 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         [MemberData(nameof(TransportTypes))]
         public async Task ClientWillFailAuthEndPointIfNotAuthorized(HttpTransportType transportType)
         {
-            using (StartServer<Startup>(out var server))
+            bool ExpectedErrors(WriteContext writeContext)
+            {
+                return writeContext.Exception is HttpRequestException;
+            }
+
+            using (StartServer<Startup>(out var server, ExpectedErrors))
             {
                 var hubConnection = new HubConnectionBuilder()
                     .WithLoggerFactory(LoggerFactory)

@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     return context.Response.WriteAsync(GenerateJwtToken());
                 });
 
-                routes.MapGet("/redirect", context =>
+                routes.Map("/redirect/{*anything}", context =>
                 {
                     return context.Response.WriteAsync(JsonConvert.SerializeObject(new
                     {
