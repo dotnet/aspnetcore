@@ -21,9 +21,7 @@
   <Target Name="_SetCreateHelixPayload">
 
     <PropertyGroup>
-      <_AllProjectQueues>@(HelixProjectTargetQueue)</_AllProjectQueues>
-      <CreateHelixPayload Condition="'$(CreateHelixPayload)' == '' AND '$(_AllProjectQueues.Contains($(HelixTargetQueue)))'">true</CreateHelixPayload>
-      <CreateHelixPayload Condition="'$(CreateHelixPayload)' == ''">false</CreateHelixPayload>
+      <CreateHelixPayload Condition="'@(HelixProjectTargetQueue.WithMetadataValue('Identity', '$(HelixTargetQueue)').Count())' == '0'">false</CreateHelixPayload>
     </PropertyGroup>
 
   </Target>

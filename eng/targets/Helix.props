@@ -10,6 +10,7 @@
     </ItemDefinitionGroup>
 
     <PropertyGroup>
+        <CreateHelixPayload>true</CreateHelixPayload>
         <IsWindowsHelixQueue>$(HelixTargetQueue.Contains('Windows'))</IsWindowsHelixQueue>
         <XunitConsoleRunnerDir Condition="'$(XunitConsole472Path)' != ''">$([System.IO.Path]::GetDirectoryName($(XunitConsole472Path)))</XunitConsoleRunnerDir>
     </PropertyGroup>
