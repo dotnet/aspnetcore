@@ -893,12 +893,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 return InitializeResponseAwaited(startingTask, firstWriteByteCount);
             }
 
-            if (_applicationException != null)
-            {
-                ThrowResponseAbortedException();
-            }
+            VerifyInitializeState(firstWriteByteCount);
 
-            VerifyAndUpdateWrite(firstWriteByteCount);
             ProduceStart(appCompleted: false);
 
             return Task.CompletedTask;
@@ -909,13 +905,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             await startingTask;
 
-            if (_applicationException != null)
-            {
-                ThrowResponseAbortedException();
-            }
+            VerifyInitializeState(firstWriteByteCount);
 
-            VerifyAndUpdateWrite(firstWriteByteCount);
             ProduceStart(appCompleted: false);
+        }
+
+        private HttpResponseHeaders InitializeResponseFirstWrite(int firstWriteByteCount)
+        {
+            VerifyInitializeState(firstWriteByteCount);
+
+            var responseHeaders = CreateResponseHeaders(appCompleted: false);
+
+            // InitializeResponse can only be called if we are just about to Flush the headers
+            _requestProcessingStatus = RequestProcessingStatus.HeadersFlushed;
+
+            return responseHeaders;
         }
 
         private void ProduceStart(bool appCompleted)
@@ -927,7 +931,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             _requestProcessingStatus = RequestProcessingStatus.HeadersCommitted;
 
-            CreateResponseHeader(appCompleted);
+            var responseHeaders = CreateResponseHeaders(appCompleted);
+
+            Output.WriteResponseHeaders(StatusCode, ReasonPhrase, responseHeaders, _autoChunk);
+        }
+
+        private void VerifyInitializeState(int firstWriteByteCount)
+        {
+            if (_applicationException != null)
+            {
+                ThrowResponseAbortedException();
+            }
+
+            VerifyAndUpdateWrite(firstWriteByteCount);
         }
 
         protected Task TryProduceInvalidRequestResponse()
@@ -1022,7 +1038,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        private void CreateResponseHeader(bool appCompleted)
+        private HttpResponseHeaders CreateResponseHeaders(bool appCompleted)
         {
             var responseHeaders = HttpResponseHeaders;
             var hasConnection = responseHeaders.HasConnection;
@@ -1114,7 +1130,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 responseHeaders.SetRawDate(dateHeaderValues.String, dateHeaderValues.Bytes);
             }
 
-            Output.WriteResponseHeaders(StatusCode, ReasonPhrase, responseHeaders, _autoChunk);
+            return responseHeaders;
         }
 
         private bool CanWriteResponseBody()
@@ -1264,7 +1280,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 HandleNonBodyResponseWrite();
 
                 // For HEAD requests, we still use the number of bytes written for logging
-                // how many bytes were written. 
+                // how many bytes were written.
                 VerifyAndUpdateWrite(bytes);
             }
         }
@@ -1330,18 +1346,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public ValueTask<FlushResult> WritePipeAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
         {
             // For the first write, ensure headers are flushed if WriteDataAsync isn't called.
-            var firstWrite = !HasResponseStarted;
-
-            if (firstWrite)
+            if (!HasResponseStarted)
             {
-                var initializeTask = InitializeResponseAsync(data.Length);
-                // Just about to Flush the headers
-                _requestProcessingStatus = RequestProcessingStatus.HeadersFlushed;
-                // If return is Task.CompletedTask no awaiting is required
-                if (!ReferenceEquals(initializeTask, Task.CompletedTask))
-                {
-                    return WriteAsyncAwaited(initializeTask, data, cancellationToken);
-                }
+                return FirstWriteAsync(data, cancellationToken);
             }
             else
             {
@@ -1354,7 +1361,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     if (data.Length == 0)
                     {
-                        return !firstWrite ? default : Output.FlushAsync(cancellationToken);
+                        return default;
                     }
 
                     return Output.WriteChunkAsync(data.Span, cancellationToken);
@@ -1368,7 +1375,58 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             else
             {
                 HandleNonBodyResponseWrite();
-                return !firstWrite ? default : Output.FlushAsync(cancellationToken);
+                return default;
+            }
+        }
+
+        private ValueTask<FlushResult> FirstWriteAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+        {
+            Debug.Assert(!HasResponseStarted);
+
+            var startingTask = FireOnStarting();
+
+            if (!ReferenceEquals(startingTask, Task.CompletedTask))
+            {
+                return FirstWriteAsyncAwaited(startingTask, data, cancellationToken);
+            }
+
+            return FirstWriteAsyncInternal(data, cancellationToken);
+        }
+
+        private async ValueTask<FlushResult> FirstWriteAsyncAwaited(Task initializeTask, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+        {
+            await initializeTask;
+
+            return await FirstWriteAsyncInternal(data, cancellationToken);
+        }
+
+        private ValueTask<FlushResult> FirstWriteAsyncInternal(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
+        {
+            var responseHeaders = InitializeResponseFirstWrite(data.Length);
+
+            if (_canWriteResponseBody)
+            {
+                if (_autoChunk)
+                {
+                    if (data.Length == 0)
+                    {
+                        Output.WriteResponseHeaders(StatusCode, ReasonPhrase, responseHeaders, _autoChunk);
+                        return Output.FlushAsync(cancellationToken);
+                    }
+
+                    return Output.FirstWriteChunkedAsync(StatusCode, ReasonPhrase, responseHeaders, _autoChunk, data.Span, cancellationToken);
+                }
+                else
+                {
+                    CheckLastWrite();
+                    return Output.FirstWriteAsync(StatusCode, ReasonPhrase, responseHeaders, _autoChunk, data.Span, cancellationToken);
+                }
+            }
+            else
+            {
+                Output.WriteResponseHeaders(StatusCode, ReasonPhrase, responseHeaders, _autoChunk);
+                HandleNonBodyResponseWrite();
+                return Output.FlushAsync(cancellationToken);
             }
         }
 
