@@ -10,11 +10,6 @@ param()
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 1
 
-$ancmSchemaFiles = @(
-    "aspnetcore_schema.xml",
-    "aspnetcore_schema_v2.xml"
-)
-
 $ancmSchemaFileLocation = Join-Path $PSScriptRoot "aspnetcore_schema_v2.xml";
 if (!(Test-Path $ancmSchemaFileLocation))
 {
@@ -44,30 +39,31 @@ if (-not $isAdmin -and -not $WhatIfPreference) {
     }
 }
 
-for ($i=0; $i -lt $ancmSchemaFiles.Length; $i++)
-{
-    $schemaFile = $ancmSchemaFiles[$i]
-    $schemaSource = $ancmSchemaFileLocation
 
-    $destinations = @(
-        "${env:ProgramFiles(x86)}\IIS Express\config\schema\",
-        "${env:ProgramFiles}\IIS Express\config\schema\",
-        "${env:windir}\system32\inetsrv\config\schema\"
-    )
+$schemaFile = "aspnetcore_schema.xml"
+$schemaSource = $ancmSchemaFileLocation
 
-    foreach ($destPath in $destinations) {
-        $dest = "$destPath\${schemaFile}";
 
-        if (!(Test-Path $destPath))
-        {
-            Write-Host "$destPath doesn't exist"
-            continue;
-        }
 
-        if ($PSCmdlet.ShouldProcess($dest, "Replace file")) {
-            Write-Host "Updated $dest"
-            Move-Item $dest "${dest}.bak" -ErrorAction Ignore
-            Copy-Item $schemaSource $dest
-        }
+$destinations = @(
+    "${env:ProgramFiles(x86)}\IIS Express\config\schema\",
+    "${env:ProgramFiles}\IIS Express\config\schema\",
+    "${env:ProgramW6432}\IIS Express\config\schema\",
+    "${env:windir}\system32\inetsrv\config\schema\"
+)
+
+foreach ($destPath in $destinations) {
+    $dest = "$destPath\${schemaFile}";
+
+    if (!(Test-Path $destPath))
+    {
+        Write-Host "$destPath doesn't exist"
+        continue;
+    }
+
+    if ($PSCmdlet.ShouldProcess($dest, "Replace file")) {
+        Write-Host "Updated $dest"
+        Move-Item $dest "${dest}.bak" -ErrorAction Ignore
+        Copy-Item $schemaSource $dest
     }
 }

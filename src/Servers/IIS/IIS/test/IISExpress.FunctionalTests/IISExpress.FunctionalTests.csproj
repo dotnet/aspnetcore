@@ -17,7 +17,7 @@
     <HelixPreCommand Include="call RunPowershell.cmd update_schema.ps1" />
     <HelixPreCommand Include="call RunPowershell.cmd UpdateIISExpressCertificate.ps1" />
 
-    <HelixProjectTargetQueue Include="Windows.10.Amd64.EnterpriseRS3.ASPNET.Open" />
+    <HelixTimeout>01:00:00</HelixTimeout>
   </ItemGroup>
 
   <ItemGroup>

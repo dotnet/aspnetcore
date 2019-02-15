@@ -11,6 +11,7 @@
 
     <PropertyGroup>
         <CreateHelixPayload>true</CreateHelixPayload>
+        <HelixTimeout>00:30:00</HelixTimeout>
         <IsWindowsHelixQueue>$(HelixTargetQueue.Contains('Windows'))</IsWindowsHelixQueue>
         <XunitConsoleRunnerDir Condition="'$(XunitConsole472Path)' != ''">$([System.IO.Path]::GetDirectoryName($(XunitConsole472Path)))</XunitConsoleRunnerDir>
     </PropertyGroup>

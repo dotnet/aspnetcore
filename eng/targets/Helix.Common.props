@@ -1,6 +1,8 @@
 <Project>
     <!-- this file is shared between Helix.proj and .csproj files -->
     <ItemGroup>
+
+        <HelixAvailibleTargetQueue Include="Windows.10.Amd64.EnterpriseRS3.ASPNET.Open" />
         <HelixAvailibleTargetQueue Include="Windows.10.Amd64.ClientRS4.VS2017.Open" />
         <HelixAvailibleTargetQueue Include="OSX.1012.Amd64.Open" />
         <HelixAvailibleTargetQueue Include="Ubuntu.1810.Amd64.Open" />
