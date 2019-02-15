@@ -89,23 +89,23 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.WebSockets" ProjectPath="$(RepositoryRoot)src\Middleware\WebSockets\src\Microsoft.AspNetCore.WebSockets.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Razor.Runtime" ProjectPath="$(RepositoryRoot)src\Razor\Razor.Runtime\src\Microsoft.AspNetCore.Razor.Runtime.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Razor" ProjectPath="$(RepositoryRoot)src\Razor\Razor\src\Microsoft.AspNetCore.Razor.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Abstractions" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.Abstractions\Microsoft.AspNetCore.Mvc.Abstractions.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.ApiExplorer" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.ApiExplorer\Microsoft.AspNetCore.Mvc.ApiExplorer.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Core" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.Core\Microsoft.AspNetCore.Mvc.Core.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Cors" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.Cors\Microsoft.AspNetCore.Mvc.Cors.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.DataAnnotations" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.DataAnnotations\Microsoft.AspNetCore.Mvc.DataAnnotations.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Formatters.Json" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.Formatters.Json\Microsoft.AspNetCore.Mvc.Formatters.Json.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Formatters.Xml" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.Formatters.Xml\Microsoft.AspNetCore.Mvc.Formatters.Xml.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Localization" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.Localization\Microsoft.AspNetCore.Mvc.Localization.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.NewtonsoftJson\Microsoft.AspNetCore.Mvc.NewtonsoftJson.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation\Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.RazorPages" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.RazorPages\Microsoft.AspNetCore.Mvc.RazorPages.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Razor" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.Razor\Microsoft.AspNetCore.Mvc.Razor.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.TagHelpers" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.TagHelpers\Microsoft.AspNetCore.Mvc.TagHelpers.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Testing" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.Testing\Microsoft.AspNetCore.Mvc.Testing.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.ViewFeatures" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc.ViewFeatures\Microsoft.AspNetCore.Mvc.ViewFeatures.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.AspNetCore.Mvc\Microsoft.AspNetCore.Mvc.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.Extensions.ApiDescription.Tasks" ProjectPath="$(RepositoryRoot)src\Mvc\src\Microsoft.Extensions.ApiDescription.Design\Microsoft.Extensions.ApiDescription.Design.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Abstractions" ProjectPath="$(RepositoryRoot)src\Mvc\Mvc.Abstractions\src\Microsoft.AspNetCore.Mvc.Abstractions.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.ApiExplorer" ProjectPath="$(RepositoryRoot)src\Mvc\Mvc.ApiExplorer\src\Microsoft.AspNetCore.Mvc.ApiExplorer.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Core" ProjectPath="$(RepositoryRoot)src\Mvc\Mvc.Core\src\Microsoft.AspNetCore.Mvc.Core.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Cors" ProjectPath="$(RepositoryRoot)src\Mvc\Mvc.Cors\src\Microsoft.AspNetCore.Mvc.Cors.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.DataAnnotations" ProjectPath="$(RepositoryRoot)src\Mvc\Mvc.DataAnnotations\src\Microsoft.AspNetCore.Mvc.DataAnnotations.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Formatters.Json" ProjectPath="$(RepositoryRoot)src\Mvc\Mvc.Formatters.Json\src\Microsoft.AspNetCore.Mvc.Formatters.Json.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Formatters.Xml" ProjectPath="$(RepositoryRoot)src\Mvc\Mvc.Formatters.Xml\src\Microsoft.AspNetCore.Mvc.Formatters.Xml.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Localization" ProjectPath="$(RepositoryRoot)src\Mvc\Mvc.Localization\src\Microsoft.AspNetCore.Mvc.Localization.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" ProjectPath="$(RepositoryRoot)src\Mvc\Mvc.NewtonsoftJson\src\Microsoft.AspNetCore.Mvc.NewtonsoftJson.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" ProjectPath="$(RepositoryRoot)src\Mvc\Mvc.Razor.RuntimeCompilation\src\Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.RazorPages" ProjectPath="$(RepositoryRoot)src\Mvc\Mvc.RazorPages\src\Microsoft.AspNetCore.Mvc.RazorPages.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Razor" ProjectPath="$(RepositoryRoot)src\Mvc\Mvc.Razor\src\Microsoft.AspNetCore.Mvc.Razor.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.TagHelpers" ProjectPath="$(RepositoryRoot)src\Mvc\Mvc.TagHelpers\src\Microsoft.AspNetCore.Mvc.TagHelpers.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Testing" ProjectPath="$(RepositoryRoot)src\Mvc\Mvc.Testing\src\Microsoft.AspNetCore.Mvc.Testing.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.ViewFeatures" ProjectPath="$(RepositoryRoot)src\Mvc\Mvc.ViewFeatures\src\Microsoft.AspNetCore.Mvc.ViewFeatures.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc" ProjectPath="$(RepositoryRoot)src\Mvc\Mvc\src\Microsoft.AspNetCore.Mvc.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.Extensions.ApiDescription.Tasks" ProjectPath="$(RepositoryRoot)src\Mvc\Extensions.ApiDescription.Design\src\Microsoft.Extensions.ApiDescription.Design.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Authentication.AzureAD.UI" ProjectPath="$(RepositoryRoot)src\Azure\AzureAD\Authentication.AzureAD.UI\src\Microsoft.AspNetCore.Authentication.AzureAD.UI.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Authentication.AzureADB2C.UI" ProjectPath="$(RepositoryRoot)src\Azure\AzureAD\Authentication.AzureADB2C.UI\src\Microsoft.AspNetCore.Authentication.AzureADB2C.UI.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" ProjectPath="$(RepositoryRoot)src\Azure\AzureAppServices.HostingStartup\src\Microsoft.AspNetCore.AzureAppServices.HostingStartup.csproj" />

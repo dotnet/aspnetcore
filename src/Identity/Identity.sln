@@ -65,7 +65,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Rewrit
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.StaticFiles", "..\Middleware\StaticFiles\src\Microsoft.AspNetCore.StaticFiles.csproj", "{0FB4E0D1-6822-44EB-99EB-EBAADEDFFFBE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc", "..\Mvc\src\Microsoft.AspNetCore.Mvc\Microsoft.AspNetCore.Mvc.csproj", "{A20AC82F-1F82-41ED-86AD-FF12A157DA0D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc", "..\Mvc\Mvc\src\Microsoft.AspNetCore.Mvc.csproj", "{A20AC82F-1F82-41ED-86AD-FF12A157DA0D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Antiforgery", "..\Antiforgery\src\Microsoft.AspNetCore.Antiforgery.csproj", "{40D18785-1336-41AD-8577-EF20D3F96EC8}"
 EndProject
@@ -117,27 +117,27 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.HttpOv
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Localization", "..\Middleware\Localization\src\Microsoft.AspNetCore.Localization.csproj", "{5F5CCADC-2485-4CD1-8311-A68293FD415F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Abstractions", "..\Mvc\src\Microsoft.AspNetCore.Mvc.Abstractions\Microsoft.AspNetCore.Mvc.Abstractions.csproj", "{E577FDF3-AC0A-4D07-8A6D-1DAFA9379261}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Abstractions", "..\Mvc\Mvc.Abstractions\src\Microsoft.AspNetCore.Mvc.Abstractions.csproj", "{E577FDF3-AC0A-4D07-8A6D-1DAFA9379261}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Analyzers", "..\Mvc\src\Microsoft.AspNetCore.Mvc.Analyzers\Microsoft.AspNetCore.Mvc.Analyzers.csproj", "{20FF8D33-45D1-40F4-BEAF-A529290C1A17}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Analyzers", "..\Mvc\Mvc.Analyzers\src\Microsoft.AspNetCore.Mvc.Analyzers.csproj", "{20FF8D33-45D1-40F4-BEAF-A529290C1A17}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.ApiExplorer", "..\Mvc\src\Microsoft.AspNetCore.Mvc.ApiExplorer\Microsoft.AspNetCore.Mvc.ApiExplorer.csproj", "{174C92E9-EA25-4416-BF1E-19F48FE2A472}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.ApiExplorer", "..\Mvc\Mvc.ApiExplorer\src\Microsoft.AspNetCore.Mvc.ApiExplorer.csproj", "{174C92E9-EA25-4416-BF1E-19F48FE2A472}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Core", "..\Mvc\src\Microsoft.AspNetCore.Mvc.Core\Microsoft.AspNetCore.Mvc.Core.csproj", "{03EE3372-4CA3-4615-BDCA-1B34F098CE82}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Core", "..\Mvc\Mvc.Core\src\Microsoft.AspNetCore.Mvc.Core.csproj", "{03EE3372-4CA3-4615-BDCA-1B34F098CE82}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Cors", "..\Mvc\src\Microsoft.AspNetCore.Mvc.Cors\Microsoft.AspNetCore.Mvc.Cors.csproj", "{E36B945B-B787-4BD3-8293-10FED0D6479E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Cors", "..\Mvc\Mvc.Cors\src\Microsoft.AspNetCore.Mvc.Cors.csproj", "{E36B945B-B787-4BD3-8293-10FED0D6479E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.DataAnnotations", "..\Mvc\src\Microsoft.AspNetCore.Mvc.DataAnnotations\Microsoft.AspNetCore.Mvc.DataAnnotations.csproj", "{87A10D30-9188-4596-9479-750D7D459FF1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.DataAnnotations", "..\Mvc\Mvc.DataAnnotations\src\Microsoft.AspNetCore.Mvc.DataAnnotations.csproj", "{87A10D30-9188-4596-9479-750D7D459FF1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Localization", "..\Mvc\src\Microsoft.AspNetCore.Mvc.Localization\Microsoft.AspNetCore.Mvc.Localization.csproj", "{344224B0-FBFB-4253-B9A8-27F6A8310AFE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Localization", "..\Mvc\Mvc.Localization\src\Microsoft.AspNetCore.Mvc.Localization.csproj", "{344224B0-FBFB-4253-B9A8-27F6A8310AFE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Razor", "..\Mvc\src\Microsoft.AspNetCore.Mvc.Razor\Microsoft.AspNetCore.Mvc.Razor.csproj", "{AE76EC89-F6D1-4DC6-9005-416CE844DFD7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Razor", "..\Mvc\Mvc.Razor\src\Microsoft.AspNetCore.Mvc.Razor.csproj", "{AE76EC89-F6D1-4DC6-9005-416CE844DFD7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.RazorPages", "..\Mvc\src\Microsoft.AspNetCore.Mvc.RazorPages\Microsoft.AspNetCore.Mvc.RazorPages.csproj", "{F7E6FF46-9C2F-4436-9D08-1C53116324A9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.RazorPages", "..\Mvc\Mvc.RazorPages\src\Microsoft.AspNetCore.Mvc.RazorPages.csproj", "{F7E6FF46-9C2F-4436-9D08-1C53116324A9}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.TagHelpers", "..\Mvc\src\Microsoft.AspNetCore.Mvc.TagHelpers\Microsoft.AspNetCore.Mvc.TagHelpers.csproj", "{C00BD37E-E4BE-4395-8367-37E0A48193FF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.TagHelpers", "..\Mvc\Mvc.TagHelpers\src\Microsoft.AspNetCore.Mvc.TagHelpers.csproj", "{C00BD37E-E4BE-4395-8367-37E0A48193FF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.ViewFeatures", "..\Mvc\src\Microsoft.AspNetCore.Mvc.ViewFeatures\Microsoft.AspNetCore.Mvc.ViewFeatures.csproj", "{C6E58980-524F-4EA5-B1F4-8E4921F7FDB1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.ViewFeatures", "..\Mvc\Mvc.ViewFeatures\src\Microsoft.AspNetCore.Mvc.ViewFeatures.csproj", "{C6E58980-524F-4EA5-B1F4-8E4921F7FDB1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor", "..\Razor\Razor\src\Microsoft.AspNetCore.Razor.csproj", "{B00267C8-5CE0-4262-8305-BD483C769F12}"
 EndProject
@@ -169,11 +169,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authen
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.OAuth", "..\Security\Authentication\OAuth\src\Microsoft.AspNetCore.Authentication.OAuth.csproj", "{6851694F-D440-41A1-8B89-37FB5919850B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.NewtonsoftJson", "..\Mvc\src\Microsoft.AspNetCore.Mvc.NewtonsoftJson\Microsoft.AspNetCore.Mvc.NewtonsoftJson.csproj", "{5F087B72-577F-4280-8718-E3ADB325A0C1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.NewtonsoftJson", "..\Mvc\Mvc.NewtonsoftJson\src\Microsoft.AspNetCore.Mvc.NewtonsoftJson.csproj", "{5F087B72-577F-4280-8718-E3ADB325A0C1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.JsonPatch", "..\Features\JsonPatch\src\Microsoft.AspNetCore.JsonPatch.csproj", "{DEE09DF3-DFBF-4651-A562-88C2592C9E16}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Testing", "..\Mvc\src\Microsoft.AspNetCore.Mvc.Testing\Microsoft.AspNetCore.Mvc.Testing.csproj", "{0B3EC292-625E-4C3A-984A-DF41A3501CEE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Testing", "..\Mvc\Mvc.Testing\src\Microsoft.AspNetCore.Mvc.Testing.csproj", "{0B3EC292-625E-4C3A-984A-DF41A3501CEE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_dependencies", "_dependencies", "{22A687BB-5170-4312-97CD-0FECA1C3FE98}"
 EndProject

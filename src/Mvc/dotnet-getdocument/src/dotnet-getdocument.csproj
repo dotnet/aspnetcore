@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>dotnet-getdocument</AssemblyName>
+    <Description>GetDocument Command-line Tool outside man</Description>
+    <EnableApiCheck>false</EnableApiCheck>
+    <IsPackable>false</IsPackable>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Microsoft.Extensions.ApiDescription.Tool</RootNamespace>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <UseAppHost>false</UseAppHost>
+    <VerifyVersion>false</VerifyVersion>
+    <VersionPrefix>$(ExperimentalVersionPrefix)</VersionPrefix>
+    <VersionSuffix>$(ExperimentalVersionSuffix)</VersionSuffix>
+    <IsImplementationProject>false</IsImplementationProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="../../GetDocumentInsider/src/Ansi*.cs" />
+    <Compile Include="../../GetDocumentInsider/src/CommandException.cs" />
+    <Compile Include="../../GetDocumentInsider/src/CommandLineUtils/*.cs" LinkBase="CommandLineUtils" />
+    <Compile Include="../../GetDocumentInsider/src/Commands/CommandBase.cs" Link="Commands/CommandBase.cs" />
+    <Compile Include="../../GetDocumentInsider/src/Commands/HelpCommandBase.cs" Link="Commands/HelpCommandBase.cs" />
+    <Compile Include="../../GetDocumentInsider/src/ProductInfo.cs" />
+    <Compile Include="../../GetDocumentInsider/src/Reporter.cs" />
+
+    <EmbeddedResource Include="ServiceProjectReferenceMetadata.targets" />
+
+    <Reference Include="Newtonsoft.Json" />
+  </ItemGroup>
+</Project>
