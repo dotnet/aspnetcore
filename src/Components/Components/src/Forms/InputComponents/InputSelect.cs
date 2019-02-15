@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         {
             base.BuildRenderTree(builder);
             builder.OpenElement(0, "select");
-            builder.AddAttribute(2, "class", CssClass);
+            builder.AddAttribute(2, "class", FieldClass);
             builder.AddAttribute(3, "value", BindMethods.GetValue(CurrentValueAsString));
             builder.AddAttribute(4, "onchange", BindMethods.SetValueHandler(__value => CurrentValueAsString = __value, CurrentValueAsString));
             builder.AddContent(5, ChildContent);

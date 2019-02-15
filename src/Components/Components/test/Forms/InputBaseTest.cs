@@ -201,7 +201,7 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
         }
 
         [Fact]
-        public async Task SuppliesCssClassCorrespondingToFieldState()
+        public async Task SuppliesFieldClassCorrespondingToFieldState()
         {
             // Arrange
             var model = new TestModel();
@@ -214,24 +214,24 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
 
             // Act/Assert: Initally, it's valid and unmodified
             var inputComponent = await RenderAndGetTestInputComponentAsync(rootComponent);
-            Assert.Equal("valid", inputComponent.CssClass);
+            Assert.Equal("valid", inputComponent.FieldClass);
 
             // Act/Assert: Modify the field
             rootComponent.EditContext.NotifyFieldChanged(fieldIdentifier);
-            Assert.Equal("modified valid", inputComponent.CssClass);
+            Assert.Equal("modified valid", inputComponent.FieldClass);
 
             // Act/Assert: Make it invalid
             var messages = new ValidationMessageStore(rootComponent.EditContext);
             messages.Add(fieldIdentifier, "I do not like this value");
-            Assert.Equal("modified invalid", inputComponent.CssClass);
+            Assert.Equal("modified invalid", inputComponent.FieldClass);
 
             // Act/Assert: Clear the modification flag
             rootComponent.EditContext.MarkAsUnmodified(fieldIdentifier);
-            Assert.Equal("invalid", inputComponent.CssClass);
+            Assert.Equal("invalid", inputComponent.FieldClass);
 
             // Act/Assert: Make it valid
             messages.Clear();
-            Assert.Equal("valid", inputComponent.CssClass);
+            Assert.Equal("valid", inputComponent.FieldClass);
         }
 
         [Fact]
@@ -371,7 +371,7 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
 
             public new FieldIdentifier FieldIdentifier => base.FieldIdentifier;
 
-            public new string CssClass => base.CssClass;
+            public new string FieldClass => base.FieldClass;
         }
 
         class TestDateInputComponent : TestInputComponent<DateTime>

@@ -141,21 +141,8 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// Gets a string that indicates the status of the field being edited. This will include
         /// some combination of "modified", "valid", or "invalid", depending on the status of the field.
         /// </summary>
-        protected string CssClass
-        {
-            get
-            {
-                var isValid = !EditContext.GetValidationMessages(FieldIdentifier).Any();
-                if (EditContext.IsModified(FieldIdentifier))
-                {
-                    return isValid ? "modified valid" : "modified invalid";
-                }
-                else
-                {
-                    return isValid ? "valid" : "invalid";
-                }
-            }
-        }
+        protected string FieldClass
+            => EditContext.FieldClass(FieldIdentifier);
 
         /// <inheritdoc />
         public override Task SetParametersAsync(ParameterCollection parameters)
