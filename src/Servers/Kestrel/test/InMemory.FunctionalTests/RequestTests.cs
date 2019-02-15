@@ -612,9 +612,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             {
                 using (var connection = server.CreateConnection())
                 {
-                    // Use Send instead of SendEnd to ensure the connection will remain open while
-                    // the app runs and reads 0 bytes from the body nonetheless. This checks that
-                    // https://github.com/aspnet/KestrelHttpServer/issues/1104 is not regressing.
                     await connection.Send(
                         "GET / HTTP/1.1",
                         "Host:",
@@ -663,9 +660,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             {
                 using (var connection = server.CreateConnection())
                 {
-                    // Use Send instead of SendEnd to ensure the connection will remain open while
-                    // the app runs and reads 0 bytes from the body nonetheless. This checks that
-                    // https://github.com/aspnet/KestrelHttpServer/issues/1104 is not regressing.
                     await connection.Send(
                         "GET / HTTP/1.1",
                         "Host:",
@@ -715,9 +709,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             {
                 using (var connection = server.CreateConnection())
                 {
-                    // Use Send instead of SendEnd to ensure the connection will remain open while
-                    // the app runs and reads 0 bytes from the body nonetheless. This checks that
-                    // https://github.com/aspnet/KestrelHttpServer/issues/1104 is not regressing.
                     await connection.SendAll(
                         "POST / HTTP/1.0",
                         "Host:",
