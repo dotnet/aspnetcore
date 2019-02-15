@@ -1391,17 +1391,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
 
-            return FirstWriteAsyncInternal(data, responseHeaders, cancellationToken);
+            return FirstWriteAsyncInternal(data, cancellationToken);
         }
 
         private async ValueTask<FlushResult> FirstWriteAsyncAwaited(Task initializeTask, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
         {
             await initializeTask;
 
-            return await FirstWriteAsyncInternal(data, responseHeaders, cancellationToken);
+            return await FirstWriteAsyncInternal(data, cancellationToken);
         }
 
-        private ValueTask<FlushResult> FirstWriteAsyncInternal(ReadOnlyMemory<byte> data, HttpResponseHeaders responseHeaders, CancellationToken cancellationToken)
+        private ValueTask<FlushResult> FirstWriteAsyncInternal(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
         {
             var responseHeaders = InitializeResponseFirstWrite(data.Length);
 
