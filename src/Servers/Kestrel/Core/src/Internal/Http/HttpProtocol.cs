@@ -62,7 +62,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         protected string _methodText = null;
         private string _scheme = null;
 
-
         private List<IDisposable> _wrapperObjectsToDispose;
 
         public HttpProtocol(HttpConnectionContext context)
@@ -74,8 +73,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         public IHttpResponseControl HttpResponseControl { get; set; }
-
-        //public PipeReader InternalRequestBodyPipeReader { get; set; }
 
         public ServiceContext ServiceContext => _context.ServiceContext;
         private IPEndPoint LocalEndPoint => _context.LocalEndPoint;
@@ -1246,6 +1243,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public void ReportApplicationError(Exception ex)
         {
+            // ReportApplicationError can be called with a null exception from MessageBody
             if (ex == null)
             {
                 return;

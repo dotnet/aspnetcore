@@ -486,6 +486,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var body = Http1MessageBody.For(HttpVersion.Http10, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
                 var reader = new HttpRequestPipeReader();
                 var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), reader);
+                reader.StartAcceptingReads(body);
 
                 input.Add("Hello");
 
@@ -518,18 +519,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public async Task ConsumeAsyncConsumesAllRemainingInputAfterStartingTryReadWithoutAdvance()
+        public async Task ConsumeAsyncAbortsConnectionInputAfterStartingTryReadWithoutAdvance()
         {
             using (var input = new TestInput())
             {
                 var body = Http1MessageBody.For(HttpVersion.Http10, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
 
                 input.Add("Hello");
+
                 body.TryRead(out var readResult);
 
-                await body.ConsumeAsync(); // This will throw because someone called try read without advance.
-
-                Assert.True((await body.ReadAsync()).IsCompleted);
+                await body.ConsumeAsync();
 
                 await body.StopAsync();
             }
@@ -686,6 +686,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
                 var reader = new HttpRequestPipeReader();
                 var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), reader);
+                reader.StartAcceptingReads(body);
 
                 // Add some input and read it to start PumpAsync
                 input.Add("a");
@@ -1071,15 +1072,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var reader = new HttpRequestPipeReader();
                 reader.StartAcceptingReads(body);
 
-                var retVal = false;
-                reader.OnWriterCompleted((a, b) => retVal = true, null);
+                var tcs = new TaskCompletionSource<object>();
+                reader.OnWriterCompleted((a, b) => tcs.SetResult(null), null);
 
                 input.Add("0\r\n\r\n");
 
                 Assert.True(reader.TryRead(out var readResult));
 
                 Assert.True(readResult.IsCompleted);
-                Assert.True(retVal);
+                Assert.Null(await tcs.Task.DefaultTimeout());
 
                 await body.StopAsync();
             }

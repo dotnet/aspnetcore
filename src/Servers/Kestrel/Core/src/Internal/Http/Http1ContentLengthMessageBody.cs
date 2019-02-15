@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
             }
 
-            _readResult = CreateReadResultFromConnectionReadResult();
+            CreateReadResultFromConnectionReadResult();
 
             return _readResult;
         }
@@ -110,7 +110,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             var boolResult = _context.Input.TryRead(out _readResult);
 
-            readResult = CreateReadResultFromConnectionReadResult();
+            CreateReadResultFromConnectionReadResult();
+
+            readResult = _readResult;
 
             return boolResult;
         }
@@ -123,27 +125,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        private ReadResult CreateReadResultFromConnectionReadResult()
+        private void CreateReadResultFromConnectionReadResult()
         {
-            ReadResult readResult;
             if (_readResult.Buffer.Length > _inputLength)
             {
                 _readResult = new ReadResult(_readResult.Buffer.Slice(0, _inputLength), _readResult.IsCanceled, isCompleted: true);
-
             }
             else if (_readResult.Buffer.Length == _inputLength)
             {
                 _readResult = new ReadResult(_readResult.Buffer, _readResult.IsCanceled, isCompleted: true);
             }
 
-            readResult = _readResult;
-
             if (_readResult.IsCompleted)
             {
                 TryStop();
             }
-
-            return readResult;
         }
 
         public override void AdvanceTo(SequencePosition consumed)
@@ -238,11 +234,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         return Task.CompletedTask;
                     }
                 }
-            }
-            catch (OperationCanceledException)
-            {
-                // TryRead can throw OperationCanceledException https://github.com/dotnet/corefx/issues/32029
-                // because of buggy logic, this works around that for now
             }
             catch (BadHttpRequestException ex)
             {

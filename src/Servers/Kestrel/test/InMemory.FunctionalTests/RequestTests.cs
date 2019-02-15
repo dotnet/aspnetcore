@@ -733,21 +733,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                 }
 
-                using (var connection = server.CreateConnection())
-                {
-                    await connection.Send(
-                        "GET / HTTP/1.0",
-                        "Host:",
-                        "",
-                        "");
-                    await connection.ReceiveEnd(
-                        "HTTP/1.1 200 OK",
-                        "Connection: close",
-                        $"Date: {testContext.DateHeaderValue}",
-                        "Content-Length: 0",
-                        "",
-                        "");
-                }
                 await server.StopAsync();
             }
         }

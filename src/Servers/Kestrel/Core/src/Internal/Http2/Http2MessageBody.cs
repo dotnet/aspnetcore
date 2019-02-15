@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
     public class Http2MessageBody : MessageBody
     {
         private readonly Http2Stream _context;
-        private ReadResult _previousReadResult;
+        private ReadResult _readResult;
 
         private Http2MessageBody(Http2Stream context, MinDataRate minRequestBodyDataRate)
             : base(context, minRequestBodyDataRate)
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
         {
-            var dataLength = _previousReadResult.Buffer.Slice(_previousReadResult.Buffer.Start, consumed).Length;
+            var dataLength = _readResult.Buffer.Slice(_readResult.Buffer.Start, consumed).Length;
             _context.RequestPipe.Reader.AdvanceTo(consumed, examined);
             OnDataRead(dataLength);
         }
@@ -76,15 +76,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             TryStart();
 
-            _previousReadResult = await StartTimingReadAsync(cancellationToken);
-            StopTimingRead(_previousReadResult.Buffer.Length);
+            _readResult = await StartTimingReadAsync(cancellationToken);
+            StopTimingRead(_readResult.Buffer.Length);
 
-            if (_previousReadResult.IsCompleted)
+            if (_readResult.IsCompleted)
             {
                 TryStop();
             }
 
-            return _previousReadResult;
+            return _readResult;
         }
 
         private ValueTask<ReadResult> StartTimingReadAsync(CancellationToken cancellationToken)
