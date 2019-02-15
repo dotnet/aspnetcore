@@ -1280,7 +1280,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 HandleNonBodyResponseWrite();
 
                 // For HEAD requests, we still use the number of bytes written for logging
-                // how many bytes were written. 
+                // how many bytes were written.
                 VerifyAndUpdateWrite(bytes);
             }
         }
@@ -1346,9 +1346,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public ValueTask<FlushResult> WritePipeAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
         {
             // For the first write, ensure headers are flushed if WriteDataAsync isn't called.
-            var firstWrite = !HasResponseStarted;
-
-            if (firstWrite)
+            if (!HasResponseStarted)
             {
                 return FirstWriteAsync(data, cancellationToken);
             }
@@ -1392,7 +1390,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 return FirstWriteAsyncAwaited(startingTask, data, cancellationToken);
             }
 
-            var responseHeaders = InitializeResponseFirstWrite(data.Length);
 
             return FirstWriteAsyncInternal(data, responseHeaders, cancellationToken);
         }
@@ -1401,13 +1398,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             await initializeTask;
 
-            var responseHeaders = InitializeResponseFirstWrite(data.Length);
-
             return await FirstWriteAsyncInternal(data, responseHeaders, cancellationToken);
         }
 
         private ValueTask<FlushResult> FirstWriteAsyncInternal(ReadOnlyMemory<byte> data, HttpResponseHeaders responseHeaders, CancellationToken cancellationToken)
         {
+            var responseHeaders = InitializeResponseFirstWrite(data.Length);
+
             if (_canWriteResponseBody)
             {
                 if (_autoChunk)
