@@ -17,6 +17,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
+    [SkipOnHelix] // https://github.com/aspnet/AspNetCore-Internal/issues/1816
     public class HttpsTests
     {
         [ConditionalFact]
