@@ -30,7 +30,6 @@ try {
 
     if ($ci) {
         & $repoRoot/build.ps1 -ci -norestore /t:InstallDotNet
-        . "$repoRoot/activate.ps1"
     }
 
     Write-Host "Checking that Versions.props and Version.Details.xml match"
