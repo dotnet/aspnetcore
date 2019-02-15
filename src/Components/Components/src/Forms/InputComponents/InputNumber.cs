@@ -18,33 +18,37 @@ namespace Microsoft.AspNetCore.Components.Forms
         // Determine the parsing logic once per T and cache it, so we don't have to consider all the possible types on each parse
         static InputNumber()
         {
-            if (typeof(T) == typeof(short))
+            // Unwrap Nullable<T>, because InputBase already deals with the Nullable aspect
+            // of it for us. We will only get asked to parse the T for nonempty inputs.
+            var targetType = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
+
+            if (targetType == typeof(short))
             {
                 _parser = TryParseShort;
             }
-            else if (typeof(T) == typeof(int))
+            else if (targetType == typeof(int))
             {
                 _parser = TryParseInt;
             }
-            else if (typeof(T) == typeof(long))
+            else if (targetType == typeof(long))
             {
                 _parser = TryParseLong;
             }
-            else if (typeof(T) == typeof(float))
+            else if (targetType == typeof(float))
             {
                 _parser = TryParseFloat;
             }
-            else if (typeof(T) == typeof(double))
+            else if (targetType == typeof(double))
             {
                 _parser = TryParseDouble;
             }
-            else if (typeof(T) == typeof(decimal))
+            else if (targetType == typeof(decimal))
             {
                 _parser = TryParseDecimal;
             }
             else
             {
-                throw new InvalidOperationException($"The type '{typeof(T)}' is not a supported numeric type.");
+                throw new InvalidOperationException($"The type '{targetType}' is not a supported numeric type.");
             }
         }
 

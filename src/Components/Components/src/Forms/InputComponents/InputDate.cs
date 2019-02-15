@@ -6,10 +6,6 @@ using System;
 
 namespace Microsoft.AspNetCore.Components.Forms
 {
-    // TODO: Consider support for Nullable<DateTime>, Nullable<DateTimeOffset>
-    //       otherwise it may be impossible to have optional date inputs
-    //       Maybe it's possible to support Nullable<T> for arbitrary T:struct in InputBase, so all the InputNumber cases work with it too
-
     /// <summary>
     /// An input component for editing date values.
     /// Supported types are <see cref="DateTime"/> and <see cref="DateTimeOffset"/>.
@@ -35,36 +31,36 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <inheritdoc />
         protected override string FormatValueAsString(T value)
         {
-            if (typeof(T) == typeof(DateTime))
+            switch (value)
             {
-                return ((DateTime)(object)value).ToString(dateFormat);
-            }
-            else if (typeof(T) == typeof(DateTimeOffset))
-            {
-                return ((DateTimeOffset)(object)value).ToString(dateFormat);
-            }
-            else
-            {
-                throw new InvalidOperationException($"The type '{typeof(T)}' is not a supported date type.");
+                case DateTime dateTimeValue:
+                    return dateTimeValue.ToString(dateFormat);
+                case DateTimeOffset dateTimeOffsetValue:
+                    return dateTimeOffsetValue.ToString(dateFormat);
+                default:
+                    return string.Empty; // Handles null for Nullable<DateTime>, etc.
             }
         }
 
         /// <inheritdoc />
         protected override bool TryParseValueFromString(string value, out T result, out string validationErrorMessage)
         {
-            bool success;
+            // Unwrap nullable types. We don't have to deal with receiving empty values for nullable
+            // types here, because the underlying InputBase already covers that.
+            var targetType = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
 
-            if (typeof(T) == typeof(DateTime))
+            bool success;
+            if (targetType == typeof(DateTime))
             {
                 success = TryParseDateTime(value, out result);
             }
-            else if (typeof (T) == typeof(DateTimeOffset))
+            else if (targetType == typeof(DateTimeOffset))
             {
                 success = TryParseDateTimeOffset(value, out result);
             }
             else
             {
-                throw new InvalidOperationException($"The type '{typeof(T)}' is not a supported date type.");
+                throw new InvalidOperationException($"The type '{targetType}' is not a supported date type.");
             }
 
             if (success)

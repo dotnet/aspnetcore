@@ -11,10 +11,16 @@
         Age (years): <InputNumber bind-Value="@person.AgeInYears" ValueExpression="@(() => person.AgeInYears)" />
     </p>
     <p>
+        Height (optional): <InputNumber bind-Value="@person.OptionalHeight" ValueExpression="@(() => person.OptionalHeight)" />
+    </p>
+    <p>
         Description: <InputTextArea bind-Value="@person.Description" ValueExpression="@(() => person.Description)" />
     </p>
     <p>
         Renewal date: <InputDate bind-Value="@person.RenewalDate" ValueExpression="@(() => person.RenewalDate)" />
+    </p>
+    <p>
+        Expiry date (optional): <InputDate bind-Value="@person.OptionalExpiryDate" ValueExpression="@(() => person.OptionalExpiryDate)" />
     </p>
     <p>
         Ticket class:
@@ -48,7 +54,11 @@
         [Range(0, 200)]
         public int AgeInYears { get; set; }
 
+        public float? OptionalHeight { get; set; }
+
         public DateTime RenewalDate { get; set; } = DateTime.Now;
+
+        public DateTimeOffset? OptionalExpiryDate { get; set; }
 
         [Required, Range(typeof(bool), "true", "true", ErrorMessage = "Must accept terms")]
         public bool AcceptsTerms { get; set; }

@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.Components.Forms
     {
         private bool _previousParsingAttemptFailed;
         private ValidationMessageStore _parsingValidationMessages;
+        private Type _nullableUnderlyingType;
 
         [CascadingParameter] EditContext CascadedEditContext { get; set; }
 
@@ -78,7 +79,16 @@ namespace Microsoft.AspNetCore.Components.Forms
                 _parsingValidationMessages?.Clear();
 
                 bool parsingFailed;
-                if (TryParseValueFromString(value, out var parsedValue, out var validationErrorMessage))
+
+                if (_nullableUnderlyingType != null && string.IsNullOrEmpty(value))
+                {
+                    // Assume if it's a nullable type, null/empty inputs should correspond to default(T)
+                    // Then all subclasses get nullable support almost automatically (they just have to
+                    // not reject Nullable<T> based on the type itself).
+                    parsingFailed = false;
+                    CurrentValue = default;
+                }
+                else if (TryParseValueFromString(value, out var parsedValue, out var validationErrorMessage))
                 {
                     parsingFailed = false;
                     CurrentValue = parsedValue;
@@ -172,6 +182,7 @@ namespace Microsoft.AspNetCore.Components.Forms
 
                 EditContext = CascadedEditContext;
                 FieldIdentifier = FieldIdentifier.Create(ValueExpression);
+                _nullableUnderlyingType = Nullable.GetUnderlyingType(typeof(T));
             }
             else if (CascadedEditContext != EditContext)
             {
