@@ -1,15 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="../FunctionalTest.props" />
+
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <TestGroupName>IISForwardsCompatibility.FunctionalTests</TestGroupName>
     <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
     <SkipTests Condition=" '$(SkipIISForwardsCompatibilityTests)' == 'true' ">true</SkipTests>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Content Include="..\Common.FunctionalTests\AppHostConfig\*.config" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Common.Tests\Common.Tests.csproj" />

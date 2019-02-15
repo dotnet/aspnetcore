@@ -1,23 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="../FunctionalTest.props" />
+
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
     <TestGroupName>IISExpress.FunctionalTests</TestGroupName>
     <SkipTests Condition=" '$(SkipIISExpressTests)' == 'true' ">true</SkipTests>
-    <HelixTimeout>01:00:00</HelixTimeout>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Content Include="..\Common.FunctionalTests\AppHostConfig\*.config" CopyToOutputDirectory="PreserveNewest" />
-
-    <HelixContent Include="..\..\..\tools\update_schema.ps1" />
-    <HelixContent Include="..\..\..\tools\UpdateIISExpressCertificate.ps1" />
-    <HelixContent Include="..\..\..\AspNetCoreModuleV2\AspNetCore\aspnetcore_schema_v2.xml" />
-
-    <HelixPreCommand Include="call RunPowershell.cmd update_schema.ps1" />
-    <HelixPreCommand Include="call RunPowershell.cmd UpdateIISExpressCertificate.ps1" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Common.Tests\Common.Tests.csproj" />
@@ -38,18 +29,5 @@
     <Reference Include="Microsoft.Extensions.Logging.Testing" />
     <Reference Include="System.Diagnostics.EventLog" />
   </ItemGroup>
-
-  <Target Name="BuildAssets" AfterTargets="Build">
-    <MSBuild Projects="@(ProjectReference)" Targets="PublishTestsAssets" SkipNonexistentTargets="true" BuildInParallel="True" />
-  </Target>
-
-  <Target Name="PublishAssets" AfterTargets="Publish">
-
-    <ConvertToAbsolutePath Paths="$(PublishDir)">
-      <Output TaskParameter="AbsolutePaths" PropertyName="PublishAbsoluteDir" />
-    </ConvertToAbsolutePath>
-
-    <MSBuild Projects="@(ProjectReference)" Targets="PublishTestsAssets" SkipNonexistentTargets="true" BuildInParallel="True" Properties="PublishDir=$(PublishAbsoluteDir)" />
-  </Target>
 
 </Project>

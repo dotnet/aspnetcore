@@ -16,11 +16,12 @@
         <XunitConsoleRunnerDir Condition="'$(XunitConsole472Path)' != ''">$([System.IO.Path]::GetDirectoryName($(XunitConsole472Path)))</XunitConsoleRunnerDir>
     </PropertyGroup>
 
-    <ItemGroup>
-        <!-- Use all availible queues by default -->
-        <HelixProjectTargetQueue Include="@(HelixAvailibleTargetQueue)" />
-        <!-- Skip non windows queues for .NET Framework targets -->
-        <HelixProjectTargetQueue Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' AND '$(HelixProjectTargetQueue.Contains(Windows))' == 'false'" Remove="'%(HelixProjectTargetQueue.Identity)'" />
+    <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+        <HelixProjectPlatform Include="Windows" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'">
+        <HelixProjectPlatform Include="@(HelixAvailblePlatform)" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">

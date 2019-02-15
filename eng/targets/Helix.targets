@@ -19,16 +19,24 @@
   </Target>
 
   <Target Name="_SetCreateHelixPayload">
+    <PropertyGroup>
+      <_SelectedPlatforms>@(HelixProjectPlatform)</_SelectedPlatforms>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_HelixProjectTargetQueue Include="%(HelixAvailibleTargetQueue.Identity)" Condition="'$(_SelectedPlatforms.Contains(%(Platform)))' == 'true' AND '%(Identity)' == '$(HelixTargetQueue)'" />
+    </ItemGroup>
 
     <PropertyGroup>
-      <CreateHelixPayload Condition="'@(HelixProjectTargetQueue.WithMetadataValue('Identity', '$(HelixTargetQueue)').Count())' == '0'">false</CreateHelixPayload>
+      <CreateHelixPayload Condition="'@(_HelixProjectTargetQueue->Count())' == '0'">false</CreateHelixPayload>
     </PropertyGroup>
 
   </Target>
 
-  <Target Name="_PublishHelixArchive" DependsOnTargets="Publish">
+  <Target Name="_PublishHelixArchive" DependsOnTargets="Publish" >
 
         <ZipDirectory SourceDirectory="$(PublishDir)" DestinationFile="$(PublishDir)../Helix.zip" Overwrite="true" />
+        <Message Importance="High" Text="Deleting $(PublishDir)" />
         <RemoveDir Directories="$(PublishDir)" />
 
   </Target>
@@ -51,7 +59,6 @@
         <Timeout>$(HelixTimeout)</Timeout>
       </HelixWorkItem>
     </ItemGroup>
-
   </Target>
 
   <Target Name="_CreateHelixPayloadInner" Returns="@(HelixWorkItem)" DependsOnTargets="_SetCreateHelixPayload;_CreateHelixWorkItem">
