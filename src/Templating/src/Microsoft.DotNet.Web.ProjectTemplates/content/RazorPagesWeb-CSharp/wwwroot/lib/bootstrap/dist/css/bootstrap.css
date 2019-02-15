@@ -138,14 +138,14 @@ small {
 
 sub,
 sup {
-  position: relative;
   font-size: 75%;
   line-height: 0;
+  position: relative;
   vertical-align: baseline;
 }
 
 sub {
-  bottom: -.25em;
+  bottom: -0.25em;
 }
 
 sup {
@@ -305,6 +305,7 @@ fieldset {
   padding: 0;
   margin: 0;
   border: 0;
+  padding: 0;
 }
 
 legend {
