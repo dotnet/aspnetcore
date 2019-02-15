@@ -7,6 +7,6 @@ namespace Microsoft.AspNetCore.Blazor.Services
 {
     internal static class WebAssemblyJSRuntime
     {
-        public static readonly MonoWebAssemblyJSRuntime Current = new MonoWebAssemblyJSRuntime();
+        public static readonly MonoWebAssemblyJSRuntime Instance = new MonoWebAssemblyJSRuntime();
     }
 }

@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Blazor.Http
             };
 
             options.RequestUri = request.RequestUri.ToString();
-            WebAssemblyJSRuntime.Current.InvokeUnmarshalled<int, byte[], string, object>(
+            WebAssemblyJSRuntime.Instance.InvokeUnmarshalled<int, byte[], string, object>(
                 "Blazor._internal.http.sendAsync",
                 id,
                 request.Content == null ? null : await request.Content.ReadAsByteArrayAsync(),
