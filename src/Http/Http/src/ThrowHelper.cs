@@ -42,5 +42,9 @@ namespace System.IO.Pipelines
         public static void ThrowArgumentOutOfRangeException(string argument) => throw CreateArgumentOutOfRangeException(argument);
         [MethodImpl(MethodImplOptions.NoInlining)]
         public static Exception CreateArgumentOutOfRangeException(string argument) => new ArgumentOutOfRangeException(argument);
+
+        public static void ThrowOperationCanceledException_ReadCanceled() => throw CreateOperationCanceledException_ReadCanceled();
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public static Exception CreateOperationCanceledException_ReadCanceled() => new OperationCanceledException("Read was canceled on underlying PipeReader.");
     }
 }
