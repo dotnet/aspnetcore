@@ -43,6 +43,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             TryStart();
 
+            // The while(true) loop is required because the Http1 connection calls CancelPendingRead to unblock
+            // the call to StartTimingReadAsync to check if the request timed out.
+            // However, if the user called CancelPendingRead, we want that to return a canceled ReadResult
+            // We internally track an int for that.
             while (true)
             {
                 // This isn't great. The issue is that TryRead can get a canceled read result

@@ -171,7 +171,6 @@ namespace System.IO.Pipelines
                 var readableBuffer = result.Buffer;
                 var readableBufferLength = readableBuffer.Length;
 
-                // TODO make this throw if the result is canceled
                 var consumed = readableBuffer.End;
                 var actual = 0;
                 try
