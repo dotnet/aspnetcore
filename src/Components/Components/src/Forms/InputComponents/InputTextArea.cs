@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Components.RenderTree;
 
 namespace Microsoft.AspNetCore.Components.Forms
 {
+    // TODO: Support rows/cols/etc
+
     /* This is exactly equivalent to a .razor file containing:
      *
      *    @inherits InputBase<string>
@@ -15,7 +17,7 @@ namespace Microsoft.AspNetCore.Components.Forms
      */
 
     /// <summary>
-    /// An input component for editing <see cref="string"/> values.
+    /// A multiline input component for editing <see cref="string"/> values.
     /// </summary>
     public class InputTextArea : InputBase<string>
     {

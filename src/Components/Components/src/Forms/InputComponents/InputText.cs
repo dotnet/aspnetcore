@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Components.RenderTree;
 
 namespace Microsoft.AspNetCore.Components.Forms
 {
+    // TODO: Support maxlength etc.
+
     /* This is exactly equivalent to a .razor file containing:
      *
      *    @inherits InputBase<string>
