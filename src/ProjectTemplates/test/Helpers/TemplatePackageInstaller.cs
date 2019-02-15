@@ -103,14 +103,12 @@ namespace Templates.Test.Helpers
             VerifyCannotFindTemplate(output, "angular");
 
             var builtPackages = MondoHelpers.GetNupkgFiles();
-            Assert.NotEmpty(builtPackages);
-            foreach (var packagePath in builtPackages)
+            var templatePackages = builtPackages.Where(b => _templatePackages.Any(t => Path.GetFileName(b).StartsWith(t, StringComparison.OrdinalIgnoreCase));
+            Assert.Equal(4, templatePackages.Count());
+            foreach (var packagePath in templatePackages)
             {
-                if (_templatePackages.Any(name => Path.GetFileName(packagePath).StartsWith(name, StringComparison.OrdinalIgnoreCase)))
-                {
-                    output.WriteLine($"Installing templates package {packagePath}...");
-                    RunDotNetNew(output, $"--install \"{packagePath}\"", assertSuccess: true);
-                }
+                output.WriteLine($"Installing templates package {packagePath}...");
+                RunDotNetNew(output, $"--install \"{packagePath}\"", assertSuccess: true);
             }
             VerifyCanFindTemplate(output, "webapp");
             VerifyCanFindTemplate(output, "web");
