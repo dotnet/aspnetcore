@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Buffers;
-using System.Collections.Concurrent;
 using System.IO.Pipelines;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
@@ -17,183 +17,103 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         private const int OuterLoopCount = 64;
         private const int OperationsPerInvoke = InnerLoopCount * OuterLoopCount;
 
-        private readonly int IOQueueCount = Math.Min(Environment.ProcessorCount, 16);
+        private readonly static int IOQueueCount = Math.Min(Environment.ProcessorCount, 16);
 
-        private PipeScheduler[] _lockFreeQueue;
-        private PipeScheduler[] _lockBasedQueue;
-        private PipeScheduler _threadPoolScheduler;
+        private PipeScheduler[] _ioQueueSchedulers;
+        private PipeScheduler[] _threadPoolSchedulers;
+        private PipeScheduler[] _inlineSchedulers;
 
-        private static Action<object> _action = (o) => { };
+        private SemaphoreSlim _semaphore = new SemaphoreSlim(0);
+        private int _totalToReport;
+        private PaddedInteger[] _counters = new PaddedInteger[OuterLoopCount];
 
-        private static Action<int> _lockFreeAction;
-        private static Action<int> _lockBasedAction;
-        private static Action<int> _threadPoolAction;
+        private Func<int, ParallelLoopState, PipeScheduler[], PipeScheduler[]> _parallelAction;
+        private Action<object> _action;
 
         [GlobalSetup]
         public void Setup()
         {
-            _lockFreeQueue = new IOQueueLockFree[IOQueueCount];
-            for (var i = 0; i < _lockFreeQueue.Length; i++)
+            _parallelAction = ParallelBody;
+            _action = new Action<object>(ScheduledAction);
+
+            _inlineSchedulers = new PipeScheduler[IOQueueCount];
+            for (var i = 0; i < _inlineSchedulers.Length; i++)
             {
-                _lockFreeQueue[i] = new IOQueueLockFree();
+                _inlineSchedulers[i] = PipeScheduler.Inline;
             }
 
-            _lockFreeAction =
-                (n) =>
-                {
-                    PipeScheduler pipeScheduler = _lockFreeQueue[n % _lockFreeQueue.Length];
-                    for (var i = 0; i < InnerLoopCount; i++)
-                    {
-                        pipeScheduler.Schedule(_action, null);
-                    }
-                };
-
-            _lockBasedQueue = new IOQueueLockBased[IOQueueCount];
-            for (var i = 0; i < _lockBasedQueue.Length; i++)
+            _threadPoolSchedulers = new PipeScheduler[IOQueueCount];
+            for (var i = 0; i < _threadPoolSchedulers.Length; i++)
             {
-                _lockBasedQueue[i] = new IOQueueLockBased();
+                _threadPoolSchedulers[i] = PipeScheduler.ThreadPool;
             }
 
-            _lockBasedAction =
-                (n) =>
-                {
-                    PipeScheduler pipeScheduler = _lockBasedQueue[n % _lockBasedQueue.Length];
-                    for (var i = 0; i < InnerLoopCount; i++)
-                    {
-                        pipeScheduler.Schedule(_action, null);
-                    }
-                };
+            _ioQueueSchedulers = new PipeScheduler[IOQueueCount];
+            for (var i = 0; i < _ioQueueSchedulers.Length; i++)
+            {
+                _ioQueueSchedulers[i] = new IOQueue();
+            }
+        }
 
-            _threadPoolScheduler = PipeScheduler.ThreadPool;
-            _threadPoolAction =
-                (n) =>
-                {
-                    for (var i = 0; i < InnerLoopCount; i++)
-                    {
-                        _threadPoolScheduler.Schedule(_action, null);
-                    }
-                };
+        [IterationSetup]
+        public void IterationSetup()
+        {
+            _totalToReport = OuterLoopCount;
+
+            for (var i = 0; i < _counters.Length; i++)
+            {
+                _counters[i].Remaining = InnerLoopCount;
+            }
         }
 
         [Benchmark(OperationsPerInvoke = OperationsPerInvoke, Baseline = true)]
-        public void LockBasedIOQueue() => Schedule(_lockBasedAction);
+        public void ThreadPoolScheduler() => Schedule(_threadPoolSchedulers);
 
         [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
-        public void LockFreeIOQueue() => Schedule(_lockFreeAction);
+        public void IOQueueScheduler() => Schedule(_ioQueueSchedulers);
 
         [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
-        public void ThreadPoolDirect() => Schedule(_threadPoolAction);
+        public void InlineScheduler() => Schedule(_inlineSchedulers);
 
-        private void Schedule(Action<int> scheduleAction) => Parallel.For(0, OuterLoopCount, scheduleAction);
-
-        public class IOQueueLockFree : PipeScheduler, IThreadPoolWorkItem
+        private void Schedule(PipeScheduler[] schedulers)
         {
-            private readonly ConcurrentQueue<Work> _workItems = new ConcurrentQueue<Work>();
-            private int _doingWork;
+            Parallel.For(0, OuterLoopCount, () => schedulers, _parallelAction, (s) => { });
 
-            public override void Schedule(Action<object> action, object state)
+            while (_totalToReport > 0)
             {
-                _workItems.Enqueue(new Work(action, state));
-
-                // Set working if it wasn't (via atomic Interlocked).
-                if (Interlocked.CompareExchange(ref _doingWork, 1, 0) == 0)
-                {
-                    // Wasn't working, schedule.
-                    System.Threading.ThreadPool.UnsafeQueueUserWorkItem(this, preferLocal: false);
-                }
-            }
-
-            void IThreadPoolWorkItem.Execute()
-            {
-                while (true)
-                {
-                    while (_workItems.TryDequeue(out Work item))
-                    {
-                        item.Callback(item.State);
-                    }
-
-                    // All work done.
-
-                    // Set _doingWork (0 == false) prior to checking IsEmpty to catch any missed work in interim.
-                    // This doesn't need to be volatile due to the following barrier (i.e. it is volatile).
-                    _doingWork = 0;
-
-                    // Ensure _doingWork is written before IsEmpty is read.
-                    // As they are two different memory locations, we insert a barrier to guarantee ordering.
-                    Thread.MemoryBarrier();
-
-                    // Check if there is work to do
-                    if (_workItems.IsEmpty)
-                    {
-                        // Nothing to do, exit.
-                        break;
-                    }
-
-                    // Is work, can we set it as active again (via atomic Interlocked), prior to scheduling?
-                    if (Interlocked.Exchange(ref _doingWork, 1) == 1)
-                    {
-                        // Execute has been rescheduled already, exit.
-                        break;
-                    }
-
-                    // Is work, wasn't already scheduled so continue loop.
-                }
+                _semaphore.Wait();
+                _totalToReport--;
             }
         }
 
-        public class IOQueueLockBased : PipeScheduler, IThreadPoolWorkItem
+        private void ScheduledAction(object o)
         {
-            private readonly object _workSync = new object();
-            private readonly ConcurrentQueue<Work> _workItems = new ConcurrentQueue<Work>();
-            private bool _doingWork;
-
-            public override void Schedule(Action<object> action, object state)
+            var counter = (int)o;
+            var result = Interlocked.Decrement(ref _counters[counter].Remaining);
+            if (result == 0)
             {
-                var work = new Work(action, state);
-
-                _workItems.Enqueue(work);
-
-                lock (_workSync)
-                {
-                    if (!_doingWork)
-                    {
-                        System.Threading.ThreadPool.UnsafeQueueUserWorkItem(this, preferLocal: false);
-                        _doingWork = true;
-                    }
-                }
-            }
-
-            void IThreadPoolWorkItem.Execute()
-            {
-                while (true)
-                {
-                    while (_workItems.TryDequeue(out Work item))
-                    {
-                        item.Callback(item.State);
-                    }
-
-                    lock (_workSync)
-                    {
-                        if (_workItems.IsEmpty)
-                        {
-                            _doingWork = false;
-                            return;
-                        }
-                    }
-                }
+                _semaphore.Release();
             }
         }
 
-        private readonly struct Work
+        private PipeScheduler[] ParallelBody(int i, ParallelLoopState state, PipeScheduler[] schedulers)
         {
-            public readonly Action<object> Callback;
-            public readonly object State;
-
-            public Work(Action<object> callback, object state)
+            PipeScheduler pipeScheduler = schedulers[i % schedulers.Length];
+            object counter = i;
+            for (var t = 0; t < InnerLoopCount; t++)
             {
-                Callback = callback;
-                State = state;
+                pipeScheduler.Schedule(_action, counter);
             }
+
+            return schedulers;
+        }
+
+        [StructLayout(LayoutKind.Explicit, Size = 128)]
+        private struct PaddedInteger
+        {
+            // Padded to avoid false sharing
+            [FieldOffset(64)]
+            public int Remaining;
         }
     }
 }
