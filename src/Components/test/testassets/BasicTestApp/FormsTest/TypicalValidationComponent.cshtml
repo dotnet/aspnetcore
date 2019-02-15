@@ -5,10 +5,10 @@
     <DataAnnotationsValidator />
 
     <p>
-        Name: <input bind="@person.Name" />
+        Name: <InputText bind-Value="@person.Name" ValueExpression="@(() => person.Name)" />
     </p>
     <p>
-        Age (years): <input type="number" bind="@person.AgeInYears" />
+        Age (years): <InputNumber bind-Value="@person.AgeInYears" ValueExpression="@(() => person.AgeInYears)" />
     </p>
 
     <button type="submit">Submit</button>
