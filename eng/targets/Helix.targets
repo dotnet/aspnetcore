@@ -11,6 +11,8 @@
       <_TargetFrameworks Include="$(TargetFrameworks);$(TargetFramework)" />
     </ItemGroup>
 
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Restore" />
+
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="_CreateHelixPayloadInner"
              Properties="TargetFramework=%(_TargetFrameworks.Identity);">
