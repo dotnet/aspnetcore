@@ -26,10 +26,6 @@ namespace Company.WebApplication1
                     webBuilder.ConfigureKestrel(options =>
                     {
                         options.Limits.MinRequestBodyDataRate = null;
-                        options.ListenLocalhost(50051, listenOptions =>
-                        {
-                            listenOptions.Protocols = HttpProtocols.Http2;
-                        });
                     });
                     webBuilder.UseStartup<Startup>();
                 });
