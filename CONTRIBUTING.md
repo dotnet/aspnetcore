@@ -9,7 +9,7 @@ Start a discussion on the [repository issue tracker](https://github.com/aspnet/A
 For non-security related bugs, log a new issue in the appropriate GitHub repository. Here are some of the most common repositories:
 
 * [Docs](https://github.com/aspnet/Docs)
-* [AspNetCore]https://github.com/aspnet/AspNetCore
+* [AspNetCore](https://github.com/aspnet/AspNetCore)
 * [Entity Framework Core](https://github.com/aspnet/EntityFrameworkCore)
 * [Tooling](https://github.com/aspnet/Tooling)
 * [Extensions](https://github.com/aspnet/Extensions)
