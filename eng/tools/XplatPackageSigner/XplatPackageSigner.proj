@@ -8,6 +8,7 @@
 <Project DefaultTargets="Build" InitialTargets="CheckForRequiredProperties">
   <PropertyGroup>
     <SignType>$([MSBuild]::ValueOrDefault($(SignType),'real'))</SignType>
+    <OutputInRepoRoot>true</OutputInRepoRoot>
   </PropertyGroup>
 
   <Import Project="..\..\..\Directory.Build.props" />
@@ -16,7 +17,7 @@
 
   <PropertyGroup Condition="'$(DirectoryToSign)' != ''">
     <OutDir>$([MSBuild]::NormalizeDirectory($(DirectoryToSign)))</OutDir>
-    <IntermediateOutputPath>$(RepositoryRoot)obj\$(MSBuildProjectName)\</IntermediateOutputPath>
+    <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(OutDir)' != ''">

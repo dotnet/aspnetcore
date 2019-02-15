@@ -1,6 +1,7 @@
 <Project>
   <PropertyGroup>
-    <BaseIntermediateOutputPath>$(RepositoryRoot)obj\pkg\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+    <OutputInRepoRoot>true</OutputInRepoRoot>
+    <OutDirName>$(MSBuildProjectName).Pkg</OutDirName>
 
     <!-- Don't add TFM to the project output path of shared framework projects -->
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>

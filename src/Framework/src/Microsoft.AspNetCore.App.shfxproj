@@ -1,7 +1,8 @@
 <Project>
   <PropertyGroup>
-    <OutputPath>$(RepositoryRoot)bin\fx\$(TargetOsName)\$(TargetArchitecture)\$(MSBuildProjectName)\</OutputPath>
-    <BaseIntermediateOutputPath>$(RepositoryRoot)obj\fx\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+    <OutputInRepoRoot>true</OutputInRepoRoot>
+    <PlatformName>$(TargetOsName)-$(TargetArchitecture)</PlatformName>
+    <OutDirName>fx</OutDirName>
   </PropertyGroup>
 
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />

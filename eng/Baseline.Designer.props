@@ -2,7 +2,7 @@
 <Project>
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-    <AspNetCoreBaselineVersion>2.2.1</AspNetCoreBaselineVersion>
+    <AspNetCoreBaselineVersion>2.2.2</AspNetCoreBaselineVersion>
   </PropertyGroup>
   <!-- Package: dotnet-dev-certs-->
   <PropertyGroup Condition=" '$(PackageId)' == 'dotnet-dev-certs' ">
@@ -81,8 +81,9 @@
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.AspNetCoreModuleV2-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AspNetCoreModuleV2' ">
-    <BaselinePackageVersion>2.2.1</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.2</BaselinePackageVersion>
   </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AspNetCoreModuleV2' AND '$(TargetFramework)' == 'netcoreapp2.2' " />
   <!-- Package: Microsoft.AspNetCore.Authentication.Abstractions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Abstractions' ">
     <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
@@ -137,7 +138,7 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Authentication.Google-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Google' ">
-    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Google' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.OAuth" Version="[2.2.0, )" />
@@ -220,7 +221,7 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.AzureAppServices.HostingStartup-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AzureAppServices.HostingStartup' ">
-    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AzureAppServices.HostingStartup' AND '$(TargetFramework)' == 'net461' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.AzureAppServicesIntegration" Version="[2.2.0, )" />
@@ -236,7 +237,7 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.AzureAppServicesIntegration-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AzureAppServicesIntegration' ">
-    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AzureAppServicesIntegration' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting" Version="[2.2.0, )" />
@@ -528,14 +529,14 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Http-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http' ">
-    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="[2.2.0, )" />
-    <BaselinePackageReference Include="Microsoft.Net.Http.Headers" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.ObjectPool" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Net.Http.Headers" Version="[2.2.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.HttpOverrides-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.HttpOverrides' ">
@@ -656,15 +657,15 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Mvc.Core-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Core' ">
-    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Core' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Mvc.Abstractions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.Core" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authorization.Policy" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Http" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Mvc.Abstractions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Routing" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Routing.Abstractions" Version="[2.2.0, )" />
@@ -912,18 +913,18 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Routing-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Routing' ">
-    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Routing' AND '$(TargetFramework)' == 'netcoreapp2.2' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Routing.Abstractions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Routing.Abstractions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.ObjectPool" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.2.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Routing' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Routing.Abstractions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Routing.Abstractions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.ObjectPool" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.2.0, )" />
@@ -941,7 +942,7 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Server.IIS-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.IIS' ">
-    <BaselinePackageVersion>2.2.1</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.IIS' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.Core" Version="[2.2.0, )" />

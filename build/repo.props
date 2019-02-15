@@ -14,8 +14,9 @@
 
     <IsFinalBuild Condition="'$(IsFinalBuild)' == ''">false</IsFinalBuild>
 
-    <ArtifactsShippingPackagesDir>$(ArtifactsDir)packages\$(Configuration)\Shipping\</ArtifactsShippingPackagesDir>
-    <ArtifactsNonShippingPackagesDir>$(ArtifactsDir)packages\$(Configuration)\NonShipping\</ArtifactsNonShippingPackagesDir>
+    <ArtifactsPackagesDir>$(ArtifactsDir)packages\$(Configuration)\</ArtifactsPackagesDir>
+    <ArtifactsShippingPackagesDir>$(ArtifactsPackagesDir)Shipping\</ArtifactsShippingPackagesDir>
+    <ArtifactsNonShippingPackagesDir>$(ArtifactsPackagesDir)NonShipping\</ArtifactsNonShippingPackagesDir>
     <InstallersOutputPath>$(ArtifactsDir)installers\$(Configuration)\</InstallersOutputPath>
     <VisualStudioSetupOutputPath>$(ArtifactsDir)VSSetup\$(Configuration)\</VisualStudioSetupOutputPath>
 
