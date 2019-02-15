@@ -108,7 +108,7 @@ function Shutdown-Dumps()
     {
         if (Test-Path $cdb)
         {
-            & $cdb -z $dump.FullName -c ".loadby sos coreclr;.dumpcab -a $($dump.FullName).cab;q;"
+            & $cdb -z $dump.FullName -y "cache*localsymbolcache;https://msdl.microsoft.com/download/symbols" -c ".loadby sos coreclr;!sym noisy;.reload /f;.dumpcab -a $($dump.FullName).cab;q;"
             Remove-Item $dump.FullName
         }
     }
