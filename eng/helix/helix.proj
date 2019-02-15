@@ -1,7 +1,7 @@
 <Project DefaultTargets="Test">
 
   <!-- Version included until we get global.json generation to support this SDK. -->
-  <Sdk Name="Microsoft.DotNet.Helix.Sdk" Version="2.0.0-beta.19107.1" />
+  <Sdk Name="Microsoft.DotNet.Helix.Sdk" Version="2.0.0-beta.19173.6" />
 
   <Target Name="Gather" BeforeTargets="Test">
     <ItemGroup>
