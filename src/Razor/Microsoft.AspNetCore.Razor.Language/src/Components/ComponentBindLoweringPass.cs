@@ -507,15 +507,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 return GetToken(node);
             }
 
-            // In error cases we won't have a single token, but we still want to generate the code.
             IntermediateToken GetToken(IntermediateNode parent)
             {
-                return
-                    parent.Children.Count == 1 ? (IntermediateToken)parent.Children[0] : new IntermediateToken()
-                    {
-                        Kind = TokenKind.CSharp,
-                        Content = string.Join(string.Empty, parent.Children.OfType<IntermediateToken>().Select(t => t.Content)),
-                    };
+                if (parent.Children.Count == 1 && parent.Children[0] is IntermediateToken token)
+                {
+                    return token;
+                }
+
+                // In error cases we won't have a single token, but we still want to generate the code.
+                return new IntermediateToken()
+                {
+                    Kind = TokenKind.CSharp,
+                    Content = string.Join(string.Empty, parent.Children.OfType<IntermediateToken>().Select(t => t.Content)),
+                };
             }
         }
     }
