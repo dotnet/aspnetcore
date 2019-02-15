@@ -29,6 +29,7 @@
   <Target Name="_PublishHelixArchive" DependsOnTargets="Publish">
 
         <ZipDirectory SourceDirectory="$(PublishDir)" DestinationFile="$(PublishDir)../Helix.zip" Overwrite="true" />
+        <RemoveDir Directories="$(PublishDir)" />
 
   </Target>
 
@@ -39,14 +40,13 @@
     <ConvertToAbsolutePath Paths="$(PublishDir)">
       <Output TaskParameter="AbsolutePaths" PropertyName="PublishAbsoluteDir" />
     </ConvertToAbsolutePath>
-
     <ItemGroup>
       <HelixWorkItem Include="$(MSBuildProjectName)-$(TargetFramework)">
         <PayloadArchive>$(PublishAbsoluteDir)../Helix.zip</PayloadArchive>
         <TestAssembly>$(TargetFileName)</TestAssembly>
         <PreCommands>@(HelixPreCommand)</PreCommands>
         <PostCommands>@(HelixPostCommand)</PostCommands>
-        <Command Condition="$(IsWindowsHelixQueue)">runtests.cmd $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppPackageVersion)</Command>
+        <Command Condition="$(IsWindowsHelixQueue)">call runtests.cmd $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppPackageVersion)</Command>
         <Command Condition="!$(IsWindowsHelixQueue)">./runtests.sh $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppPackageVersion)</Command>
         <TestTimeout>00:30:00</TestTimeout>
       </HelixWorkItem>

@@ -15,7 +15,11 @@ $ancmSchemaFiles = @(
     "aspnetcore_schema_v2.xml"
 )
 
-$ancmSchemaFileLocation = Resolve-Path "$PSScriptRoot\..\AspNetCoreModuleV2\AspNetCore\aspnetcore_schema_v2.xml";
+$ancmSchemaFileLocation = Join-Path $PSScriptRoot "aspnetcore_schema_v2.xml";
+if (!(Test-Path $ancmSchemaFileLocation))
+{
+    $ancmSchemaFileLocation = Resolve-Path "$PSScriptRoot\..\AspNetCoreModuleV2\AspNetCore\aspnetcore_schema_v2.xml";
+}
 
 [bool]$isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
 

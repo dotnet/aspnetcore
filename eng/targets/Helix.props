@@ -22,11 +22,18 @@
         <HelixProjectTargetQueue Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' AND '$(HelixProjectTargetQueue.Contains(Windows))' == 'false'" Remove="'%(HelixProjectTargetQueue.Identity)'" />
     </ItemGroup>
 
+    <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+        <HelixContent Include="$(RepositoryRoot)eng\helix\xunit\runtests.cmd" />
+        <HelixContent Include="$(XunitConsoleRunnerDir)/**/*" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'">
+        <HelixContent Include="$(RepositoryRoot)eng\helix\vstest\runtests.sh" />
+        <HelixContent Include="$(RepositoryRoot)eng\helix\vstest\runtests.cmd" />
+    </ItemGroup>
+
     <ItemGroup>
         <HelixContent Include="$(RepositoryRoot)eng\scripts\RunPowershell.cmd" />
-        <HelixContent Include="$(RepositoryRoot)eng\helix\xunit\runtests.cmd" />
-        <HelixContent Include="$(RepositoryRoot)eng\helix\vstest\runtests.sh" />
-        <HelixContent Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' AND '$(XunitConsoleRunnerDir)' != ''" Include="$(XunitConsoleRunnerDir)/**/*" />
     </ItemGroup>
 
 </Project>

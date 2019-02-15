@@ -10,11 +10,14 @@
   <ItemGroup>
     <Content Include="..\Common.FunctionalTests\AppHostConfig\*.config" CopyToOutputDirectory="PreserveNewest" />
 
-    <HelixContext Include="..\..\tools\update_schema.ps1" />
-    <HelixContext Include="..\..\tools\UpdateIISExpressCertificate.ps1" />
+    <HelixContent Include="..\..\..\tools\update_schema.ps1" />
+    <HelixContent Include="..\..\..\tools\UpdateIISExpressCertificate.ps1" />
+    <HelixContent Include="..\..\..\AspNetCoreModuleV2\AspNetCore\aspnetcore_schema_v2.xml" />
 
-    <HelixPreCommand Include="RunPowershell.cmd update_schema.ps1" />
-    <HelixPreCommand Include="RunPowershell.cmd UpdateIISExpressCertificate.ps1" />
+    <HelixPreCommand Include="call RunPowershell.cmd update_schema.ps1" />
+    <HelixPreCommand Include="call RunPowershell.cmd UpdateIISExpressCertificate.ps1" />
+
+    <HelixProjectTargetQueue Include="Windows.10.Amd64.EnterpriseRS3.ASPNET.Open" />
   </ItemGroup>
 
   <ItemGroup>
