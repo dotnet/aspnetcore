@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Reflection;
+using System.Linq;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Connections;
@@ -42,18 +41,32 @@ namespace Microsoft.AspNetCore.Routing
         /// <param name="configureOptions">A callback to configure dispatcher options.</param>
         public static IEndpointConventionBuilder MapConnectionHandler<TConnectionHandler>(this IEndpointRouteBuilder builder, string pattern, Action<HttpConnectionDispatcherOptions> configureOptions) where TConnectionHandler : ConnectionHandler
         {
-            var authorizeAttributes = typeof(TConnectionHandler).GetCustomAttributes<AuthorizeAttribute>(inherit: true);
             var options = new HttpConnectionDispatcherOptions();
-            foreach (var attribute in authorizeAttributes)
+            // REVIEW: WE should consider removing this and instead just relying on the
+            // AuthorizationMiddleware
+            var attributes = typeof(TConnectionHandler).GetCustomAttributes(inherit: true);
+            foreach (var attribute in attributes.OfType<AuthorizeAttribute>())
             {
                 options.AuthorizationData.Add(attribute);
             }
             configureOptions?.Invoke(options);
 
-            return builder.MapConnections(pattern, options, b =>
+            var conventionBuilder = builder.MapConnections(pattern, options, b =>
             {
                 b.UseConnectionHandler<TConnectionHandler>();
             });
+
+            conventionBuilder.Add(e =>
+            {
+                // Add all attributes on the ConnectionHandler has metadata (this will allow for things like)
+                // auth attributes and cors attributes to work seamlessly
+                foreach (var item in attributes)
+                {
+                    e.Metadata.Add(item);
+                }
+            });
+
+            return conventionBuilder;
         }
 
 

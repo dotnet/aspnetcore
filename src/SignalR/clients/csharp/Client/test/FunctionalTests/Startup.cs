@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Connections;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
@@ -54,30 +55,27 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         {
             app.UseAuthentication();
 
-            app.UseSignalR(routes =>
+            app.UseRouting(routes =>
             {
                 routes.MapHub<TestHub>("/default");
                 routes.MapHub<DynamicTestHub>("/dynamic");
                 routes.MapHub<TestHubT>("/hubT");
                 routes.MapHub<HubWithAuthorization>("/authorizedhub");
                 routes.MapHub<TestHub>("/default-nowebsockets", options => options.Transports = HttpTransportType.LongPolling | HttpTransportType.ServerSentEvents);
-            });
 
-            app.Run(async (context) =>
-            {
-                if (context.Request.Path.StartsWithSegments("/generateJwtToken"))
+                routes.MapGet("/generateJwtToken", context =>
                 {
-                    await context.Response.WriteAsync(GenerateJwtToken());
-                    return;
-                }
-                else if (context.Request.Path.StartsWithSegments("/redirect"))
+                    return context.Response.WriteAsync(GenerateJwtToken());
+                });
+
+                routes.MapGet("/redirect", context =>
                 {
-                    await context.Response.WriteAsync(JsonConvert.SerializeObject(new
+                    return context.Response.WriteAsync(JsonConvert.SerializeObject(new
                     {
                         url = $"{context.Request.Scheme}://{context.Request.Host}/authorizedHub",
                         accessToken = GenerateJwtToken()
                     }));
-                }
+                });
             });
         }
 

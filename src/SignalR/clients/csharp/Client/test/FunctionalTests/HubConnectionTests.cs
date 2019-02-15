@@ -901,6 +901,28 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
         [Theory]
         [MemberData(nameof(TransportTypes))]
+        public async Task ClientWillFailAuthEndPointIfNotAuthorized(HttpTransportType transportType)
+        {
+            using (StartServer<Startup>(out var server))
+            {
+                var hubConnection = new HubConnectionBuilder()
+                    .WithLoggerFactory(LoggerFactory)
+                    .WithUrl(server.Url + "/authorizedhub", transportType)
+                    .Build();
+                try
+                {
+                    var ex = await Assert.ThrowsAnyAsync<HttpRequestException>(() => hubConnection.StartAsync().OrTimeout());
+                    Assert.Equal("Response status code does not indicate success: 401 (Unauthorized).", ex.Message);
+                }
+                finally
+                {
+                    await hubConnection.DisposeAsync().OrTimeout();
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(TransportTypes))]
         public async Task ClientCanUseJwtBearerTokenForAuthenticationWhenRedirected(HttpTransportType transportType)
         {
             using (StartServer<Startup>(out var server))
