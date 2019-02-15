@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     /// </summary>
     public class ForUpgrade : Http1MessageBody
     {
+        public bool _completed;
         public ForUpgrade(Http1Connection context)
             : base(context)
         {
@@ -25,11 +26,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public override ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
         {
+            if (_completed)
+            {
+                throw new InvalidOperationException("Reading is not allowed after the reader was completed.");
+            }
             return _context.Input.ReadAsync(cancellationToken);
         }
 
         public override bool TryRead(out ReadResult result)
         {
+            if (_completed)
+            {
+                throw new InvalidOperationException("Reading is not allowed after the reader was completed.");
+            }
             return _context.Input.TryRead(out result);
         }
 
@@ -45,8 +54,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public override void Complete(Exception exception)
         {
-            // Noop as we don't want to complete the connection pipe.
-            // actually we should complete this, just keep it internal
+            // Don't call Connection.Complete.
+            _context.ReportApplicationError(exception);
+            _completed = true;
         }
 
         public override void CancelPendingRead()

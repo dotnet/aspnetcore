@@ -30,7 +30,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public override async ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
         {
-            if (_inputLength == 0 || _completed)
+            if (_completed)
+            {
+                throw new InvalidOperationException("Reading is not allowed after the reader was completed.");
+            }
+
+            if (_inputLength == 0)
             {
                 _readResult = new ReadResult(default, isCanceled: false, isCompleted: true);
                 return _readResult;
@@ -107,10 +112,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public override bool TryRead(out ReadResult readResult)
         {
-            if (_inputLength == 0 || _completed)
+            if (_completed)
+            {
+                throw new InvalidOperationException("Reading is not allowed after the reader was completed.");
+            }
+
+            if (_inputLength == 0)
             {
                 readResult = new ReadResult(default, isCanceled: false, isCompleted: true);
-                return false;
+                return true;
             }
 
             TryStart();

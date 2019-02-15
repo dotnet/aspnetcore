@@ -858,6 +858,389 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             }
         }
 
+        [Fact]
+        public async Task CancelPendingReadContentLengthWorks()
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
+                var reader = new HttpRequestPipeReader();
+                reader.StartAcceptingReads(body);
+
+                var readResultTask = reader.ReadAsync();
+
+                reader.CancelPendingRead();
+
+                var readResult = await readResultTask;
+
+                Assert.True(readResult.IsCanceled);
+
+                await body.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task CancelPendingReadChunkedWorks()
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Http1Connection);
+                var reader = new HttpRequestPipeReader();
+                reader.StartAcceptingReads(body);
+
+                var readResultTask = reader.ReadAsync();
+
+                reader.CancelPendingRead();
+
+                var readResult = await readResultTask;
+
+                Assert.True(readResult.IsCanceled);
+
+                await body.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task CancelPendingReadUpgradeWorks()
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderConnection = "upgrade" }, input.Http1Connection);
+                var reader = new HttpRequestPipeReader();
+                reader.StartAcceptingReads(body);
+
+                var readResultTask = reader.ReadAsync();
+
+                reader.CancelPendingRead();
+
+                var readResult = await readResultTask;
+
+                Assert.True(readResult.IsCanceled);
+
+                await body.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task CancelPendingReadForZeroContentLengthCannotBeCanceled()
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders(), input.Http1Connection);
+                var reader = new HttpRequestPipeReader();
+                reader.StartAcceptingReads(body);
+
+                var readResultTask = reader.ReadAsync();
+
+                Assert.True(readResultTask.IsCompleted);
+
+                reader.CancelPendingRead();
+
+                var readResult = await readResultTask;
+
+                Assert.False(readResult.IsCanceled);
+
+                await body.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task TryReadReturnsCompletedResultAfterReadingEntireContentLength()
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
+                var reader = new HttpRequestPipeReader();
+                reader.StartAcceptingReads(body);
+
+                input.Add("Hello");
+
+                Assert.True(reader.TryRead(out var readResult));
+
+                Assert.True(readResult.IsCompleted);
+
+                await body.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task TryReadReturnsCompletedResultAfterReadingEntireChunk()
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Http1Connection);
+                var reader = new HttpRequestPipeReader();
+                reader.StartAcceptingReads(body);
+
+                input.Add("5\r\nHello\r\n");
+
+                Assert.True(reader.TryRead(out var readResult));
+                Assert.False(readResult.IsCompleted);
+                AssertASCII("Hello", readResult.Buffer);
+
+                reader.AdvanceTo(readResult.Buffer.End);
+
+                input.Add("0\r\n\r\n");
+                Assert.True(reader.TryRead(out readResult));
+
+                Assert.True(readResult.IsCompleted);
+                reader.AdvanceTo(readResult.Buffer.End);
+
+                await body.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task TryReadDoesNotReturnCompletedReadResultFromUpgradeStreamUntilCompleted()
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderConnection = "upgrade" }, input.Http1Connection);
+                var reader = new HttpRequestPipeReader();
+                reader.StartAcceptingReads(body);
+
+                input.Add("Hello");
+
+                Assert.True(reader.TryRead(out var readResult));
+                Assert.False(readResult.IsCompleted);
+                AssertASCII("Hello", readResult.Buffer);
+
+                reader.AdvanceTo(readResult.Buffer.End);
+
+                input.Fin();
+
+                reader.TryRead(out readResult);
+                Assert.True(readResult.IsCompleted);
+
+                await body.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task TryReadDoesReturnsCompletedReadResultForZeroContentLength()
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders(), input.Http1Connection);
+                var reader = new HttpRequestPipeReader();
+                reader.StartAcceptingReads(body);
+
+                input.Add("Hello");
+
+                Assert.True(reader.TryRead(out var readResult));
+                Assert.True(readResult.IsCompleted);
+
+                reader.AdvanceTo(readResult.Buffer.End);
+
+                reader.TryRead(out readResult);
+                Assert.True(readResult.IsCompleted);
+
+                await body.StopAsync();
+            }
+        }
+
+        [Fact] // TODO
+        public async Task OnWriterCompletedForContentLengthDoesNotWork()
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
+                var reader = new HttpRequestPipeReader();
+                reader.StartAcceptingReads(body);
+
+                input.Add("Hello");
+                var retVal = false;
+
+                // Callback isn't fired at the moment.
+                reader.OnWriterCompleted((a, b) => retVal = true, null);
+                Assert.True(reader.TryRead(out var readResult));
+
+                Assert.True(readResult.IsCompleted);
+                Assert.False(retVal);
+
+                await body.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task OnWriterCompletedForChunkedWorks()
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Http1Connection);
+                var reader = new HttpRequestPipeReader();
+                reader.StartAcceptingReads(body);
+
+                var retVal = false;
+                reader.OnWriterCompleted((a, b) => retVal = true, null);
+
+                input.Add("0\r\n\r\n");
+
+                Assert.True(reader.TryRead(out var readResult));
+
+                Assert.True(readResult.IsCompleted);
+                Assert.True(retVal);
+
+                await body.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task OnWriterCompletedForUpgradeWorks()
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderConnection = "upgrade" }, input.Http1Connection);
+                var reader = new HttpRequestPipeReader();
+                reader.StartAcceptingReads(body);
+
+                var retVal = false;
+                reader.OnWriterCompleted((a, b) => retVal = true, null);
+
+                input.Add("hi");
+
+                Assert.True(reader.TryRead(out var readResult));
+                reader.AdvanceTo(readResult.Buffer.End);
+
+                input.Fin();
+
+                Assert.True(retVal);
+
+                await body.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task OnWriterCompletedForNoContentLengthNoop()
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders(), input.Http1Connection);
+                var reader = new HttpRequestPipeReader();
+                reader.StartAcceptingReads(body);
+
+                var retVal = false;
+                reader.OnWriterCompleted((a, b) => retVal = true, null);
+
+                input.Add("hi");
+
+                Assert.True(reader.TryRead(out var readResult));
+                reader.AdvanceTo(readResult.Buffer.End);
+
+                input.Fin();
+
+                Assert.False(retVal);
+
+                await body.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task CompleteForContentLengthDoesNotCompleteConnectionPipeMakesReadReturnThrow()
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
+                var reader = new HttpRequestPipeReader();
+                reader.StartAcceptingReads(body);
+
+                input.Add("a");
+
+                Assert.True(reader.TryRead(out var readResult));
+
+                Assert.False(readResult.IsCompleted);
+
+                input.Add("asdf");
+
+                reader.Complete();
+                reader.AdvanceTo(readResult.Buffer.End);
+
+                Assert.Throws<InvalidOperationException>(() => reader.TryRead(out readResult));
+
+                await body.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task CompleteForChunkedDoesNotCompleteConnectionPipeMakesReadThrow()
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Http1Connection);
+                var reader = new HttpRequestPipeReader();
+                reader.StartAcceptingReads(body);
+
+                input.Add("5\r\nHello\r\n");
+
+                Assert.True(reader.TryRead(out var readResult));
+
+                Assert.False(readResult.IsCompleted);
+                reader.AdvanceTo(readResult.Buffer.End);
+
+                input.Add("1\r\nH\r\n");
+
+                reader.Complete();
+
+                Assert.Throws<InvalidOperationException>(() => reader.TryRead(out readResult));
+
+                await body.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task CompleteForUpgradeDoesNotCompleteConnectionPipeMakesReadThrow()
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderConnection = "upgrade" }, input.Http1Connection);
+                var reader = new HttpRequestPipeReader();
+                reader.StartAcceptingReads(body);
+
+                input.Add("asdf");
+
+                Assert.True(reader.TryRead(out var readResult));
+
+                Assert.False(readResult.IsCompleted);
+                reader.AdvanceTo(readResult.Buffer.End);
+
+                input.Add("asdf");
+
+                reader.Complete();
+
+                Assert.Throws<InvalidOperationException>(() => reader.TryRead(out readResult));
+
+                await body.StopAsync();
+            }
+        }
+
+
+        [Fact]
+        public async Task CompleteForZeroByteBodyDoesNotCompleteConnectionPipeNoopsReads()
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders(), input.Http1Connection);
+                var reader = new HttpRequestPipeReader();
+                reader.StartAcceptingReads(body);
+
+                input.Add("asdf");
+
+                Assert.True(reader.TryRead(out var readResult));
+
+                Assert.False(readResult.IsCompleted);
+                reader.AdvanceTo(readResult.Buffer.End);
+
+                input.Add("asdf");
+
+                reader.Complete();
+
+                // TODO should this noop or throw? I think we should keep parity with normal pipe behavior.
+                reader.TryRead(out readResult);
+
+                await body.StopAsync();
+            }
+        }
+
         private void AssertASCII(string expected, ArraySegment<byte> actual)
         {
             var encoding = Encoding.ASCII;
