@@ -10,6 +10,9 @@
     <p>
         Age (years): <InputNumber bind-Value="@person.AgeInYears" ValueExpression="@(() => person.AgeInYears)" />
     </p>
+    <p>
+        Accepts terms: <InputCheckbox bind-Value="@person.AcceptsTerms" ValueExpression="@(() => person.AcceptsTerms)" />
+    </p>
 
     <button type="submit">Submit</button>
 
@@ -19,15 +22,21 @@
 <ul>@foreach (var entry in submissionLog) { <li>@entry</li> }</ul>
 
 @functions {
+    Person person = new Person();
+
     // Usually this would be in a different file
     class Person
     {
-        [Required] public string Name { get; set; }
+        [Required]
+        public string Name { get; set; }
 
-        [Required, Range(0, 200)] public int AgeInYears { get; set; }
+        [Range(0, 200)]
+        public int AgeInYears { get; set; }
+
+        [Required, Range(typeof(bool), "true", "true", ErrorMessage = "Must accept terms")]
+        public bool AcceptsTerms { get; set; }
     }
 
-    Person person = new Person();
     List<string> submissionLog = new List<string>(); // So we can assert about the callbacks
 
     Task HandleValidSubmitAsync(EditContext editContext)
