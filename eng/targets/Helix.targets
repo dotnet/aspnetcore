@@ -14,9 +14,19 @@
     </MSBuild>
   </Target>
 
-  <Target Name="_CreateHelixPayloadInner" Condition="'$(CreateHelixPayload)' != 'false' AND '%(HelixProjectTargetQueue)' == '$(HelixTargetQueue)'" Returns="@(HelixWorkItem)">
+  <Target Name="_SetCreateHelixPayload">
 
-    <MSBuild Project="$(MSBuildProjectFullPath)" Targets="Publish" RemoveProperties="HelixTargetQueue" />
+    <PropertyGroup>
+      <_AllProjectQueues>@(HelixProjectTargetQueue)</_AllProjectQueues>
+      <CreateHelixPayload Condition="'$(CreateHelixPayload)' == '' AND '$(_AllProjectQueues.Contains($(HelixTargetQueue)))'">true</CreateHelixPayload>
+      <CreateHelixPayload Condition="'$(CreateHelixPayload)' == ''">false</CreateHelixPayload>
+    </PropertyGroup>
+
+  </Target>
+
+  <Target Name="_CreateHelixWorkItem" Condition="$(CreateHelixPayload)">
+
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" RemoveProperties="HelixTargetQueue" />
 
     <ConvertToAbsolutePath Paths="$(PublishDir)">
       <Output TaskParameter="AbsolutePaths" PropertyName="PublishAbsoluteDir" />
@@ -26,12 +36,17 @@
       <HelixWorkItem Include="$(MSBuildProjectName)-$(TargetFramework)">
         <PayloadDirectory>$(PublishAbsoluteDir)</PayloadDirectory>
         <TestAssembly>$(TargetFileName)</TestAssembly>
-        <PreCommands>@(HelixPreCommands)</PreCommands>
-        <PostCommands>@(HelixPostCommands)</PostCommands>
+        <PreCommands>@(HelixPreCommand)</PreCommands>
+        <PostCommands>@(HelixPostCommand)</PostCommands>
         <Command Condition="$(IsWindowsHelixQueue)">runtests.cmd $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppPackageVersion)</Command>
         <Command Condition="!$(IsWindowsHelixQueue)">./runtests.sh $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppPackageVersion)</Command>
         <TestTimeout>00:30:00</TestTimeout>
       </HelixWorkItem>
     </ItemGroup>
+
   </Target>
+
+  <Target Name="_CreateHelixPayloadInner" Returns="@(HelixWorkItem)" DependsOnTargets="_SetCreateHelixPayload;_CreateHelixWorkItem">
+  </Target>
+
 </Project>

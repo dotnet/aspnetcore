@@ -13,8 +13,8 @@
     <HelixContext Include="..\..\tools\update_schema.ps1" />
     <HelixContext Include="..\..\tools\UpdateIISExpressCertificate.ps1" />
 
-    <HelixPreComand Include="RunPowershell.cmd update_schema.ps1" />
-    <HelixPreComand Include="RunPowershell.cmd UpdateIISExpressCertificate.ps1" />
+    <HelixPreCommand Include="RunPowershell.cmd update_schema.ps1" />
+    <HelixPreCommand Include="RunPowershell.cmd UpdateIISExpressCertificate.ps1" />
   </ItemGroup>
 
   <ItemGroup>
