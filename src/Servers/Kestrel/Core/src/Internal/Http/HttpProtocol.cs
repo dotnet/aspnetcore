@@ -1390,7 +1390,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 return FirstWriteAsyncAwaited(startingTask, data, cancellationToken);
             }
 
-
             return FirstWriteAsyncInternal(data, cancellationToken);
         }
 
