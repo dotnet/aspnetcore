@@ -84,12 +84,12 @@ namespace Microsoft.AspNetCore.Components.Forms
 
         private static bool TryGetValidatableProperty(FieldIdentifier fieldIdentifier, out PropertyInfo propertyInfo)
         {
-            var cacheKey = (fieldIdentifier.Model.GetType(), fieldIdentifier.FieldName);
+            var cacheKey = (ModelType: fieldIdentifier.Model.GetType(), fieldIdentifier.FieldName);
             if (!_propertyInfoCache.TryGetValue(cacheKey, out propertyInfo))
             {
                 // DataAnnotations only validates public properties, so that's all we'll look for
                 // If we can't find it, cache 'null' so we don't have to try again next time
-                propertyInfo = fieldIdentifier.Model.GetType().GetProperty(fieldIdentifier.FieldName);
+                propertyInfo = cacheKey.ModelType.GetProperty(cacheKey.FieldName);
 
                 // No need to lock, because it doesn't matter if we write the same value twice
                 _propertyInfoCache[cacheKey] = propertyInfo;
