@@ -1,31 +1,7 @@
 <Project>
 
-  <!-- Prepares the test projects for helix by including xunit and publishing -->
-  <Target Name="PrepareHelixPayload" Returns="@(HelixDirectory)">
-    <ItemGroup>
-      <_TargetFrameworks Remove="@(_TargetFrameworks)" />
-      <_TargetFrameworks Include="$(TargetFrameworks);$(TargetFramework)" />
-    </ItemGroup>
-
-    <MSBuild Projects="$(MSBuildProjectFullPath)"
-             Targets="_PrepareHelixPayloadInner"
-             Properties="TargetFramework=%(_TargetFrameworks.Identity);IsWindowsHelixQueue=$(HelixTargetQueue.Contains('Windows'))">
-      <Output TaskParameter="TargetOutputs" ItemName="HelixDirectory" />
-    </MSBuild>
-  </Target>
-
-  <Target Name="_PrepareHelixPayloadInner"
-    DependsOnTargets="Publish"
-    Condition="'$(BuildHelixPayload)' == 'true'"
-    Returns="@(HelixDirectory)">
-
-    <ItemGroup>
-      <HelixDirectory Include="$(MSBuildProjectFullPath)" />
-    </ItemGroup>
-  </Target>
-
   <!-- Build the actual helix work items to send to helix queues -->
-  <Target Name="CreateHelixPayload" Returns="@(HelixPayload)">
+  <Target Name="CreateHelixPayload" Returns="@(HelixWorkItem)">
     <ItemGroup>
       <_TargetFrameworks Remove="@(_TargetFrameworks)" />
       <_TargetFrameworks Include="$(TargetFrameworks);$(TargetFramework)" />
@@ -33,57 +9,27 @@
 
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="_CreateHelixPayloadInner"
-             Properties="TargetFramework=%(_TargetFrameworks.Identity);IsWindowsHelixQueue=$(HelixTargetQueue.Contains('Windows'))">
-      <Output TaskParameter="TargetOutputs" ItemName="HelixPayload" />
+             Properties="TargetFramework=%(_TargetFrameworks.Identity);">
+      <Output TaskParameter="TargetOutputs" ItemName="HelixWorkItem" />
     </MSBuild>
   </Target>
 
-  <Target Name="CollectXunitConsoleRunner" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
-    <PropertyGroup>
-      <XunitConsoleRunnerDir>$([System.IO.Path]::GetDirectoryName($(XunitConsole472Path)))</XunitConsoleRunnerDir>
-    </PropertyGroup>
+  <Target Name="_CreateHelixPayloadInner" Condition="'$(CreateHelixPayload)' != 'false' AND '%(HelixProjectTargetQueue)' == '$(HelixTargetQueue)'" Returns="@(HelixWorkItem)">
 
-    <ItemGroup>
-      <XunitConsoleRunnerFiles Include="$(XunitConsoleRunnerDir)/**/*" />
-    </ItemGroup>
-
-    <Copy SourceFiles="@(XunitConsoleRunnerFiles)" DestinationFolder="$(PublishDir)" />
-  </Target>
-
-  <Target Name="_CreateHelixPayloadInner"
-    DependsOnTargets="CollectXunitConsoleRunner"
-    Condition="($(IsWindowsHelixQueue) OR '$(TargetFrameworkIdentifier)' != '.NETFramework')"
-    Returns="@(HelixPayload)">
+    <MSBuild Project="$(MSBuildProjectFullPath)" Targets="Publish" RemoveProperties="HelixTargetQueue" />
 
     <ConvertToAbsolutePath Paths="$(PublishDir)">
       <Output TaskParameter="AbsolutePaths" PropertyName="PublishAbsoluteDir" />
     </ConvertToAbsolutePath>
 
-    <!-- Windows NetCore -->
-    <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework' AND $(IsWindowsHelixQueue)" >
-        <_CopyItems Include="$(RepositoryRoot)eng\helix\vstest\runtests.cmd" />
-    </ItemGroup>
-
-    <!-- Windows NetFramework -->
-    <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' AND $(IsWindowsHelixQueue)" >
-        <_CopyItems Include="$(RepositoryRoot)eng\helix\xunit\runtests.cmd" />
-    </ItemGroup>
-
-    <!-- NonWindows -->
-    <ItemGroup Condition="!$(IsWindowsHelixQueue)"  >
-        <_CopyItems Include="$(RepositoryRoot)eng\helix\vstest\runtests.sh" />
-    </ItemGroup>
-
-    <Copy SourceFiles="@(_CopyItems)" DestinationFolder="$(PublishAbsoluteDir)" />
-
     <ItemGroup>
-      <HelixPayload Include="$(PublishAbsoluteDir)">
+      <HelixWorkItem Include="$(MSBuildProjectName)-$(TargetFramework)">
+        <PayloadDirectory>$(PublishAbsoluteDir)</PayloadDirectory>
         <TestAssembly>$(TargetFileName)</TestAssembly>
-        <TestName>$(MSBuildProjectName)-$(TargetFramework)</TestName>
         <Command Condition="$(IsWindowsHelixQueue)">runtests.cmd $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppPackageVersion)</Command>
         <Command Condition="!$(IsWindowsHelixQueue)">./runtests.sh $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppPackageVersion)</Command>
         <TestTimeout>00:30:00</TestTimeout>
-      </HelixPayload>
+      </HelixWorkItem>
     </ItemGroup>
   </Target>
 </Project>

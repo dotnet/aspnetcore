@@ -38,4 +38,5 @@
     <Reference Include="xunit.runner.console" Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' AND '$(IsHelixJob)' == 'true' " />
   </ItemGroup>
 
+  <Import Project="Helix.props" Condition="'$(IsTestProject)' == 'true'" />
 </Project>
