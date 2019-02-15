@@ -8,6 +8,7 @@ namespace Microsoft.AspNetCore.Components.Forms
 {
     // TODO: Consider support for Nullable<DateTime>, Nullable<DateTimeOffset>
     //       otherwise it may be impossible to have optional date inputs
+    //       Maybe it's possible to support Nullable<T> for arbitrary T:struct in InputBase, so all the InputNumber cases work with it too
 
     /// <summary>
     /// An input component for editing date values.
