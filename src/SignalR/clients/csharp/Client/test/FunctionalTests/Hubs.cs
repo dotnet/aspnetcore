@@ -221,4 +221,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
     {
         public string Echo(string message) => TestHubMethodsImpl.Echo(message);
     }
+
+    // Authorization is added via endpoint routing in Startup
+    public class HubWithAuthorization2 : Hub
+    {
+        public string Echo(string message) => TestHubMethodsImpl.Echo(message);
+    }
 }
