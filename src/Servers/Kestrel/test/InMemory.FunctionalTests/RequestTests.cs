@@ -701,18 +701,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public async Task ContentLengthTryReadPipeReader()
+        public async Task ContentLengthReadAsyncPipeReader()
         {
             var testContext = new TestServiceContext(LoggerFactory);
 
-            using (var server = new TestServer(httpContext =>
+            using (var server = new TestServer(async httpContext =>
             {
-                var res = httpContext.Request.BodyPipe.TryRead(out var readResult);
+                var readResult = await httpContext.Request.BodyPipe.ReadAsync();
                 // This will hang if 0 content length is not assumed by the server
                 Assert.Equal(5, readResult.Buffer.Length);
                 httpContext.Request.BodyPipe.AdvanceTo(readResult.Buffer.End);
-
-                return Task.CompletedTask;
             }, testContext))
             {
                 using (var connection = server.CreateConnection())

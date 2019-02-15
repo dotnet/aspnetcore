@@ -1227,7 +1227,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 Assert.True(reader.TryRead(out var readResult));
 
-                Assert.False(readResult.IsCompleted);
+                Assert.True(readResult.IsCompleted);
                 reader.AdvanceTo(readResult.Buffer.End);
 
                 input.Add("asdf");
@@ -1235,6 +1235,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 reader.Complete();
 
                 // TODO should this noop or throw? I think we should keep parity with normal pipe behavior.
+                // So maybe this should throw
                 reader.TryRead(out readResult);
 
                 await body.StopAsync();
