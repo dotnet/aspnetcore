@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore
                 ZipFile.ExtractToDirectory(zipPath, "unzipped");
             }
 
-            var nugetAssembliesPath = Path.Combine(AppContext.BaseDirectory, "unzipped", "shared", "Microsoft.AspNetCore.App", previousVersion);
+            var nugetAssembliesPath = Path.Combine(AppContext.BaseDirectory, "unzipped", "shared", config.Name, previousVersion);
 
             string[] files = Directory.GetFiles(nugetAssembliesPath, "*.dll");
             foreach (string file in files)
@@ -58,11 +58,16 @@ namespace Microsoft.AspNetCore
 
             Assert.All(files, file =>
             {
-                var localAssemblyVersion = AssemblyName.GetAssemblyName(file)?.Version;
-                var splitPath = file.Split('\\');
-                var dllName = splitPath[splitPath.Length - 1];
-                Assert.True(nugetAssemblyVersions.ContainsKey(dllName), $"Expected {dllName} to be in the downloaded dlls");
-                Assert.True(localAssemblyVersion.CompareTo(nugetAssemblyVersions[dllName]) >= 0, $"Expected the local version of {dllName} to be greater than or equal to the already released version.");
+                try
+                {
+                    var localAssemblyVersion = AssemblyName.GetAssemblyName(file)?.Version;
+                    var splitPath = file.Split('\\');
+                    var dllName = splitPath[splitPath.Length - 1];
+                    Assert.True(nugetAssemblyVersions.ContainsKey(dllName), $"Expected {dllName} to be in the downloaded dlls");
+                    Assert.True(localAssemblyVersion.CompareTo(nugetAssemblyVersions[dllName]) >= 0, $"Expected the local version of {dllName} to be greater than or equal to the already released version.");
+                }
+                catch (BadImageFormatException) { }
+
             });
         }
 
