@@ -17,45 +17,72 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         private const int OuterLoopCount = 64;
         private const int OperationsPerInvoke = InnerLoopCount * OuterLoopCount;
 
-        private PipeScheduler _lockFreeQueue;
-        private PipeScheduler _lockBasedQueue;
+        private readonly int IOQueueCount = Math.Min(Environment.ProcessorCount, 16);
+
+        private PipeScheduler[] _lockFreeQueue;
+        private PipeScheduler[] _lockBasedQueue;
+        private PipeScheduler _threadPoolScheduler;
 
         private static Action<object> _action = (o) => { };
 
         private static Action<int> _lockFreeAction;
         private static Action<int> _lockBasedAction;
+        private static Action<int> _threadPoolAction;
 
         [GlobalSetup]
         public void Setup()
         {
-            _lockFreeQueue = new IOQueueLockFree();
-            _lockBasedQueue = new IOQueueLockBased();
+            _lockFreeQueue = new IOQueueLockFree[IOQueueCount];
+            for (var i = 0; i < _lockFreeQueue.Length; i++)
+            {
+                _lockFreeQueue[i] = new IOQueueLockFree();
+            }
 
             _lockFreeAction =
                 (n) =>
                 {
+                    PipeScheduler pipeScheduler = _lockFreeQueue[n % _lockFreeQueue.Length];
                     for (var i = 0; i < InnerLoopCount; i++)
                     {
-                        _lockFreeQueue.Schedule(_action, null);
+                        pipeScheduler.Schedule(_action, null);
                     }
                 };
 
+            _lockBasedQueue = new IOQueueLockBased[IOQueueCount];
+            for (var i = 0; i < _lockBasedQueue.Length; i++)
+            {
+                _lockBasedQueue[i] = new IOQueueLockBased();
+            }
 
             _lockBasedAction =
                 (n) =>
                 {
+                    PipeScheduler pipeScheduler = _lockBasedQueue[n % _lockBasedQueue.Length];
                     for (var i = 0; i < InnerLoopCount; i++)
                     {
-                        _lockBasedQueue.Schedule(_action, null);
+                        pipeScheduler.Schedule(_action, null);
+                    }
+                };
+
+            _threadPoolScheduler = PipeScheduler.ThreadPool;
+            _threadPoolAction =
+                (n) =>
+                {
+                    for (var i = 0; i < InnerLoopCount; i++)
+                    {
+                        _threadPoolScheduler.Schedule(_action, null);
                     }
                 };
         }
 
         [Benchmark(OperationsPerInvoke = OperationsPerInvoke, Baseline = true)]
-        public void LockBased() => Schedule(_lockBasedAction);
+        public void LockBasedIOQueue() => Schedule(_lockBasedAction);
 
         [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
-        public void LockFree() => Schedule(_lockFreeAction);
+        public void LockFreeIOQueue() => Schedule(_lockFreeAction);
+
+        [Benchmark(OperationsPerInvoke = OperationsPerInvoke)]
+        public void ThreadPoolDirect() => Schedule(_threadPoolAction);
 
         private void Schedule(Action<int> scheduleAction) => Parallel.For(0, OuterLoopCount, scheduleAction);
 
