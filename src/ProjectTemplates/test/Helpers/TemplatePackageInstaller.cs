@@ -103,11 +103,8 @@ namespace Templates.Test.Helpers
             var builtPackages = MondoHelpers.GetNupkgFiles();
             foreach (var packagePath in builtPackages)
             {
-                if (_templatePackages.Any(name => Path.GetFileName(packagePath).StartsWith(name, StringComparison.OrdinalIgnoreCase)))
-                {
-                    output.WriteLine($"Installing templates package {packagePath}...");
-                    RunDotNetNew(output, $"--install \"{packagePath}\"", assertSuccess: true);
-                }
+                output.WriteLine($"Installing templates package {packagePath}...");
+                RunDotNetNew(output, $"--install \"{packagePath}\"", assertSuccess: true);
             }
             VerifyCanFindTemplate(output, "razor");
             VerifyCanFindTemplate(output, "web");

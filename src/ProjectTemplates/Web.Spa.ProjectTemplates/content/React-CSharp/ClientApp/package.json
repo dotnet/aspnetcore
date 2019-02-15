@@ -23,7 +23,8 @@
     "eslint-plugin-flowtype": "^2.50.3",
     "eslint-plugin-import": "^2.14.0",
     "eslint-plugin-jsx-a11y": "^5.1.1",
-    "eslint-plugin-react": "^7.11.1"
+    "eslint-plugin-react": "^7.11.1",
+    "typescript-eslint-parser": "21.0.2"
   },
   "eslintConfig": {
     "extends": "react-app"
