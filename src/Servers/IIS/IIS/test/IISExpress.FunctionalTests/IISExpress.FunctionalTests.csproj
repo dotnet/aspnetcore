@@ -5,6 +5,7 @@
     <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
     <TestGroupName>IISExpress.FunctionalTests</TestGroupName>
     <SkipTests Condition=" '$(SkipIISExpressTests)' == 'true' ">true</SkipTests>
+    <HelixTimeout>01:00:00</HelixTimeout>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,8 +17,6 @@
 
     <HelixPreCommand Include="call RunPowershell.cmd update_schema.ps1" />
     <HelixPreCommand Include="call RunPowershell.cmd UpdateIISExpressCertificate.ps1" />
-
-    <HelixTimeout>01:00:00</HelixTimeout>
   </ItemGroup>
 
   <ItemGroup>
