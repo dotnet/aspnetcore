@@ -141,7 +141,7 @@
              Properties="$(BuildProperties);__DummyTarget=GenerateBuildAssetManifest" />
   </Target>
 
-  <Target Name="Helix">
+  <Target Name="Helix" DependsOnTargets="Restore">
     <MSBuild Projects="$(MSBuildThisFileDirectory)..\eng\helix\helix.proj"
              Targets="Test"
              ContinueOnError="ErrorAndStop" />
