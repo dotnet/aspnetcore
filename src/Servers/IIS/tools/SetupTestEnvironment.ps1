@@ -80,7 +80,7 @@ function Setup-Dumps()
     New-ItemProperty $werHive -Name "DontShowUI" -Value 1 -PropertyType "DWORD" -Force;
 
     New-ItemProperty $ldHive -Name "DumpFolder" -Value $DumpFolder -PropertyType "ExpandString" -Force;
-    New-ItemProperty $ldHive -Name "DumpCount" -Value 15 -PropertyType "DWORD" -Force;
+    New-ItemProperty $ldHive -Name "DumpCount" -Value 5 -PropertyType "DWORD" -Force;
     New-ItemProperty $ldHive -Name "DumpType" -Value 2 -PropertyType "DWORD" -Force;
 
     Restart-Service WerSvc
