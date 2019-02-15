@@ -1,5 +1,9 @@
 <Project>
 
+  <ItemGroup>
+    <Content Include="@(HelixContext)" />
+  </ItemGroup>
+
   <!-- Build the actual helix work items to send to helix queues -->
   <Target Name="CreateHelixPayload" Returns="@(HelixWorkItem)">
     <ItemGroup>
