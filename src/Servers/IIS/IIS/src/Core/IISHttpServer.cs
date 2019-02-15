@@ -164,7 +164,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             try
             {
                 context = (IISHttpContext)GCHandle.FromIntPtr(pvManagedHttpContext).Target;
-                context.ConnectionReset();
+                context.AbortIO(clientDisconnect: true);
             }
             catch (Exception ex)
             {
