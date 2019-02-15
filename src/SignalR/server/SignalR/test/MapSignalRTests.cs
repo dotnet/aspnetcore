@@ -68,6 +68,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             builder
                 .UseKestrel()
+                .ConfigureServices(services =>
+                {
+                    services.AddRouting();
+                })
                 .Configure(app =>
                 {
                     executedConfigure = true;
