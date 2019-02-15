@@ -253,7 +253,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
+        public ValueTask<FlushResult> FirstWriteAsync(int statusCode, string reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, ReadOnlySpan<byte> data, CancellationToken cancellationToken)
+        {
+            lock (_dataWriterLock)
+            {
+                WriteResponseHeaders(statusCode, reasonPhrase, responseHeaders, autoChunk);
+
+                return WriteDataToPipeAsync(data, cancellationToken);
+            }
+        }
+
         ValueTask<FlushResult> IHttpOutputProducer.WriteChunkAsync(ReadOnlySpan<byte> data, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ValueTask<FlushResult> FirstWriteChunkedAsync(int statusCode, string reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, ReadOnlySpan<byte> data, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }

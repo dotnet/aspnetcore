@@ -236,25 +236,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 if (_advancedBytesForChunk > 0 || buffer.Length > 0)
                 {
                     var writer = new BufferWriter<PipeWriter>(_pipeWriter);
-                    if (_advancedBytesForChunk > 0)
-                    {
-                        WriteCurrentMemoryToPipeWriter(ref writer);
-                    }
-
-                    if (buffer.Length > 0)
-                    {
-
-                        writer.WriteBeginChunkBytes(buffer.Length);
-                        writer.Write(buffer);
-                        writer.WriteEndChunkBytes();
-                    }
-
-                    writer.Commit();
-                    _unflushedBytes += writer.BytesCommitted;
+                    CommitChunkInternal(ref writer, buffer);
                 }
             }
 
             return FlushAsync(cancellationToken);
+        }
+
+        private void CommitChunkInternal(ref BufferWriter<PipeWriter> writer, ReadOnlySpan<byte> buffer)
+        {
+            if (_advancedBytesForChunk > 0)
+            {
+                WriteCurrentMemoryToPipeWriter(ref writer);
+            }
+
+            if (buffer.Length > 0)
+            {
+
+                writer.WriteBeginChunkBytes(buffer.Length);
+                writer.Write(buffer);
+                writer.WriteEndChunkBytes();
+            }
+
+            writer.Commit();
+            _unflushedBytes += writer.BytesCommitted;
         }
 
         public void WriteResponseHeaders(int statusCode, string reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk)
@@ -268,18 +273,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 var buffer = _pipeWriter;
                 var writer = new BufferWriter<PipeWriter>(buffer);
-
-                writer.Write(HttpVersion11Bytes);
-                var statusBytes = ReasonPhrases.ToStatusBytes(statusCode, reasonPhrase);
-                writer.Write(statusBytes);
-                responseHeaders.CopyTo(ref writer);
-                writer.Write(EndHeadersBytes);
-
-                writer.Commit();
-
-                _unflushedBytes += writer.BytesCommitted;
-                _autoChunk = autoChunk;
+                WriteResponseHeadersInternal(ref writer, statusCode, reasonPhrase, responseHeaders, autoChunk);
             }
+        }
+
+        private void WriteResponseHeadersInternal(ref BufferWriter<PipeWriter> writer, int statusCode, string reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk)
+        {
+            writer.Write(HttpVersion11Bytes);
+            var statusBytes = ReasonPhrases.ToStatusBytes(statusCode, reasonPhrase);
+            writer.Write(statusBytes);
+            responseHeaders.CopyTo(ref writer);
+            writer.Write(EndHeadersBytes);
+
+            writer.Commit();
+
+            _unflushedBytes += writer.BytesCommitted;
+            _autoChunk = autoChunk;
         }
 
         public void Dispose()
@@ -338,6 +347,44 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return WriteAsync(ContinueBytes);
         }
 
+        public ValueTask<FlushResult> FirstWriteAsync(int statusCode, string reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, ReadOnlySpan<byte> buffer, CancellationToken cancellationToken)
+        {
+            lock (_contextLock)
+            {
+                if (_pipeWriterCompleted)
+                {
+                    return default;
+                }
+
+                // Uses same BufferWriter to write response headers and response
+                var writer = new BufferWriter<PipeWriter>(_pipeWriter);
+
+                WriteResponseHeadersInternal(ref writer, statusCode, reasonPhrase, responseHeaders, autoChunk);
+
+                return WriteAsyncInternal(ref writer, buffer, cancellationToken);
+            }
+        }
+
+        public ValueTask<FlushResult> FirstWriteChunkedAsync(int statusCode, string reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, ReadOnlySpan<byte> buffer, CancellationToken cancellationToken)
+        {
+            lock (_contextLock)
+            {
+                if (_pipeWriterCompleted)
+                {
+                    return default;
+                }
+
+                // Uses same BufferWriter to write response headers and chunk
+                var writer = new BufferWriter<PipeWriter>(_pipeWriter);
+
+                WriteResponseHeadersInternal(ref writer, statusCode, reasonPhrase, responseHeaders, autoChunk);
+
+                CommitChunkInternal(ref writer, buffer);
+
+                return FlushAsync(cancellationToken);
+            }
+        }
+
         private ValueTask<FlushResult> WriteAsync(
             ReadOnlySpan<byte> buffer,
             CancellationToken cancellationToken = default)
@@ -350,36 +397,45 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
 
                 var writer = new BufferWriter<PipeWriter>(_pipeWriter);
-                if (_autoChunk)
-                {
-                    if (_advancedBytesForChunk > 0)
-                    {
-                        // If there is data that was chunked before writing (ex someone did GetMemory->Advance->WriteAsync)
-                        // make sure to write whatever was advanced first
-                        WriteCurrentMemoryToPipeWriter(ref writer);
-                    }
-                    else
-                    {
-                        // If there is an empty write, we still need to update the current chunk
-                        _currentChunkMemoryUpdated = false;
-                    }
-                }
-
-                if (buffer.Length > 0)
-                {
-                    writer.Write(buffer);
-                }
-                writer.Commit();
-
-                var bytesWritten = _unflushedBytes + writer.BytesCommitted;
-                _unflushedBytes = 0;
-
-                return _flusher.FlushAsync(
-                    _minResponseDataRateFeature.MinDataRate,
-                    bytesWritten,
-                    this,
-                    cancellationToken);
+                return WriteAsyncInternal(ref writer, buffer, cancellationToken);
             }
+        }
+
+        private ValueTask<FlushResult> WriteAsyncInternal(
+            ref BufferWriter<PipeWriter> writer,
+            ReadOnlySpan<byte> buffer,
+            CancellationToken cancellationToken = default)
+        {
+            if (_autoChunk)
+            {
+                if (_advancedBytesForChunk > 0)
+                {
+                    // If there is data that was chunked before writing (ex someone did GetMemory->Advance->WriteAsync)
+                    // make sure to write whatever was advanced first
+                    WriteCurrentMemoryToPipeWriter(ref writer);
+                }
+                else
+                {
+                    // If there is an empty write, we still need to update the current chunk
+                    _currentChunkMemoryUpdated = false;
+                }
+            }
+
+            if (buffer.Length > 0)
+            {
+                writer.Write(buffer);
+            }
+
+            writer.Commit();
+
+            var bytesWritten = _unflushedBytes + writer.BytesCommitted;
+            _unflushedBytes = 0;
+
+            return _flusher.FlushAsync(
+                _minResponseDataRateFeature.MinDataRate,
+                bytesWritten,
+                this,
+                cancellationToken);
         }
 
         // These methods are for chunked http responses that use GetMemory/Advance
