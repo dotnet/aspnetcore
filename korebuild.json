@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/aspnet/BuildTools/master/tools/korebuild.schema.json",
-  "channel": "feature/vs2019",
+  "channel": "master",
   "msbuildType": "full",
   "toolsets": {
     "nodejs": {

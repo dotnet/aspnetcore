@@ -15,9 +15,18 @@ $repoRoot = Resolve-Path "$PSScriptRoot/../.."
 
 [string[]] $errors = @()
 
-function LogError([string]$message) {
+function LogError {
+    param(
+        [Parameter(Mandatory = $true, Position = 0)]
+        [string]$message,
+        [string]$FilePath
+    )
     if ($env:TF_BUILD) {
-        Write-Host "##vso[task.logissue type=error]$message"
+        $prefix = "##vso[task.logissue type=error"
+        if ($FilePath) {
+            $prefix = "${prefix};sourcepath=$FilePath"
+        }
+        Write-Host "${prefix}]${message}"
     }
     Write-Host -f Red "error: $message"
     $script:errors += $message
@@ -50,7 +59,9 @@ try {
         $actualVersion = $versionVar.InnerText
 
         if ($expectedVersion -ne $actualVersion) {
-            LogError "Version variable '$varName' does not match the value in Version.Details.xml. Expected '$expectedVersion', actual '$actualVersion'"
+            LogError `
+                "Version variable '$varName' does not match the value in Version.Details.xml. Expected '$expectedVersion', actual '$actualVersion'" `
+                -filepath "$repoRoot\eng\Versions.props"
         }
     }
 
@@ -95,12 +106,14 @@ try {
         & $dotnet run -p "$repoRoot/eng/tools/BaselineGenerator/"
     }
 
-    Write-Host "git diff"
-    & git diff --ignore-space-at-eol --exit-code
-    if ($LastExitCode -ne 0) {
-        $status = git status -s | Out-String
-        $status = $status -replace "`n","`n    "
-        LogError "Generated code is not up to date."
+    Write-Host "Run git diff to check for pending changes"
+    $changedFiles = git --no-pager diff --ignore-space-at-eol --name-only
+    if ($changedFiles) {
+        foreach ($file in $changedFiles) {
+            $filePath = Resolve-Path "${repoRoot}/${file}"
+            LogError "Generated code is not up to date in $file." -filepath $filePath
+            & git --no-pager diff --ignore-space-at-eol $filePath
+        }
     }
 }
 finally {
