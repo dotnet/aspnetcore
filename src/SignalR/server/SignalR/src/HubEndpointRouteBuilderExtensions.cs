@@ -14,8 +14,9 @@ namespace Microsoft.AspNetCore.Routing
         /// Maps incoming requests with the specified path to the specified <see cref="Hub"/> type.
         /// </summary>
         /// <typeparam name="THub">The <see cref="Hub"/> type to map requests to.</typeparam>
-        /// <param name="builder">The <see cref="IEndpointRouteBuilder"/></param>
-        /// <param name="pattern">The request path.</param>
+        /// <param name="builder">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="pattern">The route pattern.</param>
+        /// <returns>An <see cref="IEndpointConventionBuilder"/> for endpoints associated with the connections.</returns>
         public static IEndpointConventionBuilder MapHub<THub>(this IEndpointRouteBuilder builder, string pattern) where THub : Hub
         {
             return builder.MapHub<THub>(pattern, configureOptions: null);
@@ -25,9 +26,10 @@ namespace Microsoft.AspNetCore.Routing
         /// Maps incoming requests with the specified path to the specified <see cref="Hub"/> type.
         /// </summary>
         /// <typeparam name="THub">The <see cref="Hub"/> type to map requests to.</typeparam>
-        /// <param name="builder">The <see cref="IEndpointRouteBuilder"/></param>
-        /// <param name="pattern">The request path.</param>
+        /// <param name="builder">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="pattern">The route pattern.</param>
         /// <param name="configureOptions">A callback to configure dispatcher options.</param>
+        /// <returns>An <see cref="IEndpointConventionBuilder"/> for endpoints associated with the connections.</returns>
         public static IEndpointConventionBuilder MapHub<THub>(this IEndpointRouteBuilder builder, string pattern, Action<HttpConnectionDispatcherOptions> configureOptions) where THub : Hub
         {
             var marker = builder.ServiceProvider.GetService<SignalRMarkerService>();

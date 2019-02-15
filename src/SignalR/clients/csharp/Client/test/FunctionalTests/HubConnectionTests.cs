@@ -900,8 +900,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         }
 
         [Theory]
-        [MemberData(nameof(TransportTypes))]
-        public async Task ClientWillFailAuthEndPointIfNotAuthorized(HttpTransportType transportType)
+        [MemberData(nameof(TransportTypesWithAuth))]
+        public async Task ClientWillFailAuthEndPointIfNotAuthorized(HttpTransportType transportType, string hubPath)
         {
             bool ExpectedErrors(WriteContext writeContext)
             {
@@ -912,7 +912,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             {
                 var hubConnection = new HubConnectionBuilder()
                     .WithLoggerFactory(LoggerFactory)
-                    .WithUrl(server.Url + "/authorizedhub", transportType)
+                    .WithUrl(server.Url + hubPath, transportType)
                     .Build();
                 try
                 {
@@ -1195,6 +1195,17 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                             }
                         }
                     }
+                }
+            }
+        }
+
+        public static IEnumerable<object[]> TransportTypesWithAuth()
+        {
+            foreach (var transport in TransportTypes().SelectMany(t => t).Cast<HttpTransportType>())
+            {
+                foreach (var path in new[] { "/authorizedhub", "/authorizedhub2" })
+                {
+                    yield return new object[] { transport, path };
                 }
             }
         }

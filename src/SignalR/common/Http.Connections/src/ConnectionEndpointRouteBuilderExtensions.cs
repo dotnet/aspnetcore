@@ -15,9 +15,10 @@ namespace Microsoft.AspNetCore.Routing
         /// <summary>
         /// Maps incoming requests with the specified path to the provided connection pipeline.
         /// </summary>
-        /// <param name="builder">The <see cref="IEndpointRouteBuilder"/></param>
-        /// <param name="pattern">The request path.</param>
+        /// <param name="builder">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="pattern">The route pattern.</param>
         /// <param name="configure">A callback to configure the connection.</param>
+        /// <returns>An <see cref="IEndpointConventionBuilder"/> for endpoints associated with the connections.</returns>
         public static IEndpointConventionBuilder MapConnections(this IEndpointRouteBuilder builder, string pattern, Action<IConnectionBuilder> configure) =>
             builder.MapConnections(pattern, new HttpConnectionDispatcherOptions(), configure);
 
@@ -25,8 +26,9 @@ namespace Microsoft.AspNetCore.Routing
         /// Maps incoming requests with the specified path to the provided connection pipeline.
         /// </summary>
         /// <typeparam name="TConnectionHandler">The <see cref="ConnectionHandler"/> type.</typeparam>
-        /// <param name="builder">The <see cref="IEndpointRouteBuilder"/></param>
-        /// <param name="pattern">The request path.</param>
+        /// <param name="builder">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="pattern">The route pattern.</param>
+        /// <returns>An <see cref="IEndpointConventionBuilder"/> for endpoints associated with the connections.</returns>
         public static IEndpointConventionBuilder MapConnectionHandler<TConnectionHandler>(this IEndpointRouteBuilder builder, string pattern) where TConnectionHandler : ConnectionHandler
         {
             return builder.MapConnectionHandler<TConnectionHandler>(pattern, configureOptions: null);
@@ -36,9 +38,10 @@ namespace Microsoft.AspNetCore.Routing
         /// Maps incoming requests with the specified path to the provided connection pipeline.
         /// </summary>
         /// <typeparam name="TConnectionHandler">The <see cref="ConnectionHandler"/> type.</typeparam>
-        /// <param name="builder">The <see cref="IEndpointRouteBuilder"/></param>
-        /// <param name="pattern">The request path.</param>
+        /// <param name="builder">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="pattern">The route pattern.</param>
         /// <param name="configureOptions">A callback to configure dispatcher options.</param>
+        /// <returns>An <see cref="IEndpointConventionBuilder"/> for endpoints associated with the connections.</returns>
         public static IEndpointConventionBuilder MapConnectionHandler<TConnectionHandler>(this IEndpointRouteBuilder builder, string pattern, Action<HttpConnectionDispatcherOptions> configureOptions) where TConnectionHandler : ConnectionHandler
         {
             var options = new HttpConnectionDispatcherOptions();
@@ -73,10 +76,11 @@ namespace Microsoft.AspNetCore.Routing
         /// <summary>
         /// Maps incoming requests with the specified path to the provided connection pipeline.
         /// </summary>
-        /// <param name="builder">The <see cref="IEndpointRouteBuilder"/></param>
-        /// <param name="pattern">The request path.</param>
+        /// <param name="builder">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="pattern">The route pattern.</param>
         /// <param name="options">Options used to configure the connection.</param>
         /// <param name="configure">A callback to configure the connection.</param>
+        /// <returns>An <see cref="IEndpointConventionBuilder"/> for endpoints associated with the connections.</returns>
         public static IEndpointConventionBuilder MapConnections(this IEndpointRouteBuilder builder, string pattern, HttpConnectionDispatcherOptions options, Action<IConnectionBuilder> configure)
         {
             var dispatcher = builder.ServiceProvider.GetRequiredService<HttpConnectionDispatcher>();
