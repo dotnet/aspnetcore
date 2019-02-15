@@ -1,6 +1,7 @@
 @using Microsoft.JSInterop
 @using BasicTestApp.InteropTest
 @using System.Runtime.InteropServices
+@inject IJSRuntime JSRuntime
 
 <button id="btn-interop" onclick="@InvokeInteropAsync">Invoke interop!</button>
 
@@ -71,7 +72,7 @@
         var instanceMethodsTarget = new JavaScriptInterop();
 
         Console.WriteLine("Starting interop invocations.");
-        await JSRuntime.Current.InvokeAsync<object>(
+        await JSRuntime.InvokeAsync<object>(
             "jsInteropTests.invokeDotNetInteropMethodsAsync",
             shouldSupportSyncInterop,
             new DotNetObjectRef(testDTOTOPassByRef),
@@ -83,7 +84,7 @@
         }
 
         Console.WriteLine("Showing interop invocation results.");
-        var collectResults = await JSRuntime.Current.InvokeAsync<Dictionary<string,string>>("jsInteropTests.collectInteropResults");
+        var collectResults = await JSRuntime.InvokeAsync<Dictionary<string,string>>("jsInteropTests.collectInteropResults");
 
         ReturnValues = collectResults.ToDictionary(kvp => kvp.Key,kvp => System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(kvp.Value)));
 
@@ -96,7 +97,7 @@
 
         try
         {
-            await JSRuntime.Current.InvokeAsync<object>("jsInteropTests.asyncFunctionThrowsSyncException");
+            await JSRuntime.InvokeAsync<object>("jsInteropTests.asyncFunctionThrowsSyncException");
         }
         catch (JSException e)
         {
@@ -105,7 +106,7 @@
 
         try
         {
-            await JSRuntime.Current.InvokeAsync<object>("jsInteropTests.asyncFunctionThrowsAsyncException");
+            await JSRuntime.InvokeAsync<object>("jsInteropTests.asyncFunctionThrowsAsyncException");
         }
         catch (JSException e)
         {
@@ -118,15 +119,15 @@
             { "stringValue", "My string" },
             { "testDto", new DotNetObjectRef(passDotNetObjectByRef) },
         };
-        ReceiveDotNetObjectByRefAsyncResult = await JSRuntime.Current.InvokeAsync<Dictionary<string, object>>("receiveDotNetObjectByRefAsync", passDotNetObjectByRefArg);
+        ReceiveDotNetObjectByRefAsyncResult = await JSRuntime.InvokeAsync<Dictionary<string, object>>("receiveDotNetObjectByRefAsync", passDotNetObjectByRefArg);
         ReceiveDotNetObjectByRefAsyncResult["testDto"] = ReceiveDotNetObjectByRefAsyncResult["testDto"] == passDotNetObjectByRef ? "Same" : "Different";
 
-        ReturnValues["returnPrimitiveAsync"] = (await JSRuntime.Current.InvokeAsync<int>("returnPrimitiveAsync")).ToString();
-        ReturnValues["returnArrayAsync"] = string.Join(",", (await JSRuntime.Current.InvokeAsync<Segment[]>("returnArrayAsync")).Select(x => x.Source).ToArray());
+        ReturnValues["returnPrimitiveAsync"] = (await JSRuntime.InvokeAsync<int>("returnPrimitiveAsync")).ToString();
+        ReturnValues["returnArrayAsync"] = string.Join(",", (await JSRuntime.InvokeAsync<Segment[]>("returnArrayAsync")).Select(x => x.Source).ToArray());
         if (shouldSupportSyncInterop)
         {
-            ReturnValues["returnPrimitive"] = ((IJSInProcessRuntime)JSRuntime.Current).Invoke<int>("returnPrimitive").ToString();
-            ReturnValues["returnArray"] = string.Join(",", ((IJSInProcessRuntime)JSRuntime.Current).Invoke<Segment[]>("returnArray").Select(x => x.Source).ToArray());
+            ReturnValues["returnPrimitive"] = ((IJSInProcessRuntime)JSRuntime).Invoke<int>("returnPrimitive").ToString();
+            ReturnValues["returnArray"] = string.Join(",", ((IJSInProcessRuntime)JSRuntime).Invoke<Segment[]>("returnArray").Select(x => x.Source).ToArray());
         }
 
         Invocations = invocations;
@@ -135,7 +136,7 @@
 
     public void InvokeInProcessInterop()
     {
-        var inProcRuntime = ((IJSInProcessRuntime)JSRuntime.Current);
+        var inProcRuntime = ((IJSInProcessRuntime)JSRuntime);
 
         try
         {

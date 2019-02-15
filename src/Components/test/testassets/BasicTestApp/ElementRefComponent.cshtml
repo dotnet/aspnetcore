@@ -1,4 +1,5 @@
 @using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
 
 <h1>Element capture</h1>
 
@@ -31,6 +32,6 @@
 
     async Task MakeInteropCall()
     {
-        await JSRuntime.Current.InvokeAsync<object>("setElementValue", _myInput, $"Clicks: {++_count}");
+        await JSRuntime.InvokeAsync<object>("setElementValue", _myInput, $"Clicks: {++_count}");
     }
 }
