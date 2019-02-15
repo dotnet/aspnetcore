@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             }
         }
 
-        [Parameter] string ParsingErrorMessage { get; set; } = "The value for '{0}' must be a number.";
+        [Parameter] string ParsingErrorMessage { get; set; } = "The {0} field must be a number.";
 
         /// <inheritdoc />
         protected override void BuildRenderTree(RenderTreeBuilder builder)
