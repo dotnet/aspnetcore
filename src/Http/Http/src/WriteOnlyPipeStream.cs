@@ -81,9 +81,17 @@ namespace System.IO.Pipelines
         }
 
         /// <inheritdoc />
-        public override async Task FlushAsync(CancellationToken cancellationToken)
+        public override Task FlushAsync(CancellationToken cancellationToken)
         {
-            await InnerPipeWriter.FlushAsync(cancellationToken);
+            var task = InnerPipeWriter.FlushAsync(cancellationToken);
+            if (task.IsCompletedSuccessfully)
+            {
+                // Most ValueTask implementations reset in GetResult, so call it before returning completed task
+                task.GetAwaiter().GetResult();
+                return Task.CompletedTask;
+            }
+
+            return task.AsTask();
         }
 
         /// <inheritdoc />
