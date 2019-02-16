@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
         public Task StopAsync(CancellationToken token)
         {
-            return ExecuteAsync(service => service.StopAsync(token), throwOnfirstFailure: false);
+            return ExecuteAsync(service => service.StopAsync(token), throwOnFirstFailure: false);
         }
 
         private async Task ExecuteAsync(Func<IHostedService, Task> callback, bool throwOnFirstFailure = true)
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 }
                 catch (Exception ex)
                 {
-                    if (throwOnfirstFailure)
+                    if (throwOnFirstFailure)
                     {
                         throw;
                     }
