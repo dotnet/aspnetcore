@@ -138,14 +138,17 @@ namespace signalr
                             previous_task.get();
                             return previous_task;
                         }
-                        catch (std::exception)
+                        catch (std::exception e)
                         {
                             auto connection = weak_connection.lock();
                             if (connection)
                             {
-                                connection->m_connection->stop();
+                                return connection->m_connection->stop()
+                                    .then([e]() {
+                                        throw e;
+                                    });
                             }
-                            throw;
+                            throw e;
                         }
                     });
             });

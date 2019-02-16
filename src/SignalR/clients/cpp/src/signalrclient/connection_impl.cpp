@@ -84,112 +84,122 @@ namespace signalr
             m_message_id = m_groups_token = m_connection_id = _XPLATSTR("");
         }
 
+        return start_negotiate(m_base_url);
+    }
+
+    pplx::task<void> connection_impl::start_negotiate(const web::uri& url)
+    {
         pplx::task_completion_event<void> start_tce;
 
         auto weak_connection = weak_from_this();
 
         pplx::task_from_result()
-            .then([weak_connection]()
+            .then([weak_connection, url]()
+        {
+            auto connection = weak_connection.lock();
+            if (!connection)
             {
-                auto connection = weak_connection.lock();
-                if (!connection)
-                {
-                    return pplx::task_from_exception<negotiation_response>(_XPLATSTR("connection no longer exists"));
-                }
-                return request_sender::negotiate(*connection->m_web_request_factory, connection->m_base_url,
-                    connection->m_query_string, connection->m_signalr_client_config);
-            }, m_disconnect_cts.get_token())
-            .then([weak_connection](negotiation_response negotiation_response)
+                return pplx::task_from_exception<negotiation_response>(_XPLATSTR("connection no longer exists"));
+            }
+            return request_sender::negotiate(*connection->m_web_request_factory, url,
+                connection->m_query_string, connection->m_signalr_client_config);
+        }, m_disconnect_cts.get_token())
+            .then([weak_connection, start_tce](negotiation_response negotiation_response)
+        {
+            auto connection = weak_connection.lock();
+            if (!connection)
             {
-                auto connection = weak_connection.lock();
-                if (!connection)
+                return pplx::task_from_exception<void>(_XPLATSTR("connection no longer exists"));
+            }
+
+            if (!negotiation_response.error.empty())
+            {
+                return pplx::task_from_exception<void>(signalr_exception(negotiation_response.error));
+            }
+
+            // TODO: redirect response
+            if (!negotiation_response.url.empty())
+            {
+                return connection->start_negotiate(negotiation_response.url);
+            }
+
+            connection->m_connection_id = std::move(negotiation_response.connectionId);
+
+            // TODO: fallback logic
+
+            bool foundWebsockets = false;
+            for (auto availableTransport : negotiation_response.availableTransports)
+            {
+                if (availableTransport.transport == _XPLATSTR("WebSockets"))
                 {
-                    return pplx::task_from_exception<void>(_XPLATSTR("connection no longer exists"));
+                    foundWebsockets = true;
+                    break;
                 }
+            }
 
-                if (!negotiation_response.error.empty())
-                {
-                    return pplx::task_from_exception<void>(signalr_exception(negotiation_response.error));
-                }
+            if (!foundWebsockets)
+            {
+                return pplx::task_from_exception<void>(signalr_exception(_XPLATSTR("WebSockets is the only supported transport currently")));
+            }
 
-                // TODO: redirect response
-
-                connection->m_connection_id = std::move(negotiation_response.connectionId);
-
-                // TODO: fallback logic
-
-                bool foundWebsockets = false;
-                for (auto availableTransport : negotiation_response.availableTransports)
-                {
-                    if (availableTransport.transport == _XPLATSTR("WebSockets"))
-                    {
-                        foundWebsockets = true;
-                        break;
-                    }
-                }
-
-                if (!foundWebsockets)
-                {
-                    return pplx::task_from_exception<void>(signalr_exception(_XPLATSTR("WebSockets is the only supported transport currently")));
-                }
-
-                return connection->start_transport()
-                    .then([weak_connection](std::shared_ptr<transport> transport)
-                    {
-                        auto connection = weak_connection.lock();
-                        if (!connection)
-                        {
-                            return pplx::task_from_exception<void>(_XPLATSTR("connection no longer exists"));
-                        }
-                        connection->m_transport = transport;
-                        return pplx::task_from_result();
-                    });
-            }, m_disconnect_cts.get_token())
-            .then([start_tce, weak_connection](pplx::task<void> previous_task)
+            return connection->start_transport()
+                .then([weak_connection, start_tce](std::shared_ptr<transport> transport)
             {
                 auto connection = weak_connection.lock();
                 if (!connection)
                 {
                     return pplx::task_from_exception<void>(_XPLATSTR("connection no longer exists"));
                 }
-                try
+                connection->m_transport = transport;
+
+                if (!connection->change_state(connection_state::connecting, connection_state::connected))
                 {
-                    previous_task.get();
-                    if (!connection->change_state(connection_state::connecting, connection_state::connected))
-                    {
-                        connection->m_logger.log(trace_level::errors,
-                            utility::string_t(_XPLATSTR("internal error - transition from an unexpected state. expected state: connecting, actual state: "))
-                            .append(translate_connection_state(connection->get_connection_state())));
+                    connection->m_logger.log(trace_level::errors,
+                        utility::string_t(_XPLATSTR("internal error - transition from an unexpected state. expected state: connecting, actual state: "))
+                        .append(translate_connection_state(connection->get_connection_state())));
 
-                        _ASSERTE(false);
-                    }
-
-                    connection->m_start_completed_event.set();
-                    start_tce.set();
-                }
-                catch (const std::exception &e)
-                {
-                    auto task_canceled_exception = dynamic_cast<const pplx::task_canceled *>(&e);
-                    if (task_canceled_exception)
-                    {
-                        connection->m_logger.log(trace_level::info,
-                            _XPLATSTR("starting the connection has been canceled."));
-                    }
-                    else
-                    {
-                        connection->m_logger.log(trace_level::errors,
-                            utility::string_t(_XPLATSTR("connection could not be started due to: "))
-                            .append(utility::conversions::to_string_t(e.what())));
-                    }
-
-                    connection->m_transport = nullptr;
-                    connection->change_state(connection_state::disconnected);
-                    connection->m_start_completed_event.set();
-                    start_tce.set_exception(std::current_exception());
+                    _ASSERTE(false);
                 }
 
                 return pplx::task_from_result();
             });
+        }, m_disconnect_cts.get_token())
+            .then([start_tce, weak_connection](pplx::task<void> previous_task)
+        {
+            auto connection = weak_connection.lock();
+            if (!connection)
+            {
+                return pplx::task_from_exception<void>(_XPLATSTR("connection no longer exists"));
+            }
+            try
+            {
+                previous_task.get();
+                connection->m_start_completed_event.set();
+                start_tce.set();
+            }
+            catch (const std::exception & e)
+            {
+                auto task_canceled_exception = dynamic_cast<const pplx::task_canceled*>(&e);
+                if (task_canceled_exception)
+                {
+                    connection->m_logger.log(trace_level::info,
+                        _XPLATSTR("starting the connection has been canceled."));
+                }
+                else
+                {
+                    connection->m_logger.log(trace_level::errors,
+                        utility::string_t(_XPLATSTR("connection could not be started due to: "))
+                        .append(utility::conversions::to_string_t(e.what())));
+                }
+
+                connection->m_transport = nullptr;
+                connection->change_state(connection_state::disconnected);
+                connection->m_start_completed_event.set();
+                start_tce.set_exception(std::current_exception());
+            }
+
+            return pplx::task_from_result();
+        });
 
         return pplx::create_task(start_tce);
     }

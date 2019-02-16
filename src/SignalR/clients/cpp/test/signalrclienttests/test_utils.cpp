@@ -38,7 +38,7 @@ std::unique_ptr<web_request_factory> create_test_web_request_factory()
         auto response_body =
             url.path() == _XPLATSTR("/negotiate")
             ? _XPLATSTR("{\"connectionId\" : \"f7707523-307d-4cba-9abf-3eef701241e8\", ")
-            _XPLATSTR("\"availableTransports\" : [] }")
+            _XPLATSTR("\"availableTransports\" : [ { \"transport\": \"WebSockets\", \"transferFormats\": [ \"Text\", \"Binary\" ] } ] }")
             : url.path() == _XPLATSTR("/start") || url.path() == _XPLATSTR("/signalr/start")
                 ? _XPLATSTR("{\"Response\":\"started\" }")
                 : _XPLATSTR("");

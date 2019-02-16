@@ -329,7 +329,7 @@ TEST(connection_impl_start, start_fails_if_negotiate_response_does_not_have_webs
     {
         auto response_body =
             url.path() == _XPLATSTR("/negotiate")
-            ? _XPLATSTR("{ \"availableTransports\": [ { \"transport\": \"ServerSentEvents\" } ] }")
+            ? _XPLATSTR("{ \"availableTransports\": [ { \"transport\": \"ServerSentEvents\", \"transferFormats\": [ \"Text\" ] } ] }")
             : _XPLATSTR("");
 
         return std::unique_ptr<web_request>(new web_request_stub((unsigned short)200, _XPLATSTR("OK"), response_body));
@@ -353,24 +353,47 @@ TEST(connection_impl_start, start_fails_if_negotiate_response_does_not_have_webs
     }
     catch (const signalr_exception & e)
     {
-        ASSERT_STREQ("bad negotiate", e.what());
+        ASSERT_STREQ("WebSockets is the only supported transport currently", e.what());
     }
+}
+
+TEST(connection_impl_start, negotiate_follows_redirect)
+{
+    std::shared_ptr<log_writer> writer(std::make_shared<memory_log_writer>());
+
+    auto web_request_factory = std::make_unique<test_web_request_factory>([](const web::uri & url)
+    {
+        utility::string_t response_body = _XPLATSTR("");
+        if (url.path() == _XPLATSTR("/negotiate"))
+        {
+            if (url.host() == _XPLATSTR("redirected"))
+            {
+                response_body = _XPLATSTR("{\"connectionId\" : \"f7707523-307d-4cba-9abf-3eef701241e8\", ")
+                    _XPLATSTR("\"availableTransports\" : [ { \"transport\": \"WebSockets\", \"transferFormats\": [ \"Text\", \"Binary\" ] } ] }");
+            }
+            else
+            {
+                response_body = _XPLATSTR("{ \"url\": \"http://redirected\" }");
+            }
+        }
+
+        return std::unique_ptr<web_request>(new web_request_stub((unsigned short)200, _XPLATSTR("OK"), response_body));
+    });
+
+    auto websocket_client = std::make_shared<test_websocket_client>();
+
+    auto connection =
+        connection_impl::create(create_uri(), _XPLATSTR(""), trace_level::messages, writer,
+            std::move(web_request_factory), std::make_unique<test_transport_factory>(websocket_client));
+
+    connection->start().get();
 }
 
 TEST(connection_impl_start, start_fails_if_connect_request_times_out)
 {
     std::shared_ptr<log_writer> writer(std::make_shared<memory_log_writer>());
 
-    auto web_request_factory = std::make_unique<test_web_request_factory>([](const web::uri& url)
-    {
-        auto response_body =
-            url.path() == _XPLATSTR("/negotiate")
-            ? _XPLATSTR("{ \"connectionId\" : \"f7707523-307d-4cba-9abf-3eef701241e8\", ")
-            _XPLATSTR("\"availableTransports\" : [] }")
-            : _XPLATSTR("");
-
-        return std::unique_ptr<web_request>(new web_request_stub((unsigned short)200, _XPLATSTR("OK"), response_body));
-    });
+    auto web_request_factory = create_test_web_request_factory();
 
     pplx::task_completion_event<void> tce;
     auto websocket_client = std::make_shared<test_websocket_client>();
@@ -1075,8 +1098,8 @@ TEST(connection_impl_config, custom_headers_set_in_requests)
     {
         auto response_body =
             url.path() == _XPLATSTR("/negotiate")
-            ? _XPLATSTR("{ \"connectionId\" : \"f7707523-307d-4cba-9abf-3eef701241e8\", ")
-            _XPLATSTR("\"availableTransports\" : [] }")
+            ? _XPLATSTR("{\"connectionId\" : \"f7707523-307d-4cba-9abf-3eef701241e8\", ")
+            _XPLATSTR("\"availableTransports\" : [ { \"transport\": \"WebSockets\", \"transferFormats\": [ \"Text\", \"Binary\" ] } ] }")
             : _XPLATSTR("");
 
         auto request = new web_request_stub((unsigned short)200, _XPLATSTR("OK"), response_body);
@@ -1221,8 +1244,8 @@ TEST(connection_id, connection_id_reset_when_starting_connection)
         if (!fail_http_requests) {
             auto response_body =
                 url.path() == _XPLATSTR("/negotiate")
-                ? _XPLATSTR("{ \"connectionId\" : \"f7707523-307d-4cba-9abf-3eef701241e8\", ")
-                _XPLATSTR("\"availableTransports\" : [] }")
+                ? _XPLATSTR("{\"connectionId\" : \"f7707523-307d-4cba-9abf-3eef701241e8\", ")
+                _XPLATSTR("\"availableTransports\" : [ { \"transport\": \"WebSockets\", \"transferFormats\": [ \"Text\", \"Binary\" ] } ] }")
                 : _XPLATSTR("");
 
             return std::unique_ptr<web_request>(new web_request_stub((unsigned short)200, _XPLATSTR("OK"), response_body));
