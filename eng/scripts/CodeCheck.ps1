@@ -33,9 +33,7 @@ function LogError {
 }
 
 try {
-    #
-    # Solutions
-    #
+    Invoke-Block { & git --version }
 
     if ($ci) {
         & $repoRoot/build.ps1 -ci -norestore /t:InstallDotNet
