@@ -4,7 +4,6 @@
 using System;
 using Microsoft.Extensions.Options;
 
-
 namespace Microsoft.AspNetCore.Http.Connections
 {
     public class ConnectionOptionsSetup : IConfigureOptions<ConnectionOptions>
