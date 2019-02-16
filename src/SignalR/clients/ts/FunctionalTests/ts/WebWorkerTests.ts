@@ -29,7 +29,7 @@ describe("WebWorkers", () => {
                         connection.start().then(function () {
                             postMessage('connected');
                         });
-                    } else if (connection.connectionState == signalR.HubConnectionState.Connected) {
+                    } else if (connection.state == signalR.HubConnectionState.Connected) {
                         connection.invoke('invokeWithString', e.data);
                     } else {
                         postMessage('Attempted to send message while disconnected.')
