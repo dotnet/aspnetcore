@@ -25,7 +25,12 @@ namespace Microsoft.AspNetCore.Http.Internal
 
         public void Initialize(IFeatureCollection features)
         {
-            _features = new FeatureReferences<FeatureInterfaces>(features);
+            _features.Initalize(features);
+        }
+
+        public void Initialize(IFeatureCollection features, int revision)
+        {
+            _features.Initalize(features, revision);
         }
 
         public void Uninitialize()

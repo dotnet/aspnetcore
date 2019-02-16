@@ -28,12 +28,17 @@ namespace Microsoft.AspNetCore.Http.Internal
         public DefaultHttpRequest(DefaultHttpContext context)
         {
             _context = context;
-            _features = new FeatureReferences<FeatureInterfaces>(_context.Features);
+            _features.Initalize(context.Features);
         }
 
         public void Initialize()
         {
-            _features = new FeatureReferences<FeatureInterfaces>(_context.Features);
+            _features.Initalize(_context.Features);
+        }
+
+        public void Initialize(int revision)
+        {
+            _features.Initalize(_context.Features, revision);
         }
 
         public void Uninitialize()
