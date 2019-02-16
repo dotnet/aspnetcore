@@ -72,7 +72,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             TryStart();
 
-            _readResult = await StartTimingReadAsync(cancellationToken);
+            try
+            {
+                _readResult = await StartTimingReadAsync(cancellationToken);
+            }
+            catch (ConnectionAbortedException ex)
+            {
+                throw new TaskCanceledException("The request was aborted", ex);
+            }
 
             StopTimingRead(_readResult.Buffer.Length);
 

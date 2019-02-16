@@ -52,7 +52,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     BadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTimeout);
                 }
 
-                _readResult = await StartTimingReadAsync(cancellationToken);
+                try
+                {
+                    _readResult = await StartTimingReadAsync(cancellationToken);
+                }
+                catch (ConnectionAbortedException ex)
+                {
+                    throw new TaskCanceledException("The request was aborted", ex);
+                }
 
                 if (_context.RequestTimedOut)
                 {

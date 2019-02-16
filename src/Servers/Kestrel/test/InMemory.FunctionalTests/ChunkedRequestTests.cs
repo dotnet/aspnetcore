@@ -900,14 +900,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             {
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.SendAll(
+                    await connection.Send(
                         "POST / HTTP/1.1",
                         "Host:",
                         "Transfer-Encoding: chunked",
                         "",
                         "1",
-                        "H");
-                    await connection.Send(
+                        "H",
                         "4",
                         "ello",
                         "0",

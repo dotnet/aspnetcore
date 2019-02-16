@@ -5,6 +5,7 @@ using System;
 using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
@@ -76,7 +77,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             TryStart();
 
-            _readResult = await StartTimingReadAsync(cancellationToken);
+            try
+            {
+                _readResult = await StartTimingReadAsync(cancellationToken);
+            }
+            catch (ConnectionAbortedException ex)
+            {
+                throw new TaskCanceledException("The request was aborted", ex);
+            }
+
             StopTimingRead(_readResult.Buffer.Length);
 
             if (_readResult.IsCompleted)
