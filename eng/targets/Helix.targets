@@ -35,9 +35,8 @@
 
   <Target Name="_PublishHelixArchive" DependsOnTargets="Publish" >
 
-        <ZipDirectory SourceDirectory="$(PublishDir)" DestinationFile="$(PublishDir)../Helix.zip" Overwrite="true" />
-        <Message Importance="High" Text="Deleting $(PublishDir)" />
-        <RemoveDir Directories="$(PublishDir)" />
+    <ZipDirectory SourceDirectory="$(PublishDir)" DestinationFile="$(PublishDir)../Helix.zip" Overwrite="true" />
+    <RemoveDir Directories="$(PublishDir)" />
 
   </Target>
 

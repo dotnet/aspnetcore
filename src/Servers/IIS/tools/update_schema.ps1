@@ -39,11 +39,8 @@ if (-not $isAdmin -and -not $WhatIfPreference) {
     }
 }
 
-
 $schemaFile = "aspnetcore_schema.xml"
 $schemaSource = $ancmSchemaFileLocation
-
-
 
 $destinations = @(
     "${env:ProgramFiles(x86)}\IIS Express\config\schema\",

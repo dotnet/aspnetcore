@@ -1,6 +1,5 @@
 @ECHO OFF
 
-ECHO %*
 SET _TAIL=%*
 CALL SET _TAIL=%%_TAIL:*%1=%%
 
