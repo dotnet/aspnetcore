@@ -174,9 +174,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 .SetupGet(o => o.Value)
                 .Returns(new RouteOptions());
 
-#pragma warning disable CS0618 // Type or member is obsolete
-            var inlineConstraintResolver = new DefaultInlineConstraintResolver(routeOptions.Object);
-#pragma warning restore CS0618 // Type or member is obsolete
+            var inlineConstraintResolver = new DefaultInlineConstraintResolver(routeOptions.Object, Mock.Of<IServiceProvider>());
 
             var services = new ServiceCollection()
                 .AddSingleton<IInlineConstraintResolver>(inlineConstraintResolver);

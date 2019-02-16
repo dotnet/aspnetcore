@@ -26,70 +26,6 @@ namespace Microsoft.AspNetCore.Routing.Tree
         private static ObjectPool<UriBuildingContext> Pool = new DefaultObjectPoolProvider().Create(
             new UriBuilderContextPooledObjectPolicy());
 
-        [Fact]
-        public async Task TreeRouter_RouteAsync_MatchesCatchAllRoutesWithDefaults_UsingObsoleteConstructo()
-        {
-            // Arrange
-            var routes = new[] {
-                "{parameter1=1}/{parameter2=2}/{parameter3=3}/{*parameter4=4}",
-            };
-            var url = "/a/b/c";
-            var routeValues = new[] { "a", "b", "c", "4" };
-
-            var expectedRouteGroup = CreateRouteGroup(0, "{parameter1=1}/{parameter2=2}/{parameter3=3}/{*parameter4=4}");
-            var routeValueKeys = new[] { "parameter1", "parameter2", "parameter3", "parameter4" };
-            var expectedRouteValues = new RouteValueDictionary();
-            for (var i = 0; i < routeValueKeys.Length; i++)
-            {
-                expectedRouteValues.Add(routeValueKeys[i], routeValues[i]);
-            }
-
-            var builder = CreateBuilderUsingObsoleteConstructor();
-
-            // We setup the route entries in reverse order of precedence to ensure that when we
-            // try to route the request, the route with a higher precedence gets tried first.
-            foreach (var template in routes.Reverse())
-            {
-                MapInboundEntry(builder, template);
-            }
-
-            var route = builder.Build();
-
-            var context = CreateRouteContext(url);
-
-            // Act
-            await route.RouteAsync(context);
-
-            // Assert
-            Assert.Equal(expectedRouteGroup, context.RouteData.Values["test_route_group"]);
-            foreach (var entry in expectedRouteValues)
-            {
-                var data = Assert.Single(context.RouteData.Values, v => v.Key == entry.Key);
-                Assert.Equal(entry.Value, data.Value);
-            }
-        }
-
-        [Fact]
-        public async Task TreeRouter_RouteAsync_DoesNotMatchRoutesWithIntermediateDefaultRouteValues_UsingObsoleteConstructor()
-        {
-            // Arrange
-            var url = "/a/b";
-
-            var builder = CreateBuilderUsingObsoleteConstructor();
-
-            MapInboundEntry(builder, "a/b/{parameter3=3}/d");
-
-            var route = builder.Build();
-
-            var context = CreateRouteContext(url);
-
-            // Act
-            await route.RouteAsync(context);
-
-            // Assert
-            Assert.Null(context.Handler);
-        }
-
         [Theory]
         [InlineData("template/5", "template/{parameter:int}")]
         [InlineData("template/5", "template/{parameter}")]
@@ -2148,23 +2084,6 @@ namespace Microsoft.AspNetCore.Routing.Tree
                 NullLoggerFactory.Instance,
                 objectPool,
                 constraintResolver);
-            return builder;
-        }
-
-        private static TreeRouteBuilder CreateBuilderUsingObsoleteConstructor()
-        {
-            var objectPoolProvider = new DefaultObjectPoolProvider();
-            var objectPolicy = new UriBuilderContextPooledObjectPolicy();
-            var objectPool = objectPoolProvider.Create<UriBuildingContext>(objectPolicy);
-
-            var constraintResolver = CreateConstraintResolver();
-#pragma warning disable CS0618 // Type or member is obsolete
-            var builder = new TreeRouteBuilder(
-                NullLoggerFactory.Instance,
-                UrlEncoder.Default,
-                objectPool,
-                constraintResolver);
-#pragma warning restore CS0618 // Type or member is obsolete
             return builder;
         }
 
