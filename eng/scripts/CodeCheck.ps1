@@ -34,6 +34,7 @@ function LogError {
 
 try {
     Invoke-Block { & git --version }
+    $PSVersionTable
 
     if ($ci) {
         & $repoRoot/build.ps1 -ci -norestore /t:InstallDotNet
