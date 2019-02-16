@@ -5,6 +5,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
@@ -28,17 +29,14 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            app.UseConnections(routes =>
+            app.UseRouting(routes =>
             {
+                routes.MapHub<UncreatableHub>("/uncreatable");
+
                 routes.MapConnectionHandler<EchoConnectionHandler>("/echo");
                 routes.MapConnectionHandler<WriteThenCloseConnectionHandler>("/echoAndClose");
                 routes.MapConnectionHandler<HttpHeaderConnectionHandler>("/httpheader");
                 routes.MapConnectionHandler<AuthConnectionHandler>("/auth");
-            });
-
-            app.UseSignalR(routes =>
-            {
-                routes.MapHub<UncreatableHub>("/uncreatable");
             });
         }
     }

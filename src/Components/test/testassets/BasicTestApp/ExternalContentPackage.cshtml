@@ -1,5 +1,8 @@
 @addTagHelper *, TestContentPackage
 @using TestContentPackage
+@using Microsoft.JSInterop
+
+@inject IJSRuntime JSRuntime
 
 <h1>Functionality and content from an external package</h1>
 
@@ -33,6 +36,6 @@
 
     async Task ShowJavaScriptPrompt()
     {
-        result = await MyPrompt.Show("Hello!");
+        result = await MyPrompt.Show(JSRuntime, "Hello!");
     }
 }

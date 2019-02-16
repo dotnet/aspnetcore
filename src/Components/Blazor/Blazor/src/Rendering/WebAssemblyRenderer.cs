@@ -3,11 +3,10 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Blazor.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Browser;
 using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.JSInterop;
-using Mono.WebAssembly.Interop;
 
 namespace Microsoft.AspNetCore.Blazor.Rendering
 {
@@ -23,7 +22,8 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         /// Constructs an instance of <see cref="WebAssemblyRenderer"/>.
         /// </summary>
         /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to use when initializing components.</param>
-        public WebAssemblyRenderer(IServiceProvider serviceProvider) : base(serviceProvider)
+        public WebAssemblyRenderer(IServiceProvider serviceProvider)
+            : base(serviceProvider)
         {
             // The browser renderer registers and unregisters itself with the static
             // registry. This works well with the WebAssembly runtime, and is simple for the
@@ -66,7 +66,8 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
             // (otherwise the logged exception will come from UpdateDisplayAsync instead of here)
             // When implementing support for out-of-process runtimes, we'll need to call this
             // asynchronously and ensure we surface any exceptions correctly.
-            ((IJSInProcessRuntime)JSRuntime.Current).Invoke<object>(
+
+            WebAssemblyJSRuntime.Instance.Invoke<object>(
                 "Blazor._internal.attachRootComponentToElement",
                 _webAssemblyRendererId,
                 domElementSelector,
@@ -85,19 +86,12 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         /// <inheritdoc />
         protected override Task UpdateDisplayAsync(in RenderBatch batch)
         {
-            if (JSRuntime.Current is MonoWebAssemblyJSRuntime mono)
-            {
-                mono.InvokeUnmarshalled<int, RenderBatch, object>(
-                    "Blazor._internal.renderBatch",
-                    _webAssemblyRendererId,
-                    batch);
-                return Task.CompletedTask;
-            }
-            else
-            {
-                // This renderer is not used for server-side Blazor.
-                throw new NotImplementedException($"{nameof(WebAssemblyRenderer)} is supported only with in-process JS runtimes.");
-            }
+            WebAssemblyJSRuntime.Instance.InvokeUnmarshalled<int, RenderBatch, object>(
+                "Blazor._internal.renderBatch",
+                _webAssemblyRendererId,
+                batch);
+
+            return Task.CompletedTask;
         }
 
         /// <inheritdoc />

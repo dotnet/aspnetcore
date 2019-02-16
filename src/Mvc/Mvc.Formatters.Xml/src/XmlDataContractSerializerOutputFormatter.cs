@@ -254,6 +254,13 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             var dataContractSerializer = GetCachedSerializer(wrappingType);
 
+            // Opt into sync IO support until we can work out an alternative https://github.com/aspnet/AspNetCore/issues/6397
+            var syncIOFeature = context.HttpContext.Features.Get<Http.Features.IHttpBodyControlFeature>();
+            if (syncIOFeature != null)
+            {
+                syncIOFeature.AllowSynchronousIO = true;
+            }
+
             using (var textWriter = context.WriterFactory(context.HttpContext.Response.Body, writerSettings.Encoding))
             {
                 using (var xmlWriter = CreateXmlWriter(context, textWriter, writerSettings))

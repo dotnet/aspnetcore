@@ -900,6 +900,33 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         }
 
         [Theory]
+        [MemberData(nameof(TransportTypesWithAuth))]
+        public async Task ClientWillFailAuthEndPointIfNotAuthorized(HttpTransportType transportType, string hubPath)
+        {
+            bool ExpectedErrors(WriteContext writeContext)
+            {
+                return writeContext.Exception is HttpRequestException;
+            }
+
+            using (StartServer<Startup>(out var server, ExpectedErrors))
+            {
+                var hubConnection = new HubConnectionBuilder()
+                    .WithLoggerFactory(LoggerFactory)
+                    .WithUrl(server.Url + hubPath, transportType)
+                    .Build();
+                try
+                {
+                    var ex = await Assert.ThrowsAnyAsync<HttpRequestException>(() => hubConnection.StartAsync().OrTimeout());
+                    Assert.Equal("Response status code does not indicate success: 401 (Unauthorized).", ex.Message);
+                }
+                finally
+                {
+                    await hubConnection.DisposeAsync().OrTimeout();
+                }
+            }
+        }
+
+        [Theory]
         [MemberData(nameof(TransportTypes))]
         public async Task ClientCanUseJwtBearerTokenForAuthenticationWhenRedirected(HttpTransportType transportType)
         {
@@ -1168,6 +1195,17 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                             }
                         }
                     }
+                }
+            }
+        }
+
+        public static IEnumerable<object[]> TransportTypesWithAuth()
+        {
+            foreach (var transport in TransportTypes().SelectMany(t => t).Cast<HttpTransportType>())
+            {
+                foreach (var path in new[] { "/authorizedhub", "/authorizedhub2" })
+                {
+                    yield return new object[] { transport, path };
                 }
             }
         }
