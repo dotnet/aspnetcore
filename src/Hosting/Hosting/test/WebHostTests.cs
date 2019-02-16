@@ -458,26 +458,26 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         [Fact]
-        public async Task WebHostNotifiesAllIApplicationLifetimeEventsCallbacksEvenIfTheyThrow()
+        public async Task WebHostDoesNotNotifyAllIApplicationLifetimeEventsCallbacksIfTheyThrow()
         {
-            bool[] events1 = null;
-            bool[] events2 = null;
+            bool[] hostedSeviceCalls1 = null;
+            bool[] hostedServiceCalls2 = null;
 
             using (var host = CreateBuilder()
                 .UseFakeServer()
                 .ConfigureServices(services =>
                 {
-                    events1 = RegisterCallbacksThatThrow(services);
-                    events2 = RegisterCallbacksThatThrow(services);
+                    hostedSeviceCalls1 = RegisterCallbacksThatThrow(services);
+                    hostedServiceCalls2 = RegisterCallbacksThatThrow(services);
                 })
                 .Build())
             {
-                await host.StartAsync();
-                Assert.True(events1[0]);
-                Assert.True(events2[0]);
+                await Assert.ThrowsAsync<InvalidOperationException>(() => host.StartAsync());
+                Assert.True(hostedSeviceCalls1[0]);
+                Assert.False(hostedServiceCalls2[0]);
                 host.Dispose();
-                Assert.True(events1[1]);
-                Assert.True(events2[1]);
+                Assert.True(hostedSeviceCalls1[1]);
+                Assert.True(hostedServiceCalls2[1]);
             }
         }
 
@@ -667,17 +667,17 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         [Fact]
-        public async Task WebHostNotifiesAllIHostedServicesAndIApplicationLifetimeCallbacksEvenIfTheyThrow()
+        public async Task WebHostDoesNotNotifyAllIHostedServicesAndIApplicationLifetimeCallbacksIfTheyThrow()
         {
-            bool[] events1 = null;
-            bool[] events2 = null;
+            bool[] hostedServiceCalls1 = null;
+            bool[] hostedServiceCalls2 = null;
 
             using (var host = CreateBuilder()
                 .UseFakeServer()
                 .ConfigureServices(services =>
                 {
-                    events1 = RegisterCallbacksThatThrow(services);
-                    events2 = RegisterCallbacksThatThrow(services);
+                    hostedServiceCalls1 = RegisterCallbacksThatThrow(services);
+                    hostedServiceCalls2 = RegisterCallbacksThatThrow(services);
                 })
                 .Build())
             {
@@ -690,14 +690,14 @@ namespace Microsoft.AspNetCore.Hosting
                 var started2 = RegisterCallbacksThatThrow(applicationLifetime2.ApplicationStarted);
                 var stopping2 = RegisterCallbacksThatThrow(applicationLifetime2.ApplicationStopping);
 
-                await host.StartAsync();
-                Assert.True(events1[0]);
-                Assert.True(events2[0]);
+                await Assert.ThrowsAsync<InvalidOperationException>(() => host.StartAsync());
+                Assert.True(hostedServiceCalls1[0]);
+                Assert.False(hostedServiceCalls2[0]);
                 Assert.True(started.All(s => s));
                 Assert.True(started2.All(s => s));
                 host.Dispose();
-                Assert.True(events1[1]);
-                Assert.True(events2[1]);
+                Assert.True(hostedServiceCalls1[1]);
+                Assert.True(hostedServiceCalls2[1]);
                 Assert.True(stopping.All(s => s));
                 Assert.True(stopping2.All(s => s));
             }
