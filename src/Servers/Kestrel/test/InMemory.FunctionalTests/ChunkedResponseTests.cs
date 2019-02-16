@@ -476,7 +476,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 var response = httpContext.Response;
                 await response.StartAsync();
 
-                var memory = response.BodyPipe.GetMemory(5000); // This will return 4089
+                var memory = response.BodyPipe.GetMemory(); // This will return 4089
                 var fisrtPartOfResponse = Encoding.ASCII.GetBytes(new string('a', memory.Length));
                 fisrtPartOfResponse.CopyTo(memory);
                 response.BodyPipe.Advance(memory.Length);
@@ -525,7 +525,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                 await response.BodyPipe.FlushAsync();
 
-                var memory = response.BodyPipe.GetMemory(5000); // This will return 4089
+                var memory = response.BodyPipe.GetMemory(); // This will return 4089
                 var fisrtPartOfResponse = Encoding.ASCII.GetBytes(new string('a', memory.Length));
                 fisrtPartOfResponse.CopyTo(memory);
                 response.BodyPipe.Advance(memory.Length);
