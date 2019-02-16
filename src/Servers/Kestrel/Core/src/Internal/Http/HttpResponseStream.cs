@@ -31,12 +31,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public override void Flush()
         {
-            if (!_bodyControl.AllowSynchronousIO)
+            // Dispose of a TextWrtier calls Flush unconditionally even if there is nothing to Flush,
+            // so we need to guard against immediately completing Flushes vs sync Flushes
+            var task = base.FlushAsync();
+            if (!task.IsCompletedSuccessfully && !_bodyControl.AllowSynchronousIO)
             {
                 throw new InvalidOperationException(CoreStrings.SynchronousWritesDisallowed);
             }
 
-            base.Flush();
+            task.GetAwaiter().GetResult();
         }
 
         public void StartAcceptingWrites()

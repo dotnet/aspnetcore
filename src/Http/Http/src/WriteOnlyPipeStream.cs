@@ -72,12 +72,15 @@ namespace System.IO.Pipelines
         /// <inheritdoc />
         public override void Flush()
         {
-            if (!_allowSynchronousIO)
+            // Dispose of a TextWrtier calls Flush unconditionally even if there is nothing to Flush,
+            // so we need to guard against immediately completing Flushes vs sync Flushes
+            var task = FlushAsync(default);
+            if (!task.IsCompletedSuccessfully && !_allowSynchronousIO)
             {
                 ThrowHelper.ThrowInvalidOperationException_SynchronousFlushesDisallowed();
             }
-            
-            FlushAsync(default).GetAwaiter().GetResult();
+
+            task.GetAwaiter().GetResult();
         }
 
         /// <inheritdoc />
