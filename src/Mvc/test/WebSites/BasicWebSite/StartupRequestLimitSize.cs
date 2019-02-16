@@ -3,6 +3,8 @@
 
 using System;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
@@ -48,6 +50,7 @@ namespace BasicWebSite
         {
             private readonly Stream _innerStream;
             private readonly IHttpMaxRequestBodySizeFeature _maxRequestBodySizeFeature;
+            private long _totalRead;
 
             public RequestBodySizeCheckingStream(
                 Stream innerStream,
@@ -78,12 +81,39 @@ namespace BasicWebSite
             public override int Read(byte[] buffer, int offset, int count)
             {
                 if (_maxRequestBodySizeFeature.MaxRequestBodySize != null
-                    && _innerStream.Length > _maxRequestBodySizeFeature.MaxRequestBodySize)
+                    && _innerStream.CanSeek && _innerStream.Length > _maxRequestBodySizeFeature.MaxRequestBodySize)
                 {
                     throw new InvalidOperationException("Request content size is greater than the limit size");
                 }
 
-                return _innerStream.Read(buffer, offset, count);
+                var read = _innerStream.Read(buffer, offset, count);
+                _totalRead += read;
+
+                if (_maxRequestBodySizeFeature.MaxRequestBodySize != null
+                    && _totalRead > _maxRequestBodySizeFeature.MaxRequestBodySize)
+                {
+                    throw new InvalidOperationException("Request content size is greater than the limit size");
+                }
+                return read;
+            }
+
+            public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+            {
+                if (_maxRequestBodySizeFeature.MaxRequestBodySize != null
+                    && _innerStream.CanSeek && _innerStream.Length > _maxRequestBodySizeFeature.MaxRequestBodySize)
+                {
+                    throw new InvalidOperationException("Request content size is greater than the limit size");
+                }
+
+                var read = await _innerStream.ReadAsync(buffer, offset, count, cancellationToken);
+                _totalRead += read;
+
+                if (_maxRequestBodySizeFeature.MaxRequestBodySize != null
+                    && _totalRead > _maxRequestBodySizeFeature.MaxRequestBodySize)
+                {
+                    throw new InvalidOperationException("Request content size is greater than the limit size");
+                }
+                return read;
             }
 
             public override long Seek(long offset, SeekOrigin origin)

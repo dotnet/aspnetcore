@@ -105,6 +105,13 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 response.StatusCode = result.StatusCode.Value;
             }
 
+            // Opt into sync IO support until we can work out an alternative https://github.com/aspnet/AspNetCore/issues/6397
+            var syncIOFeature = context.HttpContext.Features.Get<Http.Features.IHttpBodyControlFeature>();
+            if (syncIOFeature != null)
+            {
+                syncIOFeature.AllowSynchronousIO = true;
+            }
+
             using (var writer = new HttpResponseStreamWriter(response.Body, resolvedContentTypeEncoding))
             {
                 var viewContext = new ViewContext(
