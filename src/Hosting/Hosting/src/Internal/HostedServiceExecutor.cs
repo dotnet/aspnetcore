@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             return ExecuteAsync(service => service.StopAsync(token), throwOnfirstFailure: false);
         }
 
-        private async Task ExecuteAsync(Func<IHostedService, Task> callback, bool throwOnfirstFailure = true)
+        private async Task ExecuteAsync(Func<IHostedService, Task> callback, bool throwOnFirstFailure = true)
         {
             List<Exception> exceptions = null;
 
