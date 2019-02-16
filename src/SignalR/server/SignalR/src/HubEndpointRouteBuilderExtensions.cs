@@ -4,12 +4,12 @@
 using System;
 using System.Linq;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Connections;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Routing
+namespace Microsoft.AspNetCore.Builder
 {
     public static class HubEndpointRouteBuilderExtensions
     {
