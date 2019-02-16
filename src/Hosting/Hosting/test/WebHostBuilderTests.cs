@@ -552,7 +552,9 @@ namespace Microsoft.AspNetCore.Hosting
                 .Build())
             {
                 Assert.Equal(expected, host.Services.GetService<IHostingEnvironment>().EnvironmentName);
+#pragma warning disable CS0618 // Type or member is obsolete
                 Assert.Equal(expected, host.Services.GetService<Extensions.Hosting.IHostingEnvironment>().EnvironmentName);
+#pragma warning restore CS0618 // Type or member is obsolete
             }
         }
 
@@ -597,7 +599,9 @@ namespace Microsoft.AspNetCore.Hosting
                 .Build())
             {
                 Assert.Equal("/", host.Services.GetService<IHostingEnvironment>().ContentRootPath);
+#pragma warning disable CS0618 // Type or member is obsolete
                 Assert.Equal("/", host.Services.GetService<Extensions.Hosting.IHostingEnvironment>().ContentRootPath);
+#pragma warning restore CS0618 // Type or member is obsolete
             }
         }
 
@@ -612,7 +616,9 @@ namespace Microsoft.AspNetCore.Hosting
                 .Build())
             {
                 var basePath = host.Services.GetRequiredService<IHostingEnvironment>().ContentRootPath;
+#pragma warning disable CS0618 // Type or member is obsolete
                 var basePath2 = host.Services.GetService<Extensions.Hosting.IHostingEnvironment>().ContentRootPath;
+#pragma warning restore CS0618 // Type or member is obsolete
 
                 Assert.True(Path.IsPathRooted(basePath));
                 Assert.EndsWith(Path.DirectorySeparatorChar + "testroot", basePath);
@@ -633,7 +639,9 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 var appBase = AppContext.BaseDirectory;
                 Assert.Equal(appBase, host.Services.GetService<IHostingEnvironment>().ContentRootPath);
+#pragma warning disable CS0618 // Type or member is obsolete
                 Assert.Equal(appBase, host.Services.GetService<Extensions.Hosting.IHostingEnvironment>().ContentRootPath);
+#pragma warning restore CS0618 // Type or member is obsolete
             }
         }
 
@@ -659,7 +667,9 @@ namespace Microsoft.AspNetCore.Hosting
                 .Build())
             {
                 var hostingEnv = host.Services.GetService<IHostingEnvironment>();
+#pragma warning disable CS0618 // Type or member is obsolete
                 var hostingEnv2 = host.Services.GetService<Extensions.Hosting.IHostingEnvironment>();
+#pragma warning restore CS0618 // Type or member is obsolete
                 Assert.Equal(typeof(Startup).Assembly.GetName().Name, hostingEnv.ApplicationName);
                 Assert.Equal(typeof(Startup).Assembly.GetName().Name, hostingEnv2.ApplicationName);
             }
@@ -675,7 +685,9 @@ namespace Microsoft.AspNetCore.Hosting
                 .Build())
             {
                 var hostingEnv = host.Services.GetService<IHostingEnvironment>();
+#pragma warning disable CS0618 // Type or member is obsolete
                 var hostingEnv2 = host.Services.GetService<Extensions.Hosting.IHostingEnvironment>();
+#pragma warning restore CS0618 // Type or member is obsolete
                 Assert.Equal(typeof(StartupNoServicesNoInterface).Assembly.GetName().Name, hostingEnv.ApplicationName);
                 Assert.Equal(typeof(StartupNoServicesNoInterface).Assembly.GetName().Name, hostingEnv2.ApplicationName);
             }
