@@ -162,6 +162,12 @@ namespace System.IO.Pipelines
             while (true)
             {
                 var result = await InnerPipeReader.ReadAsync(cancellationToken);
+
+                if (result.IsCanceled)
+                {
+                    ThrowHelper.ThrowOperationCanceledException_ReadCanceled();
+                }
+
                 var readableBuffer = result.Buffer;
                 var readableBufferLength = readableBuffer.Length;
 

@@ -51,14 +51,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         [ConditionalFact]
         public async Task Https_EchoHelloWorld_Success()
         {
-            using (Utilities.CreateDynamicHttpsServer(out var address, httpContext =>
+            using (Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
             {
-                string input = new StreamReader(httpContext.Request.Body).ReadToEnd();
+                var input = await new StreamReader(httpContext.Request.Body).ReadToEndAsync();
                 Assert.Equal("Hello World", input);
-                byte[] body = Encoding.UTF8.GetBytes("Hello World");
+                var body = Encoding.UTF8.GetBytes("Hello World");
                 httpContext.Response.ContentLength = body.Length;
-                httpContext.Response.Body.Write(body, 0, body.Length);
-                return Task.FromResult(0);
+                await httpContext.Response.Body.WriteAsync(body, 0, body.Length);
             }))
             {
                 string response = await SendRequestAsync(address, "Hello World");
@@ -103,9 +102,32 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
+        [OSDontSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
+        public async Task Https_SkipsITlsHandshakeFeatureOnWin7()
+        {
+            using (Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
+            {
+                try
+                {
+                    var tlsFeature = httpContext.Features.Get<ITlsHandshakeFeature>();
+                    Assert.Null(tlsFeature);
+                }
+                catch (Exception ex)
+                {
+                    await httpContext.Response.WriteAsync(ex.ToString());
+                }
+            }))
+            {
+                string response = await SendRequestAsync(address);
+                Assert.Equal(string.Empty, response);
+            }
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
         public async Task Https_SetsITlsHandshakeFeature()
         {
-            using (Utilities.CreateDynamicHttpsServer(out var address, httpContext =>
+            using (Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
             {
                 try
                 {
@@ -122,9 +144,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 }
                 catch (Exception ex)
                 {
-                    return httpContext.Response.WriteAsync(ex.ToString());
+                    await httpContext.Response.WriteAsync(ex.ToString());
                 }
-                return Task.FromResult(0);
             }))
             {
                 string response = await SendRequestAsync(address);
