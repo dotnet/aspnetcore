@@ -277,6 +277,10 @@
       <Uri>https://github.com/aspnet/Extensions</Uri>
       <Sha>61070026dca7117d439de0443cfbbb0fb7172c65</Sha>
     </Dependency>
+    <Dependency Name="Mono.WebAssembly.Interop" Version="3.0.0-preview.19105.4">
+      <Uri>https://github.com/aspnet/Extensions</Uri>
+      <Sha>0000</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.Bcl.Json.Sources" Version="4.6.0-preview.19107.9">
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>c2bbb6a5ee5ff67e5e8353e154d7b4c4f2f83143</Sha>
