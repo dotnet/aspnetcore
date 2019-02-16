@@ -33,12 +33,19 @@ function LogError {
 }
 
 try {
-    #
-    # Solutions
-    #
-
     if ($ci) {
         & $repoRoot/build.ps1 -ci -norestore /t:InstallDotNet
+
+        $git = Get-Command git -ea ignore
+        if (-not $git) {
+            Write-Host "Could not find git.exe - downloading git v2.20.1"
+            $tempDir = "$PSScriptRoot/obj/"
+            mkdir $tempDir -ea ignore | out-null
+            $ProgressPreference = 'SilentlyContinue' # Workaround PowerShell/PowerShell#2138
+            Invoke-WebRequest -UseBasicParsing 'https://github.com/git-for-windows/git/releases/download/v2.20.1.windows.1/MinGit-2.20.1-64-bit.zip' -o $tempDir/git.zip
+            Expand-Archive $tempDir/git.zip -d  $tempDir/git/
+            $env:PATH="$env:PATH;$tempDir/git/cmd/"
+        }
     }
 
     Write-Host "Checking that Versions.props and Version.Details.xml match"
