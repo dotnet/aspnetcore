@@ -98,7 +98,7 @@ export class FetchHttpClient extends HttpClient {
           });
         })
         .catch((error) => {
-          if (error.message === "timemout") {
+          if (error.message === "timeout") {
             this.logger.log(LogLevel.Warning, `Timeout from HTTP request.`);
             reject(new TimeoutError());
           }
