@@ -1705,7 +1705,7 @@ namespace Microsoft.AspNetCore.Mvc.Core
             => string.Format(CultureInfo.CurrentCulture, GetString("ReferenceToNewtonsoftJsonRequired"), p0, p1, p2, p3, p4);
 
         /// <summary>
-        /// Collection bound to '{0}' exceeded {1}.{2} ({3}). Remove properties that bind unconditionally from {4}.
+        /// Collection bound to '{0}' exceeded {1}.{2} ({3}). This limit is a safeguard against incorrect model binders and models. Address issues in '{4}'. For example, this type may have a property with a model binder that always succeeds. See the {0}.{1} documentation for more information.
         /// </summary>
         internal static string ModelBinding_ExceededMaxModelBindingCollectionSize
         {
@@ -1713,13 +1713,13 @@ namespace Microsoft.AspNetCore.Mvc.Core
         }
 
         /// <summary>
-        /// Collection bound to '{0}' exceeded {1}.{2} ({3}). Remove properties that bind unconditionally from {4}.
+        /// Collection bound to '{0}' exceeded {1}.{2} ({3}). This limit is a safeguard against incorrect model binders and models. Address issues in '{4}'. For example, this type may have a property with a model binder that always succeeds. See the {0}.{1} documentation for more information.
         /// </summary>
         internal static string FormatModelBinding_ExceededMaxModelBindingCollectionSize(object p0, object p1, object p2, object p3, object p4)
             => string.Format(CultureInfo.CurrentCulture, GetString("ModelBinding_ExceededMaxModelBindingCollectionSize"), p0, p1, p2, p3, p4);
 
         /// <summary>
-        /// Model binding system exceeded {0}.{1} ({2}). Reduce the potential nesting of {3}.
+        /// Model binding system exceeded {0}.{1} ({2}). Reduce the potential nesting of '{3}'. For example, this type may have a property with a model binder that always succeeds. See the {0}.{1} documentation for more information.
         /// </summary>
         internal static string ModelBinding_ExceededMaxModelBindingRecursionDepth
         {
@@ -1727,7 +1727,7 @@ namespace Microsoft.AspNetCore.Mvc.Core
         }
 
         /// <summary>
-        /// Model binding system exceeded {0}.{1} ({2}). Reduce the potential nesting of {3}.
+        /// Model binding system exceeded {0}.{1} ({2}). Reduce the potential nesting of '{3}'. For example, this type may have a property with a model binder that always succeeds. See the {0}.{1} documentation for more information.
         /// </summary>
         internal static string FormatModelBinding_ExceededMaxModelBindingRecursionDepth(object p0, object p1, object p2, object p3)
             => string.Format(CultureInfo.CurrentCulture, GetString("ModelBinding_ExceededMaxModelBindingRecursionDepth"), p0, p1, p2, p3);

@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         private ActionContext _actionContext;
         private ModelStateDictionary _modelState;
         private ValidationStateDictionary _validationState;
-        private int _maxModelBindingRecursionDepth;
+        private int? _maxModelBindingRecursionDepth;
 
         private State _state;
         private readonly Stack<State> _stack = new Stack<State>();
@@ -192,19 +192,18 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         {
             get
             {
-                if (_maxModelBindingRecursionDepth == 0)
+                if (!_maxModelBindingRecursionDepth.HasValue)
                 {
-                    var mvcOptions = ActionContext?.HttpContext?.RequestServices?.GetService<IOptions<MvcOptions>>();
-                    if (mvcOptions == null)
-                    {
-                        // Ignore incomplete initialization. This must be a test scenario.
-                        return 32;
-                    }
-
-                    _maxModelBindingRecursionDepth = mvcOptions.Value.MaxModelBindingRecursionDepth;
+                    // Ignore incomplete initialization. This must be a test scenario because CreateBindingContext(...)
+                    // has not been called or was called without MvcOptions in the service provider.
+                    _maxModelBindingRecursionDepth = MvcOptions.DefaultMaxModelBindingRecursionDepth;
                 }
 
-                return _maxModelBindingRecursionDepth;
+                return _maxModelBindingRecursionDepth.Value;
+            }
+            set
+            {
+                _maxModelBindingRecursionDepth = value;
             }
         }
 
@@ -247,16 +246,16 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
 
             var binderModelName = bindingInfo?.BinderModelName ?? metadata.BinderModelName;
+            var bindingSource = bindingInfo?.BindingSource ?? metadata.BindingSource;
             var propertyFilterProvider = bindingInfo?.PropertyFilterProvider ?? metadata.PropertyFilterProvider;
 
-            var bindingSource = bindingInfo?.BindingSource ?? metadata.BindingSource;
-
-            return new DefaultModelBindingContext()
+            var bindingContext = new DefaultModelBindingContext()
             {
                 ActionContext = actionContext,
                 BinderModelName = binderModelName,
                 BindingSource = bindingSource,
                 PropertyFilter = propertyFilterProvider?.PropertyFilter,
+                ValidationState = new ValidationStateDictionary(),
 
                 // Because this is the top-level context, FieldName and ModelName should be the same.
                 FieldName = binderModelName ?? modelName,
@@ -269,9 +268,16 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
                 OriginalValueProvider = valueProvider,
                 ValueProvider = FilterValueProvider(valueProvider, bindingSource),
-
-                ValidationState = new ValidationStateDictionary(),
             };
+
+            // mvcOptions may be null when this method is called in test scenarios.
+            var mvcOptions = actionContext.HttpContext.RequestServices?.GetService<IOptions<MvcOptions>>();
+            if (mvcOptions != null)
+            {
+                bindingContext.MaxModelBindingRecursionDepth = mvcOptions.Value.MaxModelBindingRecursionDepth;
+            }
+
+            return bindingContext;
         }
 
         /// <inheritdoc />

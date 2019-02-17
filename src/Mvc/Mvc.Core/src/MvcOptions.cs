@@ -4,7 +4,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -23,10 +22,14 @@ namespace Microsoft.AspNetCore.Mvc
     /// </summary>
     public class MvcOptions : IEnumerable<ICompatibilitySwitch>
     {
+        internal const int DefaultMaxModelBindingCollectionSize = FormReader.DefaultValueCountLimit;
+        internal const int DefaultMaxModelBindingRecursionDepth = 32;
+
         private readonly IReadOnlyList<ICompatibilitySwitch> _switches = Array.Empty<ICompatibilitySwitch>();
+
         private int _maxModelStateErrors = ModelStateDictionary.DefaultMaxAllowedErrors;
-        private int _maxModelBindingCollectionSize = FormReader.DefaultValueCountLimit;
-        private int _maxModelBindingRecursionDepth = 32;
+        private int _maxModelBindingCollectionSize = DefaultMaxModelBindingCollectionSize;
+        private int _maxModelBindingRecursionDepth = DefaultMaxModelBindingRecursionDepth;
         private int? _maxValidationDepth = 32;
 
         /// <summary>
@@ -242,16 +245,21 @@ namespace Microsoft.AspNetCore.Mvc
         /// <remarks>
         /// <para>
         /// When binding a collection, some element binders may succeed unconditionally and model binding may run out
-        /// of memory. This limit constrains such unbounded collection growth.
+        /// of memory. This limit constrains such unbounded collection growth; it is a safeguard against incorrect
+        /// model binders and models.
         /// </para>
         /// <para>
         /// This limit does not <em>correct</em> the bound model. The <see cref="InvalidOperationException"/> instead
-        /// informs the developer of an issue in their model or model binder.
+        /// informs the developer of an issue in their model or model binder. The developer must correct that issue.
         /// </para>
         /// <para>
         /// This limit does not apply to collections of simple types. When
         /// <see cref="CollectionModelBinder{TElement}"/> relies entirely on <see cref="IValueProvider"/>s, it cannot
         /// create collections larger than the available data.
+        /// </para>
+        /// <para>
+        /// A very high value for this option (<c>int.MaxValue</c> for example) effectively removes the limit and is
+        /// not recommended.
         /// </para>
         /// </remarks>
         /// <value>The default value is <c>1024</c>, matching <see cref="FormReader.DefaultValueCountLimit"/>.</value>
@@ -278,12 +286,18 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         /// <remarks>
         /// <para>
-        /// For models that are very deep or infinitely recursive, model binding may result in stack overflow. This
-        /// limit constrains such recursion.
+        /// For some self-referential models, some binders may succeed unconditionally and model binding may result in
+        /// stack overflow. This limit constrains such unbounded recursion; it is a safeguard against incorrect model
+        /// binders and models. This limit also protects against very deep model type hierarchies lacking
+        /// self-references.
         /// </para>
         /// <para>
         /// This limit does not <em>correct</em> the bound model. The <see cref="InvalidOperationException"/> instead
-        /// informs the developer of an issue in their model.
+        /// informs the developer of an issue in their model. The developer must correct that issue.
+        /// </para>
+        /// <para>
+        /// A very high value for this option (<c>int.MaxValue</c> for example) effectively removes the limit and is
+        /// not recommended.
         /// </para>
         /// </remarks>
         /// <value>The default value is <c>32</c>, matching the default <see cref="MaxValidationDepth"/> value.</value>

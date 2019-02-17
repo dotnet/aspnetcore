@@ -12,7 +12,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
-using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
@@ -24,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     public class CollectionModelBinder<TElement> : ICollectionModelBinder
     {
         private static readonly IValueProvider EmptyValueProvider = new CompositeValueProvider();
-        private readonly int _maxModelBindingCollectionSize = FormReader.DefaultValueCountLimit;
+        private readonly int _maxModelBindingCollectionSize = MvcOptions.DefaultMaxModelBindingCollectionSize;
         private Func<object> _modelCreator;
 
         /// <summary>

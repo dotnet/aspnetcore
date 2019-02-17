@@ -3411,44 +3411,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.True(modelState.IsValid);
         }
 
-        private static void SetJsonBodyContent(HttpRequest request, string content)
-        {
-            var stream = new MemoryStream(new UTF8Encoding(encoderShouldEmitUTF8Identifier: false).GetBytes(content));
-            request.Body = stream;
-            request.ContentType = "application/json";
-        }
-
-        private static void SetFormFileBodyContent(HttpRequest request, string content, string name)
-        {
-            const string fileName = "text.txt";
-
-            FormFileCollection fileCollection;
-            if (request.HasFormContentType)
-            {
-                // Do less work and do not overwrite previous information if called a second time.
-                fileCollection = (FormFileCollection)request.Form.Files;
-            }
-            else
-            {
-                fileCollection = new FormFileCollection();
-                var formCollection = new FormCollection(new Dictionary<string, StringValues>(), fileCollection);
-
-                request.ContentType = "multipart/form-data; boundary=----WebKitFormBoundarymx2fSWqWSd0OxQqq";
-                request.Form = formCollection;
-            }
-
-            var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(content));
-            var file = new FormFile(memoryStream, 0, memoryStream.Length, name, fileName)
-            {
-                Headers = new HeaderDictionary(),
-
-                // Do not move this up. Headers must be non-null before the ContentDisposition property is accessed.
-                ContentDisposition = $"form-data; name={name}; filename={fileName}",
-            };
-
-            fileCollection.Add(file);
-        }
-
         private class LoopyModel
         {
             [ModelBinder(typeof(SuccessfulModelBinder))]
@@ -3625,18 +3587,32 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         private static void SetFormFileBodyContent(HttpRequest request, string content, string name)
         {
             const string fileName = "text.txt";
-            var fileCollection = new FormFileCollection();
-            var formCollection = new FormCollection(new Dictionary<string, StringValues>(), fileCollection);
-            var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(content));
 
-            request.Form = formCollection;
-            request.ContentType = "multipart/form-data; boundary=----WebKitFormBoundarymx2fSWqWSd0OxQqq";
-            request.Headers["Content-Disposition"] = $"form-data; name={name}; filename={fileName}";
-
-            fileCollection.Add(new FormFile(memoryStream, 0, memoryStream.Length, name, fileName)
+            FormFileCollection fileCollection;
+            if (request.HasFormContentType)
             {
-                Headers = request.Headers
-            });
+                // Do less work and do not overwrite previous information if called a second time.
+                fileCollection = (FormFileCollection)request.Form.Files;
+            }
+            else
+            {
+                fileCollection = new FormFileCollection();
+                var formCollection = new FormCollection(new Dictionary<string, StringValues>(), fileCollection);
+
+                request.ContentType = "multipart/form-data; boundary=----WebKitFormBoundarymx2fSWqWSd0OxQqq";
+                request.Form = formCollection;
+            }
+
+            var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(content));
+            var file = new FormFile(memoryStream, 0, memoryStream.Length, name, fileName)
+            {
+                Headers = new HeaderDictionary(),
+
+                // Do not move this up. Headers must be non-null before the ContentDisposition property is accessed.
+                ContentDisposition = $"form-data; name={name}; filename={fileName}",
+            };
+
+            fileCollection.Add(file);
         }
 
         private ModelMetadata GetMetadata(ModelBindingTestContext context, ParameterDescriptor parameter)
