@@ -339,6 +339,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 { ".wcm", "application/vnd.ms-works" },
                 { ".wdb", "application/vnd.ms-works" },
                 { ".webm", "video/webm" },
+                { ".webmanifest", "application/manifest+json" },
                 { ".webp", "image/webp" },
                 { ".wks", "application/vnd.ms-works" },
                 { ".wm", "video/x-ms-wm" },
