@@ -389,6 +389,76 @@ TEST(connection_impl_start, negotiate_follows_redirect)
     connection->start().get();
 }
 
+TEST(connection_impl_start, negotiate_fails_after_too_many_redirects)
+{
+    std::shared_ptr<log_writer> writer(std::make_shared<memory_log_writer>());
+
+    auto web_request_factory = std::make_unique<test_web_request_factory>([](const web::uri & url)
+    {
+        utility::string_t response_body = _XPLATSTR("");
+        if (url.path() == _XPLATSTR("/negotiate"))
+        {
+            // infinite redirect
+            response_body = _XPLATSTR("{ \"url\": \"http://redirected\" }");
+        }
+
+        return std::unique_ptr<web_request>(new web_request_stub((unsigned short)200, _XPLATSTR("OK"), response_body));
+    });
+
+    auto websocket_client = std::make_shared<test_websocket_client>();
+
+    auto connection =
+        connection_impl::create(create_uri(), _XPLATSTR(""), trace_level::messages, writer,
+            std::move(web_request_factory), std::make_unique<test_transport_factory>(websocket_client));
+
+    try
+    {
+        connection->start().get();
+    }
+    catch (signalr_exception e)
+    {
+        ASSERT_STREQ("too many redirects during negotiate", e.what());
+    }
+}
+
+TEST(connection_impl_start, negotiate_redirect_does_not_overwrite_url)
+{
+    std::shared_ptr<log_writer> writer(std::make_shared<memory_log_writer>());
+    int redirectCount = 0;
+
+    auto web_request_factory = std::make_unique<test_web_request_factory>([&redirectCount](const web::uri & url)
+    {
+        utility::string_t response_body = _XPLATSTR("");
+        if (url.path() == _XPLATSTR("/negotiate"))
+        {
+            if (url.host() == _XPLATSTR("redirected"))
+            {
+                response_body = _XPLATSTR("{\"connectionId\" : \"f7707523-307d-4cba-9abf-3eef701241e8\", ")
+                    _XPLATSTR("\"availableTransports\" : [ { \"transport\": \"WebSockets\", \"transferFormats\": [ \"Text\", \"Binary\" ] } ] }");
+            }
+            else
+            {
+                response_body = _XPLATSTR("{ \"url\": \"http://redirected\" }");
+                redirectCount++;
+            }
+        }
+
+        return std::unique_ptr<web_request>(new web_request_stub((unsigned short)200, _XPLATSTR("OK"), response_body));
+    });
+
+    auto websocket_client = std::make_shared<test_websocket_client>();
+
+    auto connection =
+        connection_impl::create(create_uri(), _XPLATSTR(""), trace_level::messages, writer,
+            std::move(web_request_factory), std::make_unique<test_transport_factory>(websocket_client));
+
+    connection->start().get();
+    ASSERT_EQ(1, redirectCount);
+    connection->stop().get();
+    connection->start().get();
+    ASSERT_EQ(2, redirectCount);
+}
+
 TEST(connection_impl_start, start_fails_if_connect_request_times_out)
 {
     std::shared_ptr<log_writer> writer(std::make_shared<memory_log_writer>());

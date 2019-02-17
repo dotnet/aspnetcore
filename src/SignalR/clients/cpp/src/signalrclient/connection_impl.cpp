@@ -84,11 +84,16 @@ namespace signalr
             m_message_id = m_groups_token = m_connection_id = _XPLATSTR("");
         }
 
-        return start_negotiate(m_base_url);
+        return start_negotiate(m_base_url, 0);
     }
 
-    pplx::task<void> connection_impl::start_negotiate(const web::uri& url)
+    pplx::task<void> connection_impl::start_negotiate(const web::uri& url, int redirect_count)
     {
+        if (redirect_count >= 100)
+        {
+            return pplx::task_from_exception<void>(signalr_exception(_XPLATSTR("too many redirects during negotiate")));
+        }
+
         pplx::task_completion_event<void> start_tce;
 
         auto weak_connection = weak_from_this();
@@ -104,7 +109,7 @@ namespace signalr
             return request_sender::negotiate(*connection->m_web_request_factory, url,
                 connection->m_query_string, connection->m_signalr_client_config);
         }, m_disconnect_cts.get_token())
-            .then([weak_connection, start_tce](negotiation_response negotiation_response)
+            .then([weak_connection, start_tce, redirect_count](negotiation_response negotiation_response)
         {
             auto connection = weak_connection.lock();
             if (!connection)
@@ -117,10 +122,10 @@ namespace signalr
                 return pplx::task_from_exception<void>(signalr_exception(negotiation_response.error));
             }
 
-            // TODO: redirect response
             if (!negotiation_response.url.empty())
             {
-                return connection->start_negotiate(negotiation_response.url);
+                // TODO: access token
+                return connection->start_negotiate(negotiation_response.url, redirect_count + 1);
             }
 
             connection->m_connection_id = std::move(negotiation_response.connectionId);
@@ -141,6 +146,8 @@ namespace signalr
             {
                 return pplx::task_from_exception<void>(signalr_exception(_XPLATSTR("WebSockets is the only supported transport currently")));
             }
+
+            // TODO: use transfer format
 
             return connection->start_transport()
                 .then([weak_connection, start_tce](std::shared_ptr<transport> transport)
