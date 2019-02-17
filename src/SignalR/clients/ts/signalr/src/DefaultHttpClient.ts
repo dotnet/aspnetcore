@@ -2,12 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 import { AbortError } from "./Errors";
+import { FetchHttpClient } from "./FetchHttpClient";
 import { HttpClient, HttpRequest, HttpResponse } from "./HttpClient";
 import { ILogger } from "./ILogger";
 import { XhrHttpClient } from "./XhrHttpClient";
 
 let nodeHttpClientModule: any;
-if (typeof XMLHttpRequest === "undefined") {
+if (typeof fetch === "undefined" && typeof XMLHttpRequest === "undefined") {
     // In order to ignore the dynamic require in webpack builds we need to do this magic
     // @ts-ignore: TS doesn't know about these names
     const requireFunc = typeof __webpack_require__ === "function" ? __non_webpack_require__ : require;
@@ -22,7 +23,9 @@ export class DefaultHttpClient extends HttpClient {
     public constructor(logger: ILogger) {
         super();
 
-        if (typeof XMLHttpRequest !== "undefined") {
+        if (typeof fetch !== "undefined") {
+            this.httpClient = new FetchHttpClient(logger);
+        } else if (typeof XMLHttpRequest !== "undefined") {
             this.httpClient = new XhrHttpClient(logger);
         } else if (typeof nodeHttpClientModule !== "undefined") {
             this.httpClient = new nodeHttpClientModule.NodeHttpClient(logger);
