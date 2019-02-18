@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import { Collapse, Container, Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink } from 'reactstrap';
 import { Link } from 'react-router-dom';
+////#if (IndividualLocalAuth)
 import { LoginMenu } from './api-authorization/LoginMenu';
+////#endif
 import './NavMenu.css';
 
 export class NavMenu extends Component {
@@ -40,8 +42,10 @@ export class NavMenu extends Component {
                 <NavItem>
                   <NavLink tag={Link} className="text-dark" to="/fetch-data">Fetch data</NavLink>
                 </NavItem>
+////#if (IndividualLocalAuth)
                 <LoginMenu>
                 </LoginMenu>
+////#endif
               </ul>
             </Collapse>
           </Container>

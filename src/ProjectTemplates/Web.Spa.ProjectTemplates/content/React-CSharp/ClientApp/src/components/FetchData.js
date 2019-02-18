@@ -1,20 +1,35 @@
 import React, { Component } from 'react';
+////#if (IndividualLocalAuth)
+import authService from './api-authorization/AuthorizeService'
+////#endif
 
 export class FetchData extends Component {
   static displayName = FetchData.name;
 
-  constructor (props) {
+  constructor(props) {
     super(props);
     this.state = { forecasts: [], loading: true };
 
+    ////#if (IndividualLocalAuth)
+    authService.getAccessToken()
+      .then(token =>
+        fetch('api/SampleData/WeatherForecasts', {
+          headers: FetchData.getHeaders(token)
+        }))
+      .then(response => response.json())
+      .then(data => {
+        this.setState({ forecasts: data, loading: false });
+      });
+    ////#else
     fetch('api/SampleData/WeatherForecasts')
       .then(response => response.json())
       .then(data => {
         this.setState({ forecasts: data, loading: false });
       });
+    ////#endif
   }
 
-  static renderForecastsTable (forecasts) {
+  static renderForecastsTable(forecasts) {
     return (
       <table className='table table-striped'>
         <thead>
@@ -39,7 +54,7 @@ export class FetchData extends Component {
     );
   }
 
-  render () {
+  render() {
     let contents = this.state.loading
       ? <p><em>Loading...</em></p>
       : FetchData.renderForecastsTable(this.state.forecasts);
@@ -52,4 +67,10 @@ export class FetchData extends Component {
       </div>
     );
   }
+
+////#if (IndividualLocalAuth)
+  static getHeaders(token) {
+    return !token ? {} : { 'Authorization': `Bearer ${token}` };
+  }
+////#endif
 }

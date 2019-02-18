@@ -2,70 +2,61 @@
 import { Component } from 'react';
 import authService from './AuthorizeService';
 import { AuthenticationResultStatus } from './AuthorizeService';
+import { QueryParameterNames, LogoutActions, ApplicationPaths } from './ApiAuthorizationConstants';
 
 export class Logout extends Component {
     constructor(props) {
         super(props);
 
         this.state = {
-            logoutErrors: [],
+            message: undefined,
             isReady: false,
             authenticated: false
         };
+    }
 
+    componentDidMount() {
         const action = this.props.action;
         switch (action) {
-            case 'logout':
+            case LogoutActions.Logout:
                 this.logout(this.getReturnUrl());
                 break;
-            case 'logout-callback':
+            case LogoutActions.LogoutCallback:
                 this.processLogoutCallback();
+                break;
+            case LogoutActions.LoggedOut:
+                this.setState({ isReady: true, message: "You successfully logged out!" });
                 break;
             default:
                 throw new Error(`Invalid action '${action}'`);
         }
-    }
 
-    componentDidMount() {
-        authService.isauthenticated()
-            .then(authenticated =>
-                this.setState({
-                    isReady: true,
-                    authenticated
-                }));
-    }
-
-    getReturnUrl = (state) => {
-        let params = new URLSearchParams(window.location.search);
-        let fromQuery = params.get('returnUrl');
-        return (state && state.returnUrl) || fromQuery || `${window.location.protocol}//${window.location.host}/`;
+        this.populateAuthenticationState();
     }
 
     render() {
-        if (this.state.isReady) {
+        const { isReady, message } = this.state;
+        if (!isReady) {
             return <div></div>
         }
-        if (this.state.logoutErrors.length > 0) {
-            let errors = [];
-            let i = 0;
-            for (let error of this.state.logoutErrors) {
-                errors.push(<p key={i++}>{error}</p>);
-            }
-            return <div>{errors}</div>
+        if (!!message) {
+            return (<div>{message}</div>);
         } else {
             const action = this.props.action;
             switch (action) {
-                case 'logout':
+                case LogoutActions.Logout:
                     return (<div>Processing logout</div>);
-                case 'logout-callback':
+                case LogoutActions.LogoutCallback:
                     return (<div>Processing logout callback</div>);
+                case LogoutActions.LoggedOut:
+                    return (<div>{message}</div>);
                 default:
                     throw new Error(`Invalid action '${action}'`);
             }
         }
     }
 
-    logout = async (returnUrl) => {
+    async logout(returnUrl) {
         const state = { returnUrl };
         var isauthenticated = await authService.isAuthenticated();
         if (isauthenticated) {
@@ -78,18 +69,17 @@ export class Logout extends Component {
                     await this.navigateToReturnUrl(returnUrl);
                     break;
                 case AuthenticationResultStatus.Fail:
-                    this.setState({ logoutErrors: [...this.state.logoutErrors, result.message] });
+                    this.setState({ message: result.message });
                     break;
+                default:
+                    throw new Error("Invalid authentication result status.");
             }
         } else {
-            this.setState({ logoutErrors: [...this.state.logoutErrors, "You successfully logged out!"] });
+            this.setState({ message: "You successfully logged out!" });
         }
     }
 
-    navigateToReturnUrl = (returnUrl) =>
-        window.location.replace(returnUrl);
-
-    processLogoutCallback = async () => {
+    async processLogoutCallback() {
         const url = window.location.href;
         const result = await authService.completeSignOut(url);
         switch (result.status) {
@@ -101,8 +91,27 @@ export class Logout extends Component {
                 await this.navigateToReturnUrl(this.getReturnUrl(result.state));
                 break;
             case AuthenticationResultStatus.Fail:
-                this.setState({ logoutErrors: [...this.state.logoutErrors, result.message] });
+                this.setState({ message: result.message });
                 break;
+            default:
+                throw new Error("Invalid authentication result status.");
         }
-    };
+    }
+
+    async populateAuthenticationState() {
+        const authenticated = authService.isAuthenticated();
+        this.setState({ isReady: true, authenticated });
+    }
+
+    getReturnUrl(state) {
+        let params = new URLSearchParams(window.location.search);
+        let fromQuery = params.get(QueryParameterNames.ReturnUrl);
+        return (state && state.returnUrl) ||
+            fromQuery ||
+            `${window.location.protocol}//${window.location.host}/${ApplicationPaths.LoggedOut}`;
+    }
+
+    navigateToReturnUrl(returnUrl) {
+        return window.location.replace(returnUrl);
+    }
 }

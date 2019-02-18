@@ -2,6 +2,7 @@
 import { NavItem, NavLink } from 'reactstrap';
 import { Link } from 'react-router-dom';
 import authService from './AuthorizeService';
+import { ApplicationPaths } from './ApiAuthorizationConstants';
 
 export class LoginMenu extends Component {
     constructor(props) {
@@ -31,20 +32,21 @@ export class LoginMenu extends Component {
     }
 
     render() {
-        if (!this.state.isAuthenticated) {
+        const { isAuthenticated, userName } = this.state;
+        if (!isAuthenticated) {
             return this.anonymousView();
         } else {
-            return this.authenticatedView();
+            return this.authenticatedView(userName);
         }
     }
 
-    authenticatedView() {
+    authenticatedView(userName) {
         return (<Fragment>
             <NavItem>
-                <NavLink tag={Link} className="text-dark" to="/authentication/profile">Hello {this.state.userName}</NavLink>
+                <NavLink tag={Link} className="text-dark" to={`${ApplicationPaths.Profile}`}>Hello {userName}</NavLink>
             </NavItem>
             <NavItem>
-                <NavLink tag={Link} className="text-dark" to="/authentication/logout">Logout</NavLink>
+                <NavLink tag={Link} className="text-dark" to={`${ApplicationPaths.LogOut}`}>Logout</NavLink>
             </NavItem>
         </Fragment>);
 
@@ -53,10 +55,10 @@ export class LoginMenu extends Component {
     anonymousView() {
         return (<Fragment>
             <NavItem>
-                <NavLink tag={Link} className="text-dark" to="/authentication/register">Register</NavLink>
+                <NavLink tag={Link} className="text-dark" to={`${ApplicationPaths.Register}`}>Register</NavLink>
             </NavItem>
             <NavItem>
-                <NavLink tag={Link} className="text-dark" to="/authentication/login">Login</NavLink>
+                <NavLink tag={Link} className="text-dark" to={`${ApplicationPaths.Login}`}>Login</NavLink>
             </NavItem>
         </Fragment>);
     }

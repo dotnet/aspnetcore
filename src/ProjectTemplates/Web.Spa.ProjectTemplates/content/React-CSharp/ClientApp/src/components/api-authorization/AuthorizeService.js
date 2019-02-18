@@ -1,4 +1,5 @@
-﻿import { UserManager } from 'oidc-client';
+﻿import { UserManager, WebStorageStateStore } from 'oidc-client';
+import { ApplicationPaths, ApplicationName } from './ApiAuthorizationConstants';
 
 export class AuthorizeService {
     _callbacks = [];
@@ -11,12 +12,6 @@ export class AuthorizeService {
         return !!user;
     }
 
-    async getAccessToken() {
-        await this.ensureUserManagerInitialized();
-        const user = await this.userManager.getUser();
-        return user && user.access_token;
-    }
-
     async getUser() {
         if (this._user && this._user.profile) {
             return this._user;
@@ -24,31 +19,134 @@ export class AuthorizeService {
 
         await this.ensureUserManagerInitialized();
         const user = await this.userManager.getUser();
-        // this.updateState(user && user.profile);
         return user && user.profile;
+    }
+
+    async getAccessToken() {
+        await this.ensureUserManagerInitialized();
+        const user = await this.userManager.getUser();
+        return user && user.access_token;
+    }
+
+    // We try to authenticate the user in three different ways:
+    // 1) We try to see if we can authenticate the user silently. This happens
+    //    when the user is already logged in on the IdP and is done using a hidden iframe
+    //    on the client.
+    // 2) We try to authenticate the user using a PopUp Window.
+    // 3) If the two methods above fail, we redirect the browser to the IdP.
+    async signIn(state) {
+        await this.ensureUserManagerInitialized();
+        try {
+            const silentUser = await this.userManager.signinSilent(this.createArguments(LoginMode.Silent));
+            this.updateState(silentUser);
+            return this.success(state);
+        } catch (silentError) {
+            // User might not be authenticated, fallback to popup authentication
+            try {
+                const popUpUser = await this.userManager.signinPopup(this.createArguments(LoginMode.PopUp));
+                this.updateState(popUpUser);
+                return this.success(state);
+            } catch (popUpError) {
+                if (popUpError.message === "Popup window closed") {
+                    return this.error("The user closed the window.");
+                }
+                // PopUps might be blocked by the user, fallback to redirect
+                console.log("Popup authentication error: ", popUpError);
+
+                try {
+                    const signInRequest = await this.userManager.createSigninRequest(
+                        this.createArguments(LoginMode.Redirect, state));
+                    return this.redirect(signInRequest.url);
+                } catch (redirectError) {
+                    console.log("Redirect authentication error: ", redirectError);
+                    return this.error(redirectError);
+                }
+            }
+        }
+    }
+
+    async completeSignIn(url) {
+        await this.ensureUserManagerInitialized();
+        let response = undefined;
+        try {
+            response = await this.getSignInResponse(url);
+            if (!!response.error) {
+                return this.error(`${response.error}: ${response.error_description}`);
+            }
+        } catch (processSignInResponseError) {
+            if (processSignInResponseError.error === "login_required") {
+                // This error is thrown by the underlying oidc client when it tries to log in
+                // the user silently as in case 1 defined above and the IdP requires the user
+                // to enter credentials.
+                response = processSignInResponseError;
+            } else {
+                console.log("There was an error processing the sign-in response: ", processSignInResponseError);
+                return this.error("There was an error processing the sign-in response.");
+            }
+        }
+
+        const authenticationState = response.state;
+        const mode = authenticationState.mode;
+
+        switch (mode) {
+            case LoginMode.Silent:
+                try {
+                    await this.userManager.signinSilentCallback(url);
+                    return this.success(undefined);
+                } catch (silentCallbackError) {
+                    console.log("Silent callback authentication error: ", silentCallbackError);
+                    return this.error("Silent callback authentication error");
+                }
+            case LoginMode.PopUp:
+                try {
+                    await this.userManager.signinPopupCallback(url);
+                    return this.success(undefined);
+                } catch (popupCallbackError) {
+                    console.log("Popup callback authentication error: ", popupCallbackError);
+                    return this.error("Popup callback authentication error.");
+                }
+            case LoginMode.Redirect:
+                try {
+                    let user = await this.userManager.signinRedirectCallback(url);
+                    this.updateState(user.profile);
+                    return this.success(response.state.userState);
+                } catch (redirectCallbackError) {
+                    console.log("Redirect callback authentication error: ", redirectCallbackError);
+                    return this.error("Redirect callback authentication error.");
+                }
+            default:
+                throw new Error(`Invalid login mode '${mode}'.`);
+        }
     }
 
     async signOut(state) {
         await this.ensureUserManagerInitialized();
         try {
             await this.userManager.signoutPopup(this.createArguments(LoginMode.PopUp));
-            this.notifySubscribers();
+            this.updateState(undefined);
             return this.success(state);
-        } catch (exception) {
-            // PopUps might be blocked by the user, fallback to redirect
+        } catch (popupSignOutError) {
+            console.log("Popup signout error: ", popupSignOutError);
             try {
                 const signOutRequest = await this.userManager.createSignoutRequest(
                     this.createArguments(LoginMode.Redirect, state));
                 return this.redirect(signOutRequest.url);
-            } catch (error) {
-                return this.error(error);
+            } catch (redirectSignOutError) {
+                console.log("Redirect signout error: ", redirectSignOutError);
+                return this.error(redirectSignOutError);
             }
         }
     }
 
     async completeSignOut(url) {
         await this.ensureUserManagerInitialized();
-        const response = await this.getSignOutResponse(url);
+        let response = undefined;
+        try {
+            response = await await this.getSignOutResponse(url);
+        } catch (processSignOutResponseError) {
+            console.log("There was an error processing the sign-out response: ", processSignOutResponseError);
+            response = processSignOutResponseError;
+        }
 
         if (!!response.error) {
             return this.error(`${response.error}: ${response.error_description}`);
@@ -60,67 +158,26 @@ export class AuthorizeService {
 
         switch (mode) {
             case LoginMode.PopUp:
-                await this.userManager.signoutPopupCallback(url);
-                window.close();
-                // The call above will close the window so we'll never get here.
-                throw new Error("Should never get here.");
-            case LoginMode.Redirect:
-                this.updateState(await this.userManager.signoutRedirectCallback(url));
-                return this.success(response.state.userState);
-            default:
-                throw new Error(`Invalid login mode '${mode}'.`);
-        }
-    }
-
-    async authenticate(state) {
-        await this.ensureUserManagerInitialized();
-        try {
-            this.updateState(await this.userManager.signinSilent(this.createArguments(LoginMode.Silent)));
-            return this.success(state);
-        } catch (exception) {
-            // User might not be authenticated, fallback to popup authentication
-            try {
-                this.updateState(await this.userManager.signinPopup(this.createArguments(LoginMode.PopUp)));
-                return this.success(state);
-            } catch (exception) {
-                // PopUps might be blocked by the user, fallback to redirect
                 try {
-                    const signInRequest = await this.userManager.createSigninRequest(
-                        this.createArguments(LoginMode.Redirect, state));
-                    return this.redirect(signInRequest.url);
-                } catch (error) {
-                    return this.error(error);
+                    await this.userManager.signoutPopupCallback(url);
+                    return this.success(response.state && response.state.userState);
+                } catch (popupCallbackError) {
+                    console.log("Popup signout callback error: ", popupCallbackError);
+                    return this.error("Popup signout callback error");
                 }
-            }
-        }
-    }
-
-    async completeAuthentication(url) {
-        await this.ensureUserManagerInitialized();
-        const response = await this.getAuthorizationResponse(url);
-
-        if (!!response.error) {
-            return this.error(`${response.error}: ${response.error_description}`);
-        }
-
-        const authenticationState = response.state;
-        const mode = authenticationState.mode;
-
-        switch (mode) {
-            case LoginMode.Silent:
-                await this.userManager.signinSilentCallback(url);
-                // The call above will close the window so we'll never get here.
-                throw new Error("Should never get here.");
-            case LoginMode.PopUp:
-                await this.userManager.signinPopupCallback(url);
-                // The call above will close the window so we'll never get here.
-                throw new Error("Should never get here.");
             case LoginMode.Redirect:
-                this.updateState(await this.userManager.signinRedirectCallback(url));
-                return this.success(response.state.userState);
+                try {
+                    await this.userManager.signoutRedirectCallback(url);
+                    this.updateState(undefined);
+                    return this.success(response.state.userState);
+                } catch (redirectCallbackError) {
+                    console.log("Redirect signout callback error: ", redirectCallbackError);
+                    return this.error("Redirect signout callback error");
+                }
             default:
-                throw new Error(`Invalid login mode '${mode}'.`);
+                throw new Error("Should never get here.");
         }
+
     }
 
     updateState(user) {
@@ -152,17 +209,20 @@ export class AuthorizeService {
         }
     }
 
-    async getAuthorizationResponse(url) {
+    async getSignInResponse(url) {
         const keys = await this.userManager.settings.stateStore.getAllKeys();
         const states = keys.map(key => ({ key, state: this.userManager.settings.stateStore.get(key) }));
         for (const state of states) {
             state.state = await state.state;
         }
-        const response = await this.userManager.processSigninResponse(url);
-        for (const state of states) {
-            await this.userManager.settings.stateStore.set(state.key, state.state);
+        try {
+            const response = await this.userManager.processSigninResponse(url);
+            return response;
+        } finally {
+            for (const state of states) {
+                await this.userManager.settings.stateStore.set(state.key, state.state);
+            }
         }
-        return response;
     }
 
     async getSignOutResponse(url) {
@@ -171,15 +231,22 @@ export class AuthorizeService {
         for (const state of states) {
             state.state = await state.state;
         }
-        const response = await this.userManager.processSignoutResponse(url);
-        for (const state of states) {
-            await this.userManager.settings.stateStore.set(state.key, state.state);
+        try {
+            const response = await this.userManager.processSignoutResponse(url);
+            return response;
+        } finally {
+            for (const state of states) {
+                await this.userManager.settings.stateStore.set(state.key, state.state);
+            }
         }
-        return response;
     }
 
     createArguments(mode, state) {
-        return { data: { mode, userState: state } };
+        if (mode !== LoginMode.Silent) {
+            return { data: { mode, userState: state } };
+        } else {
+            return { data: { mode, userState: state }, redirect_uri: this.userManager.settings.redirect_uri };
+        }
     }
 
     error(message) {
@@ -199,13 +266,18 @@ export class AuthorizeService {
             return;
         }
 
-        let response = await fetch('/_configuration/react');
+        let response = await fetch(ApplicationPaths.ApiAuthorizationClientConfigurationUrl);
         if (!response.ok) {
-            throw new Error(`Could not load settings for 'reactSPA'`);
+            throw new Error(`Could not load settings for '${ApplicationName}'`);
         }
 
         let settings = await response.json();
-        settings.post_logout_redirect_uri = settings.post_logout_redirect_uri.replace('login-callback', 'logout-callback');
+        settings.automaticSilentRenew = true;
+        settings.includeIdTokenInSilentRenew = true;
+        settings.userStore = new WebStorageStateStore({
+            prefix: ApplicationName
+        });
+
         this.userManager = new UserManager(settings);
     }
 

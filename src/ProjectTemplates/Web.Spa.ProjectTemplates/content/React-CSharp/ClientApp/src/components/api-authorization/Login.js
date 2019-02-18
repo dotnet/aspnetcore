@@ -2,64 +2,63 @@
 import { Component } from 'react';
 import authService from './AuthorizeService';
 import { AuthenticationResultStatus } from './AuthorizeService';
+import { LoginActions, QueryParameterNames, ApplicationPaths } from './ApiAuthorizationConstants';
 
 export class Login extends Component {
     constructor(props) {
         super(props);
 
         this.state = {
-            loginErrors: []
+            message: undefined
         };
+    }
 
+    componentDidMount() {
         const action = this.props.action;
         switch (action) {
-            case 'login':
+            case LoginActions.Login:
                 this.login(this.getReturnUrl());
                 break;
-            case 'login-callback':
+            case LoginActions.LoginCallback:
                 this.processLoginCallback();
                 break;
-            case 'profile':
+            case LoginActions.Profile:
                 this.redirectToProfile();
                 break;
-            case 'register':
+            case LoginActions.Register:
                 this.redirectToRegister();
+                break;
+            case LoginActions.LoginFailed:
+                const params = new URLSearchParams(window.location.search);
+                const error = params.get(QueryParameterNames.Message);
+                this.setState({ message: error });
                 break;
             default:
                 throw new Error(`Invalid action '${action}'`);
         }
     }
 
-    getReturnUrl = (state) => {
-        let params = new URLSearchParams(window.location.search);
-        let fromQuery = params.get('returnUrl');
-        return (state && state.returnUrl) || fromQuery || `${window.location.protocol}//${window.location.host}/`;
-    }
-
     render() {
         const action = this.props.action;
-        if (this.state.loginErrors.length > 0) {
-            let errors = [];
-            let i = 0;
-            for (let error of this.state.loginErrors) {
-                errors.push(<p key={i++}>{error}</p>);
-            }
-            return <div>{errors}</div>
+        const { message } = this.state;
+
+        if (!!message) {
+            return <div>{message}</div>
         } else {
             switch (action) {
-                case 'login':
+                case LoginActions.Login:
                     return (<div>Processing login</div>);
-                case 'login-callback':
-                    return (<div>Processing logout</div>);
+                case LoginActions.LoginCallback:
+                    return (<div>Processing login callback</div>);
                 default:
                     throw new Error(`Invalid action '${action}'`);
             }
         }
     }
 
-    login = async (returnUrl) => {
+    async login(returnUrl) {
         const state = { returnUrl };
-        const result = await authService.authenticate(state);
+        const result = await authService.signIn(state);
         switch (result.status) {
             case AuthenticationResultStatus.Redirect:
                 window.location.replace(result.redirectUrl);
@@ -68,19 +67,16 @@ export class Login extends Component {
                 await this.navigateToReturnUrl(returnUrl);
                 break;
             case AuthenticationResultStatus.Fail:
-                this.state.loginErrors.push(result.message);
+                this.setState({ message: result.message });
                 break;
             default:
                 throw new Error(`Invalid status result ${result.status}.`);
         }
     }
 
-    navigateToReturnUrl = (returnUrl) =>
-        window.location.replace(returnUrl);
-
-    processLoginCallback = async () => {
+    async processLoginCallback() {
         const url = window.location.href;
-        const result = await authService.completeAuthentication(url);
+        const result = await authService.completeSignIn(url);
         switch (result.status) {
             case AuthenticationResultStatus.Redirect:
                 // There should not be any redirects as the only time completeAuthentication finishes
@@ -90,19 +86,25 @@ export class Login extends Component {
                 await this.navigateToReturnUrl(this.getReturnUrl(result.state));
                 break;
             case AuthenticationResultStatus.Fail:
-                this.state.loginErrors.push(result.message);
+                this.setState({ message: result.message });
                 break;
             default:
                 throw new Error(`Invalid authentication result status '${result.status}'.`);
         }
-    };
+    }
+
+    getReturnUrl(state) {
+        const params = new URLSearchParams(window.location.search);
+        const fromQuery = params.get(QueryParameterNames.ReturnUrl);
+        return (state && state.returnUrl) || fromQuery || `${window.location.protocol}//${window.location.host}/`;
+    }
 
     redirectToRegister() {
-        this.redirectToApiAuthorizationPath('/Identity/Account/Register');
+        this.redirectToApiAuthorizationPath(ApplicationPaths.IdentityRegisterPath);
     }
 
     redirectToProfile() {
-        this.redirectToApiAuthorizationPath('/Identity/Account/Manage');
+        this.redirectToApiAuthorizationPath(ApplicationPaths.IdentityManagePath);
     }
 
     redirectToApiAuthorizationPath(apiAuthorizationPath) {
@@ -113,5 +115,9 @@ export class Login extends Component {
     getBaseUrl() {
         const url = window.location;
         return `${url.protocol}//${url.host}`;
+    }
+
+    navigateToReturnUrl(returnUrl) {
+        window.location.replace(returnUrl);
     }
 }

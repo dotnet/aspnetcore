@@ -4,9 +4,11 @@ import { Layout } from './components/Layout';
 import { Home } from './components/Home';
 import { FetchData } from './components/FetchData';
 import { Counter } from './components/Counter';
+////#if (IndividualLocalAuth)
 import { Login } from './components/api-authorization/Login'
 import { Logout } from './components/api-authorization/Logout'
 import AuthorizeRoute from './components/api-authorization/AuthorizeRoute';
+////#endif
 
 export default class App extends Component {
   static displayName = App.name;
@@ -17,6 +19,7 @@ export default class App extends Component {
         <Route exact path='/' component={Home} />
         <Route path='/counter' component={Counter} />
         <Route path='/fetch-data' component={FetchData} />
+////#if (IndividualLocalAuth)
         <AuthorizeRoute path='/fetch-data' component={FetchData} />
         <Route path='/authentication/login' render={() => loginAction('login')} />
         <Route path='/authentication/login-callback' render={() => loginAction('login-callback')} />
@@ -24,10 +27,12 @@ export default class App extends Component {
         <Route path='/authentication/register' render={() => loginAction('register')} />
         <Route path='/authentication/logout' render={() => logoutAction('logout')} />
         <Route path='/authentication/logout-callback' render={() => logoutAction('logout-callback')} />
+////#endif
       </Layout>
     );
   }
 }
+////#if (IndividualLocalAuth)
 
 function loginAction(name){
     return (<Login action={name}></Login>);
@@ -36,3 +41,4 @@ function loginAction(name){
 function logoutAction(name) {
     return (<Logout action={name}></Logout>);
 }
+////#endif
