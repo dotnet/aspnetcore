@@ -12,4 +12,8 @@
     <Reference Include="Microsoft.Extensions.Logging.Testing" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="..\..\..\Shared\test\SingleThreadedSynchronizationContext.cs" Link="Shared\SingleThreadedSynchronizationContext.cs"/>
+  </ItemGroup>
+
 </Project>

@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
@@ -448,6 +449,39 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                     Assert.Equal("timeout", actual.Key);
                     Assert.Equal(HealthStatus.Unhealthy, actual.Value.Status);
                 });
+        }
+
+        [Fact]
+        public void CheckHealthAsync_WorksInSingleThreadedSyncContext()
+        {
+            // Arrange
+            var service = CreateHealthChecksService(b =>
+            {
+                b.AddAsyncCheck("test", async () =>
+                {
+                    await Task.Delay(1).ConfigureAwait(false);
+                    return HealthCheckResult.Healthy();
+                });
+            });
+
+            var hangs = true;
+
+            // Act
+            using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3)))
+            {
+                var token = cts.Token;
+                token.Register(() => throw new OperationCanceledException(token));
+
+                SingleThreadedSynchronizationContext.Run(() =>
+                {
+                    // Act
+                    service.CheckHealthAsync(token).GetAwaiter().GetResult();
+                    hangs = false;
+                });
+            }
+
+            // Assert
+            Assert.False(hangs);
         }
 
         private static DefaultHealthCheckService CreateHealthChecksService(Action<IHealthChecksBuilder> configure)
