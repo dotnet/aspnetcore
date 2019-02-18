@@ -3,9 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
-using System.Text;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
@@ -18,29 +16,6 @@ namespace Microsoft.Extensions.ApiDescription.Tasks
     public class GetFileReferenceMetadata : Task
     {
         private const string TypeScriptLanguageName = "TypeScript";
-
-        // Ignore Unicode escape sequences because, though they may escape valid class name characters,
-        // backslash is not a valid filename character.
-        private static readonly HashSet<UnicodeCategory> ValidClassNameCharacterCategories =
-            new HashSet<UnicodeCategory>(new[]
-            {
-                // Formatting
-                UnicodeCategory.Format, // Cf
-                // Letter
-                UnicodeCategory.LowercaseLetter, // Ll
-                UnicodeCategory.ModifierLetter, // Lm
-                UnicodeCategory.OtherLetter, // Lo
-                UnicodeCategory.TitlecaseLetter, // Lt
-                UnicodeCategory.UppercaseLetter, // Lu
-                UnicodeCategory.LetterNumber, // Nl
-                // Combining
-                UnicodeCategory.SpacingCombiningMark, // Mc
-                UnicodeCategory.NonSpacingMark, // Mn
-                // Decimal digit
-                UnicodeCategory.DecimalDigitNumber, // Nd
-                // Connecting (includes underscore)
-                UnicodeCategory.ConnectorPunctuation, // Pc
-            });
 
         /// <summary>
         /// Extension to use in default OutputPath metadata value. Ignored when generating TypeScript.
@@ -131,24 +106,8 @@ namespace Microsoft.Extensions.ApiDescription.Tasks
                 if (string.IsNullOrEmpty(className))
                 {
                     var outputFilename = Path.GetFileNameWithoutExtension(outputPath);
-                    var classNameBuilder = new StringBuilder(outputFilename);
 
-                    // Eliminate valid filename characters that are invalid in a class name e.g. '-'.
-                    for (var index = 0; index < classNameBuilder.Length; index++)
-                    {
-                        var @char = classNameBuilder[index];
-                        var category = char.GetUnicodeCategory(@char);
-                        if (!ValidClassNameCharacterCategories.Contains(category))
-                        {
-                            classNameBuilder[index] = '_';
-                        }
-                        else if (index == 0 && @char != '_' && !char.IsLetter(@char))
-                        {
-                            classNameBuilder.Insert(0, '_');
-                        }
-                    }
-
-                    className = classNameBuilder.ToString();
+                    className = CSharpIdentifier.SanitizeIdentifier(outputFilename);
                     MetadataSerializer.SetMetadata(newItem, "ClassName", className);
                 }
 
