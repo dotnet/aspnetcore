@@ -3,12 +3,13 @@
 
 using Microsoft.AspNetCore.Components.RenderTree;
 using System;
+using System.Globalization;
 
 namespace Microsoft.AspNetCore.Components.Forms
 {
     /// <summary>
     /// An input component for editing numeric values.
-    /// Supported numeric types are <see cref="short"/>, <see cref="int"/>, <see cref="long"/>, <see cref="float"/>, <see cref="double"/>, <see cref="decimal"/>.
+    /// Supported numeric types are <see cref="int"/>, <see cref="long"/>, <see cref="float"/>, <see cref="double"/>, <see cref="decimal"/>.
     /// </summary>
     public class InputNumber<T> : InputBase<T>
     {
@@ -22,11 +23,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             // of it for us. We will only get asked to parse the T for nonempty inputs.
             var targetType = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
 
-            if (targetType == typeof(short))
-            {
-                _parser = TryParseShort;
-            }
-            else if (targetType == typeof(int))
+            if (targetType == typeof(int))
             {
                 _parser = TryParseInt;
             }
@@ -81,24 +78,9 @@ namespace Microsoft.AspNetCore.Components.Forms
             }
         }
 
-        static bool TryParseShort(string value, out T result)
-        {
-            var success = short.TryParse(value, out var parsedValue);
-            if (success)
-            {
-                result = (T)(object)parsedValue;
-                return true;
-            }
-            else
-            {
-                result = default;
-                return false;
-            }
-        }
-
         static bool TryParseInt(string value, out T result)
         {
-            var success = int.TryParse(value, out var parsedValue);
+            var success = int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedValue);
             if (success)
             {
                 result = (T)(object)parsedValue;
@@ -113,7 +95,7 @@ namespace Microsoft.AspNetCore.Components.Forms
 
         static bool TryParseLong(string value, out T result)
         {
-            var success = long.TryParse(value, out var parsedValue);
+            var success = long.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedValue);
             if (success)
             {
                 result = (T)(object)parsedValue;
@@ -128,7 +110,7 @@ namespace Microsoft.AspNetCore.Components.Forms
 
         static bool TryParseFloat(string value, out T result)
         {
-            var success = float.TryParse(value, out var parsedValue);
+            var success = float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsedValue);
             if (success)
             {
                 result = (T)(object)parsedValue;
@@ -143,7 +125,7 @@ namespace Microsoft.AspNetCore.Components.Forms
 
         static bool TryParseDouble(string value, out T result)
         {
-            var success = double.TryParse(value, out var parsedValue);
+            var success = double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsedValue);
             if (success)
             {
                 result = (T)(object)parsedValue;
@@ -158,7 +140,7 @@ namespace Microsoft.AspNetCore.Components.Forms
 
         static bool TryParseDecimal(string value, out T result)
         {
-            var success = decimal.TryParse(value, out var parsedValue);
+            var success = decimal.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsedValue);
             if (success)
             {
                 result = (T)(object)parsedValue;
