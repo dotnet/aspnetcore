@@ -382,11 +382,20 @@ TEST(connection_impl_start, negotiate_follows_redirect)
 
     auto websocket_client = std::make_shared<test_websocket_client>();
 
+    utility::string_t connectUrl;
+    websocket_client->set_connect_function([&connectUrl](const web::uri& url)
+    {
+        connectUrl = url.to_string();
+        return pplx::task_from_result();
+    });
+
     auto connection =
         connection_impl::create(create_uri(), _XPLATSTR(""), trace_level::messages, writer,
             std::move(web_request_factory), std::make_unique<test_transport_factory>(websocket_client));
 
     connection->start().get();
+
+    ASSERT_EQ(_XPLATSTR("ws://redirected/"), connectUrl);
 }
 
 TEST(connection_impl_start, negotiate_fails_after_too_many_redirects)

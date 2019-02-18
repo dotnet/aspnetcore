@@ -109,7 +109,7 @@ namespace signalr
             return request_sender::negotiate(*connection->m_web_request_factory, url,
                 connection->m_query_string, connection->m_signalr_client_config);
         }, m_disconnect_cts.get_token())
-            .then([weak_connection, start_tce, redirect_count](negotiation_response negotiation_response)
+            .then([weak_connection, start_tce, redirect_count, url](negotiation_response negotiation_response)
         {
             auto connection = weak_connection.lock();
             if (!connection)
@@ -124,7 +124,12 @@ namespace signalr
 
             if (!negotiation_response.url.empty())
             {
-                // TODO: access token
+                if (!negotiation_response.accessToken.empty())
+                {
+                    auto headers = connection->m_signalr_client_config.get_http_headers();
+                    headers.add(_XPLATSTR("Authorization"), _XPLATSTR("Bearer ") + negotiation_response.accessToken);
+                    connection->m_signalr_client_config.set_http_headers(headers);
+                }
                 return connection->start_negotiate(negotiation_response.url, redirect_count + 1);
             }
 
@@ -149,7 +154,7 @@ namespace signalr
 
             // TODO: use transfer format
 
-            return connection->start_transport()
+            return connection->start_transport(url)
                 .then([weak_connection, start_tce](std::shared_ptr<transport> transport)
             {
                 auto connection = weak_connection.lock();
@@ -211,7 +216,7 @@ namespace signalr
         return pplx::create_task(start_tce);
     }
 
-    pplx::task<std::shared_ptr<transport>> connection_impl::start_transport()
+    pplx::task<std::shared_ptr<transport>> connection_impl::start_transport(const web::uri& url)
     {
         auto connection = shared_from_this();
 
@@ -287,18 +292,18 @@ namespace signalr
             }
         });
 
-        return connection->send_connect_request(transport, connect_request_tce)
+        return connection->send_connect_request(transport, url, connect_request_tce)
             .then([transport](){ return pplx::task_from_result(transport); });
     }
 
-    pplx::task<void> connection_impl::send_connect_request(const std::shared_ptr<transport>& transport, const pplx::task_completion_event<void>& connect_request_tce)
+    pplx::task<void> connection_impl::send_connect_request(const std::shared_ptr<transport>& transport, const web::uri& url, const pplx::task_completion_event<void>& connect_request_tce)
     {
         auto logger = m_logger;
         auto query_string = m_query_string;
         if (!query_string.empty())
             query_string.append(_XPLATSTR("&"));
         query_string.append(_XPLATSTR("id=")).append(m_connection_id);
-        auto connect_url = url_builder::build_connect(m_base_url, transport->get_transport_type(), query_string);
+        auto connect_url = url_builder::build_connect(url, transport->get_transport_type(), query_string);
 
         transport->connect(connect_url)
             .then([transport, connect_request_tce, logger](pplx::task<void> connect_task)

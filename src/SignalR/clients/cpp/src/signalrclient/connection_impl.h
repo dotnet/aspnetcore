@@ -72,9 +72,9 @@ namespace signalr
         connection_impl(const utility::string_t& url, const utility::string_t& query_string, trace_level trace_level, const std::shared_ptr<log_writer>& log_writer,
             std::unique_ptr<web_request_factory> web_request_factory, std::unique_ptr<transport_factory> transport_factory);
 
-        pplx::task<std::shared_ptr<transport>> start_transport();
+        pplx::task<std::shared_ptr<transport>> start_transport(const web::uri& url);
         pplx::task<void> send_connect_request(const std::shared_ptr<transport>& transport,
-            const pplx::task_completion_event<void>& connect_request_tce);
+            const web::uri& url, const pplx::task_completion_event<void>& connect_request_tce);
         pplx::task<void> start_negotiate(const web::uri& url, int redirect_count);
 
         void process_response(const utility::string_t& response);
