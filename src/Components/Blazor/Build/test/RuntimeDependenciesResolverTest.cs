@@ -84,6 +84,8 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 "System.Collections.dll",
                 "System.ComponentModel.Composition.dll",
                 "System.ComponentModel.dll",
+                "System.ComponentModel.Annotations.dll",
+                "System.ComponentModel.DataAnnotations.dll",
                 "System.Core.dll",
                 "System.Data.dll",
                 "System.Diagnostics.Debug.dll",
