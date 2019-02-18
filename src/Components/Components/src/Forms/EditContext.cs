@@ -30,17 +30,17 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <summary>
         /// An event that is raised when a field value changes.
         /// </summary>
-        public event EventHandler<FieldIdentifier> OnFieldChanged;
+        public event EventHandler<FieldChangedEventArgs> OnFieldChanged;
 
         /// <summary>
         /// An event that is raised when validation is requested.
         /// </summary>
-        public event EventHandler OnValidationRequested;
+        public event EventHandler<ValidationRequestedEventArgs> OnValidationRequested;
 
         /// <summary>
         /// An event that is raised when validation state has changed.
         /// </summary>
-        public event EventHandler OnValidationStateChanged;
+        public event EventHandler<ValidationStateChangedEventArgs> OnValidationStateChanged;
 
         /// <summary>
         /// Supplies a <see cref="FieldIdentifier"/> corresponding to a specified field name
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         public void NotifyFieldChanged(FieldIdentifier fieldIdentifier)
         {
             GetFieldState(fieldIdentifier, ensureExists: true).IsModified = true;
-            OnFieldChanged?.Invoke(this, fieldIdentifier);
+            OnFieldChanged?.Invoke(this, new FieldChangedEventArgs(fieldIdentifier));
         }
 
         /// <summary>
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// </summary>
         public void NotifyValidationStateChanged()
         {
-            OnValidationStateChanged?.Invoke(this, null);
+            OnValidationStateChanged?.Invoke(this, ValidationStateChangedEventArgs.Empty);
         }
 
         /// <summary>
@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <returns>True if there are no validation messages after validation; otherwise false.</returns>
         public bool Validate()
         {
-            OnValidationRequested?.Invoke(this, null);
+            OnValidationRequested?.Invoke(this, ValidationRequestedEventArgs.Empty);
             return !GetValidationMessages().Any();
         }
 

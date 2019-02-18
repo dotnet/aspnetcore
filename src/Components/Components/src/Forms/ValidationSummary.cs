@@ -6,11 +6,9 @@ using System;
 
 namespace Microsoft.AspNetCore.Components.Forms
 {
-    /*
-     * Note: there's no reason why developers strictly need to use this. It's equally valid to
-     * put a @foreach(var message in context.GetValidationMessages()) { ... } inside a form.
-     * This component is for convenience only, plus it implements a few small perf optimizations.
-     */
+    // Note: there's no reason why developers strictly need to use this. It's equally valid to
+    // put a @foreach(var message in context.GetValidationMessages()) { ... } inside a form.
+    // This component is for convenience only, plus it implements a few small perf optimizations.
 
     /// <summary>
     /// Displays a list of validation messages from a cascaded <see cref="EditContext"/>.
@@ -18,7 +16,7 @@ namespace Microsoft.AspNetCore.Components.Forms
     public class ValidationSummary : ComponentBase, IDisposable
     {
         private EditContext _previousEditContext;
-        private readonly EventHandler _validationStateChangedHandler;
+        private readonly EventHandler<ValidationStateChangedEventArgs> _validationStateChangedHandler;
 
         [CascadingParameter] EditContext CurrentEditContext { get; set; }
 
@@ -74,7 +72,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             }
         }
 
-        private void HandleValidationStateChanged(object sender, EventArgs eventArgs)
+        private void HandleValidationStateChanged(object sender, ValidationStateChangedEventArgs eventArgs)
         {
             StateHasChanged();
         }

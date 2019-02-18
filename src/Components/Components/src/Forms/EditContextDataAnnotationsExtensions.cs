@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Components.Forms
 
             // Perform per-field validation on each field edit
             editContext.OnFieldChanged +=
-                (sender, fieldIdentifier) => ValidateField(editContext, messages, fieldIdentifier);
+                (sender, eventArgs) => ValidateField(editContext, messages, eventArgs.FieldIdentifier);
 
             return editContext;
         }

@@ -113,10 +113,10 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
             var editContext = new EditContext(new object());
             var field1 = new FieldIdentifier(new object(), "fieldname"); // Shows it can be on a different model
             var didReceiveNotification = false;
-            editContext.OnFieldChanged += (sender, changedFieldIdentifier) =>
+            editContext.OnFieldChanged += (sender, eventArgs) =>
             {
                 Assert.Same(editContext, sender);
-                Assert.Equal(field1, changedFieldIdentifier);
+                Assert.Equal(field1, eventArgs.FieldIdentifier);
                 didReceiveNotification = true;
             };
 
@@ -224,7 +224,7 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
             editContext.OnValidationRequested += (sender, eventArgs) =>
             {
                 Assert.Same(editContext, sender);
-                Assert.Null(eventArgs); // Not currently used
+                Assert.NotNull(eventArgs);
                 messages.Add(
                     new FieldIdentifier(new object(), "some field"),
                     "Some message");
