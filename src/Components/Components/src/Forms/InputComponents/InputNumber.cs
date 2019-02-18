@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Components.Forms
     {
         delegate bool Parser(string value, out T result);
         private static Parser _parser;
+        private static string _stepAttributeValue; // Null by default, so only allows whole numbers as per HTML spec
 
         // Determine the parsing logic once per T and cache it, so we don't have to consider all the possible types on each parse
         static InputNumber()
@@ -34,14 +35,17 @@ namespace Microsoft.AspNetCore.Components.Forms
             else if (targetType == typeof(float))
             {
                 _parser = TryParseFloat;
+                _stepAttributeValue = "any";
             }
             else if (targetType == typeof(double))
             {
                 _parser = TryParseDouble;
+                _stepAttributeValue = "any";
             }
             else if (targetType == typeof(decimal))
             {
                 _parser = TryParseDecimal;
+                _stepAttributeValue = "any";
             }
             else
             {
@@ -56,10 +60,12 @@ namespace Microsoft.AspNetCore.Components.Forms
         {
             base.BuildRenderTree(builder);
             builder.OpenElement(0, "input");
-            builder.AddAttribute(1, "id", Id);
-            builder.AddAttribute(2, "class", CssClass);
-            builder.AddAttribute(3, "value", BindMethods.GetValue(CurrentValueAsString));
-            builder.AddAttribute(4, "onchange", BindMethods.SetValueHandler(__value => CurrentValueAsString = __value, CurrentValueAsString));
+            builder.AddAttribute(1, "type", "number");
+            builder.AddAttribute(2, "step", _stepAttributeValue);
+            builder.AddAttribute(3, "id", Id);
+            builder.AddAttribute(4, "class", CssClass);
+            builder.AddAttribute(5, "value", BindMethods.GetValue(CurrentValueAsString));
+            builder.AddAttribute(6, "onchange", BindMethods.SetValueHandler(__value => CurrentValueAsString = __value, CurrentValueAsString));
             builder.CloseElement();
         }
 
