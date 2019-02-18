@@ -398,6 +398,54 @@ TEST(connection_impl_start, negotiate_follows_redirect)
     ASSERT_EQ(_XPLATSTR("ws://redirected/"), connectUrl);
 }
 
+TEST(connection_impl_start, negotiate_redirect_uses_accessToken)
+{
+    std::shared_ptr<log_writer> writer(std::make_shared<memory_log_writer>());
+    utility::string_t accessToken;
+
+    auto web_request_factory = std::make_unique<test_web_request_factory>([&accessToken](const web::uri & url)
+    {
+        utility::string_t response_body = _XPLATSTR("");
+        if (url.path() == _XPLATSTR("/negotiate"))
+        {
+            if (url.host() == _XPLATSTR("redirected"))
+            {
+                response_body = _XPLATSTR("{\"connectionId\" : \"f7707523-307d-4cba-9abf-3eef701241e8\", ")
+                    _XPLATSTR("\"availableTransports\" : [ { \"transport\": \"WebSockets\", \"transferFormats\": [ \"Text\", \"Binary\" ] } ] }");
+            }
+            else
+            {
+                response_body = _XPLATSTR("{ \"url\": \"http://redirected\", \"accessToken\": \"secret\" }");
+            }
+        }
+
+        auto request = new web_request_stub((unsigned short)200, _XPLATSTR("OK"), response_body);
+        request->on_get_response = [&accessToken](web_request_stub& stub)
+        {
+            accessToken = stub.m_signalr_client_config.get_http_headers()[_XPLATSTR("Authorization")];
+        };
+        return std::unique_ptr<web_request>(request);
+    });
+
+    auto websocket_client = std::make_shared<test_websocket_client>();
+
+    utility::string_t connectUrl;
+    websocket_client->set_connect_function([&connectUrl](const web::uri& url)
+    {
+        connectUrl = url.to_string();
+        return pplx::task_from_result();
+    });
+
+    auto connection =
+        connection_impl::create(create_uri(), _XPLATSTR(""), trace_level::messages, writer,
+            std::move(web_request_factory), std::make_unique<test_transport_factory>(websocket_client));
+
+    connection->start().get();
+
+    ASSERT_EQ(_XPLATSTR("ws://redirected/"), connectUrl);
+    ASSERT_EQ(_XPLATSTR("Bearer secret"), accessToken);
+}
+
 TEST(connection_impl_start, negotiate_fails_after_too_many_redirects)
 {
     std::shared_ptr<log_writer> writer(std::make_shared<memory_log_writer>());

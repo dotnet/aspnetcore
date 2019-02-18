@@ -106,6 +106,7 @@ namespace signalr
                 _XPLATSTR("the connection can only be started if it is in the disconnected state"));
         }
 
+        m_connection->set_client_config(m_signalr_client_config);
         m_handshakeTask = pplx::task_completion_event<void>();
         m_handshakeReceived = false;
         auto weak_connection = weak_from_this();
@@ -358,6 +359,7 @@ namespace signalr
 
     void hub_connection_impl::set_client_config(const signalr_client_config& config)
     {
+        m_signalr_client_config = config;
         m_connection->set_client_config(config);
     }
 

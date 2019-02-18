@@ -57,6 +57,7 @@ namespace signalr
         bool m_handshakeReceived;
         pplx::task_completion_event<void> m_handshakeTask;
         std::function<void()> m_disconnected;
+        signalr_client_config m_signalr_client_config;
 
         void initialize();
 
