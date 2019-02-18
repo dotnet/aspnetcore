@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             base.BuildRenderTree(builder);
             builder.OpenElement(0, "input");
             builder.AddAttribute(1, "id", Id);
-            builder.AddAttribute(2, "class", FieldClass);
+            builder.AddAttribute(2, "class", CssClass);
             builder.AddAttribute(3, "value", BindMethods.GetValue(CurrentValueAsString));
             builder.AddAttribute(4, "onchange", BindMethods.SetValueHandler(__value => CurrentValueAsString = __value, CurrentValueAsString));
             builder.CloseElement();

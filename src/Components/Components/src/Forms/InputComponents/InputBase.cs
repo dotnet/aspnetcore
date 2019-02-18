@@ -22,9 +22,14 @@ namespace Microsoft.AspNetCore.Components.Forms
         [CascadingParameter] EditContext CascadedEditContext { get; set; }
 
         /// <summary>
-        /// Gets or sets a value for the component's 'id' attribute.
+        /// Gets a value for the component's 'id' attribute.
         /// </summary>
-        [Parameter] protected string Id { get; set; }
+        [Parameter] protected string Id { get; private set; }
+
+        /// <summary>
+        /// Gets a value for the component's 'class' attribute.
+        /// </summary>
+        [Parameter] protected string Class { get; private set; }
 
         /// <summary>
         /// Gets or sets the value of the input. This should be used with two-way binding.
@@ -147,6 +152,16 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// </summary>
         protected string FieldClass
             => EditContext.FieldClass(FieldIdentifier);
+
+        /// <summary>
+        /// Gets a CSS class string that combines the <see cref="Class"/> and <see cref="FieldClass"/>
+        /// properties. Derived components should typically use this value for the primary HTML element's
+        /// 'class' attribute.
+        /// </summary>
+        protected string CssClass
+            => string.IsNullOrEmpty(Class)
+            ? FieldClass // Never null or empty
+            : $"{Class} {FieldClass}";
 
         /// <inheritdoc />
         public override Task SetParametersAsync(ParameterCollection parameters)

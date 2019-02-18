@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             builder.OpenElement(0, "input");
             builder.AddAttribute(1, "type", "checkbox");
             builder.AddAttribute(2, "id", Id);
-            builder.AddAttribute(3, "class", FieldClass);
+            builder.AddAttribute(3, "class", CssClass);
             builder.AddAttribute(4, "value", BindMethods.GetValue(CurrentValue));
             builder.AddAttribute(5, "onchange", BindMethods.SetValueHandler(__value => CurrentValue = __value, CurrentValue));
             builder.CloseElement();

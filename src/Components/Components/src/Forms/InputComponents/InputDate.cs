@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             builder.OpenElement(0, "input");
             builder.AddAttribute(1, "type", "date");
             builder.AddAttribute(2, "id", Id);
-            builder.AddAttribute(3, "class", FieldClass);
+            builder.AddAttribute(3, "class", CssClass);
             builder.AddAttribute(4, "value", BindMethods.GetValue(CurrentValueAsString));
             builder.AddAttribute(5, "onchange", BindMethods.SetValueHandler(__value => CurrentValueAsString = __value, CurrentValueAsString));
             builder.CloseElement();

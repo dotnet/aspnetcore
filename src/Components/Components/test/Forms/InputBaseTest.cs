@@ -234,23 +234,52 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
             // Act/Assert: Initally, it's valid and unmodified
             var inputComponent = await RenderAndGetTestInputComponentAsync(rootComponent);
             Assert.Equal("valid", inputComponent.FieldClass);
+            Assert.Equal("valid", inputComponent.CssClass); // Same because no Class was specified
 
             // Act/Assert: Modify the field
             rootComponent.EditContext.NotifyFieldChanged(fieldIdentifier);
             Assert.Equal("modified valid", inputComponent.FieldClass);
+            Assert.Equal("modified valid", inputComponent.CssClass);
 
             // Act/Assert: Make it invalid
             var messages = new ValidationMessageStore(rootComponent.EditContext);
             messages.Add(fieldIdentifier, "I do not like this value");
             Assert.Equal("modified invalid", inputComponent.FieldClass);
+            Assert.Equal("modified invalid", inputComponent.CssClass);
 
             // Act/Assert: Clear the modification flag
             rootComponent.EditContext.MarkAsUnmodified(fieldIdentifier);
             Assert.Equal("invalid", inputComponent.FieldClass);
+            Assert.Equal("invalid", inputComponent.CssClass);
 
             // Act/Assert: Make it valid
             messages.Clear();
             Assert.Equal("valid", inputComponent.FieldClass);
+            Assert.Equal("valid", inputComponent.CssClass);
+        }
+
+        [Fact]
+        public async Task CssClassCombinesClassWithFieldClass()
+        {
+            // Arrange
+            var model = new TestModel();
+            var rootComponent = new TestInputHostComponent<string, TestInputComponent<string>>
+            {
+                Class = "my-class other-class",
+                EditContext = new EditContext(model),
+                ValueExpression = () => model.StringProperty
+            };
+            var fieldIdentifier = FieldIdentifier.Create(() => model.StringProperty);
+
+            // Act/Assert
+            var inputComponent = await RenderAndGetTestInputComponentAsync(rootComponent);
+            Assert.Equal("valid", inputComponent.FieldClass);
+            Assert.Equal("my-class other-class valid", inputComponent.CssClass);
+
+            // Act/Assert: Retains custom class when changing field class
+            rootComponent.EditContext.NotifyFieldChanged(fieldIdentifier);
+            Assert.Equal("modified valid", inputComponent.FieldClass);
+            Assert.Equal("my-class other-class modified valid", inputComponent.CssClass);
         }
 
         [Fact]
@@ -388,6 +417,8 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
 
             public new string Id => base.Id;
 
+            public new string CssClass => base.CssClass;
+
             public new EditContext EditContext => base.EditContext;
 
             public new FieldIdentifier FieldIdentifier => base.FieldIdentifier;
@@ -419,6 +450,8 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
         {
             public string Id { get; set; }
 
+            public string Class { get; set; }
+
             public EditContext EditContext { get; set; }
 
             public TValue Value { get; set; }
@@ -438,6 +471,7 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
                     childBuilder.AddAttribute(1, "ValueChanged", ValueChanged);
                     childBuilder.AddAttribute(2, "ValueExpression", ValueExpression);
                     childBuilder.AddAttribute(3, nameof(Id), Id);
+                    childBuilder.AddAttribute(4, nameof(Class), Class);
                     childBuilder.CloseComponent();
                 }));
                 builder.CloseComponent();

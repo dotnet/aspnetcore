@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             base.BuildRenderTree(builder);
             builder.OpenElement(0, "textarea");
             builder.AddAttribute(1, "id", Id);
-            builder.AddAttribute(2, "class", FieldClass);
+            builder.AddAttribute(2, "class", CssClass);
             builder.AddAttribute(3, "value", BindMethods.GetValue(CurrentValue));
             builder.AddAttribute(4, "onchange", BindMethods.SetValueHandler(__value => CurrentValue = __value, CurrentValue));
             builder.CloseElement();
