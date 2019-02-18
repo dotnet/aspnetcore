@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// Holds metadata related to a data editing process, such as flags to indicate which
     /// fields have been modified and the current set of validation messages.
     /// </summary>
-    public class EditContext
+    public sealed class EditContext
     {
         private readonly Dictionary<FieldIdentifier, FieldState> _fieldStates = new Dictionary<FieldIdentifier, FieldState>();
 
