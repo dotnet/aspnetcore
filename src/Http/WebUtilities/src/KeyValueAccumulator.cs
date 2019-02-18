@@ -9,11 +9,15 @@ namespace Microsoft.AspNetCore.WebUtilities
 {
     public struct KeyValueAccumulator
     {
+        // This thing doesn't seem great at all...
+        // I also don't see tests...
         private Dictionary<string, StringValues> _accumulator;
         private Dictionary<string, List<string>> _expandingAccumulator;
 
         public void Append(string key, string value)
         {
+            // This thing feels so wrong... Every string has a list of strings associated with it.
+            // Can this be StringStruct or something similar?
             if (_accumulator == null)
             {
                 _accumulator = new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase);
