@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
@@ -21,6 +20,11 @@ namespace Microsoft.AspNetCore.Components.Forms
         private Type _nullableUnderlyingType;
 
         [CascadingParameter] EditContext CascadedEditContext { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value for the component's 'id' attribute.
+        /// </summary>
+        [Parameter] protected string Id { get; set; }
 
         /// <summary>
         /// Gets or sets the value of the input. This should be used with two-way binding.

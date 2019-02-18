@@ -75,6 +75,25 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
         }
 
         [Fact]
+        public async Task ExposesIdToSubclass()
+        {
+            // Arrange
+            var model = new TestModel();
+            var rootComponent = new TestInputHostComponent<string, TestInputComponent<string>>
+            {
+                Id = "test-id",
+                EditContext = new EditContext(model),
+                ValueExpression = () => model.StringProperty
+            };
+
+            // Act
+            var inputComponent = await RenderAndGetTestInputComponentAsync(rootComponent);
+
+            // Assert
+            Assert.Same(rootComponent.Id, inputComponent.Id);
+        }
+
+        [Fact]
         public async Task ExposesEditContextToSubclass()
         {
             // Arrange
@@ -367,6 +386,8 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
                 set { base.CurrentValueAsString = value; }
             }
 
+            public new string Id => base.Id;
+
             public new EditContext EditContext => base.EditContext;
 
             public new FieldIdentifier FieldIdentifier => base.FieldIdentifier;
@@ -396,6 +417,8 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
 
         class TestInputHostComponent<TValue, TComponent> : AutoRenderComponent where TComponent: TestInputComponent<TValue>
         {
+            public string Id { get; set; }
+
             public EditContext EditContext { get; set; }
 
             public TValue Value { get; set; }
@@ -414,6 +437,7 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
                     childBuilder.AddAttribute(0, "Value", Value);
                     childBuilder.AddAttribute(1, "ValueChanged", ValueChanged);
                     childBuilder.AddAttribute(2, "ValueExpression", ValueExpression);
+                    childBuilder.AddAttribute(3, nameof(Id), Id);
                     childBuilder.CloseComponent();
                 }));
                 builder.CloseComponent();
