@@ -283,19 +283,6 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
         }
 
         [Fact]
-        public async Task CannotUseCurrentValueAsStringWithoutOverridingTryParseValueFromString()
-        {
-            // Arrange
-            var model = new TestModel();
-            var rootComponent = new TestInputHostComponent<string, TestInputComponent<string>> { EditContext = new EditContext(model), ValueExpression = () => model.StringProperty };
-            var inputComponent = await RenderAndGetTestInputComponentAsync(rootComponent);
-
-            // Act/Assert
-            var ex = Assert.Throws<NotImplementedException>(() => { inputComponent.CurrentValueAsString = "something"; });
-            Assert.Contains($"must override TryParseValueFromString", ex.Message);
-        }
-
-        [Fact]
         public async Task SuppliesCurrentValueAsStringWithFormatting()
         {
             // Arrange
@@ -424,6 +411,11 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
             public new FieldIdentifier FieldIdentifier => base.FieldIdentifier;
 
             public new string FieldClass => base.FieldClass;
+
+            protected override bool TryParseValueFromString(string value, out T result, out string validationErrorMessage)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         class TestDateInputComponent : TestInputComponent<DateTime>

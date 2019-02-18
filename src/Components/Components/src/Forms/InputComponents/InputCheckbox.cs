@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Components.RenderTree;
+using System;
 
 namespace Microsoft.AspNetCore.Components.Forms
 {
@@ -31,5 +32,9 @@ namespace Microsoft.AspNetCore.Components.Forms
             builder.AddAttribute(5, "onchange", BindMethods.SetValueHandler(__value => CurrentValue = __value, CurrentValue));
             builder.CloseElement();
         }
+
+        /// <inheritdoc />
+        protected override bool TryParseValueFromString(string value, out bool result, out string validationErrorMessage)
+            => throw new NotImplementedException($"This component does not parse string inputs. Bind to the '{nameof(CurrentValue)}' property, not '{nameof(CurrentValueAsString)}'.");
     }
 }

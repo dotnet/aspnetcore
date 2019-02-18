@@ -142,9 +142,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <param name="result">An instance of <typeparamref name="T"/>.</param>
         /// <param name="validationErrorMessage">If the value could not be parsed, provides a validation error message.</param>
         /// <returns>True if the value could be parsed; otherwise false.</returns>
-        protected virtual bool TryParseValueFromString(string value, out T result, out string validationErrorMessage)
-            => throw new NotImplementedException($"Components that inherit from {nameof(InputBase<T>)} must override " +
-                $"{nameof(TryParseValueFromString)} in order to use {nameof(CurrentValueAsString)}.");
+        protected abstract bool TryParseValueFromString(string value, out T result, out string validationErrorMessage);
 
         /// <summary>
         /// Gets a string that indicates the status of the field being edited. This will include
