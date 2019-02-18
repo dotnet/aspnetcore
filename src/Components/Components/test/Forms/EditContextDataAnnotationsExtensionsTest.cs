@@ -41,17 +41,17 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
 
             Assert.Equal(new string[]
                 {
-                    "The RequiredString field is required.",
-                    "The field IntFrom1To100 must be between 1 and 100."
+                    "RequiredString:required",
+                    "IntFrom1To100:range"
                 },
                 editContext.GetValidationMessages());
 
-            Assert.Equal(new string[] { "The RequiredString field is required." },
+            Assert.Equal(new string[] { "RequiredString:required" },
                 editContext.GetValidationMessages(editContext.Field(nameof(TestModel.RequiredString))));
 
             // This shows we're including non-[Required] properties in the validation results, i.e,
             // that we're correctly passing "validateAllProperties: true" to DataAnnotations
-            Assert.Equal(new string[] { "The field IntFrom1To100 must be between 1 and 100." },
+            Assert.Equal(new string[] { "IntFrom1To100:range" },
                 editContext.GetValidationMessages(editContext.Field(nameof(TestModel.IntFrom1To100))));
         }
 
@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
             // Only RequiredString gets validated, even though IntFrom1To100 also holds an invalid value
             editContext.NotifyFieldChanged(requiredStringIdentifier);
             Assert.Equal(1, onValidationStateChangedCount);
-            Assert.Equal(new[] { "The RequiredString field is required." }, editContext.GetValidationMessages());
+            Assert.Equal(new[] { "RequiredString:required" }, editContext.GetValidationMessages());
 
             // Act/Assert 2: Fix RequiredString, but only notify about IntFrom1To100
             // Only IntFrom1To100 gets validated; messages for RequiredString are left unchanged
@@ -122,15 +122,15 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
             Assert.Equal(2, onValidationStateChangedCount);
             Assert.Equal(new string[]
                 {
-                    "The RequiredString field is required.",
-                    "The field IntFrom1To100 must be between 1 and 100."
+                    "RequiredString:required",
+                    "IntFrom1To100:range"
                 },
                 editContext.GetValidationMessages());
 
             // Act/Assert 3: Notify about RequiredString
             editContext.NotifyFieldChanged(requiredStringIdentifier);
             Assert.Equal(3, onValidationStateChangedCount);
-            Assert.Equal(new[] { "The field IntFrom1To100 must be between 1 and 100." }, editContext.GetValidationMessages());
+            Assert.Equal(new[] { "IntFrom1To100:range" }, editContext.GetValidationMessages());
         }
 
         [Theory]
@@ -157,9 +157,9 @@ namespace Microsoft.AspNetCore.Components.Tests.Forms
 
         class TestModel
         {
-            [Required] public string RequiredString { get; set; }
+            [Required(ErrorMessage = "RequiredString:required")] public string RequiredString { get; set; }
 
-            [Range(1, 100)] public int IntFrom1To100 { get; set; }
+            [Range(1, 100, ErrorMessage = "IntFrom1To100:range")] public int IntFrom1To100 { get; set; }
 
 #pragma warning disable 649
             [Required] public string ThisWillNotBeValidatedBecauseItIsAField;
