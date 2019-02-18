@@ -13,6 +13,11 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// </summary>
     public sealed class EditContext
     {
+        // Note that EditContext tracks state for any FieldIdentifier you give to it, plus
+        // the underlying storage is sparse. As such, none of the APIs have a "field not found"
+        // error state. If you give us an unrecognized FieldIdentifier, that just means we
+        // didn't yet track any state for it, so we behave as if it's in the default state
+        // (valid and unmodified).
         private readonly Dictionary<FieldIdentifier, FieldState> _fieldStates = new Dictionary<FieldIdentifier, FieldState>();
 
         /// <summary>
