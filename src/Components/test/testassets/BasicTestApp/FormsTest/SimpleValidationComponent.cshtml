@@ -4,10 +4,10 @@
 <EditForm Model="@this" OnValidSubmit="@(EventCallback.Factory.Create<EditContext>(this, HandleValidSubmit))" OnInvalidSubmit="@(EventCallback.Factory.Create<EditContext>(this, HandleInvalidSubmit))">
     <DataAnnotationsValidator />
 
-    <p>
+    <p class="user-name">
         User name: <input bind="@UserName" class="@context.FieldClass(() => UserName)" />
     </p>
-    <p>
+    <p class="accepts-terms">
         Accept terms: <input type="checkbox" bind="@AcceptsTerms" class="@context.FieldClass(() => AcceptsTerms)" />
     </p>
 
@@ -17,7 +17,7 @@
     <ul class="validation-errors">
         @foreach (var message in context.GetValidationMessages())
         {
-            <li>@message</li>
+            <li class="validation-message">@message</li>
         }
     </ul>
 
@@ -31,7 +31,7 @@
 @functions {
     string lastCallback;
 
-    [Required]
+    [Required(ErrorMessage = "Please choose a username")]
     public string UserName { get; set; }
 
     [Required]
