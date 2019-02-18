@@ -16,11 +16,11 @@
 </p>
 
 <form onsubmit="@HandleSubmit">
-    <p>
+    <p class="user-name">
         User name:
         <input bind="@person.UserName" class="@editContext.FieldClass(() => person.UserName)" />
     </p>
-    <p>
+    <p class="accepts-terms">
         Accept terms:
         <input type="checkbox" bind="@person.AcceptsTerms" class="@editContext.FieldClass(() => person.AcceptsTerms)" />
     </p>
@@ -32,7 +32,7 @@
     </CascadingValue>
 </form>
 
-@submissionStatus
+<div id="submission-status">@submissionStatus</div>
 
 @functions {
     MyModel person = new MyModel();
@@ -65,7 +65,7 @@
         string _userName;
         bool _acceptsTerms;
 
-        [Required]
+        [Required, StringLength(10, ErrorMessage = "That name is too long")]
         public string UserName
         {
             get => _userName;

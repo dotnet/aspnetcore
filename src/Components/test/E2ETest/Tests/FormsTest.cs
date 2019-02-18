@@ -34,34 +34,32 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var userNameInput = appElement.FindElement(By.ClassName("user-name")).FindElement(By.TagName("input"));
             var acceptsTermsInput = appElement.FindElement(By.ClassName("accepts-terms")).FindElement(By.TagName("input"));
             var submitButton = appElement.FindElement(By.TagName("button"));
+            var messagesAccessor = CreateValidationMessagesAccessor(appElement);
 
             // Editing a field doesn't trigger validation on its own
             userNameInput.SendKeys("Bert\t");
             acceptsTermsInput.Click(); // Accept terms
             acceptsTermsInput.Click(); // Un-accept terms
             await Task.Delay(500); // There's no expected change to the UI, so just wait a moment before asserting
-            Assert.Empty(appElement.FindElements(By.ClassName("validation-message")));
+            WaitAssert.Empty(messagesAccessor);
             Assert.Empty(appElement.FindElements(By.Id("last-callback")));
 
             // Submitting the form does validate
             submitButton.Click();
-            WaitAssert.Collection(() => appElement.FindElements(By.ClassName("validation-message")),
-                li => Assert.Equal("You must accept the terms", li.Text));
+            WaitAssert.Equal(new[] { "You must accept the terms" }, messagesAccessor);
             WaitAssert.Equal("OnInvalidSubmit", () => appElement.FindElement(By.Id("last-callback")).Text);
 
             // Can make another field invalid
             userNameInput.Clear();
             submitButton.Click();
-            WaitAssert.Collection(() => appElement.FindElements(By.ClassName("validation-message")).OrderBy(x => x.Text),
-                li => Assert.Equal("Please choose a username", li.Text),
-                li => Assert.Equal("You must accept the terms", li.Text));
+            WaitAssert.Equal(new[] { "Please choose a username", "You must accept the terms" }, messagesAccessor);
             WaitAssert.Equal("OnInvalidSubmit", () => appElement.FindElement(By.Id("last-callback")).Text);
 
             // Can make valid
             userNameInput.SendKeys("Bert\t");
             acceptsTermsInput.Click();
             submitButton.Click();
-            WaitAssert.Empty(() => appElement.FindElements(By.ClassName("validation-message")));
+            WaitAssert.Empty(messagesAccessor);
             WaitAssert.Equal("OnValidSubmit", () => appElement.FindElement(By.Id("last-callback")).Text);
         }
 
@@ -252,6 +250,43 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             acceptsTermsInput.Click();
             WaitAssert.Equal("modified invalid", () => acceptsTermsInput.GetAttribute("class"));
             WaitAssert.Equal(new[] { "Must accept terms" }, messagesAccessor);
+        }
+
+        [Fact]
+        public void CanWireUpINotifyPropertyChangedToEditContext()
+        {
+            var appElement = MountTestComponent<NotifyPropertyChangedValidationComponent>();
+            var userNameInput = appElement.FindElement(By.ClassName("user-name")).FindElement(By.TagName("input"));
+            var acceptsTermsInput = appElement.FindElement(By.ClassName("accepts-terms")).FindElement(By.TagName("input"));
+            var submitButton = appElement.FindElement(By.TagName("button"));
+            var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+            var submissionStatus = appElement.FindElement(By.Id("submission-status"));
+
+            // Editing a field triggers validation immediately
+            WaitAssert.Equal("valid", () => userNameInput.GetAttribute("class"));
+            userNameInput.SendKeys("Too long too long\t");
+            WaitAssert.Equal("modified invalid", () => userNameInput.GetAttribute("class"));
+            WaitAssert.Equal(new[] { "That name is too long" }, messagesAccessor);
+
+            // Submitting the form validates remaining fields
+            submitButton.Click();
+            WaitAssert.Equal(new[] { "That name is too long", "You must accept the terms" }, messagesAccessor);
+            WaitAssert.Equal("modified invalid", () => userNameInput.GetAttribute("class"));
+            WaitAssert.Equal("invalid", () => acceptsTermsInput.GetAttribute("class"));
+
+            // Can make fields valid
+            userNameInput.Clear();
+            userNameInput.SendKeys("Bert\t");
+            WaitAssert.Equal("modified valid", () => userNameInput.GetAttribute("class"));
+            acceptsTermsInput.Click();
+            WaitAssert.Equal("modified valid", () => acceptsTermsInput.GetAttribute("class"));
+            WaitAssert.Equal(string.Empty, () => submissionStatus.Text);
+            submitButton.Click();
+            WaitAssert.True(() => submissionStatus.Text.StartsWith("Submitted"));
+
+            // Fields can revert to unmodified
+            WaitAssert.Equal("valid", () => userNameInput.GetAttribute("class"));
+            WaitAssert.Equal("valid", () => acceptsTermsInput.GetAttribute("class"));
         }
 
         private Func<string[]> CreateValidationMessagesAccessor(IWebElement appElement)
