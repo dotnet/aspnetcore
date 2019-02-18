@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// </summary>
         public FieldIdentifier FieldIdentifier { get; }
 
-        internal FieldChangedEventArgs(FieldIdentifier fieldIdentifier)
+        internal FieldChangedEventArgs(in FieldIdentifier fieldIdentifier)
         {
             FieldIdentifier = fieldIdentifier;
         }

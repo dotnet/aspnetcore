@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <param name="editContext">The <see cref="EditContext"/>.</param>
         /// <param name="fieldIdentifier">An identifier for the field.</param>
         /// <returns>A string that indicates the status of the field.</returns>
-        public static string FieldClass(this EditContext editContext, FieldIdentifier fieldIdentifier)
+        public static string FieldClass(this EditContext editContext, in FieldIdentifier fieldIdentifier)
         {
             var isValid = !editContext.GetValidationMessages(fieldIdentifier).Any();
             if (editContext.IsModified(fieldIdentifier))

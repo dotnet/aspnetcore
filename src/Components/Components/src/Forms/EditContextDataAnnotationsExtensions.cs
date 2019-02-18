@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             editContext.NotifyValidationStateChanged();
         }
 
-        private static void ValidateField(EditContext editContext, ValidationMessageStore messages, FieldIdentifier fieldIdentifier)
+        private static void ValidateField(EditContext editContext, ValidationMessageStore messages, in FieldIdentifier fieldIdentifier)
         {
             if (TryGetValidatableProperty(fieldIdentifier, out var propertyInfo))
             {
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             }
         }
 
-        private static bool TryGetValidatableProperty(FieldIdentifier fieldIdentifier, out PropertyInfo propertyInfo)
+        private static bool TryGetValidatableProperty(in FieldIdentifier fieldIdentifier, out PropertyInfo propertyInfo)
         {
             var cacheKey = (ModelType: fieldIdentifier.Model.GetType(), fieldIdentifier.FieldName);
             if (!_propertyInfoCache.TryGetValue(cacheKey, out propertyInfo))

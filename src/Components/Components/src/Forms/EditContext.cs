@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// Signals that the value for the specified field has changed.
         /// </summary>
         /// <param name="fieldIdentifier">Identifies the field whose value has been changed.</param>
-        public void NotifyFieldChanged(FieldIdentifier fieldIdentifier)
+        public void NotifyFieldChanged(in FieldIdentifier fieldIdentifier)
         {
             GetFieldState(fieldIdentifier, ensureExists: true).IsModified = true;
             OnFieldChanged?.Invoke(this, new FieldChangedEventArgs(fieldIdentifier));
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// Clears any modification flag that may be tracked for the specified field.
         /// </summary>
         /// <param name="fieldIdentifier">Identifies the field whose modification flag (if any) should be cleared.</param>
-        public void MarkAsUnmodified(FieldIdentifier fieldIdentifier)
+        public void MarkAsUnmodified(in FieldIdentifier fieldIdentifier)
         {
             if (_fieldStates.TryGetValue(fieldIdentifier, out var state))
             {
@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// Determines whether the specified fields in this <see cref="EditContext"/> has been modified.
         /// </summary>
         /// <returns>True if the field has been modified; otherwise false.</returns>
-        public bool IsModified(FieldIdentifier fieldIdentifier)
+        public bool IsModified(in FieldIdentifier fieldIdentifier)
             => _fieldStates.TryGetValue(fieldIdentifier, out var state)
             ? state.IsModified
             : false;
@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             return !GetValidationMessages().Any();
         }
 
-        internal FieldState GetFieldState(FieldIdentifier fieldIdentifier, bool ensureExists)
+        internal FieldState GetFieldState(in FieldIdentifier fieldIdentifier, bool ensureExists)
         {
             if (!_fieldStates.TryGetValue(fieldIdentifier, out var state) && ensureExists)
             {
