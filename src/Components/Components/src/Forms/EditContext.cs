@@ -107,9 +107,19 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// </summary>
         /// <returns>True if any of the fields in this <see cref="EditContext"/> have been modified; otherwise false.</returns>
         public bool IsModified()
+        {
             // If necessary, we could consider caching the overall "is modified" state and only recomputing
             // when there's a call to NotifyFieldModified/NotifyFieldUnmodified
-            => _fieldStates.Values.Any(state => state.IsModified);
+            foreach (var state in _fieldStates)
+            {
+                if (state.Value.IsModified)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
 
         /// <summary>
         /// Gets the current validation messages across all fields.
@@ -118,9 +128,17 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// </summary>
         /// <returns>The current validation messages.</returns>
         public IEnumerable<string> GetValidationMessages()
+        {
             // Since we're only enumerating the fields for which we have a non-null state, the cost of this grows
             // based on how many fields have been modified or have associated validation messages
-            => _fieldStates.Values.SelectMany(state => state.GetValidationMessages());
+            foreach (var state in _fieldStates)
+            {
+                foreach (var message in state.Value.GetValidationMessages())
+                {
+                    yield return message;
+                }
+            }
+        }
 
         /// <summary>
         /// Gets the current validation messages for the specified field.
@@ -130,7 +148,15 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <param name="fieldIdentifier">Identifies the field whose current validation messages should be returned.</param>
         /// <returns>The current validation messages for the specified field.</returns>
         public IEnumerable<string> GetValidationMessages(FieldIdentifier fieldIdentifier)
-            => _fieldStates.TryGetValue(fieldIdentifier, out var state) ? state.GetValidationMessages() : Enumerable.Empty<string>();
+        {
+            if (_fieldStates.TryGetValue(fieldIdentifier, out var state))
+            {
+                foreach (var message in state.GetValidationMessages())
+                {
+                    yield return message;
+                }
+            }
+        }
 
         /// <summary>
         /// Determines whether the specified fields in this <see cref="EditContext"/> has been modified.

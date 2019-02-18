@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Microsoft.AspNetCore.Components.Forms
 {
@@ -24,7 +23,18 @@ namespace Microsoft.AspNetCore.Components.Forms
         public bool IsModified { get; set; }
 
         public IEnumerable<string> GetValidationMessages()
-            => _validationMessageStores == null ? Enumerable.Empty<string>() : _validationMessageStores.SelectMany(store => store[_fieldIdentifier]);
+        {
+            if (_validationMessageStores != null)
+            {
+                foreach (var store in _validationMessageStores)
+                {
+                    foreach (var message in store[_fieldIdentifier])
+                    {
+                        yield return message;
+                    }
+                }
+            }
+        }
 
         public void AssociateWithValidationMessageStore(ValidationMessageStore validationMessageStore)
         {
