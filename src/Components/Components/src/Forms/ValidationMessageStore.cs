@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// <summary>
     /// Holds validation messages for an <see cref="EditContext"/>.
     /// </summary>
-    public class ValidationMessageStore
+    public sealed class ValidationMessageStore
     {
         private readonly EditContext _editContext;
         private readonly Dictionary<FieldIdentifier, List<string>> _messages = new Dictionary<FieldIdentifier, List<string>>();
