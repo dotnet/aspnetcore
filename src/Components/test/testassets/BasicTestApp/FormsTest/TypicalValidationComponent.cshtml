@@ -1,7 +1,7 @@
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Components.Forms
 
-<EditForm Model="@person" OnValidSubmit="@(EventCallback.Factory.Create<EditContext>(this, HandleValidSubmitAsync))">
+<EditForm Model="@person" OnValidSubmit="@(EventCallback.Factory.Create<EditContext>(this, HandleValidSubmit))">
     <DataAnnotationsValidator />
 
     <p>
@@ -74,10 +74,8 @@
 
     List<string> submissionLog = new List<string>(); // So we can assert about the callbacks
 
-    Task HandleValidSubmitAsync(EditContext editContext)
+    void HandleValidSubmit()
     {
         submissionLog.Add("OnValidSubmit");
-        StateHasChanged(); // Temporary workaround for event routing bug
-        return Task.CompletedTask;
     }
 }

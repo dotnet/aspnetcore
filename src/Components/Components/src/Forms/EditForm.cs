@@ -105,22 +105,11 @@ namespace Microsoft.AspNetCore.Components.Forms
             builder.OpenComponent<CascadingValue<EditContext>>(2);
             builder.AddAttribute(3, "IsFixed", true);
             builder.AddAttribute(4, "Value", _fixedEditContext);
-
-            // TODO: Once the event routing bug is fixed, replace the following with
-            // builder.AddAttribute(5, RenderTreeBuilder.ChildContent, ChildContent?.Invoke(_fixedEditContext));
-            builder.AddAttribute(5, RenderTreeBuilder.ChildContent, (RenderFragment)RenderChildContentInWorkaround);
-
+            builder.AddAttribute(5, RenderTreeBuilder.ChildContent, ChildContent?.Invoke(_fixedEditContext));
             builder.CloseComponent();
             builder.CloseElement();
 
             builder.CloseRegion();
-        }
-
-        private void RenderChildContentInWorkaround(RenderTreeBuilder builder)
-        {
-            builder.OpenComponent<TemporaryEventRoutingWorkaround>(0);
-            builder.AddAttribute(1, RenderTreeBuilder.ChildContent, ChildContent?.Invoke(_fixedEditContext));
-            builder.CloseComponent();
         }
 
         private async Task HandleSubmitAsync()

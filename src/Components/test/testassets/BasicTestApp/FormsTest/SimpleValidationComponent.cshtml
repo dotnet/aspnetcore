@@ -1,7 +1,7 @@
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Components.Forms
 
-<EditForm Model="@this" OnValidSubmit="@(EventCallback.Factory.Create<EditContext>(this, HandleValidSubmitAsync))" OnInvalidSubmit="@(EventCallback.Factory.Create<EditContext>(this, HandleInvalidSubmitAsync))">
+<EditForm Model="@this" OnValidSubmit="@(EventCallback.Factory.Create<EditContext>(this, HandleValidSubmit))" OnInvalidSubmit="@(EventCallback.Factory.Create<EditContext>(this, HandleInvalidSubmit))">
     <DataAnnotationsValidator />
 
     <p>
@@ -38,21 +38,13 @@
     [Range(typeof(bool), "true", "true", ErrorMessage = "You must accept the terms")]
     public bool AcceptsTerms { get; set; }
 
-    Task HandleValidSubmitAsync(EditContext editContext)
+    void HandleValidSubmit()
     {
         lastCallback = "OnValidSubmit";
-
-        StateHasChanged(); // This is only needed as a temporary workaround to the event routing issue
-
-        return Task.CompletedTask;
     }
 
-    Task HandleInvalidSubmitAsync(EditContext editContext)
+    void HandleInvalidSubmit()
     {
         lastCallback = "OnInvalidSubmit";
-
-        StateHasChanged(); // This is only needed as a temporary workaround to the event routing issue
-
-        return Task.CompletedTask;
     }
 }
