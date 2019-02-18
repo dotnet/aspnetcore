@@ -16,6 +16,7 @@ namespace Microsoft.CodeAnalysis.Razor
             // Arrange
             var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
 using System;
+using System.Linq.Expressions;
 using Microsoft.AspNetCore.Components;
 
 namespace Test
@@ -31,6 +32,9 @@ namespace Test
 
         [Parameter]
         Action<string> MyPropertyChanged { get; set; }
+
+        [Parameter]
+        Expression<Func<string>> MyPropertyExpression { get; set; }
     }
 }
 "));
@@ -69,6 +73,7 @@ namespace Test
 
             Assert.Equal("MyProperty", bind.Metadata[BlazorMetadata.Bind.ValueAttribute]);
             Assert.Equal("MyPropertyChanged", bind.Metadata[BlazorMetadata.Bind.ChangeAttribute]);
+            Assert.Equal("MyPropertyExpression", bind.Metadata[BlazorMetadata.Bind.ExpressionAttribute]);
 
             Assert.Equal(
                 "Binds the provided expression to the 'MyProperty' property and a change event " +

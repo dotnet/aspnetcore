@@ -351,6 +351,8 @@ namespace Microsoft.CodeAnalysis.Razor
                 //
                 // The easiest way to figure this out without a lot of backtracking is to look for `FooChanged` and then
                 // try to find a matching "Foo".
+                //
+                // We also look for a corresponding FooExpression attribute, though its presence is optional.
                 for (var i = 0; i < tagHelper.BoundAttributes.Count; i++)
                 {
                     var changeAttribute = tagHelper.BoundAttributes[i];
@@ -360,12 +362,25 @@ namespace Microsoft.CodeAnalysis.Razor
                     }
 
                     BoundAttributeDescriptor valueAttribute = null;
+                    BoundAttributeDescriptor expressionAttribute = null;
                     var valueAttributeName = changeAttribute.Name.Substring(0, changeAttribute.Name.Length - "Changed".Length);
+                    var expressionAttributeName = valueAttributeName + "Expression";
                     for (var j = 0; j < tagHelper.BoundAttributes.Count; j++)
                     {
                         if (tagHelper.BoundAttributes[j].Name == valueAttributeName && !tagHelper.BoundAttributes[j].IsDelegateProperty())
                         {
                             valueAttribute = tagHelper.BoundAttributes[j];
+                            
+                        }
+
+                        if (tagHelper.BoundAttributes[j].Name == expressionAttributeName)
+                        {
+                            expressionAttribute = tagHelper.BoundAttributes[j];
+                        }
+
+                        if (valueAttribute != null && expressionAttribute != null)
+                        {
+                            // We found both, so we can stop looking now
                             break;
                         }
                     }
@@ -387,6 +402,11 @@ namespace Microsoft.CodeAnalysis.Razor
                     builder.Metadata[TagHelperMetadata.Runtime.Name] = BlazorMetadata.Bind.RuntimeName;
                     builder.Metadata[BlazorMetadata.Bind.ValueAttribute] = valueAttribute.Name;
                     builder.Metadata[BlazorMetadata.Bind.ChangeAttribute] = changeAttribute.Name;
+
+                    if (expressionAttribute != null)
+                    {
+                        builder.Metadata[BlazorMetadata.Bind.ExpressionAttribute] = expressionAttribute.Name;
+                    }
 
                     // WTE has a bug 15.7p1 where a Tag Helper without a display-name that looks like
                     // a C# property will crash trying to create the toolips.

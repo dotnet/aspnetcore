@@ -95,6 +95,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             return result;
         }
 
+        public static string GetExpressionAttributeName(this TagHelperDescriptor tagHelper)
+        {
+            if (tagHelper == null)
+            {
+                throw new ArgumentNullException(nameof(tagHelper));
+            }
+
+            tagHelper.Metadata.TryGetValue(BlazorMetadata.Bind.ExpressionAttribute, out var result);
+            return result;
+        }
+
         public static bool IsChildContentTagHelper(this TagHelperDescriptor tagHelper)
         {
             if (tagHelper == null)

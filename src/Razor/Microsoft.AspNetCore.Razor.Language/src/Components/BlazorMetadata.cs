@@ -24,6 +24,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             public readonly static string ValueAttribute = "Blazor.Bind.ValueAttribute";
 
             public readonly static string ChangeAttribute = "Blazor.Bind.ChangeAttribute";
+
+            public readonly static string ExpressionAttribute = "Blazor.Bind.ExpressionAttribute";
         }
 
         public static class ChildContent

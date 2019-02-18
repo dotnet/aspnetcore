@@ -36,6 +36,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             {
                 typeof(System.Runtime.AssemblyTargetedPatchBandAttribute).Assembly, // System.Runtime
                 typeof(Enumerable).Assembly, // Other .NET fundamental types
+                typeof(System.Linq.Expressions.Expression).Assembly,
                 typeof(ComponentBase).Assembly,
             };
 
