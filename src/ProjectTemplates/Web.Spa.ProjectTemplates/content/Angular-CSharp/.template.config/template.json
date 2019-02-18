@@ -34,7 +34,7 @@
             "Data/**",
             "Models/**",
             "ClientApp/src/api-authorization/**",
-            "Controllers/ConfigurationController.cs"
+            "Controllers/OidcConfigurationController.cs"
           ]
         },
         {

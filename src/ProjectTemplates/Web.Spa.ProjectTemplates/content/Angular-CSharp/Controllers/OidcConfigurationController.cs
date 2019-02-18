@@ -3,9 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Company.WebApplication1.Controllers
 {
-    public class ConfigurationController : Controller
+    public class OidcConfigurationController : Controller
     {
-        public ConfigurationController(IClientRequestParametersProvider clientRequestParametersProvider)
+        public OidcConfigurationController(IClientRequestParametersProvider clientRequestParametersProvider)
         {
             ClientRequestParametersProvider = clientRequestParametersProvider;
         }
