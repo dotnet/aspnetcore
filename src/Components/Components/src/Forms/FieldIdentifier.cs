@@ -18,6 +18,11 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <param name="accessor">An expression that identifies an object member.</param>
         public static FieldIdentifier Create<T>(Expression<Func<T>> accessor)
         {
+            if (accessor == null)
+            {
+                throw new ArgumentNullException(nameof(accessor));
+            }
+
             ParseAccessor(accessor, out var model, out var fieldName);
             return new FieldIdentifier(model, fieldName);
         }
