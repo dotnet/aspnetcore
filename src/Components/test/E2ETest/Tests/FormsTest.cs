@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
@@ -62,6 +63,203 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             submitButton.Click();
             WaitAssert.Empty(() => appElement.FindElements(By.ClassName("validation-message")));
             WaitAssert.Equal("OnValidSubmit", () => appElement.FindElement(By.Id("last-callback")).Text);
+        }
+
+        [Fact]
+        public void InputTextInteractsWithEditContext()
+        {
+            var appElement = MountTestComponent<TypicalValidationComponent>();
+            var nameInput = appElement.FindElement(By.ClassName("name")).FindElement(By.TagName("input"));
+            var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+            
+            // Validates on edit
+            WaitAssert.Equal("valid", () => nameInput.GetAttribute("class"));
+            nameInput.SendKeys("Bert\t");
+            WaitAssert.Equal("modified valid", () => nameInput.GetAttribute("class"));
+
+            // Can become invalid
+            nameInput.SendKeys("01234567890123456789\t");
+            WaitAssert.Equal("modified invalid", () => nameInput.GetAttribute("class"));
+            WaitAssert.Equal(new[] { "That name is too long" }, messagesAccessor);
+
+            // Can become valid
+            nameInput.Clear();
+            nameInput.SendKeys("Bert\t");
+            WaitAssert.Equal("modified valid", () => nameInput.GetAttribute("class"));
+            WaitAssert.Empty(messagesAccessor);
+        }
+
+        [Fact]
+        public void InputNumberInteractsWithEditContext_NonNullableInt()
+        {
+            var appElement = MountTestComponent<TypicalValidationComponent>();
+            var ageInput = appElement.FindElement(By.ClassName("age")).FindElement(By.TagName("input"));
+            var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+
+            // Validates on edit
+            WaitAssert.Equal("valid", () => ageInput.GetAttribute("class"));
+            ageInput.SendKeys("123\t");
+            WaitAssert.Equal("modified valid", () => ageInput.GetAttribute("class"));
+
+            // Can become invalid
+            ageInput.SendKeys("e100\t");
+            WaitAssert.Equal("modified invalid", () => ageInput.GetAttribute("class"));
+            WaitAssert.Equal(new[] { "The AgeInYears field must be a number." }, messagesAccessor);
+
+            // Empty is invalid, because it's not a nullable int
+            ageInput.Clear();
+            ageInput.SendKeys("\t");
+            WaitAssert.Equal("modified invalid", () => ageInput.GetAttribute("class"));
+            WaitAssert.Equal(new[] { "The AgeInYears field must be a number." }, messagesAccessor);
+
+            // Zero is within the allowed range
+            ageInput.SendKeys("0\t");
+            WaitAssert.Equal("modified valid", () => ageInput.GetAttribute("class"));
+            WaitAssert.Empty(messagesAccessor);
+        }
+
+        [Fact]
+        public void InputNumberInteractsWithEditContext_NullableFloat()
+        {
+            var appElement = MountTestComponent<TypicalValidationComponent>();
+            var heightInput = appElement.FindElement(By.ClassName("height")).FindElement(By.TagName("input"));
+            var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+
+            // Validates on edit
+            WaitAssert.Equal("valid", () => heightInput.GetAttribute("class"));
+            heightInput.SendKeys("123.456\t");
+            WaitAssert.Equal("modified valid", () => heightInput.GetAttribute("class"));
+
+            // Can become invalid
+            heightInput.SendKeys("e100\t");
+            WaitAssert.Equal("modified invalid", () => heightInput.GetAttribute("class"));
+            WaitAssert.Equal(new[] { "The OptionalHeight field must be a number." }, messagesAccessor);
+
+            // Empty is valid, because it's a nullable float
+            heightInput.Clear();
+            heightInput.SendKeys("\t");
+            WaitAssert.Equal("modified valid", () => heightInput.GetAttribute("class"));
+            WaitAssert.Empty(messagesAccessor);
+        }
+
+        [Fact]
+        public void InputTextAreaInteractsWithEditContext()
+        {
+            var appElement = MountTestComponent<TypicalValidationComponent>();
+            var descriptionInput = appElement.FindElement(By.ClassName("description")).FindElement(By.TagName("textarea"));
+            var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+
+            // Validates on edit
+            WaitAssert.Equal("valid", () => descriptionInput.GetAttribute("class"));
+            descriptionInput.SendKeys("Hello\t");
+            WaitAssert.Equal("modified valid", () => descriptionInput.GetAttribute("class"));
+
+            // Can become invalid
+            descriptionInput.SendKeys("too long too long too long too long too long\t");
+            WaitAssert.Equal("modified invalid", () => descriptionInput.GetAttribute("class"));
+            WaitAssert.Equal(new[] { "Description is max 20 chars" }, messagesAccessor);
+
+            // Can become valid
+            descriptionInput.Clear();
+            descriptionInput.SendKeys("Hello\t");
+            WaitAssert.Equal("modified valid", () => descriptionInput.GetAttribute("class"));
+            WaitAssert.Empty(messagesAccessor);
+        }
+
+        [Fact]
+        public void InputDateInteractsWithEditContext_NonNullableDateTime()
+        {
+            var appElement = MountTestComponent<TypicalValidationComponent>();
+            var renewalDateInput = appElement.FindElement(By.ClassName("renewal-date")).FindElement(By.TagName("input"));
+            var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+
+            // Validates on edit
+            WaitAssert.Equal("valid", () => renewalDateInput.GetAttribute("class"));
+            renewalDateInput.SendKeys("01/01/2000\t");
+            WaitAssert.Equal("modified valid", () => renewalDateInput.GetAttribute("class"));
+
+            // Can become invalid
+            renewalDateInput.SendKeys("0/0/0");
+            WaitAssert.Equal("modified invalid", () => renewalDateInput.GetAttribute("class"));
+            WaitAssert.Equal(new[] { "The RenewalDate field must be a date." }, messagesAccessor);
+
+            // Empty is invalid, because it's not nullable
+            renewalDateInput.SendKeys($"{Keys.Backspace}\t{Keys.Backspace}\t{Keys.Backspace}\t");
+            WaitAssert.Equal("modified invalid", () => renewalDateInput.GetAttribute("class"));
+            WaitAssert.Equal(new[] { "The RenewalDate field must be a date." }, messagesAccessor);
+
+            // Can become valid
+            renewalDateInput.SendKeys("01/01/01\t");
+            WaitAssert.Equal("modified valid", () => renewalDateInput.GetAttribute("class"));
+            WaitAssert.Empty(messagesAccessor);
+        }
+
+        [Fact]
+        public void InputDateInteractsWithEditContext_NullableDateTimeOffset()
+        {
+            var appElement = MountTestComponent<TypicalValidationComponent>();
+            var expiryDateInput = appElement.FindElement(By.ClassName("expiry-date")).FindElement(By.TagName("input"));
+            var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+
+            // Validates on edit
+            WaitAssert.Equal("valid", () => expiryDateInput.GetAttribute("class"));
+            expiryDateInput.SendKeys("01/01/2000\t");
+            WaitAssert.Equal("modified valid", () => expiryDateInput.GetAttribute("class"));
+
+            // Can become invalid
+            expiryDateInput.SendKeys("111111111");
+            WaitAssert.Equal("modified invalid", () => expiryDateInput.GetAttribute("class"));
+            WaitAssert.Equal(new[] { "The OptionalExpiryDate field must be a date." }, messagesAccessor);
+
+            // Empty is valid, because it's nullable
+            expiryDateInput.SendKeys($"{Keys.Backspace}\t{Keys.Backspace}\t{Keys.Backspace}\t");
+            WaitAssert.Equal("modified valid", () => expiryDateInput.GetAttribute("class"));
+            WaitAssert.Empty(messagesAccessor);
+        }
+
+        [Fact]
+        public void InputSelectInteractsWithEditContext()
+        {
+            var appElement = MountTestComponent<TypicalValidationComponent>();
+            var ticketClassInput = new SelectElement(appElement.FindElement(By.ClassName("ticket-class")).FindElement(By.TagName("select")));
+            var select = ticketClassInput.WrappedElement;
+            var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+
+            // Validates on edit
+            WaitAssert.Equal("valid", () => select.GetAttribute("class"));
+            ticketClassInput.SelectByText("First class");
+            WaitAssert.Equal("modified valid", () => select.GetAttribute("class"));
+
+            // Can become invalid
+            ticketClassInput.SelectByText("(select)");
+            WaitAssert.Equal("modified invalid", () => select.GetAttribute("class"));
+            WaitAssert.Equal(new[] { "The TicketClass field is not valid." }, messagesAccessor);
+        }
+
+        [Fact]
+        public void InputCheckboxInteractsWithEditContext()
+        {
+            var appElement = MountTestComponent<TypicalValidationComponent>();
+            var acceptsTermsInput = appElement.FindElement(By.ClassName("accepts-terms")).FindElement(By.TagName("input"));
+            var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+
+            // Validates on edit
+            WaitAssert.Equal("valid", () => acceptsTermsInput.GetAttribute("class"));
+            acceptsTermsInput.Click();
+            WaitAssert.Equal("modified valid", () => acceptsTermsInput.GetAttribute("class"));
+
+            // Can become invalid
+            acceptsTermsInput.Click();
+            WaitAssert.Equal("modified invalid", () => acceptsTermsInput.GetAttribute("class"));
+            WaitAssert.Equal(new[] { "Must accept terms" }, messagesAccessor);
+        }
+
+        private Func<string[]> CreateValidationMessagesAccessor(IWebElement appElement)
+        {
+            return () => appElement.FindElements(By.ClassName("validation-message"))
+                .Select(x => x.Text)
+                .OrderBy(x => x)
+                .ToArray();
         }
     }
 }
