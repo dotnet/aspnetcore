@@ -293,6 +293,10 @@
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>0abec4390b30fdda97dc496594f9b1f9c9b20e17</Sha>
     </Dependency>
+    <Dependency Name="System.ComponentModel.Annotations" Version="4.6.0-preview.19109.6">
+      <Uri>https://github.com/dotnet/corefx</Uri>
+      <Sha>000000</Sha>
+    </Dependency>
     <Dependency Name="System.Data.SqlClient" Version="4.7.0-preview.19109.6">
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>0abec4390b30fdda97dc496594f9b1f9c9b20e17</Sha>

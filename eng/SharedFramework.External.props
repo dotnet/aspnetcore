@@ -51,6 +51,7 @@
     <ExternalAspNetCoreAppReference Include="Microsoft.JSInterop"                                          Version="$(MicrosoftJSInteropPackageVersion)" />
 
     <!-- Dependencies from dotnet/corefx -->
+    <ExternalAspNetCoreAppReference Include="System.ComponentModel.Annotations"                            Version="$(SystemComponentModelAnnotationsPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="System.IO.Pipelines"                                          Version="$(SystemIOPipelinesPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="System.Runtime.CompilerServices.Unsafe"                       Version="$(SystemRuntimeCompilerServicesUnsafePackageVersion)" />
     <ExternalAspNetCoreAppReference Include="System.Security.Cryptography.Xml"                             Version="$(SystemSecurityCryptographyXmlPackageVersion)" />
