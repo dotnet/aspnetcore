@@ -96,9 +96,9 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// </summary>
         public void MarkAsUnmodified()
         {
-            foreach (var state in _fieldStates.Values)
+            foreach (var state in _fieldStates)
             {
-                state.IsModified = false;
+                state.Value.IsModified = false;
             }
         }
 
