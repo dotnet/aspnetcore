@@ -49,19 +49,19 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// If using this parameter, you are responsible for triggering any validation
         /// manually, e.g., by calling <see cref="EditContext.Validate"/>.
         /// </summary>
-        [Parameter] Func<EditContext, Task> OnSubmit { get; set; }
+        [Parameter] EventCallback<EditContext> OnSubmit { get; set; }
 
         /// <summary>
         /// A callback that will be invoked when the form is submitted and the
         /// <see cref="EditContext"/> is determined to be valid.
         /// </summary>
-        [Parameter] Func<EditContext, Task> OnValidSubmit { get; set; }
+        [Parameter] EventCallback<EditContext> OnValidSubmit { get; set; }
 
         /// <summary>
         /// A callback that will be invoked when the form is submitted and the
         /// <see cref="EditContext"/> is determined to be invalid.
         /// </summary>
-        [Parameter] Func<EditContext, Task> OnInvalidSubmit { get; set; }
+        [Parameter] EventCallback<EditContext> OnInvalidSubmit { get; set; }
 
         /// <inheritdoc />
         protected override void OnParametersSet()
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Components.Forms
             // (e.g., so you can display a "pending" state in the UI). In that case you don't want the
             // system to trigger a second validation implicitly, so don't combine it with the simplified
             // OnValidSubmit/OnInvalidSubmit handlers.
-            if (OnSubmit != null && (OnValidSubmit != null || OnInvalidSubmit != null))
+            if (OnSubmit.HasDelegate && (OnValidSubmit.HasDelegate || OnInvalidSubmit.HasDelegate))
             {
                 throw new InvalidOperationException($"When supplying an {nameof(OnSubmit)} parameter to " +
                     $"{nameof(EditForm)}, do not also supply {nameof(OnValidSubmit)} or {nameof(OnInvalidSubmit)}.");
@@ -125,24 +125,24 @@ namespace Microsoft.AspNetCore.Components.Forms
 
         private async Task HandleSubmitAsync()
         {
-            if (OnSubmit != null)
+            if (OnSubmit.HasDelegate)
             {
                 // When using OnSubmit, the developer takes control of the validation lifecycle
-                await OnSubmit(_fixedEditContext);
+                await OnSubmit.InvokeAsync(_fixedEditContext);
             }
             else
             {
                 // Otherwise, the system implicitly runs validation on form submission
                 var isValid = _fixedEditContext.Validate(); // This will likely become ValidateAsync later
 
-                if (isValid && OnValidSubmit != null)
+                if (isValid && OnValidSubmit.HasDelegate)
                 {
-                    await OnValidSubmit(_fixedEditContext);
+                    await OnValidSubmit.InvokeAsync(_fixedEditContext);
                 }
 
-                if (!isValid && OnInvalidSubmit != null)
+                if (!isValid && OnInvalidSubmit.HasDelegate)
                 {
-                    await OnInvalidSubmit(_fixedEditContext);
+                    await OnInvalidSubmit.InvokeAsync(_fixedEditContext);
                 }
             }
         }

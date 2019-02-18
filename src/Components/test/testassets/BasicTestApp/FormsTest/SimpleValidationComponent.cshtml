@@ -1,7 +1,7 @@
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Components.Forms
 
-<EditForm Model="@this" OnValidSubmit="@HandleValidSubmitAsync" OnInvalidSubmit="@HandleInvalidSubmitAsync">
+<EditForm Model="@this" OnValidSubmit="@(EventCallback.Factory.Create<EditContext>(this, HandleValidSubmitAsync))" OnInvalidSubmit="@(EventCallback.Factory.Create<EditContext>(this, HandleInvalidSubmitAsync))">
     <DataAnnotationsValidator />
 
     <p>
