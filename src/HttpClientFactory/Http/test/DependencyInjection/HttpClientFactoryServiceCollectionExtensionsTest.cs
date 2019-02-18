@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
@@ -9,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Http.Logging;
+using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Options;
 using Moq;
 using Moq.Protected;
@@ -1042,36 +1044,6 @@ namespace Microsoft.Extensions.DependencyInjection
             public HttpClient HttpClient { get; }
 
             public TransientService Service { get; }
-        }
-
-        private class SingleThreadedSynchronizationContext : SynchronizationContext
-        {
-            private readonly Queue<(SendOrPostCallback Callback, object State)> _queue = new Queue<(SendOrPostCallback Callback, object State)>();
-
-            public override void Post(SendOrPostCallback d, object state)
-            {
-                _queue.Enqueue((d, state));
-            }
-
-            public static void Run(Action action)
-            {
-                var previous = Current;
-                var context = new SingleThreadedSynchronizationContext();
-                SetSynchronizationContext(context);
-                try
-                {
-                    action();
-                    while (context._queue.Count > 0)
-                    {
-                        var item = context._queue.Dequeue();
-                        item.Callback(item.State);
-                    }
-                }
-                finally
-                {
-                    SetSynchronizationContext(previous);
-                }
-            }
         }
     }
 }
