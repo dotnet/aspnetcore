@@ -22,20 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         [Fact]
-        public void NoBinderType_WithBindingSource()
-        {
-            // Arrange
-            var attribute = new ModelBinderAttribute(BindingSourceKey.Services);
-
-            // Act
-            var source = attribute.BindingSource;
-
-            // Assert
-            Assert.Same(BindingSource.Services, source);
-        }
-
-        [Fact]
-        public void BinderType_DefaultBindingSource()
+        public void BinderType_DefaultCustomBindingSource()
         {
             // Arrange
             var attribute = new ModelBinderAttribute
@@ -47,11 +34,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var source = attribute.BindingSource;
 
             // Assert
-            Assert.Same(BindingSource.ModelBinding, source);
+            Assert.Same(BindingSource.Custom, source);
         }
 
         [Fact]
-        public void BinderTypePassedToConstructor_DefaultBindingSource()
+        public void BinderTypePassedToConstructor_DefaultCustomBindingSource()
         {
             // Arrange
             var attribute = new ModelBinderAttribute(typeof(ByteArrayModelBinder));
@@ -60,39 +47,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var source = attribute.BindingSource;
 
             // Assert
-            Assert.Same(BindingSource.ModelBinding, source);
-        }
-
-        [Fact]
-        public void BinderType_WithBindingSource()
-        {
-            // Arrange
-            var attribute = new ModelBinderAttribute(BindingSourceKey.Services)
-            {
-                BinderType = typeof(ByteArrayModelBinder),
-            };
-
-            // Act
-            var source = attribute.BindingSource;
-
-            // Assert
-            Assert.Same(BindingSource.Services, source);
-        }
-
-        [Fact]
-        public void BinderTypePassedToConstructor_WithBindingSource()
-        {
-            // Arrange
-            var attribute = new ModelBinderAttribute(BindingSourceKey.Services)
-            {
-                BinderType = typeof(ByteArrayModelBinder),
-            };
-
-            // Act
-            var source = attribute.BindingSource;
-
-            // Assert
-            Assert.Same(BindingSource.Services, source);
+            Assert.Same(BindingSource.Custom, source);
         }
 
         [Fact]

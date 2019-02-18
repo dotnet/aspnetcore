@@ -268,7 +268,7 @@ namespace Microsoft.AspNetCore.Mvc.Description
         [InlineData("api/products/{id}", nameof(FromModelBinding), "Path")]
         [InlineData("api/products/{id?}", nameof(FromModelBinding), "ModelBinding")]
         [InlineData("api/products/{id=5}", nameof(FromModelBinding), "ModelBinding")]
-        [InlineData("api/products/{id=5}", nameof(FromBinderType), "ModelBinding")]
+        [InlineData("api/products/{id}", nameof(FromCustom), "Custom")]
         public void GetApiDescription_ParameterDescription_IncludesRouteInfo(
             string template,
             string methodName,
@@ -1327,25 +1327,8 @@ namespace Microsoft.AspNetCore.Mvc.Description
             var description = Assert.Single(descriptions);
 
             var parameter = Assert.Single(description.ParameterDescriptions);
-            Assert.Equal("id", parameter.Name);
+            Assert.Equal("product", parameter.Name);
             Assert.Same(BindingSource.Custom, parameter.Source);
-        }
-
-        [Fact]
-        public void GetApiDescription_ParameterDescription_SourceFromModelBinding_WithBinderType()
-        {
-            // Arrange
-            var action = CreateActionDescriptor(nameof(AcceptsProduct_ModelBinding));
-
-            // Act
-            var descriptions = GetApiDescriptions(action);
-
-            // Assert
-            var description = Assert.Single(descriptions);
-
-            var parameter = Assert.Single(description.ParameterDescriptions);
-            Assert.Equal("id", parameter.Name);
-            Assert.Same(BindingSource.ModelBinding, parameter.Source);
         }
 
         [Fact]
@@ -2022,12 +2005,7 @@ namespace Microsoft.AspNetCore.Mvc.Description
         }
 
         // This will show up as source = unknown
-        private void AcceptsProduct_Custom(
-            [ModelBinder(BindingSourceKey.Custom, BinderType = typeof(BodyModelBinder))] int id)
-        {
-        }
-
-        private void AcceptsProduct_ModelBinding([ModelBinder(BinderType = typeof(BodyModelBinder))] int id)
+        private void AcceptsProduct_Custom([ModelBinder(BinderType = typeof(BodyModelBinder))] Product product)
         {
         }
 
@@ -2091,7 +2069,7 @@ namespace Microsoft.AspNetCore.Mvc.Description
         {
         }
 
-        private void FromBinderType([ModelBinder(typeof(BodyModelBinder))] int id)
+        private void FromCustom([ModelBinder(typeof(BodyModelBinder))] int id)
         {
         }
 

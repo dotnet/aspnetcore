@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             // Assert
             var parameterModel = Assert.Single(action.Parameters);
             Assert.NotNull(parameterModel.BindingInfo);
-            Assert.Same(BindingSource.ModelBinding, parameterModel.BindingInfo.BindingSource);
+            Assert.Same(BindingSource.Custom, parameterModel.BindingInfo.BindingSource);
         }
 
         [Fact]
@@ -163,7 +163,7 @@ Environment.NewLine + "int b";
 
             var bindingInfo = parameter.BindingInfo;
             Assert.NotNull(bindingInfo);
-            Assert.Same(BindingSource.ModelBinding, bindingInfo.BindingSource);
+            Assert.Same(BindingSource.Custom, bindingInfo.BindingSource);
             Assert.Null(bindingInfo.BinderModelName);
         }
 
@@ -184,7 +184,7 @@ Environment.NewLine + "int b";
 
             var bindingInfo = parameter.BindingInfo;
             Assert.NotNull(bindingInfo);
-            Assert.Same(BindingSource.ModelBinding, bindingInfo.BindingSource);
+            Assert.Same(BindingSource.Custom, bindingInfo.BindingSource);
             Assert.Equal("foo", bindingInfo.BinderModelName);
         }
 

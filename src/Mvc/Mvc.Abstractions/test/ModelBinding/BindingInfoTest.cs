@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             Assert.NotNull(bindingInfo);
             Assert.Same(typeof(ComplexTypeModelBinder), bindingInfo.BinderType);
             Assert.Same("Different", bindingInfo.BinderModelName);
-            Assert.Same(BindingSource.ModelBinding, bindingInfo.BindingSource);
+            Assert.Same(BindingSource.Custom, bindingInfo.BindingSource);
         }
 
         [Fact]

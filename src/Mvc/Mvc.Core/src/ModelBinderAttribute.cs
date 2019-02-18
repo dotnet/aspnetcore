@@ -34,11 +34,6 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Initializes a new instance of <see cref="ModelBinderAttribute"/>.
         /// </summary>
-        /// <remarks>
-        /// If setting <see cref="BinderType"/> to an <see cref="IModelBinder"/> implementation that does not use values
-        /// from form data, route values or the query string, instead use the
-        /// <see cref="ModelBinderAttribute(BindingSourceKey)"/> constructor to set <see cref="BindingSource"/>.
-        /// </remarks>
         public ModelBinderAttribute()
         {
         }
@@ -46,25 +41,10 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Initializes a new instance of <see cref="ModelBinderAttribute"/>.
         /// </summary>
-        /// <param name="bindingSource">
-        /// The <see cref="BindingSourceKey"/> that indicates the value of the <see cref="BindingSource"/> property.
-        /// </param>
-        /// <exception cref="InvalidEnumArgumentException">
-        /// Thrown if the <paramref name="bindingSource"/> is not a defined <see cref="BindingSourceKey"/> value.
-        /// </exception>
-        public ModelBinderAttribute(BindingSourceKey bindingSource)
-        {
-            _bindingSource = bindingSource.GetBindingSource();
-        }
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="ModelBinderAttribute"/>.
-        /// </summary>
         /// <param name="binderType">A <see cref="Type"/> which implements <see cref="IModelBinder"/>.</param>
         /// <remarks>
-        /// If the specified <paramref name="binderType" /> does not use values from form data, route values or the
-        /// query string, instead use the <see cref="ModelBinderAttribute(BindingSourceKey)"/> constructor to set
-        /// <see cref="BindingSource"/> and set the <see cref="BinderType"/> property.
+        /// Subclass this attribute and set <see cref="BindingSource"/> if <see cref="BindingSource.Custom"/> is not
+        /// correct for the specified <paramref name="binderType"/>.
         /// </remarks>
         public ModelBinderAttribute(Type binderType)
         {
@@ -78,9 +58,8 @@ namespace Microsoft.AspNetCore.Mvc
 
         /// <inheritdoc />
         /// <remarks>
-        /// If the specified <see cref="IModelBinder"/> implementation does not use values from form data, route values
-        /// or the query string, use the <see cref="ModelBinderAttribute(BindingSourceKey)"/> constructor to set
-        /// <see cref="BindingSource"/>.
+        /// Subclass this attribute and set <see cref="BindingSource"/> if <see cref="BindingSource.Custom"/> is not
+        /// correct for the specified (non-<see langword="null"/>) <see cref="IModelBinder"/> implementation.
         /// </remarks>
         public Type BinderType
         {
@@ -103,8 +82,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <inheritdoc />
         /// <value>
         /// If <see cref="BinderType"/> is <see langword="null"/>, defaults to <see langword="null"/>. Otherwise,
-        /// defaults to <see cref="BindingSource.ModelBinding"/>. May be overridden using the
-        /// <see cref="ModelBinderAttribute(BindingSourceKey)"/> constructor or in a subclass.
+        /// defaults to <see cref="BindingSource.Custom"/>. May be overridden in a subclass.
         /// </value>
         public virtual BindingSource BindingSource
         {
@@ -112,7 +90,7 @@ namespace Microsoft.AspNetCore.Mvc
             {
                 if (_bindingSource == null && BinderType != null)
                 {
-                    return BindingSource.ModelBinding;
+                    return BindingSource.Custom;
                 }
 
                 return _bindingSource;

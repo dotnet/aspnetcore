@@ -51,11 +51,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public string BinderModelName { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Type"/> of the <see cref="IModelBinder"/> implementation used to bind the model.
+        /// Gets or sets the <see cref="Type"/> of the <see cref="IModelBinder"/> implementation used to bind the
+        /// model.
         /// </summary>
         /// <remarks>
-        /// Also set <see cref="BindingSource"/> if the specified <see cref="IModelBinder"/> implementation does not use
-        /// values from form data, route values or the query string.
+        /// Also set <see cref="BindingSource"/> if the specified <see cref="IModelBinder"/> implementation does not
+        /// use values from form data, route values or the query string.
         /// </remarks>
         public Type BinderType
         {

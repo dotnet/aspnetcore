@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.ComponentModel;
+using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Microsoft.AspNetCore.Mvc
@@ -21,34 +21,9 @@ namespace Microsoft.AspNetCore.Mvc
     {
         private static readonly Func<ActionContext, bool> _supportsAllRequests = (c) => true;
         private static readonly Func<ActionContext, bool> _supportsNonGetRequests = IsNonGetRequest;
+
         private BindingSource _bindingSource;
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="BindPropertyAttribute"/>.
-        /// </summary>
-        /// <remarks>
-        /// If setting <see cref="BinderType"/> to an <see cref="IModelBinder"/> implementation that does not use values
-        /// from form data, route values or the query string, instead use the
-        /// <see cref="BindPropertyAttribute(BindingSourceKey)"/> constructor to set <see cref="BindingSource"/>.
-        /// </remarks>
-        public BindPropertyAttribute()
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="BindPropertyAttribute"/>.
-        /// </summary>
-        /// <param name="bindingSource">
-        /// The <see cref="BindingSourceKey"/> that indicates the value of the
-        /// <see cref="BindingSource"/> property.
-        /// </param>
-        /// <exception cref="InvalidEnumArgumentException">
-        /// Thrown if the <paramref name="bindingSource"/> is not a defined <see cref="BindingSourceKey"/> value.
-        /// </exception>
-        public BindPropertyAttribute(BindingSourceKey bindingSource)
-        {
-            _bindingSource = bindingSource.GetBindingSource();
-        }
+        private Type _binderType;
 
         /// <summary>
         /// Gets or sets an indication the associated property should be bound in HTTP GET requests. If
@@ -60,17 +35,31 @@ namespace Microsoft.AspNetCore.Mvc
 
         /// <inheritdoc />
         /// <remarks>
-        /// Use the <see cref="BindPropertyAttribute(BindingSourceKey)"/> constructor to set
-        /// <see cref="BindingSource"/> if the specified <see cref="IModelBinder"/> implementation does not use values
-        /// from form data, route values or the query string.
+        /// Subclass this attribute and set <see cref="BindingSource"/> if <see cref="BindingSource.Custom"/> is not
+        /// correct for the specified (non-<see langword="null"/>) <see cref="IModelBinder"/> implementation.
         /// </remarks>
-        public Type BinderType { get; set; }
+        public Type BinderType
+        {
+            get => _binderType;
+            set
+            {
+                if (value != null && !typeof(IModelBinder).IsAssignableFrom(value))
+                {
+                    throw new ArgumentException(
+                        Resources.FormatBinderType_MustBeIModelBinder(
+                            value.FullName,
+                            typeof(IModelBinder).FullName),
+                        nameof(value));
+                }
+
+                _binderType = value;
+            }
+        }
 
         /// <inheritdoc />
         /// <value>
         /// If <see cref="BinderType"/> is <see langword="null"/>, defaults to <see langword="null"/>. Otherwise,
-        /// defaults to <see cref="BindingSource.ModelBinding"/>. May be overridden using the
-        /// <see cref="BindPropertyAttribute(BindingSourceKey)"/> constructor or in a subclass.
+        /// defaults to <see cref="BindingSource.Custom"/>. May be overridden in a subclass.
         /// </value>
         public virtual BindingSource BindingSource
         {
@@ -78,7 +67,7 @@ namespace Microsoft.AspNetCore.Mvc
             {
                 if (_bindingSource == null && BinderType != null)
                 {
-                    return BindingSource.ModelBinding;
+                    return BindingSource.Custom;
                 }
 
                 return _bindingSource;
