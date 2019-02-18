@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <!--
 
   This file is used by automation to update Versions.props and may be used for other purposes, such as
@@ -353,17 +353,17 @@
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>0abec4390b30fdda97dc496594f9b1f9c9b20e17</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.DependencyModel" Version="3.0.0-preview3-27414-8">
+    <Dependency Name="Microsoft.Extensions.DependencyModel" Version="3.0.0-preview3-27415-4">
       <Uri>https://github.com/dotnet/core-setup</Uri>
-      <Sha>2c740c0ea828ceac8b333dff566d117ad600a248</Sha>
+      <Sha>0dfcccec1a9fdf391fe4544ed354ac15390d9205</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App" Version="3.0.0-preview3-27414-8">
+    <Dependency Name="Microsoft.NETCore.App" Version="3.0.0-preview3-27415-4">
       <Uri>https://github.com/dotnet/core-setup</Uri>
-      <Sha>2c740c0ea828ceac8b333dff566d117ad600a248</Sha>
+      <Sha>0dfcccec1a9fdf391fe4544ed354ac15390d9205</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.PlatformAbstractions" Version="3.0.0-preview3-27414-8">
+    <Dependency Name="Microsoft.DotNet.PlatformAbstractions" Version="3.0.0-preview3-27415-4">
       <Uri>https://github.com/dotnet/core-setup</Uri>
-      <Sha>2c740c0ea828ceac8b333dff566d117ad600a248</Sha>
+      <Sha>0dfcccec1a9fdf391fe4544ed354ac15390d9205</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
