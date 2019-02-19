@@ -7779,16 +7779,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             switch (index)
             {
                 case 0:
-                    goto HeaderContentLength;
-            
-                case 1:
                     goto HeaderConnection;
-                case 2:
+                case 1:
                     goto HeaderDate;
-                case 3:
+                case 2:
                     goto HeaderContentType;
-                case 4:
+                case 3:
                     goto HeaderServer;
+                case 4:
+                    goto HeaderContentLength;
                 case 5:
                     goto HeaderCacheControl;
                 case 6:
@@ -7854,14 +7853,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 default:
                     return;
             }
-        HeaderContentLength:
-            if ((tempBits & -9223372036854775808L) != 0)
-            {
-                tempBits ^= -9223372036854775808L;
-
-                output.Write(new ReadOnlySpan<byte>(_headerBytes, 592, 18));
-                output.WriteNumeric((ulong)ContentLength.Value);
-            }
             
         HeaderConnection:
             if ((tempBits & 2L) != 0)
@@ -7876,11 +7867,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     values = ref _headers._Connection;
                     keyStart = 17;
                     keyLength = 14;
-                    index = 2;
+                    index = 1;
                     goto OutputHeader;
                 }
             }
-        
         HeaderDate:
             if ((tempBits & 4L) != 0)
             {
@@ -7894,11 +7884,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     values = ref _headers._Date;
                     keyStart = 31;
                     keyLength = 8;
-                    index = 3;
+                    index = 2;
                     goto OutputHeader;
                 }
             }
-        
         HeaderContentType:
             if ((tempBits & 2048L) != 0)
             {
@@ -7909,7 +7898,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 index = 4;
                 goto OutputHeader;
             }
-        
         HeaderServer:
             if ((tempBits & 33554432L) != 0)
             {
@@ -7923,11 +7911,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     values = ref _headers._Server;
                     keyStart = 350;
                     keyLength = 10;
-                    index = 5;
+                    index = 4;
                     goto OutputHeader;
                 }
             }
-        
+        HeaderContentLength:
+            if ((tempBits & -9223372036854775808L) != 0)
+            {
+                tempBits ^= -9223372036854775808L;
+                output.Write(new ReadOnlySpan<byte>(_headerBytes, 592, 18));
+                output.WriteNumeric((ulong)ContentLength.Value);
+                if (tempBits == 0)
+                {
+                    return;
+                }
+            }
         HeaderCacheControl:
             if ((tempBits & 1L) != 0)
             {
@@ -7935,10 +7933,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 values = ref _headers._CacheControl;
                 keyStart = 0;
                 keyLength = 17;
-                index = 6;
+                index = 7;
                 goto OutputHeader;
             }
-        
         HeaderKeepAlive:
             if ((tempBits & 8L) != 0)
             {
@@ -7946,10 +7943,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 values = ref _headers._KeepAlive;
                 keyStart = 39;
                 keyLength = 14;
-                index = 7;
+                index = 8;
                 goto OutputHeader;
             }
-        
         HeaderPragma:
             if ((tempBits & 16L) != 0)
             {
@@ -7957,10 +7953,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 values = ref _headers._Pragma;
                 keyStart = 53;
                 keyLength = 10;
-                index = 8;
+                index = 9;
                 goto OutputHeader;
             }
-        
         HeaderTrailer:
             if ((tempBits & 32L) != 0)
             {
@@ -7968,10 +7963,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 values = ref _headers._Trailer;
                 keyStart = 63;
                 keyLength = 11;
-                index = 9;
+                index = 10;
                 goto OutputHeader;
             }
-        
         HeaderTransferEncoding:
             if ((tempBits & 64L) != 0)
             {
@@ -7989,7 +7983,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     goto OutputHeader;
                 }
             }
-        
         HeaderUpgrade:
             if ((tempBits & 128L) != 0)
             {
@@ -7997,10 +7990,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 values = ref _headers._Upgrade;
                 keyStart = 95;
                 keyLength = 11;
-                index = 11;
+                index = 12;
                 goto OutputHeader;
             }
-        
         HeaderVia:
             if ((tempBits & 256L) != 0)
             {
@@ -8008,10 +8000,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 values = ref _headers._Via;
                 keyStart = 106;
                 keyLength = 7;
-                index = 12;
+                index = 13;
                 goto OutputHeader;
             }
-        
         HeaderWarning:
             if ((tempBits & 512L) != 0)
             {
@@ -8019,10 +8010,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 values = ref _headers._Warning;
                 keyStart = 113;
                 keyLength = 11;
-                index = 13;
+                index = 14;
                 goto OutputHeader;
             }
-        
         HeaderAllow:
             if ((tempBits & 1024L) != 0)
             {
@@ -8030,10 +8020,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 values = ref _headers._Allow;
                 keyStart = 124;
                 keyLength = 9;
-                index = 14;
+                index = 15;
                 goto OutputHeader;
             }
-        
         HeaderContentEncoding:
             if ((tempBits & 4096L) != 0)
             {
@@ -8041,10 +8030,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 values = ref _headers._ContentEncoding;
                 keyStart = 149;
                 keyLength = 20;
-                index = 15;
+                index = 16;
                 goto OutputHeader;
             }
-        
         HeaderContentLanguage:
             if ((tempBits & 8192L) != 0)
             {
@@ -8052,10 +8040,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 values = ref _headers._ContentLanguage;
                 keyStart = 169;
                 keyLength = 20;
-                index = 16;
+                index = 17;
                 goto OutputHeader;
             }
-        
         HeaderContentLocation:
             if ((tempBits & 16384L) != 0)
             {
@@ -8063,10 +8050,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 values = ref _headers._ContentLocation;
                 keyStart = 189;
                 keyLength = 20;
-                index = 17;
+                index = 18;
                 goto OutputHeader;
             }
-        
         HeaderContentMD5:
             if ((tempBits & 32768L) != 0)
             {
@@ -8074,10 +8060,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 values = ref _headers._ContentMD5;
                 keyStart = 209;
                 keyLength = 15;
-                index = 18;
+                index = 19;
                 goto OutputHeader;
             }
-        
         HeaderContentRange:
             if ((tempBits & 65536L) != 0)
             {
@@ -8085,10 +8070,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 values = ref _headers._ContentRange;
                 keyStart = 224;
                 keyLength = 17;
-                index = 19;
+                index = 20;
                 goto OutputHeader;
             }
-        
         HeaderExpires:
             if ((tempBits & 131072L) != 0)
             {
@@ -8096,10 +8080,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 values = ref _headers._Expires;
                 keyStart = 241;
                 keyLength = 11;
-                index = 20;
+                index = 21;
                 goto OutputHeader;
             }
-        
         HeaderLastModified:
             if ((tempBits & 262144L) != 0)
             {
@@ -8107,10 +8090,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 values = ref _headers._LastModified;
                 keyStart = 252;
                 keyLength = 17;
-                index = 21;
+                index = 22;
                 goto OutputHeader;
             }
-        
         HeaderAcceptRanges:
             if ((tempBits & 524288L) != 0)
             {
@@ -8118,10 +8100,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 values = ref _headers._AcceptRanges;
                 keyStart = 269;
                 keyLength = 17;
-                index = 22;
+                index = 23;
                 goto OutputHeader;
             }
-        
         HeaderAge:
             if ((tempBits & 1048576L) != 0)
             {
@@ -8129,10 +8110,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 values = ref _headers._Age;
                 keyStart = 286;
                 keyLength = 7;
-                index = 23;
+                index = 24;
                 goto OutputHeader;
             }
-        
         HeaderETag:
             if ((tempBits & 2097152L) != 0)
             {
@@ -8140,10 +8120,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 values = ref _headers._ETag;
                 keyStart = 293;
                 keyLength = 8;
-                index = 24;
+                index = 25;
                 goto OutputHeader;
             }
-        
         HeaderLocation:
             if ((tempBits & 4194304L) != 0)
             {
@@ -8151,10 +8130,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 values = ref _headers._Location;
                 keyStart = 301;
                 keyLength = 12;
-                index = 25;
+                index = 26;
                 goto OutputHeader;
             }
-        
         HeaderProxyAuthenticate:
             if ((tempBits & 8388608L) != 0)
             {
@@ -8162,10 +8140,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 values = ref _headers._ProxyAuthenticate;
                 keyStart = 313;
                 keyLength = 22;
-                index = 26;
+                index = 27;
                 goto OutputHeader;
             }
-        
         HeaderRetryAfter:
             if ((tempBits & 16777216L) != 0)
             {
@@ -8173,10 +8150,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 values = ref _headers._RetryAfter;
                 keyStart = 335;
                 keyLength = 15;
-                index = 27;
+                index = 28;
                 goto OutputHeader;
             }
-        
         HeaderSetCookie:
             if ((tempBits & 67108864L) != 0)
             {
@@ -8184,10 +8160,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 values = ref _headers._SetCookie;
                 keyStart = 360;
                 keyLength = 14;
-                index = 28;
+                index = 29;
                 goto OutputHeader;
             }
-        
         HeaderVary:
             if ((tempBits & 134217728L) != 0)
             {
@@ -8195,10 +8170,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 values = ref _headers._Vary;
                 keyStart = 374;
                 keyLength = 8;
-                index = 29;
+                index = 30;
                 goto OutputHeader;
             }
-        
         HeaderWWWAuthenticate:
             if ((tempBits & 268435456L) != 0)
             {
@@ -8206,10 +8180,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 values = ref _headers._WWWAuthenticate;
                 keyStart = 382;
                 keyLength = 20;
-                index = 30;
+                index = 31;
                 goto OutputHeader;
             }
-        
         HeaderAccessControlAllowCredentials:
             if ((tempBits & 536870912L) != 0)
             {
@@ -8217,10 +8190,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 values = ref _headers._AccessControlAllowCredentials;
                 keyStart = 402;
                 keyLength = 36;
-                index = 31;
+                index = 32;
                 goto OutputHeader;
             }
-        
         HeaderAccessControlAllowHeaders:
             if ((tempBits & 1073741824L) != 0)
             {
@@ -8228,10 +8200,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 values = ref _headers._AccessControlAllowHeaders;
                 keyStart = 438;
                 keyLength = 32;
-                index = 32;
+                index = 33;
                 goto OutputHeader;
             }
-        
         HeaderAccessControlAllowMethods:
             if ((tempBits & 2147483648L) != 0)
             {
@@ -8239,10 +8210,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 values = ref _headers._AccessControlAllowMethods;
                 keyStart = 470;
                 keyLength = 32;
-                index = 33;
+                index = 34;
                 goto OutputHeader;
             }
-        
         HeaderAccessControlAllowOrigin:
             if ((tempBits & 4294967296L) != 0)
             {
@@ -8250,10 +8220,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 values = ref _headers._AccessControlAllowOrigin;
                 keyStart = 502;
                 keyLength = 31;
-                index = 34;
+                index = 35;
                 goto OutputHeader;
             }
-        
         HeaderAccessControlExposeHeaders:
             if ((tempBits & 8589934592L) != 0)
             {
@@ -8261,10 +8230,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 values = ref _headers._AccessControlExposeHeaders;
                 keyStart = 533;
                 keyLength = 33;
-                index = 35;
+                index = 36;
                 goto OutputHeader;
             }
-        
         HeaderAccessControlMaxAge:
             if ((tempBits & 17179869184L) != 0)
             {
@@ -8272,10 +8240,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 values = ref _headers._AccessControlMaxAge;
                 keyStart = 566;
                 keyLength = 26;
-                index = 36;
+                index = 37;
                 goto OutputHeader;
             }
-        
+
         return;
 
         OutputHeader:

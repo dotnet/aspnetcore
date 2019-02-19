@@ -133,6 +133,7 @@ namespace CodeGenerator
                 "Date",
                 "Content-Type",
                 "Server",
+                "Content-Length",
             };
             var commonHeaders = new[]
             {
@@ -264,7 +265,7 @@ namespace CodeGenerator
             .Concat(new[] { new KnownHeader
             {
                 Name = "Content-Length",
-                Index = -1,
+                Index = 63,
                 EnhancedSetter = enhancedHeaders.Contains("Content-Length"),
                 PrimaryHeader = responsePrimaryHeaders.Contains("Content-Length")
             }})
@@ -286,7 +287,7 @@ namespace CodeGenerator
 
             // 63 for responseHeaders as it steals one bit for Content-Length in CopyTo(ref MemoryPoolIterator output)
             Debug.Assert(responseHeaders.Length <= 63);
-            Debug.Assert(responseHeaders.Max(x => x.Index) <= 62);
+            Debug.Assert(responseHeaders.Count(x => x.Index == 63) == 1);
 
             var loops = new[]
             {
@@ -574,28 +575,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         MoveNext:
             switch (index)
-            {{
-                case 0:
-                    goto HeaderContentLength;
-            {Each(loop.Headers.Where(header => header.Identifier != "ContentLength").OrderBy(h => !h.PrimaryHeader).Select((h, i) => (Header: h, Index: i)), hi => $@"
-                case {hi.Index + 1}:
+            {{{Each(loop.Headers.OrderBy(h => !h.PrimaryHeader).Select((h, i) => (Header: h, Index: i)), hi => $@"
+                case {hi.Index}:
                     goto Header{hi.Header.Identifier};")}
                 default:
                     return;
             }}
-        HeaderContentLength:
-            if ((tempBits & {1L << 63}L) != 0)
-            {{
-                tempBits ^= {1L << 63}L;
-
-                output.Write(new ReadOnlySpan<byte>(_headerBytes, {loop.Headers.First(x => x.Identifier == "ContentLength").BytesOffset}, {loop.Headers.First(x => x.Identifier == "ContentLength").BytesCount}));
-                output.WriteNumeric((ulong)ContentLength.Value);
-            }}
-            {Each(loop.Headers.Where(header => header.Identifier != "ContentLength").OrderBy(h => !h.PrimaryHeader).Select((h, i) => (Header: h, Index: i)), hi => $@"
+            {Each(loop.Headers.OrderBy(h => !h.PrimaryHeader).Select((h, i) => (Header: h, Index: i)), hi => $@"
         Header{hi.Header.Identifier}:
             if ({hi.Header.TestTempBit()})
             {{
-                tempBits ^= {1L << hi.Header.Index}L;{(hi.Header.EnhancedSetter == false ? $@"
+                tempBits ^= {1L << hi.Header.Index}L;{(hi.Header.Identifier != "ContentLength" ? $@"{(hi.Header.EnhancedSetter == false ? $@"
                 values = ref _headers._{hi.Header.Identifier};
                 keyStart = {hi.Header.BytesOffset};
                 keyLength = {hi.Header.BytesCount};
@@ -610,11 +600,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     values = ref _headers._{hi.Header.Identifier};
                     keyStart = {hi.Header.BytesOffset};
                     keyLength = {hi.Header.BytesCount};
-                    index = {hi.Index + 2};
+                    index = {hi.Index + 1};
                     goto OutputHeader;
+                }}")}" : $@"
+                output.Write(new ReadOnlySpan<byte>(_headerBytes, {hi.Header.BytesOffset}, {hi.Header.BytesCount}));
+                output.WriteNumeric((ulong)ContentLength.Value);
+                if (tempBits == 0)
+                {{
+                    return;
                 }}")}
-            }}
-        ")}
+            }}")}
+
         return;
 
         OutputHeader:
