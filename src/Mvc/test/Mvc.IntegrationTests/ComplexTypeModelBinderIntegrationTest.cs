@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,7 +11,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
@@ -3199,6 +3202,96 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Null(state.Value.AttemptedValue);
             Assert.Empty(state.Value.Errors);
             Assert.Null(state.Value.RawValue);
+        }
+
+        private class TestModel
+        {
+            public TestInnerModel[] InnerModels { get; set; } = Array.Empty<TestInnerModel>();
+        }
+
+        private class TestInnerModel
+        {
+            [ModelBinder(BinderType = typeof(NumberModelBinder))]
+            public decimal Rate { get; set; }
+        }
+
+        private class NumberModelBinder : IModelBinder
+        {
+            private readonly NumberStyles _supportedStyles = NumberStyles.Float | NumberStyles.AllowThousands;
+            private DecimalModelBinder _innerBinder;
+
+            public NumberModelBinder(ILoggerFactory loggerFactory)
+            {
+                _innerBinder = new DecimalModelBinder(_supportedStyles, loggerFactory);
+            }
+
+            public Task BindModelAsync(ModelBindingContext bindingContext)
+            {
+                return _innerBinder.BindModelAsync(bindingContext);
+            }
+        }
+
+        // Regression test for #4939.
+        [Fact]
+        public async Task ComplexTypeModelBinder_ReportsFailureToCollectionModelBinder_CustomBinder()
+        {
+            // Arrange
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "parameter",
+                ParameterType = typeof(TestModel),
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                request.QueryString = new QueryString(
+                    "?parameter.InnerModels[0].Rate=1,000.00&parameter.InnerModels[1].Rate=2000");
+            });
+
+            var modelState = testContext.ModelState;
+            var metadata = GetMetadata(testContext, parameter);
+            var modelBinder = GetModelBinder(testContext, parameter, metadata);
+            var valueProvider = await CompositeValueProvider.CreateAsync(testContext);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext);
+
+            // Act
+            var modelBindingResult = await parameterBinder.BindModelAsync(
+                testContext,
+                modelBinder,
+                valueProvider,
+                parameter,
+                metadata,
+                value: null);
+
+            // Assert
+            Assert.True(modelBindingResult.IsModelSet);
+
+            var model = Assert.IsType<TestModel>(modelBindingResult.Model);
+            Assert.NotNull(model.InnerModels);
+            Assert.Collection(
+                model.InnerModels,
+                item => Assert.Equal(1000, item.Rate),
+                item => Assert.Equal(2000, item.Rate));
+
+            Assert.True(modelState.IsValid);
+            Assert.Collection(
+                modelState,
+                kvp =>
+                {
+                    Assert.Equal("parameter.InnerModels[0].Rate", kvp.Key);
+                    Assert.Equal("1,000.00", kvp.Value.AttemptedValue);
+                    Assert.Empty(kvp.Value.Errors);
+                    Assert.Equal("1,000.00", kvp.Value.RawValue);
+                    Assert.Equal(ModelValidationState.Valid, kvp.Value.ValidationState);
+                },
+                kvp =>
+                {
+                    Assert.Equal("parameter.InnerModels[1].Rate", kvp.Key);
+                    Assert.Equal("2000", kvp.Value.AttemptedValue);
+                    Assert.Empty(kvp.Value.Errors);
+                    Assert.Equal("2000", kvp.Value.RawValue);
+                    Assert.Equal(ModelValidationState.Valid, kvp.Value.ValidationState);
+                });
         }
 
         private class Person6
