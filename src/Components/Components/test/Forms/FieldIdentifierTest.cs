@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using Xunit;
 
@@ -113,6 +114,14 @@ namespace Microsoft.AspNetCore.Components.Forms
         }
 
         [Fact]
+        public void CannotCreateFromExpression_NonMember()
+        {
+            var ex = Assert.Throws<ArgumentException>(() =>
+                FieldIdentifier.Create(() => new TestModel()));
+            Assert.Equal($"The provided expression contains a NewExpression which is not supported. {nameof(FieldIdentifier)} only supports simple member accessors (fields, properties) of an object.", ex.Message);
+        }
+
+        [Fact]
         public void CanCreateFromExpression_Field()
         {
             var model = new TestModel();
@@ -141,6 +150,33 @@ namespace Microsoft.AspNetCore.Components.Forms
             Assert.Equal(nameof(StringPropertyOnThisClass), fieldIdentifier.FieldName);
         }
 
+        [Fact]
+        public void CanCreateFromExpression_MemberOfChildObject()
+        {
+            var parentModel = new ParentModel { Child = new TestModel() };
+            var fieldIdentifier = FieldIdentifier.Create(() => parentModel.Child.StringField);
+            Assert.Same(parentModel.Child, fieldIdentifier.Model);
+            Assert.Equal(nameof(TestModel.StringField), fieldIdentifier.FieldName);
+        }
+
+        [Fact]
+        public void CanCreateFromExpression_MemberOfIndexedCollectionEntry()
+        {
+            var models = new List<TestModel>() { null, new TestModel() };
+            var fieldIdentifier = FieldIdentifier.Create(() => models[1].StringField);
+            Assert.Same(models[1], fieldIdentifier.Model);
+            Assert.Equal(nameof(TestModel.StringField), fieldIdentifier.FieldName);
+        }
+
+        [Fact]
+        public void CanCreateFromExpression_MemberOfObjectWithCast()
+        {
+            var model = new TestModel();
+            var fieldIdentifier = FieldIdentifier.Create(() => ((TestModel)(object)model).StringField);
+            Assert.Same(model, fieldIdentifier.Model);
+            Assert.Equal(nameof(TestModel.StringField), fieldIdentifier.FieldName);
+        }
+
         string StringPropertyOnThisClass { get; set; }
 
         class TestModel
@@ -152,6 +188,11 @@ namespace Microsoft.AspNetCore.Components.Forms
 #pragma warning disable 649
             public string StringField;
 #pragma warning restore 649
+        }
+
+        class ParentModel
+        {
+            public TestModel Child { get; set; }
         }
     }
 }

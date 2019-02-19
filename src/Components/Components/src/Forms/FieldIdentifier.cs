@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Components.Forms
 
             if (!(accessorBody is MemberExpression memberExpression))
             {
-                throw new ArgumentException("The accessor is not supported because its body is not a MemberExpression");
+                throw new ArgumentException($"The provided expression contains a {accessorBody.GetType().Name} which is not supported. {nameof(FieldIdentifier)} only supports simple member accessors (fields, properties) of an object.");
             }
 
             // Identify the field name. We don't mind whether it's a property or field, or even something else.
@@ -98,18 +98,15 @@ namespace Microsoft.AspNetCore.Components.Forms
                 case ConstantExpression constantExpression:
                     model = constantExpression.Value;
                     break;
-                case MemberExpression nestedMemberExpression:
+                default:
                     // It would be great to cache this somehow, but it's unclear there's a reasonable way to do
                     // so, given that it embeds captured values such as "this". We could consider special-casing
                     // for "() => something.Member" and building a cache keyed by "something.GetType()" with values
                     // of type Func<object, object> so we can cheaply map from "something" to "something.Member".
-                    var modelLambda = Expression.Lambda(nestedMemberExpression);
+                    var modelLambda = Expression.Lambda(memberExpression.Expression);
                     var modelLambdaCompiled = (Func<object>)modelLambda.Compile();
                     model = modelLambdaCompiled();
                     break;
-                default:
-                    // An error message that might help us work out what extra expression types need to be supported
-                    throw new InvalidOperationException($"The accessor is not supported because the model value cannot be parsed from it. Expression: '{memberExpression.Expression}', type: '{memberExpression.Expression.GetType().FullName}'");
             }
         }
     }
