@@ -2904,6 +2904,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     Assert.Null(message);
                 }
             }
+
+            Assert.Single(TestSink.Writes.Where(w => w.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
+                w.EventId.Name == "ClosingStreamWithBindingError"));
         }
 
         [Fact]
@@ -2926,6 +2929,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     Assert.Null(message);
                 }
             }
+
+            Assert.Single(TestSink.Writes.Where(w => w.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
+                w.EventId.Name == "UnexpectedStreamCompletion"));
         }
 
         public static string CustomErrorMessage = "custom error for testing ::::)";
@@ -3070,6 +3076,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     await connectionHandlerTask.OrTimeout();
                 }
             }
+
+            Assert.Single(TestSink.Writes.Where(w => w.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
+                w.EventId.Name == "ClosingStreamWithBindingError"));
         }
 
         [Fact]
@@ -3104,6 +3113,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     await connectionHandlerTask.OrTimeout();
                 }
             }
+
+            Assert.Single(TestSink.Writes.Where(w => w.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
+                w.EventId.Name == "ClosingStreamWithBindingError"));
         }
 
         [Theory]
