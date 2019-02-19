@@ -974,8 +974,11 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         {
             // Arrange
             var expectedMessage = $"Collection bound to 'parameter' exceeded " +
-                $"{nameof(MvcOptions)}.{nameof(MvcOptions.MaxModelBindingCollectionSize)} (1024). " +
-                $"Remove properties that bind unconditionally from {typeof(SuccessfulModel)}.";
+                $"{nameof(MvcOptions)}.{nameof(MvcOptions.MaxModelBindingCollectionSize)} (1024). This limit is a " +
+                $"safeguard against incorrect model binders and models. Address issues in " +
+                $"'{typeof(SuccessfulModel)}'. For example, this type may have a property with a model binder that " +
+                $"always succeeds. See the {nameof(MvcOptions)}.{nameof(MvcOptions.MaxModelBindingCollectionSize)} " +
+                $"documentation for more information.";
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -1056,8 +1059,11 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         {
             // Arrange
             var expectedMessage = $"Collection bound to 'parameter' exceeded " +
-                $"{nameof(MvcOptions)}.{nameof(MvcOptions.MaxModelBindingCollectionSize)} (3). " +
-                $"Remove properties that bind unconditionally from {typeof(SuccessfulModel)}.";
+                $"{nameof(MvcOptions)}.{nameof(MvcOptions.MaxModelBindingCollectionSize)} (3). This limit is a " +
+                $"safeguard against incorrect model binders and models. Address issues in " +
+                $"'{typeof(SuccessfulModel)}'. For example, this type may have a property with a model binder that " +
+                $"always succeeds. See the {nameof(MvcOptions)}.{nameof(MvcOptions.MaxModelBindingCollectionSize)} " +
+                $"documentation for more information.";
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -1092,8 +1098,11 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         {
             // Arrange
             var expectedMessage = $"Collection bound to 'Successes' exceeded " +
-                $"{nameof(MvcOptions)}.{nameof(MvcOptions.MaxModelBindingCollectionSize)} (1024). " +
-                $"Remove properties that bind unconditionally from {typeof(SuccessfulModel)}.";
+                $"{nameof(MvcOptions)}.{nameof(MvcOptions.MaxModelBindingCollectionSize)} (1024). This limit is a " +
+                $"safeguard against incorrect model binders and models. Address issues in " +
+                $"'{typeof(SuccessfulModel)}'. For example, this type may have a property with a model binder that " +
+                $"always succeeds. See the {nameof(MvcOptions)}.{nameof(MvcOptions.MaxModelBindingCollectionSize)} " +
+                $"documentation for more information.";
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",

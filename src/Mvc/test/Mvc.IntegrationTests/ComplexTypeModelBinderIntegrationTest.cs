@@ -3425,8 +3425,11 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         {
             // Arrange
             var expectedMessage = $"Model binding system exceeded " +
-                $"{nameof(MvcOptions)}.{nameof(MvcOptions.MaxModelBindingRecursionDepth)} (32). " +
-                $"Reduce the potential nesting of {typeof(LoopyModel)}.";
+                $"{nameof(MvcOptions)}.{nameof(MvcOptions.MaxModelBindingRecursionDepth)} (32). Reduce the " +
+                $"potential nesting of '{typeof(LoopyModel)}'. For example, this type may have a property with a " +
+                $"model binder that always succeeds. See the " +
+                $"{nameof(MvcOptions)}.{nameof(MvcOptions.MaxModelBindingRecursionDepth)} documentation for more " +
+                $"information.";
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -3506,8 +3509,11 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         {
             // Arrange
             var expectedMessage = $"Model binding system exceeded " +
-                $"{nameof(MvcOptions)}.{nameof(MvcOptions.MaxModelBindingRecursionDepth)} (3). " +
-                $"Reduce the potential nesting of {typeof(FourDeepModel)}.";
+                $"{nameof(MvcOptions)}.{nameof(MvcOptions.MaxModelBindingRecursionDepth)} (3). Reduce the " +
+                $"potential nesting of '{typeof(FourDeepModel)}'. For example, this type may have a property with a " +
+                $"model binder that always succeeds. See the " +
+                $"{nameof(MvcOptions)}.{nameof(MvcOptions.MaxModelBindingRecursionDepth)} documentation for more " +
+                $"information.";
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
@@ -3557,8 +3563,11 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         {
             // Arrange
             var expectedMessage = $"Model binding system exceeded " +
-                $"{nameof(MvcOptions)}.{nameof(MvcOptions.MaxModelBindingRecursionDepth)} (32). " +
-                $"Reduce the potential nesting of {typeof(LoopyModel1)}.";
+                $"{nameof(MvcOptions)}.{nameof(MvcOptions.MaxModelBindingRecursionDepth)} (32). Reduce the " +
+                $"potential nesting of '{typeof(LoopyModel1)}'. For example, this type may have a property with a " +
+                $"model binder that always succeeds. See the " +
+                $"{nameof(MvcOptions)}.{nameof(MvcOptions.MaxModelBindingRecursionDepth)} documentation for more " +
+                $"information.";
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",

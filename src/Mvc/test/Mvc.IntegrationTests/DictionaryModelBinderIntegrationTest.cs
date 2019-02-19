@@ -1132,9 +1132,13 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task DictionaryModelBinder_ThrowsOn1025Items_AtTopLevel()
         {
             // Arrange
-            var expectedMessage = "Collection bound to 'parameter' exceeded " +
-                $"{nameof(MvcOptions)}.{nameof(MvcOptions.MaxModelBindingCollectionSize)} (1024). Remove " +
-                $"properties that bind unconditionally from {typeof(KeyValuePair<SuccessfulModel,SuccessfulModel>)}.";
+            var expectedMessage = $"Collection bound to 'parameter' exceeded " +
+                $"{nameof(MvcOptions)}.{nameof(MvcOptions.MaxModelBindingCollectionSize)} (1024). This limit is a " +
+                $"safeguard against incorrect model binders and models. Address issues in " +
+                $"'{typeof(KeyValuePair<SuccessfulModel, SuccessfulModel>)}'. For example, this type may have a " +
+                $"property with a model binder that always succeeds. See the " +
+                $"{nameof(MvcOptions)}.{nameof(MvcOptions.MaxModelBindingCollectionSize)} documentation for more " +
+                $"information.";
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
