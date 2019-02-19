@@ -129,10 +129,6 @@ try {
     }
 
     Write-Host "Run git diff to check for pending changes"
-    if ($ci) {
-        # Suppress "warning: LF will be replaced by CRLF" which causes issues on some CI machines running git commands.
-        & git config core.safecrlf false
-    }
     $changedFiles = git --no-pager diff --ignore-space-at-eol --name-only 2> $null
     if ($changedFiles) {
         foreach ($file in $changedFiles) {
