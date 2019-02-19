@@ -145,8 +145,9 @@ namespace Templates.Test
             }
         }
 
-        private async Task<string> GetShaIntegrity(ScriptTag scriptTag, string prefix)
+        private async Task<string> GetShaIntegrity(ScriptTag scriptTag)
         {
+            var prefix = scriptTag.Integrity.Substring(5);
             using (var respStream = await _httpClient.GetStreamAsync(scriptTag.Src))
             using (HashAlgorithm alg = string.Equals(prefix, "sha256") ? (HashAlgorithm)SHA256.Create() : (HashAlgorithm)SHA384.Create())
             {
