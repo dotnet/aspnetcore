@@ -10,6 +10,25 @@ namespace Microsoft.AspNetCore.Components
     public class EventCallbackFactoryTest
     {
         [Fact]
+        public void Create_EventCallback_ReturnsInput()
+        {
+            // Arrange
+            var component = new EventComponent();
+            var @delegate = (Action)component.SomeAction;
+            var input = new EventCallback(component, @delegate);
+
+            var anotherComponent = new EventComponent();
+
+            // Act
+            var callback = EventCallback.Factory.Create(anotherComponent, input);
+
+            // Assert
+            Assert.Same(@delegate, callback.Delegate);
+            Assert.Same(component, callback.Receiver);
+            Assert.False(callback.RequiresExplicitReceiver);
+        }
+
+        [Fact]
         public void Create_Action_AlreadyBoundToReceiver()
         {
             // Arrange
@@ -218,6 +237,39 @@ namespace Microsoft.AspNetCore.Components
         }
 
         [Fact]
+        public void CreateT_String_ReturnsInput()
+        {
+            // Arrange
+            var component = new EventComponent();
+            var input = "some_js";
+
+            // Act
+            var callback = EventCallback.Factory.Create<UIMouseEventArgs>(component, input);
+
+            // Assert
+            Assert.Same(input, callback);
+        }
+
+        [Fact]
+        public void CreateT_EventCallback_ReturnsInput()
+        {
+            // Arrange
+            var component = new EventComponent();
+            var @delegate = (Action)component.SomeAction;
+            var input = new EventCallback<string>(component, @delegate);
+
+            var anotherComponent = new EventComponent();
+
+            // Act
+            var callback = EventCallback.Factory.Create<string>(anotherComponent, input);
+
+            // Assert
+            Assert.Same(@delegate, callback.Delegate);
+            Assert.Same(component, callback.Receiver);
+            Assert.False(callback.RequiresExplicitReceiver);
+        }
+
+        [Fact]
         public void CreateT_Action_AlreadyBoundToReceiver()
         {
             // Arrange
@@ -422,6 +474,38 @@ namespace Microsoft.AspNetCore.Components
             // Assert
             Assert.Same(@delegate, callback.Delegate);
             Assert.Same(anotherComponent, callback.Receiver);
+            Assert.True(callback.RequiresExplicitReceiver);
+        }
+
+        [Fact]
+        public void CreateInferred_ActionT()
+        {
+            // Arrange
+            var component = new EventComponent();
+            var @delegate = (Action<string>)((s) => { });
+
+            // Act
+            var callback = EventCallback.Factory.CreateInferred<string>(component, @delegate, "hi");
+
+            // Assert
+            Assert.Same(@delegate, callback.Delegate);
+            Assert.Same(component, callback.Receiver);
+            Assert.True(callback.RequiresExplicitReceiver);
+        }
+
+        [Fact]
+        public void CreateInferred_FuncTTask()
+        {
+            // Arrange
+            var component = new EventComponent();
+            var @delegate = (Func<string, Task>)((s) => Task.CompletedTask);
+
+            // Act
+            var callback = EventCallback.Factory.CreateInferred<string>(component, @delegate, "hi");
+
+            // Assert
+            Assert.Same(@delegate, callback.Delegate);
+            Assert.Same(component, callback.Receiver);
             Assert.True(callback.RequiresExplicitReceiver);
         }
 
