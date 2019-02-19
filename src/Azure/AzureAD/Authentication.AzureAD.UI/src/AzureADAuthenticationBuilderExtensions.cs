@@ -58,9 +58,9 @@ namespace Microsoft.AspNetCore.Authentication
 
             builder.Services.Configure(TryAddJwtBearerSchemeMapping(scheme, jwtBearerScheme));
 
-            builder.Services.TryAddSingleton<IConfigureOptions<AzureADOptions>, AzureADOptionsConfiguration>();
+            builder.Services.ConfigureOptions<AzureADOptionsConfiguration>();
 
-            builder.Services.AddSingleton<IConfigureOptions<JwtBearerOptions>, JwtBearerOptionsConfiguration>();
+            builder.Services.ConfigureOptions<JwtBearerOptionsConfiguration>();
 
             builder.Services.Configure(scheme, configureOptions);
             builder.AddJwtBearer(jwtBearerScheme, o => { });
@@ -113,11 +113,9 @@ namespace Microsoft.AspNetCore.Authentication
 
             builder.Services.Configure(TryAddOpenIDCookieSchemeMappings(scheme, openIdConnectScheme, cookieScheme));
 
-            builder.Services.TryAddSingleton<IConfigureOptions<AzureADOptions>, AzureADOptionsConfiguration>();
-
-            builder.Services.TryAddSingleton<IConfigureOptions<OpenIdConnectOptions>, OpenIdConnectOptionsConfiguration>();
-
-            builder.Services.TryAddSingleton<IConfigureOptions<CookieAuthenticationOptions>, CookieOptionsConfiguration>();
+            builder.Services.ConfigureOptions<AzureADOptionsConfiguration>();
+            builder.Services.ConfigureOptions<OpenIdConnectOptionsConfiguration>();
+            builder.Services.ConfigureOptions<CookieOptionsConfiguration>();
 
             builder.Services.Configure(scheme, configureOptions);
 
