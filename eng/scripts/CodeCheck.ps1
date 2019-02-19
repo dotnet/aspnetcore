@@ -88,7 +88,7 @@ try {
 
     Get-ChildItem "$repoRoot/*.sln" -Recurse `
         | ? {
-            # These .sln file is used by the templating engine.
+            # These .sln files are used by the templating engine.
             ($_.Name -ne "RazorComponentsWeb-CSharp.sln") -and ($_.Name -ne "Grpc-Application.sln")
         } `
         | % {
