@@ -22,14 +22,14 @@ export const LoginActions = {
 export const ApplicationPaths = {
   DefaultLoginRedirectPath: '/',
   ApiAuthorizationClientConfigurationUrl: `/_configuration/${ApplicationName}`,
-  Login: `authentication/${LoginActions.Login}`,
-  LoginFailed: `authentication/${LoginActions.LoginFailed}`,
-  LoginCallback: `authentication/${LoginActions.LoginCallback}`,
-  Register: `authentication/${LoginActions.Register}`,
-  Profile: `authentication/${LoginActions.Profile}`,
-  LogOut: `authentication/${LogoutActions.Logout}`,
-  LoggedOut: `authentication/${LogoutActions.LoggedOut}`,
-  LogOutCallback: `authentication/${LogoutActions.LogoutCallback}`,
+  Login: `/authentication/${LoginActions.Login}`,
+  LoginFailed: `/authentication/${LoginActions.LoginFailed}`,
+  LoginCallback: `/authentication/${LoginActions.LoginCallback}`,
+  Register: `/authentication/${LoginActions.Register}`,
+  Profile: `/authentication/${LoginActions.Profile}`,
+  LogOut: `/authentication/${LogoutActions.Logout}`,
+  LoggedOut: `/authentication/${LogoutActions.LoggedOut}`,
+  LogOutCallback: `/authentication/${LogoutActions.LogoutCallback}`,
   IdentityRegisterPath: '/Identity/Account/Register',
   IdentityManagePath: '/Identity/Account/Manage'
 };

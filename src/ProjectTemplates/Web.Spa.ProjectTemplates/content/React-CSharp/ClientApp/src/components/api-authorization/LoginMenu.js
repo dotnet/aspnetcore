@@ -34,31 +34,35 @@ export class LoginMenu extends Component {
     render() {
         const { isAuthenticated, userName } = this.state;
         if (!isAuthenticated) {
-            return this.anonymousView();
+            const registerPath = `${ApplicationPaths.Register}`;
+            const loginPath = `${ApplicationPaths.Login}`;
+            return this.anonymousView(registerPath, loginPath);
         } else {
-            return this.authenticatedView(userName);
+            const profilePath = `${ApplicationPaths.Profile}`;
+            const logoutPath = { pathname: `${ApplicationPaths.LogOut}`, state: { local: true } };
+            return this.authenticatedView(userName, profilePath, logoutPath);
         }
     }
 
-    authenticatedView(userName) {
+    authenticatedView(userName, profilePath, logoutPath) {
         return (<Fragment>
             <NavItem>
-                <NavLink tag={Link} className="text-dark" to={`${ApplicationPaths.Profile}`}>Hello {userName}</NavLink>
+                <NavLink tag={Link} className="text-dark" to={profilePath}>Hello {userName}</NavLink>
             </NavItem>
             <NavItem>
-                <NavLink tag={Link} className="text-dark" to={{ pathName: ApplicationPaths.LogOut, state: { local:true }}}>Logout</NavLink>
+                <NavLink tag={Link} className="text-dark" to={logoutPath}>Logout</NavLink>
             </NavItem>
         </Fragment>);
 
     }
 
-    anonymousView() {
+    anonymousView(registerPath, loginPath) {
         return (<Fragment>
             <NavItem>
-                <NavLink tag={Link} className="text-dark" to={`${ApplicationPaths.Register}`}>Register</NavLink>
+                <NavLink tag={Link} className="text-dark" to={registerPath}>Register</NavLink>
             </NavItem>
             <NavItem>
-                <NavLink tag={Link} className="text-dark" to={`${ApplicationPaths.Login}`}>Login</NavLink>
+                <NavLink tag={Link} className="text-dark" to={loginPath}>Login</NavLink>
             </NavItem>
         </Fragment>);
     }

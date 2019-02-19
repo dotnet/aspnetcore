@@ -20,7 +20,7 @@ export default class AuthorizeRoute extends Component {
 
     render() {
         const { ready, authenticated } = this.state;
-        const redirectUrl = `${ApplicationPaths.Login}?${QueryParameterNames.ReturnUrl}=${encodeURI(window.location.href)}`
+        const redirectUrl = `${window.location.origin}${ApplicationPaths.Login}?${QueryParameterNames.ReturnUrl}=${encodeURI(window.location.href)}`
         if (!ready) {
             return <div></div>;
         } else {
@@ -35,9 +35,9 @@ export default class AuthorizeRoute extends Component {
                 }} />
         }
     }
-    
+
     async populateAuthenticationState() {
-        const authenticated = authService.isAuthenticated();
+        const authenticated = await authService.isAuthenticated();
         this.setState({ ready: true, authenticated });
     }
 }

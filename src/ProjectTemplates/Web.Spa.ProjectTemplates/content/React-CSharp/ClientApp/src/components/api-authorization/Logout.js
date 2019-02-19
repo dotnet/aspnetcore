@@ -22,7 +22,7 @@ export class Logout extends Component {
         const action = this.props.action;
         switch (action) {
             case LogoutActions.Logout:
-                if (!!window.history.state.local) {
+                if (!!window.history.state.state.local) {
                     this.logout(this.getReturnUrl());
                 } else {
                     // This prevents regular links to <app>/authentication/logout from triggering a logout
@@ -109,7 +109,7 @@ export class Logout extends Component {
     }
 
     async populateAuthenticationState() {
-        const authenticated = authService.isAuthenticated();
+        const authenticated = await authService.isAuthenticated();
         this.setState({ isReady: true, authenticated });
     }
 
@@ -122,7 +122,7 @@ export class Logout extends Component {
         }
         return (state && state.returnUrl) ||
             fromQuery ||
-            `${window.location.origin}/${ApplicationPaths.LoggedOut}`;
+            `${window.location.origin}${ApplicationPaths.LoggedOut}`;
     }
 
     navigateToReturnUrl(returnUrl) {

@@ -67,8 +67,8 @@ export class FetchData extends Component {
       </div>
     );
   }
-
 ////#if (IndividualLocalAuth)
+
   static getHeaders(token) {
     return !token ? {} : { 'Authorization': `Bearer ${token}` };
   }

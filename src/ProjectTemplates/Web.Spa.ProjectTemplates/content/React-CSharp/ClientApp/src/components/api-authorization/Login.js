@@ -114,7 +114,7 @@ export class Login extends Component {
     }
 
     redirectToRegister() {
-        this.redirectToApiAuthorizationPath(ApplicationPaths.IdentityRegisterPath);
+        this.redirectToApiAuthorizationPath(`${ApplicationPaths.IdentityRegisterPath}?${QueryParameterNames.ReturnUrl}=${encodeURI(ApplicationPaths.Login)}`);
     }
 
     redirectToProfile() {
@@ -122,15 +122,11 @@ export class Login extends Component {
     }
 
     redirectToApiAuthorizationPath(apiAuthorizationPath) {
-        const redirectUrl = `${this.getBaseUrl()}${apiAuthorizationPath}`;
+        const redirectUrl = `${window.location.origin}${apiAuthorizationPath}`;
         // It's important that we do a replace here so that when the user hits the back arrow on the
         // browser he gets sent back to where it was on the app instead of to an endpoint on this
         // component.
         window.location.replace(redirectUrl);
-    }
-
-    getBaseUrl() {
-        return window.location.origin;
     }
 
     navigateToReturnUrl(returnUrl) {

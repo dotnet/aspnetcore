@@ -19,6 +19,9 @@ export default class App extends Component {
       <Layout>
         <Route exact path='/' component={Home} />
         <Route path='/counter' component={Counter} />
+////#if (!IndividualLocalAuth)
+        <Route path='/fetch-data' component={FetchData} />
+////#endif
 ////#if (IndividualLocalAuth)
         <AuthorizeRoute path='/fetch-data' component={FetchData} />
         <Route path={ApplicationPaths.Login} render={() => loginAction(LoginActions.Login)} />
@@ -28,8 +31,7 @@ export default class App extends Component {
         <Route path={ApplicationPaths.Register} render={() => loginAction(LoginActions.Register)} />
         <Route path={ApplicationPaths.LogOut} render={() => logoutAction(LogoutActions.Logout)} />
         <Route path={ApplicationPaths.LogOutCallback} render={() => logoutAction(LogoutActions.LogoutCallback)} />
-////#else
-        <Route path='/fetch-data' component={FetchData} />
+        <Route path={ApplicationPaths.LoggedOut} render={() => logoutAction(LogoutActions.LoggedOut)} />
 ////#endif
       </Layout>
     );

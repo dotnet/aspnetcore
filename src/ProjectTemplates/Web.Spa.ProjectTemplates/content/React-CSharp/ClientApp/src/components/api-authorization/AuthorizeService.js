@@ -19,7 +19,6 @@ export class AuthorizeService {
 
         await this.ensureUserManagerInitialized();
         const user = await this.userManager.getUser();
-        this.updateState(user);
         return user && user.profile;
     }
 
