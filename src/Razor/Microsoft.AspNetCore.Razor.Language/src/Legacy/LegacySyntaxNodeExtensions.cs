@@ -23,6 +23,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private static readonly SyntaxKind[] CommentSpanKinds = new SyntaxKind[]
         {
+            SyntaxKind.RazorCommentTransition,
+            SyntaxKind.RazorCommentStar,
             SyntaxKind.RazorCommentLiteral,
         };
 
@@ -100,7 +102,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
 
             SyntaxNode owner = null;
-            IEnumerable<SyntaxNode> children = null;
+            IEnumerable<SyntaxNode> children;
             if (node is MarkupStartTagSyntax startTag)
             {
                 children = startTag.Children;
@@ -108,6 +110,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             else if (node is MarkupEndTagSyntax endTag)
             {
                 children = endTag.Children;
+            }
+            else if (node is MarkupTagHelperStartTagSyntax startTagHelper)
+            {
+                children = startTagHelper.Children;
+            }
+            else if (node is MarkupTagHelperEndTagSyntax endTagHelper)
+            {
+                children = endTagHelper.Children;
             }
             else
             {
