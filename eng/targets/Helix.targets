@@ -28,7 +28,7 @@
     </ItemGroup>
 
     <PropertyGroup>
-      <CreateHelixPayload Condition="'@(_HelixProjectTargetQueue->Count())' == '0'">false</CreateHelixPayload>
+      <BuildHelixPayload Condition="'@(_HelixProjectTargetQueue->Count())' == '0'">false</BuildHelixPayload>
     </PropertyGroup>
 
   </Target>
@@ -40,7 +40,7 @@
 
   </Target>
 
-  <Target Name="_CreateHelixWorkItem" Condition="$(CreateHelixPayload)">
+  <Target Name="_CreateHelixWorkItem" Condition="$(BuildHelixPayload)">
 
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_PublishHelixArchive" RemoveProperties="HelixTargetQueue" />
 
