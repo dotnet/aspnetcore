@@ -16,7 +16,7 @@ using namespace signalr;
 std::shared_ptr<hub_connection_impl> create_hub_connection(std::shared_ptr<websocket_client> websocket_client = create_test_websocket_client(),
     std::shared_ptr<log_writer> log_writer = std::make_shared<trace_log_writer>(), trace_level trace_level = trace_level::all)
 {
-    return hub_connection_impl::create(create_uri(), _XPLATSTR(""), trace_level, log_writer,
+    return hub_connection_impl::create(create_uri(), trace_level, log_writer,
         create_test_web_request_factory(), std::make_unique<test_transport_factory>(websocket_client));
 }
 
@@ -33,7 +33,7 @@ TEST(url, negotiate_appended_to_url)
             return std::unique_ptr<web_request>(new web_request_stub((unsigned short)404, _XPLATSTR("Bad request"), _XPLATSTR("")));
         });
 
-        auto hub_connection = hub_connection_impl::create(base_url, _XPLATSTR(""), trace_level::none,
+        auto hub_connection = hub_connection_impl::create(base_url, trace_level::none,
             std::make_shared<trace_log_writer>(), std::move(web_request_factory),
             std::make_unique<test_transport_factory>(create_test_websocket_client()));
 

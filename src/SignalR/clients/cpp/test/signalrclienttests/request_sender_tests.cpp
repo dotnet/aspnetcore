@@ -24,7 +24,7 @@ TEST(request_sender_negotiate, request_created_with_correct_url)
         return std::unique_ptr<web_request>(new web_request_stub((unsigned short)200, _XPLATSTR("OK"), response_body));
     });
 
-    request_sender::negotiate(request_factory, web::uri{ _XPLATSTR("http://fake/signalr") }, _XPLATSTR("")).get();
+    request_sender::negotiate(request_factory, web::uri{ _XPLATSTR("http://fake/signalr") }).get();
 
     ASSERT_EQ(web::uri(_XPLATSTR("http://fake/signalr/negotiate")), requested_url);
 }
@@ -40,7 +40,7 @@ TEST(request_sender_negotiate, negotiation_request_sent_and_response_serialized)
         return std::unique_ptr<web_request>(new web_request_stub((unsigned short)200, _XPLATSTR("OK"), response_body));
     });
 
-    auto response = request_sender::negotiate(request_factory, web::uri{ _XPLATSTR("http://fake/signalr") }, _XPLATSTR("")).get();
+    auto response = request_sender::negotiate(request_factory, web::uri{ _XPLATSTR("http://fake/signalr") }).get();
 
     ASSERT_EQ(_XPLATSTR("f7707523-307d-4cba-9abf-3eef701241e8"), response.connectionId);
     // TODO: response.availableTransports

@@ -22,8 +22,8 @@ namespace signalr
     public:
         typedef std::function<void __cdecl (const web::json::value&)> method_invoked_handler;
 
-        SIGNALRCLIENT_API explicit hub_connection(const utility::string_t& url, const utility::string_t& query_string = _XPLATSTR(""),
-            trace_level trace_level = trace_level::all, std::shared_ptr<log_writer> log_writer = nullptr);
+        SIGNALRCLIENT_API explicit hub_connection(const utility::string_t& url, trace_level trace_level = trace_level::all,
+            std::shared_ptr<log_writer> log_writer = nullptr);
 
         SIGNALRCLIENT_API ~hub_connection();
 

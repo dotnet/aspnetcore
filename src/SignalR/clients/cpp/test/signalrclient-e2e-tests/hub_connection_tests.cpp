@@ -30,7 +30,7 @@ TEST(hub_connection_tests, connection_status_start_stop_start)
 
 TEST(hub_connection_tests, send_message)
 {
-    auto hub_conn = std::make_shared<signalr::hub_connection>(url + U("custom"), U(""), signalr::trace_level::all, nullptr);
+    auto hub_conn = std::make_shared<signalr::hub_connection>(url + U("custom"), signalr::trace_level::all, nullptr);
     auto message = std::make_shared<utility::string_t>();
     auto received_event = std::make_shared<signalr::event>();
 

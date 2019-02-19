@@ -21,22 +21,21 @@ namespace signalr
         static void log(const logger& logger, trace_level level, const utility::string_t& entry);
     }
 
-    std::shared_ptr<connection_impl> connection_impl::create(const utility::string_t& url, const utility::string_t& query_string,
-        trace_level trace_level, const std::shared_ptr<log_writer>& log_writer)
+    std::shared_ptr<connection_impl> connection_impl::create(const utility::string_t& url, trace_level trace_level, const std::shared_ptr<log_writer>& log_writer)
     {
-        return connection_impl::create(url, query_string, trace_level, log_writer, std::make_unique<web_request_factory>(), std::make_unique<transport_factory>());
+        return connection_impl::create(url, trace_level, log_writer, std::make_unique<web_request_factory>(), std::make_unique<transport_factory>());
     }
 
-    std::shared_ptr<connection_impl> connection_impl::create(const utility::string_t& url, const utility::string_t& query_string, trace_level trace_level,
-        const std::shared_ptr<log_writer>& log_writer, std::unique_ptr<web_request_factory> web_request_factory, std::unique_ptr<transport_factory> transport_factory)
+    std::shared_ptr<connection_impl> connection_impl::create(const utility::string_t& url, trace_level trace_level, const std::shared_ptr<log_writer>& log_writer,
+        std::unique_ptr<web_request_factory> web_request_factory, std::unique_ptr<transport_factory> transport_factory)
     {
-        return std::shared_ptr<connection_impl>(new connection_impl(url, query_string, trace_level,
+        return std::shared_ptr<connection_impl>(new connection_impl(url, trace_level,
             log_writer ? log_writer : std::make_shared<trace_log_writer>(), std::move(web_request_factory), std::move(transport_factory)));
     }
 
-    connection_impl::connection_impl(const utility::string_t& url, const utility::string_t& query_string, trace_level trace_level, const std::shared_ptr<log_writer>& log_writer,
+    connection_impl::connection_impl(const utility::string_t& url, trace_level trace_level, const std::shared_ptr<log_writer>& log_writer,
         std::unique_ptr<web_request_factory> web_request_factory, std::unique_ptr<transport_factory> transport_factory)
-        : m_base_url(url), m_query_string(query_string), m_connection_state(connection_state::disconnected), m_logger(log_writer, trace_level),
+        : m_base_url(url), m_connection_state(connection_state::disconnected), m_logger(log_writer, trace_level),
         m_transport(nullptr), m_web_request_factory(std::move(web_request_factory)), m_transport_factory(std::move(transport_factory)),
         m_message_received([](const utility::string_t&) noexcept {}), m_disconnected([]() noexcept {})
     { }
@@ -89,9 +88,9 @@ namespace signalr
 
     pplx::task<void> connection_impl::start_negotiate(const web::uri& url, int redirect_count)
     {
-        if (redirect_count >= 100)
+        if (redirect_count >= MAX_NEGOTIATE_REDIRECTS)
         {
-            return pplx::task_from_exception<void>(signalr_exception(_XPLATSTR("too many redirects during negotiate")));
+            return pplx::task_from_exception<void>(signalr_exception(_XPLATSTR("Negotiate redirection limit exceeded.")));
         }
 
         pplx::task_completion_event<void> start_tce;
@@ -106,8 +105,7 @@ namespace signalr
             {
                 return pplx::task_from_exception<negotiation_response>(_XPLATSTR("connection no longer exists"));
             }
-            return request_sender::negotiate(*connection->m_web_request_factory, url,
-                connection->m_query_string, connection->m_signalr_client_config);
+            return request_sender::negotiate(*connection->m_web_request_factory, url, connection->m_signalr_client_config);
         }, m_disconnect_cts.get_token())
             .then([weak_connection, start_tce, redirect_count, url](negotiation_response negotiation_response)
         {
@@ -127,7 +125,7 @@ namespace signalr
                 if (!negotiation_response.accessToken.empty())
                 {
                     auto headers = connection->m_signalr_client_config.get_http_headers();
-                    headers.add(_XPLATSTR("Authorization"), _XPLATSTR("Bearer ") + negotiation_response.accessToken);
+                    headers[_XPLATSTR("Authorization")] = _XPLATSTR("Bearer ") + negotiation_response.accessToken;
                     connection->m_signalr_client_config.set_http_headers(headers);
                 }
                 return connection->start_negotiate(negotiation_response.url, redirect_count + 1);
@@ -149,7 +147,7 @@ namespace signalr
 
             if (!foundWebsockets)
             {
-                return pplx::task_from_exception<void>(signalr_exception(_XPLATSTR("WebSockets is the only supported transport currently")));
+                return pplx::task_from_exception<void>(signalr_exception(_XPLATSTR("The server does not support WebSockets which is currently the only transport supported by this client.")));
             }
 
             // TODO: use transfer format
@@ -299,10 +297,7 @@ namespace signalr
     pplx::task<void> connection_impl::send_connect_request(const std::shared_ptr<transport>& transport, const web::uri& url, const pplx::task_completion_event<void>& connect_request_tce)
     {
         auto logger = m_logger;
-        auto query_string = m_query_string;
-        if (!query_string.empty())
-            query_string.append(_XPLATSTR("&"));
-        query_string.append(_XPLATSTR("id=")).append(m_connection_id);
+        auto query_string = _XPLATSTR("id=" + m_connection_id);
         auto connect_url = url_builder::build_connect(url, transport->get_transport_type(), query_string);
 
         transport->connect(connect_url)

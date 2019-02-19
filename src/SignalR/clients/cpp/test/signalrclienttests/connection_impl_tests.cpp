@@ -19,14 +19,14 @@ using namespace signalr;
 static std::shared_ptr<connection_impl> create_connection(std::shared_ptr<websocket_client> websocket_client = create_test_websocket_client(),
     std::shared_ptr<log_writer> log_writer = std::make_shared<trace_log_writer>(), trace_level trace_level = trace_level::all)
 {
-    return connection_impl::create(create_uri(), _XPLATSTR(""), trace_level, log_writer, create_test_web_request_factory(),
+    return connection_impl::create(create_uri(), trace_level, log_writer, create_test_web_request_factory(),
         std::make_unique<test_transport_factory>(websocket_client));
 }
 
 TEST(connection_impl_connection_state, initial_connection_state_is_disconnected)
 {
     auto connection =
-        connection_impl::create(create_uri(), _XPLATSTR(""), trace_level::none, std::make_shared<trace_log_writer>());
+        connection_impl::create(create_uri(), trace_level::none, std::make_shared<trace_log_writer>());
 
     ASSERT_EQ(connection_state::disconnected, connection->get_connection_state());
 }
@@ -98,7 +98,7 @@ TEST(connection_impl_start, connection_state_is_disconnected_when_connection_can
     });
 
     auto connection =
-        connection_impl::create(create_uri(), _XPLATSTR(""), trace_level::none, std::make_shared<trace_log_writer>(),
+        connection_impl::create(create_uri(), trace_level::none, std::make_shared<trace_log_writer>(),
         std::move(web_request_factory), std::make_unique<transport_factory>());
 
     try
@@ -111,6 +111,60 @@ TEST(connection_impl_start, connection_state_is_disconnected_when_connection_can
     ASSERT_EQ(connection->get_connection_state(), connection_state::disconnected);
 }
 
+TEST(connection_impl_start, start_sets_id_query_string)
+{
+    std::shared_ptr<log_writer> writer(std::make_shared<memory_log_writer>());
+    utility::string_t query_string;
+
+    auto websocket_client = create_test_websocket_client(
+        /* receive function */ []() { return pplx::task_from_exception<std::string>(std::runtime_error("should not be invoked")); },
+        /* send function */ [](const utility::string_t) { return pplx::task_from_exception<void>(std::runtime_error("should not be invoked"));  },
+        /* connect function */[&query_string](const web::uri& url)
+    {
+        query_string = url.query();
+        return pplx::task_from_exception<void>(web::websockets::client::websocket_exception(_XPLATSTR("connecting failed")));
+    });
+
+    auto connection = connection_impl::create(create_uri(_XPLATSTR("")), trace_level::errors, writer, create_test_web_request_factory(), std::make_unique<test_transport_factory>(websocket_client));
+
+    try
+    {
+        connection->start().get();
+    }
+    catch (...)
+    {
+    }
+
+    ASSERT_EQ(_XPLATSTR("id=f7707523-307d-4cba-9abf-3eef701241e8"), query_string);
+}
+
+TEST(connection_impl_start, start_appends_id_query_string)
+{
+    std::shared_ptr<log_writer> writer(std::make_shared<memory_log_writer>());
+    utility::string_t query_string;
+
+    auto websocket_client = create_test_websocket_client(
+        /* receive function */ []() { return pplx::task_from_exception<std::string>(std::runtime_error("should not be invoked")); },
+        /* send function */ [](const utility::string_t) { return pplx::task_from_exception<void>(std::runtime_error("should not be invoked"));  },
+        /* connect function */[&query_string](const web::uri& url)
+    {
+        query_string = url.query();
+        return pplx::task_from_exception<void>(web::websockets::client::websocket_exception(_XPLATSTR("connecting failed")));
+    });
+
+    auto connection = connection_impl::create(create_uri(_XPLATSTR("a=b&c=d")), trace_level::errors, writer, create_test_web_request_factory(), std::make_unique<test_transport_factory>(websocket_client));
+
+    try
+    {
+        connection->start().get();
+    }
+    catch (...)
+    {
+    }
+
+    ASSERT_EQ(_XPLATSTR("a=b&c=d&id=f7707523-307d-4cba-9abf-3eef701241e8"), query_string);
+}
+
 TEST(connection_impl_start, start_logs_exceptions)
 {
     std::shared_ptr<log_writer> writer(std::make_shared<memory_log_writer>());
@@ -121,7 +175,7 @@ TEST(connection_impl_start, start_logs_exceptions)
     });
 
     auto connection =
-        connection_impl::create(create_uri(), _XPLATSTR(""), trace_level::errors, writer,
+        connection_impl::create(create_uri(), trace_level::errors, writer,
             std::move(web_request_factory), std::make_unique<transport_factory>());
 
     try
@@ -138,6 +192,7 @@ TEST(connection_impl_start, start_logs_exceptions)
     ASSERT_EQ(_XPLATSTR("[error       ] connection could not be started due to: web exception - 404 Bad request\n"), entry);
 }
 
+
 TEST(connection_impl_start, start_propagates_exceptions_from_negotiate)
 {
     auto web_request_factory = std::make_unique<test_web_request_factory>([](const web::uri &) -> std::unique_ptr<web_request>
@@ -146,7 +201,7 @@ TEST(connection_impl_start, start_propagates_exceptions_from_negotiate)
     });
 
     auto connection =
-        connection_impl::create(create_uri(), _XPLATSTR(""), trace_level::none, std::make_shared<trace_log_writer>(),
+        connection_impl::create(create_uri(), trace_level::none, std::make_shared<trace_log_writer>(),
         std::move(web_request_factory), std::make_unique<transport_factory>());
 
     try
@@ -205,7 +260,7 @@ TEST(connection_impl_start, DISABLED_start_fails_if_no_available_transports)
 
    auto websocket_client = std::make_shared<test_websocket_client>();
    auto connection =
-       connection_impl::create(create_uri(), _XPLATSTR(""), trace_level::errors, std::make_shared<trace_log_writer>(),
+       connection_impl::create(create_uri(), trace_level::errors, std::make_shared<trace_log_writer>(),
        std::move(web_request_factory), std::make_unique<test_transport_factory>(websocket_client));
 
    try
@@ -271,7 +326,7 @@ TEST(connection_impl_start, start_fails_if_negotiate_request_fails)
     });
 
     auto connection =
-        connection_impl::create(create_uri(), _XPLATSTR(""), trace_level::messages, writer,
+        connection_impl::create(create_uri(), trace_level::messages, writer,
         std::move(web_request_factory), std::make_unique<test_transport_factory>(websocket_client));
 
     try
@@ -307,7 +362,7 @@ TEST(connection_impl_start, start_fails_if_negotiate_response_has_error)
     });
 
     auto connection =
-        connection_impl::create(create_uri(), _XPLATSTR(""), trace_level::messages, writer,
+        connection_impl::create(create_uri(), trace_level::messages, writer,
             std::move(web_request_factory), std::make_unique<test_transport_factory>(websocket_client));
 
     try
@@ -343,7 +398,7 @@ TEST(connection_impl_start, start_fails_if_negotiate_response_does_not_have_webs
     });
 
     auto connection =
-        connection_impl::create(create_uri(), _XPLATSTR(""), trace_level::messages, writer,
+        connection_impl::create(create_uri(), trace_level::messages, writer,
             std::move(web_request_factory), std::make_unique<test_transport_factory>(websocket_client));
 
     try
@@ -353,7 +408,79 @@ TEST(connection_impl_start, start_fails_if_negotiate_response_does_not_have_webs
     }
     catch (const signalr_exception & e)
     {
-        ASSERT_STREQ("WebSockets is the only supported transport currently", e.what());
+        ASSERT_STREQ("The server does not support WebSockets which is currently the only transport supported by this client.", e.what());
+    }
+}
+
+TEST(connection_impl_start, start_fails_if_negotiate_response_does_not_have_transports)
+{
+    std::shared_ptr<log_writer> writer(std::make_shared<memory_log_writer>());
+
+    auto web_request_factory = std::make_unique<test_web_request_factory>([](const web::uri & url)
+    {
+        auto response_body =
+            url.path() == _XPLATSTR("/negotiate")
+            ? _XPLATSTR("{ \"availableTransports\": [ ] }")
+            : _XPLATSTR("");
+
+        return std::unique_ptr<web_request>(new web_request_stub((unsigned short)200, _XPLATSTR("OK"), response_body));
+    });
+
+    pplx::task_completion_event<void> tce;
+    auto websocket_client = std::make_shared<test_websocket_client>();
+    websocket_client->set_connect_function([tce](const web::uri&) mutable
+    {
+        return pplx::task<void>(tce);
+    });
+
+    auto connection =
+        connection_impl::create(create_uri(), trace_level::messages, writer,
+            std::move(web_request_factory), std::make_unique<test_transport_factory>(websocket_client));
+
+    try
+    {
+        connection->start().get();
+        ASSERT_TRUE(false); // exception not thrown
+    }
+    catch (const signalr_exception & e)
+    {
+        ASSERT_STREQ("The server does not support WebSockets which is currently the only transport supported by this client.", e.what());
+    }
+}
+
+TEST(connection_impl_start, start_fails_if_negotiate_response_is_invalid)
+{
+    std::shared_ptr<log_writer> writer(std::make_shared<memory_log_writer>());
+
+    auto web_request_factory = std::make_unique<test_web_request_factory>([](const web::uri & url)
+    {
+        auto response_body =
+            url.path() == _XPLATSTR("/negotiate")
+            ? _XPLATSTR("{ \"availableTransports\": [ ")
+            : _XPLATSTR("");
+
+        return std::unique_ptr<web_request>(new web_request_stub((unsigned short)200, _XPLATSTR("OK"), response_body));
+    });
+
+    pplx::task_completion_event<void> tce;
+    auto websocket_client = std::make_shared<test_websocket_client>();
+    websocket_client->set_connect_function([tce](const web::uri&) mutable
+    {
+        return pplx::task<void>(tce);
+    });
+
+    auto connection =
+        connection_impl::create(create_uri(), trace_level::messages, writer,
+            std::move(web_request_factory), std::make_unique<test_transport_factory>(websocket_client));
+
+    try
+    {
+        connection->start().get();
+        ASSERT_TRUE(false); // exception not thrown
+    }
+    catch (const std::exception & e)
+    {
+        ASSERT_STREQ("* Line 1, Column 28 Syntax error: Malformed token", e.what());
     }
 }
 
@@ -390,12 +517,12 @@ TEST(connection_impl_start, negotiate_follows_redirect)
     });
 
     auto connection =
-        connection_impl::create(create_uri(), _XPLATSTR(""), trace_level::messages, writer,
+        connection_impl::create(create_uri(), trace_level::messages, writer,
             std::move(web_request_factory), std::make_unique<test_transport_factory>(websocket_client));
 
     connection->start().get();
 
-    ASSERT_EQ(_XPLATSTR("ws://redirected/"), connectUrl);
+    ASSERT_EQ(_XPLATSTR("ws://redirected/?id=f7707523-307d-4cba-9abf-3eef701241e8"), connectUrl);
 }
 
 TEST(connection_impl_start, negotiate_redirect_uses_accessToken)
@@ -437,12 +564,12 @@ TEST(connection_impl_start, negotiate_redirect_uses_accessToken)
     });
 
     auto connection =
-        connection_impl::create(create_uri(), _XPLATSTR(""), trace_level::messages, writer,
+        connection_impl::create(create_uri(), trace_level::messages, writer,
             std::move(web_request_factory), std::make_unique<test_transport_factory>(websocket_client));
 
     connection->start().get();
 
-    ASSERT_EQ(_XPLATSTR("ws://redirected/"), connectUrl);
+    ASSERT_EQ(_XPLATSTR("ws://redirected/?id=f7707523-307d-4cba-9abf-3eef701241e8"), connectUrl);
     ASSERT_EQ(_XPLATSTR("Bearer secret"), accessToken);
 }
 
@@ -465,7 +592,7 @@ TEST(connection_impl_start, negotiate_fails_after_too_many_redirects)
     auto websocket_client = std::make_shared<test_websocket_client>();
 
     auto connection =
-        connection_impl::create(create_uri(), _XPLATSTR(""), trace_level::messages, writer,
+        connection_impl::create(create_uri(), trace_level::messages, writer,
             std::move(web_request_factory), std::make_unique<test_transport_factory>(websocket_client));
 
     try
@@ -474,7 +601,38 @@ TEST(connection_impl_start, negotiate_fails_after_too_many_redirects)
     }
     catch (signalr_exception e)
     {
-        ASSERT_STREQ("too many redirects during negotiate", e.what());
+        ASSERT_STREQ("Negotiate redirection limit exceeded.", e.what());
+    }
+}
+
+TEST(connection_impl_start, negotiate_fails_if_ProtocolVersion_in_response)
+{
+    std::shared_ptr<log_writer> writer(std::make_shared<memory_log_writer>());
+
+    auto web_request_factory = std::make_unique<test_web_request_factory>([](const web::uri & url)
+    {
+        utility::string_t response_body = _XPLATSTR("");
+        if (url.path() == _XPLATSTR("/negotiate"))
+        {
+            response_body = _XPLATSTR("{\"ProtocolVersion\" : \"\" }");
+        }
+
+        return std::unique_ptr<web_request>(new web_request_stub((unsigned short)200, _XPLATSTR("OK"), response_body));
+    });
+
+    auto websocket_client = std::make_shared<test_websocket_client>();
+
+    auto connection =
+        connection_impl::create(create_uri(), trace_level::messages, writer,
+            std::move(web_request_factory), std::make_unique<test_transport_factory>(websocket_client));
+
+    try
+    {
+        connection->start().get();
+    }
+    catch (signalr_exception e)
+    {
+        ASSERT_STREQ("Detected a connection attempt to an ASP.NET SignalR Server. This client only supports connecting to an ASP.NET Core SignalR Server. See https://aka.ms/signalr-core-differences for details.", e.what());
     }
 }
 
@@ -506,7 +664,7 @@ TEST(connection_impl_start, negotiate_redirect_does_not_overwrite_url)
     auto websocket_client = std::make_shared<test_websocket_client>();
 
     auto connection =
-        connection_impl::create(create_uri(), _XPLATSTR(""), trace_level::messages, writer,
+        connection_impl::create(create_uri(), trace_level::messages, writer,
             std::move(web_request_factory), std::make_unique<test_transport_factory>(websocket_client));
 
     connection->start().get();
@@ -514,6 +672,52 @@ TEST(connection_impl_start, negotiate_redirect_does_not_overwrite_url)
     connection->stop().get();
     connection->start().get();
     ASSERT_EQ(2, redirectCount);
+}
+
+TEST(connection_impl_start, negotiate_redirect_uses_own_query_string)
+{
+    std::shared_ptr<log_writer> writer(std::make_shared<memory_log_writer>());
+    utility::string_t query_string;
+
+    auto websocket_client = create_test_websocket_client(
+        /* receive function */ []() { return pplx::task_from_exception<std::string>(std::runtime_error("should not be invoked")); },
+        /* send function */ [](const utility::string_t) { return pplx::task_from_exception<void>(std::runtime_error("should not be invoked"));  },
+        /* connect function */[&query_string](const web::uri& url)
+    {
+        query_string = url.query();
+        return pplx::task_from_exception<void>(web::websockets::client::websocket_exception(_XPLATSTR("connecting failed")));
+    });
+
+    auto web_request_factory = std::make_unique<test_web_request_factory>([](const web::uri & url)
+    {
+        utility::string_t response_body = _XPLATSTR("");
+        if (url.path() == _XPLATSTR("/negotiate"))
+        {
+            if (url.host() == _XPLATSTR("redirected"))
+            {
+                response_body = _XPLATSTR("{\"connectionId\" : \"f7707523-307d-4cba-9abf-3eef701241e8\", ")
+                    _XPLATSTR("\"availableTransports\" : [ { \"transport\": \"WebSockets\", \"transferFormats\": [ \"Text\", \"Binary\" ] } ] }");
+            }
+            else
+            {
+                response_body = _XPLATSTR("{ \"url\": \"http://redirected?customQuery=1\" }");
+            }
+        }
+
+        return std::unique_ptr<web_request>(new web_request_stub((unsigned short)200, _XPLATSTR("OK"), response_body));
+    });
+
+    auto connection = connection_impl::create(create_uri(_XPLATSTR("a=b&c=d")), trace_level::errors, writer, std::move(web_request_factory), std::make_unique<test_transport_factory>(websocket_client));
+
+    try
+    {
+        connection->start().get();
+    }
+    catch (...)
+    {
+    }
+
+    ASSERT_EQ(_XPLATSTR("customQuery=1&id=f7707523-307d-4cba-9abf-3eef701241e8"), query_string);
 }
 
 TEST(connection_impl_start, start_fails_if_connect_request_times_out)
@@ -530,7 +734,7 @@ TEST(connection_impl_start, start_fails_if_connect_request_times_out)
     });
 
     auto connection =
-        connection_impl::create(create_uri(), _XPLATSTR(""), trace_level::messages, writer,
+        connection_impl::create(create_uri(), trace_level::messages, writer,
         std::move(web_request_factory), std::make_unique<test_transport_factory>(websocket_client));
 
     try
@@ -595,7 +799,7 @@ TEST(connection_impl_send, message_sent)
 TEST(connection_impl_send, send_throws_if_connection_not_connected)
 {
     auto connection =
-        connection_impl::create(create_uri(), _XPLATSTR(""), trace_level::none, std::make_shared<trace_log_writer>());
+        connection_impl::create(create_uri(), trace_level::none, std::make_shared<trace_log_writer>());
 
     try
     {
@@ -896,7 +1100,7 @@ TEST(connection_impl_set_configuration, set_disconnected_callback_can_be_set_onl
 TEST(connection_impl_stop, stopping_disconnected_connection_is_no_op)
 {
     std::shared_ptr<log_writer> writer{ std::make_shared<memory_log_writer>() };
-    auto connection = connection_impl::create(create_uri(), _XPLATSTR(""), trace_level::all, writer);
+    auto connection = connection_impl::create(create_uri(), trace_level::all, writer);
     connection->stop().get();
 
     ASSERT_EQ(connection_state::disconnected, connection->get_connection_state());
@@ -1107,7 +1311,7 @@ TEST(connection_impl_stop, ongoing_start_request_canceled_if_connection_stopped_
     });
 
     auto writer = std::shared_ptr<log_writer>{std::make_shared<memory_log_writer>()};
-    auto connection = connection_impl::create(create_uri(), _XPLATSTR(""), trace_level::all, writer,
+    auto connection = connection_impl::create(create_uri(), trace_level::all, writer,
         std::move(web_request_factory), std::make_unique<test_transport_factory>(websocket_client));
 
     auto start_task = connection->start();
@@ -1244,7 +1448,7 @@ TEST(connection_impl_config, custom_headers_set_in_requests)
         /* receive function */ []() { return pplx::task_from_result(std::string("{ }\x1e")); });
 
     auto connection =
-        connection_impl::create(create_uri(), _XPLATSTR(""), trace_level::state_changes,
+        connection_impl::create(create_uri(), trace_level::state_changes,
         writer, std::move(web_request_factory), std::make_unique<test_transport_factory>(websocket_client));
 
     signalr::signalr_client_config signalr_client_config{};
@@ -1382,7 +1586,7 @@ TEST(connection_id, connection_id_reset_when_starting_connection)
     });
 
     auto connection =
-        connection_impl::create(create_uri(), _XPLATSTR(""), trace_level::none, std::make_shared<trace_log_writer>(),
+        connection_impl::create(create_uri(), trace_level::none, std::make_shared<trace_log_writer>(),
             std::move(web_request_factory), std::make_unique<test_transport_factory>(websocket_client));
 
     connection->start()

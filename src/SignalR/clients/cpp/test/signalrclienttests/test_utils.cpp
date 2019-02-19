@@ -58,6 +58,18 @@ utility::string_t create_uri()
         .append(utility::conversions::to_string_t(unit_test->current_test_info()->name()));
 }
 
+utility::string_t create_uri(const utility::string_t& query_string)
+{
+    auto unit_test = ::testing::UnitTest::GetInstance();
+
+    // unit test will be null if this function is not called in a test
+    _ASSERTE(unit_test);
+
+    return utility::string_t(_XPLATSTR("http://"))
+        .append(utility::conversions::to_string_t(unit_test->current_test_info()->name()))
+        .append(_XPLATSTR("?" + query_string));
+}
+
 std::vector<utility::string_t> filter_vector(const std::vector<utility::string_t>& source, const utility::string_t& string)
 {
     std::vector<utility::string_t> filtered_entries;

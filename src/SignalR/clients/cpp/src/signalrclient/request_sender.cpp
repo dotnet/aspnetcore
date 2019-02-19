@@ -12,9 +12,9 @@ namespace signalr
     namespace request_sender
     {
         pplx::task<negotiation_response> negotiate(web_request_factory& request_factory, const web::uri& base_url,
-            const utility::string_t& query_string, const signalr_client_config& signalr_client_config)
+            const signalr_client_config& signalr_client_config)
         {
-            auto negotiate_url = url_builder::build_negotiate(base_url, query_string);
+            auto negotiate_url = url_builder::build_negotiate(base_url);
 
             return http_sender::post(request_factory, negotiate_url, signalr_client_config)
                 .then([](utility::string_t body)
@@ -58,6 +58,11 @@ namespace signalr
                     {
                         response.accessToken = negotiation_response_json[_XPLATSTR("accessToken")].as_string();
                     }
+                }
+
+                if (negotiation_response_json.has_field(_XPLATSTR("ProtocolVersion")))
+                {
+                    throw signalr_exception(_XPLATSTR("Detected a connection attempt to an ASP.NET SignalR Server. This client only supports connecting to an ASP.NET Core SignalR Server. See https://aka.ms/signalr-core-differences for details."));
                 }
 
                 return std::move(response);

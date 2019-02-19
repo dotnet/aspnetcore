@@ -20,18 +20,18 @@ namespace signalr
             const std::function<void(const std::exception_ptr e)>& set_exception);
     }
 
-    std::shared_ptr<hub_connection_impl> hub_connection_impl::create(const utility::string_t& url, const utility::string_t& query_string,
-        trace_level trace_level, const std::shared_ptr<log_writer>& log_writer)
+    std::shared_ptr<hub_connection_impl> hub_connection_impl::create(const utility::string_t& url, trace_level trace_level,
+        const std::shared_ptr<log_writer>& log_writer)
     {
-        return hub_connection_impl::create(url, query_string, trace_level, log_writer,
+        return hub_connection_impl::create(url, trace_level, log_writer,
             std::make_unique<web_request_factory>(), std::make_unique<transport_factory>());
     }
 
-    std::shared_ptr<hub_connection_impl> hub_connection_impl::create(const utility::string_t& url, const utility::string_t& query_string,
-        trace_level trace_level, const std::shared_ptr<log_writer>& log_writer, std::unique_ptr<web_request_factory> web_request_factory,
+    std::shared_ptr<hub_connection_impl> hub_connection_impl::create(const utility::string_t& url, trace_level trace_level,
+        const std::shared_ptr<log_writer>& log_writer, std::unique_ptr<web_request_factory> web_request_factory,
         std::unique_ptr<transport_factory> transport_factory)
     {
-        auto connection = std::shared_ptr<hub_connection_impl>(new hub_connection_impl(url, query_string, trace_level,
+        auto connection = std::shared_ptr<hub_connection_impl>(new hub_connection_impl(url, trace_level,
             log_writer ? log_writer : std::make_shared<trace_log_writer>(), std::move(web_request_factory), std::move(transport_factory)));
 
         connection->initialize();
@@ -39,10 +39,10 @@ namespace signalr
         return connection;
     }
 
-    hub_connection_impl::hub_connection_impl(const utility::string_t& url, const utility::string_t& query_string, trace_level trace_level,
+    hub_connection_impl::hub_connection_impl(const utility::string_t& url, trace_level trace_level,
         const std::shared_ptr<log_writer>& log_writer, std::unique_ptr<web_request_factory> web_request_factory,
         std::unique_ptr<transport_factory> transport_factory)
-        : m_connection(connection_impl::create(url, query_string, trace_level, log_writer,
+        : m_connection(connection_impl::create(url, trace_level, log_writer,
         std::move(web_request_factory), std::move(transport_factory))),m_logger(log_writer, trace_level),
         m_callback_manager(json::value::parse(_XPLATSTR("{ \"error\" : \"connection went out of scope before invocation result was received\"}"))),
         m_disconnected([]() noexcept {}), m_handshakeReceived(false)
