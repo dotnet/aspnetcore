@@ -257,7 +257,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                 var isCompleted = result.IsCompleted;
                 if (!buffer.IsEmpty)
                 {
-                    await _sender.SendAsync(buffer);
+                    await _sender.SendAsync(in buffer);
                 }
 
                 output.AdvanceTo(end);

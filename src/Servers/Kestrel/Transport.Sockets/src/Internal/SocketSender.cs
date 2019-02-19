@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         {
         }
 
-        public SocketAwaitableEventArgs SendAsync(ReadOnlySequence<byte> buffers)
+        public SocketAwaitableEventArgs SendAsync(in ReadOnlySequence<byte> buffers)
         {
             if (buffers.IsSingleSegment)
             {
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                 _awaitableEventArgs.SetBuffer(null, 0, 0);
             }
 
-            _awaitableEventArgs.BufferList = GetBufferList(buffers);
+            _awaitableEventArgs.BufferList = GetBufferList(in buffers);
 
             if (!_socket.SendAsync(_awaitableEventArgs))
             {
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             return _awaitableEventArgs;
         }
 
-        private List<ArraySegment<byte>> GetBufferList(ReadOnlySequence<byte> buffer)
+        private List<ArraySegment<byte>> GetBufferList(in ReadOnlySequence<byte> buffer)
         {
             Debug.Assert(!buffer.IsEmpty);
             Debug.Assert(!buffer.IsSingleSegment);
