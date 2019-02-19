@@ -128,7 +128,7 @@
   <PropertyGroup Label="Manual">
     <!-- Build tool dependencies -->
     <InternalAspNetCoreSdkPackageVersion>$(KoreBuildVersion)</InternalAspNetCoreSdkPackageVersion>
-    <InternalAspNetCoreSdkPackageVersion Condition=" '$(KoreBuildVersion)' == '' ">3.0.0-build-feat-vs2019-20190206.1</InternalAspNetCoreSdkPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion Condition=" '$(KoreBuildVersion)' == '' ">3.0.0-build-20190219.1</InternalAspNetCoreSdkPackageVersion>
     <MicrosoftNETFrameworkReferenceAssembliesPackageVersion>1.0.0-alpha-004</MicrosoftNETFrameworkReferenceAssembliesPackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.9.0</MicrosoftNETTestSdkPackageVersion>
     <MicrosoftSourceLinkGitHubPackageVersion>1.0.0-beta2-18618-05</MicrosoftSourceLinkGitHubPackageVersion>

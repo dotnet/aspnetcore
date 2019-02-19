@@ -1,2 +1,2 @@
-version:3.0.0-build-feat-vs2019-20190206.1
-commithash:cc6886de9fb992c54e0c859d6347344bd4658423
+version:3.0.0-build-20190219.1
+commithash:7effe75f1408a86a9c32b592192fea1097bdd3a3
