@@ -243,7 +243,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
             }, handler);
         }
 
-
         /// <summary>
         /// Registers a handler that will be invoked when the hub method with the specified method name is invoked.
         /// </summary>
