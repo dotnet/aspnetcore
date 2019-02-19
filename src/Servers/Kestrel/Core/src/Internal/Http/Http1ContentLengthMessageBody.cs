@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // We internally track an int for that.
             while (true)
             {
-                // _context.RequestTimedOut The issue is that TryRead can get a canceled read result
+                // The issue is that TryRead can get a canceled read result
                 // which is unknown to StartTimingReadAsync. 
                 if (_context.RequestTimedOut)
                 {

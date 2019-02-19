@@ -18,7 +18,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging.Testing;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
@@ -731,9 +730,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task ConnectionClosesWhenFinReceivedBeforeRequestCompletes()
         {
-            var testContext = new TestServiceContext(LoggerFactory);
-            // FIN callbacks are scheduled so run inline to make this test more reliable
-            testContext.Scheduler = PipeScheduler.Inline;
+            var testContext = new TestServiceContext(LoggerFactory)
+            {
+                // FIN callbacks are scheduled so run inline to make this test more reliable
+                Scheduler = PipeScheduler.Inline
+            };
 
             using (var server = new TestServer(TestApp.EchoAppChunked, testContext))
             {
@@ -1317,7 +1318,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                 Assert.Equal(0, await context.Request.Body.ReadAsync(new byte[1], 0, 1));
                 Assert.Equal("Hello", Encoding.ASCII.GetString(buffer, 0, 5));
-            }));
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "POST / HTTP/1.1",
+                        "Host:",
+                        "Content-Length: 5",
+                        "",
+                        "Hello");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+            }
         }
 
         [Fact]
@@ -1394,6 +1412,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 response.Headers["Content-Length"] = new[] { "11" };
 
                 await response.BodyPipe.WriteAsync(new Memory<byte>(Encoding.ASCII.GetBytes("Hello World"), 0, 11));
+
             }, testContext))
             {
                 using (var connection = server.CreateConnection())
@@ -1404,12 +1423,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Content-Length: 5",
                         "",
                         "Hello");
-                    await connection.Receive(
-                        "HTTP/1.1 200 OK",
-                        $"Date: {server.Context.DateHeaderValue}",
-                        "Content-Length: 0",
-                        "",
-                        "");
 
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
