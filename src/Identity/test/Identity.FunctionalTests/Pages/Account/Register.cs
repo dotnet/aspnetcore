@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account
         public Register(HttpClient client, IHtmlDocument register, DefaultUIContext context)
             : base(client, register, context)
         {
-            _registerForm = HtmlAssert.HasForm(register);
+            _registerForm = HtmlAssert.HasForm("#register", register);
         }
 
         public async Task<Index> SubmitRegisterFormForValidUserAsync(string userName, string password)
