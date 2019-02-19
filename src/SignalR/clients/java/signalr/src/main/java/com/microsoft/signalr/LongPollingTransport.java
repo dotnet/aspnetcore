@@ -98,7 +98,7 @@ class LongPollingTransport implements Transport {
                     } else {
                         if (response.getContent() != null) {
                             logger.debug("Message received.");
-                            threadPool.execute(() -> this.onReceive(response.getContent()));
+                            this.onReceive(response.getContent());
                         } else {
                             logger.debug("Poll timed out, reissuing.");
                         }
