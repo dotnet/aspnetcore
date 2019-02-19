@@ -6,7 +6,7 @@ const nonBubblingEvents = toLookup([
 ]);
 
 export interface OnEventCallback {
-  (event: Event, componentId: number, eventHandlerId: number, eventArgs: EventForDotNet<UIEventArgs>): void;
+  (event: Event, eventHandlerId: number, eventArgs: EventForDotNet<UIEventArgs>): void;
 }
 
 // Responsible for adding/removing the eventInfo on an expando property on DOM elements, and
@@ -23,7 +23,7 @@ export class EventDelegator {
     this.eventInfoStore = new EventInfoStore(this.onGlobalEvent.bind(this));
   }
 
-  public setListener(element: Element, eventName: string, componentId: number, eventHandlerId: number) {
+  public setListener(element: Element, eventName: string, eventHandlerId: number) {
     // Ensure we have a place to store event info for this element
     let infoForElement: EventHandlerInfosForElement = element[this.eventsCollectionKey];
     if (!infoForElement) {
@@ -36,7 +36,7 @@ export class EventDelegator {
       this.eventInfoStore.update(oldInfo.eventHandlerId, eventHandlerId);
     } else {
       // Go through the whole flow which might involve registering a new global handler
-      const newInfo = { element, eventName, componentId, eventHandlerId };
+      const newInfo = { element, eventName, eventHandlerId };
       this.eventInfoStore.add(newInfo);
       infoForElement[eventName] = newInfo;
     }
@@ -80,7 +80,7 @@ export class EventDelegator {
           }
 
           const handlerInfo = handlerInfos[evt.type];
-          this.onEvent(evt, handlerInfo.componentId, handlerInfo.eventHandlerId, eventArgs);
+          this.onEvent(evt, handlerInfo.eventHandlerId, eventArgs);
         }
       }
 
@@ -161,7 +161,6 @@ interface EventHandlerInfosForElement {
 interface EventHandlerInfo {
   element: Element;
   eventName: string;
-  componentId: number;
   eventHandlerId: number;
 }
 

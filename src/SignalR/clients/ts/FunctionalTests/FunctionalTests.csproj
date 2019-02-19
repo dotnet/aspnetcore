@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
@@ -21,6 +21,7 @@
     <None Remove="ts\Utils.ts" />
     <None Remove="ts\WebDriverReporter.ts" />
     <None Remove="ts\WebSocketTests.ts" />
+    <None Remove="ts\WebWorkerTests.ts" />
   </ItemGroup>
 
   <ItemGroup>
@@ -49,8 +50,8 @@
     <TypeScriptCompile Include="ts\index.ts" />
     <TypeScriptCompile Include="ts\TestLogger.ts" />
     <TypeScriptCompile Include="ts\Utils.ts" />
-    <TypeScriptCompile Include="ts\WebDriverReporter.ts" />
     <TypeScriptCompile Include="ts\WebSocketTests.ts" />
+    <TypeScriptCompile Include="ts\WebWorkerTests.ts" />
   </ItemGroup>
 
   <Target Name="ClientBuild" BeforeTargets="AfterBuild">
@@ -65,10 +66,12 @@
       <Copy SourceFiles="@(JasmineFiles)" DestinationFolder="$(MSBuildProjectDirectory)/wwwroot/lib/jasmine" />
 
       <ItemGroup>
-        <SignalRJSClientFiles Include="$(MSBuildThisFileDirectory)node_modules/@aspnet/signalr/dist/browser/*" />
-        <SignalRJSClientFiles Include="$(MSBuildThisFileDirectory)node_modules/@aspnet/signalr-protocol-msgpack/dist/browser/*" />
+        <SignalRJSBrowserClientFiles Include="$(MSBuildThisFileDirectory)node_modules/@aspnet/signalr/dist/browser/*" />
+        <SignalRJSBrowserClientFiles Include="$(MSBuildThisFileDirectory)node_modules/@aspnet/signalr-protocol-msgpack/dist/browser/*" />
+        <SignalRJSWebWorkerClientFiles Include="$(MSBuildThisFileDirectory)node_modules/@aspnet/signalr/dist/webworker/*" />
       </ItemGroup>
-      <Copy SourceFiles="@(SignalRJSClientFiles)" DestinationFolder="$(MSBuildThisFileDirectory)/wwwroot/lib/signalr" />
+      <Copy SourceFiles="@(SignalRJSBrowserClientFiles)" DestinationFolder="$(MSBuildThisFileDirectory)/wwwroot/lib/signalr" />
+      <Copy SourceFiles="@(SignalRJSWebWorkerClientFiles)" DestinationFolder="$(MSBuildThisFileDirectory)/wwwroot/lib/signalr-webworker" />
  </Target>
 
 </Project>

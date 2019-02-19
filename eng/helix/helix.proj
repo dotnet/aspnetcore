@@ -22,8 +22,6 @@
   </Target>
 
   <PropertyGroup>
-    <!-- helix SDK issue https://github.com/dotnet/arcade/issues/1605 -->
-    <SkipInvalidConfigurations>true</SkipInvalidConfigurations>
     <HelixSource>pr/aspnet/aspnetcore</HelixSource>
     <HelixType>ci</HelixType>
     <HelixBuild>private-$(USERNAME)</HelixBuild>
@@ -39,12 +37,16 @@
       Windows.10.Amd64.ClientRS4.VS2017.Open;
       OSX.1012.Amd64.Open;
       Ubuntu.1810.Amd64.Open;
+      Ubuntu.1804.Arm64.Open;
       Ubuntu.1604.Amd64.Open;
       Centos.7.Amd64.Open;
       Debian.8.Amd64.Open;
       Debian.9.Amd64.Open;
+      Debian.9.Arm64.Open;
       Redhat.7.Amd64.Open;
+      Fedora.27.Amd64.Open;
+      Fedora.28.Amd64.Open;      
     </HelixTargetQueues>
-    <!--  TODO: re-enable Fedora.27.Amd64.Open and Fedora.28.Amd64.Open. See https://github.com/aspnet/AspNetCore/issues/7398   -->
+    <!--  TODO: re-enable Ubuntu.1604.Arm64.Open; curl not found -->
   </PropertyGroup>
 </Project> 

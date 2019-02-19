@@ -2530,7 +2530,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var response = httpContext.Response;
                 await response.StartAsync();
 
-                var memory = response.BodyPipe.GetMemory(5000);
+                var memory = response.BodyPipe.GetMemory();
                 Assert.Equal(4096, memory.Length);
                 var fisrtPartOfResponse = Encoding.ASCII.GetBytes(new string('a', memory.Length));
                 fisrtPartOfResponse.CopyTo(memory);
@@ -2584,7 +2584,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 await response.BodyPipe.FlushAsync();
 
-                var memory = response.BodyPipe.GetMemory(5000);
+                var memory = response.BodyPipe.GetMemory();
                 var fisrtPartOfResponse = Encoding.ASCII.GetBytes(new string('a', memory.Length));
                 fisrtPartOfResponse.CopyTo(memory);
                 response.BodyPipe.Advance(memory.Length);
@@ -2783,7 +2783,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var memory = response.BodyPipe.GetMemory(0);
                 Assert.Equal(4096, memory.Length);
 
-                memory = response.BodyPipe.GetMemory(1000000);
+                memory = response.BodyPipe.GetMemory(4096);
                 Assert.Equal(4096, memory.Length);
             });
 

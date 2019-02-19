@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Components
         /// <summary>
         /// Method invoked when the component is ready to start, having received its
         /// initial parameters from its parent in the render tree.
-        /// 
+        ///
         /// Override this method if you will perform an asynchronous operation and
         /// want the component to refresh when that operation is completed.
         /// </summary>
@@ -210,8 +210,8 @@ namespace Microsoft.AspNetCore.Components
                 catch when (task.IsCanceled)
                 {
                     // Ignore exceptions from task cancelletions.
-                    // Awaiting a canceled task may produce either an OperationCanceledException (if produced as a consequence of 
-                    // CancellationToken.ThrowIfCancellationRequested()) or a TaskCanceledException (produced as a consequence of awaiting Task.FromCanceled). 
+                    // Awaiting a canceled task may produce either an OperationCanceledException (if produced as a consequence of
+                    // CancellationToken.ThrowIfCancellationRequested()) or a TaskCanceledException (produced as a consequence of awaiting Task.FromCanceled).
                     // It's much easier to check the state of the Task (i.e. Task.IsCanceled) rather than catch two distinct exceptions.
                 }
 
@@ -255,9 +255,9 @@ namespace Microsoft.AspNetCore.Components
             StateHasChanged();
         }
 
-        Task IHandleEvent.HandleEventAsync(EventHandlerInvoker binding, UIEventArgs args)
+        Task IHandleEvent.HandleEventAsync(EventCallbackWorkItem callback, object arg)
         {
-            var task = binding.Invoke(args);
+            var task = callback.InvokeAsync(arg);
             var shouldAwaitTask = task.Status != TaskStatus.RanToCompletion &&
                 task.Status != TaskStatus.Canceled;
 

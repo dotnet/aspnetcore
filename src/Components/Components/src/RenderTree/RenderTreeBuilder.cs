@@ -278,6 +278,84 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         }
 
         /// <summary>
+        /// <para>
+        /// Appends a frame representing an <see cref="EventCallback"/> attribute.
+        /// </para>
+        /// <para>
+        /// The attribute is associated with the most recently added element. If the value is <c>null</c> and the
+        /// current element is not a component, the frame will be omitted.
+        /// </para>
+        /// </summary>
+        /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
+        /// <param name="name">The name of the attribute.</param>
+        /// <param name="value">The value of the attribute.</param>
+        /// <remarks>
+        /// This method is provided for infrastructure purposes, and is used to support generated code
+        /// that uses <see cref="EventCallbackFactory"/>.
+        /// </remarks>
+        public void AddAttribute(int sequence, string name, EventCallback value)
+        {
+            AssertCanAddAttribute();
+            if (_lastNonAttributeFrameType == RenderTreeFrameType.Component)
+            {
+                // Since this is a component, we need to preserve the type of the EventCallabck, so we have
+                // to box.
+                Append(RenderTreeFrame.Attribute(sequence, name, (object)value));
+            }
+            else if (value.RequiresExplicitReceiver)
+            {
+                // If we need to preserve the receiver, we just box the EventCallback
+                // so we can get it out on the other side.
+                Append(RenderTreeFrame.Attribute(sequence, name, (object)value));
+            }
+            else
+            {
+                // In the common case the receiver is also the delegate's target, so we
+                // just need to retain the delegate. This allows us to avoid an allocation.
+                Append(RenderTreeFrame.Attribute(sequence, name, value.Delegate));
+            }
+        }
+
+        /// <summary>
+        /// <para>
+        /// Appends a frame representing an <see cref="EventCallback"/> attribute.
+        /// </para>
+        /// <para>
+        /// The attribute is associated with the most recently added element. If the value is <c>null</c> and the
+        /// current element is not a component, the frame will be omitted.
+        /// </para>
+        /// </summary>
+        /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
+        /// <param name="name">The name of the attribute.</param>
+        /// <param name="value">The value of the attribute.</param>
+        /// <remarks>
+        /// This method is provided for infrastructure purposes, and is used to support generated code
+        /// that uses <see cref="EventCallbackFactory"/>.
+        /// </remarks>
+        public void AddAttribute<T>(int sequence, string name, EventCallback<T> value)
+        {
+            AssertCanAddAttribute();
+            if (_lastNonAttributeFrameType == RenderTreeFrameType.Component)
+            {
+                // Since this is a component, we need to preserve the type of the EventCallback, so we have
+                // to box.
+                Append(RenderTreeFrame.Attribute(sequence, name, (object)value));
+            }
+            else if (value.RequiresExplicitReceiver)
+            {
+                // If we need to preserve the receiver - we convert this to an untyped EventCallback. We don't
+                // need to preserve the type of an EventCallback<T> when it's invoked from the DOM.
+                Append(RenderTreeFrame.Attribute(sequence, name, (object)value.AsUntyped()));
+            }
+            else
+            {
+                // In the common case the receiver is also the delegate's target, so we
+                // just need to retain the delegate. This allows us to avoid an allocation.
+                Append(RenderTreeFrame.Attribute(sequence, name, value.Delegate));
+            }
+        }
+
+        /// <summary>
         /// Appends a frame representing a string-valued attribute.
         /// The attribute is associated with the most recently added element. If the value is <c>null</c>, or
         /// the <see cref="System.Boolean" /> value <c>false</c> and the current element is not a component, the

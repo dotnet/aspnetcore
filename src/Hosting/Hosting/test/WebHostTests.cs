@@ -168,7 +168,9 @@ namespace Microsoft.AspNetCore.Hosting
                 .Build())
             {
                 var lifetime = host.Services.GetRequiredService<IApplicationLifetime>();
+#pragma warning disable CS0618 // Type or member is obsolete
                 var lifetime2 = host.Services.GetRequiredService<Extensions.Hosting.IApplicationLifetime>();
+#pragma warning restore CS0618 // Type or member is obsolete
                 var server = (FakeServer)host.Services.GetRequiredService<IServer>();
 
                 var cts = new CancellationTokenSource();
@@ -415,7 +417,9 @@ namespace Microsoft.AspNetCore.Hosting
                 .Build())
             {
                 var applicationLifetime = host.Services.GetService<IApplicationLifetime>();
+#pragma warning disable CS0618 // Type or member is obsolete
                 var applicationLifetime2 = host.Services.GetService<Extensions.Hosting.IApplicationLifetime>();
+#pragma warning restore CS0618 // Type or member is obsolete
 
                 Assert.False(applicationLifetime.ApplicationStarted.IsCancellationRequested);
                 Assert.False(applicationLifetime2.ApplicationStarted.IsCancellationRequested);
@@ -434,7 +438,9 @@ namespace Microsoft.AspNetCore.Hosting
                 .Build())
             {
                 var applicationLifetime = host.Services.GetService<IApplicationLifetime>();
+#pragma warning disable CS0618 // Type or member is obsolete
                 var applicationLifetime2 = host.Services.GetService<Extensions.Hosting.IApplicationLifetime>();
+#pragma warning restore CS0618 // Type or member is obsolete
 
                 var started = RegisterCallbacksThatThrow(applicationLifetime.ApplicationStarted);
                 var stopping = RegisterCallbacksThatThrow(applicationLifetime.ApplicationStopping);
@@ -458,26 +464,26 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         [Fact]
-        public async Task WebHostNotifiesAllIApplicationLifetimeEventsCallbacksEvenIfTheyThrow()
+        public async Task WebHostDoesNotNotifyAllIApplicationLifetimeEventsCallbacksIfTheyThrow()
         {
-            bool[] events1 = null;
-            bool[] events2 = null;
+            bool[] hostedSeviceCalls1 = null;
+            bool[] hostedServiceCalls2 = null;
 
             using (var host = CreateBuilder()
                 .UseFakeServer()
                 .ConfigureServices(services =>
                 {
-                    events1 = RegisterCallbacksThatThrow(services);
-                    events2 = RegisterCallbacksThatThrow(services);
+                    hostedSeviceCalls1 = RegisterCallbacksThatThrow(services);
+                    hostedServiceCalls2 = RegisterCallbacksThatThrow(services);
                 })
                 .Build())
             {
-                await host.StartAsync();
-                Assert.True(events1[0]);
-                Assert.True(events2[0]);
+                await Assert.ThrowsAsync<InvalidOperationException>(() => host.StartAsync());
+                Assert.True(hostedSeviceCalls1[0]);
+                Assert.False(hostedServiceCalls2[0]);
                 host.Dispose();
-                Assert.True(events1[1]);
-                Assert.True(events2[1]);
+                Assert.True(hostedSeviceCalls1[1]);
+                Assert.True(hostedServiceCalls2[1]);
             }
         }
 
@@ -667,22 +673,24 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         [Fact]
-        public async Task WebHostNotifiesAllIHostedServicesAndIApplicationLifetimeCallbacksEvenIfTheyThrow()
+        public async Task WebHostDoesNotNotifyAllIHostedServicesAndIApplicationLifetimeCallbacksIfTheyThrow()
         {
-            bool[] events1 = null;
-            bool[] events2 = null;
+            bool[] hostedServiceCalls1 = null;
+            bool[] hostedServiceCalls2 = null;
 
             using (var host = CreateBuilder()
                 .UseFakeServer()
                 .ConfigureServices(services =>
                 {
-                    events1 = RegisterCallbacksThatThrow(services);
-                    events2 = RegisterCallbacksThatThrow(services);
+                    hostedServiceCalls1 = RegisterCallbacksThatThrow(services);
+                    hostedServiceCalls2 = RegisterCallbacksThatThrow(services);
                 })
                 .Build())
             {
                 var applicationLifetime = host.Services.GetService<IApplicationLifetime>();
+#pragma warning disable CS0618 // Type or member is obsolete
                 var applicationLifetime2 = host.Services.GetService<Extensions.Hosting.IApplicationLifetime>();
+#pragma warning restore CS0618 // Type or member is obsolete
 
                 var started = RegisterCallbacksThatThrow(applicationLifetime.ApplicationStarted);
                 var stopping = RegisterCallbacksThatThrow(applicationLifetime.ApplicationStopping);
@@ -690,14 +698,14 @@ namespace Microsoft.AspNetCore.Hosting
                 var started2 = RegisterCallbacksThatThrow(applicationLifetime2.ApplicationStarted);
                 var stopping2 = RegisterCallbacksThatThrow(applicationLifetime2.ApplicationStopping);
 
-                await host.StartAsync();
-                Assert.True(events1[0]);
-                Assert.True(events2[0]);
+                await Assert.ThrowsAsync<InvalidOperationException>(() => host.StartAsync());
+                Assert.True(hostedServiceCalls1[0]);
+                Assert.False(hostedServiceCalls2[0]);
                 Assert.True(started.All(s => s));
                 Assert.True(started2.All(s => s));
                 host.Dispose();
-                Assert.True(events1[1]);
-                Assert.True(events2[1]);
+                Assert.True(hostedServiceCalls1[1]);
+                Assert.True(hostedServiceCalls2[1]);
                 Assert.True(stopping.All(s => s));
                 Assert.True(stopping2.All(s => s));
             }
@@ -714,7 +722,9 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 await host.StartAsync();
                 var env = host.Services.GetService<IHostingEnvironment>();
+#pragma warning disable CS0618 // Type or member is obsolete
                 var env2 = host.Services.GetService<Extensions.Hosting.IHostingEnvironment>();
+#pragma warning restore CS0618 // Type or member is obsolete
                 Assert.Equal("Changed", env.EnvironmentName);
                 Assert.Equal("Changed", env2.EnvironmentName);
             }
@@ -799,7 +809,9 @@ namespace Microsoft.AspNetCore.Hosting
             using (var host = CreateBuilder().UseFakeServer().Build())
             {
                 var env = host.Services.GetService<IHostingEnvironment>();
+#pragma warning disable CS0618 // Type or member is obsolete
                 var env2 = host.Services.GetService<Extensions.Hosting.IHostingEnvironment>();
+#pragma warning restore CS0618 // Type or member is obsolete
                 Assert.Equal(EnvironmentName.Production, env.EnvironmentName);
                 Assert.Equal(EnvironmentName.Production, env2.EnvironmentName);
             }
@@ -820,7 +832,9 @@ namespace Microsoft.AspNetCore.Hosting
             using (var host = CreateBuilder(config).UseFakeServer().Build())
             {
                 var env = host.Services.GetService<IHostingEnvironment>();
+#pragma warning disable CS0618 // Type or member is obsolete
                 var env2 = host.Services.GetService<Extensions.Hosting.IHostingEnvironment>();
+#pragma warning restore CS0618 // Type or member is obsolete
                 Assert.Equal(EnvironmentName.Staging, env.EnvironmentName);
                 Assert.Equal(EnvironmentName.Staging, env.EnvironmentName);
             }
@@ -1022,7 +1036,9 @@ namespace Microsoft.AspNetCore.Hosting
         {
             private readonly IApplicationLifetime _lifetime;
 
+#pragma warning disable CS0618 // Type or member is obsolete
             public TestHostedService(IApplicationLifetime lifetime, Extensions.Hosting.IApplicationLifetime lifetime2)
+#pragma warning restore CS0618 // Type or member is obsolete
             {
                 _lifetime = lifetime;
             }
