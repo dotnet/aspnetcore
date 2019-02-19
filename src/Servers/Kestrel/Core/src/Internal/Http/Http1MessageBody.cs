@@ -1,6 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.IO.Pipelines;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     public abstract class Http1MessageBody : MessageBody
@@ -11,6 +17,96 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             : base(context, context.MinRequestBodyDataRate)
         {
             _context = context;
+        }
+
+        protected void CheckCompletedReadResult(ReadResult result)
+        {
+            if (result.IsCompleted)
+            {
+                // OnInputOrOutputCompleted() is an idempotent method that closes the connection. Sometimes
+                // input completion is observed here before the Input.OnWriterCompleted() callback is fired,
+                // so we call OnInputOrOutputCompleted() now to prevent a race in our tests where a 400
+                // response is written after observing the unexpected end of request content instead of just
+                // closing the connection without a response as expected.
+                _context.OnInputOrOutputCompleted();
+
+                BadHttpRequestException.Throw(RequestRejectionReason.UnexpectedEndOfRequestContent);
+            }
+        }
+
+        protected override Task OnConsumeAsync()
+        {
+            try
+            {
+                if (TryRead(out var readResult))
+                {
+                    AdvanceTo(readResult.Buffer.End);
+
+                    if (readResult.IsCompleted)
+                    {
+                        return Task.CompletedTask;
+                    }
+                }
+            }
+            catch (BadHttpRequestException ex)
+            {
+                // At this point, the response has already been written, so this won't result in a 4XX response;
+                // however, we still need to stop the request processing loop and log.
+                _context.SetBadRequestState(ex);
+                return Task.CompletedTask;
+            }
+            catch (ConnectionAbortedException)
+            {
+                Log.RequestBodyDrainTimedOut(_context.ConnectionIdFeature, _context.TraceIdentifier);
+            }
+            catch (InvalidOperationException ex)
+            {
+                var connectionAbortedException = new ConnectionAbortedException(CoreStrings.ConnectionAbortedByApplication, ex);
+                _context.ReportApplicationError(connectionAbortedException);
+
+                // Have to abort the connection because we can't finish draining the request
+                _context.StopProcessingNextRequest();
+                return Task.CompletedTask;
+            }
+
+            return OnConsumeAsyncAwaited();
+        }
+
+        protected async Task OnConsumeAsyncAwaited()
+        {
+            Log.RequestBodyNotEntirelyRead(_context.ConnectionIdFeature, _context.TraceIdentifier);
+
+            _context.TimeoutControl.SetTimeout(Constants.RequestBodyDrainTimeout.Ticks, TimeoutReason.RequestBodyDrain);
+
+            try
+            {
+                ReadResult result;
+                do
+                {
+                    result = await ReadAsync();
+                    AdvanceTo(result.Buffer.End);
+                } while (!result.IsCompleted);
+            }
+            catch (BadHttpRequestException ex)
+            {
+                _context.SetBadRequestState(ex);
+            }
+            catch (ConnectionAbortedException)
+            {
+                Log.RequestBodyDrainTimedOut(_context.ConnectionIdFeature, _context.TraceIdentifier);
+            }
+            catch (InvalidOperationException ex)
+            {
+                var connectionAbortedException = new ConnectionAbortedException(CoreStrings.ConnectionAbortedByApplication, ex);
+                _context.ReportApplicationError(connectionAbortedException);
+
+                // Have to abort the connection because we can't finish draining the request
+                _context.StopProcessingNextRequest();
+            }
+            finally
+            {
+                _context.TimeoutControl.CancelTimeout();
+            }
         }
 
         public static MessageBody For(

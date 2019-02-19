@@ -74,7 +74,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             try
             {
-                _readResult = await StartTimingReadAsync(cancellationToken);
+                var readAwaitable = _requestBodyPipe.Reader.ReadAsync(cancellationToken);
+
+                _readResult = await StartTimingReadAsync(readAwaitable, cancellationToken);
             }
             catch (ConnectionAbortedException ex)
             {
@@ -156,17 +158,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         }
 
                         // Read() will have already have greedily consumed the entire request body if able.
-                        if (result.IsCompleted)
-                        {
-                            // OnInputOrOutputCompleted() is an idempotent method that closes the connection. Sometimes
-                            // input completion is observed here before the Input.OnWriterCompleted() callback is fired,
-                            // so we call OnInputOrOutputCompleted() now to prevent a race in our tests where a 400
-                            // response is written after observing the unexpected end of request content instead of just
-                            // closing the connection without a response as expected.
-                            _context.OnInputOrOutputCompleted();
-
-                            BadHttpRequestException.Throw(RequestRejectionReason.UnexpectedEndOfRequestContent);
-                        }
+                        CheckCompletedReadResult(result);
                     }
                     finally
                     {
@@ -216,77 +208,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             // At this point both the request body pipe reader and writer should be completed.
             _requestBodyPipe.Reset();
-        }
-
-        protected override Task OnConsumeAsync()
-        {
-            try
-            {
-                if (_requestBodyPipe.Reader.TryRead(out var readResult))
-                {
-                    _requestBodyPipe.Reader.AdvanceTo(readResult.Buffer.End);
-
-                    if (readResult.IsCompleted)
-                    {
-                        return Task.CompletedTask;
-                    }
-                }
-            }
-            catch (BadHttpRequestException ex)
-            {
-                // At this point, the response has already been written, so this won't result in a 4XX response;
-                // however, we still need to stop the request processing loop and log.
-                _context.SetBadRequestState(ex);
-                return Task.CompletedTask;
-            }
-            catch (InvalidOperationException ex)
-            {
-                var connectionAbortedException = new ConnectionAbortedException(CoreStrings.ConnectionAbortedByApplication, ex);
-                _context.ReportApplicationError(connectionAbortedException);
-
-                // Have to abort the connection because we can't finish draining the request
-                _context.StopProcessingNextRequest();
-                return Task.CompletedTask;
-            }
-
-            return OnConsumeAsyncAwaited();
-        }
-
-        private async Task OnConsumeAsyncAwaited()
-        {
-            Log.RequestBodyNotEntirelyRead(_context.ConnectionIdFeature, _context.TraceIdentifier);
-
-            _context.TimeoutControl.SetTimeout(Constants.RequestBodyDrainTimeout.Ticks, TimeoutReason.RequestBodyDrain);
-
-            try
-            {
-                ReadResult result;
-                do
-                {
-                    result = await _requestBodyPipe.Reader.ReadAsync();
-                    _requestBodyPipe.Reader.AdvanceTo(result.Buffer.End);
-                } while (!result.IsCompleted);
-            }
-            catch (BadHttpRequestException ex)
-            {
-                _context.SetBadRequestState(ex);
-            }
-            catch (ConnectionAbortedException)
-            {
-                Log.RequestBodyDrainTimedOut(_context.ConnectionIdFeature, _context.TraceIdentifier);
-            }
-            catch (InvalidOperationException ex)
-            {
-                var connectionAbortedException = new ConnectionAbortedException(CoreStrings.ConnectionAbortedByApplication, ex);
-                _context.ReportApplicationError(connectionAbortedException);
-
-                // Have to abort the connection because we can't finish draining the request
-                _context.StopProcessingNextRequest();
-            }
-            finally
-            {
-                _context.TimeoutControl.CancelTimeout();
-            }
         }
 
         protected void Copy(ReadOnlySequence<byte> readableBuffer, PipeWriter writableBuffer)
@@ -593,34 +514,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             BadHttpRequestException.Throw(RequestRejectionReason.BadChunkSizeData);
             return -1; // can't happen, but compiler complains
-        }
-
-        private ValueTask<ReadResult> StartTimingReadAsync(CancellationToken cancellationToken)
-        {
-            // The only difference is which reader to use. Let's do the following.
-            // Make an internal reader that will always be used for whatever operation is needed here
-            // Keep external one the same always.
-            var readAwaitable = _requestBodyPipe.Reader.ReadAsync(cancellationToken);
-
-            if (!readAwaitable.IsCompleted && _timingEnabled)
-            {
-                _backpressure = true;
-                _context.TimeoutControl.StartTimingRead();
-            }
-
-            return readAwaitable;
-        }
-
-        private void StopTimingRead(long bytesRead)
-        {
-            _context.TimeoutControl.BytesRead(bytesRead - _alreadyTimedBytes);
-            _alreadyTimedBytes = 0;
-
-            if (_backpressure)
-            {
-                _backpressure = false;
-                _context.TimeoutControl.StopTimingRead();
-            }
         }
 
         private enum Mode

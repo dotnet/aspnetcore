@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // We internally track an int for that.
             while (true)
             {
-                // This isn't great. The issue is that TryRead can get a canceled read result
+                // _context.RequestTimedOut The issue is that TryRead can get a canceled read result
                 // which is unknown to StartTimingReadAsync. 
                 if (_context.RequestTimedOut)
                 {
@@ -54,7 +54,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 try
                 {
-                    _readResult = await StartTimingReadAsync(cancellationToken);
+                    var readAwaitable = _context.Input.ReadAsync(cancellationToken);
+                    _readResult = await StartTimingReadAsync(readAwaitable, cancellationToken);
                 }
                 catch (ConnectionAbortedException ex)
                 {
@@ -63,16 +64,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 if (_context.RequestTimedOut)
                 {
-                    Debug.Assert(_readResult.IsCanceled);
                     BadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTimeout);
                 }
 
+                // Make sure to handle when this is canceled here.
                 if (_readResult.IsCanceled)
                 {
-                    if (Interlocked.CompareExchange(ref _userCanceled, 0, 1) == 1)
+                    if (Interlocked.Exchange(ref _userCanceled, 0) == 1)
                     {
                         // Ignore the readResult if it wasn't by the user.
                         break;
+                    }
+                    else
+                    {
+                        // TODO should this reset the timing read?
+                        StopTimingRead(0);
+                        continue;
                     }
                 }
 
@@ -80,25 +87,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 var readableBufferLength = readableBuffer.Length;
                 StopTimingRead(readableBufferLength);
 
-                if (_readResult.IsCompleted)
-                {
-                    // OnInputOrOutputCompleted() is an idempotent method that closes the connection. Sometimes
-                    // input completion is observed here before the Input.OnWriterCompleted() callback is fired,
-                    // so we call OnInputOrOutputCompleted() now to prevent a race in our tests where a 400
-                    // response is written after observing the unexpected end of request content instead of just
-                    // closing the connection without a response as expected.
-                    _context.OnInputOrOutputCompleted();
-
-                    BadHttpRequestException.Throw(RequestRejectionReason.UnexpectedEndOfRequestContent);
-                }
+                CheckCompletedReadResult(_readResult);
 
                 if (readableBufferLength > 0)
                 {
+                    CreateReadResultFromConnectionReadResult();
+
                     break;
                 }
             }
-
-            CreateReadResultFromConnectionReadResult();
 
             return _readResult;
         }
@@ -115,13 +112,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             TryStart();
 
-            var boolResult = _context.Input.TryRead(out _readResult);
+            if (!_context.Input.TryRead(out _readResult))
+            {
+                readResult = default;
+                return false;
+            }
+
+            if (_readResult.IsCanceled)
+            {
+                if (Interlocked.Exchange(ref _userCanceled, 0) == 0)
+                {
+                    // Cancellation wasn't by the user, return default ReadResult
+                    readResult = default;
+                    return false;
+                }
+            }
 
             CreateReadResultFromConnectionReadResult();
 
             readResult = _readResult;
 
-            return boolResult;
+            return true;
         }
 
         private void ThrowIfCompleted()
@@ -178,33 +189,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        private ValueTask<ReadResult> StartTimingReadAsync(CancellationToken cancellationToken)
-        {
-            var readAwaitable = _context.Input.ReadAsync(cancellationToken);
-
-            if (!readAwaitable.IsCompleted && _timingEnabled)
-            {
-                TryProduceContinue();
-
-                _backpressure = true;
-                _context.TimeoutControl.StartTimingRead();
-            }
-
-            return readAwaitable;
-        }
-
-        private void StopTimingRead(long bytesRead)
-        {
-            _context.TimeoutControl.BytesRead(bytesRead - _alreadyTimedBytes);
-            _alreadyTimedBytes = 0;
-
-            if (_backpressure)
-            {
-                _backpressure = false;
-                _context.TimeoutControl.StopTimingRead();
-            }
-        }
-
         public override void Complete(Exception exception)
         {
             _context.ReportApplicationError(exception);
@@ -226,77 +210,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             Complete(null);
             return Task.CompletedTask;
-        }
-
-        protected override Task OnConsumeAsync()
-        {
-            try
-            {
-                if (TryRead(out var readResult))
-                {
-                    AdvanceTo(readResult.Buffer.End);
-
-                    if (readResult.IsCompleted)
-                    {
-                        return Task.CompletedTask;
-                    }
-                }
-            }
-            catch (BadHttpRequestException ex)
-            {
-                // At this point, the response has already been written, so this won't result in a 4XX response;
-                // however, we still need to stop the request processing loop and log.
-                _context.SetBadRequestState(ex);
-                return Task.CompletedTask;
-            }
-            catch (InvalidOperationException ex)
-            {
-                var connectionAbortedException = new ConnectionAbortedException(CoreStrings.ConnectionAbortedByApplication, ex);
-                _context.ReportApplicationError(connectionAbortedException);
-
-                // Have to abort the connection because we can't finish draining the request
-                _context.StopProcessingNextRequest();
-                return Task.CompletedTask;
-            }
-
-            return OnConsumeAsyncAwaited();
-        }
-
-        private async Task OnConsumeAsyncAwaited()
-        {
-            Log.RequestBodyNotEntirelyRead(_context.ConnectionIdFeature, _context.TraceIdentifier);
-
-            _context.TimeoutControl.SetTimeout(Constants.RequestBodyDrainTimeout.Ticks, TimeoutReason.RequestBodyDrain);
-
-            try
-            {
-                ReadResult result;
-                do
-                {
-                    result = await ReadAsync();
-                    AdvanceTo(result.Buffer.End);
-                } while (!result.IsCompleted);
-            }
-            catch (BadHttpRequestException ex)
-            {
-                _context.SetBadRequestState(ex);
-            }
-            catch (ConnectionAbortedException)
-            {
-                Log.RequestBodyDrainTimedOut(_context.ConnectionIdFeature, _context.TraceIdentifier);
-            }
-            catch (InvalidOperationException ex)
-            {
-                var connectionAbortedException = new ConnectionAbortedException(CoreStrings.ConnectionAbortedByApplication, ex);
-                _context.ReportApplicationError(connectionAbortedException);
-
-                // Have to abort the connection because we can't finish draining the request
-                _context.StopProcessingNextRequest();
-            }
-            finally
-            {
-                _context.TimeoutControl.CancelTimeout();
-            }
         }
     }
 }

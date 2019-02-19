@@ -154,5 +154,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 BadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
             }
         }
+
+        protected ValueTask<ReadResult> StartTimingReadAsync(ValueTask<ReadResult> readAwaitable, CancellationToken cancellationToken)
+        {
+
+            if (!readAwaitable.IsCompleted && _timingEnabled)
+            {
+                TryProduceContinue();
+
+                _backpressure = true;
+                _context.TimeoutControl.StartTimingRead();
+            }
+
+            return readAwaitable;
+        }
+
+        protected void StopTimingRead(long bytesRead)
+        {
+            _context.TimeoutControl.BytesRead(bytesRead - _alreadyTimedBytes);
+            _alreadyTimedBytes = 0;
+
+            if (_backpressure)
+            {
+                _backpressure = false;
+                _context.TimeoutControl.StopTimingRead();
+            }
+        }
     }
 }

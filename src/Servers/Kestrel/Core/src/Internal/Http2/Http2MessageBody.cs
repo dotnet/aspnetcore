@@ -64,13 +64,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
         {
             var dataLength = _readResult.Buffer.Slice(_readResult.Buffer.Start, consumed).Length;
-            _context.RequestPipe.Reader.AdvanceTo(consumed, examined);
+            _context.RequestBodyPipe.Reader.AdvanceTo(consumed, examined);
             OnDataRead(dataLength);
         }
 
         public override bool TryRead(out ReadResult readResult)
         {
-            return _context.RequestPipe.Reader.TryRead(out readResult);
+            return _context.RequestBodyPipe.Reader.TryRead(out readResult);
         }
 
         public override async ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
@@ -79,7 +79,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             try
             {
-                _readResult = await StartTimingReadAsync(cancellationToken);
+                var readAwaitable = _context.RequestBodyPipe.Reader.ReadAsync(cancellationToken);
+
+                _readResult = await StartTimingReadAsync(readAwaitable, cancellationToken);
             }
             catch (ConnectionAbortedException ex)
             {
@@ -96,44 +98,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             return _readResult;
         }
 
-        private ValueTask<ReadResult> StartTimingReadAsync(CancellationToken cancellationToken)
-        {
-            var readAwaitable = _context.RequestPipe.Reader.ReadAsync(cancellationToken);
-
-            if (!readAwaitable.IsCompleted && _timingEnabled)
-            {
-                _backpressure = true;
-                _context.TimeoutControl.StartTimingRead();
-            }
-
-            return readAwaitable;
-        }
-
-        private void StopTimingRead(long bytesRead)
-        {
-            _context.TimeoutControl.BytesRead(bytesRead - _alreadyTimedBytes);
-            _alreadyTimedBytes = 0;
-
-            if (_backpressure)
-            {
-                _backpressure = false;
-                _context.TimeoutControl.StopTimingRead();
-            }
-        }
-
         public override void Complete(Exception exception)
         {
-            _context.RequestPipe.Reader.Complete(exception);
+            _context.RequestBodyPipe.Reader.Complete(exception);
         }
 
         public override void OnWriterCompleted(Action<Exception, object> callback, object state)
         {
-            _context.RequestPipe.Reader.OnWriterCompleted(callback, state);
+            _context.RequestBodyPipe.Reader.OnWriterCompleted(callback, state);
         }
 
         public override void CancelPendingRead()
         {
-            _context.RequestPipe.Reader.CancelPendingRead();
+            _context.RequestBodyPipe.Reader.CancelPendingRead();
         }
 
         protected override Task OnStopAsync()
@@ -143,7 +120,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 return Task.CompletedTask;
             }
 
-            _context.RequestPipe.Reader.Complete();
+            _context.RequestBodyPipe.Reader.Complete();
 
             return Task.CompletedTask;
         }
