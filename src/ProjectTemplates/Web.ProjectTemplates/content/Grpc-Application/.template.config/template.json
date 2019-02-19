@@ -5,10 +5,10 @@
     "Web",
     "gRPC"
   ],
-  "name": "ASP.NET Core gRPC Application",
+  "name": "ASP.NET Core gRPC App",
   "generatorVersions": "[1.0.0.0-*)",
   "description": "A project template for creating a gRPC ASP.NET Core application.",
-  "groupIdentity": "Microsoft.Grpc",
+  "groupIdentity": "Microsoft.Web.Grpc",
   "precedence": "5000",
   "identity": "Microsoft.Grpc.Application.CSharp.3.0",
   "shortName": "grpc",
