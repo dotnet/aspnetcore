@@ -10,7 +10,6 @@ using System.IO;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
 using System.Security.Authentication;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -22,26 +21,39 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
     public class Http2Connection : IHttp2StreamLifetimeHandler, IHttpHeadersHandler, IRequestProcessor
     {
-        public static byte[] ClientPreface { get; } = Encoding.ASCII.GetBytes("PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n");
+        public static ReadOnlySpan<byte> ClientPreface => new byte[] {
+            (byte)'P', (byte)'R', (byte)'I', (byte)' ', (byte)'*', (byte)' ',
+            (byte)'H', (byte)'T', (byte)'T', (byte)'P', (byte)'/', (byte)'2',
+            (byte)'.', (byte)'0', (byte)'\r', (byte)'\n', (byte)'\r', (byte)'\n',
+            (byte)'S', (byte)'M', (byte)'\r', (byte)'\n', (byte)'\r', (byte)'\n'};
 
         private static readonly PseudoHeaderFields _mandatoryRequestPseudoHeaderFields =
             PseudoHeaderFields.Method | PseudoHeaderFields.Path | PseudoHeaderFields.Scheme;
 
-        private static readonly byte[] _authorityBytes = Encoding.ASCII.GetBytes(HeaderNames.Authority);
-        private static readonly byte[] _methodBytes = Encoding.ASCII.GetBytes(HeaderNames.Method);
-        private static readonly byte[] _pathBytes = Encoding.ASCII.GetBytes(HeaderNames.Path);
-        private static readonly byte[] _schemeBytes = Encoding.ASCII.GetBytes(HeaderNames.Scheme);
-        private static readonly byte[] _statusBytes = Encoding.ASCII.GetBytes(HeaderNames.Status);
-        private static readonly byte[] _connectionBytes = Encoding.ASCII.GetBytes("connection");
-        private static readonly byte[] _teBytes = Encoding.ASCII.GetBytes("te");
-        private static readonly byte[] _trailersBytes = Encoding.ASCII.GetBytes("trailers");
-        private static readonly byte[] _connectBytes = Encoding.ASCII.GetBytes("CONNECT");
+        private static ReadOnlySpan<byte> Authority => new byte[] {
+            (byte)':', (byte)'a', (byte)'u', (byte)'t', (byte)'h', (byte)'o', (byte)'r',
+            (byte)'i', (byte)'t', (byte)'y' };
+        private static ReadOnlySpan<byte> Method => new byte[] {
+            (byte)':', (byte)'m', (byte)'e', (byte)'t', (byte)'h', (byte)'o', (byte)'d' };
+        private static ReadOnlySpan<byte> Path => new byte[] {
+            (byte)':', (byte)'p', (byte)'a', (byte)'t', (byte)'h' };
+        private static ReadOnlySpan<byte> Scheme => new byte[] {
+            (byte)':', (byte)'s', (byte)'c', (byte)'h', (byte)'e', (byte)'m', (byte)'e' };
+        private static ReadOnlySpan<byte> Status => new byte[] {
+            (byte)':', (byte)'s', (byte)'t', (byte)'a', (byte)'t', (byte)'u', (byte)'s' };
+        private static ReadOnlySpan<byte> Connection => new byte[] {
+            (byte)'c', (byte)'o', (byte)'n', (byte)'n', (byte)'e', (byte)'c', (byte)'t', (byte)'i', (byte)'o', (byte)'n' };
+        private static ReadOnlySpan<byte> TE => new byte[] {
+            (byte)'t', (byte)'e' };
+        private static ReadOnlySpan<byte> Trailers => new byte[] {
+            (byte)'t', (byte)'r', (byte)'a', (byte)'i', (byte)'l', (byte)'e', (byte)'r', (byte)'s' };
+        private static ReadOnlySpan<byte> Connect => new byte[] {
+            (byte)'C', (byte)'O', (byte)'N', (byte)'N', (byte)'E', (byte)'C', (byte)'T' };
 
         private readonly HttpConnectionContext _context;
         private readonly Http2FrameWriter _frameWriter;
@@ -1149,7 +1161,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                 if (headerField == PseudoHeaderFields.Method)
                 {
-                    _isMethodConnect = value.SequenceEqual(_connectBytes);
+                    _isMethodConnect = value.SequenceEqual(Connect);
                 }
 
                 _parsedPseudoHeaderFields |= headerField;
@@ -1191,23 +1203,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 return false;
             }
 
-            if (name.SequenceEqual(_pathBytes))
+            if (name.SequenceEqual(Path))
             {
                 headerField = PseudoHeaderFields.Path;
             }
-            else if (name.SequenceEqual(_methodBytes))
+            else if (name.SequenceEqual(Method))
             {
                 headerField = PseudoHeaderFields.Method;
             }
-            else if (name.SequenceEqual(_schemeBytes))
+            else if (name.SequenceEqual(Scheme))
             {
                 headerField = PseudoHeaderFields.Scheme;
             }
-            else if (name.SequenceEqual(_statusBytes))
+            else if (name.SequenceEqual(Status))
             {
                 headerField = PseudoHeaderFields.Status;
             }
-            else if (name.SequenceEqual(_authorityBytes))
+            else if (name.SequenceEqual(Authority))
             {
                 headerField = PseudoHeaderFields.Authority;
             }
@@ -1221,7 +1233,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         private static bool IsConnectionSpecificHeaderField(Span<byte> name, Span<byte> value)
         {
-            return name.SequenceEqual(_connectionBytes) || (name.SequenceEqual(_teBytes) && !value.SequenceEqual(_trailersBytes));
+            return name.SequenceEqual(Connection) || (name.SequenceEqual(TE) && !value.SequenceEqual(Trailers));
         }
 
         private bool TryClose()
