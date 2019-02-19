@@ -202,7 +202,6 @@ public class LongPollingTransportTest {
         assertEquals("FIRSTSECONDTHIRD", message.get());
     }
 
-
     @Test
     public void LongPollingTransportSendsHeaders() {
         AtomicInteger requestCount = new AtomicInteger();
