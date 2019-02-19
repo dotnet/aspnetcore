@@ -3,9 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using System.Buffers;
 using System.IO.Pipelines;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
@@ -7767,776 +7767,538 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return true;
         }
         
-        internal void CopyToFast(ref BufferWriter<PipeWriter> output)
+        internal unsafe void CopyToFast(ref BufferWriter<PipeWriter> output)
         {
             var tempBits = _bits | (_contentLength.HasValue ? -9223372036854775808L : 0);
+            var index = 0;
+            var keyStart = 0;
+            var keyLength = 0;
+            ref readonly StringValues values = ref Unsafe.AsRef<StringValues>(null);
+
+        MoveNext:
+            switch (index)
+            {
+                case 0:
+                    goto HeaderContentLength;
             
-                if ((tempBits & 2L) != 0)
-                { 
-                    if (_headers._rawConnection != null)
-                    {
-                        output.Write(_headers._rawConnection);
-                    }
-                    else 
-                    {
-                        var valueCount = _headers._Connection.Count;
-                        for (var i = 0; i < valueCount; i++)
-                        {
-                            var value = _headers._Connection[i];
-                            if (value != null)
-                            {
-                                output.Write(new ReadOnlySpan<byte>(_headerBytes, 17, 14));
-                                output.WriteAsciiNoValidation(value);
-                            }
-                        }
-                    }
+                case 1:
+                    goto HeaderConnection;
+                case 2:
+                    goto HeaderDate;
+                case 3:
+                    goto HeaderContentType;
+                case 4:
+                    goto HeaderServer;
+                case 5:
+                    goto HeaderCacheControl;
+                case 6:
+                    goto HeaderKeepAlive;
+                case 7:
+                    goto HeaderPragma;
+                case 8:
+                    goto HeaderTrailer;
+                case 9:
+                    goto HeaderTransferEncoding;
+                case 10:
+                    goto HeaderUpgrade;
+                case 11:
+                    goto HeaderVia;
+                case 12:
+                    goto HeaderWarning;
+                case 13:
+                    goto HeaderAllow;
+                case 14:
+                    goto HeaderContentEncoding;
+                case 15:
+                    goto HeaderContentLanguage;
+                case 16:
+                    goto HeaderContentLocation;
+                case 17:
+                    goto HeaderContentMD5;
+                case 18:
+                    goto HeaderContentRange;
+                case 19:
+                    goto HeaderExpires;
+                case 20:
+                    goto HeaderLastModified;
+                case 21:
+                    goto HeaderAcceptRanges;
+                case 22:
+                    goto HeaderAge;
+                case 23:
+                    goto HeaderETag;
+                case 24:
+                    goto HeaderLocation;
+                case 25:
+                    goto HeaderProxyAuthenticate;
+                case 26:
+                    goto HeaderRetryAfter;
+                case 27:
+                    goto HeaderSetCookie;
+                case 28:
+                    goto HeaderVary;
+                case 29:
+                    goto HeaderWWWAuthenticate;
+                case 30:
+                    goto HeaderAccessControlAllowCredentials;
+                case 31:
+                    goto HeaderAccessControlAllowHeaders;
+                case 32:
+                    goto HeaderAccessControlAllowMethods;
+                case 33:
+                    goto HeaderAccessControlAllowOrigin;
+                case 34:
+                    goto HeaderAccessControlExposeHeaders;
+                case 35:
+                    goto HeaderAccessControlMaxAge;
+                default:
+                    return;
+            }
+        HeaderContentLength:
+            if ((tempBits & -9223372036854775808L) != 0)
+            {
+                tempBits ^= -9223372036854775808L;
 
-                    if((tempBits & ~2L) == 0)
-                    {
-                        return;
-                    }
-                    tempBits &= ~2L;
-                }
-                if ((tempBits & 4L) != 0)
-                { 
-                    if (_headers._rawDate != null)
-                    {
-                        output.Write(_headers._rawDate);
-                    }
-                    else 
-                    {
-                        var valueCount = _headers._Date.Count;
-                        for (var i = 0; i < valueCount; i++)
-                        {
-                            var value = _headers._Date[i];
-                            if (value != null)
-                            {
-                                output.Write(new ReadOnlySpan<byte>(_headerBytes, 31, 8));
-                                output.WriteAsciiNoValidation(value);
-                            }
-                        }
-                    }
-
-                    if((tempBits & ~4L) == 0)
-                    {
-                        return;
-                    }
-                    tempBits &= ~4L;
-                }
-                if ((tempBits & 2048L) != 0)
-                { 
-                    {
-                        var valueCount = _headers._ContentType.Count;
-                        for (var i = 0; i < valueCount; i++)
-                        {
-                            var value = _headers._ContentType[i];
-                            if (value != null)
-                            {
-                                output.Write(new ReadOnlySpan<byte>(_headerBytes, 133, 16));
-                                output.WriteAsciiNoValidation(value);
-                            }
-                        }
-                    }
-
-                    if((tempBits & ~2048L) == 0)
-                    {
-                        return;
-                    }
-                    tempBits &= ~2048L;
-                }
-                if ((tempBits & 33554432L) != 0)
-                { 
-                    if (_headers._rawServer != null)
-                    {
-                        output.Write(_headers._rawServer);
-                    }
-                    else 
-                    {
-                        var valueCount = _headers._Server.Count;
-                        for (var i = 0; i < valueCount; i++)
-                        {
-                            var value = _headers._Server[i];
-                            if (value != null)
-                            {
-                                output.Write(new ReadOnlySpan<byte>(_headerBytes, 350, 10));
-                                output.WriteAsciiNoValidation(value);
-                            }
-                        }
-                    }
-
-                    if((tempBits & ~33554432L) == 0)
-                    {
-                        return;
-                    }
-                    tempBits &= ~33554432L;
-                }
-                if ((tempBits & -9223372036854775808L) != 0)
+                output.Write(new ReadOnlySpan<byte>(_headerBytes, 592, 18));
+                output.WriteNumeric((ulong)ContentLength.Value);
+            }
+            
+        HeaderConnection:
+            if ((tempBits & 2L) != 0)
+            {
+                tempBits ^= 2L;
+                if (_headers._rawConnection != null)
                 {
-                    output.Write(new ReadOnlySpan<byte>(_headerBytes, 592, 18));
-                    output.WriteNumeric((ulong)ContentLength.Value);
-
-                    if((tempBits & ~-9223372036854775808L) == 0)
-                    {
-                        return;
-                    }
-                    tempBits &= ~-9223372036854775808L;
+                    output.Write(_headers._rawConnection);
                 }
-                if ((tempBits & 1L) != 0)
-                { 
-                    {
-                        var valueCount = _headers._CacheControl.Count;
-                        for (var i = 0; i < valueCount; i++)
-                        {
-                            var value = _headers._CacheControl[i];
-                            if (value != null)
-                            {
-                                output.Write(new ReadOnlySpan<byte>(_headerBytes, 0, 17));
-                                output.WriteAsciiNoValidation(value);
-                            }
-                        }
-                    }
-
-                    if((tempBits & ~1L) == 0)
-                    {
-                        return;
-                    }
-                    tempBits &= ~1L;
+                else
+                {
+                    values = ref _headers._Connection;
+                    keyStart = 17;
+                    keyLength = 14;
+                    index = 2;
+                    goto OutputHeader;
                 }
-                if ((tempBits & 8L) != 0)
-                { 
-                    {
-                        var valueCount = _headers._KeepAlive.Count;
-                        for (var i = 0; i < valueCount; i++)
-                        {
-                            var value = _headers._KeepAlive[i];
-                            if (value != null)
-                            {
-                                output.Write(new ReadOnlySpan<byte>(_headerBytes, 39, 14));
-                                output.WriteAsciiNoValidation(value);
-                            }
-                        }
-                    }
-
-                    if((tempBits & ~8L) == 0)
-                    {
-                        return;
-                    }
-                    tempBits &= ~8L;
+            }
+        
+        HeaderDate:
+            if ((tempBits & 4L) != 0)
+            {
+                tempBits ^= 4L;
+                if (_headers._rawDate != null)
+                {
+                    output.Write(_headers._rawDate);
                 }
-                if ((tempBits & 16L) != 0)
-                { 
-                    {
-                        var valueCount = _headers._Pragma.Count;
-                        for (var i = 0; i < valueCount; i++)
-                        {
-                            var value = _headers._Pragma[i];
-                            if (value != null)
-                            {
-                                output.Write(new ReadOnlySpan<byte>(_headerBytes, 53, 10));
-                                output.WriteAsciiNoValidation(value);
-                            }
-                        }
-                    }
-
-                    if((tempBits & ~16L) == 0)
-                    {
-                        return;
-                    }
-                    tempBits &= ~16L;
+                else
+                {
+                    values = ref _headers._Date;
+                    keyStart = 31;
+                    keyLength = 8;
+                    index = 3;
+                    goto OutputHeader;
                 }
-                if ((tempBits & 32L) != 0)
-                { 
-                    {
-                        var valueCount = _headers._Trailer.Count;
-                        for (var i = 0; i < valueCount; i++)
-                        {
-                            var value = _headers._Trailer[i];
-                            if (value != null)
-                            {
-                                output.Write(new ReadOnlySpan<byte>(_headerBytes, 63, 11));
-                                output.WriteAsciiNoValidation(value);
-                            }
-                        }
-                    }
-
-                    if((tempBits & ~32L) == 0)
-                    {
-                        return;
-                    }
-                    tempBits &= ~32L;
+            }
+        
+        HeaderContentType:
+            if ((tempBits & 2048L) != 0)
+            {
+                tempBits ^= 2048L;
+                values = ref _headers._ContentType;
+                keyStart = 133;
+                keyLength = 16;
+                index = 4;
+                goto OutputHeader;
+            }
+        
+        HeaderServer:
+            if ((tempBits & 33554432L) != 0)
+            {
+                tempBits ^= 33554432L;
+                if (_headers._rawServer != null)
+                {
+                    output.Write(_headers._rawServer);
                 }
-                if ((tempBits & 64L) != 0)
-                { 
-                    if (_headers._rawTransferEncoding != null)
-                    {
-                        output.Write(_headers._rawTransferEncoding);
-                    }
-                    else 
-                    {
-                        var valueCount = _headers._TransferEncoding.Count;
-                        for (var i = 0; i < valueCount; i++)
-                        {
-                            var value = _headers._TransferEncoding[i];
-                            if (value != null)
-                            {
-                                output.Write(new ReadOnlySpan<byte>(_headerBytes, 74, 21));
-                                output.WriteAsciiNoValidation(value);
-                            }
-                        }
-                    }
-
-                    if((tempBits & ~64L) == 0)
-                    {
-                        return;
-                    }
-                    tempBits &= ~64L;
+                else
+                {
+                    values = ref _headers._Server;
+                    keyStart = 350;
+                    keyLength = 10;
+                    index = 5;
+                    goto OutputHeader;
                 }
-                if ((tempBits & 128L) != 0)
-                { 
-                    {
-                        var valueCount = _headers._Upgrade.Count;
-                        for (var i = 0; i < valueCount; i++)
-                        {
-                            var value = _headers._Upgrade[i];
-                            if (value != null)
-                            {
-                                output.Write(new ReadOnlySpan<byte>(_headerBytes, 95, 11));
-                                output.WriteAsciiNoValidation(value);
-                            }
-                        }
-                    }
-
-                    if((tempBits & ~128L) == 0)
-                    {
-                        return;
-                    }
-                    tempBits &= ~128L;
+            }
+        
+        HeaderCacheControl:
+            if ((tempBits & 1L) != 0)
+            {
+                tempBits ^= 1L;
+                values = ref _headers._CacheControl;
+                keyStart = 0;
+                keyLength = 17;
+                index = 6;
+                goto OutputHeader;
+            }
+        
+        HeaderKeepAlive:
+            if ((tempBits & 8L) != 0)
+            {
+                tempBits ^= 8L;
+                values = ref _headers._KeepAlive;
+                keyStart = 39;
+                keyLength = 14;
+                index = 7;
+                goto OutputHeader;
+            }
+        
+        HeaderPragma:
+            if ((tempBits & 16L) != 0)
+            {
+                tempBits ^= 16L;
+                values = ref _headers._Pragma;
+                keyStart = 53;
+                keyLength = 10;
+                index = 8;
+                goto OutputHeader;
+            }
+        
+        HeaderTrailer:
+            if ((tempBits & 32L) != 0)
+            {
+                tempBits ^= 32L;
+                values = ref _headers._Trailer;
+                keyStart = 63;
+                keyLength = 11;
+                index = 9;
+                goto OutputHeader;
+            }
+        
+        HeaderTransferEncoding:
+            if ((tempBits & 64L) != 0)
+            {
+                tempBits ^= 64L;
+                if (_headers._rawTransferEncoding != null)
+                {
+                    output.Write(_headers._rawTransferEncoding);
                 }
-                if ((tempBits & 256L) != 0)
-                { 
-                    {
-                        var valueCount = _headers._Via.Count;
-                        for (var i = 0; i < valueCount; i++)
-                        {
-                            var value = _headers._Via[i];
-                            if (value != null)
-                            {
-                                output.Write(new ReadOnlySpan<byte>(_headerBytes, 106, 7));
-                                output.WriteAsciiNoValidation(value);
-                            }
-                        }
-                    }
-
-                    if((tempBits & ~256L) == 0)
-                    {
-                        return;
-                    }
-                    tempBits &= ~256L;
+                else
+                {
+                    values = ref _headers._TransferEncoding;
+                    keyStart = 74;
+                    keyLength = 21;
+                    index = 10;
+                    goto OutputHeader;
                 }
-                if ((tempBits & 512L) != 0)
-                { 
-                    {
-                        var valueCount = _headers._Warning.Count;
-                        for (var i = 0; i < valueCount; i++)
-                        {
-                            var value = _headers._Warning[i];
-                            if (value != null)
-                            {
-                                output.Write(new ReadOnlySpan<byte>(_headerBytes, 113, 11));
-                                output.WriteAsciiNoValidation(value);
-                            }
-                        }
-                    }
+            }
+        
+        HeaderUpgrade:
+            if ((tempBits & 128L) != 0)
+            {
+                tempBits ^= 128L;
+                values = ref _headers._Upgrade;
+                keyStart = 95;
+                keyLength = 11;
+                index = 11;
+                goto OutputHeader;
+            }
+        
+        HeaderVia:
+            if ((tempBits & 256L) != 0)
+            {
+                tempBits ^= 256L;
+                values = ref _headers._Via;
+                keyStart = 106;
+                keyLength = 7;
+                index = 12;
+                goto OutputHeader;
+            }
+        
+        HeaderWarning:
+            if ((tempBits & 512L) != 0)
+            {
+                tempBits ^= 512L;
+                values = ref _headers._Warning;
+                keyStart = 113;
+                keyLength = 11;
+                index = 13;
+                goto OutputHeader;
+            }
+        
+        HeaderAllow:
+            if ((tempBits & 1024L) != 0)
+            {
+                tempBits ^= 1024L;
+                values = ref _headers._Allow;
+                keyStart = 124;
+                keyLength = 9;
+                index = 14;
+                goto OutputHeader;
+            }
+        
+        HeaderContentEncoding:
+            if ((tempBits & 4096L) != 0)
+            {
+                tempBits ^= 4096L;
+                values = ref _headers._ContentEncoding;
+                keyStart = 149;
+                keyLength = 20;
+                index = 15;
+                goto OutputHeader;
+            }
+        
+        HeaderContentLanguage:
+            if ((tempBits & 8192L) != 0)
+            {
+                tempBits ^= 8192L;
+                values = ref _headers._ContentLanguage;
+                keyStart = 169;
+                keyLength = 20;
+                index = 16;
+                goto OutputHeader;
+            }
+        
+        HeaderContentLocation:
+            if ((tempBits & 16384L) != 0)
+            {
+                tempBits ^= 16384L;
+                values = ref _headers._ContentLocation;
+                keyStart = 189;
+                keyLength = 20;
+                index = 17;
+                goto OutputHeader;
+            }
+        
+        HeaderContentMD5:
+            if ((tempBits & 32768L) != 0)
+            {
+                tempBits ^= 32768L;
+                values = ref _headers._ContentMD5;
+                keyStart = 209;
+                keyLength = 15;
+                index = 18;
+                goto OutputHeader;
+            }
+        
+        HeaderContentRange:
+            if ((tempBits & 65536L) != 0)
+            {
+                tempBits ^= 65536L;
+                values = ref _headers._ContentRange;
+                keyStart = 224;
+                keyLength = 17;
+                index = 19;
+                goto OutputHeader;
+            }
+        
+        HeaderExpires:
+            if ((tempBits & 131072L) != 0)
+            {
+                tempBits ^= 131072L;
+                values = ref _headers._Expires;
+                keyStart = 241;
+                keyLength = 11;
+                index = 20;
+                goto OutputHeader;
+            }
+        
+        HeaderLastModified:
+            if ((tempBits & 262144L) != 0)
+            {
+                tempBits ^= 262144L;
+                values = ref _headers._LastModified;
+                keyStart = 252;
+                keyLength = 17;
+                index = 21;
+                goto OutputHeader;
+            }
+        
+        HeaderAcceptRanges:
+            if ((tempBits & 524288L) != 0)
+            {
+                tempBits ^= 524288L;
+                values = ref _headers._AcceptRanges;
+                keyStart = 269;
+                keyLength = 17;
+                index = 22;
+                goto OutputHeader;
+            }
+        
+        HeaderAge:
+            if ((tempBits & 1048576L) != 0)
+            {
+                tempBits ^= 1048576L;
+                values = ref _headers._Age;
+                keyStart = 286;
+                keyLength = 7;
+                index = 23;
+                goto OutputHeader;
+            }
+        
+        HeaderETag:
+            if ((tempBits & 2097152L) != 0)
+            {
+                tempBits ^= 2097152L;
+                values = ref _headers._ETag;
+                keyStart = 293;
+                keyLength = 8;
+                index = 24;
+                goto OutputHeader;
+            }
+        
+        HeaderLocation:
+            if ((tempBits & 4194304L) != 0)
+            {
+                tempBits ^= 4194304L;
+                values = ref _headers._Location;
+                keyStart = 301;
+                keyLength = 12;
+                index = 25;
+                goto OutputHeader;
+            }
+        
+        HeaderProxyAuthenticate:
+            if ((tempBits & 8388608L) != 0)
+            {
+                tempBits ^= 8388608L;
+                values = ref _headers._ProxyAuthenticate;
+                keyStart = 313;
+                keyLength = 22;
+                index = 26;
+                goto OutputHeader;
+            }
+        
+        HeaderRetryAfter:
+            if ((tempBits & 16777216L) != 0)
+            {
+                tempBits ^= 16777216L;
+                values = ref _headers._RetryAfter;
+                keyStart = 335;
+                keyLength = 15;
+                index = 27;
+                goto OutputHeader;
+            }
+        
+        HeaderSetCookie:
+            if ((tempBits & 67108864L) != 0)
+            {
+                tempBits ^= 67108864L;
+                values = ref _headers._SetCookie;
+                keyStart = 360;
+                keyLength = 14;
+                index = 28;
+                goto OutputHeader;
+            }
+        
+        HeaderVary:
+            if ((tempBits & 134217728L) != 0)
+            {
+                tempBits ^= 134217728L;
+                values = ref _headers._Vary;
+                keyStart = 374;
+                keyLength = 8;
+                index = 29;
+                goto OutputHeader;
+            }
+        
+        HeaderWWWAuthenticate:
+            if ((tempBits & 268435456L) != 0)
+            {
+                tempBits ^= 268435456L;
+                values = ref _headers._WWWAuthenticate;
+                keyStart = 382;
+                keyLength = 20;
+                index = 30;
+                goto OutputHeader;
+            }
+        
+        HeaderAccessControlAllowCredentials:
+            if ((tempBits & 536870912L) != 0)
+            {
+                tempBits ^= 536870912L;
+                values = ref _headers._AccessControlAllowCredentials;
+                keyStart = 402;
+                keyLength = 36;
+                index = 31;
+                goto OutputHeader;
+            }
+        
+        HeaderAccessControlAllowHeaders:
+            if ((tempBits & 1073741824L) != 0)
+            {
+                tempBits ^= 1073741824L;
+                values = ref _headers._AccessControlAllowHeaders;
+                keyStart = 438;
+                keyLength = 32;
+                index = 32;
+                goto OutputHeader;
+            }
+        
+        HeaderAccessControlAllowMethods:
+            if ((tempBits & 2147483648L) != 0)
+            {
+                tempBits ^= 2147483648L;
+                values = ref _headers._AccessControlAllowMethods;
+                keyStart = 470;
+                keyLength = 32;
+                index = 33;
+                goto OutputHeader;
+            }
+        
+        HeaderAccessControlAllowOrigin:
+            if ((tempBits & 4294967296L) != 0)
+            {
+                tempBits ^= 4294967296L;
+                values = ref _headers._AccessControlAllowOrigin;
+                keyStart = 502;
+                keyLength = 31;
+                index = 34;
+                goto OutputHeader;
+            }
+        
+        HeaderAccessControlExposeHeaders:
+            if ((tempBits & 8589934592L) != 0)
+            {
+                tempBits ^= 8589934592L;
+                values = ref _headers._AccessControlExposeHeaders;
+                keyStart = 533;
+                keyLength = 33;
+                index = 35;
+                goto OutputHeader;
+            }
+        
+        HeaderAccessControlMaxAge:
+            if ((tempBits & 17179869184L) != 0)
+            {
+                tempBits ^= 17179869184L;
+                values = ref _headers._AccessControlMaxAge;
+                keyStart = 566;
+                keyLength = 26;
+                index = 36;
+                goto OutputHeader;
+            }
+        
+        return;
 
-                    if((tempBits & ~512L) == 0)
+        OutputHeader:
+            {
+                var valueCount = values.Count;
+                var headerKey = new ReadOnlySpan<byte>(_headerBytes, keyStart, keyLength);
+                for (var i = 0; i < valueCount; i++)
+                {
+                    var value = values[i];
+                    if (value != null)
                     {
-                        return;
+                        output.Write(headerKey);
+                        output.WriteAsciiNoValidation(value);
                     }
-                    tempBits &= ~512L;
                 }
-                if ((tempBits & 1024L) != 0)
-                { 
-                    {
-                        var valueCount = _headers._Allow.Count;
-                        for (var i = 0; i < valueCount; i++)
-                        {
-                            var value = _headers._Allow[i];
-                            if (value != null)
-                            {
-                                output.Write(new ReadOnlySpan<byte>(_headerBytes, 124, 9));
-                                output.WriteAsciiNoValidation(value);
-                            }
-                        }
-                    }
 
-                    if((tempBits & ~1024L) == 0)
-                    {
-                        return;
-                    }
-                    tempBits &= ~1024L;
+                if (tempBits == 0)
+                {
+                    return;
                 }
-                if ((tempBits & 4096L) != 0)
-                { 
-                    {
-                        var valueCount = _headers._ContentEncoding.Count;
-                        for (var i = 0; i < valueCount; i++)
-                        {
-                            var value = _headers._ContentEncoding[i];
-                            if (value != null)
-                            {
-                                output.Write(new ReadOnlySpan<byte>(_headerBytes, 149, 20));
-                                output.WriteAsciiNoValidation(value);
-                            }
-                        }
-                    }
 
-                    if((tempBits & ~4096L) == 0)
-                    {
-                        return;
-                    }
-                    tempBits &= ~4096L;
-                }
-                if ((tempBits & 8192L) != 0)
-                { 
-                    {
-                        var valueCount = _headers._ContentLanguage.Count;
-                        for (var i = 0; i < valueCount; i++)
-                        {
-                            var value = _headers._ContentLanguage[i];
-                            if (value != null)
-                            {
-                                output.Write(new ReadOnlySpan<byte>(_headerBytes, 169, 20));
-                                output.WriteAsciiNoValidation(value);
-                            }
-                        }
-                    }
-
-                    if((tempBits & ~8192L) == 0)
-                    {
-                        return;
-                    }
-                    tempBits &= ~8192L;
-                }
-                if ((tempBits & 16384L) != 0)
-                { 
-                    {
-                        var valueCount = _headers._ContentLocation.Count;
-                        for (var i = 0; i < valueCount; i++)
-                        {
-                            var value = _headers._ContentLocation[i];
-                            if (value != null)
-                            {
-                                output.Write(new ReadOnlySpan<byte>(_headerBytes, 189, 20));
-                                output.WriteAsciiNoValidation(value);
-                            }
-                        }
-                    }
-
-                    if((tempBits & ~16384L) == 0)
-                    {
-                        return;
-                    }
-                    tempBits &= ~16384L;
-                }
-                if ((tempBits & 32768L) != 0)
-                { 
-                    {
-                        var valueCount = _headers._ContentMD5.Count;
-                        for (var i = 0; i < valueCount; i++)
-                        {
-                            var value = _headers._ContentMD5[i];
-                            if (value != null)
-                            {
-                                output.Write(new ReadOnlySpan<byte>(_headerBytes, 209, 15));
-                                output.WriteAsciiNoValidation(value);
-                            }
-                        }
-                    }
-
-                    if((tempBits & ~32768L) == 0)
-                    {
-                        return;
-                    }
-                    tempBits &= ~32768L;
-                }
-                if ((tempBits & 65536L) != 0)
-                { 
-                    {
-                        var valueCount = _headers._ContentRange.Count;
-                        for (var i = 0; i < valueCount; i++)
-                        {
-                            var value = _headers._ContentRange[i];
-                            if (value != null)
-                            {
-                                output.Write(new ReadOnlySpan<byte>(_headerBytes, 224, 17));
-                                output.WriteAsciiNoValidation(value);
-                            }
-                        }
-                    }
-
-                    if((tempBits & ~65536L) == 0)
-                    {
-                        return;
-                    }
-                    tempBits &= ~65536L;
-                }
-                if ((tempBits & 131072L) != 0)
-                { 
-                    {
-                        var valueCount = _headers._Expires.Count;
-                        for (var i = 0; i < valueCount; i++)
-                        {
-                            var value = _headers._Expires[i];
-                            if (value != null)
-                            {
-                                output.Write(new ReadOnlySpan<byte>(_headerBytes, 241, 11));
-                                output.WriteAsciiNoValidation(value);
-                            }
-                        }
-                    }
-
-                    if((tempBits & ~131072L) == 0)
-                    {
-                        return;
-                    }
-                    tempBits &= ~131072L;
-                }
-                if ((tempBits & 262144L) != 0)
-                { 
-                    {
-                        var valueCount = _headers._LastModified.Count;
-                        for (var i = 0; i < valueCount; i++)
-                        {
-                            var value = _headers._LastModified[i];
-                            if (value != null)
-                            {
-                                output.Write(new ReadOnlySpan<byte>(_headerBytes, 252, 17));
-                                output.WriteAsciiNoValidation(value);
-                            }
-                        }
-                    }
-
-                    if((tempBits & ~262144L) == 0)
-                    {
-                        return;
-                    }
-                    tempBits &= ~262144L;
-                }
-                if ((tempBits & 524288L) != 0)
-                { 
-                    {
-                        var valueCount = _headers._AcceptRanges.Count;
-                        for (var i = 0; i < valueCount; i++)
-                        {
-                            var value = _headers._AcceptRanges[i];
-                            if (value != null)
-                            {
-                                output.Write(new ReadOnlySpan<byte>(_headerBytes, 269, 17));
-                                output.WriteAsciiNoValidation(value);
-                            }
-                        }
-                    }
-
-                    if((tempBits & ~524288L) == 0)
-                    {
-                        return;
-                    }
-                    tempBits &= ~524288L;
-                }
-                if ((tempBits & 1048576L) != 0)
-                { 
-                    {
-                        var valueCount = _headers._Age.Count;
-                        for (var i = 0; i < valueCount; i++)
-                        {
-                            var value = _headers._Age[i];
-                            if (value != null)
-                            {
-                                output.Write(new ReadOnlySpan<byte>(_headerBytes, 286, 7));
-                                output.WriteAsciiNoValidation(value);
-                            }
-                        }
-                    }
-
-                    if((tempBits & ~1048576L) == 0)
-                    {
-                        return;
-                    }
-                    tempBits &= ~1048576L;
-                }
-                if ((tempBits & 2097152L) != 0)
-                { 
-                    {
-                        var valueCount = _headers._ETag.Count;
-                        for (var i = 0; i < valueCount; i++)
-                        {
-                            var value = _headers._ETag[i];
-                            if (value != null)
-                            {
-                                output.Write(new ReadOnlySpan<byte>(_headerBytes, 293, 8));
-                                output.WriteAsciiNoValidation(value);
-                            }
-                        }
-                    }
-
-                    if((tempBits & ~2097152L) == 0)
-                    {
-                        return;
-                    }
-                    tempBits &= ~2097152L;
-                }
-                if ((tempBits & 4194304L) != 0)
-                { 
-                    {
-                        var valueCount = _headers._Location.Count;
-                        for (var i = 0; i < valueCount; i++)
-                        {
-                            var value = _headers._Location[i];
-                            if (value != null)
-                            {
-                                output.Write(new ReadOnlySpan<byte>(_headerBytes, 301, 12));
-                                output.WriteAsciiNoValidation(value);
-                            }
-                        }
-                    }
-
-                    if((tempBits & ~4194304L) == 0)
-                    {
-                        return;
-                    }
-                    tempBits &= ~4194304L;
-                }
-                if ((tempBits & 8388608L) != 0)
-                { 
-                    {
-                        var valueCount = _headers._ProxyAuthenticate.Count;
-                        for (var i = 0; i < valueCount; i++)
-                        {
-                            var value = _headers._ProxyAuthenticate[i];
-                            if (value != null)
-                            {
-                                output.Write(new ReadOnlySpan<byte>(_headerBytes, 313, 22));
-                                output.WriteAsciiNoValidation(value);
-                            }
-                        }
-                    }
-
-                    if((tempBits & ~8388608L) == 0)
-                    {
-                        return;
-                    }
-                    tempBits &= ~8388608L;
-                }
-                if ((tempBits & 16777216L) != 0)
-                { 
-                    {
-                        var valueCount = _headers._RetryAfter.Count;
-                        for (var i = 0; i < valueCount; i++)
-                        {
-                            var value = _headers._RetryAfter[i];
-                            if (value != null)
-                            {
-                                output.Write(new ReadOnlySpan<byte>(_headerBytes, 335, 15));
-                                output.WriteAsciiNoValidation(value);
-                            }
-                        }
-                    }
-
-                    if((tempBits & ~16777216L) == 0)
-                    {
-                        return;
-                    }
-                    tempBits &= ~16777216L;
-                }
-                if ((tempBits & 67108864L) != 0)
-                { 
-                    {
-                        var valueCount = _headers._SetCookie.Count;
-                        for (var i = 0; i < valueCount; i++)
-                        {
-                            var value = _headers._SetCookie[i];
-                            if (value != null)
-                            {
-                                output.Write(new ReadOnlySpan<byte>(_headerBytes, 360, 14));
-                                output.WriteAsciiNoValidation(value);
-                            }
-                        }
-                    }
-
-                    if((tempBits & ~67108864L) == 0)
-                    {
-                        return;
-                    }
-                    tempBits &= ~67108864L;
-                }
-                if ((tempBits & 134217728L) != 0)
-                { 
-                    {
-                        var valueCount = _headers._Vary.Count;
-                        for (var i = 0; i < valueCount; i++)
-                        {
-                            var value = _headers._Vary[i];
-                            if (value != null)
-                            {
-                                output.Write(new ReadOnlySpan<byte>(_headerBytes, 374, 8));
-                                output.WriteAsciiNoValidation(value);
-                            }
-                        }
-                    }
-
-                    if((tempBits & ~134217728L) == 0)
-                    {
-                        return;
-                    }
-                    tempBits &= ~134217728L;
-                }
-                if ((tempBits & 268435456L) != 0)
-                { 
-                    {
-                        var valueCount = _headers._WWWAuthenticate.Count;
-                        for (var i = 0; i < valueCount; i++)
-                        {
-                            var value = _headers._WWWAuthenticate[i];
-                            if (value != null)
-                            {
-                                output.Write(new ReadOnlySpan<byte>(_headerBytes, 382, 20));
-                                output.WriteAsciiNoValidation(value);
-                            }
-                        }
-                    }
-
-                    if((tempBits & ~268435456L) == 0)
-                    {
-                        return;
-                    }
-                    tempBits &= ~268435456L;
-                }
-                if ((tempBits & 536870912L) != 0)
-                { 
-                    {
-                        var valueCount = _headers._AccessControlAllowCredentials.Count;
-                        for (var i = 0; i < valueCount; i++)
-                        {
-                            var value = _headers._AccessControlAllowCredentials[i];
-                            if (value != null)
-                            {
-                                output.Write(new ReadOnlySpan<byte>(_headerBytes, 402, 36));
-                                output.WriteAsciiNoValidation(value);
-                            }
-                        }
-                    }
-
-                    if((tempBits & ~536870912L) == 0)
-                    {
-                        return;
-                    }
-                    tempBits &= ~536870912L;
-                }
-                if ((tempBits & 1073741824L) != 0)
-                { 
-                    {
-                        var valueCount = _headers._AccessControlAllowHeaders.Count;
-                        for (var i = 0; i < valueCount; i++)
-                        {
-                            var value = _headers._AccessControlAllowHeaders[i];
-                            if (value != null)
-                            {
-                                output.Write(new ReadOnlySpan<byte>(_headerBytes, 438, 32));
-                                output.WriteAsciiNoValidation(value);
-                            }
-                        }
-                    }
-
-                    if((tempBits & ~1073741824L) == 0)
-                    {
-                        return;
-                    }
-                    tempBits &= ~1073741824L;
-                }
-                if ((tempBits & 2147483648L) != 0)
-                { 
-                    {
-                        var valueCount = _headers._AccessControlAllowMethods.Count;
-                        for (var i = 0; i < valueCount; i++)
-                        {
-                            var value = _headers._AccessControlAllowMethods[i];
-                            if (value != null)
-                            {
-                                output.Write(new ReadOnlySpan<byte>(_headerBytes, 470, 32));
-                                output.WriteAsciiNoValidation(value);
-                            }
-                        }
-                    }
-
-                    if((tempBits & ~2147483648L) == 0)
-                    {
-                        return;
-                    }
-                    tempBits &= ~2147483648L;
-                }
-                if ((tempBits & 4294967296L) != 0)
-                { 
-                    {
-                        var valueCount = _headers._AccessControlAllowOrigin.Count;
-                        for (var i = 0; i < valueCount; i++)
-                        {
-                            var value = _headers._AccessControlAllowOrigin[i];
-                            if (value != null)
-                            {
-                                output.Write(new ReadOnlySpan<byte>(_headerBytes, 502, 31));
-                                output.WriteAsciiNoValidation(value);
-                            }
-                        }
-                    }
-
-                    if((tempBits & ~4294967296L) == 0)
-                    {
-                        return;
-                    }
-                    tempBits &= ~4294967296L;
-                }
-                if ((tempBits & 8589934592L) != 0)
-                { 
-                    {
-                        var valueCount = _headers._AccessControlExposeHeaders.Count;
-                        for (var i = 0; i < valueCount; i++)
-                        {
-                            var value = _headers._AccessControlExposeHeaders[i];
-                            if (value != null)
-                            {
-                                output.Write(new ReadOnlySpan<byte>(_headerBytes, 533, 33));
-                                output.WriteAsciiNoValidation(value);
-                            }
-                        }
-                    }
-
-                    if((tempBits & ~8589934592L) == 0)
-                    {
-                        return;
-                    }
-                    tempBits &= ~8589934592L;
-                }
-                if ((tempBits & 17179869184L) != 0)
-                { 
-                    {
-                        var valueCount = _headers._AccessControlMaxAge.Count;
-                        for (var i = 0; i < valueCount; i++)
-                        {
-                            var value = _headers._AccessControlMaxAge[i];
-                            if (value != null)
-                            {
-                                output.Write(new ReadOnlySpan<byte>(_headerBytes, 566, 26));
-                                output.WriteAsciiNoValidation(value);
-                            }
-                        }
-                    }
-
-                    if((tempBits & ~17179869184L) == 0)
-                    {
-                        return;
-                    }
-                    tempBits &= ~17179869184L;
-                }
+                goto MoveNext;
+            }
         }
         
 
