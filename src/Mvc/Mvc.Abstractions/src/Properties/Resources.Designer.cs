@@ -276,6 +276,20 @@ namespace Microsoft.AspNetCore.Mvc.Abstractions
         internal static string FormatBindingSource_FormFile()
             => GetString("BindingSource_FormFile");
 
+        /// <summary>
+        /// The type '{0}' must implement '{1}' to be used as a model binder.
+        /// </summary>
+        internal static string BinderType_MustBeIModelBinder
+        {
+            get => GetString("BinderType_MustBeIModelBinder");
+        }
+
+        /// <summary>
+        /// The type '{0}' must implement '{1}' to be used as a model binder.
+        /// </summary>
+        internal static string FormatBinderType_MustBeIModelBinder(object p0, object p1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("BinderType_MustBeIModelBinder"), p0, p1);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
