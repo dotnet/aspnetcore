@@ -52,7 +52,6 @@ namespace Microsoft.JSInterop
     }
     public static partial class JSRuntime
     {
-        public static Microsoft.JSInterop.IJSRuntime Current { get { throw null; } }
         public static void SetCurrentJSRuntime(Microsoft.JSInterop.IJSRuntime instance) { }
     }
     public abstract partial class JSRuntimeBase : Microsoft.JSInterop.IJSRuntime

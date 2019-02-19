@@ -11,13 +11,9 @@ namespace Microsoft.JSInterop
     /// </summary>
     public static class JSRuntime
     {
-        private static AsyncLocal<IJSRuntime> _currentJSRuntime
-            = new AsyncLocal<IJSRuntime>();
+        private static readonly AsyncLocal<IJSRuntime> _currentJSRuntime = new AsyncLocal<IJSRuntime>();
 
-        /// <summary>
-        /// Gets the current <see cref="IJSRuntime"/>, if any.
-        /// </summary>
-        public static IJSRuntime Current => _currentJSRuntime.Value;
+        internal static IJSRuntime Current => _currentJSRuntime.Value;
 
         /// <summary>
         /// Sets the current JS runtime to the supplied instance.
