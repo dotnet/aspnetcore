@@ -13,23 +13,17 @@
         <CreateHelixPayload>true</CreateHelixPayload>
         <HelixTimeout>00:30:00</HelixTimeout>
         <IsWindowsHelixQueue>$(HelixTargetQueue.Contains('Windows'))</IsWindowsHelixQueue>
-        <XunitConsoleRunnerDir Condition="'$(XunitConsole472Path)' != ''">$([System.IO.Path]::GetDirectoryName($(XunitConsole472Path)))</XunitConsoleRunnerDir>
     </PropertyGroup>
 
     <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
         <HelixProjectPlatform Include="Windows" />
+
+        <HelixContent Include="$(RepositoryRoot)eng\helix\xunit\runtests.cmd" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'">
         <HelixProjectPlatform Include="@(HelixAvailblePlatform)" />
-    </ItemGroup>
 
-    <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
-        <HelixContent Include="$(RepositoryRoot)eng\helix\xunit\runtests.cmd" />
-        <HelixContent Condition="'$(XunitConsole472Path)' != ''" Include="$(XunitConsoleRunnerDir)/**/*" />
-    </ItemGroup>
-
-    <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'">
         <HelixContent Include="$(RepositoryRoot)eng\helix\vstest\runtests.sh" />
         <HelixContent Include="$(RepositoryRoot)eng\helix\vstest\runtests.cmd" />
     </ItemGroup>

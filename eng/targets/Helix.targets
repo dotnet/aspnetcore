@@ -1,5 +1,10 @@
 <Project>
 
+  <!-- Item group has to be defined here becasue Helix.props is evaluated before xunit.runner.console.props  -->
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+      <HelixContent Condition="'$(XunitConsole472Path)' != ''" Include="$([System.IO.Path]::GetDirectoryName('$(XunitConsole472Path)'))/**/*" />
+  </ItemGroup>
+
   <ItemGroup>
     <Content Include="@(HelixContent)" />
   </ItemGroup>
