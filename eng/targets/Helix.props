@@ -13,6 +13,7 @@
         <CreateHelixPayload>true</CreateHelixPayload>
         <HelixTimeout>00:30:00</HelixTimeout>
         <IsWindowsHelixQueue>$(HelixTargetQueue.Contains('Windows'))</IsWindowsHelixQueue>
+        <HelixTestName>$(MSBuildProjectName)-$(TargetFramework)</HelixTestName>
     </PropertyGroup>
 
     <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">

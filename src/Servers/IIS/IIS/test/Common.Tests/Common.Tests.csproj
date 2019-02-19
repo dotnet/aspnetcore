@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <IsTestProject>false</IsTestProject>
+    <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
   </PropertyGroup>
 
   <ItemGroup>

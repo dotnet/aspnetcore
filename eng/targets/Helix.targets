@@ -40,7 +40,7 @@
 
   <Target Name="_PublishHelixArchive" DependsOnTargets="Publish" >
 
-    <ZipDirectory SourceDirectory="$(PublishDir)" DestinationFile="$(PublishDir)../Helix.zip" Overwrite="true" />
+    <ZipDirectory SourceDirectory="$(PublishDir)" DestinationFile="$(PublishDir)../$(HelixTestName).zip" Overwrite="true" />
     <RemoveDir Directories="$(PublishDir)" />
 
   </Target>
@@ -53,8 +53,8 @@
       <Output TaskParameter="AbsolutePaths" PropertyName="PublishAbsoluteDir" />
     </ConvertToAbsolutePath>
     <ItemGroup>
-      <HelixWorkItem Include="$(MSBuildProjectName)-$(TargetFramework)">
-        <PayloadArchive>$(PublishAbsoluteDir)../Helix.zip</PayloadArchive>
+      <HelixWorkItem Include="$(HelixTestName)">
+        <PayloadArchive>$(PublishAbsoluteDir)../$(HelixTestName).zip</PayloadArchive>
         <TestAssembly>$(TargetFileName)</TestAssembly>
         <PreCommands>@(HelixPreCommand)</PreCommands>
         <PostCommands>@(HelixPostCommand)</PostCommands>
