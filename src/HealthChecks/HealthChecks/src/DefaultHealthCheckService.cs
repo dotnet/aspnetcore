@@ -91,9 +91,21 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                 Log.HealthCheckBegin(_logger, registration);
 
                 HealthReportEntry entry;
+                CancellationTokenSource timeoutCancellationTokenSource = null;
                 try
                 {
-                    var result = await healthCheck.CheckHealthAsync(context, cancellationToken);
+                    HealthCheckResult result;
+
+                    var checkCancellationToken = cancellationToken;
+                    if (registration.Timeout > TimeSpan.Zero)
+                    {
+                        timeoutCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                        timeoutCancellationTokenSource.CancelAfter(registration.Timeout);
+                        checkCancellationToken = timeoutCancellationTokenSource.Token;
+                    }
+
+                    result = await healthCheck.CheckHealthAsync(context, checkCancellationToken);
+
                     var duration = stopwatch.GetElapsedTime();
 
                     entry = new HealthReportEntry(
@@ -107,7 +119,20 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                     Log.HealthCheckData(_logger, registration, entry);
                 }
 
-                // Allow cancellation to propagate.
+                catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested)
+                {
+                    var duration = stopwatch.GetElapsedTime();
+                    entry = new HealthReportEntry(
+                        status: HealthStatus.Unhealthy,
+                        description: "A timeout occured while running check.",
+                        duration: duration,
+                        exception: ex,
+                        data: null);
+
+                    Log.HealthCheckError(_logger, registration, ex, duration);
+                }
+
+                // Allow cancellation to propagate if it's not a timeout.
                 catch (Exception ex) when (ex as OperationCanceledException == null)
                 {
                     var duration = stopwatch.GetElapsedTime();
@@ -119,6 +144,11 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                         data: null);
 
                     Log.HealthCheckError(_logger, registration, ex, duration);
+                }
+
+                finally
+                {
+                    timeoutCancellationTokenSource?.Dispose();
                 }
 
                 return entry;

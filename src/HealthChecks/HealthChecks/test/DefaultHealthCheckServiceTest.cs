@@ -424,6 +424,32 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                 });
         }
 
+        [Fact]
+        public async Task CheckHealthAsync_TimeoutReturnsUnhealthy()
+        {
+            // Arrange
+            var service = CreateHealthChecksService(b =>
+            {
+                b.AddAsyncCheck("timeout", async (ct) =>
+                {
+                    await Task.Delay(2000, ct);
+                    return HealthCheckResult.Healthy();
+                }, timeout: TimeSpan.FromMilliseconds(100));
+            });
+
+            // Act
+            var results = await service.CheckHealthAsync();
+
+            // Assert
+            Assert.Collection(
+                results.Entries,
+                actual =>
+                {
+                    Assert.Equal("timeout", actual.Key);
+                    Assert.Equal(HealthStatus.Unhealthy, actual.Value.Status);
+                });
+        }
+
         private static DefaultHealthCheckService CreateHealthChecksService(Action<IHealthChecksBuilder> configure)
         {
             var services = new ServiceCollection();
