@@ -25,7 +25,7 @@ export class LogoutComponent implements OnInit {
     const action = this.activatedRoute.snapshot.url[1]
     switch (action.path) {
       case LogoutActions.Logout:
-        if (true) {
+        if (!!window.history.state.local) {
           await this.logout(this.getReturnUrl());
         } else {
           // This prevents regular links to <app>/authentication/logout from triggering a logout
