@@ -40,8 +40,8 @@
 
   <Target Name="_PublishHelixArchive" DependsOnTargets="Publish" >
 
-    <ZipDirectory SourceDirectory="$(PublishDir)" DestinationFile="$(PublishDir)../$(HelixTestName).zip" Overwrite="true" />
-    <RemoveDir Directories="$(PublishDir)" />
+    <ZipDirectory Condition="'$(HelixUseArchive)' == 'true'" SourceDirectory="$(PublishDir)" DestinationFile="$(PublishDir)../$(HelixTestName).zip" Overwrite="true" />
+    <RemoveDir Condition="'$(HelixUseArchive)' == 'true'" Directories="$(PublishDir)" />
 
   </Target>
 
@@ -54,7 +54,8 @@
     </ConvertToAbsolutePath>
     <ItemGroup>
       <HelixWorkItem Include="$(HelixTestName)">
-        <PayloadArchive>$(PublishAbsoluteDir)../$(HelixTestName).zip</PayloadArchive>
+        <PayloadArchive Condition="'$(HelixUseArchive)' == 'true'">$(PublishAbsoluteDir)../$(HelixTestName).zip</PayloadArchive>
+        <PayloadDirectory Condition="'$(HelixUseArchive)' == 'false'">$(PublishAbsoluteDir)</PayloadDirectory>
         <TestAssembly>$(TargetFileName)</TestAssembly>
         <PreCommands>@(HelixPreCommand)</PreCommands>
         <PostCommands>@(HelixPostCommand)</PostCommands>

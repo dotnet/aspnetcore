@@ -9,8 +9,8 @@
         <HelixAvailibleTargetQueue Include="Windows.10.Amd64.ClientRS4.VS2017.Open" Platform="Windows" />
         <HelixAvailibleTargetQueue Include="OSX.1012.Amd64.Open" Platform="OSX" />
         <HelixAvailibleTargetQueue Include="Ubuntu.1810.Amd64.Open" Platform="Linux" />
+        <HelixAvailibleTargetQueue Include="Ubuntu.1810.Arm64.Open" Platform="Linux" />
         <HelixAvailibleTargetQueue Include="Ubuntu.1604.Amd64.Open" Platform="Linux" />
-        <HelixAvailibleTargetQueue Include="Ubuntu.1604.Arm64.Open" Platform="Linux" />
         <HelixAvailibleTargetQueue Include="Centos.7.Amd64.Open" Platform="Linux" />
         <HelixAvailibleTargetQueue Include="Debian.8.Amd64.Open" Platform="Linux" />
         <HelixAvailibleTargetQueue Include="Debian.9.Amd64.Open" Platform="Linux" />
