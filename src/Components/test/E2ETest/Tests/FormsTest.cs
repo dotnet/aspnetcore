@@ -289,6 +289,33 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             WaitAssert.Equal("valid", () => acceptsTermsInput.GetAttribute("class"));
         }
 
+        [Fact]
+        public void ValidationMessageDisplaysMessagesForField()
+        {
+            var appElement = MountTestComponent<TypicalValidationComponent>();
+            var emailContainer = appElement.FindElement(By.ClassName("email"));
+            var emailInput = emailContainer.FindElement(By.TagName("input"));
+            var emailMessagesAccessor = CreateValidationMessagesAccessor(emailContainer);
+            var submitButton = appElement.FindElement(By.TagName("button"));
+
+            // Doesn't show messages for other fields
+            submitButton.Click();
+            WaitAssert.Empty(emailMessagesAccessor);
+
+            // Updates on edit
+            emailInput.SendKeys("abc\t");
+            WaitAssert.Equal(new[] { "That doesn't look like a real email address" }, emailMessagesAccessor);
+
+            // Can show more than one message
+            emailInput.SendKeys("too long too long too long\t");
+            WaitAssert.Equal(new[] { "That doesn't look like a real email address", "We only accept very short email addresses (max 10 chars)" }, emailMessagesAccessor);
+
+            // Can become valid
+            emailInput.Clear();
+            emailInput.SendKeys("a@b.com\t");
+            WaitAssert.Empty(emailMessagesAccessor);
+        }
+
         private Func<string[]> CreateValidationMessagesAccessor(IWebElement appElement)
         {
             return () => appElement.FindElements(By.ClassName("validation-message"))
