@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                 _awaitableEventArgs.SetBuffer(null, 0, 0);
             }
 
-            _awaitableEventArgs.BufferList = GetBufferList(in buffers);
+            _awaitableEventArgs.BufferList = GetBufferList(buffers);
 
             if (!_socket.SendAsync(_awaitableEventArgs))
             {
