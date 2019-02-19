@@ -135,7 +135,7 @@ try {
 
     if ($changedFiles) {
         foreach ($file in $changedFiles) {
-            if ($file -like 'warning:*') {
+            if (($file -like 'warning:*') -or ($file -like 'The file will have its original line endings*')) {
                 # git might emit warnings to stderr about CRLF vs LR, which can vary from machine to machine based on git's configuration
                 continue
             }
