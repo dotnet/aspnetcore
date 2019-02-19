@@ -33,12 +33,14 @@ function LogError {
 }
 
 try {
-    Invoke-Block { & git --version }
-    $PSVersionTable
-
     if ($ci) {
+        # Install dotnet.exe
         & $repoRoot/build.ps1 -ci -norestore /t:InstallDotNet
     }
+
+    #
+    # Versions.props and Version.Details.xml
+    #
 
     Write-Host "Checking that Versions.props and Version.Details.xml match"
     [xml] $versionProps = Get-Content "$repoRoot/eng/Versions.props"
@@ -77,6 +79,10 @@ try {
             "Version variable '$unexpectedVar' does not have a matching entry in Version.Details.xml. See https://github.com/aspnet/AspNetCore/blob/master/docs/ReferenceResolution.md for instructions on how to add a new dependency." `
             -filepath "$repoRoot\eng\Versions.props"
     }
+
+    #
+    # Solutions
+    #
 
     Write-Host "Checking that solutions are up to date"
 
@@ -120,7 +126,7 @@ try {
     }
 
     Write-Host "Run git diff to check for pending changes"
-    $changedFiles = git --no-pager diff --ignore-space-at-eol --name-only
+    $changedFiles = git --no-pager diff --ignore-space-at-eol --name-only 2> $null
     if ($changedFiles) {
         foreach ($file in $changedFiles) {
             $filePath = Resolve-Path "${repoRoot}/${file}"
