@@ -37,6 +37,7 @@ namespace System.Buffers
         /// Initializes a new instance of the <see cref="BufferWriter{T}"/> struct.
         /// </summary>
         /// <param name="output">The <see cref="IBufferWriter{T}"/> to be wrapped.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public BufferWriter(T output)
         {
             _buffered = 0;

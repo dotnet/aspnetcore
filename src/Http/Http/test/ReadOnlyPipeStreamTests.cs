@@ -157,6 +157,21 @@ namespace System.IO.Pipelines.Tests
             Assert.Equal(Reader, readOnlyPipeStream.InnerPipeReader);
         }
 
+        [Fact]
+        public async Task ThrowsOperationCanceledExceptionIfCancelPendingReadWasCalledOnInnerPipeReader()
+        {
+            var readOnlyPipeStream = new ReadOnlyPipeStream(Reader);
+            var readOperation = readOnlyPipeStream.ReadAsync(new byte[1]);
+
+            Assert.False(readOperation.IsCompleted);
+
+            Reader.CancelPendingRead();
+
+            var ex = await Assert.ThrowsAsync<OperationCanceledException>(async () => await readOperation);
+
+            Assert.Equal(ThrowHelper.CreateOperationCanceledException_ReadCanceled().Message, ex.Message);
+        }
+
         private async Task<Mock<PipeReader>> SetupMockPipeReader()
         {
             await WriteByteArrayToPipeAsync(new byte[1]);

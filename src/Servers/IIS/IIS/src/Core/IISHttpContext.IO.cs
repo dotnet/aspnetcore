@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
             catch (ConnectionResetException ex)
             {
-                ConnectionReset();
+                AbortIO(clientDisconnect: true);
                 error = ex;
             }
             catch (Exception ex)
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             // We want to swallow IO exception and allow app to finish writing
             catch (ConnectionResetException)
             {
-                ConnectionReset();
+                AbortIO(clientDisconnect: true);
             }
             catch (Exception ex)
             {
@@ -184,11 +184,16 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
         }
 
-        private bool AbortIO()
+        internal void AbortIO(bool clientDisconnect)
         {
             if (Interlocked.CompareExchange(ref _requestAborted, 1, 0) != 0)
             {
-                return false;
+                return;
+            }
+
+            if (clientDisconnect)
+            {
+                Log.ConnectionDisconnect(_logger, ((IHttpConnectionFeature)this).ConnectionId);
             }
 
             _bodyOutput.Dispose();
@@ -208,8 +213,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                     }
                 });
             }
-
-            return true;
         }
 
         public void Abort(Exception reason)
@@ -218,15 +221,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             _streams.Abort(reason);
             NativeMethods.HttpCloseConnection(_pInProcessHandler);
 
-            AbortIO();
-        }
-
-        internal void ConnectionReset()
-        {
-            if (AbortIO())
-            {
-                Log.ConnectionDisconnect(_logger, ((IHttpConnectionFeature)this).ConnectionId);
-            }
+            AbortIO(clientDisconnect: false);
         }
     }
 }

@@ -469,6 +469,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task ChunksWithGetMemoryLargeWriteBeforeFirstFlush()
         {
+            var length = new IntAsRef();
+            var semaphore = new SemaphoreSlim(initialCount: 0);
             var testContext = new TestServiceContext(LoggerFactory);
 
             using (var server = new TestServer(async httpContext =>
@@ -476,7 +478,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 var response = httpContext.Response;
                 await response.StartAsync();
 
-                var memory = response.BodyPipe.GetMemory(5000); // This will return 4089
+                var memory = response.BodyPipe.GetMemory();
+                length.Value = memory.Length;
+                semaphore.Release();
+
                 var fisrtPartOfResponse = Encoding.ASCII.GetBytes(new string('a', memory.Length));
                 fisrtPartOfResponse.CopyTo(memory);
                 response.BodyPipe.Advance(memory.Length);
@@ -496,13 +501,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Host: ",
                         "",
                         "");
+
+                    // Wait for length to be set
+                    await semaphore.WaitAsync();
+
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
                         $"Date: {testContext.DateHeaderValue}",
                         "Transfer-Encoding: chunked",
                         "",
-                        "ff9",
-                        new string('a', 4089),
+                        length.Value.ToString("x"),
+                        new string('a', length.Value),
                         "6",
                         "World!",
                         "0",
@@ -517,6 +526,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task ChunksWithGetMemoryWithInitialFlushWorks()
         {
+            var length = new IntAsRef();
+            var semaphore = new SemaphoreSlim(initialCount: 0);
             var testContext = new TestServiceContext(LoggerFactory);
 
             using (var server = new TestServer(async httpContext =>
@@ -525,7 +536,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                 await response.BodyPipe.FlushAsync();
 
-                var memory = response.BodyPipe.GetMemory(5000); // This will return 4089
+                var memory = response.BodyPipe.GetMemory();
+                length.Value = memory.Length;
+                semaphore.Release();
+
                 var fisrtPartOfResponse = Encoding.ASCII.GetBytes(new string('a', memory.Length));
                 fisrtPartOfResponse.CopyTo(memory);
                 response.BodyPipe.Advance(memory.Length);
@@ -545,13 +559,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Host: ",
                         "",
                         "");
+
+                    // Wait for length to be set
+                    await semaphore.WaitAsync();
+
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
                         $"Date: {testContext.DateHeaderValue}",
                         "Transfer-Encoding: chunked",
                         "",
-                        "ff9",
-                        new string('a', 4089),
+                        length.Value.ToString("x"),
+                        new string('a', length.Value),
                         "6",
                         "World!",
                         "0",
@@ -829,6 +847,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
                 await server.StopAsync();
             }
+        }
+
+        private class IntAsRef
+        {
+            public int Value { get; set; }
         }
     }
 }

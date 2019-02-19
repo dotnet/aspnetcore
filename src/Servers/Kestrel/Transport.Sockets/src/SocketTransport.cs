@@ -19,8 +19,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 {
     internal sealed class SocketTransport : ITransport
     {
-        private static readonly PipeScheduler[] ThreadPoolSchedulerArray = new PipeScheduler[] { PipeScheduler.ThreadPool };
-
         private readonly MemoryPool<byte> _memoryPool;
         private readonly IEndPointInformation _endPointInformation;
         private readonly IConnectionDispatcher _dispatcher;
@@ -65,8 +63,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             }
             else
             {
-                _numSchedulers = ThreadPoolSchedulerArray.Length;
-                _schedulers = ThreadPoolSchedulerArray;
+                var directScheduler = new PipeScheduler[] { PipeScheduler.ThreadPool };
+                _numSchedulers = directScheduler.Length;
+                _schedulers = directScheduler;
             }
         }
 

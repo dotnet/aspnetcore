@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Blazor.Services;
 using Microsoft.AspNetCore.Components.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
-using Mono.WebAssembly.Interop;
 
 namespace Microsoft.AspNetCore.Blazor.Hosting
 {
@@ -88,7 +87,7 @@ namespace Microsoft.AspNetCore.Blazor.Hosting
             var services = new ServiceCollection();
             services.AddSingleton(_BrowserHostBuilderContext);
             services.AddSingleton<IWebAssemblyHost, WebAssemblyHost>();
-            services.AddSingleton<IJSRuntime, MonoWebAssemblyJSRuntime>();
+            services.AddSingleton<IJSRuntime>(WebAssemblyJSRuntime.Instance);
 
             services.AddSingleton<IUriHelper>(WebAssemblyUriHelper.Instance);
             services.AddSingleton<HttpClient>(s =>

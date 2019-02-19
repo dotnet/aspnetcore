@@ -1352,7 +1352,7 @@ class HubConnectionTest {
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
 
         TimeUnit.MILLISECONDS.sleep(100);
-        hubConnection.stop();
+        hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
 
         String[] sentMessages = mockTransport.getSentMessages();
         assertTrue(sentMessages.length > 1);

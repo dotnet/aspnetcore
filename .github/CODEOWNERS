@@ -1,8 +1,10 @@
 # Users referenced in this file will automatically be requested as reviewers for PRs that modify the given paths.
 # See https://help.github.com/articles/about-code-owners/
 
-/build/ @natemcmaster
-/eng/ @natemcmaster
+/.azure/ @dougbu
+/.config/ @dougbu
+/build/ @dougbu
+/eng/ @dougbu
 /src/Components/ @SteveSandersonMS
 /src/DefaultBuilder/ @tratcher
 /src/Hosting/ @tratcher

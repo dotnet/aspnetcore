@@ -29,5 +29,8 @@ Later on, this will be checked using this condition:
       java:signalr;
     </PackagesInPatch>
   </PropertyGroup>
-
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.2.3' ">
+    <PackagesInPatch>
+    </PackagesInPatch>
+  </PropertyGroup>
 </Project>

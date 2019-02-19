@@ -31,15 +31,15 @@ namespace Microsoft.AspNetCore.Blazor.Services
         /// </summary>
         protected override void InitializeState()
         {
-            ((IJSInProcessRuntime)JSRuntime.Current).Invoke<object>(
+            WebAssemblyJSRuntime.Instance.Invoke<object>(
                 Interop.EnableNavigationInterception,
                 typeof(WebAssemblyUriHelper).Assembly.GetName().Name,
                 nameof(NotifyLocationChanged));
 
             // As described in the comment block above, BrowserUriHelper is only for
             // client-side (Mono) use, so it's OK to rely on synchronicity here.
-            var baseUri = ((IJSInProcessRuntime)JSRuntime.Current).Invoke<string>(Interop.GetBaseUri);
-            var uri = ((IJSInProcessRuntime)JSRuntime.Current).Invoke<string>(Interop.GetLocationHref);
+            var baseUri = WebAssemblyJSRuntime.Instance.Invoke<string>(Interop.GetBaseUri);
+            var uri = WebAssemblyJSRuntime.Instance.Invoke<string>(Interop.GetLocationHref);
             SetAbsoluteBaseUri(baseUri);
             SetAbsoluteUri(uri);
         }
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Blazor.Services
                 throw new ArgumentNullException(nameof(uri));
             }
 
-            ((IJSInProcessRuntime)JSRuntime.Current).Invoke<object>(Interop.NavigateTo, uri, forceLoad);
+            WebAssemblyJSRuntime.Instance.Invoke<object>(Interop.NavigateTo, uri, forceLoad);
         }
 
         /// <summary>

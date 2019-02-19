@@ -254,7 +254,11 @@ namespace signalr
     pplx::task<void> connection_impl::send_connect_request(const std::shared_ptr<transport>& transport, const pplx::task_completion_event<void>& connect_request_tce)
     {
         auto logger = m_logger;
-        auto connect_url = url_builder::build_connect(m_base_url, transport->get_transport_type(), m_query_string);
+        auto query_string = m_query_string;
+        if (!query_string.empty())
+            query_string.append(_XPLATSTR("&"));
+        query_string.append(_XPLATSTR("id=")).append(m_connection_id);
+        auto connect_url = url_builder::build_connect(m_base_url, transport->get_transport_type(), query_string);
 
         transport->connect(connect_url)
             .then([transport, connect_request_tce, logger](pplx::task<void> connect_task)

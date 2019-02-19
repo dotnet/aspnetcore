@@ -16,7 +16,7 @@
     </CascadingValue>
 </CascadingValue>
 
-<p><button id="increment-count" onclick=@counterState.IncrementCount>Increment</button></p>
+<p><button id="increment-count" onclick="@((args) => counterState.IncrementCount())">Increment</button></p>
 <p><label><input type="checkbox" id="toggle-flag-1" bind=currentFlagValue1 /> Flag 1</label></p>
 <p><label><input type="checkbox" id="toggle-flag-2" bind=currentFlagValue2 /> Flag 2</label></p>
 

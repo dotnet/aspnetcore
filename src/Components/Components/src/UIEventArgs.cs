@@ -9,6 +9,11 @@ namespace Microsoft.AspNetCore.Components
     public class UIEventArgs
     {
         /// <summary>
+        /// An empty instance of <see cref="UIEventArgs"/>.
+        /// </summary>
+        public static readonly UIEventArgs Empty = new UIEventArgs();
+
+        /// <summary>
         /// Gets or sets the type of the event.
         /// </summary>
         public string Type { get; set; }

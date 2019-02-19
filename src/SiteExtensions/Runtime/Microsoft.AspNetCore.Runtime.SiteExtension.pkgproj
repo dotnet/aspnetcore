@@ -11,7 +11,7 @@
     <PackageTags>aspnetcore;AzureSiteExtension</PackageTags>
     <PackageId>AspNetCoreRuntime.$(TrimmedVersion).$(TargetArchitecture)</PackageId>
     <NoPackageAnalysis>true</NoPackageAnalysis>
-    <DotNetUnpackFolder>$(RepositoryRoot)obj\ar\$(TargetRuntimeIdentifier)\</DotNetUnpackFolder>
+    <DotNetUnpackFolder>$(ArtifactsObjDir)ar\$(TargetRuntimeIdentifier)\</DotNetUnpackFolder>
     <IsShippingPackage>true</IsShippingPackage>
   </PropertyGroup>
 
@@ -19,7 +19,7 @@
     <Content Include="applicationHost.xdt" />
     <Content Include="scmApplicationHost.xdt" />
     <Content Include="install.cmd" />
-    <Content Include="$(RepositoryRoot)bin\Microsoft.Web.Xdt.Extensions\$(Configuration)\net461\Microsoft.Web.Xdt.Extensions.dll" PackagePath="content" />
+    <Content Include="$(ArtifactsBinDir)Microsoft.Web.Xdt.Extensions\$(Configuration)\net461\Microsoft.Web.Xdt.Extensions.dll" PackagePath="content" />
   </ItemGroup>
 
   <ItemGroup>

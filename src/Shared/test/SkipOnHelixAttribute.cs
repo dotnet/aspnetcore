@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Testing.xunit
     /// Skip test if a given environment variable is not enabled. To enable the test, set environment variable
     /// to "true" for the test process.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, AllowMultiple = false)]
     public class SkipOnHelixAttribute : Attribute, ITestCondition
     {
         public bool IsMet

@@ -25,6 +25,7 @@ using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Moq;
 using Newtonsoft.Json;
@@ -395,7 +396,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         {
             using (StartVerifiableLog())
             {
-                var manager = CreateConnectionManager(LoggerFactory);
+                var manager = CreateConnectionManager(LoggerFactory, TimeSpan.FromSeconds(5));
                 var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
                 var connection = manager.CreateConnection();
                 connection.TransportType = HttpTransportType.LongPolling;
@@ -2176,6 +2177,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         private static HttpConnectionManager CreateConnectionManager(ILoggerFactory loggerFactory)
         {
             return new HttpConnectionManager(loggerFactory ?? new LoggerFactory(), new EmptyApplicationLifetime());
+        }
+
+        private static HttpConnectionManager CreateConnectionManager(ILoggerFactory loggerFactory, TimeSpan disconnectTimeout)
+        {
+            var connectionOptions = new ConnectionOptions();
+            connectionOptions.DisconnectTimeout = disconnectTimeout;
+            return new HttpConnectionManager(loggerFactory ?? new LoggerFactory(), new EmptyApplicationLifetime(), Options.Create(connectionOptions));
         }
 
         private string GetContentAsString(Stream body)

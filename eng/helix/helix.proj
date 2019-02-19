@@ -12,8 +12,6 @@
 
   <PropertyGroup>
     <BuildInParallel>true</BuildInParallel>
-    <!-- helix SDK issue https://github.com/dotnet/arcade/issues/1605 -->
-    <SkipInvalidConfigurations>true</SkipInvalidConfigurations>
     <HelixSource>pr/aspnet/aspnetcore</HelixSource>
     <HelixType>ci</HelixType>
     <HelixBuild>private-$(USERNAME)</HelixBuild>

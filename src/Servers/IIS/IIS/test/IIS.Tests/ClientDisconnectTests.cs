@@ -209,9 +209,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 {
                     Assert.IsType<OperationCanceledException>(exception);
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
-                    Logger.LogError(e, "Unexpected exception");
+                    Logger.LogError(exception, "Unexpected exception type");
                     throw;
                 }
             }

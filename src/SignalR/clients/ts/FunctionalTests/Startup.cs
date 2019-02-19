@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Connections;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Tokens;
@@ -122,39 +123,21 @@ namespace FunctionalTests
                 return next.Invoke();
             });
 
-            app.UseConnections(routes =>
-            {
-                routes.MapConnectionHandler<EchoConnectionHandler>("/echo");
-            });
-
-            app.Use(async (context, next) =>
-            {
-                if (context.Request.Path.Value.Contains("/negotiate"))
-                {
-                    context.Response.Cookies.Append("testCookie", "testValue");
-                    context.Response.Cookies.Append("testCookie2", "testValue2");
-                    context.Response.Cookies.Append("expiredCookie", "doesntmatter", new CookieOptions() { Expires = DateTimeOffset.Now.AddHours(-1) });
-                }
-                await next.Invoke();
-            });
-
-            app.UseSignalR(routes =>
+            app.UseRouting(routes =>
             {
                 routes.MapHub<TestHub>("/testhub");
                 routes.MapHub<TestHub>("/testhub-nowebsockets", options => options.Transports = HttpTransportType.ServerSentEvents | HttpTransportType.LongPolling);
                 routes.MapHub<UncreatableHub>("/uncreatable");
                 routes.MapHub<HubWithAuthorization>("/authorizedhub");
-            });
 
-            app.Use(next => async (context) =>
-            {
-                if (context.Request.Path.StartsWithSegments("/generateJwtToken"))
+                routes.MapConnectionHandler<EchoConnectionHandler>("/echo");
+
+                routes.MapGet("/generateJwtToken", context =>
                 {
-                    await context.Response.WriteAsync(GenerateJwtToken());
-                    return;
-                }
+                    return context.Response.WriteAsync(GenerateJwtToken());
+                });
 
-                if (context.Request.Path.StartsWithSegments("/deployment"))
+                routes.MapGet("/deployment", context =>
                 {
                     var attributes = Assembly.GetAssembly(typeof(Startup)).GetCustomAttributes<AssemblyMetadataAttribute>();
 
@@ -182,7 +165,20 @@ namespace FunctionalTests
 
                         json.WriteTo(writer);
                     }
+
+                    return Task.CompletedTask;
+                });
+            });
+
+            app.Use(async (context, next) =>
+            {
+                if (context.Request.Path.Value.Contains("/negotiate"))
+                {
+                    context.Response.Cookies.Append("testCookie", "testValue");
+                    context.Response.Cookies.Append("testCookie2", "testValue2");
+                    context.Response.Cookies.Append("expiredCookie", "doesntmatter", new CookieOptions() { Expires = DateTimeOffset.Now.AddHours(-1) });
                 }
+                await next.Invoke();
             });
         }
 
