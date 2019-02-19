@@ -3,14 +3,12 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <NoDefaultLaunchSettingsFile Condition="'$(ExcludeLaunchSettings)' == 'True'">True</NoDefaultLaunchSettingsFile>
-    <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">RazorComponentsWeb_CSharp.Server</RootNamespace>
+    <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">RazorComponentsWeb_CSharp</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\RazorComponentsWeb-CSharp.App\RazorComponentsWeb-CSharp.App.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.Browser" Version="${MicrosoftAspNetCoreComponentsBrowserPackageVersion}" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Build" Version="${MicrosoftAspNetCoreComponentsBuildPackageVersion}" PrivateAssets="all" />
     <PackageReference Include="Microsoft.AspNetCore.Components.Server" Version="${MicrosoftAspNetCoreComponentsServerPackageVersion}" />
   </ItemGroup>
 

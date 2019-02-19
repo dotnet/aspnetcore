@@ -10,8 +10,9 @@ using Microsoft.AspNetCore.HttpsPolicy;
 #endif
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using RazorComponentsWeb_CSharp.Services;
 
-namespace RazorComponentsWeb_CSharp.Server
+namespace RazorComponentsWeb_CSharp
 {
     public class Startup
     {
@@ -19,7 +20,8 @@ namespace RazorComponentsWeb_CSharp.Server
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddRazorComponents<App.Startup>();
+            services.AddSingleton<WeatherForecastService>();
+            services.AddRazorComponents<Components.Startup>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -41,7 +43,7 @@ namespace RazorComponentsWeb_CSharp.Server
             app.UseHttpsRedirection();
 #endif
             app.UseStaticFiles();
-            app.UseRazorComponents<App.Startup>();
+            app.UseRazorComponents<Components.Startup>();
         }
     }
 }

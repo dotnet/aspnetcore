@@ -18,11 +18,6 @@
   },
   "sourceName": "RazorComponentsWeb-CSharp",
   "preferNameDirectory": true,
-  "guids": [
-    "4C26868E-5E7C-458D-82E3-040509D0C71F",
-    "5990939C-7E7B-4CFA-86FF-44CA5756498A",
-    "650B3CE7-2E93-4CC4-9F46-466686815EAA"
-  ],
   "sources": [
     {
       "modifiers": [
@@ -30,12 +25,6 @@
           "condition": "(ExcludeLaunchSettings)",
           "exclude": [
             "Properties/launchSettings.json"
-          ]
-        },
-        {
-          "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
-          "exclude": [
-            "*.sln"
           ]
         }
       ]
@@ -47,10 +36,6 @@
       "datatype": "bool",
       "defaultValue": "false",
       "description": "Whether to exclude launchSettings.json from the generated template."
-    },
-    "HostIdentifier": {
-      "type": "bind",
-      "binding": "HostIdentifier"
     },
     "HttpPort": {
       "type": "parameter",
@@ -132,16 +117,7 @@
   },
   "primaryOutputs": [
     {
-      "condition": "(HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\")",
-      "path": "RazorComponentsWeb-CSharp.sln"
-    },
-    {
-      "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
-      "path": "RazorComponentsWeb-CSharp.Server/RazorComponentsWeb-CSharp.Server.csproj"
-    },
-    {
-      "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
-      "path": "RazorComponentsWeb-CSharp.App/RazorComponentsWeb-CSharp.App.csproj"
+      "path": "RazorComponentsWeb-CSharp.csproj"
     }
   ],
   "defaultName": "WebApplication1",
