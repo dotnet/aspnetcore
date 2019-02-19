@@ -573,6 +573,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             var keyLength = 0;
             ref readonly StringValues values = ref Unsafe.AsRef<StringValues>(null);
 
+            goto MoveNext;
+
+        OutputHeader:
+            {{
+                var valueCount = values.Count;
+                var headerKey = new ReadOnlySpan<byte>(_headerBytes, keyStart, keyLength);
+                for (var i = 0; i < valueCount; i++)
+                {{
+                    var value = values[i];
+                    if (value != null)
+                    {{
+                        output.Write(headerKey);
+                        output.WriteAsciiNoValidation(value);
+                    }}
+                }}
+
+                if (tempBits == 0)
+                {{
+                    return;
+                }}
+            }}
+
         MoveNext:
             switch (index)
             {{{Each(loop.Headers.OrderBy(h => !h.PrimaryHeader).Select((h, i) => (Header: h, Index: i)), hi => $@"
@@ -611,29 +633,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }}")}
             }}")}
 
-        return;
-
-        OutputHeader:
-            {{
-                var valueCount = values.Count;
-                var headerKey = new ReadOnlySpan<byte>(_headerBytes, keyStart, keyLength);
-                for (var i = 0; i < valueCount; i++)
-                {{
-                    var value = values[i];
-                    if (value != null)
-                    {{
-                        output.Write(headerKey);
-                        output.WriteAsciiNoValidation(value);
-                    }}
-                }}
-
-                if (tempBits == 0)
-                {{
-                    return;
-                }}
-
-                goto MoveNext;
-            }}
+            return;
         }}" : "")}
         {(loop.ClassName == "HttpRequestHeaders" ? $@"
         public unsafe void Append(byte* pKeyBytes, int keyLength, string value)

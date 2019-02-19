@@ -7775,6 +7775,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             var keyLength = 0;
             ref readonly StringValues values = ref Unsafe.AsRef<StringValues>(null);
 
+            goto MoveNext;
+
+        OutputHeader:
+            {
+                var valueCount = values.Count;
+                var headerKey = new ReadOnlySpan<byte>(_headerBytes, keyStart, keyLength);
+                for (var i = 0; i < valueCount; i++)
+                {
+                    var value = values[i];
+                    if (value != null)
+                    {
+                        output.Write(headerKey);
+                        output.WriteAsciiNoValidation(value);
+                    }
+                }
+
+                if (tempBits == 0)
+                {
+                    return;
+                }
+            }
+
         MoveNext:
             switch (index)
             {
@@ -8244,29 +8266,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 goto OutputHeader;
             }
 
-        return;
-
-        OutputHeader:
-            {
-                var valueCount = values.Count;
-                var headerKey = new ReadOnlySpan<byte>(_headerBytes, keyStart, keyLength);
-                for (var i = 0; i < valueCount; i++)
-                {
-                    var value = values[i];
-                    if (value != null)
-                    {
-                        output.Write(headerKey);
-                        output.WriteAsciiNoValidation(value);
-                    }
-                }
-
-                if (tempBits == 0)
-                {
-                    return;
-                }
-
-                goto MoveNext;
-            }
+            return;
         }
         
 
