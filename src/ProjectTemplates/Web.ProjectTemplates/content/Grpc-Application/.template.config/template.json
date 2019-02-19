@@ -2,8 +2,8 @@
   "$schema": "http://json.schemastore.org/template",
   "author": "Microsoft",
   "classifications": [
-    "gRPC",
-    "ASP.NET"
+    "Web",
+    "gRPC"
   ],
   "name": "ASP.NET Core gRPC Application",
   "generatorVersions": "[1.0.0.0-*)",
