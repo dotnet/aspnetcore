@@ -14,11 +14,12 @@ export class AuthorizeService {
 
     async getUser() {
         if (this._user && this._user.profile) {
-            return this._user;
+            return this._user.profile;
         }
 
         await this.ensureUserManagerInitialized();
         const user = await this.userManager.getUser();
+        this.updateState(user);
         return user && user.profile;
     }
 
@@ -32,8 +33,10 @@ export class AuthorizeService {
     // 1) We try to see if we can authenticate the user silently. This happens
     //    when the user is already logged in on the IdP and is done using a hidden iframe
     //    on the client.
-    // 2) We try to authenticate the user using a PopUp Window.
-    // 3) If the two methods above fail, we redirect the browser to the IdP.
+    // 2) We try to authenticate the user using a PopUp Window. This might fail if there is a
+    //    Pop-Up blocker or the user has disabled PopUps.
+    // 3) If the two methods above fail, we redirect the browser to the IdP to perform a traditional
+    //    redirect flow.
     async signIn(state) {
         await this.ensureUserManagerInitialized();
         try {
@@ -42,17 +45,20 @@ export class AuthorizeService {
             return this.success(state);
         } catch (silentError) {
             // User might not be authenticated, fallback to popup authentication
+            console.log("Silent authentication error: ", silentError);
+
             try {
                 const popUpUser = await this.userManager.signinPopup(this.createArguments(LoginMode.PopUp));
                 this.updateState(popUpUser);
                 return this.success(state);
             } catch (popUpError) {
                 if (popUpError.message === "Popup window closed") {
+                    // The user explicitly cancelled the login action by closing an opened popup.
                     return this.error("The user closed the window.");
                 }
-                // PopUps might be blocked by the user, fallback to redirect
                 console.log("Popup authentication error: ", popUpError);
 
+                // PopUps might be blocked by the user, fallback to redirect
                 try {
                     const signInRequest = await this.userManager.createSigninRequest(
                         this.createArguments(LoginMode.Redirect, state));
@@ -65,6 +71,13 @@ export class AuthorizeService {
         }
     }
 
+    // We are receiving a callback from the IdP. This code can be running in 3 situations:
+    // 1) As a hidden iframe started by a silent login on signIn (above). The code in the main
+    //    browser window will close the iframe after returning from signInSilent.
+    // 2) As a PopUp window started by a pop-up login on signIn (above). The code in the main
+    //    browser window will close the pop-up window after returning from signInPopUp
+    // 3) On the main browser window when the IdP redirects back to the app. We will process
+    //    the response and redirect to the return url or display an error message.
     async completeSignIn(url) {
         await this.ensureUserManagerInitialized();
         let response = undefined;
@@ -77,7 +90,8 @@ export class AuthorizeService {
             if (processSignInResponseError.error === "login_required") {
                 // This error is thrown by the underlying oidc client when it tries to log in
                 // the user silently as in case 1 defined above and the IdP requires the user
-                // to enter credentials.
+                // to enter credentials. We let the user manager handle the response to notify
+                // the main window.
                 response = processSignInResponseError;
             } else {
                 console.log("There was an error processing the sign-in response: ", processSignInResponseError);
@@ -108,7 +122,7 @@ export class AuthorizeService {
             case LoginMode.Redirect:
                 try {
                     let user = await this.userManager.signinRedirectCallback(url);
-                    this.updateState(user.profile);
+                    this.updateState(user);
                     return this.success(response.state.userState);
                 } catch (redirectCallbackError) {
                     console.log("Redirect callback authentication error: ", redirectCallbackError);
@@ -119,6 +133,11 @@ export class AuthorizeService {
         }
     }
 
+    // We try to sign out the user in two different ways:
+    // 1) We try to do a sign-out using a PopUp Window. This might fail if there is a
+    //    Pop-Up blocker or the user has disabled PopUps.
+    // 2) If the method above fails, we redirect the browser to the IdP to perform a traditional
+    //    post logout redirect flow.
     async signOut(state) {
         await this.ensureUserManagerInitialized();
         try {
@@ -138,6 +157,11 @@ export class AuthorizeService {
         }
     }
 
+    // We are receiving a callback from the IdP. This code can be running in 2 situations:
+    // 1) As a PopUp window started by a pop-up login on signOut (above). The code in the main
+    //    browser window will close the pop-up window after returning from signOutPopUp
+    // 2) On the main browser window when the IdP redirects back to the app. We will process
+    //    the response and redirect to the logged-out url or display an error message.
     async completeSignOut(url) {
         await this.ensureUserManagerInitialized();
         let response = undefined;
@@ -175,7 +199,7 @@ export class AuthorizeService {
                     return this.error("Redirect signout callback error");
                 }
             default:
-                throw new Error("Should never get here.");
+                throw new Error(`Invalid LoginMode '${mode}'.`);
         }
 
     }
@@ -192,7 +216,7 @@ export class AuthorizeService {
     }
 
     unsubscribe(subscriptionId) {
-        var subscriptionIndex = this._callbacks
+        const subscriptionIndex = this._callbacks
             .map((element, index) => element.subscription === subscriptionId ? { found: true, index } : { found: false })
             .filter(element => element.found === true);
         if (subscriptionIndex.length !== 1) {
@@ -204,7 +228,7 @@ export class AuthorizeService {
 
     notifySubscribers() {
         for (let i = 0; i < this._callbacks.length; i++) {
-            let callback = this._callbacks[i].callback;
+            const callback = this._callbacks[i].callback;
             callback();
         }
     }

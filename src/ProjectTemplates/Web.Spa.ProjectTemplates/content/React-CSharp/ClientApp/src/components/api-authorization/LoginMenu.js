@@ -46,7 +46,7 @@ export class LoginMenu extends Component {
                 <NavLink tag={Link} className="text-dark" to={`${ApplicationPaths.Profile}`}>Hello {userName}</NavLink>
             </NavItem>
             <NavItem>
-                <NavLink tag={Link} className="text-dark" to={`${ApplicationPaths.LogOut}`}>Logout</NavLink>
+                <NavLink tag={Link} className="text-dark" to={{ pathName: ApplicationPaths.LogOut, state: { local:true }}}>Logout</NavLink>
             </NavItem>
         </Fragment>);
 

@@ -4,6 +4,10 @@ import authService from './AuthorizeService';
 import { AuthenticationResultStatus } from './AuthorizeService';
 import { LoginActions, QueryParameterNames, ApplicationPaths } from './ApiAuthorizationConstants';
 
+// The main responsibility of this component is to handle the user's login process.
+// This is the starting point for the login process. Any component that needs to authenticate
+// a user can simply perform a redirect to this component with a returnUrl query parameter and
+// let the component perform the login and return back to the return url.
 export class Login extends Component {
     constructor(props) {
         super(props);
@@ -50,6 +54,9 @@ export class Login extends Component {
                     return (<div>Processing login</div>);
                 case LoginActions.LoginCallback:
                     return (<div>Processing login callback</div>);
+                case LoginActions.Profile:
+                case LoginActions.Register:
+                    return (<div></div>);
                 default:
                     throw new Error(`Invalid action '${action}'`);
             }
@@ -61,6 +68,9 @@ export class Login extends Component {
         const result = await authService.signIn(state);
         switch (result.status) {
             case AuthenticationResultStatus.Redirect:
+                // We replace the location here so that in case the user hits the back
+                // arrow from within the login page he doesn't get into an infinite
+                // redirect loop.
                 window.location.replace(result.redirectUrl);
                 break;
             case AuthenticationResultStatus.Success:
@@ -96,7 +106,11 @@ export class Login extends Component {
     getReturnUrl(state) {
         const params = new URLSearchParams(window.location.search);
         const fromQuery = params.get(QueryParameterNames.ReturnUrl);
-        return (state && state.returnUrl) || fromQuery || `${window.location.protocol}//${window.location.host}/`;
+        if (fromQuery && !fromQuery.startsWith(`${window.location.origin}/`)) {
+            // This is an extra check to prevent open redirects.
+            throw new Error("Invalid return url. The return url needs to have the same origin as the current page.")
+        }
+        return (state && state.returnUrl) || fromQuery || `${window.location.origin}/`;
     }
 
     redirectToRegister() {
@@ -109,15 +123,19 @@ export class Login extends Component {
 
     redirectToApiAuthorizationPath(apiAuthorizationPath) {
         const redirectUrl = `${this.getBaseUrl()}${apiAuthorizationPath}`;
+        // It's important that we do a replace here so that when the user hits the back arrow on the
+        // browser he gets sent back to where it was on the app instead of to an endpoint on this
+        // component.
         window.location.replace(redirectUrl);
     }
 
     getBaseUrl() {
-        const url = window.location;
-        return `${url.protocol}//${url.host}`;
+        return window.location.origin;
     }
 
     navigateToReturnUrl(returnUrl) {
+        // It's important that we do a replace here so that we remove the callback uri with the
+        // fragment containing the tokens from the browser history.
         window.location.replace(returnUrl);
     }
 }

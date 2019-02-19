@@ -4,6 +4,9 @@ import authService from './AuthorizeService';
 import { AuthenticationResultStatus } from './AuthorizeService';
 import { QueryParameterNames, LogoutActions, ApplicationPaths } from './ApiAuthorizationConstants';
 
+// The main responsibility of this component is to handle the user's logout process.
+// This is the starting point for the logout process, which is usually initated when a
+// user clicks on the logout button on the LoginMenu component.
 export class Logout extends Component {
     constructor(props) {
         super(props);
@@ -19,7 +22,12 @@ export class Logout extends Component {
         const action = this.props.action;
         switch (action) {
             case LogoutActions.Logout:
-                this.logout(this.getReturnUrl());
+                if (!!window.history.state.local) {
+                    this.logout(this.getReturnUrl());
+                } else {
+                    // This prevents regular links to <app>/authentication/logout from triggering a logout
+                    this.setState({ isReady: true, message: "The logout was not initiated from within the page." });
+                }
                 break;
             case LogoutActions.LogoutCallback:
                 this.processLogoutCallback();
@@ -63,6 +71,8 @@ export class Logout extends Component {
             const result = await authService.signOut(state);
             switch (result.status) {
                 case AuthenticationResultStatus.Redirect:
+                    // We replace the location here so that in case the user hits the back
+                    // arrow from within the IdP he doesn't get into an infinite redirect loop.
                     window.location.replace(result.redirectUrl);
                     break;
                 case AuthenticationResultStatus.Success:
@@ -104,11 +114,15 @@ export class Logout extends Component {
     }
 
     getReturnUrl(state) {
-        let params = new URLSearchParams(window.location.search);
-        let fromQuery = params.get(QueryParameterNames.ReturnUrl);
+        const params = new URLSearchParams(window.location.search);
+        const fromQuery = params.get(QueryParameterNames.ReturnUrl);
+        if (fromQuery && !fromQuery.startsWith(`${window.location.origin}/`)) {
+            // This is an extra check to prevent open redirects.
+            throw new Error("Invalid return url. The return url needs to have the same origin as the current page.")
+        }
         return (state && state.returnUrl) ||
             fromQuery ||
-            `${window.location.protocol}//${window.location.host}/${ApplicationPaths.LoggedOut}`;
+            `${window.location.origin}/${ApplicationPaths.LoggedOut}`;
     }
 
     navigateToReturnUrl(returnUrl) {

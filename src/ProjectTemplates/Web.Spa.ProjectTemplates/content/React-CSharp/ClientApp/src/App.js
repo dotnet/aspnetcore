@@ -8,6 +8,7 @@ import { Counter } from './components/Counter';
 import { Login } from './components/api-authorization/Login'
 import { Logout } from './components/api-authorization/Logout'
 import AuthorizeRoute from './components/api-authorization/AuthorizeRoute';
+import { ApplicationPaths, LoginActions, LogoutActions } from './components/api-authorization/ApiAuthorizationConstants';
 ////#endif
 
 export default class App extends Component {
@@ -18,15 +19,17 @@ export default class App extends Component {
       <Layout>
         <Route exact path='/' component={Home} />
         <Route path='/counter' component={Counter} />
-        <Route path='/fetch-data' component={FetchData} />
 ////#if (IndividualLocalAuth)
         <AuthorizeRoute path='/fetch-data' component={FetchData} />
-        <Route path='/authentication/login' render={() => loginAction('login')} />
-        <Route path='/authentication/login-callback' render={() => loginAction('login-callback')} />
-        <Route path='/authentication/profile' render={() => loginAction('profile')} />
-        <Route path='/authentication/register' render={() => loginAction('register')} />
-        <Route path='/authentication/logout' render={() => logoutAction('logout')} />
-        <Route path='/authentication/logout-callback' render={() => logoutAction('logout-callback')} />
+        <Route path={ApplicationPaths.Login} render={() => loginAction(LoginActions.Login)} />
+        <Route path={ApplicationPaths.LoginFailed} render={() => loginAction(LoginActions.LoginFailed)} />
+        <Route path={ApplicationPaths.LoginCallback} render={() => loginAction(LoginActions.LoginCallback)} />
+        <Route path={ApplicationPaths.Profile} render={() => loginAction(LoginActions.Profile)} />
+        <Route path={ApplicationPaths.Register} render={() => loginAction(LoginActions.Register)} />
+        <Route path={ApplicationPaths.LogOut} render={() => logoutAction(LogoutActions.Logout)} />
+        <Route path={ApplicationPaths.LogOutCallback} render={() => logoutAction(LogoutActions.LogoutCallback)} />
+////#else
+        <Route path='/fetch-data' component={FetchData} />
 ////#endif
       </Layout>
     );
