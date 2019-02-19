@@ -59,9 +59,9 @@ namespace Microsoft.AspNetCore.Authentication
 
             builder.Services.Configure(TryAddJwtBearerSchemeMapping(scheme, jwtBearerScheme));
 
-            builder.Services.TryAddSingleton<IConfigureOptions<AzureADB2COptions>, AzureADB2COptionsConfiguration>();
+            builder.Services.AddSingleton<IConfigureOptions<AzureADB2COptions>, AzureADB2COptionsConfiguration>();
 
-            builder.Services.TryAddSingleton<IConfigureOptions<JwtBearerOptions>, JwtBearerOptionsConfiguration>();
+            builder.Services.AddSingleton<IConfigureOptions<JwtBearerOptions>, JwtBearerOptionsConfiguration>();
 
             builder.Services.Configure(scheme, configureOptions);
             builder.AddJwtBearer(jwtBearerScheme, o => { });
@@ -114,11 +114,11 @@ namespace Microsoft.AspNetCore.Authentication
 
             builder.Services.Configure(TryAddOpenIDCookieSchemeMappings(scheme, openIdConnectScheme, cookieScheme));
 
-            builder.Services.TryAddSingleton<IConfigureOptions<AzureADB2COptions>, AzureADB2COptionsConfiguration>();
+            builder.Services.AddSingleton<IConfigureOptions<AzureADB2COptions>, AzureADB2COptionsConfiguration>();
 
-            builder.Services.TryAddSingleton<IConfigureOptions<OpenIdConnectOptions>, OpenIdConnectOptionsConfiguration>();
+            builder.Services.AddSingleton<IConfigureOptions<OpenIdConnectOptions>, OpenIdConnectOptionsConfiguration>();
 
-            builder.Services.TryAddSingleton<IConfigureOptions<CookieAuthenticationOptions>, CookieOptionsConfiguration>();
+            builder.Services.AddSingleton<IConfigureOptions<CookieAuthenticationOptions>, CookieOptionsConfiguration>();
 
             builder.Services.Configure(scheme, configureOptions);
 

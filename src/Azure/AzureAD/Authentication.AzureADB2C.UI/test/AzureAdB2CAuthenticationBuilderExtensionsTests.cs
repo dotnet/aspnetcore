@@ -213,6 +213,43 @@ namespace Microsoft.AspNetCore.Authentication
         }
 
         [Fact]
+        public void AddAzureADB2CBearer_ConfiguresAllOptionsWithBearer()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+
+            // Act
+            services.AddAuthentication()
+                .AddJwtBearer(o => { })
+                .AddAzureADB2CBearer(o =>
+                {
+                    o.Instance = "https://login.microsoftonline.com/tfp";
+                    o.ClientId = "ClientId";
+                    o.CallbackPath = "/signin-oidc";
+                    o.Domain = "domain.onmicrosoft.com";
+                    o.SignUpSignInPolicyId = "B2C_1_SiUpIn";
+                });
+            var provider = services.BuildServiceProvider();
+
+            // Assert
+            var azureADB2COptionsMonitor = provider.GetService<IOptionsMonitor<AzureADB2COptions>>();
+            Assert.NotNull(azureADB2COptionsMonitor);
+            var options = azureADB2COptionsMonitor.Get(AzureADB2CDefaults.BearerAuthenticationScheme);
+            Assert.Equal(AzureADB2CDefaults.JwtBearerAuthenticationScheme, options.JwtBearerSchemeName);
+            Assert.Equal("https://login.microsoftonline.com/tfp", options.Instance);
+            Assert.Equal("ClientId", options.ClientId);
+            Assert.Equal("domain.onmicrosoft.com", options.Domain);
+            Assert.Equal("B2C_1_SiUpIn", options.DefaultPolicy);
+
+            var bearerOptionsMonitor = provider.GetService<IOptionsMonitor<JwtBearerOptions>>();
+            Assert.NotNull(bearerOptionsMonitor);
+            var bearerOptions = bearerOptionsMonitor.Get(AzureADB2CDefaults.JwtBearerAuthenticationScheme);
+            Assert.Equal("ClientId", bearerOptions.Audience);
+            Assert.Equal($"https://login.microsoftonline.com/tfp/domain.onmicrosoft.com/B2C_1_SiUpIn/v2.0", bearerOptions.Authority);
+        }
+
+        [Fact]
         public void AddAzureADB2CBearer_ThrowsForDuplicatedSchemes()
         {
             // Arrange

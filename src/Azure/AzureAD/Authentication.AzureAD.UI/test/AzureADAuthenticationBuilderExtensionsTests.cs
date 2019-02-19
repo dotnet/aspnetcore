@@ -35,6 +35,49 @@ namespace Microsoft.AspNetCore.Authentication
         }
 
         [Fact]
+        public void AddAzureAD_ConfiguresAllOptionsWithNormalBearer()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+
+            // Act
+            services.AddAuthentication()
+                .AddJwtBearer(o => { })
+                .AddAzureAD(o =>
+                {
+                    o.Instance = "https://login.microsoftonline.com";
+                    o.ClientId = "ClientId";
+                    o.ClientSecret = "ClientSecret";
+                    o.CallbackPath = "/signin-oidc";
+                    o.Domain = "domain.onmicrosoft.com";
+                    o.TenantId = "Common";
+                });
+            var provider = services.BuildServiceProvider();
+
+            // Assert
+            var azureADOptionsMonitor = provider.GetService<IOptionsMonitor<AzureADOptions>>();
+            Assert.NotNull(azureADOptionsMonitor);
+            var azureADOptions = azureADOptionsMonitor.Get(AzureADDefaults.AuthenticationScheme);
+            Assert.Equal(AzureADDefaults.OpenIdScheme, azureADOptions.OpenIdConnectSchemeName);
+            Assert.Equal(AzureADDefaults.CookieScheme, azureADOptions.CookieSchemeName);
+            Assert.Equal("https://login.microsoftonline.com", azureADOptions.Instance);
+            Assert.Equal("ClientId", azureADOptions.ClientId);
+            Assert.Equal("ClientSecret", azureADOptions.ClientSecret);
+            Assert.Equal("/signin-oidc", azureADOptions.CallbackPath);
+            Assert.Equal("domain.onmicrosoft.com", azureADOptions.Domain);
+
+            var openIdOptionsMonitor = provider.GetService<IOptionsMonitor<OpenIdConnectOptions>>();
+            Assert.NotNull(openIdOptionsMonitor);
+            var openIdOptions = openIdOptionsMonitor.Get(AzureADDefaults.OpenIdScheme);
+            Assert.Equal("ClientId", openIdOptions.ClientId);
+            Assert.Equal($"https://login.microsoftonline.com/Common", openIdOptions.Authority);
+            Assert.True(openIdOptions.UseTokenLifetime);
+            Assert.Equal("/signin-oidc", openIdOptions.CallbackPath);
+            Assert.Equal(AzureADDefaults.CookieScheme, openIdOptions.SignInScheme);
+        }
+
+        [Fact]
         public void AddAzureAD_ConfiguresAllOptions()
         {
             // Arrange
@@ -171,6 +214,42 @@ namespace Microsoft.AspNetCore.Authentication
 
             // Act
             services.AddAuthentication()
+                .AddAzureADBearer(o =>
+                {
+                    o.Instance = "https://login.microsoftonline.com/";
+                    o.ClientId = "ClientId";
+                    o.CallbackPath = "/signin-oidc";
+                    o.Domain = "domain.onmicrosoft.com";
+                    o.TenantId = "TenantId";
+                });
+            var provider = services.BuildServiceProvider();
+
+            // Assert
+            var azureADOptionsMonitor = provider.GetService<IOptionsMonitor<AzureADOptions>>();
+            Assert.NotNull(azureADOptionsMonitor);
+            var options = azureADOptionsMonitor.Get(AzureADDefaults.BearerAuthenticationScheme);
+            Assert.Equal(AzureADDefaults.JwtBearerAuthenticationScheme, options.JwtBearerSchemeName);
+            Assert.Equal("https://login.microsoftonline.com/", options.Instance);
+            Assert.Equal("ClientId", options.ClientId);
+            Assert.Equal("domain.onmicrosoft.com", options.Domain);
+
+            var bearerOptionsMonitor = provider.GetService<IOptionsMonitor<JwtBearerOptions>>();
+            Assert.NotNull(bearerOptionsMonitor);
+            var bearerOptions = bearerOptionsMonitor.Get(AzureADDefaults.JwtBearerAuthenticationScheme);
+            Assert.Equal("ClientId", bearerOptions.Audience);
+            Assert.Equal($"https://login.microsoftonline.com/TenantId", bearerOptions.Authority);
+        }
+
+        [Fact]
+        public void AddAzureADBearer_ConfiguresAllOptionsWithRegularBearer()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+
+            // Act
+            services.AddAuthentication()
+                .AddJwtBearer(o => { })
                 .AddAzureADBearer(o =>
                 {
                     o.Instance = "https://login.microsoftonline.com/";

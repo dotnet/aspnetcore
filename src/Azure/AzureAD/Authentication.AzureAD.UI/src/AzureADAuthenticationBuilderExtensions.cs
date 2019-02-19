@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Authentication
 
             builder.Services.TryAddSingleton<IConfigureOptions<AzureADOptions>, AzureADOptionsConfiguration>();
 
-            builder.Services.TryAddSingleton<IConfigureOptions<JwtBearerOptions>, JwtBearerOptionsConfiguration>();
+            builder.Services.AddSingleton<IConfigureOptions<JwtBearerOptions>, JwtBearerOptionsConfiguration>();
 
             builder.Services.Configure(scheme, configureOptions);
             builder.AddJwtBearer(jwtBearerScheme, o => { });
