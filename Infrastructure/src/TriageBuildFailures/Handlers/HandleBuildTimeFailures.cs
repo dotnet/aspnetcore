@@ -32,7 +32,7 @@ namespace TriageBuildFailures.Handlers
             "SSL_ERROR_SYSCALL",
             "API rate limit exceeded for user ID",
             "##[error]",
-            "Missing required variable"
+            "Missing required variable",
         };
 
         public override async Task<bool> CanHandleFailure(ICIBuild build)
