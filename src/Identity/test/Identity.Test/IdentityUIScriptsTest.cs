@@ -43,13 +43,13 @@ namespace Microsoft.AspNetCore.Identity.Test
         [MemberData(nameof(ScriptWithIntegrityData))]
         public async Task IdentityUI_ScriptTags_SubresourceIntegrityCheck(ScriptTag scriptTag)
         {
-            var prefix = scriptTag.Integrity.Substring(5);
-            var sha256Integrity = await GetShaIntegrity(scriptTag, prefix);
-            Assert.Equal(scriptTag.Integrity, sha256Integrity);
+            var integrity = await GetShaIntegrity(scriptTag);
+            Assert.Equal(scriptTag.Integrity, integrity);
         }
 
-        private async Task<string> GetShaIntegrity(ScriptTag scriptTag, string prefix)
+        private async Task<string> GetShaIntegrity(ScriptTag scriptTag)
         {
+            var prefix = scriptTag.Integrity.Substring(5);
             using (var respStream = await _httpClient.GetStreamAsync(scriptTag.Src))
             using (HashAlgorithm alg = string.Equals(prefix, "sha256") ? (HashAlgorithm)SHA256.Create() : (HashAlgorithm)SHA384.Create())
             {

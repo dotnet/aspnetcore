@@ -74,14 +74,7 @@ namespace Templates.Test
         [MemberData(nameof(SubresourceIntegrityCheckScriptData))]
         public async Task CheckScriptSubresourceIntegrity(ScriptTag scriptTag)
         {
-            string expectedIntegrity;
-            using (var responseStream = await _httpClient.GetStreamAsync(scriptTag.Src))
-            using (var alg = SHA256.Create())
-            {
-                var hash = alg.ComputeHash(responseStream);
-                expectedIntegrity = "sha256-" + Convert.ToBase64String(hash);
-            }
-
+            var expectedIntegrity = GetShaIntegrity(scriptTag);
             if (!expectedIntegrity.Equals(scriptTag.Integrity, StringComparison.OrdinalIgnoreCase))
             {
                 Assert.False(true, $"Expected {scriptTag.Src} to have Integrity '{expectedIntegrity}' but it had '{scriptTag.Integrity}'.");
@@ -92,14 +85,7 @@ namespace Templates.Test
         [MemberData(nameof(SubresourceIntegrityCheckLinkData))]
         public async Task CheckLinkSubresourceIntegrity(LinkTag linkTag)
         {
-            string expectedIntegrity;
-            using (var responseStream = await _httpClient.GetStreamAsync(linkTag.HRef))
-            using (var alg = SHA256.Create())
-            {
-                var hash = alg.ComputeHash(responseStream);
-                expectedIntegrity = "sha256-" + Convert.ToBase64String(hash);
-            }
-
+            string expectedIntegrity = GetShaIntegrity(linkTag);
             if (!expectedIntegrity.Equals(linkTag.Integrity, StringComparison.OrdinalIgnoreCase))
             {
                 Assert.False(true, $"Expected {linkTag.HRef} to have Integrity '{expectedIntegrity}' but it had '{linkTag.Integrity}'.");
@@ -156,6 +142,16 @@ namespace Templates.Test
             public override string ToString()
             {
                 return $"{Src}, {Entry}";
+            }
+        }
+
+        private async Task<string> GetShaIntegrity(ScriptTag scriptTag, string prefix)
+        {
+            using (var respStream = await _httpClient.GetStreamAsync(scriptTag.Src))
+            using (HashAlgorithm alg = string.Equals(prefix, "sha256") ? (HashAlgorithm)SHA256.Create() : (HashAlgorithm)SHA384.Create())
+            {
+                var hash = alg.ComputeHash(respStream);
+                return $"{prefix}-" + Convert.ToBase64String(hash);
             }
         }
 
