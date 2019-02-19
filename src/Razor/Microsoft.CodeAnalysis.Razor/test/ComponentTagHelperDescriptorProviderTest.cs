@@ -578,6 +578,171 @@ namespace Test
         }
 
         [Fact]
+        public void Execute_EventCallbackProperty_CreatesDescriptor()
+        {
+            // Arrange
+
+            var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    public class MyComponent : ComponentBase
+    {
+        [Parameter]
+        EventCallback OnClick { get; set; }
+    }
+}
+
+"));
+
+            Assert.Empty(compilation.GetDiagnostics());
+
+            var context = TagHelperDescriptorProviderContext.Create();
+            context.SetCompilation(compilation);
+
+            var provider = new ComponentTagHelperDescriptorProvider();
+
+            // Act
+            provider.Execute(context);
+
+            // Assert
+            var components = ExcludeBuiltInComponents(context);
+            var component = Assert.Single(components);
+
+            Assert.Equal("TestAssembly", component.AssemblyName);
+            Assert.Equal("Test.MyComponent", component.Name);
+
+            var attribute = Assert.Single(component.BoundAttributes);
+            Assert.Equal("OnClick", attribute.Name);
+            Assert.Equal("Microsoft.AspNetCore.Components.EventCallback", attribute.TypeName);
+
+            Assert.False(attribute.HasIndexer);
+            Assert.False(attribute.IsBooleanProperty);
+            Assert.False(attribute.IsEnum);
+            Assert.False(attribute.IsStringProperty);
+            Assert.True(attribute.IsEventCallbackProperty());
+            Assert.False(attribute.IsDelegateProperty());
+            Assert.False(attribute.IsChildContentProperty());
+        }
+
+        [Fact]
+        public void Execute_EventCallbackProperty_CreatesDescriptor_ClosedGeneric()
+        {
+            // Arrange
+
+            var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    public class MyComponent : ComponentBase
+    {
+        [Parameter]
+        EventCallback<UIMouseEventArgs> OnClick { get; set; }
+    }
+}
+
+"));
+
+            Assert.Empty(compilation.GetDiagnostics());
+
+            var context = TagHelperDescriptorProviderContext.Create();
+            context.SetCompilation(compilation);
+
+            var provider = new ComponentTagHelperDescriptorProvider();
+
+            // Act
+            provider.Execute(context);
+
+            // Assert
+            var components = ExcludeBuiltInComponents(context);
+            var component = Assert.Single(components);
+
+            Assert.Equal("TestAssembly", component.AssemblyName);
+            Assert.Equal("Test.MyComponent", component.Name);
+
+            Assert.Collection(
+                component.BoundAttributes.OrderBy(a => a.Name),
+                a =>
+                {
+                    Assert.Equal("OnClick", a.Name);
+                    Assert.Equal("Microsoft.AspNetCore.Components.EventCallback<Microsoft.AspNetCore.Components.UIMouseEventArgs>", a.TypeName);
+                    Assert.False(a.HasIndexer);
+                    Assert.False(a.IsBooleanProperty);
+                    Assert.False(a.IsEnum);
+                    Assert.False(a.IsStringProperty);
+                    Assert.True(a.IsEventCallbackProperty());
+                    Assert.False(a.IsDelegateProperty());
+                    Assert.False(a.IsChildContentProperty());
+                    Assert.False(a.IsGenericTypedProperty());
+
+                });
+        }
+
+        [Fact]
+        public void Execute_EventCallbackProperty_CreatesDescriptor_OpenGeneric()
+        {
+            // Arrange
+
+            var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    public class MyComponent<T> : ComponentBase
+    {
+        [Parameter]
+        EventCallback<T> OnClick { get; set; }
+    }
+}
+
+"));
+
+            Assert.Empty(compilation.GetDiagnostics());
+
+            var context = TagHelperDescriptorProviderContext.Create();
+            context.SetCompilation(compilation);
+
+            var provider = new ComponentTagHelperDescriptorProvider();
+
+            // Act
+            provider.Execute(context);
+
+            // Assert
+            var components = ExcludeBuiltInComponents(context);
+            var component = Assert.Single(components);
+
+            Assert.Equal("TestAssembly", component.AssemblyName);
+            Assert.Equal("Test.MyComponent<T>", component.Name);
+
+            Assert.Collection(
+                component.BoundAttributes.OrderBy(a => a.Name),
+                a =>
+                {
+                    Assert.Equal("OnClick", a.Name);
+                    Assert.Equal("Microsoft.AspNetCore.Components.EventCallback<T>", a.TypeName);
+                    Assert.False(a.HasIndexer);
+                    Assert.False(a.IsBooleanProperty);
+                    Assert.False(a.IsEnum);
+                    Assert.False(a.IsStringProperty);
+                    Assert.True(a.IsEventCallbackProperty());
+                    Assert.False(a.IsDelegateProperty());
+                    Assert.False(a.IsChildContentProperty());
+                    Assert.True(a.IsGenericTypedProperty());
+
+                },
+                a =>
+                {
+                    Assert.Equal("T", a.Name);
+                    Assert.Equal("T", a.GetPropertyName());
+                    Assert.Equal("T", a.DisplayName);
+                    Assert.Equal("System.Type", a.TypeName);
+                    Assert.True(a.IsTypeParameterProperty());
+                });
+        }
+
+        [Fact]
         public void Execute_RenderFragmentProperty_CreatesDescriptors()
         {
             // Arrange

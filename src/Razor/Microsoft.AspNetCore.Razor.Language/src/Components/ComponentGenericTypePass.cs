@@ -218,6 +218,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                         // This is a weakly typed delegate, treat it as Action<object>
                         attribute.TypeName = "System.Action<System.Object>";
                     }
+                    else if (attribute.TypeName == null && (attribute.BoundAttribute?.IsEventCallbackProperty() ?? false))
+                    {
+                        // This is a weakly typed event-callback, treat it as EventCallback (non-generic)
+                        attribute.TypeName = ComponentsApi.EventCallback.FullTypeName;
+                    }
                     else if (attribute.TypeName == null)
                     {
                         // This is a weakly typed attribute, treat it as System.Object

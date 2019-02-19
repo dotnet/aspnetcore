@@ -55,6 +55,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
             public static readonly string DelegateSignatureKey = "Blazor.DelegateSignature";
 
+            public static readonly string EventCallbackKey = "Blazor.EventCallback";
+
             public static readonly string WeaklyTypedKey = "Blazor.IsWeaklyTyped";
 
             public static readonly string RuntimeName = "Blazor.IComponent";

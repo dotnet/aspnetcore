@@ -541,6 +541,55 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                         context.CodeWriter.Write(")");
                     }
                 }
+                else if (node.BoundAttribute?.IsEventCallbackProperty() ?? false)
+                {
+                    // This is the case where we are writing an EventCallback (a delegate with super-powers).
+                    //
+                    // An event callback can either be passed verbatim, or it can be created by the EventCallbackFactory.
+                    // Since we don't look at the code the user typed inside the attribute value, this is always
+                    // resolved via overloading.
+
+                    if (canTypeCheck && NeedsTypeCheck(node))
+                    {
+                        context.CodeWriter.Write(ComponentsApi.RuntimeHelpers.TypeCheck);
+                        context.CodeWriter.Write("<");
+                        context.CodeWriter.Write(node.TypeName);
+                        context.CodeWriter.Write(">");
+                        context.CodeWriter.Write("(");
+                    }
+
+                    // Microsoft.AspNetCore.Components.EventCallback.Factory.Create(this, ...) OR
+                    // Microsoft.AspNetCore.Components.EventCallback.Factory.Create<T>(this, ...)
+
+                    context.CodeWriter.Write(ComponentsApi.EventCallback.FactoryAccessor);
+                    context.CodeWriter.Write(".");
+                    context.CodeWriter.Write(ComponentsApi.EventCallbackFactory.CreateMethod);
+
+                    if (node.TryParseEventCallbackTypeArgument(out var argument))
+                    {
+                        context.CodeWriter.Write("<");
+                        context.CodeWriter.Write(argument);
+                        context.CodeWriter.Write(">");
+                    }
+
+                    context.CodeWriter.Write("(");
+                    context.CodeWriter.Write("this");
+                    context.CodeWriter.Write(", ");
+
+                    context.CodeWriter.WriteLine();
+
+                    for (var i = 0; i < tokens.Count; i++)
+                    {
+                        WriteCSharpToken(context, tokens[i]);
+                    }
+
+                    context.CodeWriter.Write(")");
+
+                    if (canTypeCheck && NeedsTypeCheck(node))
+                    {
+                        context.CodeWriter.Write(")");
+                    }
+                }
                 else
                 {
                     // This is the case when an attribute contains C# code

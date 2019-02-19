@@ -101,5 +101,42 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             formatter.WriteProperty(nameof(TagHelper), TagHelper?.DisplayName);
             formatter.WriteProperty(nameof(TypeName), TypeName);
         }
+
+        public bool TryParseEventCallbackTypeArgument(out string argument)
+        {
+            // This is ugly and ad-hoc, but for various layering reasons we can't just use Roslyn APIs
+            // to parse this. We need to parse this just before we write it out to the code generator,
+            // so we can't compute it up front either.
+
+            if (BoundAttribute == null || !BoundAttribute.IsEventCallbackProperty())
+            {
+                throw new InvalidOperationException("This attribute is not an EventCallback attribute.");
+            }
+
+            if (string.Equals(TypeName, ComponentsApi.EventCallback.FullTypeName, StringComparison.Ordinal))
+            {
+                // Non-Generic
+                argument = null;
+                return false;
+            }
+
+            if (TypeName != null && 
+                TypeName.Length > ComponentsApi.EventCallback.FullTypeName.Length + "<>".Length &&
+                TypeName.StartsWith(ComponentsApi.EventCallback.FullTypeName, StringComparison.Ordinal) &&
+                TypeName[ComponentsApi.EventCallback.FullTypeName.Length] == '<' &&
+                TypeName[TypeName.Length - 1] == '>')
+            {
+                // OK this is promising.
+                //
+                // Chop off leading `...EventCallback<` and let the length so the ending `>` is cut off as well.
+                argument = TypeName.Substring(ComponentsApi.EventCallback.FullTypeName.Length + 1, TypeName.Length - (ComponentsApi.EventCallback.FullTypeName.Length + "<>".Length));
+                return true;
+            }
+
+            // If we get here this is a failure. This should only happen if someone manages to mangle the name with extensibility.
+            // We don't really want to crash though.
+            argument = null;
+            return false;
+        }
     }
 }

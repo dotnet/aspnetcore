@@ -20,6 +20,25 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 string.Equals(value, bool.TrueString);
         }
 
+        /// <summary>
+        /// Gets a value indicating whether the attribute is of type <c>EventCallback</c> or
+        /// <c>EventCallback{T}</c>
+        /// </summary>
+        /// <param name="attribute">The <see cref="BoundAttributeDescriptor"/>.</param>
+        /// <returns><c>true</c> if the attribute is an event callback, otherwise <c>false</c>.</returns>
+        public static bool IsEventCallbackProperty(this BoundAttributeDescriptor attribute)
+        {
+            if (attribute == null)
+            {
+                throw new ArgumentNullException(nameof(attribute));
+            }
+
+            var key = BlazorMetadata.Component.EventCallbackKey;
+            return
+                attribute.Metadata.TryGetValue(key, out var value) &&
+                string.Equals(value, bool.TrueString);
+        }
+
         public static bool IsGenericTypedProperty(this BoundAttributeDescriptor attribute)
         {
             if (attribute == null)

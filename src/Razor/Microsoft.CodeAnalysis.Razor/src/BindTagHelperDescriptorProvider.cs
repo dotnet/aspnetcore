@@ -33,7 +33,7 @@ namespace Microsoft.CodeAnalysis.Razor
             // We generate:
             //      <input type="text" 
             //          value="@BindMethods.GetValue(FirstName)" 
-            //          onchange="@BindMethods.SetValue(__value => FirstName = __value, FirstName)"/>
+            //          onchange="@EventCallbackFactory.CreateBinder(this, __value => FirstName = __value, FirstName)"/>
             //
             // This isn't very different from code the user could write themselves - thus the pronouncement
             // that bind is very much like a macro.
@@ -356,7 +356,13 @@ namespace Microsoft.CodeAnalysis.Razor
                 for (var i = 0; i < tagHelper.BoundAttributes.Count; i++)
                 {
                     var changeAttribute = tagHelper.BoundAttributes[i];
-                    if (!changeAttribute.Name.EndsWith("Changed") || !changeAttribute.IsDelegateProperty())
+                    if (!changeAttribute.Name.EndsWith("Changed") || 
+
+                        // Allow the ValueChanged attribute to be a delegate or EventCallback<>.
+                        //
+                        // We assume that the Delegate or EventCallback<> has a matching type, and the C# compiler will help
+                        // you figure figure it out if you did it wrongly.
+                        (!changeAttribute.IsDelegateProperty() && !changeAttribute.IsEventCallbackProperty()))
                     {
                         continue;
                     }
@@ -367,7 +373,7 @@ namespace Microsoft.CodeAnalysis.Razor
                     var expressionAttributeName = valueAttributeName + "Expression";
                     for (var j = 0; j < tagHelper.BoundAttributes.Count; j++)
                     {
-                        if (tagHelper.BoundAttributes[j].Name == valueAttributeName && !tagHelper.BoundAttributes[j].IsDelegateProperty())
+                        if (tagHelper.BoundAttributes[j].Name == valueAttributeName)
                         {
                             valueAttribute = tagHelper.BoundAttributes[j];
                             

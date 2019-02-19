@@ -123,16 +123,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
             // Now rewrite the content of the value node to look like:
             //
-            // BindMethods.GetEventHandlerValue<TDelegate>(<code>)
+            // EventCallback.Factory.Create<T>(this, <code>)
             //
-            // This method is overloaded on string and TDelegate, which means that it will put the code in the
+            // This method is overloaded on string and T, which means that it will put the code in the
             // correct context for intellisense when typing in the attribute.
             var eventArgsType = node.TagHelper.GetEventArgsType();
             var tokens = new List<IntermediateToken>()
             {
                 new IntermediateToken()
                 {
-                    Content = $"{ComponentsApi.BindMethods.GetEventHandlerValue}<{eventArgsType}>(",
+                    Content = $"{ComponentsApi.EventCallback.FactoryAccessor}.{ComponentsApi.EventCallbackFactory.CreateMethod}<{eventArgsType}>(this, ",
                     Kind = TokenKind.CSharp
                 },
                 new IntermediateToken()

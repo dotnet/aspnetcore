@@ -460,7 +460,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             }
             else
             {
-                // See comments in BlazorDesignTimeNodeWriter for a description of the cases that are possible.
+                // See comments in ComponentDesignTimeNodeWriter for a description of the cases that are possible.
                 var tokens = GetCSharpTokens(node);
                 if ((node.BoundAttribute?.IsDelegateProperty() ?? false) ||
                     (node.BoundAttribute?.IsChildContentProperty() ?? false))
@@ -478,6 +478,47 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     }
 
                     if (canTypeCheck)
+                    {
+                        context.CodeWriter.Write(")");
+                    }
+                }
+                else if (node.BoundAttribute?.IsEventCallbackProperty() ?? false)
+                {
+                    if (canTypeCheck && NeedsTypeCheck(node))
+                    {
+                        context.CodeWriter.Write(ComponentsApi.RuntimeHelpers.TypeCheck);
+                        context.CodeWriter.Write("<");
+                        context.CodeWriter.Write(node.TypeName);
+                        context.CodeWriter.Write(">");
+                        context.CodeWriter.Write("(");
+                    }
+
+                    // Microsoft.AspNetCore.Components.EventCallback.Factory.Create(this, ...) OR
+                    // Microsoft.AspNetCore.Components.EventCallback.Factory.Create<T>(this, ...)
+
+                    context.CodeWriter.Write(ComponentsApi.EventCallback.FactoryAccessor);
+                    context.CodeWriter.Write(".");
+                    context.CodeWriter.Write(ComponentsApi.EventCallbackFactory.CreateMethod);
+
+                    if (node.TryParseEventCallbackTypeArgument(out var argument))
+                    {
+                        context.CodeWriter.Write("<");
+                        context.CodeWriter.Write(argument);
+                        context.CodeWriter.Write(">");
+                    }
+
+                    context.CodeWriter.Write("(");
+                    context.CodeWriter.Write("this");
+                    context.CodeWriter.Write(", ");
+
+                    for (var i = 0; i < tokens.Count; i++)
+                    {
+                        context.CodeWriter.Write(tokens[i].Content);
+                    }
+
+                    context.CodeWriter.Write(")");
+
+                    if (canTypeCheck && NeedsTypeCheck(node))
                     {
                         context.CodeWriter.Write(")");
                     }

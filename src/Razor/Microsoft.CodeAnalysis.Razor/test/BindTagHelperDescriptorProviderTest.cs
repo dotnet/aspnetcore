@@ -11,7 +11,7 @@ namespace Microsoft.CodeAnalysis.Razor
     public class BindTagHelperDescriptorProviderTest : BaseTagHelperDescriptorProviderTest
     {
         [Fact]
-        public void Execute_FindsBindTagHelperOnComponentType_CreatesDescriptor()
+        public void Execute_FindsBindTagHelperOnComponentType_Delegate_CreatesDescriptor()
         {
             // Arrange
             var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
@@ -74,6 +74,120 @@ namespace Test
             Assert.Equal("MyProperty", bind.Metadata[BlazorMetadata.Bind.ValueAttribute]);
             Assert.Equal("MyPropertyChanged", bind.Metadata[BlazorMetadata.Bind.ChangeAttribute]);
             Assert.Equal("MyPropertyExpression", bind.Metadata[BlazorMetadata.Bind.ExpressionAttribute]);
+
+            Assert.Equal(
+                "Binds the provided expression to the 'MyProperty' property and a change event " +
+                    "delegate to the 'MyPropertyChanged' property of the component.",
+                bind.Documentation);
+
+            // These are all trivially derived from the assembly/namespace/type name
+            Assert.Equal("TestAssembly", bind.AssemblyName);
+            Assert.Equal("Test.MyComponent", bind.Name);
+            Assert.Equal("Test.MyComponent", bind.DisplayName);
+            Assert.Equal("Test.MyComponent", bind.GetTypeName());
+
+            var rule = Assert.Single(bind.TagMatchingRules);
+            Assert.Empty(rule.Diagnostics);
+            Assert.False(rule.HasErrors);
+            Assert.Null(rule.ParentTag);
+            Assert.Equal("MyComponent", rule.TagName);
+            Assert.Equal(TagStructure.Unspecified, rule.TagStructure);
+
+            var requiredAttribute = Assert.Single(rule.Attributes);
+            Assert.Empty(requiredAttribute.Diagnostics);
+            Assert.Equal("bind-MyProperty", requiredAttribute.DisplayName);
+            Assert.Equal("bind-MyProperty", requiredAttribute.Name);
+            Assert.Equal(RequiredAttributeDescriptor.NameComparisonMode.FullMatch, requiredAttribute.NameComparison);
+            Assert.Null(requiredAttribute.Value);
+            Assert.Equal(RequiredAttributeDescriptor.ValueComparisonMode.None, requiredAttribute.ValueComparison);
+
+            var attribute = Assert.Single(bind.BoundAttributes);
+
+            // Invariants
+            Assert.Empty(attribute.Diagnostics);
+            Assert.False(attribute.HasErrors);
+            Assert.Equal(BlazorMetadata.Bind.TagHelperKind, attribute.Kind);
+            Assert.False(attribute.IsDefaultKind());
+            Assert.False(attribute.HasIndexer);
+            Assert.Null(attribute.IndexerNamePrefix);
+            Assert.Null(attribute.IndexerTypeName);
+            Assert.False(attribute.IsIndexerBooleanProperty);
+            Assert.False(attribute.IsIndexerStringProperty);
+
+            Assert.Equal(
+                "Binds the provided expression to the 'MyProperty' property and a change event " +
+                    "delegate to the 'MyPropertyChanged' property of the component.",
+                attribute.Documentation);
+
+            Assert.Equal("bind-MyProperty", attribute.Name);
+            Assert.Equal("MyProperty", attribute.GetPropertyName());
+            Assert.Equal("string Test.MyComponent.MyProperty", attribute.DisplayName);
+
+            // Defined from the property type
+            Assert.Equal("System.String", attribute.TypeName);
+            Assert.True(attribute.IsStringProperty);
+            Assert.False(attribute.IsBooleanProperty);
+            Assert.False(attribute.IsEnum);
+        }
+
+        [Fact]
+        public void Execute_FindsBindTagHelperOnComponentType_EventCallback_CreatesDescriptor()
+        {
+            // Arrange
+            var compilation = BaseCompilation.AddSyntaxTrees(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    public class MyComponent : IComponent
+    {
+        public void Init(RenderHandle renderHandle) { }
+
+        public void SetParameters(ParameterCollection parameters) { }
+
+        [Parameter]
+        string MyProperty { get; set; }
+
+        [Parameter]
+        EventCallback<string> MyPropertyChanged { get; set; }
+    }
+}
+"));
+
+            Assert.Empty(compilation.GetDiagnostics());
+
+            var context = TagHelperDescriptorProviderContext.Create();
+            context.SetCompilation(compilation);
+
+            // We run after component discovery and depend on the results.
+            var componentProvider = new ComponentTagHelperDescriptorProvider();
+            componentProvider.Execute(context);
+
+            var provider = new BindTagHelperDescriptorProvider();
+
+            // Act
+            provider.Execute(context);
+
+            // Assert
+            var matches = GetBindTagHelpers(context);
+            var bind = Assert.Single(matches);
+
+            // These are features Bind Tags Helpers don't use. Verifying them once here and
+            // then ignoring them.
+            Assert.Empty(bind.AllowedChildTags);
+            Assert.Null(bind.TagOutputHint);
+
+            // These are features that are invariants of all Bind Tag Helpers. Verifying them once
+            // here and then ignoring them.
+            Assert.Empty(bind.Diagnostics);
+            Assert.False(bind.HasErrors);
+            Assert.Equal(BlazorMetadata.Bind.TagHelperKind, bind.Kind);
+            Assert.Equal(BlazorMetadata.Bind.RuntimeName, bind.Metadata[TagHelperMetadata.Runtime.Name]);
+            Assert.False(bind.IsDefaultKind());
+            Assert.False(bind.KindUsesDefaultTagHelperRuntime());
+
+            Assert.Equal("MyProperty", bind.Metadata[BlazorMetadata.Bind.ValueAttribute]);
+            Assert.Equal("MyPropertyChanged", bind.Metadata[BlazorMetadata.Bind.ChangeAttribute]);
 
             Assert.Equal(
                 "Binds the provided expression to the 'MyProperty' property and a change event " +

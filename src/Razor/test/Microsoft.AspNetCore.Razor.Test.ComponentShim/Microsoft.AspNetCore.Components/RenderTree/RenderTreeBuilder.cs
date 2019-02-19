@@ -72,6 +72,14 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         {
         }
 
+        public void AddAttribute(int sequence, string name, EventCallback value)
+        {
+        }
+
+        public void AddAttribute<T>(int sequence, string name, EventCallback<T> value)
+        {
+        }
+
         public void AddAttribute(int sequence, string name, object value)
         {
         }

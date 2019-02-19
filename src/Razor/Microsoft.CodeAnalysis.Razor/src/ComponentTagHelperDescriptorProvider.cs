@@ -43,7 +43,7 @@ namespace Microsoft.CodeAnalysis.Razor
             // We need to see private members too
             compilation = WithMetadataImportOptionsAll(compilation);
 
-            var symbols = BlazorSymbols.Create(compilation);
+            var symbols = ComponentSymbols.Create(compilation);
 
             var types = new List<INamedTypeSymbol>();
             var visitor = new ComponentTypeVisitor(symbols, types);
@@ -81,7 +81,7 @@ namespace Microsoft.CodeAnalysis.Razor
             return compilation.WithOptions(newCompilationOptions);
         }
 
-        private TagHelperDescriptor CreateDescriptor(BlazorSymbols symbols, INamedTypeSymbol type)
+        private TagHelperDescriptor CreateDescriptor(ComponentSymbols symbols, INamedTypeSymbol type)
         {
             var typeName = type.ToDisplayString(FullNameTypeDisplayFormat);
             var assemblyName = type.ContainingAssembly.Identity.Name;
@@ -157,6 +157,11 @@ namespace Microsoft.CodeAnalysis.Razor
                     pb.Metadata.Add(BlazorMetadata.Component.ChildContentKey, bool.TrueString);
                 }
 
+                if (kind == PropertyKind.EventCallback)
+                {
+                    pb.Metadata.Add(BlazorMetadata.Component.EventCallbackKey, bool.TrueString);
+                }
+
                 if (kind == PropertyKind.Delegate)
                 {
                     pb.Metadata.Add(BlazorMetadata.Component.DelegateSignatureKey, bool.TrueString);
@@ -230,7 +235,7 @@ namespace Microsoft.CodeAnalysis.Razor
             });
         }
 
-        private TagHelperDescriptor CreateChildContentDescriptor(BlazorSymbols symbols, TagHelperDescriptor component, BoundAttributeDescriptor attribute)
+        private TagHelperDescriptor CreateChildContentDescriptor(ComponentSymbols symbols, TagHelperDescriptor component, BoundAttributeDescriptor attribute)
         {
             var typeName = component.GetTypeName() + "." + attribute.Name;
             var assemblyName = component.AssemblyName;
@@ -297,7 +302,7 @@ namespace Microsoft.CodeAnalysis.Razor
         // - have the [Parameter] attribute
         // - have a setter, even if private
         // - are not indexers
-        private IEnumerable<(IPropertySymbol property, PropertyKind kind)> GetProperties(BlazorSymbols symbols, INamedTypeSymbol type)
+        private IEnumerable<(IPropertySymbol property, PropertyKind kind)> GetProperties(ComponentSymbols symbols, INamedTypeSymbol type)
         {
             var properties = new Dictionary<string, (IPropertySymbol, PropertyKind)>(StringComparer.Ordinal);
             do
@@ -368,6 +373,19 @@ namespace Microsoft.CodeAnalysis.Razor
                         kind = PropertyKind.ChildContent;
                     }
 
+                    if (kind == PropertyKind.Default && property.Type == symbols.EventCallback)
+                    {
+                        kind = PropertyKind.EventCallback;
+                    }
+
+                    if (kind == PropertyKind.Default &&
+                        property.Type is INamedTypeSymbol namedType2 &&
+                        namedType2.IsGenericType &&
+                        namedType2.ConstructedFrom == symbols.EventCallbackOfT)
+                    {
+                        kind = PropertyKind.EventCallback;
+                    }
+
                     if (kind == PropertyKind.Default && property.Type.TypeKind == TypeKind.Delegate)
                     {
                         kind = PropertyKind.Delegate;
@@ -390,13 +408,18 @@ namespace Microsoft.CodeAnalysis.Razor
             Enum,
             ChildContent,
             Delegate,
+            EventCallback,
         }
 
-        private class BlazorSymbols
+        private class ComponentSymbols
         {
-            public static BlazorSymbols Create(Compilation compilation)
+            public static ComponentSymbols Create(Compilation compilation)
             {
-                var symbols = new BlazorSymbols();
+                // We find a bunch of important and fundamental types here that are needed to discover
+                // components. If one of these isn't defined then we just bail, because the results will
+                // be unpredictable.
+                var symbols = new ComponentSymbols();
+
                 symbols.ComponentBase = compilation.GetTypeByMetadataName(ComponentsApi.ComponentBase.MetadataName);
                 if (symbols.ComponentBase == null)
                 {
@@ -422,18 +445,34 @@ namespace Microsoft.CodeAnalysis.Razor
                 if (symbols.RenderFragment == null)
                 {
                     // No definition for RenderFragment, nothing to do.
+                    return null;
                 }
 
                 symbols.RenderFragmentOfT = compilation.GetTypeByMetadataName(ComponentsApi.RenderFragmentOfT.MetadataName);
                 if (symbols.RenderFragmentOfT == null)
                 {
-                    // No definition for RenderFragment, nothing to do.
+                    // No definition for RenderFragment<T>, nothing to do.
+                    return null;
+                }
+
+                symbols.EventCallback = compilation.GetTypeByMetadataName(ComponentsApi.EventCallback.MetadataName);
+                if (symbols.EventCallback == null)
+                {
+                    // No definition for EventCallback, nothing to do.
+                    return null;
+                }
+
+                symbols.EventCallbackOfT = compilation.GetTypeByMetadataName(ComponentsApi.EventCallbackOfT.MetadataName);
+                if (symbols.EventCallbackOfT == null)
+                {
+                    // No definition for EventCallback<T>, nothing to do.
+                    return null;
                 }
 
                 return symbols;
             }
 
-            private BlazorSymbols()
+            private ComponentSymbols()
             {
             }
 
@@ -446,14 +485,18 @@ namespace Microsoft.CodeAnalysis.Razor
             public INamedTypeSymbol RenderFragment { get; private set; }
 
             public INamedTypeSymbol RenderFragmentOfT { get; private set; }
+
+            public INamedTypeSymbol EventCallback { get; private set; }
+
+            public INamedTypeSymbol EventCallbackOfT { get; private set; }
         }
 
         private class ComponentTypeVisitor : SymbolVisitor
         {
-            private readonly BlazorSymbols _symbols;
+            private readonly ComponentSymbols _symbols;
             private readonly List<INamedTypeSymbol> _results;
 
-            public ComponentTypeVisitor(BlazorSymbols symbols, List<INamedTypeSymbol> results)
+            public ComponentTypeVisitor(ComponentSymbols symbols, List<INamedTypeSymbol> results)
             {
                 _symbols = symbols;
                 _results = results;

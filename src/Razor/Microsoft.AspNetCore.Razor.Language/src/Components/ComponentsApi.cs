@@ -129,5 +129,25 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         {
             public static readonly string FullTypeName = "Microsoft.AspNetCore.Components.ElementRef";
         }
+
+        public static class EventCallback
+        {
+            public static readonly string FullTypeName = "Microsoft.AspNetCore.Components.EventCallback";
+            public static readonly string MetadataName = FullTypeName;
+
+            public static readonly string FactoryAccessor = FullTypeName + ".Factory";
+        }
+
+        public static class EventCallbackOfT
+        {
+            public static readonly string MetadataName = "Microsoft.AspNetCore.Components.EventCallback`1";
+        }
+
+        public static class EventCallbackFactory
+        {
+            public static readonly string CreateMethod = "Create";
+            public static readonly string CreateInferredMethod = "CreateInferred";
+            public static readonly string CreateBinderMethod = "CreateBinder";
+        }
     }
 }

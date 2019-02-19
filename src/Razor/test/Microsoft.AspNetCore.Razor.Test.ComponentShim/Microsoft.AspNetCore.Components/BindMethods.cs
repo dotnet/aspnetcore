@@ -72,6 +72,24 @@ namespace Microsoft.AspNetCore.Components
         /// <summary>
         /// Not intended to be used directly.
         /// </summary>
+        public static EventCallback GetEventHandlerValue<T>(EventCallback value)
+            where T : UIEventArgs
+        {
+            return value;
+        }
+
+        /// <summary>
+        /// Not intended to be used directly.
+        /// </summary>
+        public static EventCallback<T> GetEventHandlerValue<T>(EventCallback<T> value)
+            where T : UIEventArgs
+        {
+            return value;
+        }
+
+        /// <summary>
+        /// Not intended to be used directly.
+        /// </summary>
         public static Action<UIEventArgs> SetValueHandler(Action<string> setter, string existingValue)
         {
             return _ => setter((string)((UIChangeEventArgs)_).Value);
