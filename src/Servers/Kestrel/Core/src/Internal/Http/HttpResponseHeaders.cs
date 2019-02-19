@@ -30,18 +30,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         internal void CopyTo(ref BufferWriter<PipeWriter> buffer)
         {
             CopyToFast(ref buffer);
-            if (MaybeUnknown != null)
+
+            var extraHeaders = MaybeUnknown;
+            if (extraHeaders != null && extraHeaders.Count > 0)
             {
-                foreach (var kv in MaybeUnknown)
+                // Only reserve stack space for the enumartors if there are extra headers
+                CopyExtraHeaders(extraHeaders, ref buffer);
+            }
+
+            void CopyExtraHeaders(Dictionary<string, StringValues> headers, ref BufferWriter<PipeWriter> buf)
+            {
+                foreach (var kv in headers)
                 {
                     foreach (var value in kv.Value)
                     {
                         if (value != null)
                         {
-                            buffer.Write(_CrLf);
-                            buffer.WriteAsciiNoValidation(kv.Key);
-                            buffer.Write(_colonSpace);
-                            buffer.WriteAsciiNoValidation(value);
+                            buf.Write(_CrLf);
+                            buf.WriteAsciiNoValidation(kv.Key);
+                            buf.Write(_colonSpace);
+                            buf.WriteAsciiNoValidation(value);
                         }
                     }
                 }
