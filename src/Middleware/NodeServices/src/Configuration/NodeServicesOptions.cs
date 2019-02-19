@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.NodeServices
 {
@@ -35,7 +36,7 @@ namespace Microsoft.AspNetCore.NodeServices
             InvocationTimeoutMilliseconds = DefaultInvocationTimeoutMilliseconds;
             WatchFileExtensions = (string[])DefaultWatchFileExtensions.Clone();
 
-            var hostEnv = serviceProvider.GetService<IHostingEnvironment>();
+            var hostEnv = serviceProvider.GetService<IWebHostEnvironment>();
             if (hostEnv != null)
             {
                 // In an ASP.NET environment, we can use the IHostingEnvironment data to auto-populate a few
@@ -48,7 +49,7 @@ namespace Microsoft.AspNetCore.NodeServices
                 ProjectPath = Directory.GetCurrentDirectory();
             }
 
-            var applicationLifetime = serviceProvider.GetService<IApplicationLifetime>();
+            var applicationLifetime = serviceProvider.GetService<IHostApplicationLifetime>();
             if (applicationLifetime != null)
             {
                 ApplicationStoppingToken = applicationLifetime.ApplicationStopping;

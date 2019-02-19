@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
     {
         private readonly TagHelperMemoryCacheProvider CacheProvider = new TagHelperMemoryCacheProvider();
         private readonly IMemoryCache MemoryCache = new MemoryCache(new MemoryCacheOptions());
-        private readonly IHostingEnvironment HostingEnvironment = Mock.Of<IHostingEnvironment>();
+        private readonly IWebHostEnvironment HostingEnvironment = Mock.Of<IWebHostEnvironment>();
         private readonly IFileVersionProvider FileVersionProvider = Mock.Of<IFileVersionProvider>();
 
         [Fact]

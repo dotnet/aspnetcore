@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Hosting
@@ -76,7 +77,7 @@ namespace Microsoft.AspNetCore.Hosting
                     {
                         services.AddSingleton(typeof(IStartup), sp =>
                         {
-                            var hostingEnvironment = sp.GetRequiredService<IHostingEnvironment>();
+                            var hostingEnvironment = sp.GetRequiredService<IHostEnvironment>();
                             return new ConventionBasedStartup(StartupLoader.LoadMethods(sp, startupType, hostingEnvironment.EnvironmentName));
                         });
                     }

@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test.DependencyInjection
             // Arrange
             var services = new ServiceCollection();
 
-            var hostingEnvironment = new Mock<IHostingEnvironment>();
+            var hostingEnvironment = new Mock<IWebHostEnvironment>();
             hostingEnvironment
                 .Setup(h => h.ApplicationName)
                 .Returns(applicationName);

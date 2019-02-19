@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
         public void GetCompilationOptions_ReturnsDefaultOptionsIfApplicationNameIsNullOrEmpty(string name)
         {
             // Arrange
-            var hostingEnvironment = Mock.Of<IHostingEnvironment>(e => e.ApplicationName == name);
+            var hostingEnvironment = Mock.Of<IWebHostEnvironment>(e => e.ApplicationName == name);
             var compiler = new CSharpCompiler(ReferenceManager, hostingEnvironment);
 
             // Act
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
         public void GetCompilationOptions_ReturnsDefaultOptionsIfApplicationDoesNotHaveDependencyContext()
         {
             // Arrange
-            var hostingEnvironment = Mock.Of<IHostingEnvironment>();
+            var hostingEnvironment = Mock.Of<IWebHostEnvironment>();
             var compiler = new CSharpCompiler(ReferenceManager, hostingEnvironment);
 
             // Act
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
         {
             // Arrange
             var options = new RazorViewEngineOptions();
-            var hostingEnvironment = new Mock<IHostingEnvironment>();
+            var hostingEnvironment = new Mock<IWebHostEnvironment>();
             hostingEnvironment.SetupGet(e => e.EnvironmentName)
                   .Returns(environment);
             var compiler = new CSharpCompiler(ReferenceManager, hostingEnvironment.Object);
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
         {
             // Arrange
             var options = new RazorViewEngineOptions();
-            var hostingEnvironment = new Mock<IHostingEnvironment>();
+            var hostingEnvironment = new Mock<IWebHostEnvironment>();
             hostingEnvironment.SetupGet(e => e.EnvironmentName)
                   .Returns(environment);
             var compiler = new CSharpCompiler(ReferenceManager, hostingEnvironment.Object);
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
         public void EnsureOptions_ConfiguresDefaultCompilationOptions()
         {
             // Arrange
-            var hostingEnvironment = Mock.Of<IHostingEnvironment>(h => h.EnvironmentName == "Development");
+            var hostingEnvironment = Mock.Of<IWebHostEnvironment>(h => h.EnvironmentName == "Development");
             var compiler = new CSharpCompiler(ReferenceManager, hostingEnvironment);
 
             // Act & Assert
@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
         public void EnsureOptions_ConfiguresDefaultParseOptions()
         {
             // Arrange
-            var hostingEnvironment = Mock.Of<IHostingEnvironment>(h => h.EnvironmentName == "Development");
+            var hostingEnvironment = Mock.Of<IWebHostEnvironment>(h => h.EnvironmentName == "Development");
             var compiler = new CSharpCompiler(ReferenceManager, hostingEnvironment);
 
             // Act & Assert
@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
         public void Constructor_ConfiguresPreprocessorSymbolNames()
         {
             // Arrange
-            var hostingEnvironment = Mock.Of<IHostingEnvironment>();
+            var hostingEnvironment = Mock.Of<IWebHostEnvironment>();
             var dependencyContextOptions = GetDependencyContextCompilationOptions("SOME_TEST_DEFINE");
 
             var compiler = new TestCSharpCompiler(ReferenceManager, hostingEnvironment, dependencyContextOptions);
@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
         {
             // Arrange
             var dependencyContextOptions = GetDependencyContextCompilationOptions(languageVersion: "7.1");
-            var hostingEnvironment = Mock.Of<IHostingEnvironment>();
+            var hostingEnvironment = Mock.Of<IWebHostEnvironment>();
 
             var compiler = new TestCSharpCompiler(ReferenceManager, hostingEnvironment, dependencyContextOptions);
 
@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
         {
             // Arrange
             var dependencyContextOptions = GetDependencyContextCompilationOptions(debugType: "portable");
-            var hostingEnvironment = Mock.Of<IHostingEnvironment>();
+            var hostingEnvironment = Mock.Of<IWebHostEnvironment>();
 
             var compiler = new TestCSharpCompiler(ReferenceManager, hostingEnvironment, dependencyContextOptions);
 
@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
         {
             // Arrange
             var dependencyContextOptions = GetDependencyContextCompilationOptions(debugType: "embedded");
-            var hostingEnvironment = Mock.Of<IHostingEnvironment>();
+            var hostingEnvironment = Mock.Of<IWebHostEnvironment>();
 
             var compiler = new TestCSharpCompiler(ReferenceManager, hostingEnvironment, dependencyContextOptions);
 
@@ -192,7 +192,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
         {
             // Arrange
             var dependencyContextOptions = GetDependencyContextCompilationOptions(debugType: "none");
-            var hostingEnvironment = Mock.Of<IHostingEnvironment>();
+            var hostingEnvironment = Mock.Of<IWebHostEnvironment>();
 
             var compiler = new TestCSharpCompiler(ReferenceManager, hostingEnvironment, dependencyContextOptions);
 
@@ -205,7 +205,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
         {
             // Arrange
             var dependencyContextOptions = GetDependencyContextCompilationOptions(allowUnsafe: true);
-            var hostingEnvironment = Mock.Of<IHostingEnvironment>();
+            var hostingEnvironment = Mock.Of<IWebHostEnvironment>();
 
             var compiler = new TestCSharpCompiler(ReferenceManager, hostingEnvironment, dependencyContextOptions);
 
@@ -219,7 +219,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
         {
             // Arrange
             var dependencyContextOptions = GetDependencyContextCompilationOptions(warningsAsErrors: true);
-            var hostingEnvironment = Mock.Of<IHostingEnvironment>();
+            var hostingEnvironment = Mock.Of<IWebHostEnvironment>();
 
             var compiler = new TestCSharpCompiler(ReferenceManager, hostingEnvironment, dependencyContextOptions);
 
@@ -233,7 +233,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
         {
             // Arrange
             var dependencyContextOptions = GetDependencyContextCompilationOptions(optimize: true);
-            var hostingEnvironment = Mock.Of<IHostingEnvironment>();
+            var hostingEnvironment = Mock.Of<IWebHostEnvironment>();
 
             var compiler = new TestCSharpCompiler(ReferenceManager, hostingEnvironment, dependencyContextOptions);
 
@@ -247,7 +247,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
         {
             // Arrange
             var dependencyContextOptions = GetDependencyContextCompilationOptions("MyDefine");
-            var hostingEnvironment = Mock.Of<IHostingEnvironment>();
+            var hostingEnvironment = Mock.Of<IWebHostEnvironment>();
             var compiler = new TestCSharpCompiler(ReferenceManager, hostingEnvironment, dependencyContextOptions);
 
             // Act & Assert
@@ -262,7 +262,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
             var content = "public class Test {}";
             var define = "MY_CUSTOM_DEFINE";
             var dependencyContextOptions = GetDependencyContextCompilationOptions(define);
-            var hostingEnvironment = Mock.Of<IHostingEnvironment>();
+            var hostingEnvironment = Mock.Of<IWebHostEnvironment>();
             var compiler = new TestCSharpCompiler(ReferenceManager, hostingEnvironment, dependencyContextOptions);
 
             // Act
@@ -305,7 +305,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
 
             public TestCSharpCompiler(
                 RazorReferenceManager referenceManager,
-                IHostingEnvironment hostingEnvironment,
+                IWebHostEnvironment hostingEnvironment,
                 DependencyContextCompilationOptions options)
                 : base(referenceManager, hostingEnvironment)
             {

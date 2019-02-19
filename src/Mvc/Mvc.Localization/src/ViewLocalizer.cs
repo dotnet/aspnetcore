@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.Localization
         /// </summary>
         /// <param name="localizerFactory">The <see cref="IHtmlLocalizerFactory"/>.</param>
         /// <param name="hostingEnvironment">The <see cref="IHostingEnvironment"/>.</param>
-        public ViewLocalizer(IHtmlLocalizerFactory localizerFactory, IHostingEnvironment hostingEnvironment)
+        public ViewLocalizer(IHtmlLocalizerFactory localizerFactory, IWebHostEnvironment hostingEnvironment)
         {
             if (localizerFactory == null)
             {

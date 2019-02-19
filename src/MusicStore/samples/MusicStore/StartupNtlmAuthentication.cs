@@ -36,7 +36,7 @@ namespace MusicStore
     /// </summary>
     public class StartupNtlmAuthentication
     {
-        public StartupNtlmAuthentication(IHostingEnvironment hostingEnvironment)
+        public StartupNtlmAuthentication(IWebHostEnvironment hostingEnvironment)
         {
             // Below code demonstrates usage of multiple configuration sources. For instance a setting say 'setting1'
             // is found in both the registered sources, then the later source will win. By this way a Local config

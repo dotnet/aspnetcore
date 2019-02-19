@@ -185,7 +185,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         private static RazorViewEngineOptions GetViewEngineOptions()
         {
-            var defaultSetup = new RazorViewEngineOptionsSetup(Mock.Of<IHostingEnvironment>());
+            var defaultSetup = new RazorViewEngineOptionsSetup();
             var options = new RazorViewEngineOptions();
             defaultSetup.Configure(options);
 

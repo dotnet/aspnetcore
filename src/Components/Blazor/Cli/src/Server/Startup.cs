@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Blazor.Cli.Server
 
         private static string FindClientAssemblyPath(IApplicationBuilder app)
         {
-            var env = app.ApplicationServices.GetRequiredService<IHostingEnvironment>();
+            var env = app.ApplicationServices.GetRequiredService<IWebHostEnvironment>();
             var contentRoot = env.ContentRootPath;
             var binDir = FindClientBinDir(contentRoot);
             var appName = Path.GetFileName(contentRoot); // TODO: Allow for the possibility that the assembly name has been overridden

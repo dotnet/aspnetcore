@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Mvc
         {
             // Arrange
             var services = new ServiceCollection();
-            services.AddSingleton<IHostingEnvironment>(GetHostingEnvironment());
+            services.AddSingleton<IWebHostEnvironment>(GetHostingEnvironment());
 
             // Register a mock implementation of each service, AddMvcServices should add another implementation.
             foreach (var serviceType in MultiRegistrationServiceTypes)
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Mvc
         {
             // Arrange
             var services = new ServiceCollection();
-            services.AddSingleton<IHostingEnvironment>(GetHostingEnvironment());
+            services.AddSingleton<IWebHostEnvironment>(GetHostingEnvironment());
 
             // Register a mock implementation of each service, AddMvcServices should not replace it.
             foreach (var serviceType in SingleRegistrationServiceTypes)
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Mvc
         {
             // Arrange
             var services = new ServiceCollection();
-            services.AddSingleton<IHostingEnvironment>(GetHostingEnvironment());
+            services.AddSingleton<IWebHostEnvironment>(GetHostingEnvironment());
 
             // Act
             services.AddMvc();
@@ -234,7 +234,7 @@ namespace Microsoft.AspNetCore.Mvc
             // Arrange
             var services = new ServiceCollection();
 
-            services.AddSingleton<IHostingEnvironment>(GetHostingEnvironment());
+            services.AddSingleton<IWebHostEnvironment>(GetHostingEnvironment());
 
             var diagnosticListener = new DiagnosticListener("Microsoft.AspNet");
             services.AddSingleton<DiagnosticSource>(diagnosticListener);
@@ -293,7 +293,7 @@ namespace Microsoft.AspNetCore.Mvc
             get
             {
                 var services = new ServiceCollection();
-                services.AddSingleton<IHostingEnvironment>(GetHostingEnvironment());
+                services.AddSingleton<IWebHostEnvironment>(GetHostingEnvironment());
                 services.AddMvc();
 
                 var multiRegistrationServiceTypes = MultiRegistrationServiceTypes;
@@ -477,9 +477,9 @@ namespace Microsoft.AspNetCore.Mvc
             }
         }
 
-        private IHostingEnvironment GetHostingEnvironment()
+        private IWebHostEnvironment GetHostingEnvironment()
         {
-            var environment = new Mock<IHostingEnvironment>();
+            var environment = new Mock<IWebHostEnvironment>();
             environment
                 .Setup(e => e.ApplicationName)
                 .Returns(typeof(MvcServiceCollectionExtensionsTest).GetTypeInfo().Assembly.GetName().Name);

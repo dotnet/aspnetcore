@@ -783,7 +783,7 @@ this should fail";
         {
             // Arrange
             var referenceManager = CreateReferenceManager();
-            var csharpCompiler = new TestCSharpCompiler(referenceManager, Mock.Of<IHostingEnvironment>())
+            var csharpCompiler = new TestCSharpCompiler(referenceManager, Mock.Of<IWebHostEnvironment>())
             {
                 EmitOptionsSettable = new EmitOptions(debugInformationFormat: DebugInformationFormat.Embedded),
             };
@@ -803,7 +803,7 @@ this should fail";
         {
             // Arrange
             var referenceManager = CreateReferenceManager();
-            var csharpCompiler = new TestCSharpCompiler(referenceManager, Mock.Of<IHostingEnvironment>())
+            var csharpCompiler = new TestCSharpCompiler(referenceManager, Mock.Of<IWebHostEnvironment>())
             {
                 EmitPdbSettable = false,
             };
@@ -835,7 +835,7 @@ this should fail";
             referenceManager = referenceManager ?? CreateReferenceManager();
             precompiledViews = precompiledViews ?? Array.Empty<CompiledViewDescriptor>();
 
-            var hostingEnvironment = Mock.Of<IHostingEnvironment>(e => e.ContentRootPath == "BasePath");
+            var hostingEnvironment = Mock.Of<IWebHostEnvironment>(e => e.ContentRootPath == "BasePath");
             var fileSystem = new FileProviderRazorProjectFileSystem(compilationFileProvider, hostingEnvironment);
             var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, fileSystem, builder =>
             {
@@ -891,7 +891,7 @@ this should fail";
 
         private class TestCSharpCompiler : CSharpCompiler
         {
-            public TestCSharpCompiler(RazorReferenceManager manager, IHostingEnvironment hostingEnvironment)
+            public TestCSharpCompiler(RazorReferenceManager manager, IWebHostEnvironment hostingEnvironment)
                 : base(manager, hostingEnvironment)
             {
             }

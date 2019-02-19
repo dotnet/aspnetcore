@@ -253,7 +253,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
             var compilationFileProvider = new RuntimeCompilationFileProvider(options);
             var fileSystem = new FileProviderRazorProjectFileSystem(
                 compilationFileProvider,
-                Mock.Of<IHostingEnvironment>(e => e.ContentRootPath == contentRootPath));
+                Mock.Of<IWebHostEnvironment>(e => e.ContentRootPath == contentRootPath));
             return fileSystem;
         }
     }

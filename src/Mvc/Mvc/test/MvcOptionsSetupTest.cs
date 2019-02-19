@@ -268,7 +268,7 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static void AddViewEngineOptionsServices(IServiceCollection serviceCollection)
         {
-            var hostingEnvironment = new Mock<IHostingEnvironment>();
+            var hostingEnvironment = new Mock<IWebHostEnvironment>();
             hostingEnvironment.SetupGet(e => e.ApplicationName)
                 .Returns(typeof(MvcOptionsSetupTest).GetTypeInfo().Assembly.GetName().Name);
 

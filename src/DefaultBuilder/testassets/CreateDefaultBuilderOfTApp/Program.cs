@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.HostFiltering;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 
 namespace CreateDefaultBuilderOfTApp
@@ -40,7 +41,7 @@ namespace CreateDefaultBuilderOfTApp
                         responseMessage = "AllowedHosts not loaded into Options.";
                     }
 
-                    var hostingEnvironment = app.ApplicationServices.GetRequiredService<IHostingEnvironment>();
+                    var hostingEnvironment = app.ApplicationServices.GetRequiredService<IHostEnvironment>();
                     return context.Response.WriteAsync(responseMessage ?? hostingEnvironment.ApplicationName);
                 }))
                 .Build()

@@ -9,9 +9,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
 {
     internal class MvcRazorRuntimeCompilationOptionsSetup : IConfigureOptions<MvcRazorRuntimeCompilationOptions>
     {
-        private readonly IHostingEnvironment _hostingEnvironment;
+        private readonly IWebHostEnvironment _hostingEnvironment;
 
-        public MvcRazorRuntimeCompilationOptionsSetup(IHostingEnvironment hostingEnvironment)
+        public MvcRazorRuntimeCompilationOptionsSetup(IWebHostEnvironment hostingEnvironment)
         {
             _hostingEnvironment = hostingEnvironment ?? throw new ArgumentNullException(nameof(hostingEnvironment));
         }
