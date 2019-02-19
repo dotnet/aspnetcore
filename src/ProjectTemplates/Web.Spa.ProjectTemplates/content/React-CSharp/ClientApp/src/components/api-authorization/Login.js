@@ -26,16 +26,16 @@ export class Login extends Component {
             case LoginActions.LoginCallback:
                 this.processLoginCallback();
                 break;
+            case LoginActions.LoginFailed:
+                const params = new URLSearchParams(window.location.search);
+                const error = params.get(QueryParameterNames.Message);
+                this.setState({ message: error });
+                break;
             case LoginActions.Profile:
                 this.redirectToProfile();
                 break;
             case LoginActions.Register:
                 this.redirectToRegister();
-                break;
-            case LoginActions.LoginFailed:
-                const params = new URLSearchParams(window.location.search);
-                const error = params.get(QueryParameterNames.Message);
-                this.setState({ message: error });
                 break;
             default:
                 throw new Error(`Invalid action '${action}'`);
@@ -89,7 +89,7 @@ export class Login extends Component {
         const result = await authService.completeSignIn(url);
         switch (result.status) {
             case AuthenticationResultStatus.Redirect:
-                // There should not be any redirects as the only time completeAuthentication finishes
+                // There should not be any redirects as the only time completeSignIn finishes
                 // is when we are doing a redirect sign in flow.
                 throw new Error('Should not redirect.');
             case AuthenticationResultStatus.Success:

@@ -28,6 +28,14 @@ export class AuthorizeService {
         map(user => user && user.access_token));
   }
 
+  // We try to authenticate the user in three different ways:
+  // 1) We try to see if we can authenticate the user silently. This happens
+  //    when the user is already logged in on the IdP and is done using a hidden iframe
+  //    on the client.
+  // 2) We try to authenticate the user using a PopUp Window. This might fail if there is a
+  //    Pop-Up blocker or the user has disabled PopUps.
+  // 3) If the two methods above fail, we redirect the browser to the IdP to perform a traditional
+  //    redirect flow.
   public async signIn(state: any): Promise<IAuthenticationResult> {
     await this.ensureUserManagerInitialized();
     let user: User = null;
@@ -36,18 +44,21 @@ export class AuthorizeService {
       this.userSubject.next(user.profile);
       return this.success(state);
     } catch (silentError) {
-      console.log("Silent authentication error: ", silentError);
       // User might not be authenticated, fallback to popup authentication
+      console.log("Silent authentication error: ", silentError);
+
       try {
         user = await this.userManager.signinPopup(this.createArguments(LoginMode.PopUp));
         this.userSubject.next(user.profile);
         return this.success(state);
       } catch (popupError) {
-        if(popupError.message === "Popup window closed"){
+        if (popupError.message === "Popup window closed") {
+          // The user explicitly cancelled the login action by closing an opened popup.
           return this.error("The user closed the window.");
         }
-        // PopUps might be blocked by the user, fallback to redirect
         console.log("Popup authentication error: ", popupError);
+
+        // PopUps might be blocked by the user, fallback to redirect
         try {
           const signInRequest = await this.userManager.createSigninRequest(
             this.createArguments(LoginMode.Redirect, state));
@@ -60,6 +71,13 @@ export class AuthorizeService {
     }
   }
 
+  // We are receiving a callback from the IdP. This code can be running in 3 situations:
+  // 1) As a hidden iframe started by a silent login on signIn (above). The code in the main
+  //    browser window will close the iframe after returning from signInSilent.
+  // 2) As a PopUp window started by a pop-up login on signIn (above). The code in the main
+  //    browser window will close the pop-up window after returning from signInPopUp
+  // 3) On the main browser window when the IdP redirects back to the app. We will process
+  //    the response and redirect to the return url or display an error message.
   public async completeSignIn(url: string): Promise<IAuthenticationResult> {
     await this.ensureUserManagerInitialized();
     let response = undefined;
@@ -69,11 +87,15 @@ export class AuthorizeService {
         return this.error(`${response.error}: ${response.error_description}`);
       }
     } catch (processSignInResponseError) {
-      if (processSignInResponseError.error !== "login_required") {
+      if (processSignInResponseError.error === "login_required") {
+        // This error is thrown by the underlying oidc client when it tries to log in
+        // the user silently as in case 1 defined above and the IdP requires the user
+        // to enter credentials. We let the user manager handle the response to notify
+        // the main window.
+        response = processSignInResponseError;
+      } else {
         console.log("There was an error processing the sign-in response: ", processSignInResponseError);
         return this.error("There was an error processing the sign-in response.");
-      } else {
-        response = processSignInResponseError;
       }
     }
 
@@ -106,11 +128,15 @@ export class AuthorizeService {
           console.log("Redirect callback authentication error: ", redirectCallbackError);
           return this.error("Redirect callback authentication error.");
         }
+      default:
+        throw new Error(`Invalid login mode '${mode}'.`);
     }
-
-    throw new Error("Should never get here.");
   }
-
+  // We try to sign out the user in two different ways:
+  // 1) We try to do a sign-out using a PopUp Window. This might fail if there is a
+  //    Pop-Up blocker or the user has disabled PopUps.
+  // 2) If the method above fails, we redirect the browser to the IdP to perform a traditional
+  //    post logout redirect flow.
   public async signOut(state: any): Promise<IAuthenticationResult> {
     await this.ensureUserManagerInitialized();
     try {
@@ -130,6 +156,11 @@ export class AuthorizeService {
     }
   }
 
+  // We are receiving a callback from the IdP. This code can be running in 2 situations:
+  // 1) As a PopUp window started by a pop-up login on signOut (above). The code in the main
+  //    browser window will close the pop-up window after returning from signOutPopUp
+  // 2) On the main browser window when the IdP redirects back to the app. We will process
+  //    the response and redirect to the logged-out url or display an error message.
   public async completeSignOut(url: string): Promise<IAuthenticationResult> {
     await this.ensureUserManagerInitialized();
     let response = undefined;
@@ -166,9 +197,9 @@ export class AuthorizeService {
           console.log("Redirect signout callback error: ", redirectCallbackError);
           return this.error("Redirect signout callback error");
         }
+      default:
+        throw new Error(`Invalid LoginMode '${mode}'.`);
     }
-
-    throw new Error("Should never get here.");
   }
 
   private async getSignInResponse(url: string) {
@@ -279,7 +310,6 @@ export enum AuthenticationResultStatus {
 export interface IUser {
   name: string
 }
-
 
 // Private interfaces
 enum LoginMode {

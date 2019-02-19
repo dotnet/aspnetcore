@@ -66,7 +66,7 @@ export class Logout extends Component {
 
     async logout(returnUrl) {
         const state = { returnUrl };
-        var isauthenticated = await authService.isAuthenticated();
+        const isauthenticated = await authService.isAuthenticated();
         if (isauthenticated) {
             const result = await authService.signOut(state);
             switch (result.status) {

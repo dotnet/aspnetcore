@@ -200,7 +200,6 @@ export class AuthorizeService {
             default:
                 throw new Error(`Invalid LoginMode '${mode}'.`);
         }
-
     }
 
     updateState(user) {

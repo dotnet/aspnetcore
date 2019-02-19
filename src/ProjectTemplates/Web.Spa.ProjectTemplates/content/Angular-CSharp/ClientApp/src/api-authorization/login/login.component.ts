@@ -4,6 +4,10 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { LoginActions, QueryParameterNames, ApplicationPaths, ReturnUrlType } from '../api-authorization.constants';
 
+// The main responsibility of this component is to handle the user's login process.
+// This is the starting point for the login process. Any component that needs to authenticate
+// a user can simply perform a redirect to this component with a returnUrl query parameter and
+// let the component perform the login and return back to the return url.
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
@@ -36,6 +40,8 @@ export class LoginComponent implements OnInit {
       case LoginActions.Register:
         this.redirectToRegister();
         break;
+      default:
+        throw new Error(`Invalid action '${action}'`);
     }
   }
 
@@ -46,6 +52,9 @@ export class LoginComponent implements OnInit {
     this.message.next(undefined);
     switch (result.status) {
       case AuthenticationResultStatus.Redirect:
+        // We replace the location here so that in case the user hits the back
+        // arrow from within the login page he doesn't get into an infinite
+        // redirect loop.
         window.location.replace(result.redirectUrl);
         break;
       case AuthenticationResultStatus.Success:
@@ -56,6 +65,8 @@ export class LoginComponent implements OnInit {
           queryParams: { [QueryParameterNames.Message]: result.message }
         });
         break;
+      default:
+        throw new Error(`Invalid status result ${result.status}.`);
     }
   }
 
@@ -85,25 +96,34 @@ export class LoginComponent implements OnInit {
   }
 
   private async navigateToReturnUrl(returnUrl: string) {
+    // It's important that we do a replace here so that we remove the callback uri with the
+    // fragment containing the tokens from the browser history.
     await this.router.navigateByUrl(returnUrl, {
       replaceUrl: true
     });
   }
 
   private getReturnUrl(state?: INavigationState): string {
+    const fromQuery = (this.activatedRoute.snapshot.queryParams as INavigationState).returnUrl;
+    // If the url is comming from the query string, check that is either
+    // a relative url or an absolute url
+    if (fromQuery &&
+      (!fromQuery.startsWith(`${window.location.origin}/`) ||
+        /\/[^\/].*/.test(fromQuery))) {
+      // This is an extra check to prevent open redirects.
+      throw new Error("Invalid return url. The return url needs to have the same origin as the current page.")
+    }
     return (state && state.returnUrl) ||
-      (this.activatedRoute.snapshot.queryParams as INavigationState).returnUrl ||
+      fromQuery ||
       ApplicationPaths.DefaultLoginRedirectPath;
   }
 
   private redirectToApiAuthorizationPath(apiAuthorizationPath: string) {
-    const redirectUrl = `${this.getBaseUrl()}${apiAuthorizationPath}`;
+    // It's important that we do a replace here so that when the user hits the back arrow on the
+    // browser he gets sent back to where it was on the app instead of to an endpoint on this
+    // component.
+    const redirectUrl = `${window.location.origin}${apiAuthorizationPath}`;
     window.location.replace(redirectUrl);
-  }
-
-  private getBaseUrl(): string {
-    const url = window.location;
-    return `${url.protocol}//${url.host}`;
   }
 }
 
