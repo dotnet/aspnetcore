@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Components
 
         public EventCallback Create(object receiver, Func<object, Task> callback) => default;
 
-        public EventCallback<T> Create<T>(object receiver, string callback) => default;
+        public string Create<T>(object receiver, string callback) => default;
 
         public EventCallback<T> Create<T>(object receiver, EventCallback<T> callback) => default;
 
