@@ -9,7 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Grpc.AspNetCore.Server" Version="1.0.0" />
+    <PackageReference Include="Grpc.AspNetCore.Server" Version="${GrpcAspNetCoreServerPackageVersion}" />
     <PackageReference Include="Google.Protobuf" Version="${GoogleProtobufPackageVersion}" />
 
     <PackageReference Include="Grpc.Tools" Version="${GrpcToolsPackageVersion}" PrivateAssets="All" />

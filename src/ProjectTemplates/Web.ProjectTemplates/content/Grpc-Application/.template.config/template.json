@@ -52,7 +52,10 @@
   },
   "primaryOutputs": [
     {
-      "path": "Grpc-Application.sln"
+      "path": "Grpc-Application.Client/Grpc-Application.Client.csproj"
+    },
+    {
+      "path": "Grpc-Application.Server/Grpc-Application.Server.csproj"
     }
   ],
   "defaultName": "gRPC-Application1",
