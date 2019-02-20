@@ -3,7 +3,6 @@
 
   <PropertyGroup>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <NoWarn>$(NoWarn);CS3021</NoWarn>
   </PropertyGroup>
 
 </Project>
