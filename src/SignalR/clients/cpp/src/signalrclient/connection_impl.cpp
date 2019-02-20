@@ -21,22 +21,21 @@ namespace signalr
         static void log(const logger& logger, trace_level level, const utility::string_t& entry);
     }
 
-    std::shared_ptr<connection_impl> connection_impl::create(const utility::string_t& url, const utility::string_t& query_string,
-        trace_level trace_level, const std::shared_ptr<log_writer>& log_writer)
+    std::shared_ptr<connection_impl> connection_impl::create(const utility::string_t& url, trace_level trace_level, const std::shared_ptr<log_writer>& log_writer)
     {
-        return connection_impl::create(url, query_string, trace_level, log_writer, std::make_unique<web_request_factory>(), std::make_unique<transport_factory>());
+        return connection_impl::create(url, trace_level, log_writer, std::make_unique<web_request_factory>(), std::make_unique<transport_factory>());
     }
 
-    std::shared_ptr<connection_impl> connection_impl::create(const utility::string_t& url, const utility::string_t& query_string, trace_level trace_level,
-        const std::shared_ptr<log_writer>& log_writer, std::unique_ptr<web_request_factory> web_request_factory, std::unique_ptr<transport_factory> transport_factory)
+    std::shared_ptr<connection_impl> connection_impl::create(const utility::string_t& url, trace_level trace_level, const std::shared_ptr<log_writer>& log_writer,
+        std::unique_ptr<web_request_factory> web_request_factory, std::unique_ptr<transport_factory> transport_factory)
     {
-        return std::shared_ptr<connection_impl>(new connection_impl(url, query_string, trace_level,
+        return std::shared_ptr<connection_impl>(new connection_impl(url, trace_level,
             log_writer ? log_writer : std::make_shared<trace_log_writer>(), std::move(web_request_factory), std::move(transport_factory)));
     }
 
-    connection_impl::connection_impl(const utility::string_t& url, const utility::string_t& query_string, trace_level trace_level, const std::shared_ptr<log_writer>& log_writer,
+    connection_impl::connection_impl(const utility::string_t& url, trace_level trace_level, const std::shared_ptr<log_writer>& log_writer,
         std::unique_ptr<web_request_factory> web_request_factory, std::unique_ptr<transport_factory> transport_factory)
-        : m_base_url(url), m_query_string(query_string), m_connection_state(connection_state::disconnected), m_logger(log_writer, trace_level),
+        : m_base_url(url), m_connection_state(connection_state::disconnected), m_logger(log_writer, trace_level),
         m_transport(nullptr), m_web_request_factory(std::move(web_request_factory)), m_transport_factory(std::move(transport_factory)),
         m_message_received([](const utility::string_t&) noexcept {}), m_disconnected([]() noexcept {})
     { }
@@ -84,94 +83,138 @@ namespace signalr
             m_message_id = m_groups_token = m_connection_id = _XPLATSTR("");
         }
 
+        return start_negotiate(m_base_url, 0);
+    }
+
+    pplx::task<void> connection_impl::start_negotiate(const web::uri& url, int redirect_count)
+    {
+        if (redirect_count >= MAX_NEGOTIATE_REDIRECTS)
+        {
+            return pplx::task_from_exception<void>(signalr_exception(_XPLATSTR("Negotiate redirection limit exceeded.")));
+        }
+
         pplx::task_completion_event<void> start_tce;
 
         auto weak_connection = weak_from_this();
 
         pplx::task_from_result()
-            .then([weak_connection]()
+            .then([weak_connection, url]()
+        {
+            auto connection = weak_connection.lock();
+            if (!connection)
             {
-                auto connection = weak_connection.lock();
-                if (!connection)
+                return pplx::task_from_exception<negotiation_response>(_XPLATSTR("connection no longer exists"));
+            }
+            return request_sender::negotiate(*connection->m_web_request_factory, url, connection->m_signalr_client_config);
+        }, m_disconnect_cts.get_token())
+            .then([weak_connection, start_tce, redirect_count, url](negotiation_response negotiation_response)
+        {
+            auto connection = weak_connection.lock();
+            if (!connection)
+            {
+                return pplx::task_from_exception<void>(_XPLATSTR("connection no longer exists"));
+            }
+
+            if (!negotiation_response.error.empty())
+            {
+                return pplx::task_from_exception<void>(signalr_exception(negotiation_response.error));
+            }
+
+            if (!negotiation_response.url.empty())
+            {
+                if (!negotiation_response.accessToken.empty())
                 {
-                    return pplx::task_from_exception<negotiation_response>(_XPLATSTR("connection no longer exists"));
+                    auto headers = connection->m_signalr_client_config.get_http_headers();
+                    headers[_XPLATSTR("Authorization")] = _XPLATSTR("Bearer ") + negotiation_response.accessToken;
+                    connection->m_signalr_client_config.set_http_headers(headers);
                 }
-                return request_sender::negotiate(*connection->m_web_request_factory, connection->m_base_url,
-                    connection->m_query_string, connection->m_signalr_client_config);
-            }, m_disconnect_cts.get_token())
-            .then([weak_connection](negotiation_response negotiation_response)
+                return connection->start_negotiate(negotiation_response.url, redirect_count + 1);
+            }
+
+            connection->m_connection_id = std::move(negotiation_response.connectionId);
+
+            // TODO: fallback logic
+
+            bool foundWebsockets = false;
+            for (auto availableTransport : negotiation_response.availableTransports)
+            {
+                if (availableTransport.transport == _XPLATSTR("WebSockets"))
+                {
+                    foundWebsockets = true;
+                    break;
+                }
+            }
+
+            if (!foundWebsockets)
+            {
+                return pplx::task_from_exception<void>(signalr_exception(_XPLATSTR("The server does not support WebSockets which is currently the only transport supported by this client.")));
+            }
+
+            // TODO: use transfer format
+
+            return connection->start_transport(url)
+                .then([weak_connection, start_tce](std::shared_ptr<transport> transport)
             {
                 auto connection = weak_connection.lock();
                 if (!connection)
                 {
                     return pplx::task_from_exception<void>(_XPLATSTR("connection no longer exists"));
                 }
-                connection->m_connection_id = std::move(negotiation_response.connection_id);
+                connection->m_transport = transport;
 
-                // TODO: check available transports
-
-                return connection->start_transport()
-                    .then([weak_connection](std::shared_ptr<transport> transport)
-                    {
-                        auto connection = weak_connection.lock();
-                        if (!connection)
-                        {
-                            return pplx::task_from_exception<void>(_XPLATSTR("connection no longer exists"));
-                        }
-                        connection->m_transport = transport;
-                        return pplx::task_from_result();
-                    });
-            }, m_disconnect_cts.get_token())
-            .then([start_tce, weak_connection](pplx::task<void> previous_task)
-            {
-                auto connection = weak_connection.lock();
-                if (!connection)
+                if (!connection->change_state(connection_state::connecting, connection_state::connected))
                 {
-                    return pplx::task_from_exception<void>(_XPLATSTR("connection no longer exists"));
-                }
-                try
-                {
-                    previous_task.get();
-                    if (!connection->change_state(connection_state::connecting, connection_state::connected))
-                    {
-                        connection->m_logger.log(trace_level::errors,
-                            utility::string_t(_XPLATSTR("internal error - transition from an unexpected state. expected state: connecting, actual state: "))
-                            .append(translate_connection_state(connection->get_connection_state())));
+                    connection->m_logger.log(trace_level::errors,
+                        utility::string_t(_XPLATSTR("internal error - transition from an unexpected state. expected state: connecting, actual state: "))
+                        .append(translate_connection_state(connection->get_connection_state())));
 
-                        _ASSERTE(false);
-                    }
-
-                    connection->m_start_completed_event.set();
-                    start_tce.set();
-                }
-                catch (const std::exception &e)
-                {
-                    auto task_canceled_exception = dynamic_cast<const pplx::task_canceled *>(&e);
-                    if (task_canceled_exception)
-                    {
-                        connection->m_logger.log(trace_level::info,
-                            _XPLATSTR("starting the connection has been canceled."));
-                    }
-                    else
-                    {
-                        connection->m_logger.log(trace_level::errors,
-                            utility::string_t(_XPLATSTR("connection could not be started due to: "))
-                            .append(utility::conversions::to_string_t(e.what())));
-                    }
-
-                    connection->m_transport = nullptr;
-                    connection->change_state(connection_state::disconnected);
-                    connection->m_start_completed_event.set();
-                    start_tce.set_exception(std::current_exception());
+                    _ASSERTE(false);
                 }
 
                 return pplx::task_from_result();
             });
+        }, m_disconnect_cts.get_token())
+            .then([start_tce, weak_connection](pplx::task<void> previous_task)
+        {
+            auto connection = weak_connection.lock();
+            if (!connection)
+            {
+                return pplx::task_from_exception<void>(_XPLATSTR("connection no longer exists"));
+            }
+            try
+            {
+                previous_task.get();
+                connection->m_start_completed_event.set();
+                start_tce.set();
+            }
+            catch (const std::exception & e)
+            {
+                auto task_canceled_exception = dynamic_cast<const pplx::task_canceled*>(&e);
+                if (task_canceled_exception)
+                {
+                    connection->m_logger.log(trace_level::info,
+                        _XPLATSTR("starting the connection has been canceled."));
+                }
+                else
+                {
+                    connection->m_logger.log(trace_level::errors,
+                        utility::string_t(_XPLATSTR("connection could not be started due to: "))
+                        .append(utility::conversions::to_string_t(e.what())));
+                }
+
+                connection->m_transport = nullptr;
+                connection->change_state(connection_state::disconnected);
+                connection->m_start_completed_event.set();
+                start_tce.set_exception(std::current_exception());
+            }
+
+            return pplx::task_from_result();
+        });
 
         return pplx::create_task(start_tce);
     }
 
-    pplx::task<std::shared_ptr<transport>> connection_impl::start_transport()
+    pplx::task<std::shared_ptr<transport>> connection_impl::start_transport(const web::uri& url)
     {
         auto connection = shared_from_this();
 
@@ -247,18 +290,15 @@ namespace signalr
             }
         });
 
-        return connection->send_connect_request(transport, connect_request_tce)
+        return connection->send_connect_request(transport, url, connect_request_tce)
             .then([transport](){ return pplx::task_from_result(transport); });
     }
 
-    pplx::task<void> connection_impl::send_connect_request(const std::shared_ptr<transport>& transport, const pplx::task_completion_event<void>& connect_request_tce)
+    pplx::task<void> connection_impl::send_connect_request(const std::shared_ptr<transport>& transport, const web::uri& url, const pplx::task_completion_event<void>& connect_request_tce)
     {
         auto logger = m_logger;
-        auto query_string = m_query_string;
-        if (!query_string.empty())
-            query_string.append(_XPLATSTR("&"));
-        query_string.append(_XPLATSTR("id=")).append(m_connection_id);
-        auto connect_url = url_builder::build_connect(m_base_url, transport->get_transport_type(), query_string);
+        auto query_string = _XPLATSTR("id=" + m_connection_id);
+        auto connect_url = url_builder::build_connect(url, transport->get_transport_type(), query_string);
 
         transport->connect(connect_url)
             .then([transport, connect_request_tce, logger](pplx::task<void> connect_task)

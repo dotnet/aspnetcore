@@ -25,11 +25,10 @@ namespace signalr
     class connection_impl : public std::enable_shared_from_this<connection_impl>
     {
     public:
-        static std::shared_ptr<connection_impl> create(const utility::string_t& url, const utility::string_t& query_string,
-            trace_level trace_level, const std::shared_ptr<log_writer>& log_writer);
+        static std::shared_ptr<connection_impl> create(const utility::string_t& url, trace_level trace_level, const std::shared_ptr<log_writer>& log_writer);
 
-        static std::shared_ptr<connection_impl> create(const utility::string_t& url, const utility::string_t& query_string, trace_level trace_level,
-            const std::shared_ptr<log_writer>& log_writer, std::unique_ptr<web_request_factory> web_request_factory, std::unique_ptr<transport_factory> transport_factory);
+        static std::shared_ptr<connection_impl> create(const utility::string_t& url, trace_level trace_level, const std::shared_ptr<log_writer>& log_writer,
+            std::unique_ptr<web_request_factory> web_request_factory, std::unique_ptr<transport_factory> transport_factory);
 
         connection_impl(const connection_impl&) = delete;
 
@@ -50,7 +49,6 @@ namespace signalr
 
     private:
         web::uri m_base_url;
-        utility::string_t m_query_string;
         std::atomic<connection_state> m_connection_state;
         logger m_logger;
         std::shared_ptr<transport> m_transport;
@@ -69,12 +67,13 @@ namespace signalr
         utility::string_t m_message_id;
         utility::string_t m_groups_token;
 
-        connection_impl(const utility::string_t& url, const utility::string_t& query_string, trace_level trace_level, const std::shared_ptr<log_writer>& log_writer,
+        connection_impl(const utility::string_t& url, trace_level trace_level, const std::shared_ptr<log_writer>& log_writer,
             std::unique_ptr<web_request_factory> web_request_factory, std::unique_ptr<transport_factory> transport_factory);
 
-        pplx::task<std::shared_ptr<transport>> start_transport();
+        pplx::task<std::shared_ptr<transport>> start_transport(const web::uri& url);
         pplx::task<void> send_connect_request(const std::shared_ptr<transport>& transport,
-            const pplx::task_completion_event<void>& connect_request_tce);
+            const web::uri& url, const pplx::task_completion_event<void>& connect_request_tce);
+        pplx::task<void> start_negotiate(const web::uri& url, int redirect_count);
 
         void process_response(const utility::string_t& response);
 

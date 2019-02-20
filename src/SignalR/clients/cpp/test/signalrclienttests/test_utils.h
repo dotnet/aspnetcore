@@ -17,5 +17,6 @@ std::shared_ptr<signalr::websocket_client> create_test_websocket_client(
 
 std::unique_ptr<signalr::web_request_factory> create_test_web_request_factory();
 utility::string_t create_uri();
+utility::string_t create_uri(const utility::string_t& query_string);
 std::vector<utility::string_t> filter_vector(const std::vector<utility::string_t>& source, const utility::string_t& string);
 utility::string_t dump_vector(const std::vector<utility::string_t>& source);

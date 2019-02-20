@@ -21,12 +21,12 @@ namespace signalr
     class hub_connection_impl : public std::enable_shared_from_this<hub_connection_impl>
     {
     public:
-        static std::shared_ptr<hub_connection_impl> create(const utility::string_t& url, const utility::string_t& query_string,
-            trace_level trace_level, const std::shared_ptr<log_writer>& log_writer);
+        static std::shared_ptr<hub_connection_impl> create(const utility::string_t& url, trace_level trace_level,
+            const std::shared_ptr<log_writer>& log_writer);
 
-        static std::shared_ptr<hub_connection_impl> create(const utility::string_t& url, const utility::string_t& query_string,
-            trace_level trace_level, const std::shared_ptr<log_writer>& log_writer,
-            std::unique_ptr<web_request_factory> web_request_factory, std::unique_ptr<transport_factory> transport_factory);
+        static std::shared_ptr<hub_connection_impl> create(const utility::string_t& url, trace_level trace_level,
+            const std::shared_ptr<log_writer>& log_writer, std::unique_ptr<web_request_factory> web_request_factory,
+            std::unique_ptr<transport_factory> transport_factory);
 
         hub_connection_impl(const hub_connection_impl&) = delete;
         hub_connection_impl& operator=(const hub_connection_impl&) = delete;
@@ -46,9 +46,8 @@ namespace signalr
         void set_disconnected(const std::function<void()>& disconnected);
 
     private:
-        hub_connection_impl(const utility::string_t& url, const utility::string_t& query_string, trace_level trace_level,
-            const std::shared_ptr<log_writer>& log_writer, std::unique_ptr<web_request_factory> web_request_factory,
-            std::unique_ptr<transport_factory> transport_factory);
+        hub_connection_impl(const utility::string_t& url, trace_level trace_level, const std::shared_ptr<log_writer>& log_writer,
+            std::unique_ptr<web_request_factory> web_request_factory, std::unique_ptr<transport_factory> transport_factory);
 
         std::shared_ptr<connection_impl> m_connection;
         logger m_logger;
@@ -57,6 +56,7 @@ namespace signalr
         bool m_handshakeReceived;
         pplx::task_completion_event<void> m_handshakeTask;
         std::function<void()> m_disconnected;
+        signalr_client_config m_signalr_client_config;
 
         void initialize();
 

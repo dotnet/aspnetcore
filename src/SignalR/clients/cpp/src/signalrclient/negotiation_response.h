@@ -7,9 +7,18 @@
 
 namespace signalr
 {
+    struct available_transport
+    {
+        utility::string_t transport;
+        std::vector<utility::string_t> transfer_formats;
+    };
+
     struct negotiation_response
     {
-        utility::string_t connection_id;
-        web::json::value availableTransports;
+        utility::string_t connectionId;
+        std::vector<available_transport> availableTransports;
+        utility::string_t url;
+        utility::string_t accessToken;
+        utility::string_t error;
     };
 }
