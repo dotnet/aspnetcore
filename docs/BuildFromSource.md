@@ -101,8 +101,10 @@ Using Visual Studio Code with this repo requires setting environment variables o
 Use these command to launch VS Code with the right settings.
 
 On Windows (requires PowerShell):
-```
-. activate.ps1
+```ps1
+# The extra dot at the beginning is required to 'dot source' this file into the right scope.
+
+. .\activate.ps1
 code .
 ```
 
@@ -134,6 +136,8 @@ to make the .NET Core command line tool work well. You can set these environment
 On Windows (requires PowerShell):
 
 ```ps1
+# The extra dot at the beginning is required to 'dot source' this file into the right scope.
+
 . .\activate.ps1
 ```
 
