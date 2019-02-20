@@ -93,7 +93,7 @@
 
     <!-- Build SharedFx Bundle Deb package -->
 
-    <Exec Command="./build.sh -i '$(IntermediateOutputPath)' -o '$(IntermediateOutputPath)out/'" />
+    <Exec Command="../tools/build.sh -i '$(IntermediateOutputPath)' -o '$(IntermediateOutputPath)out/'" />
 
     <PropertyGroup>
       <DebArch Condition=" '$(TargetArchitecture)' == 'x64' ">amd64</DebArch>
