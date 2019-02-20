@@ -7683,7 +7683,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         
         internal unsafe void CopyToFast(ref BufferWriter<PipeWriter> output)
         {
-            var tempBits = _bits | (_contentLength.HasValue ? 0x8000000000000000L : 0);
+            var tempBits = (ulong)_bits | (_contentLength.HasValue ? 0x8000000000000000L : 0);
             var next = 0;
             var keyStart = 0;
             var keyLength = 0;

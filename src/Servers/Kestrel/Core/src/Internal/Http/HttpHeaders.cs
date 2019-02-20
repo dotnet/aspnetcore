@@ -79,16 +79,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        protected static long ParseContentLength(string value)
-        {
-            if (!HeaderUtilities.TryParseNonNegativeInt64(value, out var parsed))
-            {
-                ThrowInvalidContentLengthException(value);
-            }
-
-            return parsed;
-        }
-
         protected static void ThrowHeadersReadOnlyException()
         {
             throw new InvalidOperationException(CoreStrings.HeadersAreReadOnly);
@@ -466,7 +456,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return transferEncodingOptions;
         }
 
-        private static void ThrowInvalidContentLengthException(string value)
+        protected static void ThrowInvalidContentLengthException(string value)
         {
             throw new InvalidOperationException(CoreStrings.FormatInvalidContentLength_InvalidNumber(value));
         }
