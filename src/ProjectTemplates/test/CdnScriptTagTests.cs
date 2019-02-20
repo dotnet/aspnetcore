@@ -157,7 +157,7 @@ namespace Templates.Test
 
         private async Task<string> GetShaIntegrity(string integrity, string src)
         {
-            var prefix = integrity.Substring(5);
+            var prefix = integrity.Substring(0, 6);
             using (var respStream = await _httpClient.GetStreamAsync(src))
             using (HashAlgorithm alg = string.Equals(prefix, "sha256") ? (HashAlgorithm)SHA256.Create() : (HashAlgorithm)SHA384.Create())
             {
