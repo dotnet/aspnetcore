@@ -12,9 +12,9 @@ namespace Microsoft.Extensions.Caching.Distributed
     public partial class DistributedCacheEntryOptions
     {
         public DistributedCacheEntryOptions() { }
-        public System.Nullable<System.DateTimeOffset> AbsoluteExpiration { get { throw null; } set { } }
-        public System.Nullable<System.TimeSpan> AbsoluteExpirationRelativeToNow { get { throw null; } set { } }
-        public System.Nullable<System.TimeSpan> SlidingExpiration { get { throw null; } set { } }
+        public System.DateTimeOffset? AbsoluteExpiration { get { throw null; } set { } }
+        public System.TimeSpan? AbsoluteExpirationRelativeToNow { get { throw null; } set { } }
+        public System.TimeSpan? SlidingExpiration { get { throw null; } set { } }
     }
     public static partial class DistributedCacheExtensions
     {
@@ -87,14 +87,14 @@ namespace Microsoft.Extensions.Caching.Memory
     }
     public partial interface ICacheEntry : System.IDisposable
     {
-        System.Nullable<System.DateTimeOffset> AbsoluteExpiration { get; set; }
-        System.Nullable<System.TimeSpan> AbsoluteExpirationRelativeToNow { get; set; }
+        System.DateTimeOffset? AbsoluteExpiration { get; set; }
+        System.TimeSpan? AbsoluteExpirationRelativeToNow { get; set; }
         System.Collections.Generic.IList<Microsoft.Extensions.Primitives.IChangeToken> ExpirationTokens { get; }
         object Key { get; }
         System.Collections.Generic.IList<Microsoft.Extensions.Caching.Memory.PostEvictionCallbackRegistration> PostEvictionCallbacks { get; }
         Microsoft.Extensions.Caching.Memory.CacheItemPriority Priority { get; set; }
-        System.Nullable<long> Size { get; set; }
-        System.Nullable<System.TimeSpan> SlidingExpiration { get; set; }
+        long? Size { get; set; }
+        System.TimeSpan? SlidingExpiration { get; set; }
         object Value { get; set; }
     }
     public partial interface IMemoryCache : System.IDisposable
@@ -117,13 +117,13 @@ namespace Microsoft.Extensions.Caching.Memory
     public partial class MemoryCacheEntryOptions
     {
         public MemoryCacheEntryOptions() { }
-        public System.Nullable<System.DateTimeOffset> AbsoluteExpiration { get { throw null; } set { } }
-        public System.Nullable<System.TimeSpan> AbsoluteExpirationRelativeToNow { get { throw null; } set { } }
+        public System.DateTimeOffset? AbsoluteExpiration { get { throw null; } set { } }
+        public System.TimeSpan? AbsoluteExpirationRelativeToNow { get { throw null; } set { } }
         public System.Collections.Generic.IList<Microsoft.Extensions.Primitives.IChangeToken> ExpirationTokens { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public System.Collections.Generic.IList<Microsoft.Extensions.Caching.Memory.PostEvictionCallbackRegistration> PostEvictionCallbacks { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public Microsoft.Extensions.Caching.Memory.CacheItemPriority Priority { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Nullable<long> Size { get { throw null; } set { } }
-        public System.Nullable<System.TimeSpan> SlidingExpiration { get { throw null; } set { } }
+        public long? Size { get { throw null; } set { } }
+        public System.TimeSpan? SlidingExpiration { get { throw null; } set { } }
     }
     public partial class PostEvictionCallbackRegistration
     {
