@@ -52,6 +52,6 @@
     <Reference Include="xunit.runner.console" Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' AND '$(IsHelixJob)' == 'true' " />
   </ItemGroup>
 
-  <Import Project="CSharp.Refs.props" Condition="'$(IsReferenceAssemblyProject)' == 'true'" />
+  <Import Project="CSharp.ReferenceAssembly.props" Condition="'$(IsReferenceAssemblyProject)' == 'true'" />
 
 </Project>

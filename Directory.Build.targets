@@ -23,7 +23,7 @@
   <PropertyGroup Condition=" '$(MSBuildProjectExtension)' == '.csproj' ">
     <PackageId Condition=" '$(PackageId)' == '' ">$(AssemblyName)</PackageId>
     <IsPackable Condition="'$(IsPackable)' == '' AND ( '$(IsTestProject)' == 'true' OR '$(IsTestAssetProject)' == 'true' OR '$(IsBenchmarkProject)' == 'true' OR '$(IsSampleProject)' == 'true' OR '$(IsReferenceAssemblyProject)' == 'true' ) ">false</IsPackable>
-    <HasReferenceAssembly Condition="'$(IsPackable)' == 'false' OR '$(IsShipping)' == 'false'">false</HasReferenceAssembly>
+    <HasReferenceAssembly Condition="'$(IsAspNetCoreApp)' != 'true' AND ('$(IsPackable)' == 'false' OR '$(IsShipping)' == 'false')">false</HasReferenceAssembly>
     <HasReferenceAssembly Condition="'$(IsAnalyzersProject)' == 'true' OR '$(IsSpecificationTestProject)' == 'true' OR '$(IsToolProject)' == 'true'">false</HasReferenceAssembly>
   </PropertyGroup>
 

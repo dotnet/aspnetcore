@@ -54,7 +54,7 @@
     <WriteLinesToFile Lines="@(ReferencedProjects)" File="$(ProjectsReferencedOutFile)" Overwrite="true" Condition="'$(ProjectsReferencedOutFile)' != ''" />
   </Target>
 
-  <Target Name="GenerateProjectList">
+  <Target Name="GenerateProjectList" DependsOnTargets="ResolveProjects">
     <MSBuild Projects="@(ProjectToBuild)"
              Targets="GetReferencesProvided"
              BuildInParallel="true"
