@@ -537,7 +537,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {{
                     return;
                 }}
-                tempBits &= ~{1L << header.Index}L;
+                tempBits &= ~{"0x" + (1L << header.Index).ToString("x")}L;
             }}
             ")}
         }}
