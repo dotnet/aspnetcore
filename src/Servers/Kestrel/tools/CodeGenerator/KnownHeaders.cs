@@ -347,7 +347,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     public partial class {loop.ClassName}
     {{{(loop.Bytes != null ?
         $@"
-        private static byte[] _headerBytes = new byte[]
+        private static ReadOnlySpan<byte> HeaderBytes => new byte[]
         {{
             {Each(loop.Bytes, b => $"{b},")}
         }};"
@@ -585,7 +585,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         OutputHeader:
             {{
                 var valueCount = values.Count;
-                var headerKey = new ReadOnlySpan<byte>(_headerBytes, keyStart, keyLength);
+                var headerKey = HeaderBytes.Slice(keyStart, keyLength);
                 for (var i = 0; i < valueCount; i++)
                 {{
                     var value = values[i];
@@ -633,7 +633,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     next = {hi.Index + 1};
                     goto OutputHeader;
                 }}")}" : $@"
-                output.Write(new ReadOnlySpan<byte>(_headerBytes, {hi.Header.BytesOffset}, {hi.Header.BytesCount}));
+                output.Write(HeaderBytes.Slice({hi.Header.BytesOffset}, {hi.Header.BytesCount}));
                 output.WriteNumeric((ulong)ContentLength.Value);
                 if (tempBits == 0)
                 {{
