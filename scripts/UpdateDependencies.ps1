@@ -63,7 +63,9 @@ function UpdateFromChain {
     )
     $sha = $details.SelectSingleNode("//Dependency[`@Name=`"$principalPackage`"]/Sha").InnerText
     $uri = "https://raw.githubusercontent.com/$principalRepo/$sha/eng/Version.Details.xml"
-    [xml] $extVersions = invoke-restmethod -uri $uri -Method get
+    $temp = "$env:TEMP/details.xml"
+    Invoke-WebRequest -uri $uri -o $temp
+    [xml] $extVersions = Get-Content $temp
 
     $dependentVersionDetails = $extVersions.SelectSingleNode("//Dependency[`@Name=`"$dependentPackage`"]")
     $preReleaseLabel = $dependentVersionDetails.Version.Substring( $dependentVersionDetails.Version.IndexOf('-'))
