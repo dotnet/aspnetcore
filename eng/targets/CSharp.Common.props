@@ -22,6 +22,8 @@
 
   <ItemGroup>
     <PackageReference Include="Internal.AspNetCore.Sdk" PrivateAssets="All" Version="$(InternalAspNetCoreSdkPackageVersion)" AllowExplicitReference="true" />
+    <!-- Required to exist in the NuGet package cache to enable code-signing. -->
+    <PackageReference Include="MicroBuild.Core" Version="0.3.0" PrivateAssets="All" AllowExplicitReference="true" ExcludeAssets="All" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' OR '$(RazorSdkCurrentVersionProps)' != ''">
