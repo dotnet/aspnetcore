@@ -24,7 +24,7 @@ namespace FunctionalTests
             {
                 var solutionRoot = ApplicationPaths.SolutionDirectory;
                 var projectName = typeof(TestEmbeddedResource).GetTypeInfo().Assembly.GetName().Name;
-                var fullPath = Path.Combine(solutionRoot, "test", ProjectName, "Resources", resourceFile);
+                var fullPath = Path.Combine(solutionRoot, "ViewCompilation", "test", "FunctionalTests", "Resources", resourceFile);
                 lock (_writeLock)
                 {
                     // Write content to the file, creating it if necessary.
