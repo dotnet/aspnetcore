@@ -4288,498 +4288,412 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public partial struct Enumerator
         {
+            // Compiled to Jump table
             public bool MoveNext()
             {
                 switch (_state)
                 {
-                    
                     case 0:
-                        goto state0;
-                    
+                        goto HeaderCacheControl;
                     case 1:
-                        goto state1;
-                    
+                        goto HeaderConnection;
                     case 2:
-                        goto state2;
-                    
+                        goto HeaderDate;
                     case 3:
-                        goto state3;
-                    
+                        goto HeaderKeepAlive;
                     case 4:
-                        goto state4;
-                    
+                        goto HeaderPragma;
                     case 5:
-                        goto state5;
-                    
+                        goto HeaderTrailer;
                     case 6:
-                        goto state6;
-                    
+                        goto HeaderTransferEncoding;
                     case 7:
-                        goto state7;
-                    
+                        goto HeaderUpgrade;
                     case 8:
-                        goto state8;
-                    
+                        goto HeaderVia;
                     case 9:
-                        goto state9;
-                    
+                        goto HeaderWarning;
                     case 10:
-                        goto state10;
-                    
+                        goto HeaderAllow;
                     case 11:
-                        goto state11;
-                    
+                        goto HeaderContentType;
                     case 12:
-                        goto state12;
-                    
+                        goto HeaderContentEncoding;
                     case 13:
-                        goto state13;
-                    
+                        goto HeaderContentLanguage;
                     case 14:
-                        goto state14;
-                    
+                        goto HeaderContentLocation;
                     case 15:
-                        goto state15;
-                    
+                        goto HeaderContentMD5;
                     case 16:
-                        goto state16;
-                    
+                        goto HeaderContentRange;
                     case 17:
-                        goto state17;
-                    
+                        goto HeaderExpires;
                     case 18:
-                        goto state18;
-                    
+                        goto HeaderLastModified;
                     case 19:
-                        goto state19;
-                    
+                        goto HeaderAccept;
                     case 20:
-                        goto state20;
-                    
+                        goto HeaderAcceptCharset;
                     case 21:
-                        goto state21;
-                    
+                        goto HeaderAcceptEncoding;
                     case 22:
-                        goto state22;
-                    
+                        goto HeaderAcceptLanguage;
                     case 23:
-                        goto state23;
-                    
+                        goto HeaderAuthorization;
                     case 24:
-                        goto state24;
-                    
+                        goto HeaderCookie;
                     case 25:
-                        goto state25;
-                    
+                        goto HeaderExpect;
                     case 26:
-                        goto state26;
-                    
+                        goto HeaderFrom;
                     case 27:
-                        goto state27;
-                    
+                        goto HeaderHost;
                     case 28:
-                        goto state28;
-                    
+                        goto HeaderIfMatch;
                     case 29:
-                        goto state29;
-                    
+                        goto HeaderIfModifiedSince;
                     case 30:
-                        goto state30;
-                    
+                        goto HeaderIfNoneMatch;
                     case 31:
-                        goto state31;
-                    
+                        goto HeaderIfRange;
                     case 32:
-                        goto state32;
-                    
+                        goto HeaderIfUnmodifiedSince;
                     case 33:
-                        goto state33;
-                    
+                        goto HeaderMaxForwards;
                     case 34:
-                        goto state34;
-                    
+                        goto HeaderProxyAuthorization;
                     case 35:
-                        goto state35;
-                    
+                        goto HeaderReferer;
                     case 36:
-                        goto state36;
-                    
+                        goto HeaderRange;
                     case 37:
-                        goto state37;
-                    
+                        goto HeaderTE;
                     case 38:
-                        goto state38;
-                    
+                        goto HeaderTranslate;
                     case 39:
-                        goto state39;
-                    
+                        goto HeaderUserAgent;
                     case 40:
-                        goto state40;
-                    
+                        goto HeaderOrigin;
                     case 41:
-                        goto state41;
-                    
+                        goto HeaderAccessControlRequestMethod;
                     case 42:
-                        goto state42;
-                    
+                        goto HeaderAccessControlRequestHeaders;
                     case 44:
-                        goto state44;
+                        goto HeaderContentLength;
                     default:
-                        goto state_default;
+                        goto ExtraHeaders;
                 }
                 
-                state0:
+                HeaderCacheControl:
                     if ((_bits & 1L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Cache-Control", _collection._headers._CacheControl);
                         _state = 1;
                         return true;
                     }
-                
-                state1:
+                HeaderConnection:
                     if ((_bits & 2L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Connection", _collection._headers._Connection);
                         _state = 2;
                         return true;
                     }
-                
-                state2:
+                HeaderDate:
                     if ((_bits & 4L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Date", _collection._headers._Date);
                         _state = 3;
                         return true;
                     }
-                
-                state3:
+                HeaderKeepAlive:
                     if ((_bits & 8L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Keep-Alive", _collection._headers._KeepAlive);
                         _state = 4;
                         return true;
                     }
-                
-                state4:
+                HeaderPragma:
                     if ((_bits & 16L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Pragma", _collection._headers._Pragma);
                         _state = 5;
                         return true;
                     }
-                
-                state5:
+                HeaderTrailer:
                     if ((_bits & 32L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Trailer", _collection._headers._Trailer);
                         _state = 6;
                         return true;
                     }
-                
-                state6:
+                HeaderTransferEncoding:
                     if ((_bits & 64L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Transfer-Encoding", _collection._headers._TransferEncoding);
                         _state = 7;
                         return true;
                     }
-                
-                state7:
+                HeaderUpgrade:
                     if ((_bits & 128L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Upgrade", _collection._headers._Upgrade);
                         _state = 8;
                         return true;
                     }
-                
-                state8:
+                HeaderVia:
                     if ((_bits & 256L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Via", _collection._headers._Via);
                         _state = 9;
                         return true;
                     }
-                
-                state9:
+                HeaderWarning:
                     if ((_bits & 512L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Warning", _collection._headers._Warning);
                         _state = 10;
                         return true;
                     }
-                
-                state10:
+                HeaderAllow:
                     if ((_bits & 1024L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Allow", _collection._headers._Allow);
                         _state = 11;
                         return true;
                     }
-                
-                state11:
+                HeaderContentType:
                     if ((_bits & 2048L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Content-Type", _collection._headers._ContentType);
                         _state = 12;
                         return true;
                     }
-                
-                state12:
+                HeaderContentEncoding:
                     if ((_bits & 4096L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Content-Encoding", _collection._headers._ContentEncoding);
                         _state = 13;
                         return true;
                     }
-                
-                state13:
+                HeaderContentLanguage:
                     if ((_bits & 8192L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Content-Language", _collection._headers._ContentLanguage);
                         _state = 14;
                         return true;
                     }
-                
-                state14:
+                HeaderContentLocation:
                     if ((_bits & 16384L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Content-Location", _collection._headers._ContentLocation);
                         _state = 15;
                         return true;
                     }
-                
-                state15:
+                HeaderContentMD5:
                     if ((_bits & 32768L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Content-MD5", _collection._headers._ContentMD5);
                         _state = 16;
                         return true;
                     }
-                
-                state16:
+                HeaderContentRange:
                     if ((_bits & 65536L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Content-Range", _collection._headers._ContentRange);
                         _state = 17;
                         return true;
                     }
-                
-                state17:
+                HeaderExpires:
                     if ((_bits & 131072L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Expires", _collection._headers._Expires);
                         _state = 18;
                         return true;
                     }
-                
-                state18:
+                HeaderLastModified:
                     if ((_bits & 262144L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Last-Modified", _collection._headers._LastModified);
                         _state = 19;
                         return true;
                     }
-                
-                state19:
+                HeaderAccept:
                     if ((_bits & 524288L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Accept", _collection._headers._Accept);
                         _state = 20;
                         return true;
                     }
-                
-                state20:
+                HeaderAcceptCharset:
                     if ((_bits & 1048576L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Accept-Charset", _collection._headers._AcceptCharset);
                         _state = 21;
                         return true;
                     }
-                
-                state21:
+                HeaderAcceptEncoding:
                     if ((_bits & 2097152L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Accept-Encoding", _collection._headers._AcceptEncoding);
                         _state = 22;
                         return true;
                     }
-                
-                state22:
+                HeaderAcceptLanguage:
                     if ((_bits & 4194304L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Accept-Language", _collection._headers._AcceptLanguage);
                         _state = 23;
                         return true;
                     }
-                
-                state23:
+                HeaderAuthorization:
                     if ((_bits & 8388608L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Authorization", _collection._headers._Authorization);
                         _state = 24;
                         return true;
                     }
-                
-                state24:
+                HeaderCookie:
                     if ((_bits & 16777216L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Cookie", _collection._headers._Cookie);
                         _state = 25;
                         return true;
                     }
-                
-                state25:
+                HeaderExpect:
                     if ((_bits & 33554432L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Expect", _collection._headers._Expect);
                         _state = 26;
                         return true;
                     }
-                
-                state26:
+                HeaderFrom:
                     if ((_bits & 67108864L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("From", _collection._headers._From);
                         _state = 27;
                         return true;
                     }
-                
-                state27:
+                HeaderHost:
                     if ((_bits & 134217728L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Host", _collection._headers._Host);
                         _state = 28;
                         return true;
                     }
-                
-                state28:
+                HeaderIfMatch:
                     if ((_bits & 268435456L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("If-Match", _collection._headers._IfMatch);
                         _state = 29;
                         return true;
                     }
-                
-                state29:
+                HeaderIfModifiedSince:
                     if ((_bits & 536870912L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("If-Modified-Since", _collection._headers._IfModifiedSince);
                         _state = 30;
                         return true;
                     }
-                
-                state30:
+                HeaderIfNoneMatch:
                     if ((_bits & 1073741824L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("If-None-Match", _collection._headers._IfNoneMatch);
                         _state = 31;
                         return true;
                     }
-                
-                state31:
+                HeaderIfRange:
                     if ((_bits & 2147483648L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("If-Range", _collection._headers._IfRange);
                         _state = 32;
                         return true;
                     }
-                
-                state32:
+                HeaderIfUnmodifiedSince:
                     if ((_bits & 4294967296L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("If-Unmodified-Since", _collection._headers._IfUnmodifiedSince);
                         _state = 33;
                         return true;
                     }
-                
-                state33:
+                HeaderMaxForwards:
                     if ((_bits & 8589934592L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Max-Forwards", _collection._headers._MaxForwards);
                         _state = 34;
                         return true;
                     }
-                
-                state34:
+                HeaderProxyAuthorization:
                     if ((_bits & 17179869184L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Proxy-Authorization", _collection._headers._ProxyAuthorization);
                         _state = 35;
                         return true;
                     }
-                
-                state35:
+                HeaderReferer:
                     if ((_bits & 34359738368L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Referer", _collection._headers._Referer);
                         _state = 36;
                         return true;
                     }
-                
-                state36:
+                HeaderRange:
                     if ((_bits & 68719476736L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Range", _collection._headers._Range);
                         _state = 37;
                         return true;
                     }
-                
-                state37:
+                HeaderTE:
                     if ((_bits & 137438953472L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("TE", _collection._headers._TE);
                         _state = 38;
                         return true;
                     }
-                
-                state38:
+                HeaderTranslate:
                     if ((_bits & 274877906944L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Translate", _collection._headers._Translate);
                         _state = 39;
                         return true;
                     }
-                
-                state39:
+                HeaderUserAgent:
                     if ((_bits & 549755813888L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("User-Agent", _collection._headers._UserAgent);
                         _state = 40;
                         return true;
                     }
-                
-                state40:
+                HeaderOrigin:
                     if ((_bits & 1099511627776L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Origin", _collection._headers._Origin);
                         _state = 41;
                         return true;
                     }
-                
-                state41:
+                HeaderAccessControlRequestMethod:
                     if ((_bits & 2199023255552L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Access-Control-Request-Method", _collection._headers._AccessControlRequestMethod);
                         _state = 42;
                         return true;
                     }
-                
-                state42:
+                HeaderAccessControlRequestHeaders:
                     if ((_bits & 4398046511104L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Access-Control-Request-Headers", _collection._headers._AccessControlRequestHeaders);
                         _state = 43;
                         return true;
                     }
-                
-                state44:
+                HeaderContentLength:
                     if (_collection._contentLength.HasValue)
                     {
                         _current = new KeyValuePair<string, StringValues>("Content-Length", HeaderUtilities.FormatNonNegativeInt64(_collection._contentLength.Value));
                         _state = 45;
                         return true;
                     }
-                state_default:
+                ExtraHeaders:
                     if (!_hasUnknown || !_unknownEnumerator.MoveNext())
                     {
                         _current = default(KeyValuePair<string, StringValues>);
@@ -7798,6 +7712,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
         MoveNext:
+            // Compiled to Jump table
             switch (index)
             {
                 case 0:
@@ -8316,410 +8231,340 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public partial struct Enumerator
         {
+            // Compiled to Jump table
             public bool MoveNext()
             {
                 switch (_state)
                 {
-                    
                     case 0:
-                        goto state0;
-                    
+                        goto HeaderCacheControl;
                     case 1:
-                        goto state1;
-                    
+                        goto HeaderConnection;
                     case 2:
-                        goto state2;
-                    
+                        goto HeaderDate;
                     case 3:
-                        goto state3;
-                    
+                        goto HeaderKeepAlive;
                     case 4:
-                        goto state4;
-                    
+                        goto HeaderPragma;
                     case 5:
-                        goto state5;
-                    
+                        goto HeaderTrailer;
                     case 6:
-                        goto state6;
-                    
+                        goto HeaderTransferEncoding;
                     case 7:
-                        goto state7;
-                    
+                        goto HeaderUpgrade;
                     case 8:
-                        goto state8;
-                    
+                        goto HeaderVia;
                     case 9:
-                        goto state9;
-                    
+                        goto HeaderWarning;
                     case 10:
-                        goto state10;
-                    
+                        goto HeaderAllow;
                     case 11:
-                        goto state11;
-                    
+                        goto HeaderContentType;
                     case 12:
-                        goto state12;
-                    
+                        goto HeaderContentEncoding;
                     case 13:
-                        goto state13;
-                    
+                        goto HeaderContentLanguage;
                     case 14:
-                        goto state14;
-                    
+                        goto HeaderContentLocation;
                     case 15:
-                        goto state15;
-                    
+                        goto HeaderContentMD5;
                     case 16:
-                        goto state16;
-                    
+                        goto HeaderContentRange;
                     case 17:
-                        goto state17;
-                    
+                        goto HeaderExpires;
                     case 18:
-                        goto state18;
-                    
+                        goto HeaderLastModified;
                     case 19:
-                        goto state19;
-                    
+                        goto HeaderAcceptRanges;
                     case 20:
-                        goto state20;
-                    
+                        goto HeaderAge;
                     case 21:
-                        goto state21;
-                    
+                        goto HeaderETag;
                     case 22:
-                        goto state22;
-                    
+                        goto HeaderLocation;
                     case 23:
-                        goto state23;
-                    
+                        goto HeaderProxyAuthenticate;
                     case 24:
-                        goto state24;
-                    
+                        goto HeaderRetryAfter;
                     case 25:
-                        goto state25;
-                    
+                        goto HeaderServer;
                     case 26:
-                        goto state26;
-                    
+                        goto HeaderSetCookie;
                     case 27:
-                        goto state27;
-                    
+                        goto HeaderVary;
                     case 28:
-                        goto state28;
-                    
+                        goto HeaderWWWAuthenticate;
                     case 29:
-                        goto state29;
-                    
+                        goto HeaderAccessControlAllowCredentials;
                     case 30:
-                        goto state30;
-                    
+                        goto HeaderAccessControlAllowHeaders;
                     case 31:
-                        goto state31;
-                    
+                        goto HeaderAccessControlAllowMethods;
                     case 32:
-                        goto state32;
-                    
+                        goto HeaderAccessControlAllowOrigin;
                     case 33:
-                        goto state33;
-                    
+                        goto HeaderAccessControlExposeHeaders;
                     case 34:
-                        goto state34;
-                    
+                        goto HeaderAccessControlMaxAge;
                     case 36:
-                        goto state36;
+                        goto HeaderContentLength;
                     default:
-                        goto state_default;
+                        goto ExtraHeaders;
                 }
                 
-                state0:
+                HeaderCacheControl:
                     if ((_bits & 1L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Cache-Control", _collection._headers._CacheControl);
                         _state = 1;
                         return true;
                     }
-                
-                state1:
+                HeaderConnection:
                     if ((_bits & 2L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Connection", _collection._headers._Connection);
                         _state = 2;
                         return true;
                     }
-                
-                state2:
+                HeaderDate:
                     if ((_bits & 4L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Date", _collection._headers._Date);
                         _state = 3;
                         return true;
                     }
-                
-                state3:
+                HeaderKeepAlive:
                     if ((_bits & 8L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Keep-Alive", _collection._headers._KeepAlive);
                         _state = 4;
                         return true;
                     }
-                
-                state4:
+                HeaderPragma:
                     if ((_bits & 16L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Pragma", _collection._headers._Pragma);
                         _state = 5;
                         return true;
                     }
-                
-                state5:
+                HeaderTrailer:
                     if ((_bits & 32L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Trailer", _collection._headers._Trailer);
                         _state = 6;
                         return true;
                     }
-                
-                state6:
+                HeaderTransferEncoding:
                     if ((_bits & 64L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Transfer-Encoding", _collection._headers._TransferEncoding);
                         _state = 7;
                         return true;
                     }
-                
-                state7:
+                HeaderUpgrade:
                     if ((_bits & 128L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Upgrade", _collection._headers._Upgrade);
                         _state = 8;
                         return true;
                     }
-                
-                state8:
+                HeaderVia:
                     if ((_bits & 256L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Via", _collection._headers._Via);
                         _state = 9;
                         return true;
                     }
-                
-                state9:
+                HeaderWarning:
                     if ((_bits & 512L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Warning", _collection._headers._Warning);
                         _state = 10;
                         return true;
                     }
-                
-                state10:
+                HeaderAllow:
                     if ((_bits & 1024L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Allow", _collection._headers._Allow);
                         _state = 11;
                         return true;
                     }
-                
-                state11:
+                HeaderContentType:
                     if ((_bits & 2048L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Content-Type", _collection._headers._ContentType);
                         _state = 12;
                         return true;
                     }
-                
-                state12:
+                HeaderContentEncoding:
                     if ((_bits & 4096L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Content-Encoding", _collection._headers._ContentEncoding);
                         _state = 13;
                         return true;
                     }
-                
-                state13:
+                HeaderContentLanguage:
                     if ((_bits & 8192L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Content-Language", _collection._headers._ContentLanguage);
                         _state = 14;
                         return true;
                     }
-                
-                state14:
+                HeaderContentLocation:
                     if ((_bits & 16384L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Content-Location", _collection._headers._ContentLocation);
                         _state = 15;
                         return true;
                     }
-                
-                state15:
+                HeaderContentMD5:
                     if ((_bits & 32768L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Content-MD5", _collection._headers._ContentMD5);
                         _state = 16;
                         return true;
                     }
-                
-                state16:
+                HeaderContentRange:
                     if ((_bits & 65536L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Content-Range", _collection._headers._ContentRange);
                         _state = 17;
                         return true;
                     }
-                
-                state17:
+                HeaderExpires:
                     if ((_bits & 131072L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Expires", _collection._headers._Expires);
                         _state = 18;
                         return true;
                     }
-                
-                state18:
+                HeaderLastModified:
                     if ((_bits & 262144L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Last-Modified", _collection._headers._LastModified);
                         _state = 19;
                         return true;
                     }
-                
-                state19:
+                HeaderAcceptRanges:
                     if ((_bits & 524288L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Accept-Ranges", _collection._headers._AcceptRanges);
                         _state = 20;
                         return true;
                     }
-                
-                state20:
+                HeaderAge:
                     if ((_bits & 1048576L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Age", _collection._headers._Age);
                         _state = 21;
                         return true;
                     }
-                
-                state21:
+                HeaderETag:
                     if ((_bits & 2097152L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("ETag", _collection._headers._ETag);
                         _state = 22;
                         return true;
                     }
-                
-                state22:
+                HeaderLocation:
                     if ((_bits & 4194304L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Location", _collection._headers._Location);
                         _state = 23;
                         return true;
                     }
-                
-                state23:
+                HeaderProxyAuthenticate:
                     if ((_bits & 8388608L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Proxy-Authenticate", _collection._headers._ProxyAuthenticate);
                         _state = 24;
                         return true;
                     }
-                
-                state24:
+                HeaderRetryAfter:
                     if ((_bits & 16777216L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Retry-After", _collection._headers._RetryAfter);
                         _state = 25;
                         return true;
                     }
-                
-                state25:
+                HeaderServer:
                     if ((_bits & 33554432L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Server", _collection._headers._Server);
                         _state = 26;
                         return true;
                     }
-                
-                state26:
+                HeaderSetCookie:
                     if ((_bits & 67108864L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Set-Cookie", _collection._headers._SetCookie);
                         _state = 27;
                         return true;
                     }
-                
-                state27:
+                HeaderVary:
                     if ((_bits & 134217728L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Vary", _collection._headers._Vary);
                         _state = 28;
                         return true;
                     }
-                
-                state28:
+                HeaderWWWAuthenticate:
                     if ((_bits & 268435456L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("WWW-Authenticate", _collection._headers._WWWAuthenticate);
                         _state = 29;
                         return true;
                     }
-                
-                state29:
+                HeaderAccessControlAllowCredentials:
                     if ((_bits & 536870912L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Access-Control-Allow-Credentials", _collection._headers._AccessControlAllowCredentials);
                         _state = 30;
                         return true;
                     }
-                
-                state30:
+                HeaderAccessControlAllowHeaders:
                     if ((_bits & 1073741824L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Access-Control-Allow-Headers", _collection._headers._AccessControlAllowHeaders);
                         _state = 31;
                         return true;
                     }
-                
-                state31:
+                HeaderAccessControlAllowMethods:
                     if ((_bits & 2147483648L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Access-Control-Allow-Methods", _collection._headers._AccessControlAllowMethods);
                         _state = 32;
                         return true;
                     }
-                
-                state32:
+                HeaderAccessControlAllowOrigin:
                     if ((_bits & 4294967296L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Access-Control-Allow-Origin", _collection._headers._AccessControlAllowOrigin);
                         _state = 33;
                         return true;
                     }
-                
-                state33:
+                HeaderAccessControlExposeHeaders:
                     if ((_bits & 8589934592L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Access-Control-Expose-Headers", _collection._headers._AccessControlExposeHeaders);
                         _state = 34;
                         return true;
                     }
-                
-                state34:
+                HeaderAccessControlMaxAge:
                     if ((_bits & 17179869184L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Access-Control-Max-Age", _collection._headers._AccessControlMaxAge);
                         _state = 35;
                         return true;
                     }
-                
-                state36:
+                HeaderContentLength:
                     if (_collection._contentLength.HasValue)
                     {
                         _current = new KeyValuePair<string, StringValues>("Content-Length", HeaderUtilities.FormatNonNegativeInt64(_collection._contentLength.Value));
                         _state = 37;
                         return true;
                     }
-                state_default:
+                ExtraHeaders:
                     if (!_hasUnknown || !_unknownEnumerator.MoveNext())
                     {
                         _current = default(KeyValuePair<string, StringValues>);
@@ -8922,36 +8767,34 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public partial struct Enumerator
         {
+            // Compiled to Jump table
             public bool MoveNext()
             {
                 switch (_state)
                 {
-                    
                     case 0:
-                        goto state0;
-                    
+                        goto HeaderETag;
                     case 1:
-                        goto state1;
+                        goto HeaderContentLength;
                     default:
-                        goto state_default;
+                        goto ExtraHeaders;
                 }
                 
-                state0:
+                HeaderETag:
                     if ((_bits & 1L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("ETag", _collection._headers._ETag);
                         _state = 1;
                         return true;
                     }
-                
-                state1:
+                HeaderContentLength:
                     if (_collection._contentLength.HasValue)
                     {
                         _current = new KeyValuePair<string, StringValues>("Content-Length", HeaderUtilities.FormatNonNegativeInt64(_collection._contentLength.Value));
                         _state = 2;
                         return true;
                     }
-                state_default:
+                ExtraHeaders:
                     if (!_hasUnknown || !_unknownEnumerator.MoveNext())
                     {
                         _current = default(KeyValuePair<string, StringValues>);

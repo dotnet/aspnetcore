@@ -596,6 +596,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }}
 
         MoveNext:
+            // Compiled to Jump table
             switch (index)
             {{{Each(loop.Headers.OrderBy(h => !h.PrimaryHeader).Select((h, i) => (Header: h, Index: i)), hi => $@"
                 case {hi.Index}:
@@ -661,36 +662,34 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public partial struct Enumerator
         {{
+            // Compiled to Jump table
             public bool MoveNext()
             {{
                 switch (_state)
-                {{
-                    {Each(loop.Headers.Where(header => header.Identifier != "ContentLength"), header => $@"
+                {{{Each(loop.Headers.Where(header => header.Identifier != "ContentLength"), header => $@"
                     case {header.Index}:
-                        goto state{header.Index};
-                    ")}
+                        goto Header{header.Identifier};")}
                     case {loop.Headers.Count()}:
-                        goto state{loop.Headers.Count()};
+                        goto HeaderContentLength;
                     default:
-                        goto state_default;
+                        goto ExtraHeaders;
                 }}
                 {Each(loop.Headers.Where(header => header.Identifier != "ContentLength"), header => $@"
-                state{header.Index}:
+                Header{header.Identifier}:
                     if ({header.TestBit()})
                     {{
                         _current = new KeyValuePair<string, StringValues>(""{header.Name}"", _collection._headers._{header.Identifier});
                         _state = {header.Index + 1};
                         return true;
-                    }}
-                ")}
-                state{loop.Headers.Count()}:
+                    }}")}
+                HeaderContentLength:
                     if (_collection._contentLength.HasValue)
                     {{
                         _current = new KeyValuePair<string, StringValues>(""Content-Length"", HeaderUtilities.FormatNonNegativeInt64(_collection._contentLength.Value));
                         _state = {loop.Headers.Count() + 1};
                         return true;
                     }}
-                state_default:
+                ExtraHeaders:
                     if (!_hasUnknown || !_unknownEnumerator.MoveNext())
                     {{
                         _current = default(KeyValuePair<string, StringValues>);
