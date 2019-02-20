@@ -19,14 +19,14 @@ namespace Microsoft.Extensions.Logging.AzureAppServices
     {
         public AzureFileLoggerOptions() { }
         public string FileName { get { throw null; } set { } }
-        public System.Nullable<int> FileSizeLimit { get { throw null; } set { } }
-        public System.Nullable<int> RetainedFileCountLimit { get { throw null; } set { } }
+        public int? FileSizeLimit { get { throw null; } set { } }
+        public int? RetainedFileCountLimit { get { throw null; } set { } }
     }
     public partial class BatchingLoggerOptions
     {
         public BatchingLoggerOptions() { }
-        public System.Nullable<int> BackgroundQueueSize { get { throw null; } set { } }
-        public System.Nullable<int> BatchSize { get { throw null; } set { } }
+        public int? BackgroundQueueSize { get { throw null; } set { } }
+        public int? BatchSize { get { throw null; } set { } }
         public System.TimeSpan FlushPeriod { get { throw null; } set { } }
         public bool IncludeScopes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public bool IsEnabled { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
