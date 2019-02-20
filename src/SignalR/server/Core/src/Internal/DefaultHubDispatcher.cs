@@ -130,14 +130,19 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                     break;
 
                 case StreamItemMessage streamItem:
-                    Log.ReceivedStreamItem(_logger, streamItem);
                     return ProcessStreamItem(connection, streamItem);
 
                 case CompletionMessage streamCompleteMessage:
                     // closes channels, removes from Lookup dict
                     // user's method can see the channel is complete and begin wrapping up
-                    Log.CompletingStream(_logger, streamCompleteMessage);
-                    connection.StreamTracker.Complete(streamCompleteMessage);
+                    if (connection.StreamTracker.TryComplete(streamCompleteMessage))
+                    {
+                        Log.CompletingStream(_logger, streamCompleteMessage);
+                    }
+                    else
+                    {
+                        Log.UnexpectedStreamCompletion(_logger);
+                    }
                     break;
 
                 // Other kind of message we weren't expecting
@@ -153,7 +158,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         {
             Log.FailedInvokingHubMethod(_logger, bindingFailureMessage.Target, bindingFailureMessage.BindingFailure.SourceException);
 
-
             var errorMessage = ErrorMessageHelper.BuildErrorMessage($"Failed to invoke '{bindingFailureMessage.Target}' due to an error on the server.",
                 bindingFailureMessage.BindingFailure.SourceException, _enableDetailedErrors);
             return SendInvocationError(bindingFailureMessage.InvocationId, connection, errorMessage);
@@ -167,15 +171,25 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
             var message = CompletionMessage.WithError(bindingFailureMessage.Id, errorString);
             Log.ClosingStreamWithBindingError(_logger, message);
-            connection.StreamTracker.Complete(message);
+
+            // ignore failure, it means the client already completed the stream or the stream never existed on the server
+            connection.StreamTracker.TryComplete(message);
+
+            // TODO: Send stream completion message to client when we add it
 
             return Task.CompletedTask;
         }
 
         private Task ProcessStreamItem(HubConnectionContext connection, StreamItemMessage message)
         {
+            if (!connection.StreamTracker.TryProcessItem(message, out var processTask))
+            {
+                Log.UnexpectedStreamItem(_logger);
+                return Task.CompletedTask;
+            }
+
             Log.ReceivedStreamItem(_logger, message);
-            return connection.StreamTracker.ProcessItem(message);
+            return processTask;
         }
 
         private Task ProcessInvocation(HubConnectionContext connection,
@@ -370,12 +384,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             {
                 foreach (var stream in hubMessage.StreamIds)
                 {
-                    try
-                    {
-                        connection.StreamTracker.Complete(CompletionMessage.Empty(stream));
-                    }
-                    // ignore failures, it means the client already completed the streams
-                    catch (KeyNotFoundException) { }
+                    connection.StreamTracker.TryComplete(CompletionMessage.Empty(stream));
                 }
             }
 

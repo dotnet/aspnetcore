@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Hosting.Internal;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Hosting
 {
@@ -105,7 +106,7 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 await host.StartAsync(token);
 
-                var hostingEnvironment = host.Services.GetService<IHostingEnvironment>();
+                var hostingEnvironment = host.Services.GetService<IHostEnvironment>();
                 var options = host.Services.GetRequiredService<WebHostOptions>();
 
                 if (!options.SuppressStatusMessages)
@@ -146,11 +147,11 @@ namespace Microsoft.AspNetCore.Hosting
 
         private static async Task WaitForTokenShutdownAsync(this IWebHost host, CancellationToken token)
         {
-            var applicationLifetime = host.Services.GetService<IApplicationLifetime>();
+            var applicationLifetime = host.Services.GetService<IHostApplicationLifetime>();
 
             token.Register(state =>
             {
-                ((IApplicationLifetime)state).StopApplication();
+                ((IHostApplicationLifetime)state).StopApplication();
             },
             applicationLifetime);
 

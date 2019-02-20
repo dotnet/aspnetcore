@@ -1,0 +1,11 @@
+.modified.valid {
+    box-shadow: 0px 0px 0px 2px rgb(78, 203, 37);
+}
+
+.invalid {
+    box-shadow: 0px 0px 0px 2px rgb(255, 0, 0);
+}
+
+.validation-message {
+    color: red;
+}

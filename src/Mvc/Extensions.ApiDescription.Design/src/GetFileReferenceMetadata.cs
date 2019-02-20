@@ -78,30 +78,13 @@ namespace Microsoft.Extensions.ApiDescription.Tasks
                     Log.LogError(Resources.FormatInvalidEmptyMetadataValue("CodeGenerator", type, item.ItemSpec));
                 }
 
-                var className = item.GetMetadata("ClassName");
-                if (string.IsNullOrEmpty(className))
-                {
-                    var filename = item.GetMetadata("Filename");
-                    className = $"{filename}Client";
-                    if (char.IsLower(className[0]))
-                    {
-                        className = char.ToUpper(className[0]) + className.Substring(startIndex: 1);
-                    }
-
-                    MetadataSerializer.SetMetadata(newItem, "ClassName", className);
-                }
-
-                var @namespace = item.GetMetadata("Namespace");
-                if (string.IsNullOrEmpty(@namespace))
-                {
-                    MetadataSerializer.SetMetadata(newItem, "Namespace", Namespace);
-                }
-
                 var outputPath = item.GetMetadata("OutputPath");
                 if (string.IsNullOrEmpty(outputPath))
                 {
+                    // No need to further sanitize this path.
+                    var filename = item.GetMetadata("Filename");
                     var isTypeScript = codeGenerator.EndsWith(TypeScriptLanguageName, StringComparison.OrdinalIgnoreCase);
-                    outputPath = $"{className}{(isTypeScript ? ".ts" : Extension)}";
+                    outputPath = $"{filename}Client{(isTypeScript ? ".ts" : Extension)}";
                 }
 
                 // Place output file in correct directory (relative to project directory).
@@ -118,6 +101,21 @@ namespace Microsoft.Extensions.ApiDescription.Tasks
                 }
 
                 MetadataSerializer.SetMetadata(newItem, "OutputPath", outputPath);
+
+                var className = item.GetMetadata("ClassName");
+                if (string.IsNullOrEmpty(className))
+                {
+                    var outputFilename = Path.GetFileNameWithoutExtension(outputPath);
+
+                    className = CSharpIdentifier.SanitizeIdentifier(outputFilename);
+                    MetadataSerializer.SetMetadata(newItem, "ClassName", className);
+                }
+
+                var @namespace = item.GetMetadata("Namespace");
+                if (string.IsNullOrEmpty(@namespace))
+                {
+                    MetadataSerializer.SetMetadata(newItem, "Namespace", Namespace);
+                }
 
                 // Add metadata which may be used as a property and passed to an inner build.
                 newItem.RemoveMetadata("SerializedMetadata");

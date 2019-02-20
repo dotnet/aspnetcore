@@ -172,6 +172,8 @@
     <MvcTestingTargets>$(MSBuildThisFileDirectory)src\Mvc\Mvc.Testing\src\Microsoft.AspNetCore.Mvc.Testing.targets</MvcTestingTargets>
     <!-- IIS native projects can only be built on Windows for x86 and x64. -->
     <BuildIisNativeProjects Condition="'$(BuildNative)' != 'false' AND '$(TargetOsName)' == 'win' AND ('$(TargetArchitecture)' == 'x86' OR '$(TargetArchitecture)' == 'x64')">true</BuildIisNativeProjects>
+    <!-- This property is shared by several projects to layout the AspNetCore.App targeting pack for installers -->
+    <TargetingPackLayoutRoot>$(ArtifactsObjDir)TargetingPack.Layout\$(Configuration)\</TargetingPackLayoutRoot>
   </PropertyGroup>
 
   <Import Project="eng\Workarounds.props" />

@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.Options;
@@ -1269,7 +1270,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         {
             public string Property { get; set; }
 
-            [ModelBinder(typeof(object))]
+            [ModelBinder(typeof(ComplexTypeModelBinder))]
             public string BinderType { get; set; }
 
             [FromRoute]
@@ -1306,7 +1307,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
             // Assert
             var bindingInfo = property.BindingInfo;
-            Assert.Same(typeof(object), bindingInfo.BinderType);
+            Assert.Same(typeof(ComplexTypeModelBinder), bindingInfo.BinderType);
         }
 
         [Fact]
@@ -1334,7 +1335,8 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         public void CreatePropertyModel_AppliesBindPropertyAttributeDeclaredOnBaseType()
         {
             // Arrange
-            var propertyInfo = typeof(DerivedFromBindPropertyController).GetProperty(nameof(DerivedFromBindPropertyController.DerivedProperty));
+            var propertyInfo = typeof(DerivedFromBindPropertyController).GetProperty(
+                nameof(DerivedFromBindPropertyController.DerivedProperty));
 
             // Act
             var property = Provider.CreatePropertyModel(propertyInfo);

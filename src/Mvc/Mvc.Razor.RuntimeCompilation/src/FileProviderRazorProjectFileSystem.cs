@@ -14,9 +14,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
     {
         private const string RazorFileExtension = ".cshtml";
         private readonly RuntimeCompilationFileProvider _fileProvider;
-        private readonly IHostingEnvironment _hostingEnvironment;
+        private readonly IWebHostEnvironment _hostingEnvironment;
 
-        public FileProviderRazorProjectFileSystem(RuntimeCompilationFileProvider fileProvider, IHostingEnvironment hostingEnvironment)
+        public FileProviderRazorProjectFileSystem(RuntimeCompilationFileProvider fileProvider, IWebHostEnvironment hostingEnvironment)
         {
             if (fileProvider == null)
             {

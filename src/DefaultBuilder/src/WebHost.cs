@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -118,9 +119,9 @@ namespace Microsoft.AspNetCore
         /// <remarks>
         ///   The following defaults are applied to the returned <see cref="WebHostBuilder"/>:
         ///     use Kestrel as the web server and configure it using the application's configuration providers,
-        ///     set the <see cref="IHostingEnvironment.ContentRootPath"/> to the result of <see cref="Directory.GetCurrentDirectory()"/>,
-        ///     load <see cref="IConfiguration"/> from 'appsettings.json' and 'appsettings.[<see cref="IHostingEnvironment.EnvironmentName"/>].json',
-        ///     load <see cref="IConfiguration"/> from User Secrets when <see cref="IHostingEnvironment.EnvironmentName"/> is 'Development' using the entry assembly,
+        ///     set the <see cref="IHostEnvironment.ContentRootPath"/> to the result of <see cref="Directory.GetCurrentDirectory()"/>,
+        ///     load <see cref="IConfiguration"/> from 'appsettings.json' and 'appsettings.[<see cref="IHostEnvironment.EnvironmentName"/>].json',
+        ///     load <see cref="IConfiguration"/> from User Secrets when <see cref="IHostEnvironment.EnvironmentName"/> is 'Development' using the entry assembly,
         ///     load <see cref="IConfiguration"/> from environment variables,
         ///     configure the <see cref="ILoggerFactory"/> to log to the console and debug output,
         ///     and enable IIS integration.
@@ -135,9 +136,9 @@ namespace Microsoft.AspNetCore
         /// <remarks>
         ///   The following defaults are applied to the returned <see cref="WebHostBuilder"/>:
         ///     use Kestrel as the web server and configure it using the application's configuration providers,
-        ///     set the <see cref="IHostingEnvironment.ContentRootPath"/> to the result of <see cref="Directory.GetCurrentDirectory()"/>,
-        ///     load <see cref="IConfiguration"/> from 'appsettings.json' and 'appsettings.[<see cref="IHostingEnvironment.EnvironmentName"/>].json',
-        ///     load <see cref="IConfiguration"/> from User Secrets when <see cref="IHostingEnvironment.EnvironmentName"/> is 'Development' using the entry assembly,
+        ///     set the <see cref="IHostEnvironment.ContentRootPath"/> to the result of <see cref="Directory.GetCurrentDirectory()"/>,
+        ///     load <see cref="IConfiguration"/> from 'appsettings.json' and 'appsettings.[<see cref="IHostEnvironment.EnvironmentName"/>].json',
+        ///     load <see cref="IConfiguration"/> from User Secrets when <see cref="IHostEnvironment.EnvironmentName"/> is 'Development' using the entry assembly,
         ///     load <see cref="IConfiguration"/> from environment variables,
         ///     load <see cref="IConfiguration"/> from supplied command line args,
         ///     configure the <see cref="ILoggerFactory"/> to log to the console and debug output,
@@ -235,9 +236,9 @@ namespace Microsoft.AspNetCore
         /// <remarks>
         ///   The following defaults are applied to the returned <see cref="WebHostBuilder"/>:
         ///     use Kestrel as the web server and configure it using the application's configuration providers,
-        ///     set the <see cref="IHostingEnvironment.ContentRootPath"/> to the result of <see cref="Directory.GetCurrentDirectory()"/>,
-        ///     load <see cref="IConfiguration"/> from 'appsettings.json' and 'appsettings.[<see cref="IHostingEnvironment.EnvironmentName"/>].json',
-        ///     load <see cref="IConfiguration"/> from User Secrets when <see cref="IHostingEnvironment.EnvironmentName"/> is 'Development' using the entry assembly,
+        ///     set the <see cref="IHostEnvironment.ContentRootPath"/> to the result of <see cref="Directory.GetCurrentDirectory()"/>,
+        ///     load <see cref="IConfiguration"/> from 'appsettings.json' and 'appsettings.[<see cref="IHostEnvironment.EnvironmentName"/>].json',
+        ///     load <see cref="IConfiguration"/> from User Secrets when <see cref="IHostEnvironment.EnvironmentName"/> is 'Development' using the entry assembly,
         ///     load <see cref="IConfiguration"/> from environment variables,
         ///     load <see cref="IConfiguration"/> from supplied command line args,
         ///     configure the <see cref="ILoggerFactory"/> to log to the console and debug output,

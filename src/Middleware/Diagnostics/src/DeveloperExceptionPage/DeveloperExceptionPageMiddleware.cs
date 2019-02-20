@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Diagnostics
             RequestDelegate next,
             IOptions<DeveloperExceptionPageOptions> options,
             ILoggerFactory loggerFactory,
-            IHostingEnvironment hostingEnvironment,
+            IWebHostEnvironment hostingEnvironment,
             DiagnosticSource diagnosticSource)
         {
             if (next == null)

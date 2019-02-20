@@ -117,12 +117,14 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
                     }
 
                     writer.Flush();
-                    stream.Position = 0L;
-                    using (var outStream = File.Create(context.OutputPath))
+                    if (stream.Length > 0L)
                     {
-                        stream.CopyTo(outStream);
-
-                        outStream.Flush();
+                        stream.Position = 0L;
+                        using (var outStream = File.Create(context.OutputPath))
+                        {
+                            stream.CopyTo(outStream);
+                            outStream.Flush();
+                        }
                     }
                 }
 

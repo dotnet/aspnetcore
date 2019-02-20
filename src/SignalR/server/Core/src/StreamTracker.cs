@@ -28,36 +28,47 @@ namespace Microsoft.AspNetCore.SignalR
             return newConverter.GetReaderAsObject();
         }
 
-        private IStreamConverter TryGetConverter(string streamId)
+        private bool TryGetConverter(string streamId, out IStreamConverter converter)
         {
-            if (_lookup.TryGetValue(streamId, out var converter))
+            if (_lookup.TryGetValue(streamId, out converter))
             {
-                return converter;
+                return true;
             }
-            else
-            {
-                throw new KeyNotFoundException($"No stream with id '{streamId}' could be found.");
-            }
+
+            return false;
         }
 
-        public Task ProcessItem(StreamItemMessage message)
+        public bool TryProcessItem(StreamItemMessage message, out Task task)
         {
-            return TryGetConverter(message.InvocationId).WriteToStream(message.Item);
+            if (TryGetConverter(message.InvocationId, out var converter))
+            {
+                task = converter.WriteToStream(message.Item);
+                return true;
+            }
+
+            task = default;
+            return false;
         }
 
         public Type GetStreamItemType(string streamId)
         {
-            return TryGetConverter(streamId).GetItemType();
+            if (TryGetConverter(streamId, out var converter))
+            {
+                return converter.GetItemType();
+            }
+
+            throw new KeyNotFoundException($"No stream with id '{streamId}' could be found.");
         }
 
-        public void Complete(CompletionMessage message)
+        public bool TryComplete(CompletionMessage message)
         {
             _lookup.TryRemove(message.InvocationId, out var converter);
             if (converter == null)
             {
-                throw new KeyNotFoundException($"No stream with id '{message.InvocationId}' could be found.");
+                return false;
             }
             converter.TryComplete(message.HasResult || message.Error == null ? null : new Exception(message.Error));
+            return true;
         }
 
         private static IStreamConverter BuildStream<T>()

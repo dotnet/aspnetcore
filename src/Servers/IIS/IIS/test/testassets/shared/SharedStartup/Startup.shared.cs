@@ -25,9 +25,9 @@ namespace TestSite
             serviceCollection.AddResponseCompression();
         }
 
-        private async Task ContentRootPath(HttpContext ctx) => await ctx.Response.WriteAsync(ctx.RequestServices.GetService<IHostingEnvironment>().ContentRootPath);
+        private async Task ContentRootPath(HttpContext ctx) => await ctx.Response.WriteAsync(ctx.RequestServices.GetService<IWebHostEnvironment>().ContentRootPath);
 
-        private async Task WebRootPath(HttpContext ctx) => await ctx.Response.WriteAsync(ctx.RequestServices.GetService<IHostingEnvironment>().WebRootPath);
+        private async Task WebRootPath(HttpContext ctx) => await ctx.Response.WriteAsync(ctx.RequestServices.GetService<IWebHostEnvironment>().WebRootPath);
 
         private async Task CurrentDirectory(HttpContext ctx) => await ctx.Response.WriteAsync(Environment.CurrentDirectory);
 
@@ -102,7 +102,7 @@ namespace TestSite
 
         public Task CreateFile(HttpContext context)
         {
-            var hostingEnv = context.RequestServices.GetService<IHostingEnvironment>();
+            var hostingEnv = context.RequestServices.GetService<IWebHostEnvironment>();
             File.WriteAllText(System.IO.Path.Combine(hostingEnv.ContentRootPath, "Started.txt"), "");
             return Task.CompletedTask;
         }

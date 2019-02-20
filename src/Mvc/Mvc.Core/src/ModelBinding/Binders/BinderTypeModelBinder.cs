@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 throw new ArgumentNullException(nameof(binderType));
             }
 
-            if (!typeof(IModelBinder).GetTypeInfo().IsAssignableFrom(binderType.GetTypeInfo()))
+            if (!typeof(IModelBinder).IsAssignableFrom(binderType))
             {
                 throw new ArgumentException(
                     Resources.FormatBinderType_MustBeIModelBinder(

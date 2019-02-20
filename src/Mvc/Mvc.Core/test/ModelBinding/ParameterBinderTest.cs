@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.DataAnnotations;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Testing;
@@ -37,7 +38,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 var bindingInfoWithName = new BindingInfo
                 {
                     BinderModelName = "bindingInfoName",
-                    BinderType = typeof(Person),
+                    BinderType = typeof(SimpleTypeModelBinder),
                 };
 
                 // parameterBindingInfo, metadataBinderModelName, parameterName, expectedBinderModelName
@@ -208,7 +209,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var modelBindingResult = ModelBindingResult.Success(null);
 
             // Act
-            var result = await parameterBinder.BindModelAsync(
+            await parameterBinder.BindModelAsync(
                 actionContext,
                 CreateMockModelBinder(modelBindingResult),
                 CreateMockValueProvider(),

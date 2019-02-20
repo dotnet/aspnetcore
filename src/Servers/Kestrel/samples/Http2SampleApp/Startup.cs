@@ -12,7 +12,7 @@ namespace Http2SampleApp
         {
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app)
         {
             app.UseTimingMiddleware();
             app.Run(context =>

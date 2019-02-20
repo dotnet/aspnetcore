@@ -2918,13 +2918,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public async Task UploadStreamItemInvalidId()
         {
-            bool ExpectedErrors(WriteContext writeContext)
-            {
-                return writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.HubConnectionHandler" &&
-                       writeContext.EventId.Name == "ErrorProcessingRequest";
-            }
-
-            using (StartVerifiableLog(ExpectedErrors))
+            using (StartVerifiableLog())
             {
                 var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
                 {
@@ -2937,24 +2931,19 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
                     await client.SendHubMessageAsync(new StreamItemMessage("fake_id", "not a number")).OrTimeout();
 
-                    // Client is breaking protocol by sending an invalid id, and should be closed.
                     var message = client.TryRead();
-                    Assert.IsType<CloseMessage>(message);
-                    Assert.Equal("Connection closed with an error. KeyNotFoundException: No stream with id 'fake_id' could be found.", ((CloseMessage)message).Error);
+                    Assert.Null(message);
                 }
             }
+
+            Assert.Single(TestSink.Writes.Where(w => w.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
+                w.EventId.Name == "ClosingStreamWithBindingError"));
         }
 
         [Fact]
         public async Task UploadStreamCompleteInvalidId()
         {
-            bool ExpectedErrors(WriteContext writeContext)
-            {
-                return writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.HubConnectionHandler" &&
-                       writeContext.EventId.Name == "ErrorProcessingRequest";
-            }
-
-            using (StartVerifiableLog(ExpectedErrors))
+            using (StartVerifiableLog())
             {
                 var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
                 {
@@ -2967,12 +2956,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
                     await client.SendHubMessageAsync(CompletionMessage.Empty("fake_id")).OrTimeout();
 
-                    // Client is breaking protocol by sending an invalid id, and should be closed.
                     var message = client.TryRead();
-                    Assert.IsType<CloseMessage>(message);
-                    Assert.Equal("Connection closed with an error. KeyNotFoundException: No stream with id 'fake_id' could be found.", ((CloseMessage)message).Error);
+                    Assert.Null(message);
                 }
             }
+
+            Assert.Single(TestSink.Writes.Where(w => w.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
+                w.EventId.Name == "UnexpectedStreamCompletion"));
         }
 
         public static string CustomErrorMessage = "custom error for testing ::::)";
@@ -3088,20 +3078,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public async Task UploadStreamClosesStreamsOnServerWhenMethodCompletes()
         {
-            bool errorLogged = false;
-            bool ExpectedErrors(WriteContext writeContext)
-            {
-                if (writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.HubConnectionHandler" &&
-                       writeContext.EventId.Name == "ErrorProcessingRequest")
-                {
-                    errorLogged = true;
-                    return true;
-                }
-
-                return false;
-            }
-
-            using (StartVerifiableLog(ExpectedErrors))
+            using (StartVerifiableLog())
             {
                 var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(loggerFactory: LoggerFactory);
                 var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
@@ -3118,8 +3095,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     var simpleCompletion = Assert.IsType<CompletionMessage>(result);
                     Assert.Null(simpleCompletion.Result);
 
-                    // This will log an error on the server as the hub method has completed and will complete all associated streams
+                    // This will log a warning on the server as the hub method has completed and will complete all associated streams
                     await client.SendHubMessageAsync(new StreamItemMessage("id", "error!")).OrTimeout();
+
+                    // Check that the connection hasn't been closed
+                    await client.SendInvocationAsync("VoidMethod").OrTimeout();
 
                     // Shut down
                     client.Dispose();
@@ -3128,27 +3108,14 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 }
             }
 
-            // Check that the stream has been completed by noting the existance of an error
-            Assert.True(errorLogged);
+            Assert.Single(TestSink.Writes.Where(w => w.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
+                w.EventId.Name == "ClosingStreamWithBindingError"));
         }
 
         [Fact]
         public async Task UploadStreamAndStreamingMethodClosesStreamsOnServerWhenMethodCompletes()
         {
-            bool errorLogged = false;
-            bool ExpectedErrors(WriteContext writeContext)
-            {
-                if (writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.HubConnectionHandler" &&
-                       writeContext.EventId.Name == "ErrorProcessingRequest")
-                {
-                    errorLogged = true;
-                    return true;
-                }
-
-                return false;
-            }
-
-            using (StartVerifiableLog(ExpectedErrors))
+            using (StartVerifiableLog())
             {
                 var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(loggerFactory: LoggerFactory);
                 var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
@@ -3165,8 +3132,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     var simpleCompletion = Assert.IsType<CompletionMessage>(result);
                     Assert.Null(simpleCompletion.Result);
 
-                    // This will log an error on the server as the hub method has completed and will complete all associated streams
+                    // This will log a warning on the server as the hub method has completed and will complete all associated streams
                     await client.SendHubMessageAsync(new StreamItemMessage("id", "error!")).OrTimeout();
+
+                    // Check that the connection hasn't been closed
+                    await client.SendInvocationAsync("VoidMethod").OrTimeout();
 
                     // Shut down
                     client.Dispose();
@@ -3175,8 +3145,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 }
             }
 
-            // Check that the stream has been completed by noting the existance of an error
-            Assert.True(errorLogged);
+            Assert.Single(TestSink.Writes.Where(w => w.LoggerName == "Microsoft.AspNetCore.SignalR.Internal.DefaultHubDispatcher" &&
+                w.EventId.Name == "ClosingStreamWithBindingError"));
         }
 
         [Theory]

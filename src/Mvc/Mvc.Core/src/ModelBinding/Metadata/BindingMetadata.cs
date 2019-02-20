@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Mvc.Core;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
 {
@@ -10,6 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
     /// </summary>
     public class BindingMetadata
     {
+        private Type _binderType;
         private DefaultModelBindingMessageProvider _messageProvider;
 
         /// <summary>
@@ -25,10 +27,30 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         public string BinderModelName { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Type"/> of the model binder used to bind the model.
-        /// See <see cref="ModelMetadata.BinderType"/>.
+        /// Gets or sets the <see cref="Type"/> of the <see cref="IModelBinder"/> implementation used to bind the
+        /// model. See <see cref="ModelMetadata.BinderType"/>.
         /// </summary>
-        public Type BinderType { get; set; }
+        /// <remarks>
+        /// Also set <see cref="BindingSource"/> if the specified <see cref="IModelBinder"/> implementation does not
+        /// use values from form data, route values or the query string.
+        /// </remarks>
+        public Type BinderType
+        {
+            get => _binderType;
+            set
+            {
+                if (value != null && !typeof(IModelBinder).IsAssignableFrom(value))
+                {
+                    throw new ArgumentException(
+                        Resources.FormatBinderType_MustBeIModelBinder(
+                            value.FullName,
+                            typeof(IModelBinder).FullName),
+                        nameof(value));
+                }
+
+                _binderType = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets a value indicating whether or not the property can be model bound.

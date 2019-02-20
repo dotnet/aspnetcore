@@ -74,6 +74,48 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             _valueBinder = valueBinder;
         }
 
+        /// <summary>
+        /// Creates a new <see cref="DictionaryModelBinder{TKey, TValue}"/>.
+        /// </summary>
+        /// <param name="keyBinder">The <see cref="IModelBinder"/> for <typeparamref name="TKey"/>.</param>
+        /// <param name="valueBinder">The <see cref="IModelBinder"/> for <typeparamref name="TValue"/>.</param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+        /// <param name="allowValidatingTopLevelNodes">
+        /// Indication that validation of top-level models is enabled. If <see langword="true"/> and
+        /// <see cref="ModelMetadata.IsBindingRequired"/> is <see langword="true"/> for a top-level model, the binder
+        /// adds a <see cref="ModelStateDictionary"/> error when the model is not bound.
+        /// </param>
+        /// <param name="mvcOptions">The <see cref="MvcOptions"/>.</param>
+        /// <remarks>
+        /// <para>This is the preferred <see cref="DictionaryModelBinder{TKey, TValue}"/> constructor.</para>
+        /// <para>
+        /// The <paramref name="allowValidatingTopLevelNodes"/> parameter is currently ignored.
+        /// <see cref="CollectionModelBinder{TElement}.AllowValidatingTopLevelNodes"/> is always
+        /// <see langword="false"/> in <see cref="DictionaryModelBinder{TKey, TValue}"/>. This class ignores that
+        /// property and unconditionally checks for unbound top-level models with
+        /// <see cref="ModelMetadata.IsBindingRequired"/>.
+        /// </para>
+        /// </remarks>
+        public DictionaryModelBinder(
+            IModelBinder keyBinder,
+            IModelBinder valueBinder,
+            ILoggerFactory loggerFactory,
+            bool allowValidatingTopLevelNodes,
+            MvcOptions mvcOptions)
+            : base(
+                  new KeyValuePairModelBinder<TKey, TValue>(keyBinder, valueBinder, loggerFactory),
+                  loggerFactory,
+                  allowValidatingTopLevelNodes: false,
+                  mvcOptions)
+        {
+            if (valueBinder == null)
+            {
+                throw new ArgumentNullException(nameof(valueBinder));
+            }
+
+            _valueBinder = valueBinder;
+        }
+
         /// <inheritdoc />
         public override async Task BindModelAsync(ModelBindingContext bindingContext)
         {

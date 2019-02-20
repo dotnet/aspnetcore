@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
@@ -134,7 +135,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 .Build();
 
             var doneEvent = new ManualResetEventSlim();
-            var lifetime = _host.Services.GetService<IApplicationLifetime>();
+            var lifetime = _host.Services.GetService<IHostApplicationLifetime>();
 
             lifetime.ApplicationStopping.Register(() => doneEvent.Set());
             _host.Start();

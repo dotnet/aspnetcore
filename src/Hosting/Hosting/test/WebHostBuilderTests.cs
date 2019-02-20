@@ -98,14 +98,14 @@ namespace Microsoft.AspNetCore.Hosting
 
         [Theory]
         [MemberData(nameof(DefaultWebHostBuildersWithConfig))]
-        public async Task IApplicationLifetimeRegisteredEvenWhenStartupCtorThrows_Fallback(IWebHostBuilder builder)
+        public async Task IHostApplicationLifetimeRegisteredEvenWhenStartupCtorThrows_Fallback(IWebHostBuilder builder)
         {
             var server = new TestServer();
             var host = builder.UseServer(server).UseStartup<StartupCtorThrows>().Build();
             using (host)
             {
                 await host.StartAsync();
-                var services = host.Services.GetServices<IApplicationLifetime>();
+                var services = host.Services.GetServices<IHostApplicationLifetime>();
                 Assert.NotNull(services);
                 Assert.NotEmpty(services);
 
@@ -551,8 +551,10 @@ namespace Microsoft.AspNetCore.Hosting
                 .UseStartup("Microsoft.AspNetCore.Hosting.Tests")
                 .Build())
             {
-                Assert.Equal(expected, host.Services.GetService<IHostingEnvironment>().EnvironmentName);
+                Assert.Equal(expected, host.Services.GetService<IHostEnvironment>().EnvironmentName);
+                Assert.Equal(expected, host.Services.GetService<IWebHostEnvironment>().EnvironmentName);
 #pragma warning disable CS0618 // Type or member is obsolete
+                Assert.Equal(expected, host.Services.GetService<AspNetCore.Hosting.IHostingEnvironment>().EnvironmentName);
                 Assert.Equal(expected, host.Services.GetService<Extensions.Hosting.IHostingEnvironment>().EnvironmentName);
 #pragma warning restore CS0618 // Type or member is obsolete
             }
@@ -598,8 +600,10 @@ namespace Microsoft.AspNetCore.Hosting
                 .UseStartup("Microsoft.AspNetCore.Hosting.Tests")
                 .Build())
             {
-                Assert.Equal("/", host.Services.GetService<IHostingEnvironment>().ContentRootPath);
+                Assert.Equal("/", host.Services.GetService<IHostEnvironment>().ContentRootPath);
+                Assert.Equal("/", host.Services.GetService<IWebHostEnvironment>().ContentRootPath);
 #pragma warning disable CS0618 // Type or member is obsolete
+                Assert.Equal("/", host.Services.GetService<AspNetCore.Hosting.IHostingEnvironment>().ContentRootPath);
                 Assert.Equal("/", host.Services.GetService<Extensions.Hosting.IHostingEnvironment>().ContentRootPath);
 #pragma warning restore CS0618 // Type or member is obsolete
             }
@@ -615,9 +619,9 @@ namespace Microsoft.AspNetCore.Hosting
                 .UseStartup("Microsoft.AspNetCore.Hosting.Tests")
                 .Build())
             {
-                var basePath = host.Services.GetRequiredService<IHostingEnvironment>().ContentRootPath;
+                var basePath = host.Services.GetRequiredService<IHostEnvironment>().ContentRootPath;
 #pragma warning disable CS0618 // Type or member is obsolete
-                var basePath2 = host.Services.GetService<Extensions.Hosting.IHostingEnvironment>().ContentRootPath;
+                var basePath2 = host.Services.GetService<AspNetCore.Hosting.IHostingEnvironment>().ContentRootPath;
 #pragma warning restore CS0618 // Type or member is obsolete
 
                 Assert.True(Path.IsPathRooted(basePath));
@@ -638,9 +642,9 @@ namespace Microsoft.AspNetCore.Hosting
                 .Build())
             {
                 var appBase = AppContext.BaseDirectory;
-                Assert.Equal(appBase, host.Services.GetService<IHostingEnvironment>().ContentRootPath);
+                Assert.Equal(appBase, host.Services.GetService<IHostEnvironment>().ContentRootPath);
 #pragma warning disable CS0618 // Type or member is obsolete
-                Assert.Equal(appBase, host.Services.GetService<Extensions.Hosting.IHostingEnvironment>().ContentRootPath);
+                Assert.Equal(appBase, host.Services.GetService<AspNetCore.Hosting.IHostingEnvironment>().ContentRootPath);
 #pragma warning restore CS0618 // Type or member is obsolete
             }
         }
@@ -666,9 +670,9 @@ namespace Microsoft.AspNetCore.Hosting
                 .UseStartup(typeof(Startup).Assembly.GetName().Name)
                 .Build())
             {
-                var hostingEnv = host.Services.GetService<IHostingEnvironment>();
+                var hostingEnv = host.Services.GetService<IHostEnvironment>();
 #pragma warning disable CS0618 // Type or member is obsolete
-                var hostingEnv2 = host.Services.GetService<Extensions.Hosting.IHostingEnvironment>();
+                var hostingEnv2 = host.Services.GetService<AspNetCore.Hosting.IHostingEnvironment>();
 #pragma warning restore CS0618 // Type or member is obsolete
                 Assert.Equal(typeof(Startup).Assembly.GetName().Name, hostingEnv.ApplicationName);
                 Assert.Equal(typeof(Startup).Assembly.GetName().Name, hostingEnv2.ApplicationName);
@@ -684,9 +688,9 @@ namespace Microsoft.AspNetCore.Hosting
                 .UseStartup<StartupNoServicesNoInterface>()
                 .Build())
             {
-                var hostingEnv = host.Services.GetService<IHostingEnvironment>();
+                var hostingEnv = host.Services.GetService<IHostEnvironment>();
 #pragma warning disable CS0618 // Type or member is obsolete
-                var hostingEnv2 = host.Services.GetService<Extensions.Hosting.IHostingEnvironment>();
+                var hostingEnv2 = host.Services.GetService<AspNetCore.Hosting.IHostingEnvironment>();
 #pragma warning restore CS0618 // Type or member is obsolete
                 Assert.Equal(typeof(StartupNoServicesNoInterface).Assembly.GetName().Name, hostingEnv.ApplicationName);
                 Assert.Equal(typeof(StartupNoServicesNoInterface).Assembly.GetName().Name, hostingEnv2.ApplicationName);
@@ -702,7 +706,7 @@ namespace Microsoft.AspNetCore.Hosting
                 .UseStartup(typeof(StartupNoServicesNoInterface))
                 .Build();
 
-            var hostingEnv = host.Services.GetService<IHostingEnvironment>();
+            var hostingEnv = host.Services.GetService<IHostEnvironment>();
             Assert.Equal(typeof(StartupNoServicesNoInterface).Assembly.GetName().Name, hostingEnv.ApplicationName);
         }
 
@@ -715,7 +719,7 @@ namespace Microsoft.AspNetCore.Hosting
                 .Configure(app => { })
                 .Build())
             {
-                var hostingEnv = host.Services.GetService<IHostingEnvironment>();
+                var hostingEnv = host.Services.GetService<IHostEnvironment>();
 
                 // Should be the assembly containing this test, because that's where the delegate comes from
                 Assert.Equal(typeof(WebHostBuilderTests).Assembly.GetName().Name, hostingEnv.ApplicationName);
@@ -731,7 +735,7 @@ namespace Microsoft.AspNetCore.Hosting
                 .Configure(app => { })
                 .Build())
             {
-                var hostingEnv = host.Services.GetService<IHostingEnvironment>();
+                var hostingEnv = host.Services.GetService<IHostEnvironment>();
                 Assert.Equal("Microsoft.AspNetCore.Hosting.Tests", hostingEnv.ApplicationName);
             }
         }
@@ -745,7 +749,7 @@ namespace Microsoft.AspNetCore.Hosting
                 .Configure(StaticConfigureMethod)
                 .Build())
             {
-                var hostingEnv = host.Services.GetService<IHostingEnvironment>();
+                var hostingEnv = host.Services.GetService<IHostEnvironment>();
                 Assert.Equal("Microsoft.AspNetCore.Hosting.Tests", hostingEnv.ApplicationName);
             }
         }

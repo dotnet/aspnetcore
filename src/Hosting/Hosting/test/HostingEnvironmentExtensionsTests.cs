@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         [Fact]
         public void SetsFullPathToWwwroot()
         {
-            var env = new HostingEnvironment();
+            IWebHostEnvironment env = new HostingEnvironment();
 
             env.Initialize(Path.GetFullPath("."), new WebHostOptions() { WebRoot = "testroot" });
 
@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         [Fact]
         public void DefaultsToWwwrootSubdir()
         {
-            var env = new HostingEnvironment();
+            IWebHostEnvironment env = new HostingEnvironment();
 
             env.Initialize(Path.GetFullPath("testroot"), new WebHostOptions());
 
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         [Fact]
         public void DefaultsToNullFileProvider()
         {
-            var env = new HostingEnvironment();
+            IWebHostEnvironment env = new HostingEnvironment();
 
             env.Initialize(Path.GetFullPath(Path.Combine("testroot", "wwwroot")), new WebHostOptions());
 
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         [Fact]
         public void OverridesEnvironmentFromConfig()
         {
-            var env = new HostingEnvironment();
+            IWebHostEnvironment env = new HostingEnvironment();
             env.EnvironmentName = "SomeName";
 
             env.Initialize(Path.GetFullPath("."), new WebHostOptions() { Environment = "NewName" });

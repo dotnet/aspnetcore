@@ -790,7 +790,6 @@ Hello from /Pages/WithViewStart/Index.cshtml!";
             // Arrange
             var name = "TestName";
             var age = 123;
-            var expected = $"Name = {name}, Age = {age}";
             var request = new HttpRequestMessage(HttpMethod.Post, "Pages/PropertyBinding/PolymorphicBinding")
             {
                 Content = new FormUrlEncodedContent(new Dictionary<string, string>

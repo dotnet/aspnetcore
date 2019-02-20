@@ -22,6 +22,10 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <PackageType>TargetingPack</PackageType>
     <RefAssemblyPackagePath>ref/$(TargetFramework)/</RefAssemblyPackagePath>
 
+    <LayoutTargetDir>$(TargetingPackLayoutRoot)packs/Microsoft.AspNetCore.App.Ref/$(PackageVersion)/$(RefAssemblyPackagePath)</LayoutTargetDir>
+    <ArchiveOutputFileName>aspnetcore-targeting-pack-$(PackageVersion).zip</ArchiveOutputFileName>
+    <ArchiveOutputPath>$(InstallersOutputPath)$(ArchiveOutputFileName)</ArchiveOutputPath>
+
     <!-- There are no symbols for reference assemblies. -->
     <IncludeSymbols>false</IncludeSymbols>
 
@@ -53,6 +57,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       GeneratePackageConflictManifest;
       _ResolveTargetingPackContent;
       _BatchCopyToOutputDirectory;
+      _BatchCopyToLayoutTargetDir;
+      _CreateTargetingPackArchive;
     </BuildDependsOn>
   </PropertyGroup>
 
@@ -117,6 +123,27 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <Copy SourceFiles="@(RefPackContent)"
           DestinationFiles="@(RefPackContent->'$(TargetDir)%(FileName)%(Extension)')"
           UseHardlinksIfPossible="true" />
+  </Target>
+
+  <!-- Written to take advantage of target batching in MSBuild. -->
+  <Target Name="_BatchCopyToLayoutTargetDir"
+          DependsOnTargets="_ResolveTargetingPackContent"
+          Inputs="@(RefPackContent)"
+          Outputs="@(RefPackContent->'$(LayoutTargetDir)%(FileName)%(Extension)')">
+
+    <Copy SourceFiles="@(RefPackContent)"
+          DestinationFiles="@(RefPackContent->'$(LayoutTargetDir)%(FileName)%(Extension)')"
+          UseHardlinksIfPossible="true" />
+  </Target>
+
+  <Target Name="_CreateTargetingPackArchive"
+          Inputs="@(RefPackContent)"
+          Outputs="$(ArchiveOutputPath)"
+          Condition="'$(IsPackable)' != 'false'">
+    <ZipDirectory
+      SourceDirectory="$(TargetingPackLayoutRoot)"
+      DestinationFile="$(ArchiveOutputPath)"
+      Overwrite="true" />
   </Target>
 
 </Project>
