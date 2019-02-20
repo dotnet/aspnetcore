@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\Build\SignalRClient.Build.Settings" />
   <ItemGroup Label="ProjectConfigurations">
@@ -36,7 +36,6 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
-    <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
     <Import Project="..\..\packages\cpprestsdk.v140.windesktop.msvcstl.dyn.rt-dyn.2.9.1\build\native\cpprestsdk.v140.windesktop.msvcstl.dyn.rt-dyn.targets" Condition="Exists('..\..\packages\cpprestsdk.v140.windesktop.msvcstl.dyn.rt-dyn.2.9.1\build\native\cpprestsdk.v140.windesktop.msvcstl.dyn.rt-dyn.targets')" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -110,10 +109,10 @@
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
     <Error Condition="!Exists('..\..\packages\cpprestsdk.v140.windesktop.msvcstl.dyn.rt-dyn.2.9.1\build\native\cpprestsdk.v140.windesktop.msvcstl.dyn.rt-dyn.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\cpprestsdk.v140.windesktop.msvcstl.dyn.rt-dyn.2.9.1\build\native\cpprestsdk.v140.windesktop.msvcstl.dyn.rt-dyn.targets'))" />
   </Target>
   <Target Name="AfterBuild">
-    <Exec Command="copy /y &quot;$(SolutionDir)bin\Desktop\$(Platform)\$(Configuration)\dll\$(SignalrClientTargetName).dll&quot; &quot;$(SolutionDir)$(Configuration)\$(SignalrClientTargetName).dll&quot;" />
+    <Exec Command="copy /y &quot;$(SolutionDir)bin\Desktop\$(Platform)\$(Configuration)\dll\$(SignalrClientTargetName).dll&quot; &quot;$(SolutionDir)bin\Desktop\$(Platform)\$(Configuration)\$(SignalrClientTargetName).dll&quot;" />
+    <Exec Command="copy /y &quot;$(SolutionDir)bin\Desktop\$(Platform)\$(Configuration)\dll\$(SignalrClientTargetName).pdb&quot; &quot;$(SolutionDir)bin\Desktop\$(Platform)\$(Configuration)\$(SignalrClientTargetName).pdb&quot;" />
   </Target>
 </Project>

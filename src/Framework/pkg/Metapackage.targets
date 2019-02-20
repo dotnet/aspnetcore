@@ -6,8 +6,6 @@
     <IncludeSymbols>false</IncludeSymbols>
     <!-- There is no API to check -->
     <EnableApiCheck>false</EnableApiCheck>
-    <!-- Manually control dependencies -->
-    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
     <!-- The only build output of a pkgproj is the project -->
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
@@ -23,12 +21,6 @@
 
   <ItemGroup>
     <Content Include="$(IntermediateOutputPath)runtime.json" PackagePath="\" />
-
-    <PackageReference Include="Microsoft.NETCore.App">
-      <Version>$(MicrosoftNETCoreAppPackageVersion)</Version>
-      <PrivateAssets>All</PrivateAssets>
-      <AllowExplicitVersion>true</AllowExplicitVersion>
-    </PackageReference>
 
     <!-- Add version metadata. These are expected to match the metapackage version. -->
     <AspNetCoreAppReferenceAndPackage Update="@(AspNetCoreAppReferenceAndPackage)" Version="$(SharedFxVersion)" />

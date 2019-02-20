@@ -2,7 +2,7 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.28509.92
-MinimumVisualStudioVersion = 15.0.26124.0
+MinimumVisualStudioVersion = 16.0.0.0
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Analyzers", "Analyzers", "{E059A46B-56E3-41E2-83F4-B5D180056F3B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Components.Analyzers", "Analyzers\src\Microsoft.AspNetCore.Components.Analyzers.csproj", "{ECE91401-329E-4615-8684-8E910D2741C4}"

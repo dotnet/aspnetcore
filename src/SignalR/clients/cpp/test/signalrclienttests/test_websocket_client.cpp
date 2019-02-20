@@ -24,7 +24,7 @@ pplx::task<void> test_websocket_client::send(const utility::string_t &msg)
 
 pplx::task<std::string> test_websocket_client::receive()
 {
-    return m_receive_function();
+    return pplx::create_task([this]() { return m_receive_function(); });
 }
 
 pplx::task<void> test_websocket_client::close()

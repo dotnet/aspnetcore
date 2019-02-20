@@ -15,6 +15,6 @@ namespace signalr
     namespace request_sender
     {
         pplx::task<negotiation_response> negotiate(web_request_factory& request_factory, const web::uri &base_url,
-            const utility::string_t& query_string, const signalr_client_config& signalr_client_config = signalr::signalr_client_config{});
+            const signalr_client_config& signalr_client_config = signalr::signalr_client_config{});
     }
 }

@@ -13,7 +13,7 @@ using namespace signalr;
 TEST(websocket_transport_connect, connect_connects_and_starts_receive_loop)
 {
     auto connect_called = false;
-    auto receive_called = std::make_shared<bool>(false);
+    auto receive_called = std::make_shared<event>();
     auto client = std::make_shared<test_websocket_client>();
 
     client->set_connect_function([&connect_called](const web::uri &) -> pplx::task<void>
@@ -24,7 +24,7 @@ TEST(websocket_transport_connect, connect_connects_and_starts_receive_loop)
 
     client->set_receive_function([receive_called]()->pplx::task<std::string>
     {
-        *receive_called = true;
+        receive_called->set();
         return pplx::task_from_result(std::string(""));
     });
 
@@ -36,7 +36,7 @@ TEST(websocket_transport_connect, connect_connects_and_starts_receive_loop)
     ws_transport->connect(_XPLATSTR("ws://fakeuri.org/connect?param=42")).get();
 
     ASSERT_TRUE(connect_called);
-    ASSERT_TRUE(*receive_called);
+    ASSERT_FALSE(receive_called->wait(5000));
 
     auto log_entries = std::dynamic_pointer_cast<memory_log_writer>(writer)->get_log_entries();
     ASSERT_FALSE(log_entries.empty());

@@ -10,7 +10,6 @@
     <!-- Reset the default korebuild lifecycle. -->
     <BuildDependsOn>Prepare</BuildDependsOn>
     <!-- Map bootstrapper flags to KoreBuild targets -->
-    <BuildDependsOn Condition=" '$(_RunRestore)' == 'true' ">$(BuildDependsOn);Restore</BuildDependsOn>
     <BuildDependsOn Condition=" '$(_RunBuild)' == 'true' ">$(BuildDependsOn);Compile</BuildDependsOn>
     <BuildDependsOn Condition=" '$(_RunPack)' == 'true' ">$(BuildDependsOn);Package</BuildDependsOn>
     <BuildDependsOn Condition=" '$(_RunTests)' == 'true' ">$(BuildDependsOn);Test;Verify</BuildDependsOn>
@@ -22,7 +21,6 @@
     <RestoreDependsOn>$(RestoreDependsOn);InstallDotNet;RestoreProjects</RestoreDependsOn>
 
     <CompileDependsOn />
-    <CompileDependsOn Condition=" '$(_RunRestore)' == 'true' ">Restore</CompileDependsOn>
     <CompileDependsOn>$(CompileDependsOn);BuildProjects</CompileDependsOn>
 
     <PackageDependsOn>$(PackageDependsOn);PackProjects</PackageDependsOn>
