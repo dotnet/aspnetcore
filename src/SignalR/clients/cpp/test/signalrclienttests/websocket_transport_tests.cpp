@@ -97,8 +97,7 @@ TEST(websocket_transport_connect, connect_logs_exceptions)
         entry);
 }
 
-// Flaky test: crashes test process
-TEST(websocket_transport_connect, DISABLED_cannot_call_connect_on_already_connected_transport)
+TEST(websocket_transport_connect, cannot_call_connect_on_already_connected_transport)
 {
     auto client = std::make_shared<test_websocket_client>();
     auto ws_transport = websocket_transport::create([&](){ return client; }, logger(std::make_shared<trace_log_writer>(), trace_level::none),
@@ -237,9 +236,10 @@ TEST(websocket_transport_disconnect, receive_not_called_after_disconnect)
     auto client = std::make_shared<test_websocket_client>();
 
     pplx::task_completion_event<std::string> receive_task_tce;
+    pplx::task_completion_event<void> receive_task_started_tce;
 
     // receive_task_tce is captured by reference since we assign it a new value after the first disconnect. This is
-    // safe here because we are blocking on disconnect and therefore we won't get into a state were we would be using
+    // safe here because we are blocking on disconnect and therefore we won't get into a state where we would be using
     // an invalid reference because the tce went out of scope and was destroyed.
     client->set_close_function([&receive_task_tce]()
     {
@@ -250,9 +250,10 @@ TEST(websocket_transport_disconnect, receive_not_called_after_disconnect)
 
     int num_called = 0;
 
-    client->set_receive_function([&receive_task_tce, &num_called]() -> pplx::task<std::string>
+    client->set_receive_function([&receive_task_tce, &receive_task_started_tce, &num_called]() -> pplx::task<std::string>
     {
         num_called++;
+        receive_task_started_tce.set();
         return pplx::create_task(receive_task_tce);
     });
 
@@ -260,10 +261,13 @@ TEST(websocket_transport_disconnect, receive_not_called_after_disconnect)
         [](const utility::string_t&){}, [](const std::exception&){});
 
     ws_transport->connect(_XPLATSTR("ws://fakeuri.org")).get();
+    pplx::create_task(receive_task_started_tce).get();
     ws_transport->disconnect().get();
 
     receive_task_tce = pplx::task_completion_event<std::string>();
+    receive_task_started_tce = pplx::task_completion_event<void>();
     ws_transport->connect(_XPLATSTR("ws://fakeuri.org")).get();
+    pplx::create_task(receive_task_started_tce).get();
     ws_transport->disconnect().get();
 
     ASSERT_EQ(2, num_called);
