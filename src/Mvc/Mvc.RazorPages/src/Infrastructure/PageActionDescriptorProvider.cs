@@ -82,7 +82,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                     {
                         Name = selector.AttributeRouteModel.Name,
                         Order = selector.AttributeRouteModel.Order ?? 0,
-                        Template = TransformPageRoute(model, selector),
                         SuppressLinkGeneration = selector.AttributeRouteModel.SuppressLinkGeneration,
                         SuppressPathMatching = selector.AttributeRouteModel.SuppressPathMatching,
                     },
@@ -107,6 +106,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                     descriptor.RouteValues.Add("page", model.ViewEnginePath);
                 }
 
+                descriptor.AttributeRouteInfo.Template = CreatePageRoute(model, selector, descriptor);
+
                 // Mark all pages as a "dynamic endpoint" - this is how we deal with the compilation of pages
                 // in endpoint routing.
                 descriptor.EndpointMetadata.Add(new DynamicEndpointMetadata());
@@ -115,14 +116,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             }
         }
 
-        private static string TransformPageRoute(PageRouteModel model, SelectorModel selectorModel)
+        private static string CreatePageRoute(PageRouteModel model, SelectorModel selectorModel, PageActionDescriptor descriptor)
         {
-            // Transformer not set on page route
-            if (model.RouteParameterTransformer == null)
-            {
-                return selectorModel.AttributeRouteModel.Template;
-            }
-
             var pageRouteMetadata = selectorModel.EndpointMetadata.OfType<PageRouteMetadata>().SingleOrDefault();
             if (pageRouteMetadata == null)
             {
@@ -132,16 +127,28 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 return selectorModel.AttributeRouteModel.Template;
             }
 
-            var segments = pageRouteMetadata.PageRoute.Split('/');
-            for (var i = 0; i < segments.Length; i++)
+            var pageRoute = pageRouteMetadata.PageRoute;
+            if (model.RouteParameterTransformer != null)
             {
-                segments[i] = model.RouteParameterTransformer.TransformOutbound(segments[i]);
+                var segments = pageRouteMetadata.PageRoute.Split('/');
+                for (var i = 0; i < segments.Length; i++)
+                {
+                    segments[i] = model.RouteParameterTransformer.TransformOutbound(segments[i]);
+                }
+
+                pageRoute = string.Join('/', segments);
             }
 
-            var transformedPageRoute = string.Join("/", segments);
+            var template = pageRouteMetadata.RouteTemplate;
+            if (template != null)
+            { 
+                template = AttributeRouteModel.ReplaceTokens(
+                    template, 
+                    descriptor.RouteValues, 
+                    model.RouteParameterTransformer).Replace("//", "/");
+            }
 
-            // Combine transformed page route with template
-            return AttributeRouteModel.CombineTemplates(transformedPageRoute, pageRouteMetadata.RouteTemplate);
+            return AttributeRouteModel.CombineTemplates(pageRoute, template);
         }
 
         private class DynamicEndpointMetadata : IDynamicEndpointMetadata
