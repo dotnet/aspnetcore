@@ -158,12 +158,12 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             };
         }
 
-        protected CompileToCSharpResult CompileToCSharp(string cshtmlContent)
+        protected CompileToCSharpResult CompileToCSharp(string cshtmlContent, bool throwOnFailure=true)
         {
-            return CompileToCSharp(DefaultFileName, cshtmlContent);
+            return CompileToCSharp(DefaultFileName, cshtmlContent, throwOnFailure);
         }
 
-        protected CompileToCSharpResult CompileToCSharp(string cshtmlRelativePath, string cshtmlContent)
+        protected CompileToCSharpResult CompileToCSharp(string cshtmlRelativePath, string cshtmlContent, bool throwOnFailure = true)
         {
             if (DeclarationOnly && DesignTime)
             {
@@ -204,7 +204,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 };
 
                 // Result of doing 'temp' compilation
-                var tempAssembly = CompileToAssembly(declaration);
+                var tempAssembly = CompileToAssembly(declaration, throwOnFailure);
 
                 // Add the 'temp' compilation as a metadata reference 
                 var references = BaseCompilation.References.Concat(new[] { tempAssembly.Compilation.ToMetadataReference() }).ToArray();
@@ -273,7 +273,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
         protected CompileToAssemblyResult CompileToAssembly(CompileToCSharpResult cSharpResult, bool throwOnFailure = true)
         {
-            if (cSharpResult.Diagnostics.Any())
+            if (cSharpResult.Diagnostics.Any() && throwOnFailure)
             {
                 var diagnosticsLog = string.Join(Environment.NewLine, cSharpResult.Diagnostics.Select(d => d.ToString()).ToArray());
                 throw new InvalidOperationException($"Aborting compilation to assembly because RazorCompiler returned nonempty diagnostics: {diagnosticsLog}");

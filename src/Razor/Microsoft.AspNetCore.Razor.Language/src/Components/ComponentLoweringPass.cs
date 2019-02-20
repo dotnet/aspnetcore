@@ -304,36 +304,42 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 {
                     if (attribute.Children[i] is HtmlAttributeValueIntermediateNode htmlValue)
                     {
-                        attribute.Children[i] = new HtmlContentIntermediateNode()
+                        var newNode = new HtmlContentIntermediateNode()
                         {
-                            Children =
-                            {
-                                htmlValue.Children.Single(),
-                            },
                             Source = htmlValue.Source,
                         };
+                        for (var j = 0; j < htmlValue.Children.Count; j++)
+                        {
+                            newNode.Children.Add(htmlValue.Children[j]);
+                        }
+
+                        attribute.Children[i] = newNode;
                     }
                     else if (attribute.Children[i] is CSharpExpressionAttributeValueIntermediateNode expressionValue)
                     {
-                        attribute.Children[i] = new CSharpExpressionIntermediateNode()
+                        var newNode = new CSharpExpressionIntermediateNode()
                         {
-                            Children =
-                            {
-                                expressionValue.Children.Single(),
-                            },
                             Source = expressionValue.Source,
                         };
+                        for (var j = 0; j < expressionValue.Children.Count; j++)
+                        {
+                            newNode.Children.Add(expressionValue.Children[j]);
+                        }
+
+                        attribute.Children[i] = newNode;
                     }
                     else if (attribute.Children[i] is CSharpCodeAttributeValueIntermediateNode codeValue)
                     {
-                        attribute.Children[i] = new CSharpExpressionIntermediateNode()
+                        var newNode = new CSharpExpressionIntermediateNode()
                         {
-                            Children =
-                            {
-                                codeValue.Children.Single(),
-                            },
                             Source = codeValue.Source,
                         };
+                        for (var j = 0; j < codeValue.Children.Count; j++)
+                        {
+                            newNode.Children.Add(codeValue.Children[j]);
+                        }
+
+                        attribute.Children[i] = newNode;
                     }
                 }
             }
