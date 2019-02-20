@@ -36,8 +36,8 @@
         PackageProjectUrl=$(PackageProjectUrl);
         PackageRevision=$(PackageRevision);
         PackageVersion=$(PackageVersion);
-        PackageShortDescription=$(PackageShortDescription);
-        PackageLongDescription=$(PackageLongDescription);
+        PackageSummary=$(PackageSummary);
+        PackageDescription=$(PackageDescription);
       </DebianConfigProperties>
     </PropertyGroup>
 

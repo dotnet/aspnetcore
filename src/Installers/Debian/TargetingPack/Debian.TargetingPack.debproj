@@ -14,8 +14,8 @@
     <PackageVersion Condition="'$(IncludePreReleaseLabelInPackageVersion)' == 'true'">$(PackageVersion)~$(VersionSuffix)</PackageVersion>
     <PackageRevision>1</PackageRevision>
 
-    <PackageShortDescription>ASP.NET Core Targeting Pack</PackageShortDescription>
-    <PackageLongDescription>Provides a default set of APIs for building an ASP.NET Core $(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion) application. Contains reference assemblies, documentation, and other design-time assets.</PackageLongDescription>
+    <PackageSummary>ASP.NET Core Targeting Pack</PackageSummary>
+    <PackageDescription>Provides a default set of APIs for building an ASP.NET Core $(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion) application. Contains reference assemblies, documentation, and other design-time assets.</PackageDescription>
   </PropertyGroup>
 
   <ItemGroup>

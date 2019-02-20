@@ -5,8 +5,8 @@
   "package_name": "${PackageId}",
   "install_root": "${DebianPackageInstallRoot}",
 
-  "short_description": "${PackageShortDescription}",
-  "long_description": "${PackageLongDescription}",
+  "short_description": "${PackageSummary}",
+  "long_description": "${PackageDescription}",
   "homepage": "${PackageProjectUrl}",
 
   "release":{

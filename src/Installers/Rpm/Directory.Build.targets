@@ -2,16 +2,16 @@
   Common targets for building RPM.
 -->
 <Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.targets))\Directory.Build.targets" />
+
   <UsingTask Condition=" '$(BuildToolsTaskAssembly)' != '' AND Exists('$(BuildToolsTaskAssembly)') " TaskName="Microsoft.AspNetCore.BuildTools.GenerateFileFromTemplate" AssemblyFile="$(BuildToolsTaskAssembly)" />
   <UsingTask Condition=" '$(BuildToolsTaskAssembly)' != '' AND Exists('$(BuildToolsTaskAssembly)') " TaskName="Microsoft.AspNetCore.BuildTools.Run" AssemblyFile="$(BuildToolsTaskAssembly)" />
 
   <!-- Output paths -->
   <PropertyGroup>
     <RpmPackageInstallRoot Condition="'$(RpmPackageInstallRoot)' != '' AND !HasTrailingSlash('$(RpmPackageInstallRoot)')">$(RpmPackageInstallRoot)/</RpmPackageInstallRoot>
-    <TargetPath>$(InstallersOutputPath)$(OutputFileName)</TargetPath>
+    <TargetPath>$(InstallersOutputPath)$(TargetFileName)</TargetPath>
   </PropertyGroup>
-
-  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
 
   <Target Name="GetTargetPath" Returns="$(TargetPath)" />
 
@@ -23,17 +23,18 @@
     <Error Text="Missing required property: RpmPackageInstallRoot" Condition=" '$(RpmPackageInstallRoot)' == '' " />
   </Target>
 
-  <Target Name="Build" DependsOnTargets="PrepareForBuild;ResolveProjectReferences;GetTargetPath">
-    <!-- Layout files in package_root/ for the build.sh script. -->
-    <ItemGroup>
-      <SharedFxAssetFolder Include="%(_ResolvedFxProjects.InstallerAssetPaths)" SharedFxName="%(_ResolvedFxProjects.SharedFxName)" />
-      <PackageFiles Include="%(SharedFxAssetFolder.Identity)\**\*">
-        <DestinationDir>$(IntermediatePackageRoot)shared\%(SharedFxAssetFolder.SharedFxName)\$(SharedFxVersion)\</DestinationDir>
-      </PackageFiles>
-    </ItemGroup>
+  <PropertyGroup>
+    <RpmBuildDependsOn>
+      $(RpmBuildDependsOn);
+      PrepareForBuild;
+      ResolveProjectReferences;
+      GetTargetPath;
+    </RpmBuildDependsOn>
+  </PropertyGroup>
 
-    <Copy SourceFiles="@(PackageFiles)" DestinationFiles="@(PackageFiles->'%(DestinationDir)%(RecursiveDir)%(FileName)%(Extension)')" />
+  <Target Name="Build" DependsOnTargets="RpmBuild" />
 
+  <Target Name="RpmBuild" DependsOnTargets="$(RpmBuildDependsOn)">
     <!-- Create layout: Create changelog -->
     <PropertyGroup>
       <ChangeLogProps>DATE=$([System.DateTime]::UtcNow.ToString(ddd MMM dd yyyy))</ChangeLogProps>
@@ -63,10 +64,10 @@
       <FpmArgs Include="--architecture;$(RpmArch)" />
       <FpmArgs Include="--depends;%(RpmDependency.Identity) &gt;= %(RpmDependency.Version)" Condition=" '%(RpmDependency.Identity)' != '' "  />
       <FpmArgs Include="--rpm-changelog;$(GeneratedChangeLog)" />
-      <FpmArgs Include="--rpm-summary;$(SharedFxProductName)" />
-      <FpmArgs Include="--description;$(SharedFxDescription)" />
+      <FpmArgs Include="--rpm-summary;$(PackageSummary)" />
+      <FpmArgs Include="--description;$(PackageDescription)" />
       <FpmArgs Include="--maintainer;$(Authors) &lt;$(MaintainerEmail)&gt;" />
-      <FpmArgs Include="--vendor;$(RpmPackageVendor)" />
+      <FpmArgs Include="--vendor;$(Company)" />
       <FpmArgs Include="--license;$(PackageLicenseType)" />
       <FpmArgs Include="--url;$(PackageProjectUrl)" />
       <FpmArgs Include="--directories;%(InstallerOwnedDirectory.Identity)" Condition=" '%(InstallerOwnedDirectory.Identity)' != '' " />
