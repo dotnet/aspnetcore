@@ -157,9 +157,9 @@ SimpleApp.PrecompiledViews, Version=1.0.0.0, Culture=neutral, PublicKeyToken=nul
         </script>
 <script>(window.jQuery && window.jQuery.fn && window.jQuery.fn.modal||document.write("\u003Cscript src=\u0022\/lib\/bootstrap\/dist\/js\/bootstrap.min.js\u0022\u003E\u003C\/script\u003E"));</script>
         <script src="/js/site.min.js"></script>
+    
 
-
-
+    
     SimpleApp.PrecompiledViews, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
 </body>
 </html>
