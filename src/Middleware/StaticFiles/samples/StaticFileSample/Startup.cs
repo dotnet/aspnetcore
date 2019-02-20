@@ -14,7 +14,7 @@ namespace StaticFilesSample
             services.AddDirectoryBrowser();
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment host)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment host)
         {
             Console.WriteLine("webroot: " + host.WebRootPath);
 

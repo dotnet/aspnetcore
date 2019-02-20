@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.ComponentModel;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Components
@@ -12,6 +13,23 @@ namespace Microsoft.AspNetCore.Components
     /// </summary>
     public sealed class EventCallbackFactory
     {
+        /// <summary>
+        /// Returns the provided <paramref name="callback"/>. For internal framework use only.
+        /// </summary>
+        /// <param name="receiver"></param>
+        /// <param name="callback"></param>
+        /// <returns></returns>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public EventCallback Create(object receiver, EventCallback callback)
+        {
+            if (receiver == null)
+            {
+                throw new ArgumentNullException(nameof(receiver));
+            }
+
+            return callback;
+        }
+
         /// <summary>
         /// Creates an <see cref="EventCallback"/> for the provided <paramref name="receiver"/> and
         /// <paramref name="callback"/>.
@@ -101,6 +119,40 @@ namespace Microsoft.AspNetCore.Components
         }
 
         /// <summary>
+        /// Returns the provided <paramref name="callback"/>. For internal framework use only.
+        /// </summary>
+        /// <param name="receiver"></param>
+        /// <param name="callback"></param>
+        /// <returns></returns>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public string Create<T>(object receiver, string callback)
+        {
+            if (receiver == null)
+            {
+                throw new ArgumentNullException(nameof(receiver));
+            }
+
+            return callback;
+        }
+
+        /// <summary>
+        /// Returns the provided <paramref name="callback"/>. For internal framework use only.
+        /// </summary>
+        /// <param name="receiver"></param>
+        /// <param name="callback"></param>
+        /// <returns></returns>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public EventCallback<T> Create<T>(object receiver, EventCallback<T> callback)
+        {
+            if (receiver == null)
+            {
+                throw new ArgumentNullException(nameof(receiver));
+            }
+
+            return callback;
+        }
+
+        /// <summary>
         /// Creates an <see cref="EventCallback"/> for the provided <paramref name="receiver"/> and
         /// <paramref name="callback"/>.
         /// </summary>
@@ -186,6 +238,34 @@ namespace Microsoft.AspNetCore.Components
             }
 
             return CreateCore<T>(receiver, callback);
+        }
+
+        /// <summary>
+        /// Creates an <see cref="EventCallback"/> for the provided <paramref name="receiver"/> and
+        /// <paramref name="callback"/>. For internal framework use only.
+        /// </summary>
+        /// <param name="receiver"></param>
+        /// <param name="callback"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public EventCallback<T> CreateInferred<T>(object receiver, Action<T> callback, T value)
+        {
+            return Create(receiver, callback);
+        }
+
+        /// <summary>
+        /// Creates an <see cref="EventCallback"/> for the provided <paramref name="receiver"/> and
+        /// <paramref name="callback"/>. For internal framework use only.
+        /// </summary>
+        /// <param name="receiver"></param>
+        /// <param name="callback"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public EventCallback<T> CreateInferred<T>(object receiver, Func<T, Task> callback, T value)
+        {
+            return Create(receiver, callback);
         }
 
         private EventCallback CreateCore(object receiver, MulticastDelegate callback)

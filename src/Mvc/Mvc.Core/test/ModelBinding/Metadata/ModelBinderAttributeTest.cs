@@ -25,22 +25,39 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public void BinderType_DefaultCustomBindingSource()
         {
             // Arrange
-            var attribute = new ModelBinderAttribute();
-            attribute.BinderType = typeof(ByteArrayModelBinder);
+            var attribute = new ModelBinderAttribute
+            {
+                BinderType = typeof(ByteArrayModelBinder),
+            };
 
             // Act
             var source = attribute.BindingSource;
 
             // Assert
-            Assert.Equal(BindingSource.Custom, source);
+            Assert.Same(BindingSource.Custom, source);
+        }
+
+        [Fact]
+        public void BinderTypePassedToConstructor_DefaultCustomBindingSource()
+        {
+            // Arrange
+            var attribute = new ModelBinderAttribute(typeof(ByteArrayModelBinder));
+
+            // Act
+            var source = attribute.BindingSource;
+
+            // Assert
+            Assert.Same(BindingSource.Custom, source);
         }
 
         [Fact]
         public void BinderType_SettingBindingSource_OverridesDefaultCustomBindingSource()
         {
             // Arrange
-            var attribute = new FromQueryModelBinderAttribute();
-            attribute.BinderType = typeof(ByteArrayModelBinder);
+            var attribute = new FromQueryModelBinderAttribute
+            {
+                BinderType = typeof(ByteArrayModelBinder)
+            };
 
             // Act
             var source = attribute.BindingSource;

@@ -172,6 +172,9 @@ public class LongPollingTransportTest {
                     } else if (requestCount.get() == 2) {
                         requestCount.incrementAndGet();
                         return Single.just(new HttpResponse(200, "", "SECOND"));
+                    } else if (requestCount.get() == 3) {
+                        requestCount.incrementAndGet();
+                        return Single.just(new HttpResponse(200, "", "THIRD"));
                     }
 
                     return Single.just(new HttpResponse(204, "", ""));
@@ -186,7 +189,7 @@ public class LongPollingTransportTest {
         transport.setOnReceive((msg) -> {
             onReceiveCalled.set(true);
             message.set(message.get() + msg);
-            if (messageCount.incrementAndGet() == 2) {
+            if (messageCount.incrementAndGet() == 3) {
                 blocker.onComplete();
             }
         });
@@ -196,7 +199,7 @@ public class LongPollingTransportTest {
         transport.start("http://example.com").timeout(1, TimeUnit.SECONDS).blockingAwait();
         assertTrue(blocker.blockingAwait(1, TimeUnit.SECONDS));
         assertTrue(onReceiveCalled.get());
-        assertEquals("FIRSTSECOND", message.get());
+        assertEquals("FIRSTSECONDTHIRD", message.get());
     }
 
     @Test

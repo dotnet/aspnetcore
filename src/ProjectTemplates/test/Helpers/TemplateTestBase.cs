@@ -22,7 +22,6 @@ namespace Templates.Test
         protected string ProjectName { get; set; }
         protected string ProjectGuid { get; set; }
         protected string TemplateOutputDir { get; set; }
-        protected bool UseRazorSdkPackage { get; set; } = true;
 
         public static ITestOutputHelper Output => _output.Value;
 
@@ -63,8 +62,6 @@ $@"<Project>
 
         protected void RunDotNetNew(string templateName, string auth = null, string language = null, bool useLocalDB = false, bool noHttps = false)
         {
-            SetAfterDirectoryBuildPropsContents();
-
             var args = $"new {templateName} --debug:custom-hive \"{TemplatePackageInstaller.CustomHivePath}\"";
 
             if (!string.IsNullOrEmpty(auth))
@@ -93,32 +90,6 @@ $@"<Project>
             {
                 ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), args).WaitForExit(assertSuccess: true);
             }
-        }
-
-        protected void SetAfterDirectoryBuildPropsContents()
-        {
-            var content = GetAfterDirectoryBuildPropsContent();
-            if (!string.IsNullOrEmpty(content))
-            {
-                content = "<Project>" + Environment.NewLine + content + Environment.NewLine + "</Project>";
-                File.WriteAllText(Path.Combine(TemplateOutputDir, "Directory.Build.After.props"), content);
-            }
-        }
-
-        protected virtual string GetAfterDirectoryBuildPropsContent()
-        {
-            var content = string.Empty;
-            if (UseRazorSdkPackage)
-            {
-                content +=
-@"
-<ItemGroup>
-    <PackageReference Include=""Microsoft.NET.Sdk.Razor"" Version=""$(MicrosoftNETSdkRazorPackageVersion)"" />
-</ItemGroup>
-";
-            }
-
-            return content;
         }
 
         protected void RunDotNet(string arguments)
@@ -180,7 +151,7 @@ $@"<Project>
         {
 
         }";
-            
+
             // This comparison can break depending on how GIT checked out newlines on different files.
             Assert.Contains(RemoveNewLines(emptyMigration), RemoveNewLines(contents));
         }

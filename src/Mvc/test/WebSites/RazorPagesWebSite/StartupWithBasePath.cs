@@ -12,9 +12,9 @@ namespace RazorPagesWebSite
 {
     public class StartupWithBasePath
     {
-        private readonly IHostingEnvironment _hostingEnvironment;
+        private readonly IWebHostEnvironment _hostingEnvironment;
 
-        public StartupWithBasePath(IHostingEnvironment hostingEnvironment)
+        public StartupWithBasePath(IWebHostEnvironment hostingEnvironment)
         {
             _hostingEnvironment = hostingEnvironment;
         }

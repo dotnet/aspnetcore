@@ -91,7 +91,7 @@
       -->
       <DocumentName />
       <!--
-        Full path where the API description document is placed. Default filename is %(Filename).%(DocumentName).json.
+        Full path where the API description document is placed. Default filename is %(Filename)_%(DocumentName).json.
         Filenames and relative paths (if explicitly set) are combined with $(ServiceProjectReferenceDirectory).
       -->
       <DocumentPath />
@@ -116,7 +116,7 @@
     </ServiceUriReference>
 
     <ServiceFileReference>
-      <!-- Name of the class to generate. Defaults to %(Filename)Client but with an uppercase first letter. -->
+      <!-- Name of the class to generate. Defaults to match final segment of %(OutputPath). -->
       <ClassName />
       <!--
         Code generator to use. Required and must end with "CSharp" or "TypeScript" (the currently-supported target
@@ -130,7 +130,7 @@
       <Namespace />
       <!--
         Path to place generated code. Code generator may interpret path as a filename or directory. Default filename or
-        folder name is %(ClassName).[cs|ts]. Filenames and relative paths (if explicitly set) are combined with
+        folder name is %(Filename)Client.[cs|ts]. Filenames and relative paths (if explicitly set) are combined with
         $(ServiceFileReferenceDirectory). Final value (depending on $(ServiceFileReferenceDirectory)) is likely to be
         a path relative to the client project.
       -->

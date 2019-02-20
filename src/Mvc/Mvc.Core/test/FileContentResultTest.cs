@@ -361,6 +361,7 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal(StatusCodes.Status416RangeNotSatisfiable, httpResponse.StatusCode);
             Assert.Equal("bytes", httpResponse.Headers[HeaderNames.AcceptRanges]);
             Assert.Equal(contentRange.ToString(), httpResponse.Headers[HeaderNames.ContentRange]);
+            Assert.Equal(0, httpResponse.ContentLength);
             Assert.Empty(body);
         }
 

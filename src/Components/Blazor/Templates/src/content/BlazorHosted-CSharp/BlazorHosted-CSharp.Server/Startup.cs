@@ -25,6 +25,7 @@ namespace BlazorHosted_CSharp.Server
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                app.UseBlazorDebugging();
             }
 
             app.UseMvc(routes =>
@@ -33,7 +34,6 @@ namespace BlazorHosted_CSharp.Server
             });
 
             app.UseBlazor<Client.Startup>();
-            app.UseBlazorDebugging();
         }
     }
 }

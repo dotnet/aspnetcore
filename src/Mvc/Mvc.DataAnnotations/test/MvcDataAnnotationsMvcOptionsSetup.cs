@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Test
             // Arrange
             var services = new ServiceCollection();
 
-            services.AddSingleton<IHostingEnvironment>(Mock.Of<IHostingEnvironment>());
+            services.AddSingleton<IWebHostEnvironment>(Mock.Of<IWebHostEnvironment>());
             services.AddSingleton<IValidationAttributeAdapterProvider, ValidationAttributeAdapterProvider>();
             services.AddSingleton<IOptions<MvcDataAnnotationsLocalizationOptions>>(
                 Options.Create(new MvcDataAnnotationsLocalizationOptions()));

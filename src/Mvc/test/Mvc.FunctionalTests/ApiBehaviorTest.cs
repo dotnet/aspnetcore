@@ -138,7 +138,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 {"Name", new[] {"The field Name must be a string with a minimum length of 5 and a maximum length of 30."}},
                 {"Zip", new[] { @"The field Zip must match the regular expression '\d{5}'."}}
             };
-            var contactString = JsonConvert.SerializeObject(contactModel);
 
             // Act
             var response = await CustomInvalidModelStateClient.PostAsJsonAsync("/contact/PostWithVnd", contactModel);

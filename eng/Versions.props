@@ -25,6 +25,7 @@
     <MicrosoftBclJsonSourcesPackageVersion>4.6.0-preview.19109.6</MicrosoftBclJsonSourcesPackageVersion>
     <MicrosoftCSharpPackageVersion>4.6.0-preview.19109.6</MicrosoftCSharpPackageVersion>
     <MicrosoftWin32RegistryPackageVersion>4.6.0-preview.19109.6</MicrosoftWin32RegistryPackageVersion>
+    <SystemComponentModelAnnotationsPackageVersion>4.6.0-preview.19109.6</SystemComponentModelAnnotationsPackageVersion>
     <SystemDataSqlClientPackageVersion>4.7.0-preview.19109.6</SystemDataSqlClientPackageVersion>
     <SystemDiagnosticsEventLogPackageVersion>4.6.0-preview.19109.6</SystemDiagnosticsEventLogPackageVersion>
     <SystemIOPipelinesPackageVersion>4.6.0-preview.19109.6</SystemIOPipelinesPackageVersion>
@@ -40,6 +41,8 @@
     <SystemServiceProcessServiceControllerPackageVersion>4.6.0-preview.19109.6</SystemServiceProcessServiceControllerPackageVersion>
     <SystemTextEncodingsWebPackageVersion>4.6.0-preview.19109.6</SystemTextEncodingsWebPackageVersion>
     <SystemThreadingChannelsPackageVersion>4.6.0-preview.19109.6</SystemThreadingChannelsPackageVersion>
+    <!-- Only listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
+    <MicrosoftNETCorePlatformsPackageVersion>3.0.0-preview.19109.6</MicrosoftNETCorePlatformsPackageVersion>
     <!-- Packages from aspnet/Extensions -->
     <InternalAspNetCoreAnalyzersPackageVersion>3.0.0-preview3.19117.2</InternalAspNetCoreAnalyzersPackageVersion>
     <MicrosoftAspNetCoreAnalyzerTestingPackageVersion>3.0.0-preview3.19117.2</MicrosoftAspNetCoreAnalyzerTestingPackageVersion>
@@ -126,7 +129,7 @@
   <PropertyGroup Label="Manual">
     <!-- Build tool dependencies -->
     <InternalAspNetCoreSdkPackageVersion>$(KoreBuildVersion)</InternalAspNetCoreSdkPackageVersion>
-    <InternalAspNetCoreSdkPackageVersion Condition=" '$(KoreBuildVersion)' == '' ">3.0.0-build-20190130.1</InternalAspNetCoreSdkPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion Condition=" '$(KoreBuildVersion)' == '' ">3.0.0-build-20190219.1</InternalAspNetCoreSdkPackageVersion>
     <MicrosoftNETFrameworkReferenceAssembliesPackageVersion>1.0.0-alpha-004</MicrosoftNETFrameworkReferenceAssembliesPackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.9.0</MicrosoftNETTestSdkPackageVersion>
     <MicrosoftSourceLinkGitHubPackageVersion>1.0.0-beta2-18618-05</MicrosoftSourceLinkGitHubPackageVersion>
@@ -134,6 +137,7 @@
     <!-- Stable dotnet/corefx packages no longer updated for .NET Core 3 -->
     <SystemBuffersPackageVersion>4.5.0</SystemBuffersPackageVersion>
     <SystemCodeDomPackageVersion>4.4.0</SystemCodeDomPackageVersion>
+    <SystemComponentModelPackageVersion>4.3.0</SystemComponentModelPackageVersion>
     <SystemNetHttpPackageVersion>4.3.2</SystemNetHttpPackageVersion>
     <SystemThreadingTasksExtensionsPackageVersion>4.5.2</SystemThreadingTasksExtensionsPackageVersion>
     <!-- Packages developed by @aspnet, but manually updated as necessary. -->

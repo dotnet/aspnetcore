@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
             services.AddSingleton<IUserIdProvider, UserNameIdProvider>();
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app)
         {
             app.UseRouting(routes =>
             {

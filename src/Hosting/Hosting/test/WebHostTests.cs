@@ -167,9 +167,9 @@ namespace Microsoft.AspNetCore.Hosting
                 .UseStartup("Microsoft.AspNetCore.Hosting.Tests")
                 .Build())
             {
-                var lifetime = host.Services.GetRequiredService<IApplicationLifetime>();
+                var lifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
 #pragma warning disable CS0618 // Type or member is obsolete
-                var lifetime2 = host.Services.GetRequiredService<Extensions.Hosting.IApplicationLifetime>();
+                var lifetime2 = host.Services.GetRequiredService<AspNetCore.Hosting.IApplicationLifetime>();
 #pragma warning restore CS0618 // Type or member is obsolete
                 var server = (FakeServer)host.Services.GetRequiredService<IServer>();
 
@@ -322,7 +322,7 @@ namespace Microsoft.AspNetCore.Hosting
                 .UseStartup("Microsoft.AspNetCore.Hosting.Tests")
                 .Build())
             {
-                var lifetime = host.Services.GetRequiredService<IApplicationLifetime>();
+                var lifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
                 var applicationStartedEvent = new ManualResetEventSlim(false);
                 var applicationStoppingEvent = new ManualResetEventSlim(false);
                 var applicationStoppedEvent = new ManualResetEventSlim(false);
@@ -416,9 +416,9 @@ namespace Microsoft.AspNetCore.Hosting
                 .UseFakeServer()
                 .Build())
             {
-                var applicationLifetime = host.Services.GetService<IApplicationLifetime>();
+                var applicationLifetime = host.Services.GetService<IHostApplicationLifetime>();
 #pragma warning disable CS0618 // Type or member is obsolete
-                var applicationLifetime2 = host.Services.GetService<Extensions.Hosting.IApplicationLifetime>();
+                var applicationLifetime2 = host.Services.GetService<AspNetCore.Hosting.IApplicationLifetime>();
 #pragma warning restore CS0618 // Type or member is obsolete
 
                 Assert.False(applicationLifetime.ApplicationStarted.IsCancellationRequested);
@@ -437,9 +437,9 @@ namespace Microsoft.AspNetCore.Hosting
                 .UseFakeServer()
                 .Build())
             {
-                var applicationLifetime = host.Services.GetService<IApplicationLifetime>();
+                var applicationLifetime = host.Services.GetService<IHostApplicationLifetime>();
 #pragma warning disable CS0618 // Type or member is obsolete
-                var applicationLifetime2 = host.Services.GetService<Extensions.Hosting.IApplicationLifetime>();
+                var applicationLifetime2 = host.Services.GetService<AspNetCore.Hosting.IApplicationLifetime>();
 #pragma warning restore CS0618 // Type or member is obsolete
 
                 var started = RegisterCallbacksThatThrow(applicationLifetime.ApplicationStarted);
@@ -515,7 +515,7 @@ namespace Microsoft.AspNetCore.Hosting
                 })
                 .Build())
             {
-                var lifetime = host.Services.GetRequiredService<IApplicationLifetime>();
+                var lifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
                 lifetime.StopApplication();
 
                 await host.StartAsync();
@@ -538,7 +538,7 @@ namespace Microsoft.AspNetCore.Hosting
                    })
                    .Build())
             {
-                var lifetime = host.Services.GetRequiredService<IApplicationLifetime>();
+                var lifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
                 lifetime.StopApplication();
 
                 await host.StartAsync();
@@ -562,7 +562,7 @@ namespace Microsoft.AspNetCore.Hosting
                    })
                    .Build())
             {
-                var lifetime = host.Services.GetRequiredService<IApplicationLifetime>();
+                var lifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
                 lifetime.StopApplication();
 
                 var svc = (TestHostedService)host.Services.GetRequiredService<IHostedService>();
@@ -605,7 +605,7 @@ namespace Microsoft.AspNetCore.Hosting
                 })
                 .Build())
             {
-                var lifetime = host.Services.GetRequiredService<IApplicationLifetime>();
+                var lifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
 
                 Assert.Equal(0, startedCalls);
 
@@ -658,7 +658,7 @@ namespace Microsoft.AspNetCore.Hosting
                 })
                 .Build())
             {
-                var lifetime = host.Services.GetRequiredService<IApplicationLifetime>();
+                var lifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
 
                 Assert.Equal(0, startedCalls);
                 await host.StartAsync();
@@ -687,9 +687,9 @@ namespace Microsoft.AspNetCore.Hosting
                 })
                 .Build())
             {
-                var applicationLifetime = host.Services.GetService<IApplicationLifetime>();
+                var applicationLifetime = host.Services.GetService<IHostApplicationLifetime>();
 #pragma warning disable CS0618 // Type or member is obsolete
-                var applicationLifetime2 = host.Services.GetService<Extensions.Hosting.IApplicationLifetime>();
+                var applicationLifetime2 = host.Services.GetService<AspNetCore.Hosting.IApplicationLifetime>();
 #pragma warning restore CS0618 // Type or member is obsolete
 
                 var started = RegisterCallbacksThatThrow(applicationLifetime.ApplicationStarted);
@@ -721,9 +721,9 @@ namespace Microsoft.AspNetCore.Hosting
                 .Build())
             {
                 await host.StartAsync();
-                var env = host.Services.GetService<IHostingEnvironment>();
+                var env = host.Services.GetService<IHostEnvironment>();
 #pragma warning disable CS0618 // Type or member is obsolete
-                var env2 = host.Services.GetService<Extensions.Hosting.IHostingEnvironment>();
+                var env2 = host.Services.GetService<AspNetCore.Hosting.IHostingEnvironment>();
 #pragma warning restore CS0618 // Type or member is obsolete
                 Assert.Equal("Changed", env.EnvironmentName);
                 Assert.Equal("Changed", env2.EnvironmentName);
@@ -808,9 +808,9 @@ namespace Microsoft.AspNetCore.Hosting
         {
             using (var host = CreateBuilder().UseFakeServer().Build())
             {
-                var env = host.Services.GetService<IHostingEnvironment>();
+                var env = host.Services.GetService<IHostEnvironment>();
 #pragma warning disable CS0618 // Type or member is obsolete
-                var env2 = host.Services.GetService<Extensions.Hosting.IHostingEnvironment>();
+                var env2 = host.Services.GetService<AspNetCore.Hosting.IHostingEnvironment>();
 #pragma warning restore CS0618 // Type or member is obsolete
                 Assert.Equal(EnvironmentName.Production, env.EnvironmentName);
                 Assert.Equal(EnvironmentName.Production, env2.EnvironmentName);
@@ -831,9 +831,9 @@ namespace Microsoft.AspNetCore.Hosting
 
             using (var host = CreateBuilder(config).UseFakeServer().Build())
             {
-                var env = host.Services.GetService<IHostingEnvironment>();
+                var env = host.Services.GetService<IHostEnvironment>();
 #pragma warning disable CS0618 // Type or member is obsolete
-                var env2 = host.Services.GetService<Extensions.Hosting.IHostingEnvironment>();
+                var env2 = host.Services.GetService<AspNetCore.Hosting.IHostingEnvironment>();
 #pragma warning restore CS0618 // Type or member is obsolete
                 Assert.Equal(EnvironmentName.Staging, env.EnvironmentName);
                 Assert.Equal(EnvironmentName.Staging, env.EnvironmentName);
@@ -854,9 +854,15 @@ namespace Microsoft.AspNetCore.Hosting
 
             using (var host = CreateBuilder(config).UseFakeServer().Build())
             {
-                var env = host.Services.GetService<IHostingEnvironment>();
+                var env = host.Services.GetService<IWebHostEnvironment>();
                 Assert.Equal(Path.GetFullPath("testroot"), env.WebRootPath);
                 Assert.True(env.WebRootFileProvider.GetFileInfo("TextFile.txt").Exists);
+
+#pragma warning disable CS0618 // Type or member is obsolete
+                var env1 = host.Services.GetService<IHostingEnvironment>();
+#pragma warning restore CS0618 // Type or member is obsolete
+                Assert.Equal(Path.GetFullPath("testroot"), env1.WebRootPath);
+                Assert.True(env1.WebRootFileProvider.GetFileInfo("TextFile.txt").Exists);
             }
         }
 
@@ -866,7 +872,7 @@ namespace Microsoft.AspNetCore.Hosting
             using (var host = CreateBuilder().UseFakeServer().Build())
             {
                 await host.StartAsync();
-                var env = host.Services.GetRequiredService<IHostingEnvironment>();
+                var env = host.Services.GetRequiredService<IHostEnvironment>();
                 Assert.True(env.IsEnvironment(EnvironmentName.Production));
                 Assert.True(env.IsEnvironment("producTion"));
             }
@@ -1034,10 +1040,12 @@ namespace Microsoft.AspNetCore.Hosting
 
         private class TestHostedService : IHostedService, IDisposable
         {
-            private readonly IApplicationLifetime _lifetime;
+            private readonly IHostApplicationLifetime _lifetime;
 
 #pragma warning disable CS0618 // Type or member is obsolete
-            public TestHostedService(IApplicationLifetime lifetime, Extensions.Hosting.IApplicationLifetime lifetime2)
+            public TestHostedService(IHostApplicationLifetime lifetime,
+                AspNetCore.Hosting.IApplicationLifetime lifetime1,
+                Extensions.Hosting.IApplicationLifetime lifetime2)
 #pragma warning restore CS0618 // Type or member is obsolete
             {
                 _lifetime = lifetime;

@@ -12,6 +12,5 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.NET.Sdk.Razor" PrivateAssets="All" />
   </ItemGroup>
 </Project>

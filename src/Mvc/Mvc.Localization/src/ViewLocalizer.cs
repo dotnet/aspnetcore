@@ -28,8 +28,8 @@ namespace Microsoft.AspNetCore.Mvc.Localization
         /// Creates a new <see cref="ViewLocalizer"/>.
         /// </summary>
         /// <param name="localizerFactory">The <see cref="IHtmlLocalizerFactory"/>.</param>
-        /// <param name="hostingEnvironment">The <see cref="IHostingEnvironment"/>.</param>
-        public ViewLocalizer(IHtmlLocalizerFactory localizerFactory, IHostingEnvironment hostingEnvironment)
+        /// <param name="hostingEnvironment">The <see cref="IWebHostEnvironment"/>.</param>
+        public ViewLocalizer(IHtmlLocalizerFactory localizerFactory, IWebHostEnvironment hostingEnvironment)
         {
             if (localizerFactory == null)
             {

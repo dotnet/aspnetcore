@@ -78,7 +78,7 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 manager = new ApplicationPartManager();
 
-                var environment = GetServiceFromCollection<IHostingEnvironment>(services);
+                var environment = GetServiceFromCollection<IWebHostEnvironment>(services);
                 var entryAssemblyName = environment?.ApplicationName;
                 if (string.IsNullOrEmpty(entryAssemblyName))
                 {

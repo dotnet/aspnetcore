@@ -9,13 +9,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 {
     internal class RazorViewEngineOptionsSetup : IConfigureOptions<RazorViewEngineOptions>
     {
-        private readonly IHostingEnvironment _hostingEnvironment;
-
-        public RazorViewEngineOptionsSetup(IHostingEnvironment hostingEnvironment)
-        {
-            _hostingEnvironment = hostingEnvironment ?? throw new ArgumentNullException(nameof(hostingEnvironment));
-        }
-
         public void Configure(RazorViewEngineOptions options)
         {
             if (options == null)

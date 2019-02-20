@@ -18,7 +18,7 @@ namespace MusicStore
     {
         private readonly Platform _platform;
 
-        public Startup(IHostingEnvironment hostingEnvironment)
+        public Startup(IWebHostEnvironment hostingEnvironment)
         {
             // Below code demonstrates usage of multiple configuration sources. For instance a setting say 'setting1'
             // is found in both the registered sources, then the later source will win. By this way a Local config

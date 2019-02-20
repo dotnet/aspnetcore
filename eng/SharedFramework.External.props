@@ -90,6 +90,7 @@
   -->
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <_CompilationOnlyReference Include="System.Buffers" />
+    <_CompilationOnlyReference Include="System.ComponentModel.Annotations" />
   </ItemGroup>
 
   <!--

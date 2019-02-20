@@ -92,7 +92,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Act
             var response = await Client.PostAsync("http://localhost/JsonFormatter/ReturnInput/", content);
-            var responseBody = await response.Content.ReadAsStringAsync();
 
             // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -157,7 +156,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Act
             var response = await Client.PostAsync("http://localhost/JsonFormatter/ReturnInput/", content);
-            var responseBody = await response.Content.ReadAsStringAsync();
 
             // Assert
             Assert.Equal(HttpStatusCode.UnsupportedMediaType, response.StatusCode);
@@ -213,7 +211,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Act
             var response = await Client.PostAsync("http://localhost/InputFormatter/ReturnInput/", content);
-            var responseBody = await response.Content.ReadAsStringAsync();
 
             // Assert
             Assert.Equal(HttpStatusCode.UnsupportedMediaType, response.StatusCode);

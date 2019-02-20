@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Net.Http;
 using System.Threading;
@@ -9,9 +9,9 @@ namespace MusicStore.Mocks.OpenIdConnect
 {
     internal class OpenIdConnectBackChannelHttpHandler : HttpMessageHandler
     {
-        private IHostingEnvironment _env;
+        private IWebHostEnvironment _env;
 
-        public OpenIdConnectBackChannelHttpHandler(IHostingEnvironment env)
+        public OpenIdConnectBackChannelHttpHandler(IWebHostEnvironment env)
         {
             _env = env;
         }

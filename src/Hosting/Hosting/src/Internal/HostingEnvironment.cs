@@ -6,7 +6,7 @@ using Microsoft.Extensions.FileProviders;
 namespace Microsoft.AspNetCore.Hosting.Internal
 {
 #pragma warning disable CS0618 // Type or member is obsolete
-    public class HostingEnvironment : IHostingEnvironment, Extensions.Hosting.IHostingEnvironment
+    public class HostingEnvironment : IHostingEnvironment, Extensions.Hosting.IHostingEnvironment, IWebHostEnvironment
 #pragma warning restore CS0618 // Type or member is obsolete
     {
         public string EnvironmentName { get; set; } = Hosting.EnvironmentName.Production;
