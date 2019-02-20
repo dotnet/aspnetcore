@@ -42,6 +42,9 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
     <PackageConflictManifestFileName>PackageOverrides.txt</PackageConflictManifestFileName>
     <PackageConflictManifestPackagePath>data/</PackageConflictManifestPackagePath>
+
+    <!-- Reference implementation assemblies in addition to ref assemblies to get xml docs -->
+    <ReferenceImplementationAssemblies>true</ReferenceImplementationAssemblies>
   </PropertyGroup>
 
   <ItemGroup>
@@ -85,11 +88,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
             @(ReferencePathWithRefAssemblies->WithMetadataValue('NuGetPackageId', 'Microsoft.NETCore.App'));
             @(ReferencePathWithRefAssemblies->WithMetadataValue('ReferenceGrouping', 'Microsoft.NETCore.App'));" />
 
-      <AspNetCoreReferenceDocXml Include="@(AspNetCoreReferenceAssemblyPath->'%(RootDir)%(Directory)%(FileName).xml')" />
-
-      <!-- Exclude known missing XML docs files. Time-boxing this workaround because we want XML docs for everything. This can be removed when we get a new build with https://github.com/dotnet/core-setup/pull/5109. -->
-      <AspNetCoreReferenceDocXml Remove="@(AspNetCoreReferenceDocXml)"
-        Condition="'$(MicrosoftNETCoreAppPackageVersion)' == '3.0.0-preview-27405-2' AND ('%(FileName)' == 'Microsoft.Extensions.DependencyModel' OR '%(FileName)' == 'Microsoft.DotNet.PlatformAbstractions' )" />
+      <AspNetCoreReferenceDocXml Include="@(_ResolvedProjectReferencePaths->WithMetadataValue('IsReferenceAssembly', 'false')->'%(RootDir)%(Directory)%(FileName).xml')" />
 
       <RefPackContent Include="@(AspNetCoreReferenceAssemblyPath)" />
       <RefPackContent Include="@(AspNetCoreReferenceDocXml)" />

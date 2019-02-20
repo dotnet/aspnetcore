@@ -102,6 +102,12 @@
 
     <!-- Fixes a common error in targets implementing a NoBuild mode. -->
     <BuildProjectReferences Condition=" '$(NoBuild)' == 'true' ">false</BuildProjectReferences>
+
+    <IsReferenceAssemblyProject>false</IsReferenceAssemblyProject>
+    <IsReferenceAssemblyProject Condition="$(MSBuildProjectDirectory.EndsWith('ref'))">true</IsReferenceAssemblyProject>
+    <HasReferenceAssembly>false</HasReferenceAssembly>
+    <HasReferenceAssembly Condition="'$(MSBuildProjectExtension)' == '.csproj' AND '$(IsReferenceAssemblyProject)' != 'true'">true</HasReferenceAssembly>
+    <OutDirName Condition="'$(IsReferenceAssemblyProject)' == 'true'">$(MSBuildProjectName)-ref</OutDirName>
   </PropertyGroup>
 
   <Import Project="eng\Versions.props" />
@@ -131,7 +137,7 @@
   <PropertyGroup Condition=" '$(OutputInRepoRoot)' == 'true' ">
     <OutDirName Condition=" '$(OutDirName)' == '' ">$(MSBuildProjectName)</OutDirName>
 
-    <BaseOutputPath Condition=" '$(BaseOutputPath)' == '' ">$([System.IO.Path]::GetFullPath('$(ArtifactsBinDir)$(OutDirName)\'))</BaseOutputPath>
+    <BaseOutputPath Condition=" '$(BaseOutputPath)' == '' ">$(RepositoryRoot)bin\$(OutDirName)\</BaseOutputPath>
     <OutputPath Condition=" '$(PlatformName)' == 'AnyCPU' ">$(BaseOutputPath)$(Configuration)\</OutputPath>
     <OutputPath Condition=" '$(PlatformName)' != 'AnyCPU' ">$(BaseOutputPath)$(PlatformName)\$(Configuration)\</OutputPath>
 
@@ -157,6 +163,9 @@
     <IsTestAssetProject Condition="$(RepoRelativeProjectDir.Contains('testassets'))">true</IsTestAssetProject>
     <IsSampleProject Condition="$(RepoRelativeProjectDir.Contains('sample'))">true</IsSampleProject>
     <IsAnalyzersProject Condition="$(MSBuildProjectName.EndsWith('.Analyzers'))">true</IsAnalyzersProject>
+    <IsSpecificationTestProject Condition="$(MSBuildProjectName.EndsWith('.Specification.Tests'))">true</IsSpecificationTestProject>
+    <IsToolProject Condition="$(MSBuildProjectName.StartsWith('dotnet-'))">true</IsToolProject>
+
   </PropertyGroup>
 
   <Import Project="build\tasks\RepoTasks.tasks" Condition="'$(MSBuildProjectName)' != 'RepoTasks' AND '$(DesignTimeBuild)' != 'true'" />
