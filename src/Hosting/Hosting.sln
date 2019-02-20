@@ -2,7 +2,7 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.0.0
-MinimumVisualStudioVersion = 16.0.28608.199
+MinimumVisualStudioVersion = 16.0.0.0
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Hosting", "Hosting\src\Microsoft.AspNetCore.Hosting.csproj", "{254295FC-35AF-4A45-A6F4-FF93C1B7CD8D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Hosting.Tests", "Hosting\test\Microsoft.AspNetCore.Hosting.Tests.csproj", "{B2A631BD-744E-42FB-BA79-8F22BB27DA65}"
@@ -37,7 +37,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Hostin
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestStartupAssembly1", "test\testassets\TestStartupAssembly1\TestStartupAssembly1.csproj", "{570D1047-A109-4209-9258-9BA7C8BDC9AA}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_dependencies", "_dependencies", "{2A533A99-96D8-4A02-8990-BA8F94E70567}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dependencies", "dependencies", "{2A533A99-96D8-4A02-8990-BA8F94E70567}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Http.Features", "..\Http\Http.Features\src\Microsoft.AspNetCore.Http.Features.csproj", "{F7170D2A-FFD9-43D8-AE4F-5120CAF9EFF2}"
 EndProject
