@@ -38,8 +38,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             }
         }
 
-        [ConditionalTheory]
-        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/6549
+        [Theory]
         [MemberData(nameof(ScriptWithIntegrityData))]
         public async Task IdentityUI_ScriptTags_SubresourceIntegrityCheck(ScriptTag scriptTag)
         {
@@ -68,8 +67,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             }
         }
 
-        [ConditionalTheory]
-        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/6549
+        [Theory]
         [MemberData(nameof(ScriptWithFallbackSrcData))]
         public async Task IdentityUI_ScriptTags_FallbackSourceContent_Matches_CDNContent(ScriptTag scriptTag)
         {
@@ -148,13 +146,17 @@ namespace Microsoft.AspNetCore.Identity.Test
         private static string GetSolutionDir()
         {
             var dir = new DirectoryInfo(AppContext.BaseDirectory);
-            while (dir != null)
+            // On helix we use the published copy
+            if (!string.Equals(Environment.GetEnvironmentVariable("helix"), "true", StringComparison.OrdinalIgnoreCase))
             {
-                if (File.Exists(Path.Combine(dir.FullName, "Identity.sln")))
+                while (dir != null)
                 {
-                    break;
+                    if (File.Exists(Path.Combine(dir.FullName, "Identity.sln")))
+                    {
+                        break;
+                    }
+                    dir = dir.Parent;
                 }
-                dir = dir.Parent;
             }
             return dir.FullName;
         }
