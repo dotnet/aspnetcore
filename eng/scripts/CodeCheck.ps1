@@ -38,9 +38,6 @@ try {
         & $repoRoot/build.ps1 -ci -norestore /t:InstallDotNet
     }
 
-    # Suppresses the 'Welcome to .NET Core!' output that breaks invocations of `dotnet sln`
-    $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE = 1
-
     #
     # Versions.props and Version.Details.xml
     #
@@ -99,7 +96,7 @@ try {
         $slnDir = Split-Path -Parent $_
         $sln = $_
         & dotnet sln $_ list `
-            | ? { $_ -ne 'Project(s)' -and $_ -ne '----------' } `
+            | ? { $_ -like '*proj' } `
             | % {
                 $proj = Join-Path $slnDir $_
                 if (-not (Test-Path $proj)) {
