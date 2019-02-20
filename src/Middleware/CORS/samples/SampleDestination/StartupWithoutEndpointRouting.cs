@@ -73,8 +73,7 @@ namespace SampleDestination
                 innerBuilder.UseCors(policy => policy
                     .AllowAnyOrigin()
                     .AllowAnyMethod()
-                    .AllowAnyHeader()
-                    .AllowCredentials());
+                    .AllowAnyHeader());
 
                 innerBuilder.UseMiddleware<SampleMiddleware>();
             });
