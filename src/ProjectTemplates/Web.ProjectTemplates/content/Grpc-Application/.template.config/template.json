@@ -37,6 +37,18 @@
     }
   ],
   "symbols": {
+    "Framework": {
+      "type": "parameter",
+      "description": "The target framework for the project.",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "netcoreapp3.0",
+          "description": "Target netcoreapp3.0"
+        }
+      ],
+      "defaultValue": "netcoreapp3.0"
+    },
     "ExcludeLaunchSettings": {
       "type": "parameter",
       "datatype": "bool",
@@ -52,10 +64,20 @@
   },
   "primaryOutputs": [
     {
+      "condition": "(HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\")",
+      "path": "Grpc-Application.sln"
+    },
+    {
+      "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
       "path": "Grpc-Application.Client/Grpc-Application.Client.csproj"
     },
     {
+      "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
       "path": "Grpc-Application.Server/Grpc-Application.Server.csproj"
+    },
+    {
+      "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "path": "Protos/greet.proto"
     }
   ],
   "defaultName": "gRPC-Application1",
