@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         // Decorated with ActivatorUtilitiesConstructor since we want to influence tag helper activation
         // to use this constructor in the default case.
         public ScriptTagHelper(
-            IHostingEnvironment hostingEnvironment,
+            IWebHostEnvironment hostingEnvironment,
             TagHelperMemoryCacheProvider cacheProvider,
             IFileVersionProvider fileVersionProvider,
             HtmlEncoder htmlEncoder,
@@ -176,7 +176,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         [HtmlAttributeName(FallbackTestExpressionAttributeName)]
         public string FallbackTestExpression { get; set; }
 
-        protected internal IHostingEnvironment HostingEnvironment { get; }
+        protected internal IWebHostEnvironment HostingEnvironment { get; }
 
         protected internal IMemoryCache Cache { get; private set; }
 

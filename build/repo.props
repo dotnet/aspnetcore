@@ -94,6 +94,10 @@
         <ProjectToBuild Include="$(RepositoryRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMV2\ANCMV2.wixproj" AdditionalProperties="Platform=x64" />
         <ProjectToBuild Include="$(RepositoryRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMV2\ANCMV2.wixproj" AdditionalProperties="Platform=x86" />
 
+        <!-- Build the targeting pack installers -->
+        <ProjectToBuild Include="$(RepositoryRoot)src\Installers\Windows\TargetingPack\TargetingPack.wixproj" AdditionalProperties="Platform=x64" />
+        <ProjectToBuild Include="$(RepositoryRoot)src\Installers\Windows\TargetingPack\TargetingPack.wixproj" AdditionalProperties="Platform=x86" />
+
         <!-- Build the SharedFramework installers -->
         <ProjectToBuild Include="$(RepositoryRoot)src\Installers\Windows\SharedFrameworkBundle\SharedFrameworkBundle.wixproj" AdditionalProperties="Platform=x64" />
         <ProjectToBuild Include="$(RepositoryRoot)src\Installers\Windows\SharedFrameworkBundle\SharedFrameworkBundle.wixproj" AdditionalProperties="Platform=x86" />

@@ -22,14 +22,14 @@ namespace Microsoft.AspNetCore.Identity.UI
         private const string IdentityUIDefaultAreaName = "Identity";
 
         public IdentityDefaultUIConfigureOptions(
-            IHostingEnvironment environment,
+            IWebHostEnvironment environment,
             IOptions<DefaultUIOptions> uiOptions)
         {
             Environment = environment;
             UiOptions = uiOptions;
         }
 
-        public IHostingEnvironment Environment { get; }
+        public IWebHostEnvironment Environment { get; }
         public IOptions<DefaultUIOptions> UiOptions { get; }
 
         public void PostConfigure(string name, RazorPagesOptions options)

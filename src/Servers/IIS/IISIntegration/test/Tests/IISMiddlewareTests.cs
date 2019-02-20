@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration
@@ -91,7 +92,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 .UseIISIntegration()
                 .Configure(app =>
                 {
-                    var appLifetime = app.ApplicationServices.GetRequiredService<IApplicationLifetime>();
+                    var appLifetime = app.ApplicationServices.GetRequiredService<IHostApplicationLifetime>();
                     appLifetime.ApplicationStopping.Register(() => applicationStoppingFired.SetResult(0));
 
                     app.Run(context =>
@@ -141,7 +142,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 .UseIISIntegration()
                 .Configure(app =>
                 {
-                    var appLifetime = app.ApplicationServices.GetRequiredService<IApplicationLifetime>();
+                    var appLifetime = app.ApplicationServices.GetRequiredService<IHostApplicationLifetime>();
                     appLifetime.ApplicationStopping.Register(() => applicationStoppingFired.SetResult(0));
 
                     app.Run(context =>
@@ -177,7 +178,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 .UseIISIntegration()
                 .Configure(app =>
                 {
-                    var appLifetime = app.ApplicationServices.GetRequiredService<IApplicationLifetime>();
+                    var appLifetime = app.ApplicationServices.GetRequiredService<IHostApplicationLifetime>();
                     appLifetime.ApplicationStopping.Register(() => applicationStoppingFired.SetResult(0));
 
                     app.Run(context =>
@@ -213,7 +214,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 .UseIISIntegration()
                 .Configure(app =>
                 {
-                    var appLifetime = app.ApplicationServices.GetRequiredService<IApplicationLifetime>();
+                    var appLifetime = app.ApplicationServices.GetRequiredService<IHostApplicationLifetime>();
                     appLifetime.ApplicationStopping.Register(() => applicationStoppingFired.SetResult(0));
 
                     app.Run(context =>

@@ -10,6 +10,7 @@ using Microsoft.Net.Http.Headers;
 using System.Net.Mime;
 using System;
 using System.IO;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -49,7 +50,7 @@ namespace Microsoft.AspNetCore.Builder
             // TODO: Make the .blazor.config file contents sane
             // Currently the items in it are bizarre and don't relate to their purpose,
             // hence all the path manipulation here. We shouldn't be hardcoding 'dist' here either.
-            var env = (IHostingEnvironment)app.ApplicationServices.GetService(typeof(IHostingEnvironment));
+            var env = (IWebHostEnvironment)app.ApplicationServices.GetService(typeof(IWebHostEnvironment));
             var config = BlazorConfig.Read(options.ClientAssemblyPath);
 
             if (env.IsDevelopment() && config.EnableAutoRebuilding)

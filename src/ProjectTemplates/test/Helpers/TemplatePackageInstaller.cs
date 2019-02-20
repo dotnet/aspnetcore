@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using Microsoft.Extensions.CommandLineUtils;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace Templates.Test.Helpers
@@ -95,21 +96,21 @@ namespace Templates.Test.Helpers
             }
 
             VerifyCannotFindTemplate(output, "web");
-            VerifyCannotFindTemplate(output, "razor");
+            VerifyCannotFindTemplate(output, "webapp");
+            VerifyCannotFindTemplate(output, "mvc");
             VerifyCannotFindTemplate(output, "react");
             VerifyCannotFindTemplate(output, "reactredux");
             VerifyCannotFindTemplate(output, "angular");
 
             var builtPackages = MondoHelpers.GetNupkgFiles();
-            foreach (var packagePath in builtPackages)
+            var templatePackages = builtPackages.Where(b => _templatePackages.Any(t => Path.GetFileName(b).StartsWith(t, StringComparison.OrdinalIgnoreCase)));
+            Assert.Equal(4, templatePackages.Count());
+            foreach (var packagePath in templatePackages)
             {
-                if (_templatePackages.Any(name => Path.GetFileName(packagePath).StartsWith(name, StringComparison.OrdinalIgnoreCase)))
-                {
-                    output.WriteLine($"Installing templates package {packagePath}...");
-                    RunDotNetNew(output, $"--install \"{packagePath}\"", assertSuccess: true);
-                }
+                output.WriteLine($"Installing templates package {packagePath}...");
+                RunDotNetNew(output, $"--install \"{packagePath}\"", assertSuccess: true);
             }
-            VerifyCanFindTemplate(output, "razor");
+            VerifyCanFindTemplate(output, "webapp");
             VerifyCanFindTemplate(output, "web");
             VerifyCanFindTemplate(output, "react");
         }
@@ -117,7 +118,7 @@ namespace Templates.Test.Helpers
         private static void VerifyCanFindTemplate(ITestOutputHelper output, string templateName)
         {
             var proc = RunDotNetNew(output, $"", assertSuccess: false);
-            if (!proc.Output.Contains($" {templateName}"))
+            if (!proc.Output.Contains($" {templateName} "))
             {
                 throw new InvalidOperationException($"Couldn't find {templateName} as an option in {proc.Output}.");
             }

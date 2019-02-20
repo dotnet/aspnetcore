@@ -10,7 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.Extensions.Options;
 using Xunit;
 
@@ -740,7 +740,6 @@ Environment.NewLine + "int b";
         private static InferParameterBindingInfoConvention GetConvention(
             IModelMetadataProvider modelMetadataProvider = null)
         {
-            var loggerFactory = NullLoggerFactory.Instance;
             modelMetadataProvider = modelMetadataProvider ?? new EmptyModelMetadataProvider();
             return new InferParameterBindingInfoConvention(modelMetadataProvider);
         }
@@ -999,7 +998,7 @@ Environment.NewLine + "int b";
         private class ParameterWithBindingInfo
         {
             [HttpGet("test")]
-            public IActionResult Action([ModelBinder(typeof(object))] Car car) => null;
+            public IActionResult Action([ModelBinder(typeof(ComplexTypeModelBinder))] Car car) => null;
         }
     }
 }

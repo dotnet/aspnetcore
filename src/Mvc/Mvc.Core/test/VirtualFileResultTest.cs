@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Mvc
             var contentType = "text/plain; charset=us-ascii; p1=p1-value";
             var result = new TestVirtualFileResult(path, contentType);
             result.EnableRangeProcessing = true;
-            var appEnvironment = new Mock<IHostingEnvironment>();
+            var appEnvironment = new Mock<IWebHostEnvironment>();
             appEnvironment.Setup(app => app.WebRootFileProvider)
                 .Returns(GetFileProvider(path));
 
@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Mvc
             var contentType = "text/plain; charset=us-ascii; p1=p1-value";
             var result = new TestVirtualFileResult(path, contentType);
             result.EnableRangeProcessing = true;
-            var appEnvironment = new Mock<IHostingEnvironment>();
+            var appEnvironment = new Mock<IWebHostEnvironment>();
             appEnvironment.Setup(app => app.WebRootFileProvider)
                 .Returns(GetFileProvider(path));
 
@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Mvc
             var path = Path.GetFullPath("helllo.txt");
             var contentType = "text/plain; charset=us-ascii; p1=p1-value";
             var result = new TestVirtualFileResult(path, contentType);
-            var appEnvironment = new Mock<IHostingEnvironment>();
+            var appEnvironment = new Mock<IWebHostEnvironment>();
             appEnvironment.Setup(app => app.WebRootFileProvider)
                 .Returns(GetFileProvider(path));
 
@@ -197,7 +197,7 @@ namespace Microsoft.AspNetCore.Mvc
             var contentType = "text/plain; charset=us-ascii; p1=p1-value";
             var result = new TestVirtualFileResult(path, contentType);
             result.EnableRangeProcessing = true;
-            var appEnvironment = new Mock<IHostingEnvironment>();
+            var appEnvironment = new Mock<IWebHostEnvironment>();
             appEnvironment.Setup(app => app.WebRootFileProvider)
                 .Returns(GetFileProvider(path));
 
@@ -242,7 +242,7 @@ namespace Microsoft.AspNetCore.Mvc
             var contentType = "text/plain; charset=us-ascii; p1=p1-value";
             var result = new TestVirtualFileResult(path, contentType);
             result.EnableRangeProcessing = true;
-            var appEnvironment = new Mock<IHostingEnvironment>();
+            var appEnvironment = new Mock<IWebHostEnvironment>();
             appEnvironment.Setup(app => app.WebRootFileProvider)
                     .Returns(GetFileProvider(path));
 
@@ -285,7 +285,7 @@ namespace Microsoft.AspNetCore.Mvc
             var contentType = "text/plain; charset=us-ascii; p1=p1-value";
             var result = new TestVirtualFileResult(path, contentType);
             result.EnableRangeProcessing = true;
-            var appEnvironment = new Mock<IHostingEnvironment>();
+            var appEnvironment = new Mock<IWebHostEnvironment>();
             appEnvironment.Setup(app => app.WebRootFileProvider)
                     .Returns(GetFileProvider(path));
 
@@ -317,6 +317,7 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal("bytes", httpResponse.Headers[HeaderNames.AcceptRanges]);
             Assert.Equal(contentRange.ToString(), httpResponse.Headers[HeaderNames.ContentRange]);
             Assert.NotEmpty(httpResponse.Headers[HeaderNames.LastModified]);
+            Assert.Equal(0, httpResponse.ContentLength);
             Assert.Empty(body);
         }
 
@@ -328,7 +329,7 @@ namespace Microsoft.AspNetCore.Mvc
             var contentType = "text/plain; charset=us-ascii; p1=p1-value";
             var result = new TestVirtualFileResult(path, contentType);
             result.EnableRangeProcessing = true;
-            var appEnvironment = new Mock<IHostingEnvironment>();
+            var appEnvironment = new Mock<IWebHostEnvironment>();
             appEnvironment.Setup(app => app.WebRootFileProvider)
                 .Returns(GetFileProvider(path));
 
@@ -370,7 +371,7 @@ namespace Microsoft.AspNetCore.Mvc
             var contentType = "text/plain; charset=us-ascii; p1=p1-value";
             var result = new TestVirtualFileResult(path, contentType);
             result.EnableRangeProcessing = true;
-            var appEnvironment = new Mock<IHostingEnvironment>();
+            var appEnvironment = new Mock<IWebHostEnvironment>();
             appEnvironment.Setup(app => app.WebRootFileProvider)
                 .Returns(GetFileProvider(path));
 
@@ -411,7 +412,7 @@ namespace Microsoft.AspNetCore.Mvc
             var path = Path.Combine("TestFiles", "FilePathResultTestFile.txt");
             var result = new TestVirtualFileResult(path, "text/plain");
 
-            var appEnvironment = new Mock<IHostingEnvironment>();
+            var appEnvironment = new Mock<IWebHostEnvironment>();
             appEnvironment.Setup(app => app.WebRootFileProvider)
                 .Returns(GetFileProvider(path));
 
@@ -503,7 +504,7 @@ namespace Microsoft.AspNetCore.Mvc
             var httpContext = GetHttpContext();
             httpContext.Features.Set<IHttpSendFileFeature>(sendFile);
             var context = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
-            var appEnvironment = new Mock<IHostingEnvironment>();
+            var appEnvironment = new Mock<IWebHostEnvironment>();
             appEnvironment.Setup(app => app.WebRootFileProvider)
                 .Returns(GetFileProvider(path));
             httpContext.RequestServices = new ServiceCollection()
@@ -707,7 +708,7 @@ namespace Microsoft.AspNetCore.Mvc
         {
             var services = new ServiceCollection();
 
-            var hostingEnvironment = new Mock<IHostingEnvironment>();
+            var hostingEnvironment = new Mock<IWebHostEnvironment>();
 
             services.AddSingleton<IActionResultExecutor<VirtualFileResult>, TestVirtualFileResultExecutor>();
             if (executorType != null)
@@ -715,7 +716,7 @@ namespace Microsoft.AspNetCore.Mvc
                 services.AddSingleton(typeof(IActionResultExecutor<VirtualFileResult>), executorType);
             }
 
-            services.AddSingleton<IHostingEnvironment>(hostingEnvironment.Object);
+            services.AddSingleton<IWebHostEnvironment>(hostingEnvironment.Object);
             services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
 
             return services;
@@ -767,7 +768,7 @@ namespace Microsoft.AspNetCore.Mvc
 
         private class TestVirtualFileResultExecutor : VirtualFileResultExecutor
         {
-            public TestVirtualFileResultExecutor(ILoggerFactory loggerFactory, IHostingEnvironment hostingEnvironment)
+            public TestVirtualFileResultExecutor(ILoggerFactory loggerFactory, IWebHostEnvironment hostingEnvironment)
                 : base(loggerFactory, hostingEnvironment)
             {
             }

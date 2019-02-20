@@ -244,6 +244,7 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal("bytes", httpResponse.Headers[HeaderNames.AcceptRanges]);
             Assert.Equal(contentRange.ToString(), httpResponse.Headers[HeaderNames.ContentRange]);
             Assert.NotEmpty(httpResponse.Headers[HeaderNames.LastModified]);
+            Assert.Equal(0, httpResponse.ContentLength);
             Assert.Empty(body);
         }
 

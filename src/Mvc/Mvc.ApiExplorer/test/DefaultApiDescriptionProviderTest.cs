@@ -191,8 +191,6 @@ namespace Microsoft.AspNetCore.Mvc.Description
             var action = CreateActionDescriptor(nameof(FromRouting));
             action.AttributeRouteInfo = new AttributeRouteInfo { Template = template };
 
-            var parameterDescriptor = action.Parameters[0];
-
             // Act
             var descriptions = GetApiDescriptions(action);
 
@@ -1492,7 +1490,6 @@ namespace Microsoft.AspNetCore.Mvc.Description
         {
             // Arrange
             var action = CreateActionDescriptor(nameof(AcceptsCycle));
-            var parameterDescriptor = action.Parameters.Single();
 
             // Act
             var descriptions = GetApiDescriptions(action);
@@ -1511,7 +1508,6 @@ namespace Microsoft.AspNetCore.Mvc.Description
         {
             // Arrange
             var action = CreateActionDescriptor(nameof(AcceptsHasCollection));
-            var parameterDescriptor = action.Parameters.Single();
 
             // Act
             var descriptions = GetApiDescriptions(action);
@@ -1531,7 +1527,6 @@ namespace Microsoft.AspNetCore.Mvc.Description
         {
             // Arrange
             var action = CreateActionDescriptor(nameof(AcceptsHasCollection_Complex));
-            var parameterDescriptor = action.Parameters.Single();
 
             // Act
             var descriptions = GetApiDescriptions(action);
@@ -2074,7 +2069,7 @@ namespace Microsoft.AspNetCore.Mvc.Description
         {
         }
 
-        private void FromCustom([ModelBinder(BinderType = typeof(BodyModelBinder))] int id)
+        private void FromCustom([ModelBinder(typeof(BodyModelBinder))] int id)
         {
         }
 

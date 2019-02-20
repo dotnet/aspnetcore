@@ -12,6 +12,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.DependencyModel;
+using Microsoft.Extensions.Hosting;
 using DependencyContextCompilationOptions = Microsoft.Extensions.DependencyModel.CompilationOptions;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
@@ -19,14 +20,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
     internal class CSharpCompiler
     {
         private readonly RazorReferenceManager _referenceManager;
-        private readonly IHostingEnvironment _hostingEnvironment;
+        private readonly IWebHostEnvironment _hostingEnvironment;
         private bool _optionsInitialized;
         private CSharpParseOptions _parseOptions;
         private CSharpCompilationOptions _compilationOptions;
         private EmitOptions _emitOptions;
         private bool _emitPdb;
 
-        public CSharpCompiler(RazorReferenceManager manager, IHostingEnvironment hostingEnvironment)
+        public CSharpCompiler(RazorReferenceManager manager, IWebHostEnvironment hostingEnvironment)
         {
             _referenceManager = manager ?? throw new ArgumentNullException(nameof(manager));
             _hostingEnvironment = hostingEnvironment ?? throw new ArgumentNullException(nameof(hostingEnvironment));
@@ -153,7 +154,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
         }
 
         private static CSharpCompilationOptions GetCompilationOptions(
-            IHostingEnvironment hostingEnvironment,
+            IWebHostEnvironment hostingEnvironment,
             DependencyContextCompilationOptions dependencyContextOptions)
         {
             var csharpCompilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
@@ -200,7 +201,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
         }
 
         private static CSharpParseOptions GetParseOptions(
-            IHostingEnvironment hostingEnvironment,
+            IWebHostEnvironment hostingEnvironment,
             DependencyContextCompilationOptions dependencyContextOptions)
         {
             var configurationSymbol = hostingEnvironment.IsDevelopment() ? "DEBUG" : "RELEASE";

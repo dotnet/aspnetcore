@@ -12,6 +12,7 @@ using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -32,12 +33,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         private readonly ILogger<HttpConnectionContext> _connectionLogger;
         private readonly TimeSpan _disconnectTimeout;
 
-        public HttpConnectionManager(ILoggerFactory loggerFactory, IApplicationLifetime appLifetime)
+        public HttpConnectionManager(ILoggerFactory loggerFactory, IHostApplicationLifetime appLifetime)
             : this(loggerFactory, appLifetime, Options.Create(new ConnectionOptions() { DisconnectTimeout = ConnectionOptionsSetup.DefaultDisconectTimeout }))
         {
         }
 
-        public HttpConnectionManager(ILoggerFactory loggerFactory, IApplicationLifetime appLifetime, IOptions<ConnectionOptions> connectionOptions)
+        public HttpConnectionManager(ILoggerFactory loggerFactory, IHostApplicationLifetime appLifetime, IOptions<ConnectionOptions> connectionOptions)
         {
             _logger = loggerFactory.CreateLogger<HttpConnectionManager>();
             _connectionLogger = loggerFactory.CreateLogger<HttpConnectionContext>();

@@ -25,7 +25,7 @@ namespace MusicStore
     {
         private readonly Platform _platform;
 
-        public StartupOpenIdConnectTesting(IHostingEnvironment env)
+        public StartupOpenIdConnectTesting(IWebHostEnvironment env)
         {
             //Below code demonstrates usage of multiple configuration sources. For instance a setting say 'setting1' is found in both the registered sources,
             //then the later source will win. By this way a Local config can be overridden by a different setting while deployed remotely.
@@ -40,7 +40,7 @@ namespace MusicStore
         }
 
         public IConfiguration Configuration { get; private set; }
-        public IHostingEnvironment Env { get; }
+        public IWebHostEnvironment Env { get; }
 
         public void ConfigureServices(IServiceCollection services)
         {

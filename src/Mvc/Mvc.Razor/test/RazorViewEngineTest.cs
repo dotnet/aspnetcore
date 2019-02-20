@@ -1908,7 +1908,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             IEnumerable<string> areaViewLocationFormats = null,
             IEnumerable<string> pageViewLocationFormats = null)
         {
-            var optionsSetup = new RazorViewEngineOptionsSetup(Mock.Of<IHostingEnvironment>());
+            var optionsSetup = new RazorViewEngineOptionsSetup();
 
             var options = new RazorViewEngineOptions();
             optionsSetup.Configure(options);
