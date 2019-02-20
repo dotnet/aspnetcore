@@ -4291,7 +4291,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // Compiled to Jump table
             public bool MoveNext()
             {
-                switch (_state)
+                switch (_next)
                 {
                     case 0:
                         goto HeaderCacheControl;
@@ -4385,312 +4385,312 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         goto ExtraHeaders;
                 }
                 
-                HeaderCacheControl:
+                HeaderCacheControl: // case 0
                     if ((_bits & 1L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Cache-Control", _collection._headers._CacheControl);
-                        _state = 1;
+                        _next = 1;
                         return true;
                     }
-                HeaderConnection:
+                HeaderConnection: // case 1
                     if ((_bits & 2L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Connection", _collection._headers._Connection);
-                        _state = 2;
+                        _next = 2;
                         return true;
                     }
-                HeaderDate:
+                HeaderDate: // case 2
                     if ((_bits & 4L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Date", _collection._headers._Date);
-                        _state = 3;
+                        _next = 3;
                         return true;
                     }
-                HeaderKeepAlive:
+                HeaderKeepAlive: // case 3
                     if ((_bits & 8L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Keep-Alive", _collection._headers._KeepAlive);
-                        _state = 4;
+                        _next = 4;
                         return true;
                     }
-                HeaderPragma:
+                HeaderPragma: // case 4
                     if ((_bits & 16L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Pragma", _collection._headers._Pragma);
-                        _state = 5;
+                        _next = 5;
                         return true;
                     }
-                HeaderTrailer:
+                HeaderTrailer: // case 5
                     if ((_bits & 32L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Trailer", _collection._headers._Trailer);
-                        _state = 6;
+                        _next = 6;
                         return true;
                     }
-                HeaderTransferEncoding:
+                HeaderTransferEncoding: // case 6
                     if ((_bits & 64L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Transfer-Encoding", _collection._headers._TransferEncoding);
-                        _state = 7;
+                        _next = 7;
                         return true;
                     }
-                HeaderUpgrade:
+                HeaderUpgrade: // case 7
                     if ((_bits & 128L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Upgrade", _collection._headers._Upgrade);
-                        _state = 8;
+                        _next = 8;
                         return true;
                     }
-                HeaderVia:
+                HeaderVia: // case 8
                     if ((_bits & 256L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Via", _collection._headers._Via);
-                        _state = 9;
+                        _next = 9;
                         return true;
                     }
-                HeaderWarning:
+                HeaderWarning: // case 9
                     if ((_bits & 512L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Warning", _collection._headers._Warning);
-                        _state = 10;
+                        _next = 10;
                         return true;
                     }
-                HeaderAllow:
+                HeaderAllow: // case 10
                     if ((_bits & 1024L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Allow", _collection._headers._Allow);
-                        _state = 11;
+                        _next = 11;
                         return true;
                     }
-                HeaderContentType:
+                HeaderContentType: // case 11
                     if ((_bits & 2048L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Content-Type", _collection._headers._ContentType);
-                        _state = 12;
+                        _next = 12;
                         return true;
                     }
-                HeaderContentEncoding:
+                HeaderContentEncoding: // case 12
                     if ((_bits & 4096L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Content-Encoding", _collection._headers._ContentEncoding);
-                        _state = 13;
+                        _next = 13;
                         return true;
                     }
-                HeaderContentLanguage:
+                HeaderContentLanguage: // case 13
                     if ((_bits & 8192L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Content-Language", _collection._headers._ContentLanguage);
-                        _state = 14;
+                        _next = 14;
                         return true;
                     }
-                HeaderContentLocation:
+                HeaderContentLocation: // case 14
                     if ((_bits & 16384L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Content-Location", _collection._headers._ContentLocation);
-                        _state = 15;
+                        _next = 15;
                         return true;
                     }
-                HeaderContentMD5:
+                HeaderContentMD5: // case 15
                     if ((_bits & 32768L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Content-MD5", _collection._headers._ContentMD5);
-                        _state = 16;
+                        _next = 16;
                         return true;
                     }
-                HeaderContentRange:
+                HeaderContentRange: // case 16
                     if ((_bits & 65536L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Content-Range", _collection._headers._ContentRange);
-                        _state = 17;
+                        _next = 17;
                         return true;
                     }
-                HeaderExpires:
+                HeaderExpires: // case 17
                     if ((_bits & 131072L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Expires", _collection._headers._Expires);
-                        _state = 18;
+                        _next = 18;
                         return true;
                     }
-                HeaderLastModified:
+                HeaderLastModified: // case 18
                     if ((_bits & 262144L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Last-Modified", _collection._headers._LastModified);
-                        _state = 19;
+                        _next = 19;
                         return true;
                     }
-                HeaderAccept:
+                HeaderAccept: // case 19
                     if ((_bits & 524288L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Accept", _collection._headers._Accept);
-                        _state = 20;
+                        _next = 20;
                         return true;
                     }
-                HeaderAcceptCharset:
+                HeaderAcceptCharset: // case 20
                     if ((_bits & 1048576L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Accept-Charset", _collection._headers._AcceptCharset);
-                        _state = 21;
+                        _next = 21;
                         return true;
                     }
-                HeaderAcceptEncoding:
+                HeaderAcceptEncoding: // case 21
                     if ((_bits & 2097152L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Accept-Encoding", _collection._headers._AcceptEncoding);
-                        _state = 22;
+                        _next = 22;
                         return true;
                     }
-                HeaderAcceptLanguage:
+                HeaderAcceptLanguage: // case 22
                     if ((_bits & 4194304L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Accept-Language", _collection._headers._AcceptLanguage);
-                        _state = 23;
+                        _next = 23;
                         return true;
                     }
-                HeaderAuthorization:
+                HeaderAuthorization: // case 23
                     if ((_bits & 8388608L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Authorization", _collection._headers._Authorization);
-                        _state = 24;
+                        _next = 24;
                         return true;
                     }
-                HeaderCookie:
+                HeaderCookie: // case 24
                     if ((_bits & 16777216L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Cookie", _collection._headers._Cookie);
-                        _state = 25;
+                        _next = 25;
                         return true;
                     }
-                HeaderExpect:
+                HeaderExpect: // case 25
                     if ((_bits & 33554432L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Expect", _collection._headers._Expect);
-                        _state = 26;
+                        _next = 26;
                         return true;
                     }
-                HeaderFrom:
+                HeaderFrom: // case 26
                     if ((_bits & 67108864L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("From", _collection._headers._From);
-                        _state = 27;
+                        _next = 27;
                         return true;
                     }
-                HeaderHost:
+                HeaderHost: // case 27
                     if ((_bits & 134217728L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Host", _collection._headers._Host);
-                        _state = 28;
+                        _next = 28;
                         return true;
                     }
-                HeaderIfMatch:
+                HeaderIfMatch: // case 28
                     if ((_bits & 268435456L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("If-Match", _collection._headers._IfMatch);
-                        _state = 29;
+                        _next = 29;
                         return true;
                     }
-                HeaderIfModifiedSince:
+                HeaderIfModifiedSince: // case 29
                     if ((_bits & 536870912L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("If-Modified-Since", _collection._headers._IfModifiedSince);
-                        _state = 30;
+                        _next = 30;
                         return true;
                     }
-                HeaderIfNoneMatch:
+                HeaderIfNoneMatch: // case 30
                     if ((_bits & 1073741824L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("If-None-Match", _collection._headers._IfNoneMatch);
-                        _state = 31;
+                        _next = 31;
                         return true;
                     }
-                HeaderIfRange:
+                HeaderIfRange: // case 31
                     if ((_bits & 2147483648L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("If-Range", _collection._headers._IfRange);
-                        _state = 32;
+                        _next = 32;
                         return true;
                     }
-                HeaderIfUnmodifiedSince:
+                HeaderIfUnmodifiedSince: // case 32
                     if ((_bits & 4294967296L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("If-Unmodified-Since", _collection._headers._IfUnmodifiedSince);
-                        _state = 33;
+                        _next = 33;
                         return true;
                     }
-                HeaderMaxForwards:
+                HeaderMaxForwards: // case 33
                     if ((_bits & 8589934592L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Max-Forwards", _collection._headers._MaxForwards);
-                        _state = 34;
+                        _next = 34;
                         return true;
                     }
-                HeaderProxyAuthorization:
+                HeaderProxyAuthorization: // case 34
                     if ((_bits & 17179869184L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Proxy-Authorization", _collection._headers._ProxyAuthorization);
-                        _state = 35;
+                        _next = 35;
                         return true;
                     }
-                HeaderReferer:
+                HeaderReferer: // case 35
                     if ((_bits & 34359738368L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Referer", _collection._headers._Referer);
-                        _state = 36;
+                        _next = 36;
                         return true;
                     }
-                HeaderRange:
+                HeaderRange: // case 36
                     if ((_bits & 68719476736L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Range", _collection._headers._Range);
-                        _state = 37;
+                        _next = 37;
                         return true;
                     }
-                HeaderTE:
+                HeaderTE: // case 37
                     if ((_bits & 137438953472L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("TE", _collection._headers._TE);
-                        _state = 38;
+                        _next = 38;
                         return true;
                     }
-                HeaderTranslate:
+                HeaderTranslate: // case 38
                     if ((_bits & 274877906944L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Translate", _collection._headers._Translate);
-                        _state = 39;
+                        _next = 39;
                         return true;
                     }
-                HeaderUserAgent:
+                HeaderUserAgent: // case 39
                     if ((_bits & 549755813888L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("User-Agent", _collection._headers._UserAgent);
-                        _state = 40;
+                        _next = 40;
                         return true;
                     }
-                HeaderOrigin:
+                HeaderOrigin: // case 40
                     if ((_bits & 1099511627776L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Origin", _collection._headers._Origin);
-                        _state = 41;
+                        _next = 41;
                         return true;
                     }
-                HeaderAccessControlRequestMethod:
+                HeaderAccessControlRequestMethod: // case 41
                     if ((_bits & 2199023255552L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Access-Control-Request-Method", _collection._headers._AccessControlRequestMethod);
-                        _state = 42;
+                        _next = 42;
                         return true;
                     }
-                HeaderAccessControlRequestHeaders:
+                HeaderAccessControlRequestHeaders: // case 42
                     if ((_bits & 4398046511104L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Access-Control-Request-Headers", _collection._headers._AccessControlRequestHeaders);
-                        _state = 43;
+                        _next = 43;
                         return true;
                     }
-                HeaderContentLength:
+                HeaderContentLength: // case 44
                     if (_collection._contentLength.HasValue)
                     {
                         _current = new KeyValuePair<string, StringValues>("Content-Length", HeaderUtilities.FormatNonNegativeInt64(_collection._contentLength.Value));
-                        _state = 45;
+                        _next = 45;
                         return true;
                     }
                 ExtraHeaders:
@@ -7684,7 +7684,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         internal unsafe void CopyToFast(ref BufferWriter<PipeWriter> output)
         {
             var tempBits = _bits | (_contentLength.HasValue ? -9223372036854775808L : 0);
-            var index = 0;
+            var next = 0;
             var keyStart = 0;
             var keyLength = 0;
             ref readonly StringValues values = ref Unsafe.AsRef<StringValues>(null);
@@ -7713,7 +7713,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         MoveNext:
             // Compiled to Jump table
-            switch (index)
+            switch (next)
             {
                 case 0:
                     goto HeaderConnection;
@@ -7791,7 +7791,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     return;
             }
             
-        HeaderConnection:
+        HeaderConnection: // case 0
             if ((tempBits & 2L) != 0)
             {
                 tempBits ^= 2L;
@@ -7804,11 +7804,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     values = ref _headers._Connection;
                     keyStart = 17;
                     keyLength = 14;
-                    index = 1;
+                    next = 1;
                     goto OutputHeader;
                 }
             }
-        HeaderDate:
+        HeaderDate: // case 1
             if ((tempBits & 4L) != 0)
             {
                 tempBits ^= 4L;
@@ -7821,21 +7821,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     values = ref _headers._Date;
                     keyStart = 31;
                     keyLength = 8;
-                    index = 2;
+                    next = 2;
                     goto OutputHeader;
                 }
             }
-        HeaderContentType:
+        HeaderContentType: // case 2
             if ((tempBits & 2048L) != 0)
             {
                 tempBits ^= 2048L;
                 values = ref _headers._ContentType;
                 keyStart = 133;
                 keyLength = 16;
-                index = 4;
+                next = 3;
                 goto OutputHeader;
             }
-        HeaderServer:
+        HeaderServer: // case 3
             if ((tempBits & 33554432L) != 0)
             {
                 tempBits ^= 33554432L;
@@ -7848,11 +7848,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     values = ref _headers._Server;
                     keyStart = 350;
                     keyLength = 10;
-                    index = 4;
+                    next = 4;
                     goto OutputHeader;
                 }
             }
-        HeaderContentLength:
+        HeaderContentLength: // case 4
             if ((tempBits & -9223372036854775808L) != 0)
             {
                 tempBits ^= -9223372036854775808L;
@@ -7863,47 +7863,47 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     return;
                 }
             }
-        HeaderCacheControl:
+        HeaderCacheControl: // case 5
             if ((tempBits & 1L) != 0)
             {
                 tempBits ^= 1L;
                 values = ref _headers._CacheControl;
                 keyStart = 0;
                 keyLength = 17;
-                index = 7;
+                next = 6;
                 goto OutputHeader;
             }
-        HeaderKeepAlive:
+        HeaderKeepAlive: // case 6
             if ((tempBits & 8L) != 0)
             {
                 tempBits ^= 8L;
                 values = ref _headers._KeepAlive;
                 keyStart = 39;
                 keyLength = 14;
-                index = 8;
+                next = 7;
                 goto OutputHeader;
             }
-        HeaderPragma:
+        HeaderPragma: // case 7
             if ((tempBits & 16L) != 0)
             {
                 tempBits ^= 16L;
                 values = ref _headers._Pragma;
                 keyStart = 53;
                 keyLength = 10;
-                index = 9;
+                next = 8;
                 goto OutputHeader;
             }
-        HeaderTrailer:
+        HeaderTrailer: // case 8
             if ((tempBits & 32L) != 0)
             {
                 tempBits ^= 32L;
                 values = ref _headers._Trailer;
                 keyStart = 63;
                 keyLength = 11;
-                index = 10;
+                next = 9;
                 goto OutputHeader;
             }
-        HeaderTransferEncoding:
+        HeaderTransferEncoding: // case 9
             if ((tempBits & 64L) != 0)
             {
                 tempBits ^= 64L;
@@ -7916,268 +7916,268 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     values = ref _headers._TransferEncoding;
                     keyStart = 74;
                     keyLength = 21;
-                    index = 10;
+                    next = 10;
                     goto OutputHeader;
                 }
             }
-        HeaderUpgrade:
+        HeaderUpgrade: // case 10
             if ((tempBits & 128L) != 0)
             {
                 tempBits ^= 128L;
                 values = ref _headers._Upgrade;
                 keyStart = 95;
                 keyLength = 11;
-                index = 12;
+                next = 11;
                 goto OutputHeader;
             }
-        HeaderVia:
+        HeaderVia: // case 11
             if ((tempBits & 256L) != 0)
             {
                 tempBits ^= 256L;
                 values = ref _headers._Via;
                 keyStart = 106;
                 keyLength = 7;
-                index = 13;
+                next = 12;
                 goto OutputHeader;
             }
-        HeaderWarning:
+        HeaderWarning: // case 12
             if ((tempBits & 512L) != 0)
             {
                 tempBits ^= 512L;
                 values = ref _headers._Warning;
                 keyStart = 113;
                 keyLength = 11;
-                index = 14;
+                next = 13;
                 goto OutputHeader;
             }
-        HeaderAllow:
+        HeaderAllow: // case 13
             if ((tempBits & 1024L) != 0)
             {
                 tempBits ^= 1024L;
                 values = ref _headers._Allow;
                 keyStart = 124;
                 keyLength = 9;
-                index = 15;
+                next = 14;
                 goto OutputHeader;
             }
-        HeaderContentEncoding:
+        HeaderContentEncoding: // case 14
             if ((tempBits & 4096L) != 0)
             {
                 tempBits ^= 4096L;
                 values = ref _headers._ContentEncoding;
                 keyStart = 149;
                 keyLength = 20;
-                index = 16;
+                next = 15;
                 goto OutputHeader;
             }
-        HeaderContentLanguage:
+        HeaderContentLanguage: // case 15
             if ((tempBits & 8192L) != 0)
             {
                 tempBits ^= 8192L;
                 values = ref _headers._ContentLanguage;
                 keyStart = 169;
                 keyLength = 20;
-                index = 17;
+                next = 16;
                 goto OutputHeader;
             }
-        HeaderContentLocation:
+        HeaderContentLocation: // case 16
             if ((tempBits & 16384L) != 0)
             {
                 tempBits ^= 16384L;
                 values = ref _headers._ContentLocation;
                 keyStart = 189;
                 keyLength = 20;
-                index = 18;
+                next = 17;
                 goto OutputHeader;
             }
-        HeaderContentMD5:
+        HeaderContentMD5: // case 17
             if ((tempBits & 32768L) != 0)
             {
                 tempBits ^= 32768L;
                 values = ref _headers._ContentMD5;
                 keyStart = 209;
                 keyLength = 15;
-                index = 19;
+                next = 18;
                 goto OutputHeader;
             }
-        HeaderContentRange:
+        HeaderContentRange: // case 18
             if ((tempBits & 65536L) != 0)
             {
                 tempBits ^= 65536L;
                 values = ref _headers._ContentRange;
                 keyStart = 224;
                 keyLength = 17;
-                index = 20;
+                next = 19;
                 goto OutputHeader;
             }
-        HeaderExpires:
+        HeaderExpires: // case 19
             if ((tempBits & 131072L) != 0)
             {
                 tempBits ^= 131072L;
                 values = ref _headers._Expires;
                 keyStart = 241;
                 keyLength = 11;
-                index = 21;
+                next = 20;
                 goto OutputHeader;
             }
-        HeaderLastModified:
+        HeaderLastModified: // case 20
             if ((tempBits & 262144L) != 0)
             {
                 tempBits ^= 262144L;
                 values = ref _headers._LastModified;
                 keyStart = 252;
                 keyLength = 17;
-                index = 22;
+                next = 21;
                 goto OutputHeader;
             }
-        HeaderAcceptRanges:
+        HeaderAcceptRanges: // case 21
             if ((tempBits & 524288L) != 0)
             {
                 tempBits ^= 524288L;
                 values = ref _headers._AcceptRanges;
                 keyStart = 269;
                 keyLength = 17;
-                index = 23;
+                next = 22;
                 goto OutputHeader;
             }
-        HeaderAge:
+        HeaderAge: // case 22
             if ((tempBits & 1048576L) != 0)
             {
                 tempBits ^= 1048576L;
                 values = ref _headers._Age;
                 keyStart = 286;
                 keyLength = 7;
-                index = 24;
+                next = 23;
                 goto OutputHeader;
             }
-        HeaderETag:
+        HeaderETag: // case 23
             if ((tempBits & 2097152L) != 0)
             {
                 tempBits ^= 2097152L;
                 values = ref _headers._ETag;
                 keyStart = 293;
                 keyLength = 8;
-                index = 25;
+                next = 24;
                 goto OutputHeader;
             }
-        HeaderLocation:
+        HeaderLocation: // case 24
             if ((tempBits & 4194304L) != 0)
             {
                 tempBits ^= 4194304L;
                 values = ref _headers._Location;
                 keyStart = 301;
                 keyLength = 12;
-                index = 26;
+                next = 25;
                 goto OutputHeader;
             }
-        HeaderProxyAuthenticate:
+        HeaderProxyAuthenticate: // case 25
             if ((tempBits & 8388608L) != 0)
             {
                 tempBits ^= 8388608L;
                 values = ref _headers._ProxyAuthenticate;
                 keyStart = 313;
                 keyLength = 22;
-                index = 27;
+                next = 26;
                 goto OutputHeader;
             }
-        HeaderRetryAfter:
+        HeaderRetryAfter: // case 26
             if ((tempBits & 16777216L) != 0)
             {
                 tempBits ^= 16777216L;
                 values = ref _headers._RetryAfter;
                 keyStart = 335;
                 keyLength = 15;
-                index = 28;
+                next = 27;
                 goto OutputHeader;
             }
-        HeaderSetCookie:
+        HeaderSetCookie: // case 27
             if ((tempBits & 67108864L) != 0)
             {
                 tempBits ^= 67108864L;
                 values = ref _headers._SetCookie;
                 keyStart = 360;
                 keyLength = 14;
-                index = 29;
+                next = 28;
                 goto OutputHeader;
             }
-        HeaderVary:
+        HeaderVary: // case 28
             if ((tempBits & 134217728L) != 0)
             {
                 tempBits ^= 134217728L;
                 values = ref _headers._Vary;
                 keyStart = 374;
                 keyLength = 8;
-                index = 30;
+                next = 29;
                 goto OutputHeader;
             }
-        HeaderWWWAuthenticate:
+        HeaderWWWAuthenticate: // case 29
             if ((tempBits & 268435456L) != 0)
             {
                 tempBits ^= 268435456L;
                 values = ref _headers._WWWAuthenticate;
                 keyStart = 382;
                 keyLength = 20;
-                index = 31;
+                next = 30;
                 goto OutputHeader;
             }
-        HeaderAccessControlAllowCredentials:
+        HeaderAccessControlAllowCredentials: // case 30
             if ((tempBits & 536870912L) != 0)
             {
                 tempBits ^= 536870912L;
                 values = ref _headers._AccessControlAllowCredentials;
                 keyStart = 402;
                 keyLength = 36;
-                index = 32;
+                next = 31;
                 goto OutputHeader;
             }
-        HeaderAccessControlAllowHeaders:
+        HeaderAccessControlAllowHeaders: // case 31
             if ((tempBits & 1073741824L) != 0)
             {
                 tempBits ^= 1073741824L;
                 values = ref _headers._AccessControlAllowHeaders;
                 keyStart = 438;
                 keyLength = 32;
-                index = 33;
+                next = 32;
                 goto OutputHeader;
             }
-        HeaderAccessControlAllowMethods:
+        HeaderAccessControlAllowMethods: // case 32
             if ((tempBits & 2147483648L) != 0)
             {
                 tempBits ^= 2147483648L;
                 values = ref _headers._AccessControlAllowMethods;
                 keyStart = 470;
                 keyLength = 32;
-                index = 34;
+                next = 33;
                 goto OutputHeader;
             }
-        HeaderAccessControlAllowOrigin:
+        HeaderAccessControlAllowOrigin: // case 33
             if ((tempBits & 4294967296L) != 0)
             {
                 tempBits ^= 4294967296L;
                 values = ref _headers._AccessControlAllowOrigin;
                 keyStart = 502;
                 keyLength = 31;
-                index = 35;
+                next = 34;
                 goto OutputHeader;
             }
-        HeaderAccessControlExposeHeaders:
+        HeaderAccessControlExposeHeaders: // case 34
             if ((tempBits & 8589934592L) != 0)
             {
                 tempBits ^= 8589934592L;
                 values = ref _headers._AccessControlExposeHeaders;
                 keyStart = 533;
                 keyLength = 33;
-                index = 36;
+                next = 35;
                 goto OutputHeader;
             }
-        HeaderAccessControlMaxAge:
+        HeaderAccessControlMaxAge: // case 35
             if ((tempBits & 17179869184L) != 0)
             {
                 tempBits ^= 17179869184L;
                 values = ref _headers._AccessControlMaxAge;
                 keyStart = 566;
                 keyLength = 26;
-                index = 37;
+                next = 36;
                 goto OutputHeader;
             }
 
@@ -8234,7 +8234,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // Compiled to Jump table
             public bool MoveNext()
             {
-                switch (_state)
+                switch (_next)
                 {
                     case 0:
                         goto HeaderCacheControl;
@@ -8312,256 +8312,256 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         goto ExtraHeaders;
                 }
                 
-                HeaderCacheControl:
+                HeaderCacheControl: // case 0
                     if ((_bits & 1L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Cache-Control", _collection._headers._CacheControl);
-                        _state = 1;
+                        _next = 1;
                         return true;
                     }
-                HeaderConnection:
+                HeaderConnection: // case 1
                     if ((_bits & 2L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Connection", _collection._headers._Connection);
-                        _state = 2;
+                        _next = 2;
                         return true;
                     }
-                HeaderDate:
+                HeaderDate: // case 2
                     if ((_bits & 4L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Date", _collection._headers._Date);
-                        _state = 3;
+                        _next = 3;
                         return true;
                     }
-                HeaderKeepAlive:
+                HeaderKeepAlive: // case 3
                     if ((_bits & 8L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Keep-Alive", _collection._headers._KeepAlive);
-                        _state = 4;
+                        _next = 4;
                         return true;
                     }
-                HeaderPragma:
+                HeaderPragma: // case 4
                     if ((_bits & 16L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Pragma", _collection._headers._Pragma);
-                        _state = 5;
+                        _next = 5;
                         return true;
                     }
-                HeaderTrailer:
+                HeaderTrailer: // case 5
                     if ((_bits & 32L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Trailer", _collection._headers._Trailer);
-                        _state = 6;
+                        _next = 6;
                         return true;
                     }
-                HeaderTransferEncoding:
+                HeaderTransferEncoding: // case 6
                     if ((_bits & 64L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Transfer-Encoding", _collection._headers._TransferEncoding);
-                        _state = 7;
+                        _next = 7;
                         return true;
                     }
-                HeaderUpgrade:
+                HeaderUpgrade: // case 7
                     if ((_bits & 128L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Upgrade", _collection._headers._Upgrade);
-                        _state = 8;
+                        _next = 8;
                         return true;
                     }
-                HeaderVia:
+                HeaderVia: // case 8
                     if ((_bits & 256L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Via", _collection._headers._Via);
-                        _state = 9;
+                        _next = 9;
                         return true;
                     }
-                HeaderWarning:
+                HeaderWarning: // case 9
                     if ((_bits & 512L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Warning", _collection._headers._Warning);
-                        _state = 10;
+                        _next = 10;
                         return true;
                     }
-                HeaderAllow:
+                HeaderAllow: // case 10
                     if ((_bits & 1024L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Allow", _collection._headers._Allow);
-                        _state = 11;
+                        _next = 11;
                         return true;
                     }
-                HeaderContentType:
+                HeaderContentType: // case 11
                     if ((_bits & 2048L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Content-Type", _collection._headers._ContentType);
-                        _state = 12;
+                        _next = 12;
                         return true;
                     }
-                HeaderContentEncoding:
+                HeaderContentEncoding: // case 12
                     if ((_bits & 4096L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Content-Encoding", _collection._headers._ContentEncoding);
-                        _state = 13;
+                        _next = 13;
                         return true;
                     }
-                HeaderContentLanguage:
+                HeaderContentLanguage: // case 13
                     if ((_bits & 8192L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Content-Language", _collection._headers._ContentLanguage);
-                        _state = 14;
+                        _next = 14;
                         return true;
                     }
-                HeaderContentLocation:
+                HeaderContentLocation: // case 14
                     if ((_bits & 16384L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Content-Location", _collection._headers._ContentLocation);
-                        _state = 15;
+                        _next = 15;
                         return true;
                     }
-                HeaderContentMD5:
+                HeaderContentMD5: // case 15
                     if ((_bits & 32768L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Content-MD5", _collection._headers._ContentMD5);
-                        _state = 16;
+                        _next = 16;
                         return true;
                     }
-                HeaderContentRange:
+                HeaderContentRange: // case 16
                     if ((_bits & 65536L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Content-Range", _collection._headers._ContentRange);
-                        _state = 17;
+                        _next = 17;
                         return true;
                     }
-                HeaderExpires:
+                HeaderExpires: // case 17
                     if ((_bits & 131072L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Expires", _collection._headers._Expires);
-                        _state = 18;
+                        _next = 18;
                         return true;
                     }
-                HeaderLastModified:
+                HeaderLastModified: // case 18
                     if ((_bits & 262144L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Last-Modified", _collection._headers._LastModified);
-                        _state = 19;
+                        _next = 19;
                         return true;
                     }
-                HeaderAcceptRanges:
+                HeaderAcceptRanges: // case 19
                     if ((_bits & 524288L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Accept-Ranges", _collection._headers._AcceptRanges);
-                        _state = 20;
+                        _next = 20;
                         return true;
                     }
-                HeaderAge:
+                HeaderAge: // case 20
                     if ((_bits & 1048576L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Age", _collection._headers._Age);
-                        _state = 21;
+                        _next = 21;
                         return true;
                     }
-                HeaderETag:
+                HeaderETag: // case 21
                     if ((_bits & 2097152L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("ETag", _collection._headers._ETag);
-                        _state = 22;
+                        _next = 22;
                         return true;
                     }
-                HeaderLocation:
+                HeaderLocation: // case 22
                     if ((_bits & 4194304L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Location", _collection._headers._Location);
-                        _state = 23;
+                        _next = 23;
                         return true;
                     }
-                HeaderProxyAuthenticate:
+                HeaderProxyAuthenticate: // case 23
                     if ((_bits & 8388608L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Proxy-Authenticate", _collection._headers._ProxyAuthenticate);
-                        _state = 24;
+                        _next = 24;
                         return true;
                     }
-                HeaderRetryAfter:
+                HeaderRetryAfter: // case 24
                     if ((_bits & 16777216L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Retry-After", _collection._headers._RetryAfter);
-                        _state = 25;
+                        _next = 25;
                         return true;
                     }
-                HeaderServer:
+                HeaderServer: // case 25
                     if ((_bits & 33554432L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Server", _collection._headers._Server);
-                        _state = 26;
+                        _next = 26;
                         return true;
                     }
-                HeaderSetCookie:
+                HeaderSetCookie: // case 26
                     if ((_bits & 67108864L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Set-Cookie", _collection._headers._SetCookie);
-                        _state = 27;
+                        _next = 27;
                         return true;
                     }
-                HeaderVary:
+                HeaderVary: // case 27
                     if ((_bits & 134217728L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Vary", _collection._headers._Vary);
-                        _state = 28;
+                        _next = 28;
                         return true;
                     }
-                HeaderWWWAuthenticate:
+                HeaderWWWAuthenticate: // case 28
                     if ((_bits & 268435456L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("WWW-Authenticate", _collection._headers._WWWAuthenticate);
-                        _state = 29;
+                        _next = 29;
                         return true;
                     }
-                HeaderAccessControlAllowCredentials:
+                HeaderAccessControlAllowCredentials: // case 29
                     if ((_bits & 536870912L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Access-Control-Allow-Credentials", _collection._headers._AccessControlAllowCredentials);
-                        _state = 30;
+                        _next = 30;
                         return true;
                     }
-                HeaderAccessControlAllowHeaders:
+                HeaderAccessControlAllowHeaders: // case 30
                     if ((_bits & 1073741824L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Access-Control-Allow-Headers", _collection._headers._AccessControlAllowHeaders);
-                        _state = 31;
+                        _next = 31;
                         return true;
                     }
-                HeaderAccessControlAllowMethods:
+                HeaderAccessControlAllowMethods: // case 31
                     if ((_bits & 2147483648L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Access-Control-Allow-Methods", _collection._headers._AccessControlAllowMethods);
-                        _state = 32;
+                        _next = 32;
                         return true;
                     }
-                HeaderAccessControlAllowOrigin:
+                HeaderAccessControlAllowOrigin: // case 32
                     if ((_bits & 4294967296L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Access-Control-Allow-Origin", _collection._headers._AccessControlAllowOrigin);
-                        _state = 33;
+                        _next = 33;
                         return true;
                     }
-                HeaderAccessControlExposeHeaders:
+                HeaderAccessControlExposeHeaders: // case 33
                     if ((_bits & 8589934592L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Access-Control-Expose-Headers", _collection._headers._AccessControlExposeHeaders);
-                        _state = 34;
+                        _next = 34;
                         return true;
                     }
-                HeaderAccessControlMaxAge:
+                HeaderAccessControlMaxAge: // case 34
                     if ((_bits & 17179869184L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("Access-Control-Max-Age", _collection._headers._AccessControlMaxAge);
-                        _state = 35;
+                        _next = 35;
                         return true;
                     }
-                HeaderContentLength:
+                HeaderContentLength: // case 36
                     if (_collection._contentLength.HasValue)
                     {
                         _current = new KeyValuePair<string, StringValues>("Content-Length", HeaderUtilities.FormatNonNegativeInt64(_collection._contentLength.Value));
-                        _state = 37;
+                        _next = 37;
                         return true;
                     }
                 ExtraHeaders:
@@ -8770,7 +8770,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // Compiled to Jump table
             public bool MoveNext()
             {
-                switch (_state)
+                switch (_next)
                 {
                     case 0:
                         goto HeaderETag;
@@ -8780,18 +8780,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         goto ExtraHeaders;
                 }
                 
-                HeaderETag:
+                HeaderETag: // case 0
                     if ((_bits & 1L) != 0)
                     {
                         _current = new KeyValuePair<string, StringValues>("ETag", _collection._headers._ETag);
-                        _state = 1;
+                        _next = 1;
                         return true;
                     }
-                HeaderContentLength:
+                HeaderContentLength: // case 1
                     if (_collection._contentLength.HasValue)
                     {
                         _current = new KeyValuePair<string, StringValues>("Content-Length", HeaderUtilities.FormatNonNegativeInt64(_collection._contentLength.Value));
-                        _state = 2;
+                        _next = 2;
                         return true;
                     }
                 ExtraHeaders:

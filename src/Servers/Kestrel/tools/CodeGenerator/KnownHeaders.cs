@@ -568,7 +568,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         internal unsafe void CopyToFast(ref BufferWriter<PipeWriter> output)
         {{
             var tempBits = _bits | (_contentLength.HasValue ? {1L << 63}L : 0);
-            var index = 0;
+            var next = 0;
             var keyStart = 0;
             var keyLength = 0;
             ref readonly StringValues values = ref Unsafe.AsRef<StringValues>(null);
@@ -597,7 +597,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         MoveNext:
             // Compiled to Jump table
-            switch (index)
+            switch (next)
             {{{Each(loop.Headers.OrderBy(h => !h.PrimaryHeader).Select((h, i) => (Header: h, Index: i)), hi => $@"
                 case {hi.Index}:
                     goto Header{hi.Header.Identifier};")}
@@ -605,14 +605,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     return;
             }}
             {Each(loop.Headers.OrderBy(h => !h.PrimaryHeader).Select((h, i) => (Header: h, Index: i)), hi => $@"
-        Header{hi.Header.Identifier}:
+        Header{hi.Header.Identifier}: // case {hi.Index}
             if ({hi.Header.TestTempBit()})
             {{
                 tempBits ^= {1L << hi.Header.Index}L;{(hi.Header.Identifier != "ContentLength" ? $@"{(hi.Header.EnhancedSetter == false ? $@"
                 values = ref _headers._{hi.Header.Identifier};
                 keyStart = {hi.Header.BytesOffset};
                 keyLength = {hi.Header.BytesCount};
-                index = {hi.Index + 2};
+                next = {hi.Index + 1};
                 goto OutputHeader;" : $@"
                 if (_headers._raw{hi.Header.Identifier} != null)
                 {{
@@ -623,7 +623,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     values = ref _headers._{hi.Header.Identifier};
                     keyStart = {hi.Header.BytesOffset};
                     keyLength = {hi.Header.BytesCount};
-                    index = {hi.Index + 1};
+                    next = {hi.Index + 1};
                     goto OutputHeader;
                 }}")}" : $@"
                 output.Write(new ReadOnlySpan<byte>(_headerBytes, {hi.Header.BytesOffset}, {hi.Header.BytesCount}));
@@ -665,7 +665,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // Compiled to Jump table
             public bool MoveNext()
             {{
-                switch (_state)
+                switch (_next)
                 {{{Each(loop.Headers.Where(header => header.Identifier != "ContentLength"), header => $@"
                     case {header.Index}:
                         goto Header{header.Identifier};")}
@@ -675,18 +675,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         goto ExtraHeaders;
                 }}
                 {Each(loop.Headers.Where(header => header.Identifier != "ContentLength"), header => $@"
-                Header{header.Identifier}:
+                Header{header.Identifier}: // case {header.Index}
                     if ({header.TestBit()})
                     {{
                         _current = new KeyValuePair<string, StringValues>(""{header.Name}"", _collection._headers._{header.Identifier});
-                        _state = {header.Index + 1};
+                        _next = {header.Index + 1};
                         return true;
                     }}")}
-                HeaderContentLength:
+                HeaderContentLength: // case {loop.Headers.Count()}
                     if (_collection._contentLength.HasValue)
                     {{
                         _current = new KeyValuePair<string, StringValues>(""Content-Length"", HeaderUtilities.FormatNonNegativeInt64(_collection._contentLength.Value));
-                        _state = {loop.Headers.Count() + 1};
+                        _next = {loop.Headers.Count() + 1};
                         return true;
                     }}
                 ExtraHeaders:
