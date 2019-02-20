@@ -4379,7 +4379,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         goto HeaderAccessControlRequestMethod;
                     case 42:
                         goto HeaderAccessControlRequestHeaders;
-                    case 44:
+                    case 43:
                         goto HeaderContentLength;
                     default:
                         goto ExtraHeaders;
@@ -4686,11 +4686,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         _next = 43;
                         return true;
                     }
-                HeaderContentLength: // case 44
+                HeaderContentLength: // case 43
                     if (_collection._contentLength.HasValue)
                     {
                         _current = new KeyValuePair<string, StringValues>("Content-Length", HeaderUtilities.FormatNonNegativeInt64(_collection._contentLength.Value));
-                        _next = 45;
+                        _next = 44;
                         return true;
                     }
                 ExtraHeaders:
@@ -8306,7 +8306,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         goto HeaderAccessControlExposeHeaders;
                     case 34:
                         goto HeaderAccessControlMaxAge;
-                    case 36:
+                    case 35:
                         goto HeaderContentLength;
                     default:
                         goto ExtraHeaders;
@@ -8557,11 +8557,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         _next = 35;
                         return true;
                     }
-                HeaderContentLength: // case 36
+                HeaderContentLength: // case 35
                     if (_collection._contentLength.HasValue)
                     {
                         _current = new KeyValuePair<string, StringValues>("Content-Length", HeaderUtilities.FormatNonNegativeInt64(_collection._contentLength.Value));
-                        _next = 37;
+                        _next = 36;
                         return true;
                     }
                 ExtraHeaders:
@@ -8580,7 +8580,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     {
         private static byte[] _headerBytes = new byte[]
         {
-            13,10,69,84,97,103,58,32,
+            13,10,69,84,97,103,58,32,13,10,67,111,110,116,101,110,116,45,76,101,110,103,116,104,58,32,
         };
 
         private long _bits = 0;
@@ -8603,6 +8603,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 _bits |= 1L;
                 _headers._ETag = value; 
+            }
+        }
+        public StringValues HeaderContentLength
+        {
+            get
+            {
+                StringValues value = default;
+                if (_contentLength.HasValue)
+                {
+                    value = new StringValues(HeaderUtilities.FormatNonNegativeInt64(_contentLength.Value));
+                }
+                return value;
+            }
+            set
+            {
+                _contentLength = ParseContentLength(value);
             }
         }
 
@@ -8629,6 +8645,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         }
                     }
                     break;
+                case 14:
+                    {
+                        if ("Content-Length".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (_contentLength.HasValue)
+                            {
+                                value = HeaderUtilities.FormatNonNegativeInt64(_contentLength.Value);
+                                return true;
+                            }
+                            return false;
+                        }
+                    }
+                    break;
             }
 
             return MaybeUnknown?.TryGetValue(key, out value) ?? false;
@@ -8645,6 +8674,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         {
                             _bits |= 1L;
                             _headers._ETag = value;
+                            return;
+                        }
+                    }
+                    break;
+                case 14:
+                    {
+                        if ("Content-Length".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        {
+                            _contentLength = ParseContentLength(value.ToString());
                             return;
                         }
                     }
@@ -8673,6 +8711,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         }
                     }
                     break;
+                case 14:
+                    {
+                        if ("Content-Length".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (!_contentLength.HasValue)
+                            {
+                                _contentLength = ParseContentLength(value);
+                                return true;
+                            }
+                            return false;
+                        }
+                    }
+                    break;
             }
 
             Unknown.Add(key, value);
@@ -8692,6 +8743,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             {
                                 _bits &= ~1L;
                                 _headers._ETag = default(StringValues);
+                                return true;
+                            }
+                            return false;
+                        }
+                    }
+                    break;
+                case 14:
+                    {
+                        if ("Content-Length".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (_contentLength.HasValue)
+                            {
+                                _contentLength = null;
                                 return true;
                             }
                             return false;

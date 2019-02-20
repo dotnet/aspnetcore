@@ -10,6 +10,7 @@ using System.Runtime.Intrinsics.X86;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
@@ -76,6 +77,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 ((IHeaderDictionary)this)[key] = value;
             }
+        }
+
+        protected static long ParseContentLength(string value)
+        {
+            if (!HeaderUtilities.TryParseNonNegativeInt64(value, out var parsed))
+            {
+                ThrowInvalidContentLengthException(value);
+            }
+
+            return parsed;
         }
 
         protected static void ThrowHeadersReadOnlyException()
@@ -453,6 +464,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             return transferEncodingOptions;
+        }
+
+        private static void ThrowInvalidContentLengthException(string value)
+        {
+            throw new InvalidOperationException(CoreStrings.FormatInvalidContentLength_InvalidNumber(value));
         }
 
         private static void ThrowInvalidContentLengthException(long value)

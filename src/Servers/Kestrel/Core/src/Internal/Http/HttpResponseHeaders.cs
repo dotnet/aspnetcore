@@ -48,26 +48,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        private static long ParseContentLength(string value)
-        {
-            if (!HeaderUtilities.TryParseNonNegativeInt64(value, out var parsed))
-            {
-                ThrowInvalidContentLengthException(value);
-            }
-
-            return parsed;
-        }
-
         [MethodImpl(MethodImplOptions.NoInlining)]
         private void SetValueUnknown(string key, in StringValues value)
         {
             ValidateHeaderNameCharacters(key);
             Unknown[key] = value;
-        }
-
-        private static void ThrowInvalidContentLengthException(string value)
-        {
-            throw new InvalidOperationException(CoreStrings.FormatInvalidContentLength_InvalidNumber(value));
         }
 
         public partial struct Enumerator : IEnumerator<KeyValuePair<string, StringValues>>
