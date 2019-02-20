@@ -1,9 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using System;
 
 namespace Microsoft.AspNetCore.SpaServices
@@ -45,7 +46,7 @@ namespace Microsoft.AspNetCore.SpaServices
                 // Try to clarify the common scenario where someone runs an application in
                 // Production environment without first publishing the whole application
                 // or at least building the SPA.
-                var hostEnvironment = (IHostingEnvironment)context.RequestServices.GetService(typeof(IHostingEnvironment));
+                var hostEnvironment = (IWebHostEnvironment)context.RequestServices.GetService(typeof(IWebHostEnvironment));
                 if (hostEnvironment != null && hostEnvironment.IsProduction())
                 {
                     message += "Your application is running in Production mode, so make sure it has " +

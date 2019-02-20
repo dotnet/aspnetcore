@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         // Decorated with ActivatorUtilitiesConstructor since we want to influence tag helper activation
         // to use this constructor in the default case.
         public ImageTagHelper(
-            IHostingEnvironment hostingEnvironment,
+            IWebHostEnvironment hostingEnvironment,
             TagHelperMemoryCacheProvider cacheProvider,
             IFileVersionProvider fileVersionProvider,
             HtmlEncoder htmlEncoder,
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         [HtmlAttributeName(AppendVersionAttributeName)]
         public bool AppendVersion { get; set; }
 
-        protected internal IHostingEnvironment HostingEnvironment { get; }
+        protected internal IWebHostEnvironment HostingEnvironment { get; }
 
         protected internal IMemoryCache Cache { get; }
 

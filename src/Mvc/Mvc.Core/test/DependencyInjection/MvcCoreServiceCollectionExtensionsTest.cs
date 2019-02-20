@@ -152,9 +152,9 @@ namespace Microsoft.AspNetCore.Mvc
         {
             // Arrange
             var services = new ServiceCollection();
-            var environment = new Mock<IHostingEnvironment>(MockBehavior.Strict);
+            var environment = new Mock<IWebHostEnvironment>(MockBehavior.Strict);
             environment.SetupGet(e => e.ApplicationName).Returns((string)null).Verifiable();
-            services.AddSingleton<IHostingEnvironment>(environment.Object);
+            services.AddSingleton<IWebHostEnvironment>(environment.Object);
 
             // Act
             var builder = services.AddMvcCore();
@@ -173,12 +173,12 @@ namespace Microsoft.AspNetCore.Mvc
         {
             // Arrange
             var services = new ServiceCollection();
-            var environment = new Mock<IHostingEnvironment>(MockBehavior.Strict);
-            services.AddSingleton<IHostingEnvironment>(environment.Object);
+            var environment = new Mock<IWebHostEnvironment>(MockBehavior.Strict);
+            services.AddSingleton<IWebHostEnvironment>(environment.Object);
 
-            environment = new Mock<IHostingEnvironment>(MockBehavior.Strict);
+            environment = new Mock<IWebHostEnvironment>(MockBehavior.Strict);
             environment.SetupGet(e => e.ApplicationName).Returns((string)null).Verifiable();
-            services.AddSingleton<IHostingEnvironment>(environment.Object);
+            services.AddSingleton<IWebHostEnvironment>(environment.Object);
 
             // Act
             var builder = services.AddMvcCore();
@@ -196,11 +196,11 @@ namespace Microsoft.AspNetCore.Mvc
         {
             // Arrange
             var services = new ServiceCollection();
-            var environment = new Mock<IHostingEnvironment>(MockBehavior.Strict);
+            var environment = new Mock<IWebHostEnvironment>(MockBehavior.Strict);
             var assemblyName = typeof(MvcCoreServiceCollectionExtensionsTest).GetTypeInfo().Assembly.GetName();
             var applicationName = assemblyName.FullName;
             environment.SetupGet(e => e.ApplicationName).Returns(applicationName).Verifiable();
-            services.AddSingleton<IHostingEnvironment>(environment.Object);
+            services.AddSingleton<IWebHostEnvironment>(environment.Object);
 
             // Act
             var builder = services.AddMvcCore();

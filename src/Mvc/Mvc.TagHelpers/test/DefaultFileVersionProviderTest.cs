@@ -290,7 +290,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             IFileProvider fileProvider,
             IMemoryCache memoryCache = null)
         {
-            var hostingEnv = Mock.Of<IHostingEnvironment>(e => e.WebRootFileProvider == fileProvider);
+            var hostingEnv = Mock.Of<IWebHostEnvironment>(e => e.WebRootFileProvider == fileProvider);
             var cacheProvider = new TagHelperMemoryCacheProvider();
             if (memoryCache != null)
             {

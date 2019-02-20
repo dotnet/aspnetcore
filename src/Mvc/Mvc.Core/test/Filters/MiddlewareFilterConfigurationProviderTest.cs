@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
             var loggerFactory = Mock.Of<ILoggerFactory>();
             var services = new ServiceCollection();
             services.AddSingleton(loggerFactory);
-            services.AddSingleton(Mock.Of<IHostingEnvironment>());
+            services.AddSingleton(Mock.Of<IWebHostEnvironment>());
             var applicationBuilder = GetApplicationBuilder(services);
             var provider = new MiddlewareFilterConfigurationProvider();
 
@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         {
             public void Configure(
                 IApplicationBuilder appBuilder,
-                IHostingEnvironment hostingEnvironment,
+                IWebHostEnvironment hostingEnvironment,
                 ILoggerFactory loggerFactory)
             {
                 if (hostingEnvironment == null)
@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         {
             public void ConfigureProduction(
                 IApplicationBuilder appBuilder,
-                IHostingEnvironment hostingEnvironment,
+                IWebHostEnvironment hostingEnvironment,
                 ILoggerFactory loggerFactory)
             {
                 if (hostingEnvironment == null)

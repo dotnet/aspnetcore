@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                                      IApplicationBuilderFactory applicationBuilderFactory,
                                      IEnumerable<IStartupFilter> startupFilters,
                                      IConfiguration configuration,
-                                     IHostingEnvironment hostingEnvironment)
+                                     IWebHostEnvironment hostingEnvironment)
         {
             Options = options.Value;
             Server = server;
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         public IApplicationBuilderFactory ApplicationBuilderFactory { get; }
         public IEnumerable<IStartupFilter> StartupFilters { get; }
         public IConfiguration Configuration { get; }
-        public IHostingEnvironment HostingEnvironment { get; }
+        public IWebHostEnvironment HostingEnvironment { get; }
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {

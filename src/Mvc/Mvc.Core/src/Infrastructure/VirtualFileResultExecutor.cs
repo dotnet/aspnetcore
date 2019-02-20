@@ -16,9 +16,9 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
     public class VirtualFileResultExecutor : FileResultExecutorBase, IActionResultExecutor<VirtualFileResult>
     {
-        private readonly IHostingEnvironment _hostingEnvironment;
+        private readonly IWebHostEnvironment _hostingEnvironment;
 
-        public VirtualFileResultExecutor(ILoggerFactory loggerFactory, IHostingEnvironment hostingEnvironment)
+        public VirtualFileResultExecutor(ILoggerFactory loggerFactory, IWebHostEnvironment hostingEnvironment)
             : base(CreateLogger<VirtualFileResultExecutor>(loggerFactory))
         {
             if (hostingEnvironment == null)
