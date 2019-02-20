@@ -28,7 +28,6 @@
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
     <Reference Include="Microsoft.Extensions.Configuration.CommandLine" />
-    <Reference Include="Microsoft.NET.Sdk.Razor" PrivateAssets="All" />
 
     <Reference Include="Microsoft.AspNetCore.Mvc" />
   </ItemGroup>
@@ -42,6 +41,5 @@
       DefaultRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)"
       LatestRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)"
       TargetingPackVersion="$(MicrosoftAspNetCoreAppPackageVersion)" />
-    <Reference Include="Microsoft.NET.Sdk.Razor" PrivateAssets="All" />
   </ItemGroup>
 </Project>

@@ -1,8 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
-MinimumVisualStudioVersion = 10.0.40219.1
+VisualStudioVersion = 16.0.0.0
+MinimumVisualStudioVersion = 16.0.28608.199
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PersistentConnectionSample", "samples\PersistentConnectionSample\PersistentConnectionSample.vcxproj", "{BD075706-11E9-403B-A2E3-A5E1397E53EF}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HubConnectionSample", "samples\HubConnectionSample\HubConnectionSample.vcxproj", "{3C9BD092-18E6-4C6E-A887-CDFC80ACB206}"

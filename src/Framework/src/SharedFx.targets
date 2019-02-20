@@ -13,11 +13,12 @@ This targets file should only be imported by .shfxproj files.
       PreBuildEvent;
       ResolveReferences;
       GenerateSharedFxVersionsFile;
+      GenerateBuildDependencyFile;
       PrepareForPublish;
-      ComputeAndCopyFilesToPublishDirectory;
       GeneratePublishDependencyFile;
       GenerateSharedFxMetadataFiles;
-      GeneratePublishRuntimeConfigurationFile;
+      GenerateBuildRuntimeConfigurationFiles;
+      ComputeAndCopyFilesToPublishDirectory;
       CopySharedFxToOutput;
       CollectSharedFxOutput;
       PostBuildEvent;
@@ -92,8 +93,8 @@ This targets file should only be imported by .shfxproj files.
     <!-- Prevents runtimeconfig.dev.json from ending up in publish output. -->
     <ProjectRuntimeConfigDevFilePath>$(IntermediateOutputPath)$(SharedFxName).runtimeconfig.dev.json</ProjectRuntimeConfigDevFilePath>
     <!-- Redirects the output of GeneratePublishDependencyFile into obj/ because we need to do post-processing on the .deps.json file -->
-    <ProjectDepsFilePath>$(IntermediateOutputPath)$(SharedFxName).project.deps.json</ProjectDepsFilePath>
-    <PublishDepsFilePath>$(IntermediateOutputPath)$(SharedFxName).publish.deps.json</PublishDepsFilePath>
+    <ProjectDepsFilePath>$(IntermediateOutputPath)$(SharedFxName).intermediate.deps.json</ProjectDepsFilePath>
+    <PublishDepsFilePath>$(ProjectDepsFilePath)</PublishDepsFilePath>
 
     <!-- The output path of generated files -->
     <PublishRuntimeConfigFilePath>$(MetadataOutputPath)$(SharedFxName).runtimeconfig.json</PublishRuntimeConfigFilePath>
@@ -132,13 +133,6 @@ This targets file should only be imported by .shfxproj files.
   </ItemDefinitionGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NETCore.App" Version="$(RuntimeFrameworkVersion)">
-      <Publish>true</Publish>
-      <PrivateAssets>All</PrivateAssets>
-      <ExcludeAssets>Native</ExcludeAssets>
-      <AllowExplicitVersion>true</AllowExplicitVersion>
-    </PackageReference>
-
     <!-- Add version metadata. These are expected to match the metapackage version. -->
     <AspNetCoreAppReferenceAndPackage Update="@(AspNetCoreAppReferenceAndPackage)" Version="$(SharedFxVersion)" />
     <AspNetCoreAppReference Update="@(AspNetCoreAppReference)" Version="$(SharedFxVersion)" />
@@ -209,12 +203,12 @@ This targets file should only be imported by .shfxproj files.
   <!-- Prepare the project to run crossgen. -->
   <Target Name="CopySharedFxToOutput" DependsOnTargets="_GetCopyToOutputItems;_BatchCopyToOutputIfNewer" />
 
-  <Target Name="_GetCopyToOutputItems" DependsOnTargets="RunResolvePackageDependencies;RunResolvePublishAssemblies">
+  <Target Name="_GetCopyToOutputItems" DependsOnTargets="RunResolvePackageDependencies;ComputeFilesToPublish">
     <ItemGroup>
-      <NativeAssetsToPublish Include="@(ResolvedAssembliesToPublish)" Condition="'%(AssetType)' == 'native' " />
-      <ResourceAssetsToPublish Include="@(ResolvedAssembliesToPublish)" Condition="'%(AssetType)' == 'resources'" />
-      <RuntimeAssetsToPublish Include="@(ResolvedAssembliesToPublish)" Condition="'%(AssetType)' == 'runtime'" />
-      <OtherAssemblies Include="@(ResolvedAssembliesToPublish)" Exclude="@(NativeAssetsToPublish);@(ResourceAssetsToPublish);@(RuntimeAssetsToPublish)" />
+      <NativeAssetsToPublish Include="@(_ResolvedCopyLocalPublishAssets)" Condition="'%(AssetType)' == 'native' " />
+      <ResourceAssetsToPublish Include="@(_ResolvedCopyLocalPublishAssets)" Condition="'%(AssetType)' == 'resources'" />
+      <RuntimeAssetsToPublish Include="@(_ResolvedCopyLocalPublishAssets)" Condition="'%(AssetType)' == 'runtime'" />
+      <OtherAssemblies Include="@(_ResolvedCopyLocalPublishAssets)" Exclude="@(NativeAssetsToPublish);@(ResourceAssetsToPublish);@(RuntimeAssetsToPublish)" />
     </ItemGroup>
 
     <Error Text="Unaccounted shared framework assemblies found: @(OtherAssemblies). These files have an unknown asset type." Condition="'@(OtherAssemblies)' != ''" />

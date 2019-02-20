@@ -9,7 +9,6 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Mvc" />
-    <Reference Include="Microsoft.NET.Sdk.Razor" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>

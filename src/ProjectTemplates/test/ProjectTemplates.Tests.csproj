@@ -39,6 +39,10 @@
       <_Parameter1>DotNetEfFullPath</_Parameter1>
       <_Parameter2>$([MSBuild]::EnsureTrailingSlash('$(NuGetPackageRoot)'))dotnet-ef/$(DotnetEfPackageVersion)/tools/netcoreapp3.0/any/dotnet-ef.dll</_Parameter2>
     </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>TestPackageRestorePath</_Parameter1>
+      <_Parameter2>$([MSBuild]::EnsureTrailingSlash('$(RepositoryRoot)'))obj\template-restore\</_Parameter2>
+    </AssemblyAttribute>
   </ItemGroup>
 
 </Project>

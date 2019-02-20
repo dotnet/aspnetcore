@@ -81,7 +81,9 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <ItemGroup>
       <AspNetCoreReferenceAssemblyPath
           Include="@(ReferencePathWithRefAssemblies)"
-          Exclude="@(ReferencePathWithRefAssemblies->WithMetadataValue('NuGetPackageId', 'Microsoft.NETCore.App'))" />
+          Exclude="
+            @(ReferencePathWithRefAssemblies->WithMetadataValue('NuGetPackageId', 'Microsoft.NETCore.App'));
+            @(ReferencePathWithRefAssemblies->WithMetadataValue('ReferenceGrouping', 'Microsoft.NETCore.App'));" />
 
       <AspNetCoreReferenceDocXml Include="@(AspNetCoreReferenceAssemblyPath->'%(RootDir)%(Directory)%(FileName).xml')" />
 

@@ -20,8 +20,6 @@
      <WholeProgramOptimization>true</WholeProgramOptimization>
      <CodeAnalysisRuleSet>..\DefaultRules.ruleset</CodeAnalysisRuleSet>
      <RunCodeAnalysis>false</RunCodeAnalysis>
-     <!-- Do not enable code analysis on old compiler versions -->
-     <RunCodeAnalysis Condition="'$(VCToolsRedistVersion)' != '' AND '$(VCToolsRedistVersion)' >= 14.15.26706">true</RunCodeAnalysis>
      <EnablePREfast>$(RunCodeAnalysis)</EnablePREfast>
    </PropertyGroup>
 

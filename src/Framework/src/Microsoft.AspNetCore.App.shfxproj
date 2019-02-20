@@ -11,10 +11,7 @@
     <RuntimeIdentifier>$(TargetRuntimeIdentifier)</RuntimeIdentifier>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <BaseSharedFrameworkName>Microsoft.NETCore.App</BaseSharedFrameworkName>
-    <RuntimeFrameworkVersion>$(MicrosoftNETCoreAppPackageVersion)</RuntimeFrameworkVersion>
-
-    <!-- shfxproj must be explicit about its dependencies. -->
-    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+    <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
 
     <!-- Optimize the framework using the crossgen tool -->
     <CrossgenOutput>true</CrossgenOutput>
