@@ -39,81 +39,90 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
             Func<HealthCheckRegistration, bool> predicate,
             CancellationToken cancellationToken = default)
         {
-            async Task<(string registrationName, HealthReportEntry result)> RunCheckAsync(IServiceScope scope, HealthCheckRegistration registration)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var healthCheck = registration.Factory(scope.ServiceProvider);
-
-                // If the health check does things like make Database queries using EF or backend HTTP calls,
-                // it may be valuable to know that logs it generates are part of a health check. So we start a scope.
-                using (_logger.BeginScope(new HealthCheckLogScope(registration.Name)))
-                {
-                    var stopwatch = ValueStopwatch.StartNew();
-                    var context = new HealthCheckContext { Registration = registration };
-
-                    Log.HealthCheckBegin(_logger, registration);
-
-                    HealthReportEntry entry;
-                    try
-                    {
-                        var result = await healthCheck.CheckHealthAsync(context, cancellationToken);
-                        var duration = stopwatch.GetElapsedTime();
-
-                        entry = new HealthReportEntry(
-                            status: result.Status,
-                            description: result.Description,
-                            duration: duration,
-                            exception: result.Exception,
-                            data: result.Data);
-
-                        Log.HealthCheckEnd(_logger, registration, entry, duration);
-                        Log.HealthCheckData(_logger, registration, entry);
-                    }
-
-                    // Allow cancellation to propagate.
-                    catch (Exception ex) when (ex as OperationCanceledException == null)
-                    {
-                        var duration = stopwatch.GetElapsedTime();
-                        entry = new HealthReportEntry(
-                            status: HealthStatus.Unhealthy,
-                            description: ex.Message,
-                            duration: duration,
-                            exception: ex,
-                            data: null);
-
-                        Log.HealthCheckError(_logger, registration, ex, duration);
-                    }
-
-                    return (registration.Name, entry);
-                }
-            }
-
-            IEnumerable<HealthCheckRegistration> registrations = _options.Value.Registrations;
+            var registrations = _options.Value.Registrations;
             if (predicate != null)
             {
-                registrations = registrations.Where(predicate);
+                registrations = registrations.Where(predicate).ToArray();
             }
 
             var totalTime = ValueStopwatch.StartNew();
             Log.HealthCheckProcessingBegin(_logger);
 
-            (string registrationName, HealthReportEntry result)[] results;
+            var tasks = new Task<HealthReportEntry>[registrations.Count];
+            var index = 0;
             using (var scope = _scopeFactory.CreateScope())
             {
-                results = await Task.WhenAll(registrations.Select(r => RunCheckAsync(scope, r)));
+                foreach (var registration in registrations)
+                {
+                    tasks[index++] = RunCheckAsync(scope, registration, cancellationToken);
+                }
+
+                await Task.WhenAll(tasks).ConfigureAwait(false);
             }
 
+            index = 0;
             var entries = new Dictionary<string, HealthReportEntry>(StringComparer.OrdinalIgnoreCase);
-            foreach (var (registrationName, result) in results)
+            foreach (var registration in registrations)
             {
-                entries[registrationName] = result;
+                entries[registration.Name] = tasks[index++].Result;
             }
 
             var totalElapsedTime = totalTime.GetElapsedTime();
             var report = new HealthReport(entries, totalElapsedTime);
             Log.HealthCheckProcessingEnd(_logger, report.Status, totalElapsedTime);
             return report;
+        }
+
+        private async Task<HealthReportEntry> RunCheckAsync(IServiceScope scope, HealthCheckRegistration registration, CancellationToken cancellationToken)
+        {
+            await Task.Yield();
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var healthCheck = registration.Factory(scope.ServiceProvider);
+
+            // If the health check does things like make Database queries using EF or backend HTTP calls,
+            // it may be valuable to know that logs it generates are part of a health check. So we start a scope.
+            using (_logger.BeginScope(new HealthCheckLogScope(registration.Name)))
+            {
+                var stopwatch = ValueStopwatch.StartNew();
+                var context = new HealthCheckContext { Registration = registration };
+
+                Log.HealthCheckBegin(_logger, registration);
+
+                HealthReportEntry entry;
+                try
+                {
+                    var result = await healthCheck.CheckHealthAsync(context, cancellationToken);
+                    var duration = stopwatch.GetElapsedTime();
+
+                    entry = new HealthReportEntry(
+                        status: result.Status,
+                        description: result.Description,
+                        duration: duration,
+                        exception: result.Exception,
+                        data: result.Data);
+
+                    Log.HealthCheckEnd(_logger, registration, entry, duration);
+                    Log.HealthCheckData(_logger, registration, entry);
+                }
+
+                // Allow cancellation to propagate.
+                catch (Exception ex) when (ex as OperationCanceledException == null)
+                {
+                    var duration = stopwatch.GetElapsedTime();
+                    entry = new HealthReportEntry(
+                        status: HealthStatus.Unhealthy,
+                        description: ex.Message,
+                        duration: duration,
+                        exception: ex,
+                        data: null);
+
+                    Log.HealthCheckError(_logger, registration, ex, duration);
+                }
+
+                return entry;
+            }
         }
 
         private static void ValidateRegistrations(IEnumerable<HealthCheckRegistration> registrations)
