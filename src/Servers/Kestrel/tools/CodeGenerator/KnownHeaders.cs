@@ -65,12 +65,12 @@ namespace CodeGenerator
             public bool FastCount { get; set; }
             public bool EnhancedSetter { get; set; }
             public bool PrimaryHeader { get; set; }
-            public string TestBit() => $"(_bits & {1L << Index}L) != 0";
-            public string TestTempBit() => $"(tempBits & {1L << Index}L) != 0";
-            public string TestNotTempBit() => $"(tempBits & ~{1L << Index}L) == 0";
-            public string TestNotBit() => $"(_bits & {1L << Index}L) == 0";
-            public string SetBit() => $"_bits |= {1L << Index}L";
-            public string ClearBit() => $"_bits &= ~{1L << Index}L";
+            public string TestBit() => $"(_bits & {"0x" + (1L << Index).ToString("x")}L) != 0";
+            public string TestTempBit() => $"(tempBits & {"0x" + (1L << Index).ToString("x")}L) != 0";
+            public string TestNotTempBit() => $"(tempBits & ~{"0x" + (1L << Index).ToString("x")}L) == 0";
+            public string TestNotBit() => $"(_bits & {"0x" + (1L << Index).ToString("x")}L) == 0";
+            public string SetBit() => $"_bits |= {"0x" + (1L << Index).ToString("x")}L";
+            public string ClearBit() => $"_bits &= ~{"0x" + (1L << Index).ToString("x")}L";
 
             public string EqualIgnoreCaseBytes()
             {
@@ -574,7 +574,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {(loop.ClassName == "HttpResponseHeaders" ? $@"
         internal unsafe void CopyToFast(ref BufferWriter<PipeWriter> output)
         {{
-            var tempBits = _bits | (_contentLength.HasValue ? {1L << 63}L : 0);
+            var tempBits = _bits | (_contentLength.HasValue ? {"0x" + (1L << 63).ToString("x")}L : 0);
             var next = 0;
             var keyStart = 0;
             var keyLength = 0;
@@ -615,7 +615,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         Header{hi.Header.Identifier}: // case {hi.Index}
             if ({hi.Header.TestTempBit()})
             {{
-                tempBits ^= {1L << hi.Header.Index}L;{(hi.Header.Identifier != "ContentLength" ? $@"{(hi.Header.EnhancedSetter == false ? $@"
+                tempBits ^= {"0x" + (1L << hi.Header.Index).ToString("x")}L;{(hi.Header.Identifier != "ContentLength" ? $@"{(hi.Header.EnhancedSetter == false ? $@"
                 values = ref _headers._{hi.Header.Identifier};
                 keyStart = {hi.Header.BytesOffset};
                 keyLength = {hi.Header.BytesCount};
