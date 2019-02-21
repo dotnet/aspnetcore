@@ -41,11 +41,11 @@ namespace CorsWebSite
                     });
 
                 options.AddPolicy(
-                    "WithCredentialsAnyOrigin",
+                    "WithCredentialsAndOtherSettings",
                     builder =>
                     {
                         builder.AllowCredentials()
-                               .AllowAnyOrigin()
+                               .WithOrigins("http://example.com")
                                .AllowAnyHeader()
                                .WithMethods("PUT", "POST")
                                .WithExposedHeaders("exposed1", "exposed2");
@@ -55,8 +55,7 @@ namespace CorsWebSite
                     "AllowAll",
                     builder =>
                     {
-                        builder.AllowCredentials()
-                               .AllowAnyMethod()
+                        builder.AllowAnyMethod()
                                .AllowAnyHeader()
                                .AllowAnyOrigin();
                     });

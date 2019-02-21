@@ -11,6 +11,8 @@
 <p>
     @(nameof(CascadingValueReceiveFixedByInterface)) render count:
     <strong id="receive-by-interface-num-renders">@numRenders</strong>
+
+    @* Prevent rerendering this component when the button is clicked. *@
     <button id="decrement-count" onclick=@Ancestor.DecrementCount>Decrement</button>
 </p>
 

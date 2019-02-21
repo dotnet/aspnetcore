@@ -44,11 +44,6 @@ namespace Microsoft.AspNetCore.Components
                 throw new ArgumentNullException(nameof(receiver));
             }
 
-            if (callback == null)
-            {
-                throw new ArgumentNullException(nameof(callback));
-            }
-
             return CreateCore(receiver, callback);
         }
 
@@ -64,11 +59,6 @@ namespace Microsoft.AspNetCore.Components
             if (receiver == null)
             {
                 throw new ArgumentNullException(nameof(receiver));
-            }
-
-            if (callback == null)
-            {
-                throw new ArgumentNullException(nameof(callback));
             }
 
             return CreateCore(receiver, callback);
@@ -88,11 +78,6 @@ namespace Microsoft.AspNetCore.Components
                 throw new ArgumentNullException(nameof(receiver));
             }
 
-            if (callback == null)
-            {
-                throw new ArgumentNullException(nameof(callback));
-            }
-
             return CreateCore(receiver, callback);
         }
 
@@ -108,11 +93,6 @@ namespace Microsoft.AspNetCore.Components
             if (receiver == null)
             {
                 throw new ArgumentNullException(nameof(receiver));
-            }
-
-            if (callback == null)
-            {
-                throw new ArgumentNullException(nameof(callback));
             }
 
             return CreateCore(receiver, callback);
@@ -133,6 +113,23 @@ namespace Microsoft.AspNetCore.Components
             }
 
             return callback;
+        }
+
+        /// <summary>
+        /// Returns the provided <paramref name="callback"/>. For internal framework use only.
+        /// </summary>
+        /// <param name="receiver"></param>
+        /// <param name="callback"></param>
+        /// <returns></returns>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public EventCallback<T> Create<T>(object receiver, EventCallback callback)
+        {
+            if (receiver == null)
+            {
+                throw new ArgumentNullException(nameof(receiver));
+            }
+
+            return new EventCallback<T>(callback.Receiver, callback.Delegate);
         }
 
         /// <summary>
@@ -166,11 +163,6 @@ namespace Microsoft.AspNetCore.Components
                 throw new ArgumentNullException(nameof(receiver));
             }
 
-            if (callback == null)
-            {
-                throw new ArgumentNullException(nameof(callback));
-            }
-
             return CreateCore<T>(receiver, callback);
         }
 
@@ -186,11 +178,6 @@ namespace Microsoft.AspNetCore.Components
             if (receiver == null)
             {
                 throw new ArgumentNullException(nameof(receiver));
-            }
-
-            if (callback == null)
-            {
-                throw new ArgumentNullException(nameof(callback));
             }
 
             return CreateCore<T>(receiver, callback);
@@ -210,11 +197,6 @@ namespace Microsoft.AspNetCore.Components
                 throw new ArgumentNullException(nameof(receiver));
             }
 
-            if (callback == null)
-            {
-                throw new ArgumentNullException(nameof(callback));
-            }
-
             return CreateCore<T>(receiver, callback);
         }
 
@@ -230,11 +212,6 @@ namespace Microsoft.AspNetCore.Components
             if (receiver == null)
             {
                 throw new ArgumentNullException(nameof(receiver));
-            }
-
-            if (callback == null)
-            {
-                throw new ArgumentNullException(nameof(callback));
             }
 
             return CreateCore<T>(receiver, callback);
@@ -270,22 +247,12 @@ namespace Microsoft.AspNetCore.Components
 
         private EventCallback CreateCore(object receiver, MulticastDelegate callback)
         {
-            if (!object.ReferenceEquals(receiver, callback.Target) && receiver is IHandleEvent handler)
-            {
-                return new EventCallback(handler, callback);
-            }
-
-            return new EventCallback(callback.Target as IHandleEvent, callback);
+            return new EventCallback(callback?.Target as IHandleEvent ?? receiver as IHandleEvent, callback);
         }
 
         private EventCallback<T> CreateCore<T>(object receiver, MulticastDelegate callback)
         {
-            if (!object.ReferenceEquals(receiver, callback.Target) && receiver is IHandleEvent handler)
-            {
-                return new EventCallback<T>(handler, callback);
-            }
-
-            return new EventCallback<T>(callback.Target as IHandleEvent, callback);
+            return new EventCallback<T>(callback?.Target as IHandleEvent ?? receiver as IHandleEvent, callback);
         }
     }
 }
