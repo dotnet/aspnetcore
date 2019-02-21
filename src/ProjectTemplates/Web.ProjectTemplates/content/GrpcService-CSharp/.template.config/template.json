@@ -5,18 +5,18 @@
     "Web",
     "gRPC"
   ],
-  "name": "ASP.NET Core gRPC App",
+  "name": "ASP.NET Core gRPC Service",
   "generatorVersions": "[1.0.0.0-*)",
-  "description": "A project template for creating a gRPC ASP.NET Core application.",
+  "description": "A project template for creating a gRPC ASP.NET Core service.",
   "groupIdentity": "Microsoft.Web.Grpc",
   "precedence": "5000",
-  "identity": "Microsoft.Grpc.Application.CSharp.3.0",
+  "identity": "Microsoft.Grpc.Service.CSharp.3.0",
   "shortName": "grpc",
   "tags": {
     "language": "C#",
     "type": "project"
   },
-  "sourceName": "GrpcApplication-CSharp",
+  "sourceName": "GrpcService-CSharp",
   "preferNameDirectory": true,
   "guids": [
     "4C26868E-5E7C-458D-82E3-040509D0C71F",
@@ -29,13 +29,13 @@
         {
           "condition": "(ExcludeLaunchSettings)",
           "exclude": [
-            "GrpcApplication-CSharp.Server/Properties/launchSettings.json"
+            "GrpcService-CSharp.Server/Properties/launchSettings.json"
           ]
         },
         {
           "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
           "exclude": [
-            "GrpcApplication-CSharp.sln"
+            "GrpcService-CSharp.sln"
           ]
         }
       ]
@@ -74,18 +74,18 @@
   "primaryOutputs": [
     {
       "condition": "(HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\")",
-      "path": "GrpcApplication-CSharp.sln"
+      "path": "GrpcService-CSharp.sln"
     },
     {
       "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
-      "path": "GrpcApplication-CSharp.Server/GrpcApplication-CSharp.Server.csproj"
+      "path": "GrpcService-CSharp.Server/GrpcService-CSharp.Server.csproj"
     },
     {
       "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
-      "path": "GrpcApplication-CSharp.Client/GrpcApplication-CSharp.Client.csproj"
+      "path": "GrpcService-CSharp.Client/GrpcService-CSharp.Client.csproj"
     }
   ],
-  "defaultName": "gRPCApplication-CSharp1",
+  "defaultName": "GrpcService-CSharp1",
   "postActions": [
     {
       "condition": "(!skipRestore)",
