@@ -21,8 +21,10 @@ _kill git.exe
 _kill vctip.exe
 _kill chrome.exe
 _kill h2spec.exe
+_kill WerFault.exe
 if (Get-Command iisreset -ErrorAction ignore) {
     iisreset /restart
 }
+Stop-Service w3svc -NoWait
 
 exit 0
