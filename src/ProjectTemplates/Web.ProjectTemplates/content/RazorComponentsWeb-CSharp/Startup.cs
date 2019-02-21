@@ -48,7 +48,7 @@ namespace RazorComponentsWeb_CSharp
             app.UseRouting(routes =>
             {
                 routes.MapRazorPages();
-                routes.MapComponentsHub<App>();
+                routes.MapComponentHub<App>("app");
             });
         }
     }
