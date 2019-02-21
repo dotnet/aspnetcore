@@ -4,13 +4,13 @@ import { LoginMenuComponent } from './login-menu/login-menu.component';
 import { LoginComponent } from './login/login.component';
 import { LogoutComponent } from './logout/logout.component';
 import { RouterModule } from '@angular/router';
-import { HttpModule } from '@angular/http';
 import { ApplicationPaths } from './api-authorization.constants';
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
   imports: [
     CommonModule,
-    HttpModule,
+    HttpClientModule,
     RouterModule.forChild(
       [
         { path: ApplicationPaths.Register, component: LoginComponent },

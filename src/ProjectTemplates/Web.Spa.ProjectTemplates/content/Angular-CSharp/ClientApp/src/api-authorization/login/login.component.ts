@@ -22,7 +22,7 @@ export class LoginComponent implements OnInit {
     private router: Router) { }
 
   async ngOnInit() {
-    const action = this.activatedRoute.snapshot.url[1]
+    const action = this.activatedRoute.snapshot.url[1];
     switch (action.path) {
       case LoginActions.Login:
         await this.login(this.getReturnUrl());
@@ -111,7 +111,7 @@ export class LoginComponent implements OnInit {
       !(fromQuery.startsWith(`${window.location.origin}/`) ||
         /\/[^\/].*/.test(fromQuery))) {
       // This is an extra check to prevent open redirects.
-      throw new Error("Invalid return url. The return url needs to have the same origin as the current page.")
+      throw new Error('Invalid return url. The return url needs to have the same origin as the current page.');
     }
     return (state && state.returnUrl) ||
       fromQuery ||

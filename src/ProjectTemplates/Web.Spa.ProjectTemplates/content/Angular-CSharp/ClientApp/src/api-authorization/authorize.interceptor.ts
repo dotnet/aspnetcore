@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent } from '@angular/common/http';
-import { Observable, from } from 'rxjs';
+import { Observable } from 'rxjs';
 import { AuthorizeService } from './authorize.service';
 import { mergeMap } from 'rxjs/operators';
 
@@ -32,18 +32,18 @@ export class AuthorizeInterceptor implements HttpInterceptor {
 
   private isSameOriginUrl(req: any) {
     // It's an absolute url with the same origin.
-    if(req.url.startsWith(`${window.location.origin}/`)){
+    if (req.url.startsWith(`${window.location.origin}/`)) {
       return true;
     }
 
     // It's a protocol relative url with the same origin.
     // For example: //www.example.com/api/Products
-    if(req.url.startsWith(`//${window.location.host}/`)){
+    if (req.url.startsWith(`//${window.location.host}/`)) {
       return true;
     }
 
     // It's a relative url like /api/Products
-    if(/^\/[^\/].*/.test(req.url)){
+    if (/^\/[^\/].*/.test(req.url)) {
       return true;
     }
 
