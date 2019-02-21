@@ -77,13 +77,7 @@ namespace Templates.Test
         [MemberData(nameof(SubresourceIntegrityCheckScriptData))]
         public async Task CheckScriptSubresourceIntegrity(ScriptTag scriptTag)
         {
-            string expectedIntegrity;
-            using (var responseStream = await _httpClient.GetStreamAsync(scriptTag.Src))
-            using (var alg = SHA256.Create())
-            {
-                var hash = alg.ComputeHash(responseStream);
-                expectedIntegrity = "sha256-" + Convert.ToBase64String(hash);
-            }
+            var expectedIntegrity = await GetShaIntegrity(scriptTag);
 
             if (!expectedIntegrity.Equals(scriptTag.Integrity, StringComparison.OrdinalIgnoreCase))
             {
@@ -95,13 +89,7 @@ namespace Templates.Test
         [MemberData(nameof(SubresourceIntegrityCheckLinkData))]
         public async Task CheckLinkSubresourceIntegrity(LinkTag linkTag)
         {
-            string expectedIntegrity;
-            using (var responseStream = await _httpClient.GetStreamAsync(linkTag.HRef))
-            using (var alg = SHA256.Create())
-            {
-                var hash = alg.ComputeHash(responseStream);
-                expectedIntegrity = "sha256-" + Convert.ToBase64String(hash);
-            }
+            var expectedIntegrity = await GetShaIntegrity(linkTag);
 
             if (!expectedIntegrity.Equals(linkTag.Integrity, StringComparison.OrdinalIgnoreCase))
             {
@@ -159,6 +147,27 @@ namespace Templates.Test
             public override string ToString()
             {
                 return $"{Src}, {Entry}";
+            }
+        }
+
+        private Task<string> GetShaIntegrity(ScriptTag scriptTag)
+        {
+            return GetShaIntegrity(scriptTag.Integrity, scriptTag.Src);
+        }
+
+        private Task<string> GetShaIntegrity(LinkTag linkTag)
+        {
+            return GetShaIntegrity(linkTag.Integrity, linkTag.HRef);
+        }
+
+        private async Task<string> GetShaIntegrity(string integrity, string src)
+        {
+            var prefix = integrity.Substring(0, 6);
+            using (var respStream = await _httpClient.GetStreamAsync(src))
+            using (HashAlgorithm alg = string.Equals(prefix, "sha256") ? (HashAlgorithm)SHA256.Create() : (HashAlgorithm)SHA384.Create())
+            {
+                var hash = alg.ComputeHash(respStream);
+                return $"{prefix}-" + Convert.ToBase64String(hash);
             }
         }
 
