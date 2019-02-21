@@ -25,6 +25,6 @@ _kill WerFault.exe
 if (Get-Command iisreset -ErrorAction ignore) {
     iisreset /restart
 }
-Stop-Service w3svc -NoWait
+Stop-Service w3svc -NoWait -ErrorAction Ignore
 
 exit 0
