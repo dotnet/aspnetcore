@@ -267,6 +267,13 @@ export class MessagePackHubProtocol implements IHubProtocol {
         return BinaryMessageFormat.write(payload.slice());
     }
 
+    private writeCancelInvocation(cancelInvocationMessage: CancelInvocationMessage): ArrayBuffer {
+        const msgpack = msgpack5();
+        const payload = msgpack.encode([MessageType.CancelInvocation, cancelInvocationMessage.headers || {}, cancelInvocationMessage.invocationId]);
+
+        return BinaryMessageFormat.write(payload.slice());
+    }
+
     private readHeaders(properties: any): MessageHeaders {
         const headers: MessageHeaders = properties[1] as MessageHeaders;
         if (typeof headers !== "object") {

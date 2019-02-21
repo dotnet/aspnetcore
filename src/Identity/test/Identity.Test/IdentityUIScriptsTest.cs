@@ -49,11 +49,21 @@ namespace Microsoft.AspNetCore.Identity.Test
 
         private async Task<string> GetShaIntegrity(ScriptTag scriptTag)
         {
-            var prefix = scriptTag.Integrity.Substring(0, 6);
+            var isSha256 = scriptTag.Integrity.StartsWith("sha256");
+            var prefix = isSha256 ? "sha256" : "sha384";
             using (var respStream = await _httpClient.GetStreamAsync(scriptTag.Src))
-            using (HashAlgorithm alg = string.Equals(prefix, "sha256") ? (HashAlgorithm)SHA256.Create() : (HashAlgorithm)SHA384.Create())
+            using (var alg256 = SHA256.Create())
+            using (var alg384 = SHA384.Create())
             {
-                var hash = alg.ComputeHash(respStream);
+                byte[] hash;
+                if(isSha256)
+                {
+                    hash = alg256.ComputeHash(respStream);
+                }
+                else
+                {
+                    hash = alg384.ComputeHash(respStream);
+                }
                 return $"{prefix}-" + Convert.ToBase64String(hash);
             }
         }
