@@ -14,6 +14,8 @@ using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 using Xunit.Abstractions;
 
+[assembly: CollectionBehavior(CollectionBehavior.CollectionPerAssembly)]
+
 namespace FunctionalTests
 {
     public class CorsMiddlewareFunctionalTests : LoggedTest
