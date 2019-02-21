@@ -51,8 +51,8 @@
     <GeneratedContent Include="WebApi-CSharp.csproj.in" OutputPath="content/WebApi-CSharp/Company.WebApplication1.csproj" />
     <GeneratedContent Include="WebApi-FSharp.fsproj.in" OutputPath="content/WebApi-FSharp/Company.WebApplication1.fsproj" />
     <GeneratedContent Include="Worker-CSharp.csproj.in" OutputPath="content/Worker-CSharp/Company.Application1.csproj" />
-    <GeneratedContent Include="Grpc-Application.Server.csproj.in" OutputPath="content/Grpc-Application/Grpc-Application.Server/Grpc-Application.Server.csproj" />
-    <GeneratedContent Include="Grpc-Application.Client.csproj.in" OutputPath="content/Grpc-Application/Grpc-Application.Client/Grpc-Application.Client.csproj" />
+    <GeneratedContent Include="GrpcApplication-CSharp.Server.csproj.in" OutputPath="content/GrpcApplication-CSharp/GrpcApplication-CSharp.Server/GrpcApplication-CSharp.Server.csproj" />
+    <GeneratedContent Include="GrpcApplication-CSharp.Client.csproj.in" OutputPath="content/GrpcApplication-CSharp/GrpcApplication-CSharp.Client/GrpcApplication-CSharp.Client.csproj" />
   </ItemGroup>
 
 </Project>

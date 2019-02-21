@@ -2,14 +2,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2027
 MinimumVisualStudioVersion = 15.0.26124.0
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Grpc-Application.Server", "Grpc-Application.Server\Grpc-Application.Server.csproj", "{650B3CE7-2E93-4CC4-9F46-466686815EAA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GrpcApplication-CSharp.Server", "GrpcApplication-CSharp.Server\GrpcApplication-CSharp.Server.csproj", "{650B3CE7-2E93-4CC4-9F46-466686815EAA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Grpc-Application.Client", "Grpc-Application.Client\Grpc-Application.Client.csproj", "{5990939C-7E7B-4CFA-86FF-44CA5756498A}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Protos", "Protos", "{AC41B2B2-62D9-454E-8521-F71E331B07F3}"
-	ProjectSection(SolutionItems) = preProject
-		Protos\greet.proto = Protos\greet.proto
-	EndProjectSection
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GrpcApplication-CSharp.Client", "GrpcApplication-CSharp.Client\GrpcApplication-CSharp.Client.csproj", "{5990939C-7E7B-4CFA-86FF-44CA5756498A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

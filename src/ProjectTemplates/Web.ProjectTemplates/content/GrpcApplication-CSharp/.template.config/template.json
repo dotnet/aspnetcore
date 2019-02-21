@@ -16,13 +16,12 @@
     "language": "C#",
     "type": "project"
   },
-  "sourceName": "Grpc-Application",
+  "sourceName": "GrpcApplication-CSharp",
   "preferNameDirectory": true,
   "guids": [
     "4C26868E-5E7C-458D-82E3-040509D0C71F",
     "5990939C-7E7B-4CFA-86FF-44CA5756498A",
-    "650B3CE7-2E93-4CC4-9F46-466686815EAA",
-    "AC41B2B2-62D9-454E-8521-F71E331B07F3"
+    "650B3CE7-2E93-4CC4-9F46-466686815EAA"
   ],
   "sources": [
     {
@@ -30,13 +29,23 @@
         {
           "condition": "(ExcludeLaunchSettings)",
           "exclude": [
-            "Properties/launchSettings.json"
+            "GrpcApplication-CSharp.Server/Properties/launchSettings.json"
+          ]
+        },
+        {
+          "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+          "exclude": [
+            "GrpcApplication-CSharp.sln"
           ]
         }
       ]
     }
   ],
   "symbols": {
+    "HostIdentifier": {
+      "type": "bind",
+      "binding": "HostIdentifier"
+    },
     "Framework": {
       "type": "parameter",
       "description": "The target framework for the project.",
@@ -65,22 +74,18 @@
   "primaryOutputs": [
     {
       "condition": "(HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\")",
-      "path": "Grpc-Application.sln"
+      "path": "GrpcApplication-CSharp.sln"
     },
     {
       "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
-      "path": "Grpc-Application.Client/Grpc-Application.Client.csproj"
+      "path": "GrpcApplication-CSharp.Server/GrpcApplication-CSharp.Server.csproj"
     },
     {
       "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
-      "path": "Grpc-Application.Server/Grpc-Application.Server.csproj"
-    },
-    {
-      "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
-      "path": "Protos/greet.proto"
+      "path": "GrpcApplication-CSharp.Client/GrpcApplication-CSharp.Client.csproj"
     }
   ],
-  "defaultName": "gRPC-Application1",
+  "defaultName": "gRPCApplication-CSharp1",
   "postActions": [
     {
       "condition": "(!skipRestore)",
