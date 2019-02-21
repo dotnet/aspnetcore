@@ -10,6 +10,7 @@
 /src/Hosting/ @tratcher
 /src/Http/ @tratcher @jkotalik
 /src/Middleware/ @tratcher
+/src/ProjectTemplates/ @ryanbrandenburg
 /src/Security/ @tratcher
 /src/Servers/ @tratcher @jkotalik
 /src/Middleware/Rewrite @jkotalik
