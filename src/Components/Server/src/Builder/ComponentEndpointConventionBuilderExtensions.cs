@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Builder
     /// <summary>
     /// Extensions for <see cref="IEndpointConventionBuilder"/>.
     /// </summary>
-    public static class EndpointConventionBuilderComponentsExtensions
+    public static class ComponentEndpointConventionBuilderExtensions
     {
         /// <summary>
         /// Adds <typeparamref name="TComponent"/> to the list of components registered with this <see cref="ComponentHub"/> instance.

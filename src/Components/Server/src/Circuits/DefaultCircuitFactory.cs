@@ -90,7 +90,12 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         private static IList<ComponentDescriptor> ResolveComponentMetadata(HttpContext httpContext, IClientProxy client)
         {
-            if (client != null)
+            if (client == null)
+            {
+                // This is the prerendering case.
+                return Array.Empty<ComponentDescriptor>();
+            }
+            else
             {
                 var endpointFeature = httpContext.Features.Get<IEndpointFeature>();
                 var endpoint = endpointFeature?.Endpoint;
@@ -106,15 +111,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 {
                     throw new InvalidOperationException("No component was registered with the component hub.");
                 }
-                else
-                {
-                    return componentsMetadata;
-                }
-            }
-            else
-            {
-                // This is the prerendering case.
-                return Array.Empty<ComponentDescriptor>();
+
+                return componentsMetadata;
             }
         }
     }
