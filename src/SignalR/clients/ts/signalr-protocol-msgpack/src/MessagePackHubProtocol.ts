@@ -4,8 +4,10 @@
 import { Buffer } from "buffer";
 import * as msgpack5 from "msgpack5";
 
-import { CancelInvocationMessage, CompletionMessage, HubMessage, IHubProtocol, ILogger, InvocationMessage,
-    LogLevel, MessageHeaders, MessageType, NullLogger, StreamInvocationMessage, StreamItemMessage, TransferFormat } from "@aspnet/signalr";
+import {
+    CancelInvocationMessage, CompletionMessage, HubMessage, IHubProtocol, ILogger, InvocationMessage,
+    LogLevel, MessageHeaders, MessageType, NullLogger, StreamInvocationMessage, StreamItemMessage, TransferFormat
+} from "@aspnet/signalr";
 
 import { BinaryMessageFormat } from "./BinaryMessageFormat";
 import { isArrayBuffer } from "./Utils";
@@ -256,13 +258,6 @@ export class MessagePackHubProtocol implements IHubProtocol {
                 payload = msgpack.encode([MessageType.Completion, completionMessage.headers || {}, completionMessage.invocationId, resultKind, completionMessage.result]);
                 break;
         }
-
-        return BinaryMessageFormat.write(payload.slice());
-    }
-
-    private writeCancelInvocation(cancelInvocationMessage: CancelInvocationMessage): ArrayBuffer {
-        const msgpack = msgpack5();
-        const payload = msgpack.encode([MessageType.CancelInvocation, cancelInvocationMessage.headers || {}, cancelInvocationMessage.invocationId]);
 
         return BinaryMessageFormat.write(payload.slice());
     }
