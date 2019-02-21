@@ -7,7 +7,10 @@ using System.IO;
 using System.IO.Compression;
 using System.Net;
 using System.Reflection;
+using System.Threading.Tasks;
+using McMaster.Extensions.CommandLineUtils;
 using Newtonsoft.Json.Linq;
+using TriageBuildFailures;
 using Xunit;
 
 namespace Microsoft.AspNetCore
@@ -17,10 +20,10 @@ namespace Microsoft.AspNetCore
 
         [Theory]
         [MemberData(nameof(GetSharedFxConfig))]
-        public void BaselineTest(SharedFxConfig config)
+        public async Task BaselineTest(SharedFxConfig config)
         {
             var previousVersion = TestData.GetPreviousAspNetCoreReleaseVersion();
-            var url = $"https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/" + previousVersion + "/aspnetcore-runtime-internal-" + previousVersion + "-win-x64.zip";
+            var url = new Uri($"https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/" + previousVersion + "/aspnetcore-runtime-internal-" + previousVersion + "-win-x64.zip");
             var zipName = "assemblies.zip";
             var nugetAssemblyVersions = new Dictionary<string, Version>();
 
@@ -29,7 +32,8 @@ namespace Microsoft.AspNetCore
 
             using (var testClient = new WebClient())
             {
-                testClient.DownloadFile(url, zipName);
+                var reporter = new ConsoleReporter(PhysicalConsole.Singleton);
+                await RetryHelpers.RetryAsync(async () => await testClient.DownloadFileTaskAsync(url, zipName), reporter);
             }
 
             var zipPath = Path.Combine(AppContext.BaseDirectory, zipName);
@@ -41,14 +45,13 @@ namespace Microsoft.AspNetCore
 
             var nugetAssembliesPath = Path.Combine(AppContext.BaseDirectory, "unzipped", "shared", config.Name, previousVersion);
 
-            string[] files = Directory.GetFiles(nugetAssembliesPath, "*.dll");
-            foreach (string file in files)
+            var files = Directory.GetFiles(nugetAssembliesPath, "*.dll");
+            foreach (var file in files)
             {
                 try
                 {
                     var assemblyVersion = AssemblyName.GetAssemblyName(file)?.Version;
-                    var splitPath = file.Split('\\');
-                    var dllName = splitPath[splitPath.Length - 1];
+                    var dllName = Path.GetFileName(file);
                     nugetAssemblyVersions.Add(dllName, assemblyVersion);
                 }
                 catch (BadImageFormatException) { }
