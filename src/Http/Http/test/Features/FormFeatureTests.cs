@@ -115,8 +115,12 @@ namespace Microsoft.AspNetCore.Http.Features
 "\r\n" +
 "Foo\r\n";
 
+        private const string InvalidContentDispositionValue = "form-data; name=\"description\" - filename=\"temp.html\"";
+
         private const string MultipartFormFileInvalidContentDispositionValue = "--WebKitFormBoundary5pDRpGheQXaM8k3T\r\n" +
-"Content-Disposition: form-data; name=\"description\" - filename=\"temp.html\"\r\n" +
+"Content-Disposition: " +
+InvalidContentDispositionValue +
+"\r\n" +
 "\r\n" +
 "Foo\r\n";
 
@@ -512,7 +516,7 @@ namespace Microsoft.AspNetCore.Http.Features
 
             var exception = await Assert.ThrowsAsync<InvalidDataException>(() => context.Request.ReadFormAsync());
 
-            Assert.Equal("Form section has invalid Content-Disposition value.", exception.Message);
+            Assert.Equal("Form section has invalid Content-Disposition value: " + InvalidContentDispositionValue, exception.Message);
         }
 
         private Stream CreateFile(int size)
