@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <Protobuf Include="..\Protos\*.proto" GrpcServices="Client" />
+    <Content Include="@(Protobuf)" LinkBase="" />
   </ItemGroup>
 
   <ItemGroup>

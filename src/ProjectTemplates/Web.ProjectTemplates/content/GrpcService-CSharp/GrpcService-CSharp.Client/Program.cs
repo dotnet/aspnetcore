@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Greet;
 using Grpc.Core;
 
-namespace Company.ClientApplication
+namespace GrpcService_CSharp
 {
     public class Program
     {

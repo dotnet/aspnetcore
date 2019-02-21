@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Greet;
 using Grpc.Core;
 
-namespace Company.WebApplication1
+namespace GrpcService_CSharp
 {
     public class GreeterService : Greeter.GreeterBase
     {

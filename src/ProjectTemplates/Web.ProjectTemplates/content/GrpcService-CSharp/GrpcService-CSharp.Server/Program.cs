@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 
-namespace Company.WebApplication1
+namespace GrpcService_CSharp
 {
     public class Program
     {

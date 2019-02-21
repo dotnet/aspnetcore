@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <Protobuf Include="..\Protos\*.proto" GrpcServices="Server" />
+    <Content Include="@(Protobuf)" LinkBase="" />
   </ItemGroup>
 
   <ItemGroup>

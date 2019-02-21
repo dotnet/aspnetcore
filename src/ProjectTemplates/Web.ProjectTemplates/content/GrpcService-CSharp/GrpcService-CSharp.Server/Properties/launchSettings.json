@@ -1,6 +1,6 @@
 ﻿{
   "profiles": {
-    "GrpcApplication-CSharp": {
+    "GrpcService-CSharp": {
       "commandName": "Project",
       "launchBrowser": false,
       "applicationUrl": "http://localhost:50051",
