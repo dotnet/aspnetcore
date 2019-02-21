@@ -8,18 +8,18 @@ using Microsoft.AspNetCore.Components.Server;
 namespace Microsoft.AspNetCore.Builder
 {
     /// <summary>
-    /// Extensions for <see cref="ComponentEndpointBuilder"/>.
+    /// Extensions for <see cref="IEndpointConventionBuilder"/>.
     /// </summary>
-    public static class ComponentEndpointBuilderExtensions
+    public static class IEndpointConventionBuilderExtensions
     {
         /// <summary>
         /// Adds <typeparamref name="TComponent"/> to the list of components registered with this <see cref="ComponentHub"/> instance.
         /// </summary>
         /// <typeparam name="TComponent">The component type.</typeparam>
-        /// <param name="builder">The <see cref="ComponentEndpointBuilder"/>.</param>
+        /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
         /// <param name="selector">The component selector in the DOM for the <typeparamref name="TComponent"/>.</param>
         /// <returns>The <paramref name="builder"/>.</returns>
-        public static ComponentEndpointBuilder AddComponent<TComponent>(this ComponentEndpointBuilder builder, string selector)
+        public static IEndpointConventionBuilder AddComponent<TComponent>(this IEndpointConventionBuilder builder, string selector)
         {
             if (builder == null)
             {
@@ -38,11 +38,11 @@ namespace Microsoft.AspNetCore.Builder
         /// Adds <paramref name="componentType"/> to the list of components registered with this <see cref="ComponentHub"/> instance.
         /// The selector will default to the component name in lowercase.
         /// </summary>
-        /// <param name="builder">The <see cref="ComponentEndpointBuilder"/>.</param>
+        /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
         /// <param name="componentType">The component type.</param>
         /// <param name="selector">The component selector in the DOM for the <paramref name="componentType"/>.</param>
         /// <returns>The <paramref name="builder"/>.</returns>
-        public static ComponentEndpointBuilder AddComponent(this ComponentEndpointBuilder builder, Type componentType, string selector)
+        public static IEndpointConventionBuilder AddComponent(this IEndpointConventionBuilder builder, Type componentType, string selector)
         {
             if (builder == null)
             {

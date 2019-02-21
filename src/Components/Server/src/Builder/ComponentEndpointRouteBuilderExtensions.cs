@@ -19,8 +19,8 @@ namespace Microsoft.AspNetCore.Builder
         /// <typeparam name="TComponent">The first <see cref="IComponent"/> associated with this <see cref="ComponentHub"/>.</typeparam>
         /// <param name="routes">The <see cref="RouteBuilder"/>.</param>
         /// <param name="selector">The selector for the <typeparamref name="TComponent"/>.</param>
-        /// <returns>The <see cref="ComponentEndpointBuilder"/>.</returns>
-        public static ComponentEndpointBuilder MapComponentHub<TComponent>(
+        /// <returns>The <see cref="IEndpointConventionBuilder"/>.</returns>
+        public static IEndpointConventionBuilder MapComponentHub<TComponent>(
             this IEndpointRouteBuilder routes,
             string selector)
         {
@@ -45,8 +45,8 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="routes">The <see cref="RouteBuilder"/>.</param>
         /// <param name="selector">The selector for the <typeparamref name="TComponent"/>.</param>
         /// <param name="path">The path to map to which the <see cref="ComponentHub"/> will be mapped.</param>
-        /// <returns>The <see cref="ComponentEndpointBuilder"/>.</returns>
-        public static ComponentEndpointBuilder MapComponentHub<TComponent>(
+        /// <returns>The <see cref="IEndpointConventionBuilder"/>.</returns>
+        public static IEndpointConventionBuilder MapComponentHub<TComponent>(
             this IEndpointRouteBuilder routes,
             string selector,
             string path)
@@ -77,8 +77,8 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="componentType">The first <see cref="IComponent"/> associated with this <see cref="ComponentHub"/>.</param>
         /// <param name="selector">The selector for the <paramref name="componentType"/>.</param>
         /// <param name="path">The path to map to which the <see cref="ComponentHub"/> will be mapped.</param>
-        /// <returns>The <see cref="ComponentEndpointBuilder"/>.</returns>
-        public static ComponentEndpointBuilder MapComponentHub(
+        /// <returns>The <see cref="IEndpointConventionBuilder"/>.</returns>
+        public static IEndpointConventionBuilder MapComponentHub(
             this IEndpointRouteBuilder routes,
             Type componentType,
             string selector,
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(selector));
             }
 
-            return new ComponentEndpointBuilder(routes.MapHub<ComponentHub>(path)).AddComponent(componentType, selector);
+            return routes.MapHub<ComponentHub>(path).AddComponent(componentType, selector);
         }
     }
 }
