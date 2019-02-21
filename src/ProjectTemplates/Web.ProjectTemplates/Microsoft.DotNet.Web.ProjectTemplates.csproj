@@ -43,6 +43,8 @@
   <ItemGroup>
     <GeneratedContent Include="EmptyWeb-CSharp.csproj.in" OutputPath="content/EmptyWeb-CSharp/Company.WebApplication1.csproj" />
     <GeneratedContent Include="EmptyWeb-FSharp.fsproj.in" OutputPath="content/EmptyWeb-FSharp/Company.WebApplication1.fsproj" />
+    <GeneratedContent Include="GrpcApplication-CSharp.Server.csproj.in" OutputPath="content/GrpcApplication-CSharp/GrpcApplication-CSharp.Server/GrpcApplication-CSharp.Server.csproj" />
+    <GeneratedContent Include="GrpcApplication-CSharp.Client.csproj.in" OutputPath="content/GrpcApplication-CSharp/GrpcApplication-CSharp.Client/GrpcApplication-CSharp.Client.csproj" />
     <GeneratedContent Include="RazorComponentsWeb-CSharp.csproj.in" OutputPath="content/RazorComponentsWeb-CSharp/RazorComponentsWeb-CSharp.csproj" />
     <GeneratedContent Include="RazorPagesWeb-CSharp.csproj.in" OutputPath="content/RazorPagesWeb-CSharp/Company.WebApplication1.csproj" />
     <GeneratedContent Include="RazorClassLibrary-CSharp.csproj.in" OutputPath="content/RazorClassLibrary-CSharp/Company.RazorClassLibrary1.csproj" />
@@ -51,8 +53,6 @@
     <GeneratedContent Include="WebApi-CSharp.csproj.in" OutputPath="content/WebApi-CSharp/Company.WebApplication1.csproj" />
     <GeneratedContent Include="WebApi-FSharp.fsproj.in" OutputPath="content/WebApi-FSharp/Company.WebApplication1.fsproj" />
     <GeneratedContent Include="Worker-CSharp.csproj.in" OutputPath="content/Worker-CSharp/Company.Application1.csproj" />
-    <GeneratedContent Include="GrpcApplication-CSharp.Server.csproj.in" OutputPath="content/GrpcApplication-CSharp/GrpcApplication-CSharp.Server/GrpcApplication-CSharp.Server.csproj" />
-    <GeneratedContent Include="GrpcApplication-CSharp.Client.csproj.in" OutputPath="content/GrpcApplication-CSharp/GrpcApplication-CSharp.Client/GrpcApplication-CSharp.Client.csproj" />
   </ItemGroup>
 
 </Project>
