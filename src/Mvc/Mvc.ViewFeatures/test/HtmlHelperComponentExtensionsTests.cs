@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
                 RedirectUri = "http://localhost/redirect"
             }));
 
-            Assert.Equal("Redirects are not supported on a prerrendering environment.", exception.Message);
+            Assert.Equal("Redirects are not supported on a prerendering environment.", exception.Message);
         }
 
 
@@ -193,7 +193,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
             services.AddSingleton(HtmlEncoder.Default);
             services.AddSingleton<IJSRuntime,UnsupportedJavaScriptRuntime>();
             services.AddSingleton<IUriHelper,HttpUriHelper>();
-            services.AddSingleton<IComponentPrerrenderer, MvcRazorComponentPrerrenderer>();
+            services.AddSingleton<IComponentPrerenderer, MvcRazorComponentPrerenderer>();
 
             configureServices?.Invoke(services);
 
