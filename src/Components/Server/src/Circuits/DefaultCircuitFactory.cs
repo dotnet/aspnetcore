@@ -83,9 +83,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 circuitHandlers);
 
             // Initialize per - circuit data that services need
-#pragma warning disable CS0618 // Type or member is obsolete
-            (circuitHost.Services.GetRequiredService<IJSRuntimeAccessor>() as DefaultJSRuntimeAccessor).JSRuntime = jsRuntime;
-#pragma warning restore CS0618 // Type or member is obsolete
             (circuitHost.Services.GetRequiredService<ICircuitAccessor>() as DefaultCircuitAccessor).Circuit = circuitHost.Circuit;
 
             return circuitHost;

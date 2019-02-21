@@ -32,9 +32,6 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<StaticFileOptions>, ConfigureStaticFilesOptions>());
             services.TryAddSingleton<CircuitFactory, DefaultCircuitFactory>();
             services.TryAddScoped(s => s.GetRequiredService<ICircuitAccessor>().Circuit);
-#pragma warning disable CS0618 // Type or member is obsolete
-            services.TryAddScoped<IJSRuntimeAccessor, DefaultJSRuntimeAccessor>();
-#pragma warning restore CS0618 // Type or member is obsolete
             services.TryAddScoped<ICircuitAccessor, DefaultCircuitAccessor>();
 
             // We explicitly take over the prerendering and components services here.
