@@ -89,7 +89,7 @@ namespace Templates.Test
         [MemberData(nameof(SubresourceIntegrityCheckLinkData))]
         public async Task CheckLinkSubresourceIntegrity(LinkTag linkTag)
         {
-            var expectedIntegrity = GetShaIntegrity(linkTag);
+            var expectedIntegrity = await GetShaIntegrity(linkTag);
 
             if (!expectedIntegrity.Equals(linkTag.Integrity, StringComparison.OrdinalIgnoreCase))
             {
