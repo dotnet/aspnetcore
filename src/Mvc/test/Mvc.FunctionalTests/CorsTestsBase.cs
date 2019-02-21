@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var responseHeaders = response.Headers;
             Assert.Equal(
-                new[] { "*" },
+                new[] { "http://example.com" },
                 responseHeaders.GetValues(CorsConstants.AccessControlAllowOrigin).ToArray());
             Assert.Equal(
                new[] { "true" },
@@ -190,7 +190,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var responseHeaders = response.Headers;
             Assert.Equal(
-                new[] { "*" },
+                new[] { "http://example.com" },
                 responseHeaders.GetValues(CorsConstants.AccessControlAllowOrigin).ToArray());
             Assert.Equal(
                new[] { "true" },
@@ -302,9 +302,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(
                 new[] { "*" },
                 responseHeaders.GetValues(CorsConstants.AccessControlAllowOrigin).ToArray());
-            Assert.Equal(
-               new[] { "true" },
-               responseHeaders.GetValues(CorsConstants.AccessControlAllowCredentials).ToArray());
             Assert.Equal(
                new[] { "Custom" },
                responseHeaders.GetValues(CorsConstants.AccessControlAllowHeaders).ToArray());
