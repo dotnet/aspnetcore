@@ -100,7 +100,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             });
         }
 
-
         public async Task InitializeAsync(CancellationToken cancellationToken)
         {
             await Renderer.InvokeAsync(async () =>
