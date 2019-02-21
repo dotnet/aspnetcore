@@ -79,12 +79,18 @@
     <CopyBuildOutputToOutputDirectory>true</CopyBuildOutputToOutputDirectory>
     <CopyOutputSymbolsToOutputDirectory>true</CopyOutputSymbolsToOutputDirectory>
   </PropertyGroup>
+
   <Target Name="PreCreateVsixContainer" BeforeTargets="GetVsixSourceItems">
     <ItemGroup>
-      <VSIXSourceItem Include="$(ArtifactsShippingPackagesDir)Microsoft.AspNetCore.Blazor.Templates.*.nupkg">
+      <_TemplatePackage Include="$(ArtifactsShippingPackagesDir)Microsoft.AspNetCore.Blazor.Templates.*.nupkg" />
+    </ItemGroup>
+
+    <Error Text="No template files found." Condition="@(_TemplatePackage->Count()) == 0" />
+
+    <ItemGroup>
+      <VSIXSourceItem Include="@(_TemplatePackage)">
         <VSIXSubPath>ProjectTemplates\</VSIXSubPath>
       </VSIXSourceItem>
-      <VSIXSourceItem Include="Templates.pkgdef" />
     </ItemGroup>
   </Target>
   <!--
@@ -100,7 +106,7 @@
 
   <ItemGroup>
     <Content Include="CodeSnippets.pkgdef" CopyToOutputDirectory="PreserveNewest" IncludeInVSIX="true" />
-    <Content Include="Templates.pkgdef" />
+    <Content Include="Templates.pkgdef" CopyToOutputDirectory="PreserveNewest" IncludeInVSIX="true" />
     <Content Include="CodeSnippets\Blazor\para.snippet" CopyToOutputDirectory="PreserveNewest" IncludeInVSIX="true" />
     <Content Include="Content\WebConfiguration.png" CopyToOutputDirectory="PreserveNewest" IncludeInVSIX="true" />
     <Content Include="Resources\BlazorPackage.ico" CopyToOutputDirectory="PreserveNewest" IncludeInVSIX="true" />
@@ -116,7 +122,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Templates\src\Microsoft.AspNetCore.Blazor.Templates.csproj" />
+    <ProjectReference
+      Include="..\..\Templates\src\Microsoft.AspNetCore.Blazor.Templates.csproj"
+      ReferenceOutputAssembly="false"
+      Targets="Pack" />
   </ItemGroup>
 
   <ItemGroup>
