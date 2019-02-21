@@ -18,11 +18,10 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <PackageTags>aspnetcore;targeting-pack</PackageTags>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
 
-    <!-- Subject to change: see https://github.com/dotnet/designs/pull/50 -->
-    <PackageType>TargetingPack</PackageType>
+    <PackageType>DotnetPlatform</PackageType>
     <RefAssemblyPackagePath>ref/$(TargetFramework)/</RefAssemblyPackagePath>
 
-    <LayoutTargetDir>$(TargetingPackLayoutRoot)packs/Microsoft.AspNetCore.App.Ref/$(PackageVersion)/$(RefAssemblyPackagePath)</LayoutTargetDir>
+    <LayoutTargetDir>$(TargetingPackLayoutRoot)packs/Microsoft.AspNetCore.App.Ref/$(PackageVersion)/</LayoutTargetDir>
     <ArchiveOutputFileName>aspnetcore-targeting-pack-$(PackageVersion).zip</ArchiveOutputFileName>
     <ArchiveOutputPath>$(InstallersOutputPath)$(ArchiveOutputFileName)</ArchiveOutputPath>
 
@@ -59,7 +58,6 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       $(BuildDependsOn);
       GeneratePackageConflictManifest;
       _ResolveTargetingPackContent;
-      _BatchCopyToOutputDirectory;
       _BatchCopyToLayoutTargetDir;
       _CreateTargetingPackArchive;
     </BuildDependsOn>
@@ -89,12 +87,11 @@ This package is an internal implementation of the .NET Core SDK and is not meant
             @(ReferencePathWithRefAssemblies->WithMetadataValue('ReferenceGrouping', 'Microsoft.NETCore.App'));" />
 
       <AspNetCoreReferenceDocXml Include="@(_ResolvedProjectReferencePaths->WithMetadataValue('IsReferenceAssembly', 'false')->'%(RootDir)%(Directory)%(FileName).xml')" />
+      <RefPackContent Include="@(AspNetCoreReferenceAssemblyPath)" PackagePath="$(RefAssemblyPackagePath)" />
+      <RefPackContent Include="@(AspNetCoreReferenceDocXml)" PackagePath="$(RefAssemblyPackagePath)" />
+      <RefPackContent Include="$(TargetDir)$(PackageConflictManifestFileName)" PackagePath="$(PackageConflictManifestPackagePath)" />
 
-      <RefPackContent Include="@(AspNetCoreReferenceAssemblyPath)" />
-      <RefPackContent Include="@(AspNetCoreReferenceDocXml)" />
-
-      <_PackageFiles Include="@(RefPackContent)" PackagePath="$(RefAssemblyPackagePath)" />
-      <_PackageFiles Include="$(TargetDir)$(PackageConflictManifestFileName)" PackagePath="$(PackageConflictManifestPackagePath)" />
+      <_PackageFiles Include="@(RefPackContent)" />
     </ItemGroup>
   </Target>
 
@@ -114,24 +111,13 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   </Target>
 
   <!-- Written to take advantage of target batching in MSBuild. -->
-  <Target Name="_BatchCopyToOutputDirectory"
-          DependsOnTargets="_ResolveTargetingPackContent"
-          Inputs="@(RefPackContent)"
-          Outputs="@(RefPackContent->'$(TargetDir)%(FileName)%(Extension)')">
-
-    <Copy SourceFiles="@(RefPackContent)"
-          DestinationFiles="@(RefPackContent->'$(TargetDir)%(FileName)%(Extension)')"
-          UseHardlinksIfPossible="true" />
-  </Target>
-
-  <!-- Written to take advantage of target batching in MSBuild. -->
   <Target Name="_BatchCopyToLayoutTargetDir"
           DependsOnTargets="_ResolveTargetingPackContent"
           Inputs="@(RefPackContent)"
-          Outputs="@(RefPackContent->'$(LayoutTargetDir)%(FileName)%(Extension)')">
+          Outputs="@(RefPackContent->'$(LayoutTargetDir)%(PackagePath)%(FileName)%(Extension)')">
 
     <Copy SourceFiles="@(RefPackContent)"
-          DestinationFiles="@(RefPackContent->'$(LayoutTargetDir)%(FileName)%(Extension)')"
+          DestinationFiles="@(RefPackContent->'$(LayoutTargetDir)%(PackagePath)%(FileName)%(Extension)')"
           UseHardlinksIfPossible="true" />
   </Target>
 
