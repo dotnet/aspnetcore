@@ -96,13 +96,15 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 var endpoint = endpointFeature?.Endpoint;
                 if (endpoint == null)
                 {
-                    throw new InvalidOperationException("CompnentHub doesn't have an associated endpoint.");
+                    throw new InvalidOperationException(
+                        "ComponentHub doesn't have an associated endpoint. " +
+                        "Use 'app.UseRouting(routes => routes.MapComponentHub<App>(\"app\"))' to register your hub.");
                 }
 
                 var componentsMetadata = endpoint.Metadata.OfType<ComponentDescriptor>().ToList();
                 if (componentsMetadata.Count == 0)
                 {
-                    throw new InvalidOperationException("No component was added to the component hub.");
+                    throw new InvalidOperationException("No component was registered with the component hub.");
                 }
                 else
                 {

@@ -10,14 +10,14 @@ namespace Microsoft.AspNetCore.Builder
     /// <summary>
     /// Extensions for <see cref="IEndpointConventionBuilder"/>.
     /// </summary>
-    public static class IEndpointConventionBuilderExtensions
+    public static class EndpointConventionBuilderComponentsExtensions
     {
         /// <summary>
         /// Adds <typeparamref name="TComponent"/> to the list of components registered with this <see cref="ComponentHub"/> instance.
         /// </summary>
         /// <typeparam name="TComponent">The component type.</typeparam>
         /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
-        /// <param name="selector">The component selector in the DOM for the <typeparamref name="TComponent"/>.</param>
+        /// <param name="selector">A CSS selector that identifies the DOM element into which the <typeparamref name="TComponent"/> will be placed.</param>
         /// <returns>The <paramref name="builder"/>.</returns>
         public static IEndpointConventionBuilder AddComponent<TComponent>(this IEndpointConventionBuilder builder, string selector)
         {
