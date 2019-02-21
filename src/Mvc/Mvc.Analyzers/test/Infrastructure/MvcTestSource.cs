@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using Microsoft.AspNetCore.Analyzer.Testing;
 using Microsoft.AspNetCore.Testing;
@@ -25,8 +26,14 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static string GetProjectDirectory()
         {
+            // On helix we use the published test files 
+            if (string.Equals(Environment.GetEnvironmentVariable("helix"), "true", StringComparison.OrdinalIgnoreCase))
+            {
+                return AppContext.BaseDirectory;
+            }
+
             var solutionDirectory = TestPathUtilities.GetSolutionRootDirectory("Mvc");
-            var projectDirectory = Path.Combine(solutionDirectory, "Mvc.Analyzers", "test");
+            var projectDirectory = Path.Combine(AppContext.BaseDirectory, "Mvc.Analyzers", "test");
             return projectDirectory;
         }
     }
