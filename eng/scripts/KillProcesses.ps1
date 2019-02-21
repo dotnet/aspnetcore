@@ -2,9 +2,11 @@ $ErrorActionPreference = 'Continue'
 
 function _kill($processName) {
     try {
-        & cmd /c "taskkill /T /F /IM $processName 2>&1"
+        # Redirect stderr to stdout to avoid big red blocks of output in Azure Pipeline logging
+        # when there are no instances of the process
+        & cmd /c "taskkill /T /F /IM ${processName} 2>&1"
     } catch {
-        Write-Host "Failed to kill $processName: $_"
+        Write-Host "Failed to kill ${processName}: $_"
     }
 }
 
