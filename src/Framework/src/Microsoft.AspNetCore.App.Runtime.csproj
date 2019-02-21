@@ -22,7 +22,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     </PackageDescription>
     <PackageTags>aspnetcore;shared-framework</PackageTags>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
-
+    <!-- There is a ref directory next to this project but it's not auto generated, disable the guardrails -->
+    <SkipRefDirectoryCheck>true</SkipRefDirectoryCheck>
     <!-- Subject to change: see https://github.com/dotnet/designs/pull/50 -->
     <PackageType>RuntimePack</PackageType>
     <!-- NuGet appends target framework to this value. Example: runtimes/win-x64/lib/netcoreapp3.0/ -->

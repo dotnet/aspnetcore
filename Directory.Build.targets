@@ -23,9 +23,6 @@
   <PropertyGroup Condition=" '$(MSBuildProjectExtension)' == '.csproj' ">
     <PackageId Condition=" '$(PackageId)' == '' ">$(AssemblyName)</PackageId>
     <IsPackable Condition="'$(IsPackable)' == '' AND ( '$(IsTestProject)' == 'true' OR '$(IsTestAssetProject)' == 'true' OR '$(IsBenchmarkProject)' == 'true' OR '$(IsSampleProject)' == 'true' OR '$(IsReferenceAssemblyProject)' == 'true' ) ">false</IsPackable>
-    <HasReferenceAssembly Condition="'$(OutputType)' == 'exe'">false</HasReferenceAssembly>
-    <HasReferenceAssembly Condition="'$(IsAspNetCoreApp)' != 'true' AND ('$(IsPackable)' == 'false' OR '$(IsShipping)' == 'false')">false</HasReferenceAssembly>
-    <HasReferenceAssembly Condition="'$(IsAnalyzersProject)' == 'true' OR '$(IsSpecificationTestProject)' == 'true'">false</HasReferenceAssembly>
   </PropertyGroup>
 
   <Import Project="eng\Baseline.Designer.props" />
@@ -58,10 +55,13 @@
 
   <PropertyGroup>
     <!-- Implementation projects are the projects which produce nuget packages or shipping assemblies. -->
-    <IsImplementationProject Condition=" '$(IsImplementationProject)' == '' AND '$(IsAnalyzersProject)' != 'true' AND '$(IsTestAssetProject)' != 'true' AND '$(IsTestProject)' != 'true' AND '$(IsBenchmarkProject)' != 'true' AND '$(IsSampleProject)' != 'true' ">true</IsImplementationProject>
+    <IsImplementationProject Condition=" '$(IsImplementationProject)' == '' AND '$(IsAnalyzersProject)' != 'true' AND '$(IsTestAssetProject)' != 'true' AND '$(IsTestProject)' != 'true' AND '$(IsBenchmarkProject)' != 'true' AND '$(IsSampleProject)' != 'true' AND '$(IsReferenceAssemblyProject)' != 'true' ">true</IsImplementationProject>
 
     <!-- This determines whether a project is available as a <Reference> to other projects in this repo. -->
     <IsProjectReferenceProvider Condition=" '$(IsProjectReferenceProvider)' == '' AND '$(IsImplementationProject)' == 'true' AND '$(PackAsTool)' != 'true' ">true</IsProjectReferenceProvider>
+
+    <HasReferenceAssembly Condition="'$(HasReferenceAssembly)' == '' AND '$(IsProjectReferenceProvider)' == 'true'">true</HasReferenceAssembly>
+    <HasReferenceAssembly Condition="'$(HasReferenceAssembly)' == ''">false</HasReferenceAssembly>
 
     <!-- Suppress KoreBuild warnings about the mismatch of repo version and local project version. The versioning in this mega repo is sufficiently complicated that KoreBuild's validation isn't helpful. -->
     <VerifyVersion>false</VerifyVersion>

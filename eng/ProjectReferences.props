@@ -5,14 +5,11 @@
 -->
 <Project>
   <ItemGroup>
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Server.IntegrationTesting" ProjectPath="$(RepositoryRoot)src\Hosting\Server.IntegrationTesting\ref\Microsoft.AspNetCore.Server.IntegrationTesting.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Identity.Specification.Tests" ProjectPath="$(RepositoryRoot)src\Identity\Specification.Tests\src\Microsoft.AspNetCore.Identity.Specification.Tests.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.Web.Xdt.Extensions" ProjectPath="$(RepositoryRoot)src\SiteExtensions\Microsoft.Web.Xdt.Extensions\src\Microsoft.Web.Xdt.Extensions.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.Extensions.ApiDescription.Tasks" ProjectPath="$(RepositoryRoot)src\Mvc\Extensions.ApiDescription.Design\src\Microsoft.Extensions.ApiDescription.Design.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR.Specification.Tests" ProjectPath="$(RepositoryRoot)src\SignalR\server\Specification.Tests\src\Microsoft.AspNetCore.SignalR.Specification.Tests.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Blazor.Build" ProjectPath="$(RepositoryRoot)src\Components\Blazor\Build\src\Microsoft.AspNetCore.Blazor.Build.csproj"  />
-    <ProjectReferenceProvider Include="dotnet-blazor" ProjectPath="$(RepositoryRoot)src\Components\Blazor\Cli\ref\dotnet-blazor.csproj"  />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Blazor.Templates" ProjectPath="$(RepositoryRoot)src\Components\Blazor\Templates\ref\Microsoft.AspNetCore.Blazor.Templates.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore" ProjectPath="$(RepositoryRoot)src\DefaultBuilder\src\Microsoft.AspNetCore.csproj" RefProjectPath="$(RepositoryRoot)src\DefaultBuilder\ref\Microsoft.AspNetCore.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.JsonPatch" ProjectPath="$(RepositoryRoot)src\Features\JsonPatch\src\Microsoft.AspNetCore.JsonPatch.csproj" RefProjectPath="$(RepositoryRoot)src\Features\JsonPatch\ref\Microsoft.AspNetCore.JsonPatch.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.DataProtection.Abstractions" ProjectPath="$(RepositoryRoot)src\DataProtection\Abstractions\src\Microsoft.AspNetCore.DataProtection.Abstractions.csproj" RefProjectPath="$(RepositoryRoot)src\DataProtection\Abstractions\ref\Microsoft.AspNetCore.DataProtection.Abstractions.csproj" />
