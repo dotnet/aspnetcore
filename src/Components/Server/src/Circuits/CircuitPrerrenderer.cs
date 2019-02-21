@@ -56,6 +56,5 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         {
             return UriHelper.BuildAbsolute(request.Scheme, request.Host, request.PathBase);
         }
-
     }
 }

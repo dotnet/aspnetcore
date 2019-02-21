@@ -6,13 +6,13 @@ using System;
 namespace Microsoft.AspNetCore.Builder
 {
     /// <summary>
-    /// <see cref="IEndpointConventionBuilder"/> to add specific component extensions.
+    /// <see cref="IEndpointConventionBuilder"/> implementation to add specific component extensions.
     /// </summary>
-    public class RazorComponentsEndpointBuilder : IEndpointConventionBuilder
+    public sealed class ComponentEndpointBuilder : IEndpointConventionBuilder
     {
         private readonly IEndpointConventionBuilder _builder;
 
-        internal RazorComponentsEndpointBuilder(IEndpointConventionBuilder builder)
+        internal ComponentEndpointBuilder(IEndpointConventionBuilder builder)
         {
             _builder = builder;
         }

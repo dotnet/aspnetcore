@@ -8,18 +8,18 @@ using Microsoft.AspNetCore.Components.Server;
 namespace Microsoft.AspNetCore.Builder
 {
     /// <summary>
-    /// Extensions for <see cref="RazorComponentsEndpointBuilder"/>.
+    /// Extensions for <see cref="ComponentEndpointBuilder"/>.
     /// </summary>
-    public static class ComponentsEndpointbuilderExtensions
+    public static class ComponentEndpointbuilderExtensions
     {
         /// <summary>
-        /// Adds <typeparamref name="TComponent"/> to the list of components registered with this <see cref="ComponentsHub"/> instance.
+        /// Adds <typeparamref name="TComponent"/> to the list of components registered with this <see cref="ComponentHub"/> instance.
         /// The DOM selector associated with the <typeparamref name="TComponent"/> will default to the component type name in lowercase.
         /// </summary>
         /// <typeparam name="TComponent">The component type.</typeparam>
-        /// <param name="builder">The <see cref="RazorComponentsEndpointBuilder"/>.</param>
+        /// <param name="builder">The <see cref="ComponentEndpointBuilder"/>.</param>
         /// <returns>The <paramref name="builder"/>.</returns>
-        public static RazorComponentsEndpointBuilder AddComponent<TComponent>(this RazorComponentsEndpointBuilder builder)
+        public static ComponentEndpointBuilder AddComponent<TComponent>(this ComponentEndpointBuilder builder)
         {
             if (builder == null)
             {
@@ -30,13 +30,13 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         /// <summary>
-        /// Adds <typeparamref name="TComponent"/> to the list of components registered with this <see cref="ComponentsHub"/> instance.
+        /// Adds <typeparamref name="TComponent"/> to the list of components registered with this <see cref="ComponentHub"/> instance.
         /// </summary>
         /// <typeparam name="TComponent">The component type.</typeparam>
-        /// <param name="builder">The <see cref="RazorComponentsEndpointBuilder"/>.</param>
+        /// <param name="builder">The <see cref="ComponentEndpointBuilder"/>.</param>
         /// <param name="selector">The component selector in the DOM for the <typeparamref name="TComponent"/>.</param>
         /// <returns>The <paramref name="builder"/>.</returns>
-        public static RazorComponentsEndpointBuilder AddComponent<TComponent>(this RazorComponentsEndpointBuilder builder, string selector)
+        public static ComponentEndpointBuilder AddComponent<TComponent>(this ComponentEndpointBuilder builder, string selector)
         {
             if (builder == null)
             {
@@ -52,13 +52,13 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         /// <summary>
-        /// Adds <paramref name="componentType"/> to the list of components registered with this <see cref="ComponentsHub"/> instance.
+        /// Adds <paramref name="componentType"/> to the list of components registered with this <see cref="ComponentHub"/> instance.
         /// The DOM selector associated with the <paramref name="componentType"/> will default to the component type name in lowercase.
         /// </summary>
-        /// <param name="builder">The <see cref="RazorComponentsEndpointBuilder"/>.</param>
+        /// <param name="builder">The <see cref="ComponentEndpointBuilder"/>.</param>
         /// <param name="componentType">The component type.</param>
         /// <returns>The <paramref name="builder"/>.</returns>
-        public static RazorComponentsEndpointBuilder AddComponent(this RazorComponentsEndpointBuilder builder, Type componentType)
+        public static ComponentEndpointBuilder AddComponent(this ComponentEndpointBuilder builder, Type componentType)
         {
             if (builder == null)
             {
@@ -74,14 +74,14 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         /// <summary>
-        /// Adds <paramref name="componentType"/> to the list of components registered with this <see cref="ComponentsHub"/> instance.
+        /// Adds <paramref name="componentType"/> to the list of components registered with this <see cref="ComponentHub"/> instance.
         /// The selector will default to the component name in lowercase.
         /// </summary>
-        /// <param name="builder">The <see cref="RazorComponentsEndpointBuilder"/>.</param>
+        /// <param name="builder">The <see cref="ComponentEndpointBuilder"/>.</param>
         /// <param name="componentType">The component type.</param>
         /// <param name="selector">The component selector in the DOM for the <paramref name="componentType"/>.</param>
         /// <returns>The <paramref name="builder"/>.</returns>
-        public static RazorComponentsEndpointBuilder AddComponent(this RazorComponentsEndpointBuilder builder, Type componentType, string selector)
+        public static ComponentEndpointBuilder AddComponent(this ComponentEndpointBuilder builder, Type componentType, string selector)
         {
             if (builder == null)
             {
@@ -102,25 +102,9 @@ namespace Microsoft.AspNetCore.Builder
             return builder;
         }
 
-
         private static void AddComponent(IList<object> metadata, Type type, string selector)
         {
-            RazorComponentsMetadata componentsMetadata = null;
-            for (int i = 0; i < metadata.Count; i++)
-            {
-                if (metadata[i] is RazorComponentsMetadata foundMetadata)
-                {
-                    componentsMetadata = foundMetadata;
-                    break;
-                }
-            }
-            if (componentsMetadata == null)
-            {
-                componentsMetadata = new RazorComponentsMetadata();
-                metadata.Add(componentsMetadata);
-            }
-
-            componentsMetadata.Components.Add(new ComponentDescriptor
+            metadata.Add(new ComponentDescriptor
             {
                 ComponentType = type,
                 Selector = selector

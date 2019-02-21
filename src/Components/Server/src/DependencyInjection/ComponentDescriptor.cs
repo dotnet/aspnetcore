@@ -9,12 +9,12 @@ namespace Microsoft.AspNetCore.Components.Server
     {
         public Type ComponentType { get; set; }
 
-        public string Selector { get; internal set; }
+        public string Selector { get; set; }
 
-        public void Deconstruct(out Type componentType, out string domElementSelector)
+        public void Deconstruct(out Type componentType, out string selector)
         {
             componentType = ComponentType;
-            domElementSelector = Selector;
+            selector = Selector;
         }
     }
 }

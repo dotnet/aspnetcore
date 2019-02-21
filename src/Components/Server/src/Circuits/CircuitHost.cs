@@ -85,7 +85,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         public RemoteRenderer Renderer { get; }
 
         public RendererRegistry RendererRegistry { get; }
+
         public IList<ComponentDescriptor> Descriptors { get; }
+
         public IServiceProvider Services { get; }
 
         public Task<IEnumerable<string>> PrerrenderComponentAsync(Type componentType, ParameterCollection parameters)

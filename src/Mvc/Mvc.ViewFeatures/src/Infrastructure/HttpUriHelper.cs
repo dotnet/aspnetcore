@@ -24,6 +24,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         protected override void InitializeState()
         {
+            if (_context == null)
+            {
+                throw new InvalidOperationException($"'{typeof(HttpUriHelper)}' not initialized.");
+            }
             SetAbsoluteBaseUri(GetContextBaseUri());
             SetAbsoluteUri(GetFullUri());
         }

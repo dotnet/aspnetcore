@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Components.Server
     /// <summary>
     /// A SignalR hub that accepts connections to an ASP.NET Core Components application.
     /// </summary>
-    public sealed class ComponentsHub : Hub
+    public sealed class ComponentHub : Hub
     {
         private static readonly object CircuitKey = new object();
         private readonly CircuitFactory _circuitFactory;
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Components.Server
         /// Intended for framework use only. Applications should not instantiate
         /// this class directly.
         /// </summary>
-        public ComponentsHub(IServiceProvider services, ILogger<ComponentsHub> logger)
+        public ComponentHub(IServiceProvider services, ILogger<ComponentHub> logger)
         {
             _circuitFactory = services.GetRequiredService<CircuitFactory>();
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Components.Server
             try
             {
                 _logger.LogWarning((Exception)e.ExceptionObject, "Unhandled Server-Side exception");
-                await circuitHost.Client?.SendAsync("JS.Error", e.ExceptionObject);
+                await circuitHost.Client.SendAsync("JS.Error", e.ExceptionObject);
 
                 // We generally can't abort the connection here since this is an async
                 // callback. The Hub has already been torn down. We'll rely on the

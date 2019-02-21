@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         {
             if (_clientProxy == null)
             {
-                throw new InvalidOperationException("The JavaScript runtime has not been initialized at this point.");
+                throw new InvalidOperationException("The JavaScript runtime is not available during prerendering.");
             }
             _clientProxy.SendAsync("JS.BeginInvokeJS", asyncHandle, identifier, argsJson);
         }

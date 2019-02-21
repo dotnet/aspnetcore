@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Components.Browser;
@@ -36,7 +37,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             string uriAbsolute,
             string baseUriAbsolute)
         {
-            var metadata = ResolveComponentMetadata(httpContext, client);
+            var components = ResolveComponentMetadata(httpContext, client);
 
             var scope = _scopeFactory.CreateScope();
             var encoder = scope.ServiceProvider.GetRequiredService<HtmlEncoder>();
@@ -76,7 +77,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 client,
                 rendererRegistry,
                 renderer,
-                metadata.Components,
+                components,
                 dispatcher,
                 jsRuntime,
                 circuitHandlers);
@@ -90,7 +91,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             return circuitHost;
         }
 
-        private static RazorComponentsMetadata ResolveComponentMetadata(HttpContext httpContext, IClientProxy client)
+        private static IList<ComponentDescriptor> ResolveComponentMetadata(HttpContext httpContext, IClientProxy client)
         {
             if (client != null)
             {
@@ -101,8 +102,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     throw new InvalidOperationException("CompnentHub doesn't have an associated endpoint.");
                 }
 
-                var componentsMetadata = endpoint.Metadata.GetMetadata<RazorComponentsMetadata>();
-                if (componentsMetadata == null)
+                var componentsMetadata = endpoint.Metadata.OfType<ComponentDescriptor>().ToList();
+                if (componentsMetadata.Count == 0)
                 {
                     throw new InvalidOperationException("No component was added to the component hub.");
                 }
@@ -113,7 +114,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
             else
             {
-                return new RazorComponentsMetadata();
+                // This is the prerrendering case.
+                return Array.Empty<ComponentDescriptor>();
             }
         }
     }
