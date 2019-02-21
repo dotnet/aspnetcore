@@ -1257,6 +1257,32 @@ class HubConnectionTest {
     }
 
     @Test
+    public void DetectWhenTryingToConnectToClassicSignalRServer() {
+        TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate",
+                (req) -> Single.just(new HttpResponse(200, "", "{\"Url\":\"/signalr\"," +
+                        "\"ConnectionToken\":\"X97dw3uxW4NPPggQsYVcNcyQcuz4w2\"," +
+                        "\"ConnectionId\":\"05265228-1e2c-46c5-82a1-6a5bcc3f0143\"," +
+                        "\"KeepAliveTimeout\":10.0," +
+                        "\"DisconnectTimeout\":5.0," +
+                        "\"TryWebSockets\":true," +
+                        "\"ProtocolVersion\":\"1.5\"," +
+                        "\"TransportConnectTimeout\":30.0," +
+                        "\"LongPollDelay\":0.0}")));
+
+        MockTransport transport = new MockTransport(true);
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example.com")
+                .withHttpClient(client)
+                .withTransportImplementation(transport)
+                .build();
+
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait());
+        assertEquals("Detected a connection attempt to an ASP.NET SignalR Server. This client only supports connecting to an ASP.NET Core SignalR Server. See https://aka.ms/signalr-core-differences for details.",
+                exception.getMessage());
+    }
+
+    @Test
     public void negotiateRedirectIsFollowed()  {
         TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate",
                 (req) -> Single.just(new HttpResponse(200, "", "{\"url\":\"http://testexample.com/\"}")))
