@@ -164,7 +164,6 @@
     <IsSampleProject Condition="$(RepoRelativeProjectDir.Contains('sample'))">true</IsSampleProject>
     <IsAnalyzersProject Condition="$(MSBuildProjectName.EndsWith('.Analyzers'))">true</IsAnalyzersProject>
     <IsSpecificationTestProject Condition="$(MSBuildProjectName.EndsWith('.Specification.Tests'))">true</IsSpecificationTestProject>
-    <IsToolProject Condition="$(MSBuildProjectName.StartsWith('dotnet-'))">true</IsToolProject>
 
   </PropertyGroup>
 
