@@ -50,9 +50,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             var httpContext = htmlHelper.ViewContext.HttpContext;
             var serviceProvider = httpContext.RequestServices;
-            var prerrenderer = serviceProvider.GetRequiredService<IComponentPrerrenderer>();
+            var prerenderer = serviceProvider.GetRequiredService<IComponentPrerenderer>();
 
-            var result =  await prerrenderer.PrerrenderComponentAsync(new ComponentPrerrenderingContext
+            var result =  await prerenderer.PrerenderComponentAsync(new ComponentPrerenderingContext
             {
                 Context = httpContext,
                 ComponentType = typeof(TComponent),

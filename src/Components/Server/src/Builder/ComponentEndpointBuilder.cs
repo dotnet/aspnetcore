@@ -12,7 +12,11 @@ namespace Microsoft.AspNetCore.Builder
     {
         private readonly IEndpointConventionBuilder _builder;
 
-        internal ComponentEndpointBuilder(IEndpointConventionBuilder builder)
+        /// <summary>
+        /// Initializes a new instance of <see cref="ComponentEndpointBuilder"/>.
+        /// </summary>
+        /// <param name="builder"></param>
+        public ComponentEndpointBuilder(IEndpointConventionBuilder builder)
         {
             _builder = builder;
         }

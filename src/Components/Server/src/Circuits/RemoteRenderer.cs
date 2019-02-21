@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
             = new ConcurrentDictionary<long, AutoCancelTaskCompletionSource<object>>();
         private readonly ILogger _logger;
         private long _nextRenderId = 1;
-        private bool _prerrenderMode;
+        private bool _prerenderMode;
 
         /// <summary>
         /// Notifies when a rendering exception occured.
@@ -100,9 +100,9 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
             }
         }
 
-        internal void StartPrerrender()
+        internal void StartPrerender()
         {
-            _prerrenderMode = true;
+            _prerenderMode = true;
         }
 
         /// <inheritdoc />
@@ -115,9 +115,9 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
         /// <inheritdoc />
         protected override Task UpdateDisplayAsync(in RenderBatch batch)
         {
-            if (_prerrenderMode)
+            if (_prerenderMode)
             {
-                // Nothing to do in prerrender mode for right now.
+                // Nothing to do in prerender mode for right now.
                 // In the future we will capture all the serialized render batches and
                 // resend them to the client upon the initial reconnect.
                 return Task.CompletedTask;

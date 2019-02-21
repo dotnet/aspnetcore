@@ -11,16 +11,16 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponents
 {
-    internal class MvcRazorComponentPrerrenderer : IComponentPrerrenderer
+    internal class MvcRazorComponentPrerenderer : IComponentPrerenderer
     {
         private HtmlEncoder _encoder;
 
-        public MvcRazorComponentPrerrenderer(HtmlEncoder encoder)
+        public MvcRazorComponentPrerenderer(HtmlEncoder encoder)
         {
             _encoder = encoder;
         }
 
-        public async Task<IEnumerable<string>> PrerrenderComponentAsync(ComponentPrerrenderingContext context)
+        public async Task<IEnumerable<string>> PrerenderComponentAsync(ComponentPrerenderingContext context)
         {
             var dispatcher = Renderer.CreateDefaultDispatcher();
             var parameters = context.Parameters;

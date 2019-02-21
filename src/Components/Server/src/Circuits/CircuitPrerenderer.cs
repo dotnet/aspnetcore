@@ -9,31 +9,31 @@ using Microsoft.AspNetCore.Http.Extensions;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
-    internal class CircuitPrerrenderer : IComponentPrerrenderer
+    internal class CircuitPrerenderer : IComponentPrerenderer
     {
         private readonly CircuitFactory _circuitFactory;
 
-        public CircuitPrerrenderer(CircuitFactory circuitFactory)
+        public CircuitPrerenderer(CircuitFactory circuitFactory)
         {
             _circuitFactory = circuitFactory;
         }
 
-        public async Task<IEnumerable<string>> PrerrenderComponentAsync(ComponentPrerrenderingContext prerrenderingContext)
+        public async Task<IEnumerable<string>> PrerenderComponentAsync(ComponentPrerenderingContext prerenderingContext)
         {
-            var context = prerrenderingContext.Context;
+            var context = prerenderingContext.Context;
             var circuitHost = _circuitFactory.CreateCircuitHost(
                 context,
                 client: null,
                 GetFullUri(context.Request),
                 GetFullBaseUri(context.Request));
 
-            // For right now we just do prerrendering and dispose the circuit. In the future we will keep the circuit around and
+            // For right now we just do prerendering and dispose the circuit. In the future we will keep the circuit around and
             // reconnect to it from the ComponentsHub.
             try
             {
-                var result = await circuitHost.PrerrenderComponentAsync(
-                prerrenderingContext.ComponentType,
-                prerrenderingContext.Parameters);
+                var result = await circuitHost.PrerenderComponentAsync(
+                prerenderingContext.ComponentType,
+                prerenderingContext.Parameters);
                 return result;
             }
             finally

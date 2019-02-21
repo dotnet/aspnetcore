@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         {
             if (_jsRuntime == null)
             {
-                throw new InvalidOperationException("Navigation is not allowed during prerrendering.");
+                throw new InvalidOperationException("Navigation is not allowed during prerendering.");
             }
             _jsRuntime.InvokeAsync<object>(Interop.NavigateTo, uri, forceLoad);
         }

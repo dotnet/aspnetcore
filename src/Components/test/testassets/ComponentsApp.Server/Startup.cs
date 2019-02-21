@@ -32,7 +32,7 @@ namespace ComponentsApp.Server
             app.UseRouting(builder =>
             {
                 builder.MapRazorPages();
-                builder.MapComponentHub<App.App>();
+                builder.MapComponentHub<App.App>("app");
             });
         }
     }

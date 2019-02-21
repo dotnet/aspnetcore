@@ -204,9 +204,9 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<SaveTempDataFilter>();
 
             //
-            // Component prerrendering
+            // Component prerendering
             //
-            services.TryAddSingleton<IComponentPrerrenderer, MvcRazorComponentPrerrenderer>();
+            services.TryAddSingleton<IComponentPrerenderer, MvcRazorComponentPrerenderer>();
             services.TryAddScoped<IUriHelper, HttpUriHelper>();
             services.TryAddScoped<IJSRuntime, UnsupportedJavaScriptRuntime>();
 

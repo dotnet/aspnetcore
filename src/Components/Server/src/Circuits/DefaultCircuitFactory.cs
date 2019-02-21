@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
             else
             {
-                // This is the prerrendering case.
+                // This is the prerendering case.
                 return Array.Empty<ComponentDescriptor>();
             }
         }

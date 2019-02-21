@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Components.Server
 {
-    public interface IComponentPrerrenderer
+    public interface IComponentPrerenderer
     {
-        Task<IEnumerable<string>> PrerrenderComponentAsync(ComponentPrerrenderingContext context);
+        Task<IEnumerable<string>> PrerenderComponentAsync(ComponentPrerenderingContext context);
     }
 }

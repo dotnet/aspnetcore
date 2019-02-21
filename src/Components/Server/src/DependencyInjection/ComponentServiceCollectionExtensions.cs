@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.DependencyInjection
     /// <summary>
     /// Extension methods to configure an <see cref="IServiceCollection"/> for components.
     /// </summary>
-    public static class RazorComponentsServiceCollectionExtensions
+    public static class ComponentServiceCollectionExtensions
     {
         /// <summary>
         /// Adds Razor Component app services to the service collection.
@@ -37,11 +37,11 @@ namespace Microsoft.Extensions.DependencyInjection
 #pragma warning restore CS0618 // Type or member is obsolete
             services.TryAddScoped<ICircuitAccessor, DefaultCircuitAccessor>();
 
-            // We explicitly take over the prerrendering and components services here.
+            // We explicitly take over the prerendering and components services here.
             // We can't have two separate component implementations coexisting at the
             // same time, so when you register components (Circuits) it takes over
             // all the abstractions.
-            services.AddScoped<IComponentPrerrenderer, CircuitPrerrenderer>();
+            services.AddScoped<IComponentPrerenderer, CircuitPrerenderer>();
 
             // Standard razor component services implementations
             services.AddScoped<IUriHelper, RemoteUriHelper>();

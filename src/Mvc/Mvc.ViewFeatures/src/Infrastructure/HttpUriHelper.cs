@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         protected override void NavigateToCore(string uri, bool forceLoad)
         {
             // For now throw.
-            // We don't have a good way to do redirects on a prerrendering context.
+            // We don't have a good way to do redirects on a prerendering context.
             // Currently there's no good way to stop the rendering process. We can fix
             // this by passing in a cancellation token to RenderRootComponentAsync and
             // having that checked before we await on every ProcessAsynchronousWork iteration
@@ -63,11 +63,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             // that the behavior of this feature is not reliable, and not easily to diagnose as
             // the developer only notices it when this happens at runtime; something we don't really want.
             throw new InvalidOperationException(
-                "Redirects are not supported on a prerrendering environment.");
+                "Redirects are not supported on a prerendering environment.");
 
             // We need to do something here about the hash to prevent infinite redirects
             // as the hash portion of a url doesn't get sent to the browser.
-            // This means that the hash won't be respected for prerrendering scenarios.
+            // This means that the hash won't be respected for prerendering scenarios.
             // There are several involved things that we could do. Bake the knowledge into
             // the IUriHelper abstraction so that we can produce a special link where we
             // encode the hash as a query stirng parameter.

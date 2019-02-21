@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Components.Server
 {
-    public class ComponentPrerrenderingContext
+    public class ComponentPrerenderingContext
     {
         public Type ComponentType { get; set; }
         public ParameterCollection Parameters { get; set; }
