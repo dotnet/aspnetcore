@@ -21,6 +21,8 @@ _kill git.exe
 _kill vctip.exe
 _kill chrome.exe
 _kill h2spec.exe
-iisreset /restart
+if (Get-Command iisreset -ErrorAction ignore) {
+    iisreset /restart
+}
 
 exit 0
