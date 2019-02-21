@@ -15,8 +15,6 @@
     <SharedFxName>Microsoft.AspNetCore.App</SharedFxName>
     <PackageId>$(MSBuildProjectName).$(RuntimeIdentifier)</PackageId>
     <IsShippingPackage>true</IsShippingPackage>
-    <!-- Undo for Preview4. Preview 3 is shipping using the runtime.$(rid) packages instead. -->
-    <IsPackable Condition="'$(PreReleaseLabel)'=='preview3'">false</IsPackable>
 
     <PackageDescription>Provides a default set of APIs for building an ASP.NET Core application. Contains assets used for self-contained deployments.
 
