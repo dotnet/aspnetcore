@@ -25,6 +25,33 @@ namespace Microsoft.AspNetCore
         }
 
         [Fact]
+        public void SharedFrameworkContainsExpectedFiles()
+        {
+            var actualAssemblies = Directory.GetFiles(TestData.GetTestDataValue("RuntimeAssetsOutputPath"), "*.dll")
+                .Select(Path.GetFileNameWithoutExtension)
+                .ToHashSet();
+            var expectedAssemblies = TestData.GetSharedFxDependencies()
+                .Split(';', StringSplitOptions.RemoveEmptyEntries)
+                .ToHashSet();
+
+            _output.WriteLine("==== actual assemblies ====");
+            _output.WriteLine(string.Join('\n', actualAssemblies));
+            _output.WriteLine("==== expected assemblies ====");
+            _output.WriteLine(string.Join('\n', expectedAssemblies));
+
+            var missing = expectedAssemblies.Except(actualAssemblies);
+            var unexpected = actualAssemblies.Except(expectedAssemblies);
+
+            _output.WriteLine("==== missing assemblies from the framework ====");
+            _output.WriteLine(string.Join('\n', missing));
+            _output.WriteLine("==== unexpected assemblies in the framework ====");
+            _output.WriteLine(string.Join('\n', unexpected));
+
+            Assert.Empty(missing);
+            Assert.Empty(unexpected);
+        }
+
+        [Fact]
         public void PlatformManifestListsAllFiles()
         {
             var platformManifestPath = Path.Combine(TestData.GetManifestOutputDir(), "Microsoft.AspNetCore.App.PlatformManifest.txt");
