@@ -1,11 +1,11 @@
-using Microsoft.AspNetCore.Components.Server;
+using BasicTestApp;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using BasicTestApp;
-using Microsoft.AspNetCore.Http.Features;
 
 namespace TestServer
 {
