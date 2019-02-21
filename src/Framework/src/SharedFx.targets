@@ -15,10 +15,10 @@ This targets file should only be imported by .shfxproj files.
       GenerateSharedFxVersionsFile;
       GenerateBuildDependencyFile;
       PrepareForPublish;
-      GeneratePublishDependencyFile;
-      GenerateSharedFxMetadataFiles;
       GenerateBuildRuntimeConfigurationFiles;
       ComputeAndCopyFilesToPublishDirectory;
+      GeneratePublishDependencyFile;
+      GenerateSharedFxMetadataFiles;
       CopySharedFxToOutput;
       CollectSharedFxOutput;
       PostBuildEvent;

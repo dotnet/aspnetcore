@@ -50,8 +50,7 @@ namespace SampleDestination
                 options.AddPolicy("AllowAll", policy => policy
                     .AllowAnyOrigin()
                     .AllowAnyMethod()
-                    .AllowAnyHeader()
-                    .AllowCredentials());
+                    .AllowAnyHeader());
             });
             services.AddRouting();
         }
