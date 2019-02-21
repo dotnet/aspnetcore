@@ -29,6 +29,7 @@ class LongPollingTransport implements Transport {
     private Single<String> accessTokenProvider;
     private CompletableSubject receiveLoop = CompletableSubject.create();
     private ExecutorService threadPool;
+    private ExecutorService onReceiveThread;
     private AtomicBoolean stopCalled = new AtomicBoolean(false);
 
     private final Logger logger = LoggerFactory.getLogger(LongPollingTransport.class);
@@ -38,6 +39,7 @@ class LongPollingTransport implements Transport {
         this.client = client;
         this.pollingClient = client.cloneWithTimeOut(POLL_TIMEOUT);
         this.accessTokenProvider = accessTokenProvider;
+        this.onReceiveThread = Executors.newSingleThreadExecutor();
     }
 
     //Package private active accessor for testing.
@@ -98,7 +100,7 @@ class LongPollingTransport implements Transport {
                     } else {
                         if (response.getContent() != null) {
                             logger.debug("Message received.");
-                            this.onReceive(response.getContent());
+                            onReceiveThread.submit(() ->this.onReceive(response.getContent()));
                         } else {
                             logger.debug("Poll timed out, reissuing.");
                         }
