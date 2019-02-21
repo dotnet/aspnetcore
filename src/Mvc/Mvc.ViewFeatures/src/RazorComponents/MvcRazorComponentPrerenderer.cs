@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponents
 {
     internal class MvcRazorComponentPrerenderer : IComponentPrerenderer
     {
-        private HtmlEncoder _encoder;
+        private readonly HtmlEncoder _encoder;
 
         public MvcRazorComponentPrerenderer(HtmlEncoder encoder)
         {
@@ -24,6 +24,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponents
         {
             var dispatcher = Renderer.CreateDefaultDispatcher();
             var parameters = context.Parameters;
+
+            // This shouldn't be moved to the constructor as we want a request scoped service.
             var helper = (HttpUriHelper)context.Context.RequestServices.GetRequiredService<IUriHelper>();
             helper.InitializeState(context.Context);
             using (var htmlRenderer = new HtmlRenderer(context.Context.RequestServices, _encoder.Encode, dispatcher))
