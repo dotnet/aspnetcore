@@ -244,7 +244,10 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 // read everything into a buffer, and then seek back to the beginning.
                 request.EnableBuffering();
                 Debug.Assert(request.Body.CanSeek);
+            }
 
+            if (!suppressInputFormatterBuffering)
+            { 
                 await request.Body.DrainAsync(CancellationToken.None);
                 request.Body.Seek(0L, SeekOrigin.Begin);
             }
