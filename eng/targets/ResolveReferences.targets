@@ -224,7 +224,10 @@
       <ReferenceAssemblyDirectory>$(MSBuildProjectDirectory)/../ref/</ReferenceAssemblyDirectory>
       <ReferenceAssemblyProjectFileRelativePath>$([MSBuild]::MakeRelative($(RepositoryRoot), '$(ReferenceAssemblyDirectory)$(MSBuildProjectFile)'))</ReferenceAssemblyProjectFileRelativePath>
     </PropertyGroup>
+
     <Error Condition="'$(SkipRefDirectoryCheck)' != 'true' AND '$(IsImplementationProject)' == 'true' AND '$(HasReferenceAssembly)' != 'true' AND Exists($(ReferenceAssemblyDirectory))" Text="Project shouldn't have reference assembly but folder exists $(ReferenceAssemblyDirectory)" />
+    <Error Condition=" '$(IsAspNetCoreApp)' == 'true' AND '$(IsImplementationProject)' == 'true' AND '$(HasReferenceAssembly)' != 'true'" Text="All assemblies which have set IsAspNetCoreApp=true should produce a reference assembly." />
+
     <ItemGroup Condition=" '$(IsProjectReferenceProvider)' == 'true' ">
       <ProvidesReference Include="$(AssemblyName)">
         <IsAspNetCoreApp>$([MSBuild]::ValueOrDefault($(IsAspNetCoreApp),'false'))</IsAspNetCoreApp>
