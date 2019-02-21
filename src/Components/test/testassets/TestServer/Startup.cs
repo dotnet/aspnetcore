@@ -49,7 +49,8 @@ namespace TestServer
                 // we're not relying on any extra magic inside UseServerSideBlazor, since it's
                 // important that people can set up these bits of middleware manually (e.g., to
                 // swap in UseAzureSignalR instead of UseSignalR).
-                subdirApp.UseRouting(routes => routes.MapComponentHub<Index>(selector: "root"));
+                subdirApp.UseRouting(routes =>
+                    routes.MapHub<ComponentHub>(ComponentHub.DefaultPath).AddComponent<Index>(selector: "root"));
 
                 subdirApp.MapWhen(
                     ctx => ctx.Features.Get<IEndpointFeature>()?.Endpoint == null,
