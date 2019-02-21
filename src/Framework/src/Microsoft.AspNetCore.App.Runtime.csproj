@@ -15,14 +15,15 @@
     <SharedFxName>Microsoft.AspNetCore.App</SharedFxName>
     <PackageId>$(MSBuildProjectName).$(RuntimeIdentifier)</PackageId>
     <IsShippingPackage>true</IsShippingPackage>
-
+    <HasReferenceAssembly>false</HasReferenceAssembly>
     <PackageDescription>Provides a default set of APIs for building an ASP.NET Core application. Contains assets used for self-contained deployments.
 
 This package is an internal implementation of the .NET Core SDK and is not meant to be used as a normal PackageReference.
     </PackageDescription>
     <PackageTags>aspnetcore;shared-framework</PackageTags>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
-
+    <!-- There is a ref directory next to this project but it's not auto generated, disable the guardrails -->
+    <SkipRefDirectoryCheck>true</SkipRefDirectoryCheck>
     <PackageType>DotnetPlatform</PackageType>
     <!-- NuGet appends target framework to this value. Example: runtimes/win-x64/lib/netcoreapp3.0/ -->
     <BuildOutputTargetFolder>runtimes/$(RuntimeIdentifier)/lib/</BuildOutputTargetFolder>
