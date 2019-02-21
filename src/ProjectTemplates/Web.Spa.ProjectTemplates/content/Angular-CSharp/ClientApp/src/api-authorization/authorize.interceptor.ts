@@ -19,7 +19,7 @@ export class AuthorizeInterceptor implements HttpInterceptor {
   // and adds it to the request in case it's targeted at the same origin as the
   // single page application.
   private processRequestWithToken(token: string, req: HttpRequest<any>, next: HttpHandler) {
-    if (!!token && this.IsSameOriginUrl(req)) {
+    if (!!token && this.isSameOriginUrl(req)) {
       req = req.clone({
         setHeaders: {
           Authorization: `Bearer ${token}`
@@ -30,7 +30,7 @@ export class AuthorizeInterceptor implements HttpInterceptor {
     return next.handle(req);
   }
 
-  private IsSameOriginUrl(req: any) {
+  private isSameOriginUrl(req: any) {
     // It's an absolute url with the same origin.
     if(req.url.startsWith(`${window.location.origin}/`)){
       return true;
