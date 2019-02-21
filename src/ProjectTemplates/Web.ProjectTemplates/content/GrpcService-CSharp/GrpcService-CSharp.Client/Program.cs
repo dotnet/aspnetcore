@@ -12,7 +12,10 @@ namespace GrpcService_CSharp
     {
         static async Task Main(string[] args)
         {
-            var channel = new Channel("localhost:50051", ChannelCredentials.Insecure);
+            // Include port of the gRPC server as an application argument
+            var port = args.Length > 0 ? args[0] : "50051";
+
+            var channel = new Channel("localhost:" + port, ChannelCredentials.Insecure);
             var client = new Greeter.GreeterClient(channel);
 
             var reply = await client.SayHelloAsync(new HelloRequest { Name = "GreeterClient" });
