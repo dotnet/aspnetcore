@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -379,45 +380,55 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         public async Task CheckHealthAsync_ChecksAreRunInParallel()
         {
             // Arrange
-            var sink = new TestSink();
-            async Task<HealthCheckResult> CheckMethod()
-            {
-                await Task.Delay(100);
-                return HealthCheckResult.Healthy();
-            }
+            var input1 = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var input2 = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var output1 = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var output2 = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
             var service = CreateHealthChecksService(b =>
             {
-                b.AddAsyncCheck("test1", CheckMethod);
-                b.AddAsyncCheck("test2", CheckMethod);
-                b.AddAsyncCheck("test3", CheckMethod);
-            }, sink);
+                b.AddAsyncCheck("test1",
+                    async () =>
+                    {
+                        output1.SetResult(null);
+                        await input1.Task;
+                        return HealthCheckResult.Healthy();
+                    });
+                b.AddAsyncCheck("test2",
+                    async () =>
+                    {
+                        output2.SetResult(null);
+                        await input2.Task;
+                        return HealthCheckResult.Healthy();
+                    });
+            });
 
             // Act
-            _ = await service.CheckHealthAsync();
+            var checkHealthTask = service.CheckHealthAsync();
+            await Task.WhenAll(output1.Task, output2.Task).TimeoutAfter(TimeSpan.FromSeconds(10));
+            input1.SetResult(null);
+            input2.SetResult(null);
+            await checkHealthTask;
 
             // Assert
-            Assert.Collection(
-                sink.Writes,
-                entry => { Assert.Equal(DefaultHealthCheckService.EventIds.HealthCheckProcessingBegin, entry.EventId); },
-                entry => { Assert.Equal(DefaultHealthCheckService.EventIds.HealthCheckBegin, entry.EventId); },
-                entry => { Assert.Equal(DefaultHealthCheckService.EventIds.HealthCheckBegin, entry.EventId); },
-                entry => { Assert.Equal(DefaultHealthCheckService.EventIds.HealthCheckBegin, entry.EventId); },
-                entry => { Assert.Equal(DefaultHealthCheckService.EventIds.HealthCheckEnd, entry.EventId); },
-                entry => { Assert.Equal(DefaultHealthCheckService.EventIds.HealthCheckEnd, entry.EventId); },
-                entry => { Assert.Equal(DefaultHealthCheckService.EventIds.HealthCheckEnd, entry.EventId); },
-                entry => { Assert.Equal(DefaultHealthCheckService.EventIds.HealthCheckProcessingEnd, entry.EventId); });
+            Assert.Collection(checkHealthTask.Result.Entries,
+                entry =>
+                {
+                    Assert.Equal("test1", entry.Key);
+                    Assert.Equal(HealthStatus.Healthy, entry.Value.Status);
+                },
+                entry =>
+                {
+                    Assert.Equal("test2", entry.Key);
+                    Assert.Equal(HealthStatus.Healthy, entry.Value.Status);
+                });
         }
 
-        private static DefaultHealthCheckService CreateHealthChecksService(Action<IHealthChecksBuilder> configure, ITestSink sink = null)
+        private static DefaultHealthCheckService CreateHealthChecksService(Action<IHealthChecksBuilder> configure)
         {
             var services = new ServiceCollection();
             services.AddLogging();
             services.AddOptions();
-
-            if (sink != null)
-            {
-                services.AddSingleton<ILoggerFactory>(new TestLoggerFactory(sink, enabled: true));
-            }
 
             var builder = services.AddHealthChecks();
             if (configure != null)
