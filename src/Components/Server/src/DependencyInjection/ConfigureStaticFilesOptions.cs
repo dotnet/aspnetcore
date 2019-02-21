@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Microsoft.AspNetCore.Builder;
@@ -12,9 +11,9 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNetCore.Components.Server.DependencyInjection
+namespace Microsoft.AspNetCore.Components.Server
 {
-    public class ConfigureStaticFilesOptions : IPostConfigureOptions<StaticFileOptions>
+    internal class ConfigureStaticFilesOptions : IPostConfigureOptions<StaticFileOptions>
     {
         public ConfigureStaticFilesOptions(IWebHostEnvironment environment)
         {
