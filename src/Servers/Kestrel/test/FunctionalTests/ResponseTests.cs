@@ -31,7 +31,6 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
-    [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/7847
     public class ResponseTests : TestApplicationErrorLoggerLoggedTest
     {
         public static TheoryData<ListenOptions> ConnectionAdapterData => new TheoryData<ListenOptions>
