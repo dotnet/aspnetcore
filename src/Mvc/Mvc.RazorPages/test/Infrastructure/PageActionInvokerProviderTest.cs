@@ -39,10 +39,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             Func<PageContext, ViewContext, object> factory = (a, b) => null;
             Action<PageContext, ViewContext, object> releaser = (a, b, c) => { };
 
-            var loader = new Mock<IPageLoader>();
+            var loader = new Mock<PageLoaderBase>();
             loader
-                .Setup(l => l.Load(It.IsAny<PageActionDescriptor>()))
-                .Returns(CreateCompiledPageActionDescriptor(descriptor));
+                .Setup(l => l.LoadAsync(It.IsAny<PageActionDescriptor>()))
+                .ReturnsAsync(CreateCompiledPageActionDescriptor(descriptor));
 
             var pageFactoryProvider = new Mock<IPageFactoryProvider>();
             pageFactoryProvider
@@ -94,10 +94,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             Func<PageContext, object> modelFactory = _ => null;
             Action<PageContext, object> modelDisposer = (_, __) => { };
 
-            var loader = new Mock<IPageLoader>();
+            var loader = new Mock<PageLoaderBase>();
             loader
-                .Setup(l => l.Load(It.IsAny<PageActionDescriptor>()))
-                .Returns(CreateCompiledPageActionDescriptor(
+                .Setup(l => l.LoadAsync(It.IsAny<PageActionDescriptor>()))
+                .ReturnsAsync(CreateCompiledPageActionDescriptor(
                     descriptor,
                     pageType: typeof(PageWithModel),
                     modelType: typeof(DerivedTestPageModel)));
@@ -169,10 +169,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 FilterDescriptors = new FilterDescriptor[0],
             };
 
-            var loader = new Mock<IPageLoader>();
+            var loader = new Mock<PageLoaderBase>();
             loader
-                .Setup(l => l.Load(It.IsAny<PageActionDescriptor>()))
-                .Returns(CreateCompiledPageActionDescriptor(descriptor, pageType: typeof(PageWithModel)));
+                .Setup(l => l.LoadAsync(It.IsAny<PageActionDescriptor>()))
+                .ReturnsAsync(CreateCompiledPageActionDescriptor(descriptor, pageType: typeof(PageWithModel)));
 
             var razorPageFactoryProvider = new Mock<IRazorPageFactoryProvider>();
 
@@ -222,10 +222,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 FilterDescriptors = new FilterDescriptor[0],
             };
 
-            var loader = new Mock<IPageLoader>();
+            var loader = new Mock<PageLoaderBase>();
             loader
-                .Setup(l => l.Load(It.IsAny<PageActionDescriptor>()))
-                .Returns(CreateCompiledPageActionDescriptor(descriptor));
+                .Setup(l => l.LoadAsync(It.IsAny<PageActionDescriptor>()))
+                .ReturnsAsync(CreateCompiledPageActionDescriptor(descriptor));
 
             var invokerProvider = CreateInvokerProvider(
                 loader.Object,
@@ -281,10 +281,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 .Returns(descriptorCollection1)
                 .Returns(descriptorCollection2);
 
-            var loader = new Mock<IPageLoader>();
+            var loader = new Mock<PageLoaderBase>();
             loader
-                .Setup(l => l.Load(It.IsAny<PageActionDescriptor>()))
-                .Returns(CreateCompiledPageActionDescriptor(descriptor));
+                .Setup(l => l.LoadAsync(It.IsAny<PageActionDescriptor>()))
+                .ReturnsAsync(CreateCompiledPageActionDescriptor(descriptor));
 
             var invokerProvider = CreateInvokerProvider(
                  loader.Object,
@@ -332,10 +332,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 PageTypeInfo = typeof(object).GetTypeInfo(),
             };
 
-            var loader = new Mock<IPageLoader>();
+            var loader = new Mock<PageLoaderBase>();
             loader
-                .Setup(l => l.Load(It.IsAny<PageActionDescriptor>()))
-                .Returns(compiledPageDescriptor);
+                .Setup(l => l.LoadAsync(It.IsAny<PageActionDescriptor>()))
+                .ReturnsAsync(compiledPageDescriptor);
 
             var mock = new Mock<IRazorPageFactoryProvider>(MockBehavior.Strict);
             mock
@@ -382,10 +382,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 ViewEnginePath = "/Views/Deeper/Index.cshtml"
             };
 
-            var loader = new Mock<IPageLoader>();
+            var loader = new Mock<PageLoaderBase>();
             loader
-                .Setup(l => l.Load(It.IsAny<PageActionDescriptor>()))
-                .Returns(CreateCompiledPageActionDescriptor(descriptor, typeof(TestPageModel)));
+                .Setup(l => l.LoadAsync(It.IsAny<PageActionDescriptor>()))
+                .ReturnsAsync(CreateCompiledPageActionDescriptor(descriptor, typeof(TestPageModel)));
 
             var pageFactory = new Mock<IRazorPageFactoryProvider>();
             pageFactory
@@ -447,7 +447,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         }
 
         private static PageActionInvokerProvider CreateInvokerProvider(
-            IPageLoader loader,
+            PageLoaderBase loader,
             IActionDescriptorCollectionProvider actionDescriptorProvider,
             IPageFactoryProvider pageProvider = null,
             IPageModelFactoryProvider modelProvider = null,

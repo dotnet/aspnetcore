@@ -3,8 +3,8 @@
 
 using System;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Razor.Hosting;
@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
     public class DefaultPageLoaderTest
     {
         [Fact]
-        public void Load_InvokesApplicationModelProviders()
+        public async Task LoadAsync_InvokesApplicationModelProviders()
         {
             // Arrange
             var descriptor = new PageActionDescriptor();
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 mvcOptions);
 
             // Act
-            var result = loader.Load(new PageActionDescriptor());
+            var result = await loader.LoadAsync(new PageActionDescriptor());
 
             // Assert
             provider1.Verify();
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         }
 
         [Fact]
-        public void Load_CreatesEndpoint_WithRoute()
+        public async Task LoadAsync_CreatesEndpoint_WithRoute()
         {
             // Arrange
             var descriptor = new PageActionDescriptor()
@@ -139,14 +139,14 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 mvcOptions);
 
             // Act
-            var result = loader.Load(descriptor);
+            var result = await loader.LoadAsync(descriptor);
 
             // Assert
             Assert.NotNull(result.Endpoint);
         }
 
         [Fact]
-        public void Load_InvokesApplicationModelProviders_WithTheRightOrder()
+        public async Task LoadAsync_InvokesApplicationModelProviders_WithTheRightOrder()
         {
             // Arrange
             var descriptor = new PageActionDescriptor();
@@ -203,11 +203,66 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 mvcOptions);
 
             // Act
-            var result = loader.Load(new PageActionDescriptor());
+            var result = await loader.LoadAsync(new PageActionDescriptor());
 
             // Assert
             provider1.Verify();
             provider2.Verify();
+        }
+
+        [Fact]
+        public async Task LoadAsync_CachesResults()
+        {
+            // Arrange
+            var descriptor = new PageActionDescriptor()
+            {
+                AttributeRouteInfo = new AttributeRouteInfo()
+                {
+                    Template = "/test",
+                },
+            };
+
+            var transformer = new Mock<RoutePatternTransformer>();
+            transformer
+                .Setup(t => t.SubstituteRequiredValues(It.IsAny<RoutePattern>(), It.IsAny<object>()))
+                .Returns<RoutePattern, object>((p, v) => p);
+
+            var compilerProvider = GetCompilerProvider();
+
+            var razorPagesOptions = Options.Create(new RazorPagesOptions());
+            var mvcOptions = Options.Create(new MvcOptions());
+            var endpointFactory = new ActionEndpointFactory(transformer.Object);
+
+            var provider = new Mock<IPageApplicationModelProvider>();
+
+            var pageApplicationModel = new PageApplicationModel(descriptor, typeof(object).GetTypeInfo(), Array.Empty<object>());
+
+            provider.Setup(p => p.OnProvidersExecuting(It.IsAny<PageApplicationModelProviderContext>()))
+                .Callback((PageApplicationModelProviderContext c) =>
+                {
+                    Assert.Null(c.PageApplicationModel);
+                    c.PageApplicationModel = pageApplicationModel;
+                })
+                .Verifiable();
+
+            var providers = new[]
+            {
+                provider.Object,
+            };
+
+            var loader = new DefaultPageLoader(
+                providers,
+                compilerProvider,
+                endpointFactory,
+                razorPagesOptions,
+                mvcOptions);
+
+            // Act
+            var result1 = await loader.LoadAsync(descriptor);
+            var result2 = await loader.LoadAsync(descriptor);
+
+            // Assert
+            Assert.Same(result1, result2);
         }
 
         [Fact]
@@ -553,11 +608,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
         private static IViewCompilerProvider GetCompilerProvider()
         {
-            var descriptor = new CompiledViewDescriptor
-            {
-                Item = TestRazorCompiledItem.CreateForView(typeof(object), "/Views/Index.cshtml"),
-            };
-
+            var compiledItem = TestRazorCompiledItem.CreateForView(typeof(object), "/Views/Index.cshtml");
+            var descriptor = new CompiledViewDescriptor(compiledItem);
             var compiler = new Mock<IViewCompiler>();
             compiler.Setup(c => c.CompileAsync(It.IsAny<string>()))
                 .ReturnsAsync(descriptor);

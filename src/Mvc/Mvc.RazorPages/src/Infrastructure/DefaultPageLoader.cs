@@ -5,23 +5,26 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
-    internal class DefaultPageLoader : IPageLoader
+    internal class DefaultPageLoader : PageLoaderBase
     {
         private readonly IPageApplicationModelProvider[] _applicationModelProviders;
         private readonly IViewCompilerProvider _viewCompilerProvider;
         private readonly ActionEndpointFactory _endpointFactory;
         private readonly PageConventionCollection _conventions;
         private readonly FilterCollection _globalFilters;
+        private readonly MemoryCache _memoryCache;
 
         public DefaultPageLoader(
             IEnumerable<IPageApplicationModelProvider> applicationModelProviders,
@@ -33,6 +36,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             _applicationModelProviders = applicationModelProviders
                 .OrderBy(p => p.Order)
                 .ToArray();
+
+            _memoryCache = new MemoryCache(new MemoryCacheOptions());
+
             _viewCompilerProvider = viewCompilerProvider;
             _endpointFactory = endpointFactory;
             _conventions = pageOptions.Value.Conventions;
@@ -41,16 +47,31 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
         private IViewCompiler Compiler => _viewCompilerProvider.GetCompiler();
 
-        public CompiledPageActionDescriptor Load(PageActionDescriptor actionDescriptor)
+        public async override ValueTask<CompiledPageActionDescriptor> LoadAsync(PageActionDescriptor actionDescriptor)
         {
             if (actionDescriptor == null)
             {
                 throw new ArgumentNullException(nameof(actionDescriptor));
             }
 
-            var compileTask = Compiler.CompileAsync(actionDescriptor.RelativePath);
-            var viewDescriptor = compileTask.GetAwaiter().GetResult();
+            if (_memoryCache.TryGetValue(actionDescriptor, out CompiledPageActionDescriptor compiledDescriptor))
+            {
+                return compiledDescriptor;
+            }
 
+            var viewDescriptor = await Compiler.CompileAsync(actionDescriptor.RelativePath);
+            var compiledPageActionDescriptor = GetCompiledPageActionDescriptor(actionDescriptor, viewDescriptor);
+            var entryOptions = new MemoryCacheEntryOptions();
+            for (var i = 0; i < viewDescriptor.ExpirationTokens.Count; i++)
+            {
+                entryOptions.ExpirationTokens.Add(viewDescriptor.ExpirationTokens[i]);
+            }
+
+            return _memoryCache.Set(actionDescriptor, compiledPageActionDescriptor, entryOptions);
+        }
+
+        private CompiledPageActionDescriptor GetCompiledPageActionDescriptor(PageActionDescriptor actionDescriptor, CompiledViewDescriptor viewDescriptor)
+        {
             var context = new PageApplicationModelProviderContext(actionDescriptor, viewDescriptor.Type.GetTypeInfo());
             for (var i = 0; i < _applicationModelProviders.Length; i++)
             {
@@ -65,7 +86,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             ApplyConventions(_conventions, context.PageApplicationModel);
 
             var compiled = CompiledPageActionDescriptorBuilder.Build(context.PageApplicationModel, _globalFilters);
-            
+
             // We need to create an endpoint for routing to use and attach it to the CompiledPageActionDescriptor...
             // routing for pages is two-phase. First we perform routing using the route info - we can do this without
             // compiling/loading the page. Then once we have a match we load the page and we can create an endpoint

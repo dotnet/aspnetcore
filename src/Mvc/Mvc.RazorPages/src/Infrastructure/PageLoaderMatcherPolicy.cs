@@ -7,15 +7,14 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Matching;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
     internal class PageLoaderMatcherPolicy : MatcherPolicy, IEndpointSelectorPolicy
     {
-        private readonly IPageLoader _loader;
+        private readonly PageLoaderBase _loader;
 
-        public PageLoaderMatcherPolicy(IPageLoader loader)
+        public PageLoaderMatcherPolicy(PageLoaderBase loader)
         {
             if (loader == null)
             {
@@ -73,17 +72,44 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             for (var i = 0; i < candidates.Count; i++)
             {
                 ref var candidate = ref candidates[i];
-                var endpoint = (RouteEndpoint)candidate.Endpoint;
+                var endpoint = candidate.Endpoint;
 
                 var page = endpoint.Metadata.GetMetadata<PageActionDescriptor>();
                 if (page != null)
                 {
-                    var compiled = _loader.Load(page);
-                    candidates.ReplaceEndpoint(i, compiled.Endpoint, candidate.Values);
+                    // We found an endpoint instance that has a PageActionDescriptor, but not a
+                    // CompiledPageActionDescriptor. Update the CandidateSet.
+                    var compiled = _loader.LoadAsync(page);
+                    if (compiled.IsCompletedSuccessfully)
+                    {
+                        candidates.ReplaceEndpoint(i, compiled.Result.Endpoint, candidate.Values);
+                    }
+                    else
+                    {
+                        // In the most common case, LoadAsync will return a synchronous result.
+                        // Avoid going async since this is a fairly hot path.
+                        return ApplyAsyncAwaited(candidates);
+                    }
                 }
             }
 
             return Task.CompletedTask;
+        }
+
+        private async Task ApplyAsyncAwaited(CandidateSet candidates)
+        {
+            for (var i = 0; i < candidates.Count; i++)
+            {
+                var candidate = candidates[i];
+                var endpoint = candidate.Endpoint;
+
+                var page = endpoint.Metadata.GetMetadata<PageActionDescriptor>();
+                if (page != null)
+                {
+                    var compiled = await _loader.LoadAsync(page);
+                    candidates.ReplaceEndpoint(i, compiled.Endpoint, candidates[i].Values);
+                }
+            }
         }
     }
 }
