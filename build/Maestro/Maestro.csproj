@@ -30,7 +30,7 @@
       OutputPath="$(ManifestsPath)aspnetcore-$(TargetRuntimeIdentifier)-$(PackageVersion).xml"
       BuildId="$(PackageVersion)"
       BuildData="Location=https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json"
-      RepoUri="$(BUILD_REPOSITORY_URI)"
+      RepoUri="$(RepositoryUrl)"
       RepoBranch="$(BUILD_SOURCEBRANCH)"
       RepoCommit="$(BUILD_SOURCEVERSION)" />
   </Target>
