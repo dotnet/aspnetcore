@@ -15,6 +15,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.WebSockets.Test
 {
+    [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/7847
     public class WebSocketMiddlewareTests : LoggedTest
     {
         [Fact]
