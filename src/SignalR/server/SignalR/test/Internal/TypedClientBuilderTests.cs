@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests.Internal
     public class TypedClientBuilderTests
     {
         [Fact]
-        public async Task ProducesImplementationThatProxiesMethodsToIClientProxyAsync()
+        public async Task ProducesImplementationThatProxiesMethodsToClientProxyAsync()
         {
             var clientProxy = new MockProxy();
             var typedProxy = TypedClientBuilder<ITestClient>.Build(clientProxy);
@@ -189,11 +189,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests.Internal
             event EventHandler Event;
         }
 
-        private class MockProxy : IClientProxy
+        private class MockProxy : ClientProxy
         {
             public IList<SendContext> Sends { get; } = new List<SendContext>();
 
-            public Task SendCoreAsync(string method, object[] args, CancellationToken cancellationToken)
+            public override Task SendCoreAsync(string method, object[] args, CancellationToken cancellationToken)
             {
                 var tcs = new TaskCompletionSource<object>();
 

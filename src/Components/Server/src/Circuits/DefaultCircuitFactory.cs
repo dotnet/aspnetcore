@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         public override CircuitHost CreateCircuitHost(
             HttpContext httpContext,
-            IClientProxy client,
+            ClientProxy client,
             string uriAbsolute,
             string baseUriAbsolute)
         {
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             return circuitHost;
         }
 
-        private static IList<ComponentDescriptor> ResolveComponentMetadata(HttpContext httpContext, IClientProxy client)
+        private static IList<ComponentDescriptor> ResolveComponentMetadata(HttpContext httpContext, ClientProxy client)
         {
             if (client == null)
             {

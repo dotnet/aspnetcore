@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.SignalR.Internal
 {
-    internal class UserProxy<THub> : IClientProxy where THub : Hub
+    internal class UserProxy<THub> : ClientProxy where THub : Hub
     {
         private readonly string _userId;
         private readonly HubLifetimeManager<THub> _lifetimeManager;
@@ -18,13 +18,13 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             _userId = userId;
         }
 
-        public Task SendCoreAsync(string method, object[] args, CancellationToken cancellationToken = default)
+        public override Task SendCoreAsync(string method, object[] args, CancellationToken cancellationToken = default)
         {
             return _lifetimeManager.SendUserAsync(_userId, method, args, cancellationToken);
         }
     }
 
-    internal class MultipleUserProxy<THub> : IClientProxy where THub : Hub
+    internal class MultipleUserProxy<THub> : ClientProxy where THub : Hub
     {
         private readonly IReadOnlyList<string> _userIds;
         private readonly HubLifetimeManager<THub> _lifetimeManager;
@@ -35,13 +35,13 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             _userIds = userIds;
         }
 
-        public Task SendCoreAsync(string method, object[] args, CancellationToken cancellationToken = default)
+        public override Task SendCoreAsync(string method, object[] args, CancellationToken cancellationToken = default)
         {
             return _lifetimeManager.SendUsersAsync(_userIds, method, args, cancellationToken);
         }
     }
 
-    internal class GroupProxy<THub> : IClientProxy where THub : Hub
+    internal class GroupProxy<THub> : ClientProxy where THub : Hub
     {
         private readonly string _groupName;
         private readonly HubLifetimeManager<THub> _lifetimeManager;
@@ -52,13 +52,13 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             _groupName = groupName;
         }
 
-        public Task SendCoreAsync(string method, object[] args, CancellationToken cancellationToken = default)
+        public override Task SendCoreAsync(string method, object[] args, CancellationToken cancellationToken = default)
         {
             return _lifetimeManager.SendGroupAsync(_groupName, method, args, cancellationToken);
         }
     }
 
-    internal class MultipleGroupProxy<THub> : IClientProxy where THub : Hub
+    internal class MultipleGroupProxy<THub> : ClientProxy where THub : Hub
     {
         private readonly HubLifetimeManager<THub> _lifetimeManager;
         private readonly IReadOnlyList<string> _groupNames;
@@ -69,13 +69,13 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             _groupNames = groupNames;
         }
 
-        public Task SendCoreAsync(string method, object[] args, CancellationToken cancellationToken = default)
+        public override Task SendCoreAsync(string method, object[] args, CancellationToken cancellationToken = default)
         {
             return _lifetimeManager.SendGroupsAsync(_groupNames, method, args, cancellationToken);
         }
     }
 
-    internal class GroupExceptProxy<THub> : IClientProxy where THub : Hub
+    internal class GroupExceptProxy<THub> : ClientProxy where THub : Hub
     {
         private readonly string _groupName;
         private readonly HubLifetimeManager<THub> _lifetimeManager;
@@ -88,13 +88,13 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             _excludedConnectionIds = excludedConnectionIds;
         }
 
-        public Task SendCoreAsync(string method, object[] args, CancellationToken cancellationToken = default)
+        public override Task SendCoreAsync(string method, object[] args, CancellationToken cancellationToken = default)
         {
             return _lifetimeManager.SendGroupExceptAsync(_groupName, method, args, _excludedConnectionIds, cancellationToken);
         }
     }
 
-    internal class AllClientProxy<THub> : IClientProxy where THub : Hub
+    internal class AllClientProxy<THub> : ClientProxy where THub : Hub
     {
         private readonly HubLifetimeManager<THub> _lifetimeManager;
 
@@ -103,13 +103,13 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             _lifetimeManager = lifetimeManager;
         }
 
-        public Task SendCoreAsync(string method, object[] args, CancellationToken cancellationToken = default)
+        public override Task SendCoreAsync(string method, object[] args, CancellationToken cancellationToken = default)
         {
             return _lifetimeManager.SendAllAsync(method, args);
         }
     }
 
-    internal class AllClientsExceptProxy<THub> : IClientProxy where THub : Hub
+    internal class AllClientsExceptProxy<THub> : ClientProxy where THub : Hub
     {
         private readonly HubLifetimeManager<THub> _lifetimeManager;
         private readonly IReadOnlyList<string> _excludedConnectionIds;
@@ -120,13 +120,13 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             _excludedConnectionIds = excludedConnectionIds;
         }
 
-        public Task SendCoreAsync(string method, object[] args, CancellationToken cancellationToken = default)
+        public override Task SendCoreAsync(string method, object[] args, CancellationToken cancellationToken = default)
         {
             return _lifetimeManager.SendAllExceptAsync(method, args, _excludedConnectionIds, cancellationToken);
         }
     }
 
-    internal class SingleClientProxy<THub> : IClientProxy where THub : Hub
+    internal class SingleClientProxy<THub> : ClientProxy where THub : Hub
     {
         private readonly string _connectionId;
         private readonly HubLifetimeManager<THub> _lifetimeManager;
@@ -137,13 +137,13 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             _connectionId = connectionId;
         }
 
-        public Task SendCoreAsync(string method, object[] args, CancellationToken cancellationToken = default)
+        public override Task SendCoreAsync(string method, object[] args, CancellationToken cancellationToken = default)
         {
             return _lifetimeManager.SendConnectionAsync(_connectionId, method, args, cancellationToken);
         }
     }
 
-    internal class MultipleClientProxy<THub> : IClientProxy where THub : Hub
+    internal class MultipleClientProxy<THub> : ClientProxy where THub : Hub
     {
         private readonly HubLifetimeManager<THub> _lifetimeManager;
         private readonly IReadOnlyList<string> _connectionIds;
@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             _connectionIds = connectionIds;
         }
 
-        public Task SendCoreAsync(string method, object[] args, CancellationToken cancellationToken = default)
+        public override Task SendCoreAsync(string method, object[] args, CancellationToken cancellationToken = default)
         {
             return _lifetimeManager.SendConnectionsAsync(_connectionIds, method, args, cancellationToken);
         }

@@ -16,11 +16,11 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         private const string ClientModuleName = "Microsoft.AspNetCore.SignalR.TypedClientBuilder";
 
         // There is one static instance of _builder per T
-        private static readonly Lazy<Func<IClientProxy, T>> _builder = new Lazy<Func<IClientProxy, T>>(() => GenerateClientBuilder());
+        private static readonly Lazy<Func<ClientProxy, T>> _builder = new Lazy<Func<ClientProxy, T>>(() => GenerateClientBuilder());
 
         private static readonly PropertyInfo CancellationTokenNoneProperty = typeof(CancellationToken).GetProperty("None", BindingFlags.Public | BindingFlags.Static);
 
-        public static T Build(IClientProxy proxy)
+        public static T Build(ClientProxy proxy)
         {
             return _builder.Value(proxy);
         }
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             _ = _builder.Value;
         }
 
-        private static Func<IClientProxy, T> GenerateClientBuilder()
+        private static Func<ClientProxy, T> GenerateClientBuilder()
         {
             VerifyInterface(typeof(T));
 
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 typeof(Object),
                 new[] { typeof(T) });
 
-            var proxyField = type.DefineField("_proxy", typeof(IClientProxy), FieldAttributes.Private);
+            var proxyField = type.DefineField("_proxy", typeof(ClientProxy), FieldAttributes.Private);
 
             BuildConstructor(type, proxyField);
 
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 null, new Type[] { }, null);
 
             method.SetReturnType(typeof(void));
-            method.SetParameters(typeof(IClientProxy));
+            method.SetParameters(typeof(ClientProxy));
 
             var generator = method.GetILGenerator();
 
@@ -116,8 +116,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
             var methodBuilder = type.DefineMethod(interfaceMethodInfo.Name, methodAttributes);
 
-            var invokeMethod = typeof(IClientProxy).GetMethod(
-                nameof(IClientProxy.SendCoreAsync), BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null,
+            var invokeMethod = typeof(ClientProxy).GetMethod(
+                nameof(ClientProxy.SendCoreAsync), BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null,
                 new[] { typeof(string), typeof(object[]), typeof(CancellationToken) }, null);
 
             methodBuilder.SetReturnType(interfaceMethodInfo.ReturnType);
@@ -134,14 +134,14 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
             var generator = methodBuilder.GetILGenerator();
 
-            // Declare local variable to store the arguments to IClientProxy.SendCoreAsync
+            // Declare local variable to store the arguments to ClientProxy.SendCoreAsync
             generator.DeclareLocal(typeof(object[]));
 
-            // Get IClientProxy
+            // Get ClientProxy
             generator.Emit(OpCodes.Ldarg_0);
             generator.Emit(OpCodes.Ldfld, proxyField);
 
-            // The first argument to IClientProxy.SendCoreAsync is this method's name
+            // The first argument to ClientProxy.SendCoreAsync is this method's name
             generator.Emit(OpCodes.Ldstr, interfaceMethodInfo.Name);
 
             // Create an new object array to hold all the parameters to this method
