@@ -20,6 +20,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
+    [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/7847
     public class MaxRequestBufferSizeTests : LoggedTest
     {
         // The client is typically paused after uploading this many bytes:
