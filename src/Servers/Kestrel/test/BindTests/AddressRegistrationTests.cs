@@ -28,7 +28,6 @@ using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
-    [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/7847
     public class AddressRegistrationTests : TestApplicationErrorLoggerLoggedTest
     {
         private const int MaxRetries = 10;
@@ -42,7 +41,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             await RegisterAddresses_Success($"http://{hostName}:0", $"http://{hostName}");
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(AddressRegistrationDataIPv4))]
         public async Task RegisterAddresses_IPv4_Success(string addressInput, string testUrl)
         {
@@ -73,19 +72,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             await RegisterAddresses_Success(addressInput, testUrl, 80);
         }
 
-        [ConditionalFact]
+        [Fact]
         public async Task RegisterAddresses_IPv4StaticPort_Success()
         {
             await RegisterAddresses_StaticPort_Success("http://127.0.0.1", "http://127.0.0.1");
         }
 
-        [ConditionalFact]
+        [Fact]
         public async Task RegisterAddresses_IPv4LocalhostStaticPort_Success()
         {
             await RegisterAddresses_StaticPort_Success("http://localhost", "http://127.0.0.1");
         }
 
-        [ConditionalFact]
+        [Fact]
         public async Task RegisterIPEndPoint_IPv4StaticPort_Success()
         {
             await RegisterIPEndPoint_StaticPort_Success(IPAddress.Loopback, $"http://127.0.0.1");
@@ -213,7 +212,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         private Task RegisterAddresses_StaticPort_Success(string addressInput, string[] testUrls) =>
             RunTestWithStaticPort(port => RegisterAddresses_Success($"{addressInput}:{port}", testUrls, port));
 
-        [ConditionalFact]
+        [Fact]
         public async Task RegisterHttpAddress_UpgradedToHttpsByConfigureEndpointDefaults()
         {
             var hostBuilder = TransportSelector.GetWebHostBuilder()
@@ -411,7 +410,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        [ConditionalFact]
+        [Fact]
         public Task DefaultsServerAddress_BindsToIPv4()
         {
             if (!CanBindToEndpoint(IPAddress.Loopback, 5000))
@@ -499,7 +498,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        [ConditionalFact]
+        [Fact]
         public void ThrowsWhenBindingToIPv4AddressInUse()
         {
             using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
@@ -547,7 +546,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        [ConditionalFact]
+        [Fact]
         public async Task OverrideDirectConfigurationWithIServerAddressesFeature_Succeeds()
         {
             var useUrlsAddress = $"http://127.0.0.1:0";
@@ -587,7 +586,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        [ConditionalFact]
+        [Fact]
         public async Task DoesNotOverrideDirectConfigurationWithIServerAddressesFeature_IfPreferHostingUrlsFalse()
         {
             var useUrlsAddress = $"http://127.0.0.1:0";
@@ -627,7 +626,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        [ConditionalFact]
+        [Fact]
         public async Task DoesNotOverrideDirectConfigurationWithIServerAddressesFeature_IfAddressesEmpty()
         {
             var hostBuilder = TransportSelector.GetWebHostBuilder()
@@ -660,7 +659,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        [ConditionalFact]
+        [Fact]
         public void ThrowsWhenBindingLocalhostToIPv4AddressInUse()
         {
             ThrowsWhenBindingLocalhostToAddressInUse(AddressFamily.InterNetwork);
@@ -673,7 +672,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             ThrowsWhenBindingLocalhostToAddressInUse(AddressFamily.InterNetworkV6);
         }
 
-        [ConditionalFact]
+        [Fact]
         public void ThrowsWhenBindingLocalhostToDynamicPort()
         {
             TestApplicationErrorLogger.IgnoredExceptions.Add(typeof(InvalidOperationException));
@@ -690,7 +689,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        [ConditionalTheory]
+        [Theory]
         [InlineData("ftp://localhost")]
         [InlineData("ssh://localhost")]
         public void ThrowsForUnsupportedAddressFromHosting(string address)
@@ -709,7 +708,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        [ConditionalFact]
+        [Fact]
         public async Task CanRebindToEndPoint()
         {
             var port = GetNextPort();
@@ -795,7 +794,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        [ConditionalTheory]
+        [Theory]
         [InlineData("http1", HttpProtocols.Http1)]
         [InlineData("http2", HttpProtocols.Http2)]
         [InlineData("http1AndHttp2", HttpProtocols.Http1AndHttp2)]
