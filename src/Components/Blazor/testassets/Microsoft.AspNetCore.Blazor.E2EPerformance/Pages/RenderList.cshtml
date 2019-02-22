@@ -1,4 +1,5 @@
 @page "/renderlist"
+@inject IJSRuntime JSRuntime
 
 <h2>Render List</h2>
 
@@ -47,7 +48,7 @@ Number of items: <input id="num-items" type="number" bind=@numItems />
 
     protected override void OnAfterRender()
     {
-        BenchmarkEvent.Send("Finished rendering list");
+        BenchmarkEvent.Send(JSRuntime, "Finished rendering list");
     }
 
     static IEnumerable<WeatherForecast> GenerateForecasts(int count)
