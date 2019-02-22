@@ -55,10 +55,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 _context.SetBadRequestState(ex);
                 return Task.CompletedTask;
             }
-            catch (ConnectionAbortedException)
-            {
-                Log.RequestBodyDrainTimedOut(_context.ConnectionIdFeature, _context.TraceIdentifier);
-            }
             catch (InvalidOperationException ex)
             {
                 var connectionAbortedException = new ConnectionAbortedException(CoreStrings.ConnectionAbortedByApplication, ex);
@@ -91,7 +87,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 _context.SetBadRequestState(ex);
             }
-            catch (ConnectionAbortedException)
+            catch (OperationCanceledException ex) when (ex is ConnectionAbortedException || ex is TaskCanceledException)
             {
                 Log.RequestBodyDrainTimedOut(_context.ConnectionIdFeature, _context.TraceIdentifier);
             }

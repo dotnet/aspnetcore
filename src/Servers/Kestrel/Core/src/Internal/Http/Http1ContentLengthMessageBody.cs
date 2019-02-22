@@ -57,7 +57,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
                 catch (ConnectionAbortedException ex)
                 {
-                    Log.RequestBodyDrainTimedOut(_context.ConnectionIdFeature, _context.TraceIdentifier);
                     throw new TaskCanceledException("The request was aborted", ex);
                 }
 
