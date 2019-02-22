@@ -555,6 +555,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         protected static void ThrowArgumentException() { }
         protected static void ThrowDuplicateKeyException() { }
         protected static void ThrowHeadersReadOnlyException() { }
+        protected static void ThrowInvalidContentLengthException(string value) { }
         protected static void ThrowKeyNotFoundException() { }
         protected virtual bool TryGetValueFast(string key, out Microsoft.Extensions.Primitives.StringValues value) { throw null; }
         public static void ValidateHeaderNameCharacters(string headerCharacters) { }
@@ -901,6 +902,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     public partial class HttpResponseTrailers : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpHeaders
     {
         public HttpResponseTrailers() { }
+        public Microsoft.Extensions.Primitives.StringValues HeaderContentLength { get { throw null; } set { } }
         public Microsoft.Extensions.Primitives.StringValues HeaderETag { get { throw null; } set { } }
         protected override bool AddValueFast(string key, in Microsoft.Extensions.Primitives.StringValues value) { throw null; }
         protected override void ClearFast() { }
