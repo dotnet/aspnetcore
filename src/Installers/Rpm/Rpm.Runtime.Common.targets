@@ -13,6 +13,8 @@
 
     <PackageSummary>$(SharedFxProductName)</PackageSummary>
     <PackageDescription>$(SharedFxDescription)</PackageDescription>
+
+    <IntermediatePackageRoot>$(IntermediateOutputPath)content\</IntermediatePackageRoot>
   </PropertyGroup>
 
   <ItemGroup>
