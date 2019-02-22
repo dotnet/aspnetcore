@@ -17,9 +17,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             return new CancelableAsyncEnumerable<T>(asyncEnumerable, cancellationToken);
         }
 
-        public static IAsyncEnumerable<object> GetAsyncEnumerableFromChannel<T>(ChannelReader<T> channel, CancellationToken cancellationToken = default)
+        public static IAsyncEnumerable<object> MakeCancelableAsyncEnumerableFromChannel<T>(ChannelReader<T> channel, CancellationToken cancellationToken = default)
         {
-            return new ChannelAsyncEnumerable<T>(channel, cancellationToken);
+            return MakeCancelableAsyncEnumerable(channel.ReadAllAsync(), cancellationToken);
         }
 
         /// <summary>Converts an IAsyncEnumerable of T to an IAsyncEnumerable of object.</summary>
@@ -36,15 +36,19 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
             public IAsyncEnumerator<object> GetAsyncEnumerator(CancellationToken cancellationToken = default)
             {
+                // Assume that this will be iterated through with await foreach which always passes a default token.
+                // Instead use the token from the ctor.
                 Debug.Assert(cancellationToken == default);
-                return new CancelableAsyncEnumerator(_asyncEnumerable.GetAsyncEnumerator(_cancellationToken));
+
+                var enumeratorOfT = _asyncEnumerable.GetAsyncEnumerator(_cancellationToken);
+                return enumeratorOfT as IAsyncEnumerator<object> ?? new BoxedAsyncEnumerator(enumeratorOfT);
             }
 
-            private class CancelableAsyncEnumerator : IAsyncEnumerator<object>
+            private class BoxedAsyncEnumerator : IAsyncEnumerator<object>
             {
                 private IAsyncEnumerator<T> _asyncEnumerator;
 
-                public CancelableAsyncEnumerator(IAsyncEnumerator<T> asyncEnumerator)
+                public BoxedAsyncEnumerator(IAsyncEnumerator<T> asyncEnumerator)
                 {
                     _asyncEnumerator = asyncEnumerator;
                 }
@@ -59,75 +63,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 public ValueTask DisposeAsync()
                 {
                     return _asyncEnumerator.DisposeAsync();
-                }
-            }
-        }
-
-        /// <summary>Provides an IAsyncEnumerable of object for the data in a channel.</summary>
-        private class ChannelAsyncEnumerable<T> : IAsyncEnumerable<object>
-        {
-            private readonly ChannelReader<T> _channel;
-            private readonly CancellationToken _cancellationToken;
-
-            public ChannelAsyncEnumerable(ChannelReader<T> channel, CancellationToken cancellationToken)
-            {
-                _channel = channel;
-                _cancellationToken = cancellationToken;
-            }
-
-            public IAsyncEnumerator<object> GetAsyncEnumerator(CancellationToken cancellationToken = default)
-            {
-                Debug.Assert(cancellationToken == default);
-                return new ChannelAsyncEnumerator(_channel, _cancellationToken);
-            }
-
-            private class ChannelAsyncEnumerator : IAsyncEnumerator<object>
-            {
-                /// <summary>The channel being enumerated.</summary>
-                private readonly ChannelReader<T> _channel;
-                /// <summary>Cancellation token used to cancel the enumeration.</summary>
-                private readonly CancellationToken _cancellationToken;
-                /// <summary>The current element of the enumeration.</summary>
-                private T _current;
-
-                public ChannelAsyncEnumerator(ChannelReader<T> channel, CancellationToken cancellationToken)
-                {
-                    _channel = channel;
-                    _cancellationToken = cancellationToken;
-                }
-
-                public object Current => _current;
-
-                public ValueTask<bool> MoveNextAsync()
-                {
-                    var result = _channel.ReadAsync(_cancellationToken);
-
-                    if (result.IsCompletedSuccessfully)
-                    {
-                        _current = result.Result;
-                        return new ValueTask<bool>(true);
-                    }
-
-                    return new ValueTask<bool>(MoveNextAsyncAwaited(result));
-                }
-
-                private async Task<bool> MoveNextAsyncAwaited(ValueTask<T> channelReadTask)
-                {
-                    try
-                    {
-                        _current = await channelReadTask;
-                    }
-                    catch (ChannelClosedException ex) when (ex.InnerException == null)
-                    {
-                        return false;
-                    }
-
-                    return true;
-                }
-
-                public ValueTask DisposeAsync()
-                {
-                    return default;
                 }
             }
         }

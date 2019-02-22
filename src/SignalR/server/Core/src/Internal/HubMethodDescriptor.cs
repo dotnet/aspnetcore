@@ -19,12 +19,12 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             .GetRuntimeMethods()
             .Single(m => m.Name.Equals(nameof(AsyncEnumerableAdapters.MakeCancelableAsyncEnumerable)) && m.IsGenericMethod);
 
-        private static readonly MethodInfo GetAsyncEnumerableFromChannelMethod = typeof(AsyncEnumerableAdapters)
+        private static readonly MethodInfo MakeCancelableAsyncEnumerableFromChannelMethod = typeof(AsyncEnumerableAdapters)
             .GetRuntimeMethods()
-            .Single(m => m.Name.Equals(nameof(AsyncEnumerableAdapters.GetAsyncEnumerableFromChannel)) && m.IsGenericMethod);
+            .Single(m => m.Name.Equals(nameof(AsyncEnumerableAdapters.MakeCancelableAsyncEnumerableFromChannel)) && m.IsGenericMethod);
 
-        private readonly MethodInfo _convertToEnumerableMethodInfo;
-        private Func<object, CancellationToken, IAsyncEnumerable<object>> _convertToEnumerable;
+        private readonly MethodInfo _makeCancelableEnumerableMethodInfo;
+        private Func<object, CancellationToken, IAsyncEnumerable<object>> _makeCancelableEnumerable;
 
         public HubMethodDescriptor(ObjectMethodExecutor methodExecutor, IEnumerable<IAuthorizeData> policies)
         {
@@ -46,14 +46,14 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 if (openReturnType == typeof(IAsyncEnumerable<>))
                 {
                     StreamReturnType = returnType.GetGenericArguments()[0];
-                    _convertToEnumerableMethodInfo = MakeCancelableAsyncEnumerableMethod;
+                    _makeCancelableEnumerableMethodInfo = MakeCancelableAsyncEnumerableMethod;
                     break;
                 }
 
                 if (openReturnType == typeof(ChannelReader<>))
                 {
                     StreamReturnType = returnType.GetGenericArguments()[0];
-                    _convertToEnumerableMethodInfo = GetAsyncEnumerableFromChannelMethod;
+                    _makeCancelableEnumerableMethodInfo = MakeCancelableAsyncEnumerableFromChannelMethod;
                     break;
                 }
             }
@@ -110,19 +110,19 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         public IAsyncEnumerable<object> FromReturnedStream(object stream, CancellationToken cancellationToken)
         {
             // there is the potential for compile to be called times but this has no harmful effect other than perf
-            if (_convertToEnumerable == null)
+            if (_makeCancelableEnumerable == null)
             {
-                _convertToEnumerable = CompileConvertToEnumerable(_convertToEnumerableMethodInfo, StreamReturnType);
+                _makeCancelableEnumerable = CompileConvertToEnumerable(_makeCancelableEnumerableMethodInfo, StreamReturnType);
             }
 
-            return _convertToEnumerable.Invoke(stream, cancellationToken);
+            return _makeCancelableEnumerable.Invoke(stream, cancellationToken);
         }
 
         private static Func<object, CancellationToken, IAsyncEnumerable<object>> CompileConvertToEnumerable(MethodInfo adapterMethodInfo, Type streamReturnType)
         {
             // This will call one of two adapter methods to wrap the passed in streamable value into an IAsyncEnumerable<object>:
-            // - AsyncEnumerableAdapters.GetAsyncEnumerableFromAsyncEnumerable<T>(asyncEnumerable, cancellationToken);
-            // - AsyncEnumerableAdapters.GetAsyncEnumerableFromChannel<T>(channelReader, cancellationToken);
+            // - AsyncEnumerableAdapters.MakeCancelableAsyncEnumerable<T>(asyncEnumerable, cancellationToken);
+            // - AsyncEnumerableAdapters.MakeCancelableAsyncEnumerableFromChannel<T>(channelReader, cancellationToken);
 
             var parameters = new[]
             {
