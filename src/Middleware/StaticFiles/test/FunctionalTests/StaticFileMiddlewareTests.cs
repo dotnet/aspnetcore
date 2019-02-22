@@ -24,6 +24,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.StaticFiles
 {
+    [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/7847
     public class StaticFileMiddlewareTests : LoggedTest
     {
         [Fact]
