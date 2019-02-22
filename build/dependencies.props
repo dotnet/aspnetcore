@@ -76,7 +76,6 @@
     <MicrosoftExtensionsWebEncodersPackageVersion>2.1.1</MicrosoftExtensionsWebEncodersPackageVersion>
 
     <!-- Packages that come from aspnet/Scaffolding. (Used only in the 2.1.x package archives.) -->
-    <!-- See src/Templating/build/dependencies.props for the versions used in templates. -->
     <MicrosoftVisualStudioWebCodeGenerationContractsPackageVersion>2.1.7</MicrosoftVisualStudioWebCodeGenerationContractsPackageVersion>
     <MicrosoftVisualStudioWebCodeGenerationCorePackageVersion>2.1.7</MicrosoftVisualStudioWebCodeGenerationCorePackageVersion>
     <MicrosoftVisualStudioWebCodeGenerationDesignPackageVersion>2.1.7</MicrosoftVisualStudioWebCodeGenerationDesignPackageVersion>
