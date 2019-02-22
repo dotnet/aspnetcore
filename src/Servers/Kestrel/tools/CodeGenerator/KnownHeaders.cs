@@ -580,68 +580,58 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             var keyLength = 0;
             ref readonly StringValues values = ref Unsafe.AsRef<StringValues>(null);
 
-            goto MoveNext;
-
-        OutputHeader:
+            do
             {{
-                var valueCount = values.Count;
-                var headerKey = HeaderBytes.Slice(keyStart, keyLength);
-                for (var i = 0; i < valueCount; i++)
+                switch (next)
+                {{{Each(loop.Headers.OrderBy(h => !h.PrimaryHeader).Select((h, i) => (Header: h, Index: i)), hi => $@"
+                    case {hi.Index}: // Header: ""{hi.Header.Name}""
+                        if ({hi.Header.TestTempBit()})
+                        {{
+                            tempBits ^= {"0x" + (1L << hi.Header.Index).ToString("x")}L;{(hi.Header.Identifier != "ContentLength" ? $@"{(hi.Header.EnhancedSetter == false ? $@"
+                            values = ref _headers._{hi.Header.Identifier};
+                            keyStart = {hi.Header.BytesOffset};
+                            keyLength = {hi.Header.BytesCount};
+                            next = {hi.Index + 1};
+                            break; // OutputHeader" : $@"
+                            if (_headers._raw{hi.Header.Identifier} != null)
+                            {{
+                                output.Write(_headers._raw{hi.Header.Identifier});
+                            }}
+                            else
+                            {{
+                                values = ref _headers._{hi.Header.Identifier};
+                                keyStart = {hi.Header.BytesOffset};
+                                keyLength = {hi.Header.BytesCount};
+                                next = {hi.Index + 1};
+                                break; // OutputHeader
+                            }}")}" : $@"
+                            output.Write(HeaderBytes.Slice({hi.Header.BytesOffset}, {hi.Header.BytesCount}));
+                            output.WriteNumeric((ulong)ContentLength.Value);
+                            if (tempBits == 0)
+                            {{
+                                return;
+                            }}")}
+                        }}
+                        {(hi.Index + 1 < loop.Headers.Count() ? $"goto case {hi.Index + 1};" : "return;")}")}
+                    default:
+                        return;
+                }}
+
+                // OutputHeader
                 {{
-                    var value = values[i];
-                    if (value != null)
+                    var valueCount = values.Count;
+                    var headerKey = HeaderBytes.Slice(keyStart, keyLength);
+                    for (var i = 0; i < valueCount; i++)
                     {{
-                        output.Write(headerKey);
-                        output.WriteAsciiNoValidation(value);
+                        var value = values[i];
+                        if (value != null)
+                        {{
+                            output.Write(headerKey);
+                            output.WriteAsciiNoValidation(value);
+                        }}
                     }}
                 }}
-
-                if (tempBits == 0)
-                {{
-                    return;
-                }}
-            }}
-
-        MoveNext:
-            // Compiled to Jump table
-            switch (next)
-            {{{Each(loop.Headers.OrderBy(h => !h.PrimaryHeader).Select((h, i) => (Header: h, Index: i)), hi => $@"
-                case {hi.Index}:
-                    goto Header{hi.Header.Identifier};")}
-                default:
-                    return;
-            }}
-            {Each(loop.Headers.OrderBy(h => !h.PrimaryHeader).Select((h, i) => (Header: h, Index: i)), hi => $@"
-        Header{hi.Header.Identifier}: // case {hi.Index}
-            if ({hi.Header.TestTempBit()})
-            {{
-                tempBits ^= {"0x" + (1L << hi.Header.Index).ToString("x")}L;{(hi.Header.Identifier != "ContentLength" ? $@"{(hi.Header.EnhancedSetter == false ? $@"
-                values = ref _headers._{hi.Header.Identifier};
-                keyStart = {hi.Header.BytesOffset};
-                keyLength = {hi.Header.BytesCount};
-                next = {hi.Index + 1};
-                goto OutputHeader;" : $@"
-                if (_headers._raw{hi.Header.Identifier} != null)
-                {{
-                    output.Write(_headers._raw{hi.Header.Identifier});
-                }}
-                else
-                {{
-                    values = ref _headers._{hi.Header.Identifier};
-                    keyStart = {hi.Header.BytesOffset};
-                    keyLength = {hi.Header.BytesCount};
-                    next = {hi.Index + 1};
-                    goto OutputHeader;
-                }}")}" : $@"
-                output.Write(HeaderBytes.Slice({hi.Header.BytesOffset}, {hi.Header.BytesCount}));
-                output.WriteNumeric((ulong)ContentLength.Value);
-                if (tempBits == 0)
-                {{
-                    return;
-                }}")}
-            }}")}
-
-            return;
+            }} while (tempBits != 0);
         }}" : "")}
         {(loop.ClassName == "HttpRequestHeaders" ? $@"
         public unsafe void Append(byte* pKeyBytes, int keyLength, string value)

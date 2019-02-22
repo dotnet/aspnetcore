@@ -7689,499 +7689,454 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             var keyLength = 0;
             ref readonly StringValues values = ref Unsafe.AsRef<StringValues>(null);
 
-            goto MoveNext;
-
-        OutputHeader:
+            do
             {
-                var valueCount = values.Count;
-                var headerKey = HeaderBytes.Slice(keyStart, keyLength);
-                for (var i = 0; i < valueCount; i++)
+                switch (next)
                 {
-                    var value = values[i];
-                    if (value != null)
+                    case 0: // Header: "Connection"
+                        if ((tempBits & 0x2L) != 0)
+                        {
+                            tempBits ^= 0x2L;
+                            if (_headers._rawConnection != null)
+                            {
+                                output.Write(_headers._rawConnection);
+                            }
+                            else
+                            {
+                                values = ref _headers._Connection;
+                                keyStart = 17;
+                                keyLength = 14;
+                                next = 1;
+                                break; // OutputHeader
+                            }
+                        }
+                        goto case 1;
+                    case 1: // Header: "Date"
+                        if ((tempBits & 0x4L) != 0)
+                        {
+                            tempBits ^= 0x4L;
+                            if (_headers._rawDate != null)
+                            {
+                                output.Write(_headers._rawDate);
+                            }
+                            else
+                            {
+                                values = ref _headers._Date;
+                                keyStart = 31;
+                                keyLength = 8;
+                                next = 2;
+                                break; // OutputHeader
+                            }
+                        }
+                        goto case 2;
+                    case 2: // Header: "Content-Type"
+                        if ((tempBits & 0x800L) != 0)
+                        {
+                            tempBits ^= 0x800L;
+                            values = ref _headers._ContentType;
+                            keyStart = 133;
+                            keyLength = 16;
+                            next = 3;
+                            break; // OutputHeader
+                        }
+                        goto case 3;
+                    case 3: // Header: "Server"
+                        if ((tempBits & 0x2000000L) != 0)
+                        {
+                            tempBits ^= 0x2000000L;
+                            if (_headers._rawServer != null)
+                            {
+                                output.Write(_headers._rawServer);
+                            }
+                            else
+                            {
+                                values = ref _headers._Server;
+                                keyStart = 350;
+                                keyLength = 10;
+                                next = 4;
+                                break; // OutputHeader
+                            }
+                        }
+                        goto case 4;
+                    case 4: // Header: "Content-Length"
+                        if ((tempBits & 0x8000000000000000L) != 0)
+                        {
+                            tempBits ^= 0x8000000000000000L;
+                            output.Write(HeaderBytes.Slice(592, 18));
+                            output.WriteNumeric((ulong)ContentLength.Value);
+                            if (tempBits == 0)
+                            {
+                                return;
+                            }
+                        }
+                        goto case 5;
+                    case 5: // Header: "Cache-Control"
+                        if ((tempBits & 0x1L) != 0)
+                        {
+                            tempBits ^= 0x1L;
+                            values = ref _headers._CacheControl;
+                            keyStart = 0;
+                            keyLength = 17;
+                            next = 6;
+                            break; // OutputHeader
+                        }
+                        goto case 6;
+                    case 6: // Header: "Keep-Alive"
+                        if ((tempBits & 0x8L) != 0)
+                        {
+                            tempBits ^= 0x8L;
+                            values = ref _headers._KeepAlive;
+                            keyStart = 39;
+                            keyLength = 14;
+                            next = 7;
+                            break; // OutputHeader
+                        }
+                        goto case 7;
+                    case 7: // Header: "Pragma"
+                        if ((tempBits & 0x10L) != 0)
+                        {
+                            tempBits ^= 0x10L;
+                            values = ref _headers._Pragma;
+                            keyStart = 53;
+                            keyLength = 10;
+                            next = 8;
+                            break; // OutputHeader
+                        }
+                        goto case 8;
+                    case 8: // Header: "Trailer"
+                        if ((tempBits & 0x20L) != 0)
+                        {
+                            tempBits ^= 0x20L;
+                            values = ref _headers._Trailer;
+                            keyStart = 63;
+                            keyLength = 11;
+                            next = 9;
+                            break; // OutputHeader
+                        }
+                        goto case 9;
+                    case 9: // Header: "Transfer-Encoding"
+                        if ((tempBits & 0x40L) != 0)
+                        {
+                            tempBits ^= 0x40L;
+                            if (_headers._rawTransferEncoding != null)
+                            {
+                                output.Write(_headers._rawTransferEncoding);
+                            }
+                            else
+                            {
+                                values = ref _headers._TransferEncoding;
+                                keyStart = 74;
+                                keyLength = 21;
+                                next = 10;
+                                break; // OutputHeader
+                            }
+                        }
+                        goto case 10;
+                    case 10: // Header: "Upgrade"
+                        if ((tempBits & 0x80L) != 0)
+                        {
+                            tempBits ^= 0x80L;
+                            values = ref _headers._Upgrade;
+                            keyStart = 95;
+                            keyLength = 11;
+                            next = 11;
+                            break; // OutputHeader
+                        }
+                        goto case 11;
+                    case 11: // Header: "Via"
+                        if ((tempBits & 0x100L) != 0)
+                        {
+                            tempBits ^= 0x100L;
+                            values = ref _headers._Via;
+                            keyStart = 106;
+                            keyLength = 7;
+                            next = 12;
+                            break; // OutputHeader
+                        }
+                        goto case 12;
+                    case 12: // Header: "Warning"
+                        if ((tempBits & 0x200L) != 0)
+                        {
+                            tempBits ^= 0x200L;
+                            values = ref _headers._Warning;
+                            keyStart = 113;
+                            keyLength = 11;
+                            next = 13;
+                            break; // OutputHeader
+                        }
+                        goto case 13;
+                    case 13: // Header: "Allow"
+                        if ((tempBits & 0x400L) != 0)
+                        {
+                            tempBits ^= 0x400L;
+                            values = ref _headers._Allow;
+                            keyStart = 124;
+                            keyLength = 9;
+                            next = 14;
+                            break; // OutputHeader
+                        }
+                        goto case 14;
+                    case 14: // Header: "Content-Encoding"
+                        if ((tempBits & 0x1000L) != 0)
+                        {
+                            tempBits ^= 0x1000L;
+                            values = ref _headers._ContentEncoding;
+                            keyStart = 149;
+                            keyLength = 20;
+                            next = 15;
+                            break; // OutputHeader
+                        }
+                        goto case 15;
+                    case 15: // Header: "Content-Language"
+                        if ((tempBits & 0x2000L) != 0)
+                        {
+                            tempBits ^= 0x2000L;
+                            values = ref _headers._ContentLanguage;
+                            keyStart = 169;
+                            keyLength = 20;
+                            next = 16;
+                            break; // OutputHeader
+                        }
+                        goto case 16;
+                    case 16: // Header: "Content-Location"
+                        if ((tempBits & 0x4000L) != 0)
+                        {
+                            tempBits ^= 0x4000L;
+                            values = ref _headers._ContentLocation;
+                            keyStart = 189;
+                            keyLength = 20;
+                            next = 17;
+                            break; // OutputHeader
+                        }
+                        goto case 17;
+                    case 17: // Header: "Content-MD5"
+                        if ((tempBits & 0x8000L) != 0)
+                        {
+                            tempBits ^= 0x8000L;
+                            values = ref _headers._ContentMD5;
+                            keyStart = 209;
+                            keyLength = 15;
+                            next = 18;
+                            break; // OutputHeader
+                        }
+                        goto case 18;
+                    case 18: // Header: "Content-Range"
+                        if ((tempBits & 0x10000L) != 0)
+                        {
+                            tempBits ^= 0x10000L;
+                            values = ref _headers._ContentRange;
+                            keyStart = 224;
+                            keyLength = 17;
+                            next = 19;
+                            break; // OutputHeader
+                        }
+                        goto case 19;
+                    case 19: // Header: "Expires"
+                        if ((tempBits & 0x20000L) != 0)
+                        {
+                            tempBits ^= 0x20000L;
+                            values = ref _headers._Expires;
+                            keyStart = 241;
+                            keyLength = 11;
+                            next = 20;
+                            break; // OutputHeader
+                        }
+                        goto case 20;
+                    case 20: // Header: "Last-Modified"
+                        if ((tempBits & 0x40000L) != 0)
+                        {
+                            tempBits ^= 0x40000L;
+                            values = ref _headers._LastModified;
+                            keyStart = 252;
+                            keyLength = 17;
+                            next = 21;
+                            break; // OutputHeader
+                        }
+                        goto case 21;
+                    case 21: // Header: "Accept-Ranges"
+                        if ((tempBits & 0x80000L) != 0)
+                        {
+                            tempBits ^= 0x80000L;
+                            values = ref _headers._AcceptRanges;
+                            keyStart = 269;
+                            keyLength = 17;
+                            next = 22;
+                            break; // OutputHeader
+                        }
+                        goto case 22;
+                    case 22: // Header: "Age"
+                        if ((tempBits & 0x100000L) != 0)
+                        {
+                            tempBits ^= 0x100000L;
+                            values = ref _headers._Age;
+                            keyStart = 286;
+                            keyLength = 7;
+                            next = 23;
+                            break; // OutputHeader
+                        }
+                        goto case 23;
+                    case 23: // Header: "ETag"
+                        if ((tempBits & 0x200000L) != 0)
+                        {
+                            tempBits ^= 0x200000L;
+                            values = ref _headers._ETag;
+                            keyStart = 293;
+                            keyLength = 8;
+                            next = 24;
+                            break; // OutputHeader
+                        }
+                        goto case 24;
+                    case 24: // Header: "Location"
+                        if ((tempBits & 0x400000L) != 0)
+                        {
+                            tempBits ^= 0x400000L;
+                            values = ref _headers._Location;
+                            keyStart = 301;
+                            keyLength = 12;
+                            next = 25;
+                            break; // OutputHeader
+                        }
+                        goto case 25;
+                    case 25: // Header: "Proxy-Authenticate"
+                        if ((tempBits & 0x800000L) != 0)
+                        {
+                            tempBits ^= 0x800000L;
+                            values = ref _headers._ProxyAuthenticate;
+                            keyStart = 313;
+                            keyLength = 22;
+                            next = 26;
+                            break; // OutputHeader
+                        }
+                        goto case 26;
+                    case 26: // Header: "Retry-After"
+                        if ((tempBits & 0x1000000L) != 0)
+                        {
+                            tempBits ^= 0x1000000L;
+                            values = ref _headers._RetryAfter;
+                            keyStart = 335;
+                            keyLength = 15;
+                            next = 27;
+                            break; // OutputHeader
+                        }
+                        goto case 27;
+                    case 27: // Header: "Set-Cookie"
+                        if ((tempBits & 0x4000000L) != 0)
+                        {
+                            tempBits ^= 0x4000000L;
+                            values = ref _headers._SetCookie;
+                            keyStart = 360;
+                            keyLength = 14;
+                            next = 28;
+                            break; // OutputHeader
+                        }
+                        goto case 28;
+                    case 28: // Header: "Vary"
+                        if ((tempBits & 0x8000000L) != 0)
+                        {
+                            tempBits ^= 0x8000000L;
+                            values = ref _headers._Vary;
+                            keyStart = 374;
+                            keyLength = 8;
+                            next = 29;
+                            break; // OutputHeader
+                        }
+                        goto case 29;
+                    case 29: // Header: "WWW-Authenticate"
+                        if ((tempBits & 0x10000000L) != 0)
+                        {
+                            tempBits ^= 0x10000000L;
+                            values = ref _headers._WWWAuthenticate;
+                            keyStart = 382;
+                            keyLength = 20;
+                            next = 30;
+                            break; // OutputHeader
+                        }
+                        goto case 30;
+                    case 30: // Header: "Access-Control-Allow-Credentials"
+                        if ((tempBits & 0x20000000L) != 0)
+                        {
+                            tempBits ^= 0x20000000L;
+                            values = ref _headers._AccessControlAllowCredentials;
+                            keyStart = 402;
+                            keyLength = 36;
+                            next = 31;
+                            break; // OutputHeader
+                        }
+                        goto case 31;
+                    case 31: // Header: "Access-Control-Allow-Headers"
+                        if ((tempBits & 0x40000000L) != 0)
+                        {
+                            tempBits ^= 0x40000000L;
+                            values = ref _headers._AccessControlAllowHeaders;
+                            keyStart = 438;
+                            keyLength = 32;
+                            next = 32;
+                            break; // OutputHeader
+                        }
+                        goto case 32;
+                    case 32: // Header: "Access-Control-Allow-Methods"
+                        if ((tempBits & 0x80000000L) != 0)
+                        {
+                            tempBits ^= 0x80000000L;
+                            values = ref _headers._AccessControlAllowMethods;
+                            keyStart = 470;
+                            keyLength = 32;
+                            next = 33;
+                            break; // OutputHeader
+                        }
+                        goto case 33;
+                    case 33: // Header: "Access-Control-Allow-Origin"
+                        if ((tempBits & 0x100000000L) != 0)
+                        {
+                            tempBits ^= 0x100000000L;
+                            values = ref _headers._AccessControlAllowOrigin;
+                            keyStart = 502;
+                            keyLength = 31;
+                            next = 34;
+                            break; // OutputHeader
+                        }
+                        goto case 34;
+                    case 34: // Header: "Access-Control-Expose-Headers"
+                        if ((tempBits & 0x200000000L) != 0)
+                        {
+                            tempBits ^= 0x200000000L;
+                            values = ref _headers._AccessControlExposeHeaders;
+                            keyStart = 533;
+                            keyLength = 33;
+                            next = 35;
+                            break; // OutputHeader
+                        }
+                        goto case 35;
+                    case 35: // Header: "Access-Control-Max-Age"
+                        if ((tempBits & 0x400000000L) != 0)
+                        {
+                            tempBits ^= 0x400000000L;
+                            values = ref _headers._AccessControlMaxAge;
+                            keyStart = 566;
+                            keyLength = 26;
+                            next = 36;
+                            break; // OutputHeader
+                        }
+                        return;
+                    default:
+                        return;
+                }
+
+                // OutputHeader
+                {
+                    var valueCount = values.Count;
+                    var headerKey = HeaderBytes.Slice(keyStart, keyLength);
+                    for (var i = 0; i < valueCount; i++)
                     {
-                        output.Write(headerKey);
-                        output.WriteAsciiNoValidation(value);
+                        var value = values[i];
+                        if (value != null)
+                        {
+                            output.Write(headerKey);
+                            output.WriteAsciiNoValidation(value);
+                        }
                     }
                 }
-
-                if (tempBits == 0)
-                {
-                    return;
-                }
-            }
-
-        MoveNext:
-            // Compiled to Jump table
-            switch (next)
-            {
-                case 0:
-                    goto HeaderConnection;
-                case 1:
-                    goto HeaderDate;
-                case 2:
-                    goto HeaderContentType;
-                case 3:
-                    goto HeaderServer;
-                case 4:
-                    goto HeaderContentLength;
-                case 5:
-                    goto HeaderCacheControl;
-                case 6:
-                    goto HeaderKeepAlive;
-                case 7:
-                    goto HeaderPragma;
-                case 8:
-                    goto HeaderTrailer;
-                case 9:
-                    goto HeaderTransferEncoding;
-                case 10:
-                    goto HeaderUpgrade;
-                case 11:
-                    goto HeaderVia;
-                case 12:
-                    goto HeaderWarning;
-                case 13:
-                    goto HeaderAllow;
-                case 14:
-                    goto HeaderContentEncoding;
-                case 15:
-                    goto HeaderContentLanguage;
-                case 16:
-                    goto HeaderContentLocation;
-                case 17:
-                    goto HeaderContentMD5;
-                case 18:
-                    goto HeaderContentRange;
-                case 19:
-                    goto HeaderExpires;
-                case 20:
-                    goto HeaderLastModified;
-                case 21:
-                    goto HeaderAcceptRanges;
-                case 22:
-                    goto HeaderAge;
-                case 23:
-                    goto HeaderETag;
-                case 24:
-                    goto HeaderLocation;
-                case 25:
-                    goto HeaderProxyAuthenticate;
-                case 26:
-                    goto HeaderRetryAfter;
-                case 27:
-                    goto HeaderSetCookie;
-                case 28:
-                    goto HeaderVary;
-                case 29:
-                    goto HeaderWWWAuthenticate;
-                case 30:
-                    goto HeaderAccessControlAllowCredentials;
-                case 31:
-                    goto HeaderAccessControlAllowHeaders;
-                case 32:
-                    goto HeaderAccessControlAllowMethods;
-                case 33:
-                    goto HeaderAccessControlAllowOrigin;
-                case 34:
-                    goto HeaderAccessControlExposeHeaders;
-                case 35:
-                    goto HeaderAccessControlMaxAge;
-                default:
-                    return;
-            }
-            
-        HeaderConnection: // case 0
-            if ((tempBits & 0x2L) != 0)
-            {
-                tempBits ^= 0x2L;
-                if (_headers._rawConnection != null)
-                {
-                    output.Write(_headers._rawConnection);
-                }
-                else
-                {
-                    values = ref _headers._Connection;
-                    keyStart = 17;
-                    keyLength = 14;
-                    next = 1;
-                    goto OutputHeader;
-                }
-            }
-        HeaderDate: // case 1
-            if ((tempBits & 0x4L) != 0)
-            {
-                tempBits ^= 0x4L;
-                if (_headers._rawDate != null)
-                {
-                    output.Write(_headers._rawDate);
-                }
-                else
-                {
-                    values = ref _headers._Date;
-                    keyStart = 31;
-                    keyLength = 8;
-                    next = 2;
-                    goto OutputHeader;
-                }
-            }
-        HeaderContentType: // case 2
-            if ((tempBits & 0x800L) != 0)
-            {
-                tempBits ^= 0x800L;
-                values = ref _headers._ContentType;
-                keyStart = 133;
-                keyLength = 16;
-                next = 3;
-                goto OutputHeader;
-            }
-        HeaderServer: // case 3
-            if ((tempBits & 0x2000000L) != 0)
-            {
-                tempBits ^= 0x2000000L;
-                if (_headers._rawServer != null)
-                {
-                    output.Write(_headers._rawServer);
-                }
-                else
-                {
-                    values = ref _headers._Server;
-                    keyStart = 350;
-                    keyLength = 10;
-                    next = 4;
-                    goto OutputHeader;
-                }
-            }
-        HeaderContentLength: // case 4
-            if ((tempBits & 0x8000000000000000L) != 0)
-            {
-                tempBits ^= 0x8000000000000000L;
-                output.Write(HeaderBytes.Slice(592, 18));
-                output.WriteNumeric((ulong)ContentLength.Value);
-                if (tempBits == 0)
-                {
-                    return;
-                }
-            }
-        HeaderCacheControl: // case 5
-            if ((tempBits & 0x1L) != 0)
-            {
-                tempBits ^= 0x1L;
-                values = ref _headers._CacheControl;
-                keyStart = 0;
-                keyLength = 17;
-                next = 6;
-                goto OutputHeader;
-            }
-        HeaderKeepAlive: // case 6
-            if ((tempBits & 0x8L) != 0)
-            {
-                tempBits ^= 0x8L;
-                values = ref _headers._KeepAlive;
-                keyStart = 39;
-                keyLength = 14;
-                next = 7;
-                goto OutputHeader;
-            }
-        HeaderPragma: // case 7
-            if ((tempBits & 0x10L) != 0)
-            {
-                tempBits ^= 0x10L;
-                values = ref _headers._Pragma;
-                keyStart = 53;
-                keyLength = 10;
-                next = 8;
-                goto OutputHeader;
-            }
-        HeaderTrailer: // case 8
-            if ((tempBits & 0x20L) != 0)
-            {
-                tempBits ^= 0x20L;
-                values = ref _headers._Trailer;
-                keyStart = 63;
-                keyLength = 11;
-                next = 9;
-                goto OutputHeader;
-            }
-        HeaderTransferEncoding: // case 9
-            if ((tempBits & 0x40L) != 0)
-            {
-                tempBits ^= 0x40L;
-                if (_headers._rawTransferEncoding != null)
-                {
-                    output.Write(_headers._rawTransferEncoding);
-                }
-                else
-                {
-                    values = ref _headers._TransferEncoding;
-                    keyStart = 74;
-                    keyLength = 21;
-                    next = 10;
-                    goto OutputHeader;
-                }
-            }
-        HeaderUpgrade: // case 10
-            if ((tempBits & 0x80L) != 0)
-            {
-                tempBits ^= 0x80L;
-                values = ref _headers._Upgrade;
-                keyStart = 95;
-                keyLength = 11;
-                next = 11;
-                goto OutputHeader;
-            }
-        HeaderVia: // case 11
-            if ((tempBits & 0x100L) != 0)
-            {
-                tempBits ^= 0x100L;
-                values = ref _headers._Via;
-                keyStart = 106;
-                keyLength = 7;
-                next = 12;
-                goto OutputHeader;
-            }
-        HeaderWarning: // case 12
-            if ((tempBits & 0x200L) != 0)
-            {
-                tempBits ^= 0x200L;
-                values = ref _headers._Warning;
-                keyStart = 113;
-                keyLength = 11;
-                next = 13;
-                goto OutputHeader;
-            }
-        HeaderAllow: // case 13
-            if ((tempBits & 0x400L) != 0)
-            {
-                tempBits ^= 0x400L;
-                values = ref _headers._Allow;
-                keyStart = 124;
-                keyLength = 9;
-                next = 14;
-                goto OutputHeader;
-            }
-        HeaderContentEncoding: // case 14
-            if ((tempBits & 0x1000L) != 0)
-            {
-                tempBits ^= 0x1000L;
-                values = ref _headers._ContentEncoding;
-                keyStart = 149;
-                keyLength = 20;
-                next = 15;
-                goto OutputHeader;
-            }
-        HeaderContentLanguage: // case 15
-            if ((tempBits & 0x2000L) != 0)
-            {
-                tempBits ^= 0x2000L;
-                values = ref _headers._ContentLanguage;
-                keyStart = 169;
-                keyLength = 20;
-                next = 16;
-                goto OutputHeader;
-            }
-        HeaderContentLocation: // case 16
-            if ((tempBits & 0x4000L) != 0)
-            {
-                tempBits ^= 0x4000L;
-                values = ref _headers._ContentLocation;
-                keyStart = 189;
-                keyLength = 20;
-                next = 17;
-                goto OutputHeader;
-            }
-        HeaderContentMD5: // case 17
-            if ((tempBits & 0x8000L) != 0)
-            {
-                tempBits ^= 0x8000L;
-                values = ref _headers._ContentMD5;
-                keyStart = 209;
-                keyLength = 15;
-                next = 18;
-                goto OutputHeader;
-            }
-        HeaderContentRange: // case 18
-            if ((tempBits & 0x10000L) != 0)
-            {
-                tempBits ^= 0x10000L;
-                values = ref _headers._ContentRange;
-                keyStart = 224;
-                keyLength = 17;
-                next = 19;
-                goto OutputHeader;
-            }
-        HeaderExpires: // case 19
-            if ((tempBits & 0x20000L) != 0)
-            {
-                tempBits ^= 0x20000L;
-                values = ref _headers._Expires;
-                keyStart = 241;
-                keyLength = 11;
-                next = 20;
-                goto OutputHeader;
-            }
-        HeaderLastModified: // case 20
-            if ((tempBits & 0x40000L) != 0)
-            {
-                tempBits ^= 0x40000L;
-                values = ref _headers._LastModified;
-                keyStart = 252;
-                keyLength = 17;
-                next = 21;
-                goto OutputHeader;
-            }
-        HeaderAcceptRanges: // case 21
-            if ((tempBits & 0x80000L) != 0)
-            {
-                tempBits ^= 0x80000L;
-                values = ref _headers._AcceptRanges;
-                keyStart = 269;
-                keyLength = 17;
-                next = 22;
-                goto OutputHeader;
-            }
-        HeaderAge: // case 22
-            if ((tempBits & 0x100000L) != 0)
-            {
-                tempBits ^= 0x100000L;
-                values = ref _headers._Age;
-                keyStart = 286;
-                keyLength = 7;
-                next = 23;
-                goto OutputHeader;
-            }
-        HeaderETag: // case 23
-            if ((tempBits & 0x200000L) != 0)
-            {
-                tempBits ^= 0x200000L;
-                values = ref _headers._ETag;
-                keyStart = 293;
-                keyLength = 8;
-                next = 24;
-                goto OutputHeader;
-            }
-        HeaderLocation: // case 24
-            if ((tempBits & 0x400000L) != 0)
-            {
-                tempBits ^= 0x400000L;
-                values = ref _headers._Location;
-                keyStart = 301;
-                keyLength = 12;
-                next = 25;
-                goto OutputHeader;
-            }
-        HeaderProxyAuthenticate: // case 25
-            if ((tempBits & 0x800000L) != 0)
-            {
-                tempBits ^= 0x800000L;
-                values = ref _headers._ProxyAuthenticate;
-                keyStart = 313;
-                keyLength = 22;
-                next = 26;
-                goto OutputHeader;
-            }
-        HeaderRetryAfter: // case 26
-            if ((tempBits & 0x1000000L) != 0)
-            {
-                tempBits ^= 0x1000000L;
-                values = ref _headers._RetryAfter;
-                keyStart = 335;
-                keyLength = 15;
-                next = 27;
-                goto OutputHeader;
-            }
-        HeaderSetCookie: // case 27
-            if ((tempBits & 0x4000000L) != 0)
-            {
-                tempBits ^= 0x4000000L;
-                values = ref _headers._SetCookie;
-                keyStart = 360;
-                keyLength = 14;
-                next = 28;
-                goto OutputHeader;
-            }
-        HeaderVary: // case 28
-            if ((tempBits & 0x8000000L) != 0)
-            {
-                tempBits ^= 0x8000000L;
-                values = ref _headers._Vary;
-                keyStart = 374;
-                keyLength = 8;
-                next = 29;
-                goto OutputHeader;
-            }
-        HeaderWWWAuthenticate: // case 29
-            if ((tempBits & 0x10000000L) != 0)
-            {
-                tempBits ^= 0x10000000L;
-                values = ref _headers._WWWAuthenticate;
-                keyStart = 382;
-                keyLength = 20;
-                next = 30;
-                goto OutputHeader;
-            }
-        HeaderAccessControlAllowCredentials: // case 30
-            if ((tempBits & 0x20000000L) != 0)
-            {
-                tempBits ^= 0x20000000L;
-                values = ref _headers._AccessControlAllowCredentials;
-                keyStart = 402;
-                keyLength = 36;
-                next = 31;
-                goto OutputHeader;
-            }
-        HeaderAccessControlAllowHeaders: // case 31
-            if ((tempBits & 0x40000000L) != 0)
-            {
-                tempBits ^= 0x40000000L;
-                values = ref _headers._AccessControlAllowHeaders;
-                keyStart = 438;
-                keyLength = 32;
-                next = 32;
-                goto OutputHeader;
-            }
-        HeaderAccessControlAllowMethods: // case 32
-            if ((tempBits & 0x80000000L) != 0)
-            {
-                tempBits ^= 0x80000000L;
-                values = ref _headers._AccessControlAllowMethods;
-                keyStart = 470;
-                keyLength = 32;
-                next = 33;
-                goto OutputHeader;
-            }
-        HeaderAccessControlAllowOrigin: // case 33
-            if ((tempBits & 0x100000000L) != 0)
-            {
-                tempBits ^= 0x100000000L;
-                values = ref _headers._AccessControlAllowOrigin;
-                keyStart = 502;
-                keyLength = 31;
-                next = 34;
-                goto OutputHeader;
-            }
-        HeaderAccessControlExposeHeaders: // case 34
-            if ((tempBits & 0x200000000L) != 0)
-            {
-                tempBits ^= 0x200000000L;
-                values = ref _headers._AccessControlExposeHeaders;
-                keyStart = 533;
-                keyLength = 33;
-                next = 35;
-                goto OutputHeader;
-            }
-        HeaderAccessControlMaxAge: // case 35
-            if ((tempBits & 0x400000000L) != 0)
-            {
-                tempBits ^= 0x400000000L;
-                values = ref _headers._AccessControlMaxAge;
-                keyStart = 566;
-                keyLength = 26;
-                next = 36;
-                goto OutputHeader;
-            }
-
-            return;
+            } while (tempBits != 0);
         }
         
 
