@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)RangeHelper\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
     <Content Include="TestDocument1MB.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
