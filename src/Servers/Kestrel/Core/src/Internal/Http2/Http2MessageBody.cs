@@ -100,7 +100,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public override void Complete(Exception exception)
         {
-            _context.RequestBodyPipe.Reader.Complete(exception);
+            _context.RequestBodyPipe.Reader.Complete();
+            _context.ReportApplicationError(exception);
         }
 
         public override void OnWriterCompleted(Action<Exception, object> callback, object state)
