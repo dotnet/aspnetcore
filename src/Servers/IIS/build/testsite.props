@@ -10,7 +10,6 @@
     <!-- Work around until we get a new WebSdk -->
     <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
     <HasTestAssetProfile Condition="'$(TestAssetProfile)' != ''">true</HasTestAssetProfile>
-    <AppendRuntimeIdentifierToOutputPath Condition="'$(HasTestAssetProfile)' == 'true'">false</AppendRuntimeIdentifierToOutputPath>
     <TestAssetOutputName Condition="'$(TestAssetOutputName)' == ''">$(MSBuildProjectName)</TestAssetOutputName>
   </PropertyGroup>
 
@@ -81,8 +80,6 @@
 
   <Target Name="PrepareForTestAssetPublish" BeforeTargets="PrepareForPublish" Condition="'@(TestAssetPublishProfile->Count())' != '0'">
     <PropertyGroup Condition="'$(HasTestAssetProfile)' == 'true'">
-      <!-- Remove  RuntimeIdentifier from default PublishDir -->
-      <PublishDir Condition="'$(PublishDir)' == '$(OutputPath)$(RuntimeIdentifier)\$(PublishDirName)\'">$(OutputPath)$(PublishDirName)</PublishDir>
       <PublishDir>$(PublishDir)\$(TestAssetOutputName)-$(TestAssetProfile)\</PublishDir>
     </PropertyGroup>
 
@@ -92,14 +89,26 @@
     </PropertyGroup>
   </Target>
 
-  <Target Name="PublishTestsAssets" Condition="'$(TestAssetProfile)' == '' AND '@(TestAssetPublishProfile->Count())' != '0'">
+  <Target Name="PublishTestsAsset" DependsOnTargets="Publish" Returns="@(PublishedTestAsset)">
+    <ConvertToAbsolutePath Paths="$(PublishDir)">
+      <Output TaskParameter="AbsolutePaths" PropertyName="PublishAbsoluteDir" />
+    </ConvertToAbsolutePath>
+
+    <ItemGroup>
+      <PublishedTestAsset Include="$(TestAssetOutputName)-$(TestAssetProfile)" Path="$(PublishAbsoluteDir)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="PublishTestsAssets" Condition="'$(TestAssetProfile)' == '' AND '@(TestAssetPublishProfile->Count())' != '0'" Returns="@(PublishedTestAsset)">
 
     <!--
       _InsidePublishTestsAssets is to avoid invoking this target recursively
       Platform;PlatformTarget removal is fix builds inside VS -->
     <MSBuild Projects="$(MSBuildProjectFullPath)"
-             Targets="Publish"
+             Targets="PublishTestsAsset"
              RemoveProperties="Platform;PlatformTarget"
-             Properties="TestAssetProfile=%(TestAssetPublishProfile.Identity);ReferenceTestTasks=false;%(TestAssetPublishProfile.Properties)" />
+             Properties="PublishDir=$(PublishDir);TestAssetProfile=%(TestAssetPublishProfile.Identity);ReferenceTestTasks=false;%(TestAssetPublishProfile.Properties)">
+      <Output TaskParameter="TargetOutputs" ItemName="PublishedTestAsset" />
+    </MSBuild>
   </Target>
 </Project>

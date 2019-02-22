@@ -22,16 +22,21 @@
   </ItemGroup>
 
   <Target Name="BuildAssets" AfterTargets="Build">
-    <MSBuild Projects="@(ProjectReference)" Targets="PublishTestsAssets" SkipNonexistentTargets="true" BuildInParallel="True" />
+    <MSBuild Projects="@(ProjectReference)" Targets="PublishTestsAssets" SkipNonexistentTargets="true" BuildInParallel="True">
+      <Output TaskParameter="TargetOutputs" ItemName="PublishedTestAsset" />
+    </MSBuild>
   </Target>
 
-  <Target Name="PublishAssets" AfterTargets="Publish">
+  <Target Name="CopyAssets" AfterTargets="Publish" Condition="'@(PublishedTestAsset->Count())' != '0'">
 
-    <ConvertToAbsolutePath Paths="$(PublishDir)">
-      <Output TaskParameter="AbsolutePaths" PropertyName="PublishAbsoluteDir" />
-    </ConvertToAbsolutePath>
+    <ItemGroup>
+     <_FilesToCopy Include="%(PublishedTestAsset.Path)\**\*">
+        <DestinationDir>$(PublishDir)\%(PublishedTestAsset.Identity)\</DestinationDir>
+      </_FilesToCopy>
+    </ItemGroup>
 
-    <MSBuild Projects="@(ProjectReference)" Targets="PublishTestsAssets" SkipNonexistentTargets="true" BuildInParallel="True" Properties="PublishDir=$(PublishAbsoluteDir)" />
+    <Copy SourceFiles="@(_FilesToCopy)" DestinationFiles="@(_FilesToCopy->'%(DestinationDir)%(RecursiveDir)%(FileName)%(Extension)')" />
+
   </Target>
 
 </Project>
