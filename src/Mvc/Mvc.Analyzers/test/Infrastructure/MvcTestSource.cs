@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Mvc
             }
 
             var solutionDirectory = TestPathUtilities.GetSolutionRootDirectory("Mvc");
-            var projectDirectory = Path.Combine(AppContext.BaseDirectory, "Mvc.Analyzers", "test");
+            var projectDirectory = Path.Combine(solutionDirectory, "Mvc.Analyzers", "test");
             return projectDirectory;
         }
     }
