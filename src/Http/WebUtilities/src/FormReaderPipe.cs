@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         private byte[] _buffer;
         private readonly PipeReader _pipeReader;
         private readonly Encoding _encoding;
-
+        private readonly Encoder _encoder;
         private string _currentKey;
         private string _currentValue;
         private bool _endOfStream;
@@ -33,6 +33,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         {
             _pipeReader = pipeReader;
             _encoding = encoding;
+            _encoder = _encoding.GetEncoder();
         }
 
         /// <summary>
@@ -56,7 +57,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns>The next key value pair, or null when the end of the form is reached.</returns>
-        public async Task<KeyValuePair<string, string>?> ReadNextPairAsync(CancellationToken cancellationToken = new CancellationToken())
+        public async Task<KeyValuePair<string, string>?> ReadNextPairAsync(CancellationToken cancellationToken = default)
         {
             await ReadNextPairPipeAsync(cancellationToken);
             if (ReadSucceeded())
@@ -74,7 +75,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// Parses an HTTP form body.
         /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
         /// <returns>The collection containing the parsed HTTP form body.</returns>
-        public async Task<Dictionary<string, StringValues>> ReadFormAsync(CancellationToken cancellationToken = new CancellationToken())
+        public async Task<Dictionary<string, StringValues>> ReadFormAsync(CancellationToken cancellationToken = default)
         {
             var accumulator = new KeyValueAccumulator();
             while (!_endOfStream)
@@ -85,7 +86,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             return accumulator.GetResults();
         }
 
-        private async Task ReadNextPairPipeAsync(CancellationToken cancellationToken = new CancellationToken())
+        private async Task ReadNextPairPipeAsync(CancellationToken cancellationToken = default)
         {
             StartReadNextPair();
             while (!_endOfStream)
@@ -94,7 +95,6 @@ namespace Microsoft.AspNetCore.WebUtilities
                 if (_bufferCount == 0)
                 {
                     // read from the pipe
-                    //await BufferAsync(cancellationToken);
                     await PipeReadAsync(cancellationToken);
                 }
                 if (TryReadNextPair())
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             _bufferOffset = 0;
             // how do I get T from a read only sequence? No indexer
             var readResult = await _pipeReader.ReadAsync(cancellationToken);
-            // Does ToArray allocate?
+            // Does ToArray allocate? Probably haha
             _buffer = readResult.Buffer.ToArray();
             _endOfStream = readResult.IsCompleted;
         }
@@ -171,9 +171,9 @@ namespace Microsoft.AspNetCore.WebUtilities
                 return true;
             }
             
-            _bufferCount--;
             var c = _buffer[_bufferOffset++];
             _bufferCount--;
+            
             if (c == separator)
             {
                 word = BuildWord();
@@ -192,7 +192,10 @@ namespace Microsoft.AspNetCore.WebUtilities
         // Ideally, we should only create the string after everything is done.
         private string BuildWord()
         {
+            // need a start and end index
             // TWO string copies here.... Wowzer it's bad
+            // need to handle encodoing here. Does that need to be character by character?
+            // I think so.
             _builder.Replace('+', ' ');
             // First string alloc
             var result = _builder.ToString();
