@@ -8,6 +8,6 @@
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.Logging.Testing" />
     <Reference Include="Microsoft.Extensions.Logging" />
-    <Reference Include="Microsoft.Extensions.Logging.Tests" />
+    <ProjectReference Include="../../test/Microsoft.Extensions.Logging.Tests.csproj" />
   </ItemGroup>
 </Project>
