@@ -74,7 +74,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 "/p:RunningAsTest=true",
 
                 $"/p:MicrosoftNETCoreApp30PackageVersion={BuildVariables.MicrosoftNETCoreApp30PackageVersion}",
-                $"/p:NETStandardLibrary20PackageVersion={BuildVariables.NETStandardLibrary20PackageVersion}",
             };
 
             if (!suppressRestore)

@@ -13,11 +13,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <!-- aspnet/BuildTools#662 Don't police what version of NetCoreApp we use -->
-    <NETCoreAppMaximumVersion>99.9</NETCoreAppMaximumVersion>
-
-    <NETStandardImplicitPackageVersion>$(NETStandardLibrary20PackageVersion)</NETStandardImplicitPackageVersion>
-
     <!-- Working around an issue in XDT transforms -->
     <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
   </PropertyGroup>
