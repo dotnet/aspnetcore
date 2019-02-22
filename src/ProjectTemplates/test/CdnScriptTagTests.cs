@@ -113,7 +113,7 @@ namespace Templates.Test
                 .TrimStart('~')
                 .TrimStart('/');
 
-            var cdnContent = await _httpClient.GetStringAsync(scriptTag.Src);
+            var cdnContent = await GetStringFromCDN(scriptTag.Src);
             var fallbackSrcContent = GetFileContentFromArchive(scriptTag, fallbackSrc);
 
             Assert.Equal(RemoveLineEndings(cdnContent), RemoveLineEndings(fallbackSrcContent));
