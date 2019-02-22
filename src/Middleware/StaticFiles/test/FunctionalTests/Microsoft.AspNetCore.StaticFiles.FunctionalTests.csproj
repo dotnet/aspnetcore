@@ -8,13 +8,10 @@
       Remove when fixed.
     -->
     <HasRuntimeOutput>true</HasRuntimeOutput>
-    <!-- https://github.com/aspnet/AspNetCore/issues/7847 -->
-    <BuildHelixPayload>false</BuildHelixPayload>    
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)RangeHelper\**\*.cs" />
-    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
     <Content Include="TestDocument1MB.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
