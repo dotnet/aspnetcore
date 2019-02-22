@@ -99,11 +99,12 @@ function UpdateFromEFCore {
 function UpdateFromExtensions {
     param(
         [Parameter(ValueFromPipeline = $true)]
-        [xml]$details
+        [xml]$details,
+        $depName = 'Microsoft.Extensions.Logging'
     )
     UpdateFromChain $details `
         -principalRepo 'aspnet/Extensions' `
-        -principalPackage 'Microsoft.Extensions.Logging' `
+        -principalPackage $depName `
         -dependentRepo 'dotnet/core-setup' `
         -dependentPackage 'Microsoft.NETCore.App'
 }
@@ -161,6 +162,7 @@ try {
 
     if ($currentRepo -eq 'aspnet/AspNetCore') {
         Invoke-Block { & darc update-dependencies --channel ".NET Core 3 $Channel" --source-repo 'aspnet/EntityFrameworkCore' }
+        Invoke-Block { & darc update-dependencies --channel ".NET Core 3 $Channel" --source-repo 'aspnet/AspNetCore-Tooling' }
         [xml]$versionDetails = LoadXml $detailsPath `
             | UpdateFromEFCore `
             | UpdateFromExtensions `
@@ -173,8 +175,9 @@ try {
             | UpdateFromCoreSetup
     }
     elseif ($currentRepo -eq 'aspnet/AspNetCore-Tooling') {
-        Invoke-Block { & darc update-dependencies --channel ".NET Core 3 $Channel" --source-repo 'dotnet/core-setup' }
+        Invoke-Block { & darc update-dependencies --channel ".NET Core 3 $Channel" --source-repo 'aspnet/Extensions' }
         [xml]$versionDetails = LoadXml $detailsPath `
+            | UpdateFromExtensions -depName 'Microsoft.Extensions.CommandLineUtils.Sources' `
             | UpdateFromCoreSetup
     }
     elseif ($currentRepo -eq 'aspnet/Extensions') {
