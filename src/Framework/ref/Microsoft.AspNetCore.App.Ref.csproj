@@ -70,9 +70,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
   <!-- Override the default MSBuild targets so that nothing is returned from the project since it represents a collection of assemblies. -->
   <Target Name="GetTargetPath" />
-  <Target Name="Build" DependsOnTargets="$(BuildDependsOn)">
-    <Message Importance="High" Text="$(MSBuildProjectName) -> $(TargetDir)" />
-  </Target>
+  <Target Name="Build" DependsOnTargets="$(BuildDependsOn)" />
 
   <!-- This project doesn't compile anything. -->
   <Target Name="CoreCompile" />
@@ -120,10 +118,10 @@ This package is an internal implementation of the .NET Core SDK and is not meant
           DependsOnTargets="_ResolveTargetingPackContent"
           Inputs="@(RefPackContent)"
           Outputs="@(RefPackContent->'$(LayoutTargetDir)%(PackagePath)%(FileName)%(Extension)')">
-
     <Copy SourceFiles="@(RefPackContent)"
           DestinationFiles="@(RefPackContent->'$(LayoutTargetDir)%(PackagePath)%(FileName)%(Extension)')"
           UseHardlinksIfPossible="true" />
+    <Message Importance="High" Text="$(MSBuildProjectName) -> $(LayoutTargetDir)" />
   </Target>
 
   <Target Name="_CreateTargetingPackArchive"
@@ -135,8 +133,10 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       Overwrite="true"
       Condition="'$(TargetRuntimeIdentifier)' == 'win-x64'" />
     <Exec
-      Command="tar -czf $(ArchiveOutputPath) -C $(TargetingPackLayoutRoot) ."
+      Command="tar -czf $(ArchiveOutputPath) ."
+      WorkingDirectory="$(TargetingPackLayoutRoot)"
       Condition="'$(TargetRuntimeIdentifier)' == 'linux-x64'" />
+    <Message Importance="High" Text="$(MSBuildProjectName) -> $(ArchiveOutputPath)" />
   </Target>
 
 </Project>

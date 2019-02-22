@@ -11,8 +11,7 @@
 
   <!-- Output paths -->
   <PropertyGroup>
-    <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(TargetRuntimeIdentifier)\</IntermediateOutputPath>
-    <IntermediatePackageRoot>$([MSBuild]::NormalizeDirectory('$(IntermediateOutputPath)content/'))</IntermediatePackageRoot>
+    <IntermediateOutputPath>$(IntermediateOutputPath)$(TargetRuntimeIdentifier)\</IntermediateOutputPath>
     <OutputPath>$(InstallersOutputPath)</OutputPath>
   </PropertyGroup>
 

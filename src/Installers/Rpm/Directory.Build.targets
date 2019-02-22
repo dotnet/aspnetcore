@@ -21,6 +21,7 @@
     <Error Text="Currently only linux-x64 is supported by Rpm installers." Condition=" '$(TargetRuntimeIdentifier)' != 'linux-x64' " />
 
     <Error Text="Missing required property: RpmPackageInstallRoot" Condition=" '$(RpmPackageInstallRoot)' == '' " />
+    <Error Text="Missing required property: IntermediatePackageRoot" Condition=" '$(IntermediatePackageRoot)' == '' " />
   </Target>
 
   <PropertyGroup>
