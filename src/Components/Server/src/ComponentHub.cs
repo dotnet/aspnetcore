@@ -43,21 +43,22 @@ namespace Microsoft.AspNetCore.Components.Server
         internal CircuitHost CircuitHost
         {
             get => (CircuitHost)Context.Items[CircuitKey];
-            set => Context.Items[CircuitKey] = value;
+            private set => Context.Items[CircuitKey] = value;
         }
 
         /// <summary>
         /// Intended for framework use only. Applications should not call this method directly.
         /// </summary>
-        public override async Task OnDisconnectedAsync(Exception exception)
+        public override Task OnDisconnectedAsync(Exception exception)
         {
             var circuitHost = CircuitHost;
             if (circuitHost == null)
             {
-                return;
+                return Task.CompletedTask;
             }
 
-            await _circuitRegistry.DisconnectAsync(circuitHost, Context.ConnectionId);
+            CircuitHost = null;
+            return _circuitRegistry.DisconnectAsync(circuitHost, Context.ConnectionId);
         }
 
         /// <summary>
@@ -122,7 +123,7 @@ namespace Microsoft.AspNetCore.Components.Server
             try
             {
                 _logger.LogWarning((Exception)e.ExceptionObject, "Unhandled Server-Side exception");
-                await circuitHost.Client.Client.SendAsync("JS.Error", e.ExceptionObject);
+                await circuitHost.Client.SendAsync("JS.Error", e.ExceptionObject);
 
                 // We generally can't abort the connection here since this is an async
                 // callback. The Hub has already been torn down. We'll rely on the
@@ -139,7 +140,7 @@ namespace Microsoft.AspNetCore.Components.Server
             var circuitHost = CircuitHost;
             if (circuitHost == null)
             {
-                var message = "The circuit state is invalid. This is due to an exception thrown during initialization or due to a timeout when reconnecting to it.";
+                var message = $"The {nameof(CircuitHost)} is null. This is due to an exception thrown during initialization.";
                 throw new InvalidOperationException(message);
             }
 
