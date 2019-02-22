@@ -7,6 +7,7 @@ const selectValuePropname = '_blazorSelectValue';
 const sharedTemplateElemForParsing = document.createElement('template');
 const sharedSvgElemForParsing = document.createElementNS('http://www.w3.org/2000/svg', 'g');
 const preventDefaultEvents: { [eventType: string]: boolean } = { submit: true };
+const rootComponentsPendingFirstRender: { [componentId: number]: Element } = {};
 
 export class BrowserRenderer {
   private eventDelegator: EventDelegator;
@@ -19,13 +20,22 @@ export class BrowserRenderer {
   }
 
   public attachRootComponentToElement(componentId: number, element: Element) {
-    this.attachComponentToElement(componentId, toLogicalElement(element));
+    // 'allowExistingContents' to keep any prerendered content until we do the first client-side render
+    this.attachComponentToElement(componentId, toLogicalElement(element, /* allowExistingContents */ true));
+    rootComponentsPendingFirstRender[componentId] = element;
   }
 
   public updateComponent(batch: RenderBatch, componentId: number, edits: ArraySegment<RenderTreeEdit>, referenceFrames: ArrayValues<RenderTreeFrame>) {
     const element = this.childComponentLocations[componentId];
     if (!element) {
       throw new Error(`No element is currently associated with component ${componentId}`);
+    }
+
+    // On the first render for each root component, clear any existing content (e.g., prerendered)
+    const rootElementToClear = rootComponentsPendingFirstRender[componentId];
+    if (rootElementToClear) {
+      delete rootComponentsPendingFirstRender[componentId];
+      clearElement(rootElementToClear);
     }
 
     this.applyEdits(batch, element, 0, edits, referenceFrames);
@@ -367,4 +377,11 @@ function raiseEvent(event: Event, browserRendererId: number, eventHandlerId: num
     'DispatchEvent',
     eventDescriptor,
     JSON.stringify(eventArgs.data));
+}
+
+function clearElement(element: Element) {
+  let childNode: Node | null;
+  while (childNode = element.firstChild) {
+    element.removeChild(childNode);
+  }
 }

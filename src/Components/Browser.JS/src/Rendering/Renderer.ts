@@ -16,7 +16,6 @@ export function attachRootComponentToElement(browserRendererId: number, elementS
   if (!browserRenderer) {
     browserRenderer = browserRenderers[browserRendererId] = new BrowserRenderer(browserRendererId);
   }
-  clearElement(element);
   browserRenderer.attachRootComponentToElement(componentId, element);
 }
 
@@ -55,12 +54,5 @@ export function renderBatch(browserRendererId: number, batch: RenderBatch) {
   for (let i = 0; i < disposedEventHandlerIdsLength; i++) {
     const eventHandlerId = batch.disposedEventHandlerIdsEntry(disposedEventHandlerIdsValues, i);
     browserRenderer.disposeEventHandler(eventHandlerId);
-  }
-}
-
-function clearElement(element: Element) {
-  let childNode: Node | null;
-  while (childNode = element.firstChild) {
-    element.removeChild(childNode);
   }
 }
