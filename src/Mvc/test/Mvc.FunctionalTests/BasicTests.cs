@@ -481,6 +481,9 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var expected = new[]
             {
                 "BasicWebSite",
+                "Microsoft.AspNetCore.Components.Server",
+                "Microsoft.AspNetCore.SpaServices",
+                "Microsoft.AspNetCore.SpaServices.Extensions",
                 "Microsoft.AspNetCore.Mvc.TagHelpers",
                 "Microsoft.AspNetCore.Mvc.Razor",
             };

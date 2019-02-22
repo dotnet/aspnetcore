@@ -7,3 +7,7 @@
 <div id="FetchData">
     @(await Html.RenderComponentAsync<FetchData>(new { StartDate = new DateTime(2019, 01, 15) }))
 </div>
+
+<div id="Routing">
+    @(await Html.RenderComponentAsync<RouterContainer>())
+</div>

@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Components.Server
     /// <summary>
     /// A SignalR hub that accepts connections to an ASP.NET Core Components application.
     /// </summary>
-    public sealed class ComponentsHub : Hub
+    public sealed class ComponentHub : Hub
     {
         private static readonly object CircuitKey = new object();
         private readonly CircuitFactory _circuitFactory;
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Components.Server
         /// Intended for framework use only. Applications should not instantiate
         /// this class directly.
         /// </summary>
-        public ComponentsHub(IServiceProvider services, ILogger<ComponentsHub> logger)
+        public ComponentHub(IServiceProvider services, ILogger<ComponentHub> logger)
         {
             _circuitFactory = services.GetRequiredService<CircuitFactory>();
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -58,11 +58,13 @@ namespace Microsoft.AspNetCore.Components.Server
         /// </summary>
         public async Task StartCircuit(string uriAbsolute, string baseUriAbsolute)
         {
-            var circuitHost = _circuitFactory.CreateCircuitHost(Context.GetHttpContext(), Clients.Caller);
-            circuitHost.UnhandledException += CircuitHost_UnhandledException;
+            var circuitHost = _circuitFactory.CreateCircuitHost(
+                Context.GetHttpContext(),
+                Clients.Caller,
+                uriAbsolute,
+                baseUriAbsolute);
 
-            var uriHelper = (RemoteUriHelper)circuitHost.Services.GetRequiredService<IUriHelper>();
-            uriHelper.Initialize(uriAbsolute, baseUriAbsolute);
+            circuitHost.UnhandledException += CircuitHost_UnhandledException;
 
             // If initialization fails, this will throw. The caller will fail if they try to call into any interop API.
             await circuitHost.InitializeAsync(Context.ConnectionAborted);

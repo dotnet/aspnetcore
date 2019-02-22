@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BasicWebSite.Controllers
 {
-    public class ComponentsController : Controller
+    public class RazorComponentsController : Controller
     {
         private static WeatherRow[] _weatherData = new[]
         {
@@ -51,6 +51,7 @@ namespace BasicWebSite.Controllers
             };
 
         [HttpGet("/components")]
+        [HttpGet("/components/routable")]
         public IActionResult Index()
         {
             return View();
