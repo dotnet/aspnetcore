@@ -95,7 +95,8 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
     /// <typeparam name="TRoleClaim">The type representing a role claim.</typeparam>
     public class UserStore<TUser, TRole, TContext, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim> :
         UserStoreBase<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim>,
-        IProtectedUserStore<TUser>
+        IProtectedUserStore<TUser>,
+        IAutoSaveChanges
         where TUser : IdentityUser<TKey>
         where TRole : IdentityRole<TKey>
         where TContext : DbContext

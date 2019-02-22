@@ -75,7 +75,8 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
     /// <typeparam name="TRoleClaim">The type of the class representing a role claim.</typeparam>
     public class RoleStore<TRole, TContext, TKey, TUserRole, TRoleClaim> :
         IQueryableRoleStore<TRole>,
-        IRoleClaimStore<TRole>
+        IRoleClaimStore<TRole>,
+        IAutoSaveChanges
         where TRole : IdentityRole<TKey>
         where TKey : IEquatable<TKey>
         where TContext : DbContext

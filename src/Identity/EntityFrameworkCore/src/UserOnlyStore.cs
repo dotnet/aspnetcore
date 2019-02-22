@@ -84,7 +84,8 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         IUserAuthenticationTokenStore<TUser>,
         IUserAuthenticatorKeyStore<TUser>,
         IUserTwoFactorRecoveryCodeStore<TUser>,
-        IProtectedUserStore<TUser>
+        IProtectedUserStore<TUser>,
+        IAutoSaveChanges
         where TUser : IdentityUser<TKey>
         where TContext : DbContext
         where TKey : IEquatable<TKey>
