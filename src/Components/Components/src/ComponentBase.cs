@@ -34,6 +34,7 @@ namespace Microsoft.AspNetCore.Components
         private RenderHandle _renderHandle;
         private bool _initialized;
         private bool _hasNeverRendered = true;
+        private bool _firstRender = true;
         private bool _hasPendingQueuedRender;
 
         /// <summary>
@@ -124,7 +125,21 @@ namespace Microsoft.AspNetCore.Components
         /// <returns></returns>
         protected virtual bool ShouldRender()
             => true;
+            
+        /// <summary>
+        /// Method invoked first time the component has been rendered.
+        /// </summary>
+        protected virtual void OnAfterFirstRender()
+        {
+        }
 
+        /// <summary>
+        /// Method invoked first time the component has been rendered.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing any asynchronous operation.</returns>
+        protected virtual Task OnAfterFirstRenderAsync()
+            => Task.CompletedTask;
+            
         /// <summary>
         /// Method invoked after each time the component has been rendered.
         /// </summary>
@@ -273,6 +288,16 @@ namespace Microsoft.AspNetCore.Components
 
         Task IHandleAfterRender.OnAfterRenderAsync()
         {
+        
+            if(_firstRender)
+            {
+              _firstRender = false;
+              
+              OnAfterFirstRender();
+              
+              OnAfterFirstRenderAsync();
+            }
+            
             OnAfterRender();
 
             return OnAfterRenderAsync();
