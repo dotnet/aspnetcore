@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             Assert.Equal("1", envValue);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore-Internal/issues/1826")]
         public async Task RunsWithIterationEnvVariable()
         {
             await _app.StartWatcherAsync();
