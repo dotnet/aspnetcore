@@ -8,6 +8,8 @@
       Remove when fixed.
     -->
     <HasRuntimeOutput>true</HasRuntimeOutput>
+    <!-- https://github.com/aspnet/AspNetCore/issues/7847 -->
+    <BuildHelixPayload>false</BuildHelixPayload>    
   </PropertyGroup>
 
   <ItemGroup>
