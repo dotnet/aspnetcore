@@ -28,6 +28,7 @@ using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
+    [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/7847
     public class AddressRegistrationTests : TestApplicationErrorLoggerLoggedTest
     {
         private const int MaxRetries = 10;
