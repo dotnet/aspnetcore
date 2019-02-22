@@ -20,7 +20,6 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
 {
-    [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/7847
     [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing SslStream ALPN support: https://github.com/dotnet/corefx/issues/30492")]
     [OSSkipCondition(OperatingSystems.Linux, SkipReason = "Curl requires a custom install to support HTTP/2, see https://askubuntu.com/questions/884899/how-do-i-install-curl-with-http2-support")]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)]
