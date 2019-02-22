@@ -2,7 +2,6 @@ import { CircuitHandler } from './CircuitHandler';
 export class AutoReconnectCircuitHandler implements CircuitHandler {
   modal: HTMLDivElement;
   message: Text;
-  isConnected: boolean | null;
 
   constructor(private maxRetries: number = 5, private retryInterval: number = 3000) {
     this.modal = document.createElement('div');
@@ -10,7 +9,6 @@ export class AutoReconnectCircuitHandler implements CircuitHandler {
     this.message = document.createTextNode('');
     this.modal.appendChild(this.message);
     document.addEventListener('DOMContentLoaded', () => document.body.appendChild(this.modal));
-    this.isConnected = null;
   }
   onConnectionUp() {
     this.modal.style.display = 'none';
