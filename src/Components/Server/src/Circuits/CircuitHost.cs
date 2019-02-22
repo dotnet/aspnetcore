@@ -56,7 +56,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             IList<ComponentDescriptor> descriptors,
             IDispatcher dispatcher,
             RemoteJSRuntime jsRuntime,
-            RemoteUriHelper remoteUriHelper,
             CircuitHandler[] circuitHandlers,
             ILogger logger)
         {
@@ -67,7 +66,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             Descriptors = descriptors ?? throw new ArgumentNullException(nameof(descriptors));
             Renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
             JSRuntime = jsRuntime ?? throw new ArgumentNullException(nameof(jsRuntime));
-            RemoteUriHelper = remoteUriHelper ?? throw new ArgumentNullException(nameof(remoteUriHelper));
             _logger = logger;
 
             Services = scope.ServiceProvider;
@@ -92,8 +90,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         public RendererRegistry RendererRegistry { get; }
 
         public IList<ComponentDescriptor> Descriptors { get; }
-
-        public RemoteUriHelper RemoteUriHelper { get; }
 
         public IServiceProvider Services { get; }
 

@@ -26,7 +26,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             clientProxy = clientProxy ?? new CircuitClientProxy(Mock.Of<IClientProxy>(), Guid.NewGuid().ToString());
             var renderRegistry = new RendererRegistry();
             var jsRuntime = new RemoteJSRuntime();
-            var remoteUriHelper = new RemoteUriHelper();
 
             if (remoteRenderer == null)
             {
@@ -49,7 +48,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 new List<ComponentDescriptor>(),
                 Renderer.CreateDefaultDispatcher(),
                 jsRuntime,
-                remoteUriHelper,
                 handlers,
                 NullLogger<CircuitHost>.Instance);
         }

@@ -77,7 +77,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 components,
                 dispatcher,
                 jsRuntime,
-                uriHelper,
                 circuitHandlers,
                 _loggerFactory.CreateLogger<CircuitHost>());
 
