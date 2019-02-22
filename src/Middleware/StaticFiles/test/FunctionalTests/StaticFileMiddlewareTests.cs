@@ -24,10 +24,9 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.StaticFiles
 {
-    [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/7847
     public class StaticFileMiddlewareTests : LoggedTest
     {
-        [ConditionalFact]
+        [Fact]
         public async Task ReturnsNotFoundWithoutWwwroot()
         {
             var builder = new WebHostBuilder()
@@ -46,7 +45,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             }
         }
 
-        [ConditionalFact]
+        [Fact]
         public async Task FoundFile_LastModifiedTrimsSeconds()
         {
             var builder = new WebHostBuilder()
@@ -69,7 +68,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             }
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(ExistingFiles))]
         public async Task FoundFile_Served_All(string baseUrl, string baseDir, string requestUrl)
         {
@@ -124,7 +123,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             }
         }
 
-        [ConditionalTheory]
+        [Theory]
         [MemberData(nameof(ExistingFiles))]
         public async Task HeadFile_HeadersButNotBodyServed(string baseUrl, string baseDir, string requestUrl)
         {
@@ -165,7 +164,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             new[] {"", @"SubFolder", "/Empty.txt"}
         };
 
-        [ConditionalFact]
+        [Fact]
         public Task ClientDisconnect_Kestrel_NoWriteExceptionThrown()
         {
             return ClientDisconnect_NoWriteExceptionThrown(ServerType.Kestrel);
