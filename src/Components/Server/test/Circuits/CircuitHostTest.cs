@@ -2,10 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Browser;
 using Microsoft.AspNetCore.Components.Browser.Rendering;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -22,7 +25,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         {
             // Arrange
             var serviceScope = new Mock<IServiceScope>();
-            var remoteRenderer = GetRemoteRenderer();
+            var remoteRenderer = GetRemoteRenderer(Renderer.CreateDefaultDispatcher());
             var circuitHost = GetCircuitHost(
                 serviceScope.Object,
                 remoteRenderer);
@@ -130,8 +133,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var clientProxy = Mock.Of<IClientProxy>();
             var renderRegistry = new RendererRegistry();
             var jsRuntime = Mock.Of<IJSRuntime>();
-
-            remoteRenderer = remoteRenderer ?? GetRemoteRenderer();
+            var dispatcher = Renderer.CreateDefaultDispatcher();
+            remoteRenderer = remoteRenderer ?? GetRemoteRenderer(dispatcher);
             handlers = handlers ?? Array.Empty<CircuitHandler>();
 
             return new CircuitHost(
@@ -139,24 +142,26 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 clientProxy,
                 renderRegistry,
                 remoteRenderer,
-                configure: _ => { },
+                new List<ComponentDescriptor>(),
+                dispatcher,
                 jsRuntime: jsRuntime,
                 handlers);
         }
 
-        private static TestRemoteRenderer GetRemoteRenderer()
+        private static TestRemoteRenderer GetRemoteRenderer(IDispatcher dispatcher)
         {
             return new TestRemoteRenderer(
                 Mock.Of<IServiceProvider>(),
                 new RendererRegistry(),
+                dispatcher,
                 Mock.Of<IJSRuntime>(),
                 Mock.Of<IClientProxy>());
         }
 
         private class TestRemoteRenderer : RemoteRenderer
         {
-            public TestRemoteRenderer(IServiceProvider serviceProvider, RendererRegistry rendererRegistry, IJSRuntime jsRuntime, IClientProxy client)
-                : base(serviceProvider, rendererRegistry, jsRuntime, client, CreateDefaultDispatcher(), NullLogger.Instance)
+            public TestRemoteRenderer(IServiceProvider serviceProvider, RendererRegistry rendererRegistry, IDispatcher dispatcher, IJSRuntime jsRuntime, IClientProxy client)
+                : base(serviceProvider, rendererRegistry, jsRuntime, client, dispatcher, HtmlEncoder.Default, NullLogger.Instance)
             {
             }
 

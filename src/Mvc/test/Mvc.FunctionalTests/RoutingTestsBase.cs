@@ -1533,6 +1533,17 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("Hello from middleware after routing", content);
         }
 
+        [Fact]
+        public async Task CanUseLinkGeneration_To_ConventionalActionWithPageParameter()
+        {
+            // Act
+            var response = await Client.GetAsync("/PageParameter/LinkToPageParameter");
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Equal("/PageParameter/PageParameter?page=17", content);
+        }
 
         protected static LinkBuilder LinkFrom(string url)
         {

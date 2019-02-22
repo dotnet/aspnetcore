@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
                     output = builder.ToString();
                 }
 
-                throw new InvalidOperationException($"Failed to start selenium sever. {Environment.NewLine}{output}", ex.GetBaseException());
+                throw new InvalidOperationException($"Failed to start selenium sever. {System.Environment.NewLine}{output}", ex.GetBaseException());
             }
         }
 

@@ -7,8 +7,12 @@ namespace Microsoft.AspNetCore.Hosting
 {
     /// <summary>
     /// Allows consumers to perform cleanup during a graceful shutdown.
+    /// <para>
+    ///  This type is obsolete and will be removed in a future version.
+    ///  The recommended alternative is Microsoft.Extensions.Hosting.IHostApplicationLifetime.
+    /// </para>
     /// </summary>
-    [System.Obsolete("Use Microsoft.Extensions.Hosting.IHostApplicationLifetime instead.", error: false)]
+    [System.Obsolete("This type is obsolete and will be removed in a future version. The recommended alternative is Microsoft.Extensions.Hosting.IHostApplicationLifetime.", error: false)]
     public interface IApplicationLifetime
     {
         /// <summary>
