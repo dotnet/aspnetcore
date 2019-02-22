@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Analyzer.Testing
         /// Given an analyzer and a document to apply it to, run the analyzer and gather an array of diagnostics found in it.
         /// The returned diagnostics are then ordered by location in the source document.
         /// </summary>
-        /// <param name="documents">The Documents that the analyzer will be run on</param>
+        /// <param name="projects">Projects that the analyzer will be run on</param>
         /// <param name="analyzer">The analyzer to run on the documents</param>
         /// <param name="additionalEnabledDiagnostics">Additional diagnostics to enable at Info level</param>
         /// <param name="getAllDiagnostics">
