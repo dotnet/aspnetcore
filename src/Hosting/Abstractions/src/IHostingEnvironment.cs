@@ -7,8 +7,12 @@ namespace Microsoft.AspNetCore.Hosting
 {
     /// <summary>
     /// Provides information about the web hosting environment an application is running in.
+    /// <para>
+    ///  This type is obsolete and will be removed in a future version.
+    ///  The recommended alternative is Microsoft.AspNetCore.Hosting.IWebHostEnvironment.
+    /// </para>
     /// </summary>
-    [System.Obsolete("Use IWebHostEnvironment instead.", error: false)]
+    [System.Obsolete("This type is obsolete and will be removed in a future version. The recommended alternative is Microsoft.AspNetCore.Hosting.IWebHostEnvironment.", error: false)]
     public interface IHostingEnvironment
     {
         /// <summary>
