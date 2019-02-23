@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -12,37 +12,66 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
     internal class CircuitPrerenderer : IComponentPrerenderer
     {
-        private readonly CircuitFactory _circuitFactory;
+        private static object CircuitHostKey = new object();
 
-        public CircuitPrerenderer(CircuitFactory circuitFactory)
+        private readonly CircuitFactory _circuitFactory;
+        private readonly CircuitRegistry _registry;
+
+        public CircuitPrerenderer(CircuitFactory circuitFactory, CircuitRegistry registry)
         {
             _circuitFactory = circuitFactory;
+            _registry = registry;
         }
 
-        public async Task<IEnumerable<string>> PrerenderComponentAsync(ComponentPrerenderingContext prerenderingContext)
+        public async Task<ComponentPrerenderResult> PrerenderComponentAsync(ComponentPrerenderingContext prerenderingContext)
         {
             var context = prerenderingContext.Context;
-            var circuitHost = _circuitFactory.CreateCircuitHost(
-                context,
-                client: CircuitClientProxy.OfflineClient,
-                GetFullUri(context.Request),
-                GetFullBaseUri(context.Request));
+            var circuitHost = GetOrCreateCircuitHost(context);
 
-            // We don't need to unsubscribe because the circuit host object is scoped to this call.
-            circuitHost.UnhandledException += CircuitHost_UnhandledException;
+            var renderResult = await circuitHost.PrerenderComponentAsync(
+                prerenderingContext.ComponentType,
+                prerenderingContext.Parameters);
 
-            // For right now we just do prerendering and dispose the circuit. In the future we will keep the circuit around and
-            // reconnect to it from the ComponentsHub. If we keep the circuit/renderer we also need to unsubscribe this error
-            // handler.
-            try
+            circuitHost.Descriptors.Add(new ComponentDescriptor
             {
-                return await circuitHost.PrerenderComponentAsync(
-                    prerenderingContext.ComponentType,
-                    prerenderingContext.Parameters);
+                ComponentType = prerenderingContext.ComponentType,
+                Prerendered = true
+            });
+
+            var result = new[] {
+                $"<!-- M.A.C.Component:{{\"circuitId\":\"{circuitHost.CircuitId}\",\"rendererId\":\"{circuitHost.Renderer.Id}\",\"componentId\":\"{renderResult.ComponentId}\"}} -->",
+            }.Concat(renderResult.Tokens).Concat(
+                new[] {
+                    $"<!-- M.A.C.Component: {renderResult.ComponentId} -->"
+                });
+
+            return new ComponentPrerenderResult(result);
+        }
+
+        private CircuitHost GetOrCreateCircuitHost(HttpContext context)
+        {
+            if (context.Items.TryGetValue(CircuitHostKey, out var existingHost))
+            {
+                return (CircuitHost)existingHost;
             }
-            finally
+            else
             {
-                await circuitHost.DisposeAsync();
+                var result = _circuitFactory.CreateCircuitHost(
+                    context,
+                    client: new CircuitClientProxy(), // This creates an "offline" client.
+                    GetFullUri(context.Request),
+                    GetFullBaseUri(context.Request));
+
+                result.UnhandledException += CircuitHost_UnhandledException;
+                context.Response.OnCompleted(() =>
+                {
+                    result.UnhandledException -= CircuitHost_UnhandledException;
+                    _registry.RegisterDisconnectedCircuit(result);
+                    return Task.CompletedTask;
+                });
+                context.Items.Add(CircuitHostKey, result);
+
+                return result;
             }
         }
 

@@ -23,8 +23,8 @@ namespace Templates.Test
 
         public Project Project { get; private set; }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/8244")]
-        public async Task RazorComponentsTemplateWorksAsync()
+        [Fact]
+        public async Task RazorComponentsTemplateWorks()
         {
             Project = await ProjectFactory.GetOrCreateProject("razorcomponents", Output);
 

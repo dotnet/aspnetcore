@@ -638,13 +638,21 @@ namespace Microsoft.AspNetCore.Components.Layouts
 }
 namespace Microsoft.AspNetCore.Components.Rendering
 {
+    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
+    public readonly partial struct ComponentRenderedText
+    {
+        private readonly object _dummy;
+        private readonly int _dummyPrimitive;
+        public int ComponentId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IEnumerable<string> Tokens { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+    }
     public partial class HtmlRenderer : Microsoft.AspNetCore.Components.Rendering.Renderer
     {
         public HtmlRenderer(System.IServiceProvider serviceProvider, System.Func<string, string> htmlEncoder, Microsoft.AspNetCore.Components.Rendering.IDispatcher dispatcher) : base (default(System.IServiceProvider)) { }
         protected override void HandleException(System.Exception exception) { }
         [System.Diagnostics.DebuggerStepThroughAttribute]
-        public System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<string>> RenderComponentAsync(System.Type componentType, Microsoft.AspNetCore.Components.ParameterCollection initialParameters) { throw null; }
-        public System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<string>> RenderComponentAsync<TComponent>(Microsoft.AspNetCore.Components.ParameterCollection initialParameters) where TComponent : Microsoft.AspNetCore.Components.IComponent { throw null; }
+        public System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Rendering.ComponentRenderedText> RenderComponentAsync(System.Type componentType, Microsoft.AspNetCore.Components.ParameterCollection initialParameters) { throw null; }
+        public System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Rendering.ComponentRenderedText> RenderComponentAsync<TComponent>(Microsoft.AspNetCore.Components.ParameterCollection initialParameters) where TComponent : Microsoft.AspNetCore.Components.IComponent { throw null; }
         protected override System.Threading.Tasks.Task UpdateDisplayAsync(in Microsoft.AspNetCore.Components.Rendering.RenderBatch renderBatch) { throw null; }
     }
     public partial interface IDispatcher
@@ -792,9 +800,10 @@ namespace Microsoft.AspNetCore.Components.Services
     {
         protected UriHelperBase() { }
         public event System.EventHandler<string> OnLocationChanged { add { } remove { } }
+        protected virtual void EnsureInitialized() { }
         public string GetAbsoluteUri() { throw null; }
         public virtual string GetBaseUri() { throw null; }
-        protected virtual void InitializeState() { }
+        public virtual void InitializeState(string uriAbsolute, string baseUriAbsolute) { }
         public void NavigateTo(string uri) { }
         public void NavigateTo(string uri, bool forceLoad) { }
         protected abstract void NavigateToCore(string uri, bool forceLoad);

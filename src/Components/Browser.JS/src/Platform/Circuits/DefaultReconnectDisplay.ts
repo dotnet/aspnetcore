@@ -1,5 +1,5 @@
-import { ReconnectDisplay } from "./ReconnectDisplay";
-import { AutoReconnectCircuitHandler } from "./AutoReconnectCircuitHandler";
+import { ReconnectDisplay } from './ReconnectDisplay';
+import { AutoReconnectCircuitHandler } from './AutoReconnectCircuitHandler';
 export class DefaultReconnectDisplay implements ReconnectDisplay {
   modal: HTMLDivElement;
   message: HTMLHeadingElement;
@@ -10,18 +10,18 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
     this.modal.id = AutoReconnectCircuitHandler.DialogId;
 
     const modalStyles = [
-      "position: fixed",
-      "top: 0",
-      "right: 0",
-      "bottom: 0",
-      "left: 0",
-      "z-index: 1000",
-      "display: none",
-      "overflow: hidden",
-      "background-color: #fff",
-      "opacity: 0.8",
-      "text-align: center",
-      "font-weight: bold"
+      'position: fixed',
+      'top: 0',
+      'right: 0',
+      'bottom: 0',
+      'left: 0',
+      'z-index: 1000',
+      'display: none',
+      'overflow: hidden',
+      'background-color: #fff',
+      'opacity: 0.8',
+      'text-align: center',
+      'font-weight: bold'
     ];
 
     this.modal.style.cssText = modalStyles.join(';');

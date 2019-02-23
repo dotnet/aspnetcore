@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
@@ -25,10 +26,12 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             _serverFixture.BuildWebHostMethod = ComponentsApp.Server.Program.BuildWebHost;
         }
 
-        protected override void InitializeAsyncCore()
+
+        public override async Task InitializeAsync()
         {
+            await base.InitializeAsync();
             Navigate("/", noReload: false);
-            WaitUntilLoaded();
+            await Task.Delay(2000);
         }
 
         [Fact]
@@ -161,10 +164,11 @@ window.Blazor._internal.forceCloseConnection();");
                 _ => element.Text != currentValue);
         }
 
-        private void WaitUntilLoaded()
+        [Fact]
+        public void RendersContinueAfterPrerendering()
         {
-            new WebDriverWait(Browser, TimeSpan.FromSeconds(30)).Until(
-                driver => driver.FindElement(By.TagName("app")).Text != "Loading...");
+            Browser.FindElement(By.LinkText("Greeter")).Click();
+            Browser.Equal("Hello Guest", () => Browser.FindElement(By.ClassName("greeting")).Text);
         }
     }
 }

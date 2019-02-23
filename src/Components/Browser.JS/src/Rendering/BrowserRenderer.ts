@@ -1,31 +1,32 @@
 import { RenderBatch, ArraySegment, RenderTreeEdit, RenderTreeFrame, EditType, FrameType, ArrayValues } from './RenderBatch/RenderBatch';
 import { EventDelegator } from './EventDelegator';
 import { EventForDotNet, UIEventArgs } from './EventForDotNet';
-import { LogicalElement, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement } from './LogicalElements';
+import { LogicalElement, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, getLogicalChildrenArray, getLogicalSiblingEnd } from './LogicalElements';
 import { applyCaptureIdToElement } from './ElementReferenceCapture';
 const selectValuePropname = '_blazorSelectValue';
 const sharedTemplateElemForParsing = document.createElement('template');
 const sharedSvgElemForParsing = document.createElementNS('http://www.w3.org/2000/svg', 'g');
 const preventDefaultEvents: { [eventType: string]: boolean } = { submit: true };
-const rootComponentsPendingFirstRender: { [componentId: number]: Element } = {};
+const rootComponentsPendingFirstRender: { [componentId: number]: LogicalElement } = {};
 
 export class BrowserRenderer {
   private eventDelegator: EventDelegator;
   private childComponentLocations: { [componentId: number]: LogicalElement } = {};
+  private browserRendererId: number;
 
-  constructor(private browserRendererId: number) {
+  public constructor(browserRendererId: number) {
+    this.browserRendererId = browserRendererId;
     this.eventDelegator = new EventDelegator((event, eventHandlerId, eventArgs) => {
       raiseEvent(event, this.browserRendererId, eventHandlerId, eventArgs);
     });
   }
 
-  public attachRootComponentToElement(componentId: number, element: Element) {
-    // 'allowExistingContents' to keep any prerendered content until we do the first client-side render
-    this.attachComponentToElement(componentId, toLogicalElement(element, /* allowExistingContents */ true));
+  public attachRootComponentToLogicalElement(componentId: number, element: LogicalElement): void {
+    this.attachComponentToElement(componentId, element);
     rootComponentsPendingFirstRender[componentId] = element;
   }
 
-  public updateComponent(batch: RenderBatch, componentId: number, edits: ArraySegment<RenderTreeEdit>, referenceFrames: ArrayValues<RenderTreeFrame>) {
+  public updateComponent(batch: RenderBatch, componentId: number, edits: ArraySegment<RenderTreeEdit>, referenceFrames: ArrayValues<RenderTreeFrame>): void {
     const element = this.childComponentLocations[componentId];
     if (!element) {
       throw new Error(`No element is currently associated with component ${componentId}`);
@@ -34,8 +35,14 @@ export class BrowserRenderer {
     // On the first render for each root component, clear any existing content (e.g., prerendered)
     const rootElementToClear = rootComponentsPendingFirstRender[componentId];
     if (rootElementToClear) {
+      const rootElementToClearEnd = getLogicalSiblingEnd(rootElementToClear);
       delete rootComponentsPendingFirstRender[componentId];
-      clearElement(rootElementToClear);
+
+      if (!rootElementToClearEnd) {
+        clearElement(rootElementToClear as unknown as Element);
+      } else {
+        clearBetween(rootElementToClear as unknown as Node, rootElementToClearEnd as unknown as Comment);
+      }
     }
 
     this.applyEdits(batch, element, 0, edits, referenceFrames);
@@ -89,7 +96,7 @@ export class BrowserRenderer {
           if (element instanceof Element) {
             this.applyAttribute(batch, element, frame);
           } else {
-            throw new Error(`Cannot set attribute on non-element child`);
+            throw new Error('Cannot set attribute on non-element child');
           }
           break;
         }
@@ -106,7 +113,7 @@ export class BrowserRenderer {
               element.removeAttribute(attributeName);
             }
           } else {
-            throw new Error(`Cannot remove attribute from non-element child`);
+            throw new Error('Cannot remove attribute from non-element child');
           }
           break;
         }
@@ -118,7 +125,7 @@ export class BrowserRenderer {
           if (textNode instanceof Text) {
             textNode.textContent = frameReader.textContent(frame);
           } else {
-            throw new Error(`Cannot set text content on non-text child`);
+            throw new Error('Cannot set text content on non-text child');
           }
           break;
         }
@@ -336,6 +343,11 @@ export class BrowserRenderer {
   }
 }
 
+export interface ComponentDescriptor {
+  start: Node;
+  end: Node;
+}
+
 function parseMarkup(markup: string, isSvg: boolean) {
   if (isSvg) {
     sharedSvgElemForParsing.innerHTML = markup || ' ';
@@ -369,7 +381,7 @@ function raiseEvent(event: Event, browserRendererId: number, eventHandlerId: num
   const eventDescriptor = {
     browserRendererId,
     eventHandlerId,
-    eventArgsType: eventArgs.type
+    eventArgsType: eventArgs.type,
   };
 
   return DotNet.invokeMethodAsync(
@@ -384,4 +396,23 @@ function clearElement(element: Element) {
   while (childNode = element.firstChild) {
     element.removeChild(childNode);
   }
+}
+
+function clearBetween(start: Node, end: Node): void {
+  const logicalParent = getLogicalParent(start as unknown as LogicalElement);
+  if(!logicalParent){
+    throw new Error("Can't clear between nodes. The start node does not have a logical parent.");
+  }
+  const children = getLogicalChildrenArray(logicalParent);
+  const removeStart = children.indexOf(start as unknown as LogicalElement) + 1;
+  const endIndex = children.indexOf(end as unknown as LogicalElement);
+
+  // We remove the end component comment from the DOM as we don't need it after this point.
+  for (let i = removeStart; i <= endIndex; i++) {
+    removeLogicalChild(logicalParent, removeStart);
+  }
+
+  // We sanitize the start comment by removing all the information from it now that we don't need it anymore
+  // as it adds noise to the DOM.
+  start.textContent = '!';
 }

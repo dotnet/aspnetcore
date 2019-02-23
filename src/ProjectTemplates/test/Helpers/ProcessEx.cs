@@ -75,6 +75,8 @@ namespace Templates.Test.Helpers
 
         public int ExitCode => _process.ExitCode;
 
+        public object Id => _process.Id;
+
         public static ProcessEx Run(ITestOutputHelper output, string workingDirectory, string command, string args = null, IDictionary<string, string> envVars = null)
         {
             var startInfo = new ProcessStartInfo(command, args)

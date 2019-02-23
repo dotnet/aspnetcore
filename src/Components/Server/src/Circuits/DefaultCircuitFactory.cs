@@ -46,13 +46,16 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             componentContext.Initialize(client);
 
             var uriHelper = (RemoteUriHelper)scope.ServiceProvider.GetRequiredService<IUriHelper>();
-            if (client != CircuitClientProxy.OfflineClient)
+            if (client.Connected)
             {
-                uriHelper.Initialize(uriAbsolute, baseUriAbsolute, jsRuntime);
+                uriHelper.AttachJsRuntime(jsRuntime);
+                uriHelper.InitializeState(
+                    uriAbsolute,
+                    baseUriAbsolute);
             }
             else
             {
-                uriHelper.Initialize(uriAbsolute, baseUriAbsolute);
+                uriHelper.InitializeState(uriAbsolute, baseUriAbsolute);
             }
 
             var rendererRegistry = new RendererRegistry();
@@ -87,12 +90,12 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             return circuitHost;
         }
 
-        private static IList<ComponentDescriptor> ResolveComponentMetadata(HttpContext httpContext, CircuitClientProxy client)
+        internal static IList<ComponentDescriptor> ResolveComponentMetadata(HttpContext httpContext, CircuitClientProxy client)
         {
-            if (client == CircuitClientProxy.OfflineClient)
+            if (!client.Connected)
             {
-                // This is the prerendering case.
-                return Array.Empty<ComponentDescriptor>();
+                // This is the prerendering case. Descriptors will be registered by the prerenderer.
+                return new List<ComponentDescriptor>();
             }
             else
             {
@@ -106,10 +109,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 }
 
                 var componentsMetadata = endpoint.Metadata.OfType<ComponentDescriptor>().ToList();
-                if (componentsMetadata.Count == 0)
-                {
-                    throw new InvalidOperationException("No component was registered with the component hub.");
-                }
 
                 return componentsMetadata;
             }

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -15,6 +16,7 @@ using Xunit.Sdk;
 
 namespace Templates.Test.Helpers
 {
+    [DebuggerDisplay("{ToString(),nq}")]
     public class Project
     {
         public const string DefaultFramework = "netcoreapp3.0";
@@ -384,5 +386,7 @@ namespace Templates.Test.Helpers
                 }
             }
         }
+
+        public override string ToString() => $"{ProjectName}: {TemplateOutputDir}";
     }
 }

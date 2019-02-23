@@ -40,6 +40,36 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         }
 
         [Fact]
+        public async Task DisposeAsync_DisposesRendererWithinSynchronizationContext()
+        {
+            // Arrange
+            var serviceScope = new Mock<IServiceScope>();
+            var remoteRenderer = GetRemoteRenderer(Renderer.CreateDefaultDispatcher());
+            var circuitHost = TestCircuitHost.Create(
+                serviceScope.Object,
+                remoteRenderer);
+
+            var component = new DispatcherComponent(circuitHost.Dispatcher);
+            circuitHost.Renderer.AssignRootComponentId(component);
+            var original = SynchronizationContext.Current;
+            SynchronizationContext.SetSynchronizationContext(null);
+
+            // Act & Assert
+            try
+            {
+                Assert.Null(SynchronizationContext.Current);
+                await circuitHost.DisposeAsync();
+                Assert.True(component.Called);
+                Assert.Null(SynchronizationContext.Current);
+            }
+            finally
+            {
+                // Not sure if the line above messes up the xunit sync context, so just being cautious here.
+                SynchronizationContext.SetSynchronizationContext(original);
+            }
+        }
+
+        [Fact]
         public async Task InitializeAsync_InvokesHandlers()
         {
             // Arrange
@@ -188,6 +218,23 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             {
                 base.Dispose(disposing);
                 Disposed = true;
+            }
+        }
+
+        private class DispatcherComponent : ComponentBase, IDisposable
+        {
+            public DispatcherComponent(IDispatcher dispatcher)
+            {
+                Dispatcher = dispatcher;
+            }
+
+            public IDispatcher Dispatcher { get; }
+            public bool Called { get; private set; }
+
+            public void Dispose()
+            {
+                Called = true;
+                Assert.Same(Dispatcher, SynchronizationContext.Current);
             }
         }
     }

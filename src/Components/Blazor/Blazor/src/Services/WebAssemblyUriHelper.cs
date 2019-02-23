@@ -25,11 +25,7 @@ namespace Microsoft.AspNetCore.Blazor.Services
         {
         }
 
-        /// <summary>
-        /// Called to initialize BaseURI and current URI before those values are used the first time.
-        /// Override this method to dynamically calculate those values.
-        /// </summary>
-        protected override void InitializeState()
+        protected override void EnsureInitialized()
         {
             WebAssemblyJSRuntime.Instance.Invoke<object>(
                 Interop.EnableNavigationInterception,
@@ -40,8 +36,7 @@ namespace Microsoft.AspNetCore.Blazor.Services
             // client-side (Mono) use, so it's OK to rely on synchronicity here.
             var baseUri = WebAssemblyJSRuntime.Instance.Invoke<string>(Interop.GetBaseUri);
             var uri = WebAssemblyJSRuntime.Instance.Invoke<string>(Interop.GetLocationHref);
-            SetAbsoluteBaseUri(baseUri);
-            SetAbsoluteUri(uri);
+            InitializeState(uri, baseUri);
         }
 
         /// <inheritdoc />

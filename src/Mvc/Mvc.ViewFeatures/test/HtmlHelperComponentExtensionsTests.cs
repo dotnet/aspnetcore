@@ -7,7 +7,6 @@ using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.RenderTree;
-using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -29,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
             var writer = new StringWriter();
 
             // Act
-            var result = await helper.RenderComponentAsync<TestComponent>();
+            var result = await helper.RenderStaticComponentAsync<TestComponent>();
             result.WriteTo(writer, HtmlEncoder.Default);
             var content = writer.ToString();
 
@@ -45,7 +44,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
             var writer = new StringWriter();
 
             // Act
-            var result = await helper.RenderComponentAsync<GreetingComponent>(new
+            var result = await helper.RenderStaticComponentAsync<GreetingComponent>(new
             {
                 Name = "Steve"
             });
@@ -63,7 +62,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
             var helper = CreateHelper();
 
             // Act & Assert
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => helper.RenderComponentAsync<ExceptionComponent>(new
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => helper.RenderStaticComponentAsync<ExceptionComponent>(new
             {
                 IsAsync = false
             }));
@@ -79,7 +78,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
             var helper = CreateHelper();
 
             // Act & Assert
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => helper.RenderComponentAsync<ExceptionComponent>(new
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => helper.RenderStaticComponentAsync<ExceptionComponent>(new
             {
                 IsAsync = true
             }));
@@ -95,7 +94,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
             var helper = CreateHelper();
 
             // Act & Assert
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => helper.RenderComponentAsync<ExceptionComponent>(new
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => helper.RenderStaticComponentAsync<ExceptionComponent>(new
             {
                 JsInterop = true
             }));
@@ -122,15 +121,16 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
             var writer = new StringWriter();
 
             // Act
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => helper.RenderComponentAsync<RedirectComponent>(new
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => helper.RenderStaticComponentAsync<RedirectComponent>(new
             {
                 RedirectUri = "http://localhost/redirect"
             }));
 
-            Assert.Equal("Redirects are not supported on a prerendering environment.", exception.Message);
+            Assert.Equal("Navigation commands can not be issued during server-side prerendering because the page has not yet loaded in the browser" +
+                    "Components must wrap any navigation commands in conditional logic to ensure those navigation calls are not " +
+                    "attempted during prerendering.",
+                exception.Message);
         }
-
-
 
         [Fact]
         public async Task CanRender_AsyncComponent()
@@ -182,7 +182,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
 </table>";
 
             // Act
-            var result = await helper.RenderComponentAsync<AsyncComponent>();
+            var result = await helper.RenderStaticComponentAsync<AsyncComponent>();
             result.WriteTo(writer, HtmlEncoder.Default);
             var content = writer.ToString();
 
@@ -196,7 +196,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
             services.AddSingleton(HtmlEncoder.Default);
             services.AddSingleton<IJSRuntime,UnsupportedJavaScriptRuntime>();
             services.AddSingleton<IUriHelper,HttpUriHelper>();
-            services.AddSingleton<IComponentPrerenderer, MvcRazorComponentPrerenderer>();
+            services.AddSingleton<StaticComponentRenderer>();
 
             configureServices?.Invoke(services);
 
