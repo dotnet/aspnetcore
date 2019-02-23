@@ -4,7 +4,6 @@
 using System;
 using System.IO;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -32,17 +31,6 @@ namespace SignalRSamples
             })
             .AddMessagePackProtocol();
             //.AddStackExchangeRedis();
-
-            services.AddCors(o =>
-            {
-                o.AddPolicy("Everything", p =>
-                {
-                    p.AllowAnyHeader()
-                     .AllowAnyMethod()
-                     .AllowAnyOrigin()
-                     .AllowCredentials();
-                });
-            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -54,8 +42,6 @@ namespace SignalRSamples
             {
                 app.UseDeveloperExceptionPage();
             }
-
-            app.UseCors("Everything");
 
             app.UseRouting(routes =>
             {
