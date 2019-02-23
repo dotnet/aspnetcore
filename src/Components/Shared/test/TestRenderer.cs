@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Xunit;
 
@@ -31,11 +30,18 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
         public List<CapturedBatch> Batches { get; }
             = new List<CapturedBatch>();
 
+        public List<Exception> HandledExceptions { get; } = new List<Exception>();
+
+        public bool ShouldHandleExceptions { get; set; }
+
         public new int AssignRootComponentId(IComponent component)
             => base.AssignRootComponentId(component);
 
-        public new void RenderRootComponent(int componentId)
-            => Invoke(() => base.RenderRootComponent(componentId));
+        public void RenderRootComponent(int componentId, ParameterCollection? parameters = default)
+        {
+            var task = InvokeAsync(() => base.RenderRootComponentAsync(componentId, parameters ?? ParameterCollection.Empty));
+            UnwrapTask(task);
+        }
 
         public new Task RenderRootComponentAsync(int componentId)
             => InvokeAsync(() => base.RenderRootComponentAsync(componentId));
@@ -43,24 +49,39 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
         public new Task RenderRootComponentAsync(int componentId, ParameterCollection parameters)
             => InvokeAsync(() => base.RenderRootComponentAsync(componentId, parameters));
 
-        public new void DispatchEvent(int componentId, int eventHandlerId, UIEventArgs args)
+        public new Task DispatchEventAsync(int eventHandlerId, UIEventArgs args)
+            => InvokeAsync(() => base.DispatchEventAsync(eventHandlerId, args));
+
+        private static Task UnwrapTask(Task task)
         {
-            var t = Invoke(() => base.DispatchEvent(componentId, eventHandlerId, args));
             // This should always be run synchronously
-            Assert.True(t.IsCompleted);
-            if (t.IsFaulted)
+            Assert.True(task.IsCompleted);
+            if (task.IsFaulted)
             {
-                var exception = t.Exception.Flatten().InnerException;
+                var exception = task.Exception.Flatten().InnerException;
                 while (exception is AggregateException e)
                 {
                     exception = e.InnerException;
                 }
+
                 ExceptionDispatchInfo.Capture(exception).Throw();
             }
+
+            return task;
         }
 
         public T InstantiateComponent<T>() where T : IComponent
             => (T)InstantiateComponent(typeof(T));
+
+        protected override void HandleException(Exception exception)
+        {
+            if (!ShouldHandleExceptions)
+            {
+                throw exception;
+            }
+
+            HandledExceptions.Add(exception);
+        }
 
         protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
         {

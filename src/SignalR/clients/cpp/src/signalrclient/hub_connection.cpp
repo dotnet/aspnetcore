@@ -8,9 +8,9 @@
 
 namespace signalr
 {
-    hub_connection::hub_connection(const utility::string_t& url, const utility::string_t& query_string,
+    hub_connection::hub_connection(const utility::string_t& url,
         trace_level trace_level, std::shared_ptr<log_writer> log_writer)
-        : m_pImpl(hub_connection_impl::create(url, query_string, trace_level, std::move(log_writer)))
+        : m_pImpl(hub_connection_impl::create(url, trace_level, std::move(log_writer)))
     {}
 
     // Do NOT remove this destructor. Letting the compiler generate and inline the default dtor may lead to
@@ -37,24 +37,24 @@ namespace signalr
         return m_pImpl->on(event_name, handler);
     }
 
-    pplx::task<web::json::value> hub_connection::invoke_json(const utility::string_t& method_name, const web::json::value& arguments)
+    pplx::task<web::json::value> hub_connection::invoke(const utility::string_t& method_name, const web::json::value& arguments)
     {
         if (!m_pImpl)
         {
             throw signalr_exception(_XPLATSTR("invoke() cannot be called on uninitialized hub_connection instance"));
         }
 
-        return m_pImpl->invoke_json(method_name, arguments);
+        return m_pImpl->invoke(method_name, arguments);
     }
 
-    pplx::task<void> hub_connection::invoke_void(const utility::string_t& method_name, const web::json::value& arguments)
+    pplx::task<void> hub_connection::send(const utility::string_t& method_name, const web::json::value& arguments)
     {
         if (!m_pImpl)
         {
-            throw signalr_exception(_XPLATSTR("invoke() cannot be called on uninitialized hub_connection instance"));
+            throw signalr_exception(_XPLATSTR("send() cannot be called on uninitialized hub_connection instance"));
         }
 
-        return m_pImpl->invoke_void(method_name, arguments);
+        return m_pImpl->send(method_name, arguments);
     }
 
     connection_state hub_connection::get_connection_state() const

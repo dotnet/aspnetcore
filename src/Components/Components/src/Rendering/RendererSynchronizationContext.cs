@@ -47,6 +47,10 @@ namespace Microsoft.AspNetCore.Components.Rendering
                     action();
                     completion.SetResult(null);
                 }
+                catch (OperationCanceledException)
+                {
+                    completion.SetCanceled();
+                }
                 catch (Exception exception)
                 {
                     completion.SetException(exception);
@@ -65,6 +69,10 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 {
                     await asyncAction();
                     completion.SetResult(null);
+                }
+                catch (OperationCanceledException)
+                {
+                    completion.SetCanceled();
                 }
                 catch (Exception exception)
                 {
@@ -85,6 +93,10 @@ namespace Microsoft.AspNetCore.Components.Rendering
                     var result = function();
                     completion.SetResult(result);
                 }
+                catch (OperationCanceledException)
+                {
+                    completion.SetCanceled();
+                }
                 catch (Exception exception)
                 {
                     completion.SetException(exception);
@@ -103,6 +115,10 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 {
                     var result = await asyncFunction();
                     completion.SetResult(result);
+                }
+                catch (OperationCanceledException)
+                {
+                    completion.SetCanceled();
                 }
                 catch (Exception exception)
                 {

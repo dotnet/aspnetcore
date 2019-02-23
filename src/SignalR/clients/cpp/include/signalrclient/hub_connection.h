@@ -22,8 +22,8 @@ namespace signalr
     public:
         typedef std::function<void __cdecl (const web::json::value&)> method_invoked_handler;
 
-        SIGNALRCLIENT_API explicit hub_connection(const utility::string_t& url, const utility::string_t& query_string = _XPLATSTR(""),
-            trace_level trace_level = trace_level::all, std::shared_ptr<log_writer> log_writer = nullptr);
+        SIGNALRCLIENT_API explicit hub_connection(const utility::string_t& url, trace_level trace_level = trace_level::all,
+            std::shared_ptr<log_writer> log_writer = nullptr);
 
         SIGNALRCLIENT_API ~hub_connection();
 
@@ -43,20 +43,11 @@ namespace signalr
 
         SIGNALRCLIENT_API void __cdecl on(const utility::string_t& event_name, const method_invoked_handler& handler);
 
-        pplx::task<web::json::value> invoke(const utility::string_t& method_name, const web::json::value& arguments = web::json::value::array())
-        {
-            return invoke_json(method_name, arguments);
-        }
+        SIGNALRCLIENT_API pplx::task<web::json::value> invoke(const utility::string_t& method_name, const web::json::value& arguments = web::json::value::array());
 
-        pplx::task<void> send(const utility::string_t& method_name, const web::json::value& arguments = web::json::value::array())
-        {
-            return invoke_void(method_name, arguments);
-        }
+        SIGNALRCLIENT_API pplx::task<void> send(const utility::string_t& method_name, const web::json::value& arguments = web::json::value::array());
 
     private:
         std::shared_ptr<hub_connection_impl> m_pImpl;
-
-        SIGNALRCLIENT_API pplx::task<web::json::value> __cdecl invoke_json(const utility::string_t& method_name, const web::json::value& arguments);
-        SIGNALRCLIENT_API pplx::task<void> __cdecl invoke_void(const utility::string_t& method_name, const web::json::value& arguments);
     };
 }

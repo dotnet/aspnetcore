@@ -9,7 +9,7 @@
 
   <PropertyGroup>
     <!-- Use a short folder name to avoid MAX_PATH issues on Windows -->
-    <IntermediateOutputPath>$(RepositoryRoot)obj\ai\$(TargetRuntimeIdentifier)\</IntermediateOutputPath>
+    <IntermediateOutputPath>$(ArtifactsObjDir)ai\$(TargetRuntimeIdentifier)\</IntermediateOutputPath>
     <OutputFileName>$(InternalInstallerBaseName)-$(PackageVersion)-$(TargetRuntimeIdentifier)$(ArchiveExtension)</OutputFileName>
     <OutputPath>$(InstallersOutputPath)</OutputPath>
     <TargetPath>$(InstallersOutputPath)$(OutputFileName)</TargetPath>
@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Framework\src\Microsoft.AspNetCore.App.shfxproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
       <OutputItemType>_ResolvedFxProjects</OutputItemType>
     </ProjectReference>

@@ -11,12 +11,12 @@ See https://github.com/aspnet/AspNetCore/labels/area-infrastructure for known is
 
 Building ASP.NET Core on Windows requires:
 
-* Windows 7 or higher
+* Windows 10
 * At least 10 GB of disk space and a good internet connection (our build scripts download a lot of tools and dependencies)
-* Visual Studio 2017. <https://visualstudio.com>
-    * To install the exact required components, run [eng/scripts/InstallVisualStudio.ps1](/eng/scripts/InstallVisualStudio.ps1). This will use VS2017.
+* Visual Studio **2019 Preview**. <https://visualstudio.com>
+    * To install the exact required components, run [eng/scripts/InstallVisualStudio.ps1](/eng/scripts/InstallVisualStudio.ps1).
         ```ps1
-        PS> ./eng/scripts/InstallVisualStudio.ps1 -Edition Community
+        PS> ./eng/scripts/InstallVisualStudio.ps1
         ```
 * Git. <https://git-scm.org>
 * (Optional) some optional components, like the SignalR Java client, may require
@@ -101,8 +101,10 @@ Using Visual Studio Code with this repo requires setting environment variables o
 Use these command to launch VS Code with the right settings.
 
 On Windows (requires PowerShell):
-```
-. activate.ps1
+```ps1
+# The extra dot at the beginning is required to 'dot source' this file into the right scope.
+
+. .\activate.ps1
 code .
 ```
 
@@ -134,6 +136,8 @@ to make the .NET Core command line tool work well. You can set these environment
 On Windows (requires PowerShell):
 
 ```ps1
+# The extra dot at the beginning is required to 'dot source' this file into the right scope.
+
 . .\activate.ps1
 ```
 

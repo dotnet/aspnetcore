@@ -108,13 +108,15 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
 
                     }
                     await Task.Delay(1000);
-
                 }
             });
 
             try
             {
-                waitForStart.TimeoutAfter(Timeout).Wait();
+                // Wait in intervals instead of indefinitely to prevent thread starvation.
+                while (!waitForStart.TimeoutAfter(Timeout).Wait(1000))
+                {
+                }
             }
             catch (Exception ex)
             {
@@ -124,7 +126,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
                     output = builder.ToString();
                 }
 
-                throw new InvalidOperationException($"Failed to start selenium sever. {Environment.NewLine}{output}", ex.GetBaseException());
+                throw new InvalidOperationException($"Failed to start selenium sever. {System.Environment.NewLine}{output}", ex.GetBaseException());
             }
         }
 

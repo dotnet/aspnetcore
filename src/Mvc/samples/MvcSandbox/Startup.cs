@@ -66,7 +66,8 @@ namespace MvcSandbox
                         return Task.CompletedTask;
                     });
 
-                builder.MapApplication();
+                builder.MapControllers();
+                builder.MapRazorPages();
             });
 
             app.UseDeveloperExceptionPage();

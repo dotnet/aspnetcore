@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -278,6 +278,57 @@ namespace Microsoft.AspNetCore.Routing.Matching
             else
             {
                 _largeCapactityValidity[index] = value;
+            }
+        }
+
+        /// <summary>
+        /// Replaces the <see cref="Endpoint"/> at the provided <paramref name="index"/> with the
+        /// provided <paramref name="endpoint"/>.
+        /// </summary>
+        /// <param name="index">The candidate index.</param>
+        /// <param name="endpoint">
+        /// The <see cref="Endpoint"/> to replace the original <see cref="Endpoint"/> at
+        /// the <paramref name="index"/>. If <paramref name="endpoint"/> the candidate will be marked
+        /// as invalid.
+        /// </param>
+        /// <param name="values">
+        /// The <see cref="RouteValueDictionary"/> to replace the original <see cref="RouteValueDictionary"/> at
+        /// the <paramref name="index"/>.
+        /// </param>
+        public void ReplaceEndpoint(int index, Endpoint endpoint, RouteValueDictionary values)
+        {
+            // Friendliness for inlining
+            if ((uint)index >= Count)
+            {
+                ThrowIndexArgumentOutOfRangeException();
+            }
+
+            switch (index)
+            {
+                case 0:
+                    _state0 = new CandidateState(endpoint, values, _state0.Score);
+                    break;
+
+                case 1:
+                    _state1 = new CandidateState(endpoint, values, _state1.Score);
+                    break;
+
+                case 2:
+                    _state2 = new CandidateState(endpoint, values, _state2.Score);
+                    break;
+
+                case 3:
+                    _state3 = new CandidateState(endpoint, values, _state3.Score);
+                    break;
+
+                default:
+                    _additionalCandidates[index - 4] = new CandidateState(endpoint, values, _additionalCandidates[index - 4].Score);
+                    break;
+            }
+
+            if (endpoint == null)
+            {
+                SetValidity(index, false);
             }
         }
 

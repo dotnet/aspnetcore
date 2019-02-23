@@ -6,8 +6,6 @@
     <IncludeSymbols>false</IncludeSymbols>
     <!-- There is no API to check -->
     <EnableApiCheck>false</EnableApiCheck>
-    <!-- Manually control dependencies -->
-    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
     <!-- The only build output of a pkgproj is the project -->
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
@@ -24,14 +22,12 @@
   <ItemGroup>
     <Content Include="$(IntermediateOutputPath)runtime.json" PackagePath="\" />
 
-    <PackageReference Include="Microsoft.NETCore.App">
-      <Version>$(MicrosoftNETCoreAppPackageVersion)</Version>
-      <PrivateAssets>All</PrivateAssets>
-      <AllowExplicitVersion>true</AllowExplicitVersion>
-    </PackageReference>
+    <!-- Add version metadata. These are expected to match the metapackage version. -->
+    <AspNetCoreAppReferenceAndPackage Update="@(AspNetCoreAppReferenceAndPackage)" Version="$(SharedFxVersion)" />
+    <AspNetCoreAppReference Update="@(AspNetCoreAppReference)" Version="$(SharedFxVersion)" />
 
-    <!-- Note: do not add _TransitiveExternalDependency to this list. This is intentionally not listed as a direct package reference. -->
-    <PackageReference Include="@(Dependency);@(ExternalDependency)" />
+    <!-- Note: do not add _TransitiveExternalAspNetCoreAppReference to this list. This is intentionally not listed as a direct package reference. -->
+    <PackageReference Include="@(AspNetCoreAppReference);@(AspNetCoreAppReferenceAndPackage);@(ExternalAspNetCoreAppReference)" />
   </ItemGroup>
 
   <ItemDefinitionGroup>
@@ -71,8 +67,9 @@
   <Target Name="GenerateBuildProps" BeforeTargets="BeforeBuild" DependsOnTargets="PrepareOutputPaths">
 
     <ItemGroup>
-      <_AspNetAppPackageConflictOverrides Include="@(Dependency->'%(Identity)|%(Version)')" Condition=" '%(Dependency.Version)' != '' " />
-      <_AspNetAppPackageConflictOverrides Include="@(ExternalDependency->'%(Identity)|%(Version)')" Condition=" '%(ExternalDependency.Version)' != '' " />
+      <_AspNetAppPackageConflictOverrides Include="@(AspNetCoreAppReference->'%(Identity)|%(Version)')" Condition=" '%(AspNetCoreAppReference.Version)' != '' " />
+      <_AspNetAppPackageConflictOverrides Include="@(AspNetCoreAppReferenceAndPackage->'%(Identity)|%(Version)')" Condition=" '%(AspNetCoreAppReferenceAndPackage.Version)' != '' " />
+      <_AspNetAppPackageConflictOverrides Include="@(ExternalAspNetCoreAppReference->'%(Identity)|%(Version)')" Condition=" '%(ExternalAspNetCoreAppReference.Version)' != '' " />
     </ItemGroup>
 
     <PropertyGroup>

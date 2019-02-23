@@ -21,6 +21,9 @@ Suppress running restore on projects.
 .PARAMETER NoBuild
 Suppress re-compile projects. (Implies -NoRestore)
 
+.PARAMETER NoBuildDeps
+Do not build project-to-project references and only build the specified project.
+
 .PARAMETER Pack
 Produce packages.
 
@@ -88,6 +91,7 @@ param(
     [switch]$Restore,
     [switch]$NoRestore, # Suppress restore
     [switch]$NoBuild, # Suppress compiling
+    [switch]$NoBuildDeps, # Suppress project to project dependencies
     [switch]$Pack, # Produce packages
     [switch]$Test, # Run tests
     [switch]$Sign, # Code sign
@@ -269,6 +273,8 @@ if ($BuildNative) { $MSBuildArguments += "/p:BuildNative=true" }
 if ($BuildNodeJS) { $MSBuildArguments += "/p:BuildNodeJS=true" }
 if ($BuildJava) { $MSBuildArguments += "/p:BuildJava=true" }
 
+if ($NoBuildDeps) { $MSBuildArguments += "/p:BuildProjectReferences=false" }
+
 if ($NoBuildInstallers) { $MSBuildArguments += "/p:BuildInstallers=false" }
 if ($NoBuildManaged) { $MSBuildArguments += "/p:BuildManaged=false" }
 if ($NoBuildNative) { $MSBuildArguments += "/p:BuildNative=false" }
@@ -285,7 +291,10 @@ $RunRestore = if ($NoRestore) { $false }
     else { $true }
 
 # Target selection
-$MSBuildArguments += "/p:_RunRestore=$RunRestore"
+if ($RunRestore) {
+    $MSBuildArguments += "/restore"
+}
+
 $MSBuildArguments += "/p:_RunBuild=$RunBuild"
 $MSBuildArguments += "/p:_RunPack=$Pack"
 $MSBuildArguments += "/p:_RunTests=$Test"
@@ -297,6 +306,7 @@ $MSBuildArguments += "/p:TargetOsName=win"
 Import-Module -Force -Scope Local (Join-Path $korebuildPath 'KoreBuild.psd1')
 
 try {
+    $env:KOREBUILD_KEEPGLOBALJSON = 1
     Set-KoreBuildSettings -ToolsSource $ToolsSource -DotNetHome $DotNetHome -RepoPath $PSScriptRoot -ConfigFile $ConfigFile -CI:$CI
     if ($ForceCoreMsbuild) {
         $global:KoreBuildSettings.MSBuildType = 'core'
@@ -306,4 +316,5 @@ try {
 finally {
     Remove-Module 'KoreBuild' -ErrorAction Ignore
     Remove-Item env:DOTNET_HOME
+    Remove-Item env:KOREBUILD_KEEPGLOBALJSON
 }

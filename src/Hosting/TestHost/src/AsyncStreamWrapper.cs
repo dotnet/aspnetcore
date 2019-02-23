@@ -21,13 +21,17 @@ namespace Microsoft.AspNetCore.TestHost
 
         public override bool CanRead => _inner.CanRead;
 
-        public override bool CanSeek => _inner.CanSeek;
+        public override bool CanSeek => false;
 
         public override bool CanWrite => _inner.CanWrite;
 
-        public override long Length => _inner.Length;
+        public override long Length => throw new NotSupportedException("The stream is not seekable.");
 
-        public override long Position { get => _inner.Position; set => _inner.Position = value; }
+        public override long Position
+        {
+            get => throw new NotSupportedException("The stream is not seekable.");
+            set => throw new NotSupportedException("The stream is not seekable.");
+        }
 
         public override void Flush()
         {
@@ -72,12 +76,12 @@ namespace Microsoft.AspNetCore.TestHost
 
         public override long Seek(long offset, SeekOrigin origin)
         {
-            return _inner.Seek(offset, origin);
+            throw new NotSupportedException("The stream is not seekable.");
         }
 
         public override void SetLength(long value)
         {
-            _inner.SetLength(value);
+            throw new NotSupportedException("The stream is not seekable.");
         }
 
         public override void Write(byte[] buffer, int offset, int count)

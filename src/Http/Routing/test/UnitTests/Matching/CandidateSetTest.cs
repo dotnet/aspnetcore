@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -51,6 +51,91 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 Assert.Null(state.Values);
 
                 candidateSet.SetValidity(i, false);
+                Assert.False(candidateSet.IsValidCandidate(i));
+            }
+        }
+
+        // We special case low numbers of candidates, so we want to verify that it works correctly for a variety
+        // of input sizes.
+        [Theory]
+        [InlineData(0)]
+        [InlineData(1)]
+        [InlineData(2)]
+        [InlineData(3)]
+        [InlineData(4)]
+        [InlineData(5)] // this is the break-point where we start to use a list.
+        [InlineData(6)]
+        [InlineData(31)]
+        [InlineData(32)] // this is the break point where we use a BitArray
+        [InlineData(33)]
+        public void ReplaceEndpoint_WithEndpoint(int count)
+        {
+            // Arrange
+            var endpoints = new RouteEndpoint[count];
+            for (var i = 0; i < endpoints.Length; i++)
+            {
+                endpoints[i] = CreateEndpoint($"/{i}");
+            }
+
+            var builder = CreateDfaMatcherBuilder();
+            var candidates = builder.CreateCandidates(endpoints);
+
+            var candidateSet = new CandidateSet(candidates);
+
+            for (var i = 0; i < candidateSet.Count; i++)
+            {
+                ref var state = ref candidateSet[i];
+
+                var endpoint = CreateEndpoint($"/test{i}");
+                var values = new RouteValueDictionary();
+
+                // Act
+                candidateSet.ReplaceEndpoint(i, endpoint, values);
+
+                // Assert
+                Assert.Same(endpoint, state.Endpoint);
+                Assert.Same(values, state.Values);
+                Assert.True(candidateSet.IsValidCandidate(i));
+            }
+        }
+
+        // We special case low numbers of candidates, so we want to verify that it works correctly for a variety
+        // of input sizes.
+        [Theory]
+        [InlineData(0)]
+        [InlineData(1)]
+        [InlineData(2)]
+        [InlineData(3)]
+        [InlineData(4)]
+        [InlineData(5)] // this is the break-point where we start to use a list.
+        [InlineData(6)]
+        [InlineData(31)]
+        [InlineData(32)] // this is the break point where we use a BitArray
+        [InlineData(33)]
+        public void ReplaceEndpoint_WithEndpoint_Null(int count)
+        {
+            // Arrange
+            var endpoints = new RouteEndpoint[count];
+            for (var i = 0; i < endpoints.Length; i++)
+            {
+                endpoints[i] = CreateEndpoint($"/{i}");
+            }
+
+            var builder = CreateDfaMatcherBuilder();
+            var candidates = builder.CreateCandidates(endpoints);
+
+            var candidateSet = new CandidateSet(candidates);
+
+            for (var i = 0; i < candidateSet.Count; i++)
+            {
+                ref var state = ref candidateSet[i];
+
+                // Act
+                candidateSet.ReplaceEndpoint(i, null, null);
+
+                // Assert
+                Assert.Null(state.Endpoint);
+                Assert.Null(state.Values);
                 Assert.False(candidateSet.IsValidCandidate(i));
             }
         }

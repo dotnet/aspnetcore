@@ -16,7 +16,7 @@ namespace signalr
             : runtime_error(utility::conversions::to_utf8string(what)), m_status_code(status_code)
         {}
 
-        unsigned short status_code() const
+        unsigned short status_code() const noexcept
         {
             return m_status_code;
         }

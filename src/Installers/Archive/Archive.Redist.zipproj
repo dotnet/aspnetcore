@@ -8,7 +8,7 @@
 
   <PropertyGroup>
     <!-- Use a short folder name to avoid MAX_PATH issues on Windows -->
-    <BaseIntermediateOutputPath>$(RepositoryRoot)obj\ar\</BaseIntermediateOutputPath>
+    <BaseIntermediateOutputPath>$(ArtifactsObjDir)ar\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(TargetRuntimeIdentifier)\</IntermediateOutputPath>
     <OutputFileName>$(RuntimeInstallerBaseName)-$(PackageVersion)-$(TargetRuntimeIdentifier)$(ArchiveExtension)</OutputFileName>
     <OutputPath>$(InstallersOutputPath)</OutputPath>
@@ -26,6 +26,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Framework\src\Microsoft.AspNetCore.App.shfxproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
       <OutputItemType>_ResolvedFxProjects</OutputItemType>
     </ProjectReference>

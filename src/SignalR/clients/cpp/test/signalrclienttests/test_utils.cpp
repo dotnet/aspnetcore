@@ -38,7 +38,7 @@ std::unique_ptr<web_request_factory> create_test_web_request_factory()
         auto response_body =
             url.path() == _XPLATSTR("/negotiate")
             ? _XPLATSTR("{\"connectionId\" : \"f7707523-307d-4cba-9abf-3eef701241e8\", ")
-            _XPLATSTR("\"availableTransports\" : [] }")
+            _XPLATSTR("\"availableTransports\" : [ { \"transport\": \"WebSockets\", \"transferFormats\": [ \"Text\", \"Binary\" ] } ] }")
             : url.path() == _XPLATSTR("/start") || url.path() == _XPLATSTR("/signalr/start")
                 ? _XPLATSTR("{\"Response\":\"started\" }")
                 : _XPLATSTR("");
@@ -56,6 +56,18 @@ utility::string_t create_uri()
 
     return utility::string_t(_XPLATSTR("http://"))
         .append(utility::conversions::to_string_t(unit_test->current_test_info()->name()));
+}
+
+utility::string_t create_uri(const utility::string_t& query_string)
+{
+    auto unit_test = ::testing::UnitTest::GetInstance();
+
+    // unit test will be null if this function is not called in a test
+    _ASSERTE(unit_test);
+
+    return utility::string_t(_XPLATSTR("http://"))
+        .append(utility::conversions::to_string_t(unit_test->current_test_info()->name()))
+        .append(_XPLATSTR("?" + query_string));
 }
 
 std::vector<utility::string_t> filter_vector(const std::vector<utility::string_t>& source, const utility::string_t& string)

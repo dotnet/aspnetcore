@@ -12,9 +12,9 @@ namespace signalr
     class logger
     {
     public:
-        logger(const std::shared_ptr<log_writer>& log_writer, trace_level trace_level);
+        logger(const std::shared_ptr<log_writer>& log_writer, trace_level trace_level) noexcept;
 
-        void log(trace_level level, const utility::string_t& entry);
+        void log(trace_level level, const utility::string_t& entry) const;
 
     private:
         std::shared_ptr<log_writer> m_log_writer;

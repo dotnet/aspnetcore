@@ -18,7 +18,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging.Testing;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
@@ -612,9 +611,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             {
                 using (var connection = server.CreateConnection())
                 {
-                    // Use Send instead of SendEnd to ensure the connection will remain open while
-                    // the app runs and reads 0 bytes from the body nonetheless. This checks that
-                    // https://github.com/aspnet/KestrelHttpServer/issues/1104 is not regressing.
                     await connection.Send(
                         "GET / HTTP/1.1",
                         "Host:",
@@ -650,11 +646,95 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public async Task ConnectionClosesWhenFinReceivedBeforeRequestCompletes()
+        public async Task ZeroContentLengthAssumedOnNonKeepAliveRequestsWithoutContentLengthOrTransferEncodingHeaderPipeReader()
         {
             var testContext = new TestServiceContext(LoggerFactory);
-            // FIN callbacks are scheduled so run inline to make this test more reliable
-            testContext.Scheduler = PipeScheduler.Inline;
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                var readResult = await httpContext.Request.BodyPipe.ReadAsync().AsTask().DefaultTimeout();
+                // This will hang if 0 content length is not assumed by the server
+                Assert.True(readResult.IsCompleted);
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "Connection: close",
+                        "",
+                        "");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 200 OK",
+                        "Connection: close",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.0",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 200 OK",
+                        "Connection: close",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task ContentLengthReadAsyncPipeReader()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                var readResult = await httpContext.Request.BodyPipe.ReadAsync();
+                // This will hang if 0 content length is not assumed by the server
+                Assert.Equal(5, readResult.Buffer.Length);
+                httpContext.Request.BodyPipe.AdvanceTo(readResult.Buffer.End);
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.SendAll(
+                        "POST / HTTP/1.0",
+                        "Host:",
+                        "Content-Length: 5",
+                        "",
+                        "hello");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 200 OK",
+                        "Connection: close",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task ConnectionClosesWhenFinReceivedBeforeRequestCompletes()
+        {
+            var testContext = new TestServiceContext(LoggerFactory)
+            {
+                // FIN callbacks are scheduled so run inline to make this test more reliable
+                Scheduler = PipeScheduler.Inline
+            };
 
             using (var server = new TestServer(TestApp.EchoAppChunked, testContext))
             {
@@ -1077,45 +1157,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public async Task SynchronousReadsAllowedByDefault()
+        public async Task SynchronousReadsDisallowedByDefault()
         {
-            var firstRequest = true;
-
             using (var server = new TestServer(async context =>
             {
                 var bodyControlFeature = context.Features.Get<IHttpBodyControlFeature>();
-                Assert.True(bodyControlFeature.AllowSynchronousIO);
+                Assert.False(bodyControlFeature.AllowSynchronousIO);
 
                 var buffer = new byte[6];
                 var offset = 0;
 
                 // The request body is 5 bytes long. The 6th byte (buffer[5]) is only used for writing the response body.
-                buffer[5] = (byte)(firstRequest ? '1' : '2');
+                buffer[5] = (byte)'1';
 
-                if (firstRequest)
+                // Synchronous reads throw.
+                var ioEx = Assert.Throws<InvalidOperationException>(() => context.Request.Body.Read(new byte[1], 0, 1));
+                Assert.Equal(CoreStrings.SynchronousReadsDisallowed, ioEx.Message);
+
+                var ioEx2 = Assert.Throws<InvalidOperationException>(() => context.Request.Body.CopyTo(Stream.Null));
+                Assert.Equal(CoreStrings.SynchronousReadsDisallowed, ioEx2.Message);
+
+                while (offset < 5)
                 {
-                    while (offset < 5)
-                    {
-                        offset += context.Request.Body.Read(buffer, offset, 5 - offset);
-                    }
-
-                    firstRequest = false;
-                }
-                else
-                {
-                    bodyControlFeature.AllowSynchronousIO = false;
-
-                    // Synchronous reads now throw.
-                    var ioEx = Assert.Throws<InvalidOperationException>(() => context.Request.Body.Read(new byte[1], 0, 1));
-                    Assert.Equal(CoreStrings.SynchronousReadsDisallowed, ioEx.Message);
-
-                    var ioEx2 = Assert.Throws<InvalidOperationException>(() => context.Request.Body.CopyTo(Stream.Null));
-                    Assert.Equal(CoreStrings.SynchronousReadsDisallowed, ioEx2.Message);
-
-                    while (offset < 5)
-                    {
-                        offset += await context.Request.Body.ReadAsync(buffer, offset, 5 - offset);
-                    }
+                    offset += await context.Request.Body.ReadAsync(buffer, offset, 5 - offset);
                 }
 
                 Assert.Equal(0, await context.Request.Body.ReadAsync(new byte[1], 0, 1));
@@ -1132,7 +1196,46 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "Host:",
                         "Content-Length: 5",
                         "",
-                        "HelloPOST / HTTP/1.1",
+                        "Hello");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 6",
+                        "",
+                        "Hello1");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task SynchronousReadsAllowedByOptIn()
+        {
+            using (var server = new TestServer(async context =>
+            {
+                var bodyControlFeature = context.Features.Get<IHttpBodyControlFeature>();
+                Assert.False(bodyControlFeature.AllowSynchronousIO);
+
+                var buffer = new byte[5];
+                var offset = 0;
+
+                bodyControlFeature.AllowSynchronousIO = true;
+
+                while (offset < 5)
+                {
+                    offset += context.Request.Body.Read(buffer, offset, 5 - offset);
+                }
+
+                Assert.Equal(0, await context.Request.Body.ReadAsync(new byte[1], 0, 1));
+                Assert.Equal("Hello", Encoding.ASCII.GetString(buffer, 0, 5));
+
+                context.Response.ContentLength = 5;
+                await context.Response.Body.WriteAsync(buffer, 0, 5);
+            }, new TestServiceContext(LoggerFactory)))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "POST / HTTP/1.1",
                         "Host:",
                         "Content-Length: 5",
                         "",
@@ -1140,13 +1243,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
                         $"Date: {server.Context.DateHeaderValue}",
-                        "Content-Length: 6",
+                        "Content-Length: 5",
                         "",
-                        "Hello1HTTP/1.1 200 OK",
-                        $"Date: {server.Context.DateHeaderValue}",
-                        "Content-Length: 6",
-                        "",
-                        "Hello2");
+                        "Hello");
                 }
                 await server.StopAsync();
             }
@@ -1189,6 +1288,189 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
                         $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task SynchronousReadsCanBeAllowedGlobally()
+        {
+            var testContext = new TestServiceContext(LoggerFactory)
+            {
+                ServerOptions = { AllowSynchronousIO = true }
+            };
+
+            using (var server = new TestServer(async context =>
+            {
+                var bodyControlFeature = context.Features.Get<IHttpBodyControlFeature>();
+                Assert.True(bodyControlFeature.AllowSynchronousIO);
+
+                int offset = 0;
+                var buffer = new byte[5];
+                while (offset < 5)
+                {
+                    offset += context.Request.Body.Read(buffer, offset, 5 - offset);
+                }
+
+                Assert.Equal(0, await context.Request.Body.ReadAsync(new byte[1], 0, 1));
+                Assert.Equal("Hello", Encoding.ASCII.GetString(buffer, 0, 5));
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "POST / HTTP/1.1",
+                        "Host:",
+                        "Content-Length: 5",
+                        "",
+                        "Hello");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task ContentLengthRequestCallCancelPendingReadWorks()
+        {
+            var tcs = new TaskCompletionSource<object>();
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                var response = httpContext.Response;
+                var request = httpContext.Request;
+
+                Assert.Equal("POST", request.Method);
+
+                var readResult = await request.BodyPipe.ReadAsync();
+                request.BodyPipe.AdvanceTo(readResult.Buffer.End);
+
+                var requestTask = httpContext.Request.BodyPipe.ReadAsync();
+
+                httpContext.Request.BodyPipe.CancelPendingRead();
+
+                Assert.True((await requestTask).IsCanceled);
+
+                tcs.SetResult(null);
+
+                response.Headers["Content-Length"] = new[] { "11" };
+
+                await response.BodyPipe.WriteAsync(new Memory<byte>(Encoding.ASCII.GetBytes("Hello World"), 0, 11));
+
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "POST / HTTP/1.1",
+                        "Host:",
+                        "Content-Length: 5",
+                        "",
+                        "H");
+                    await tcs.Task;
+                    await connection.Send(
+                        "ello");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 11",
+                        "",
+                        "Hello World");
+                }
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task ContentLengthRequestCallCompleteThrowsExceptionOnRead()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                var response = httpContext.Response;
+                var request = httpContext.Request;
+
+                Assert.Equal("POST", request.Method);
+
+                var readResult = await request.BodyPipe.ReadAsync();
+                request.BodyPipe.AdvanceTo(readResult.Buffer.End);
+
+                httpContext.Request.BodyPipe.Complete();
+
+                await Assert.ThrowsAsync<InvalidOperationException>(async () => await request.BodyPipe.ReadAsync());
+
+                response.Headers["Content-Length"] = new[] { "11" };
+
+                await response.BodyPipe.WriteAsync(new Memory<byte>(Encoding.ASCII.GetBytes("Hello World"), 0, 11));
+
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "POST / HTTP/1.1",
+                        "Host:",
+                        "Content-Length: 5",
+                        "",
+                        "Hello");
+
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 11",
+                        "",
+                        "Hello World");
+                }
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task ContentLengthCallCompleteWithExceptionCauses500()
+        {
+            var tcs = new TaskCompletionSource<object>();
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                var response = httpContext.Response;
+                var request = httpContext.Request;
+
+                Assert.Equal("POST", request.Method);
+
+                var readResult = await request.BodyPipe.ReadAsync();
+                request.BodyPipe.AdvanceTo(readResult.Buffer.End);
+
+                httpContext.Request.BodyPipe.Complete(new Exception());
+
+                response.Headers["Content-Length"] = new[] { "11" };
+
+                await response.BodyPipe.WriteAsync(new Memory<byte>(Encoding.ASCII.GetBytes("Hello World"), 0, 11));
+
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "POST / HTTP/1.1",
+                        "Host:",
+                        "Content-Length: 5",
+                        "",
+                        "Hello");
+
+                    await connection.Receive(
+                        "HTTP/1.1 500 Internal Server Error",
+                        $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 0",
                         "",
                         "");

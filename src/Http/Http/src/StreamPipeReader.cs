@@ -15,13 +15,13 @@ namespace System.IO.Pipelines
     /// </summary>
     public class StreamPipeReader : PipeReader, IDisposable
     {
-        private readonly int _minimumSegmentSize;
+        private readonly int _bufferSize;
         private readonly int _minimumReadThreshold;
         private readonly MemoryPool<byte> _pool;
 
         private CancellationTokenSource _internalTokenSource;
         private bool _isReaderCompleted;
-        private bool _isWriterCompleted;
+        private bool _isStreamCompleted;
         private ExceptionDispatchInfo _exceptionInfo;
 
         private BufferSegment _readHead;
@@ -60,9 +60,9 @@ namespace System.IO.Pipelines
                 throw new ArgumentOutOfRangeException(nameof(options.MinimumReadThreshold));
             }
 
-            _minimumSegmentSize = options.MinimumSegmentSize;
             _minimumReadThreshold = Math.Min(options.MinimumReadThreshold, options.MinimumSegmentSize);
-            _pool = options.MemoryPool;
+            _pool = options.MemoryPool == MemoryPool<byte>.Shared ? null : options.MemoryPool;
+            _bufferSize = _pool == null ? options.MinimumSegmentSize : Math.Min(options.MinimumSegmentSize, _pool.MaxBufferSize);
         }
 
         /// <summary>
@@ -206,11 +206,6 @@ namespace System.IO.Pipelines
         public override async ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
         {
             // TODO ReadyAsync needs to throw if there are overlapping reads.
-            if (_isWriterCompleted)
-            {
-                return new ReadResult(buffer: default, isCanceled: false, isCompleted: true);
-            }
-
             ThrowIfCompleted();
 
             // PERF: store InternalTokenSource locally to avoid querying it twice (which acquires a lock)
@@ -218,6 +213,11 @@ namespace System.IO.Pipelines
             if (TryReadInternal(tokenSource, out var readResult))
             {
                 return readResult;
+            }
+
+            if (_isStreamCompleted)
+            {
+                return new ReadResult(buffer: default, isCanceled: false, isCompleted: true);
             }
 
             var reg = new CancellationTokenRegistration();
@@ -251,7 +251,7 @@ namespace System.IO.Pipelines
 
                     if (length == 0)
                     {
-                        _isWriterCompleted = true;
+                        _isStreamCompleted = true;
                     }
                 }
                 catch (OperationCanceledException)
@@ -272,7 +272,7 @@ namespace System.IO.Pipelines
 
         private void ClearCancellationToken()
         {
-            lock(_lock)
+            lock (_lock)
             {
                 _internalTokenSource = null;
             }
@@ -296,7 +296,7 @@ namespace System.IO.Pipelines
         private bool TryReadInternal(CancellationTokenSource source, out ReadResult result)
         {
             var isCancellationRequested = source.IsCancellationRequested;
-            if (isCancellationRequested || _bufferedBytes > 0 && !_examinedEverything)
+            if (isCancellationRequested || _bufferedBytes > 0 && (!_examinedEverything || _isStreamCompleted))
             {
                 // If TryRead/ReadAsync are called and cancellation is requested, we need to make sure memory is allocated for the ReadResult,
                 // otherwise if someone calls advance afterward on the ReadResult, it will throw.
@@ -328,8 +328,7 @@ namespace System.IO.Pipelines
             if (_readHead == null)
             {
                 Debug.Assert(_readTail == null);
-                _readHead = CreateBufferSegment();
-                _readHead.SetMemory(_pool.Rent(GetSegmentSize()));
+                _readHead = AllocateSegment();
                 _readTail = _readHead;
             }
             else if (_readTail.WritableBytes < _minimumReadThreshold)
@@ -340,18 +339,25 @@ namespace System.IO.Pipelines
 
         private void CreateNewTailSegment()
         {
-            var nextSegment = CreateBufferSegment();
-            nextSegment.SetMemory(_pool.Rent(GetSegmentSize()));
+            BufferSegment nextSegment = AllocateSegment();
             _readTail.SetNext(nextSegment);
             _readTail = nextSegment;
         }
 
-        private int GetSegmentSize() => Math.Min(_pool.MaxBufferSize, _minimumSegmentSize);
-
-        private BufferSegment CreateBufferSegment()
+        private BufferSegment AllocateSegment()
         {
-            // TODO this can pool buffer segment objects
-            return new BufferSegment();
+            var nextSegment = new BufferSegment();
+
+            if (_pool is null)
+            {
+                nextSegment.SetMemory(ArrayPool<byte>.Shared.Rent(_bufferSize));
+            }
+            else
+            {
+                nextSegment.SetMemory(_pool.Rent(_bufferSize));
+            }
+
+            return nextSegment;
         }
 
         private void Cancel()
@@ -362,7 +368,7 @@ namespace System.IO.Pipelines
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool IsCompletedOrThrow()
         {
-            if (!_isWriterCompleted)
+            if (!_isStreamCompleted)
             {
                 return false;
             }

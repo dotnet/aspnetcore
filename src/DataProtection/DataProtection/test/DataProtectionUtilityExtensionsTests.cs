@@ -5,6 +5,7 @@ using System;
 using Microsoft.AspNetCore.DataProtection.Infrastructure;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Moq;
 using Xunit;
 
@@ -20,7 +21,7 @@ namespace Microsoft.AspNetCore.DataProtection
         public void GetApplicationUniqueIdentifierFromHosting(string contentRootPath, string expected)
         {
             // Arrange
-            var mockEnvironment = new Mock<IHostingEnvironment>();
+            var mockEnvironment = new Mock<IHostEnvironment>();
             mockEnvironment.Setup(o => o.ContentRootPath).Returns(contentRootPath);
 
             var services = new ServiceCollection()
@@ -47,7 +48,7 @@ namespace Microsoft.AspNetCore.DataProtection
             var mockAppDiscriminator = new Mock<IApplicationDiscriminator>();
             mockAppDiscriminator.Setup(o => o.Discriminator).Returns(discriminator);
 
-            var mockEnvironment = new Mock<IHostingEnvironment>();
+            var mockEnvironment = new Mock<IHostEnvironment>();
             mockEnvironment.SetupGet(o => o.ContentRootPath).Throws(new InvalidOperationException("Hosting environment should not be checked"));
 
             var services = new ServiceCollection()

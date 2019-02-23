@@ -4,10 +4,12 @@
 using System;
 using System.IO;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SignalRSamples.ConnectionHandlers;
@@ -44,7 +46,7 @@ namespace SignalRSamples
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseFileServer();
 
@@ -55,23 +57,17 @@ namespace SignalRSamples
 
             app.UseCors("Everything");
 
-            app.UseSignalR(routes =>
+            app.UseRouting(routes =>
             {
                 routes.MapHub<DynamicChat>("/dynamic");
                 routes.MapHub<Chat>("/default");
                 routes.MapHub<Streaming>("/streaming");
                 routes.MapHub<UploadHub>("/uploading");
                 routes.MapHub<HubTChat>("/hubT");
-            });
 
-            app.UseConnections(routes =>
-            {
                 routes.MapConnectionHandler<MessagesConnectionHandler>("/chat");
-            });
 
-            app.Use(next => (context) =>
-            {
-                if (context.Request.Path.StartsWithSegments("/deployment"))
+                routes.MapGet("/deployment", context =>
                 {
                     var attributes = Assembly.GetAssembly(typeof(Startup)).GetCustomAttributes<AssemblyMetadataAttribute>();
 
@@ -99,9 +95,12 @@ namespace SignalRSamples
 
                         json.WriteTo(writer);
                     }
-                }
-                return Task.CompletedTask;
+
+                    return Task.CompletedTask;
+                });
             });
+
+            app.UseAuthorization();
         }
     }
 }

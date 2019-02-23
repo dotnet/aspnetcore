@@ -1,7 +1,8 @@
 <Project>
   <PropertyGroup>
-    <OutputPath>$(RepositoryRoot)bin\fx\$(TargetOsName)\$(TargetArchitecture)\$(MSBuildProjectName)\</OutputPath>
-    <BaseIntermediateOutputPath>$(RepositoryRoot)obj\fx\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+    <OutputInRepoRoot>true</OutputInRepoRoot>
+    <PlatformName>$(TargetOsName)-$(TargetArchitecture)</PlatformName>
+    <OutDirName>fx</OutDirName>
   </PropertyGroup>
 
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
@@ -10,10 +11,7 @@
     <RuntimeIdentifier>$(TargetRuntimeIdentifier)</RuntimeIdentifier>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <BaseSharedFrameworkName>Microsoft.NETCore.App</BaseSharedFrameworkName>
-    <RuntimeFrameworkVersion>$(MicrosoftNETCoreAppPackageVersion)</RuntimeFrameworkVersion>
-
-    <!-- shfxproj must be explicit about its dependencies. -->
-    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+    <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
 
     <!-- Optimize the framework using the crossgen tool -->
     <CrossgenOutput>true</CrossgenOutput>
@@ -51,8 +49,6 @@ $(MSBuildProjectName) provides a default set of APIs for building an ASP.NET Cor
     <!-- Workaround for invalid NU5109 error when packing on macOS. -->
     <NoPackageAnalysis>true</NoPackageAnalysis>
   </PropertyGroup>
-
-  <Import Project="..\Microsoft.AspNetCore.App.props" />
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
   <Import Project="SharedFx.targets" />

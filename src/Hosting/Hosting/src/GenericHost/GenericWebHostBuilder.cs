@@ -71,7 +71,10 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
                 // Add the IHostingEnvironment and IApplicationLifetime from Microsoft.AspNetCore.Hosting
                 services.AddSingleton(webhostContext.HostingEnvironment);
+#pragma warning disable CS0618 // Type or member is obsolete
+                services.AddSingleton((AspNetCore.Hosting.IHostingEnvironment)webhostContext.HostingEnvironment);
                 services.AddSingleton<IApplicationLifetime, GenericWebHostApplicationLifetime>();
+#pragma warning restore CS0618 // Type or member is obsolete
 
                 services.Configure<GenericWebHostServiceOptions>(options =>
                 {
@@ -318,14 +321,12 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             if (!context.Properties.TryGetValue(typeof(WebHostBuilderContext), out var contextVal))
             {
                 var options = new WebHostOptions(context.Configuration, Assembly.GetEntryAssembly()?.GetName().Name);
-                var hostingEnvironment = new HostingEnvironment();
-                hostingEnvironment.Initialize(context.HostingEnvironment.ContentRootPath, options);
-
                 var webHostBuilderContext = new WebHostBuilderContext
                 {
                     Configuration = context.Configuration,
-                    HostingEnvironment = hostingEnvironment
+                    HostingEnvironment = new HostingEnvironment(),
                 };
+                webHostBuilderContext.HostingEnvironment.Initialize(context.HostingEnvironment.ContentRootPath, options);
                 context.Properties[typeof(WebHostBuilderContext)] = webHostBuilderContext;
                 context.Properties[typeof(WebHostOptions)] = options;
                 return webHostBuilderContext;
@@ -361,7 +362,13 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             public object GetService(Type serviceType)
             {
                 // The implementation of the HostingEnvironment supports both interfaces
-                if (serviceType == typeof(Microsoft.AspNetCore.Hosting.IHostingEnvironment) || serviceType == typeof(IHostingEnvironment))
+#pragma warning disable CS0618 // Type or member is obsolete
+                if (serviceType == typeof(Microsoft.Extensions.Hosting.IHostingEnvironment)
+                    || serviceType == typeof(Microsoft.AspNetCore.Hosting.IHostingEnvironment)
+#pragma warning restore CS0618 // Type or member is obsolete
+                    || serviceType == typeof(IWebHostEnvironment)
+                    || serviceType == typeof(IHostEnvironment)
+                    )
                 {
                     return _context.HostingEnvironment;
                 }

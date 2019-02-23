@@ -3,9 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+#if (IndividualLocalAuth)
+using Microsoft.AspNetCore.Authorization;
+#endif
 
 namespace Company.WebApplication1.Controllers
 {
+    #if (IndividualLocalAuth)
+    [Authorize]
+    #endif
     [Route("api/[controller]")]
     public class SampleDataController : Controller
     {

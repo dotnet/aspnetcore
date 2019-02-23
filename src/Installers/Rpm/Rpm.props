@@ -7,7 +7,7 @@
 
   <!-- Output paths -->
   <PropertyGroup>
-    <BaseIntermediateOutputPath>$(RepositoryRoot)obj\Rpm\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+    <BaseIntermediateOutputPath>$(ArtifactsObjDir)Rpm\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(TargetRuntimeIdentifier)\</IntermediateOutputPath>
     <IntermediatePackageRoot>$([MSBuild]::NormalizeDirectory('$(IntermediateOutputPath)content/'))</IntermediatePackageRoot>
     <OutputPath>$(InstallersOutputPath)</OutputPath>

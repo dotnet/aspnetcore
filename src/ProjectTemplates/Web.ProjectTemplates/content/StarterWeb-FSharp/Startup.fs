@@ -12,6 +12,7 @@ open Microsoft.AspNetCore.HttpsPolicy;
 open Microsoft.AspNetCore.Mvc
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
+open Microsoft.Extensions.Hosting
 
 type Startup private () =
     new (configuration: IConfiguration) as this =
@@ -24,7 +25,7 @@ type Startup private () =
         services.AddMvc().AddNewtonsoftJson().AddRazorRuntimeCompilation() |> ignore
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-    member this.Configure(app: IApplicationBuilder, env: IHostingEnvironment) =
+    member this.Configure(app: IApplicationBuilder, env: IWebHostEnvironment) =
 
         if (env.IsDevelopment()) then
             app.UseDeveloperExceptionPage() |> ignore
@@ -41,11 +42,11 @@ type Startup private () =
         app.UseStaticFiles() |> ignore
 
         app.UseRouting(fun routes ->
-            routes.MapApplication() |> ignore
             routes.MapControllerRoute(
                 name = "default",
                 template = "{controller=Home}/{action=Index}/{id?}") |> ignore
             ) |> ignore
+            routes.MapRazorPages() |> ignore
 
         app.UseAuthorization() |> ignore
 

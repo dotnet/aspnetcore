@@ -15,64 +15,56 @@ namespace Microsoft.AspNetCore.Hosting
         /// </summary>
         internal static string ErrorPageHtml_Title
         {
-            get { return GetString("ErrorPageHtml_Title"); }
+            get => GetString("ErrorPageHtml_Title");
         }
 
         /// <summary>
         /// Internal Server Error
         /// </summary>
         internal static string FormatErrorPageHtml_Title()
-        {
-            return GetString("ErrorPageHtml_Title");
-        }
+            => GetString("ErrorPageHtml_Title");
 
         /// <summary>
         /// An error occurred while starting the application.
         /// </summary>
         internal static string ErrorPageHtml_UnhandledException
         {
-            get { return GetString("ErrorPageHtml_UnhandledException"); }
+            get => GetString("ErrorPageHtml_UnhandledException");
         }
 
         /// <summary>
         /// An error occurred while starting the application.
         /// </summary>
         internal static string FormatErrorPageHtml_UnhandledException()
-        {
-            return GetString("ErrorPageHtml_UnhandledException");
-        }
+            => GetString("ErrorPageHtml_UnhandledException");
 
         /// <summary>
         /// Unknown location
         /// </summary>
         internal static string ErrorPageHtml_UnknownLocation
         {
-            get { return GetString("ErrorPageHtml_UnknownLocation"); }
+            get => GetString("ErrorPageHtml_UnknownLocation");
         }
 
         /// <summary>
         /// Unknown location
         /// </summary>
         internal static string FormatErrorPageHtml_UnknownLocation()
-        {
-            return GetString("ErrorPageHtml_UnknownLocation");
-        }
+            => GetString("ErrorPageHtml_UnknownLocation");
 
         /// <summary>
         /// WebHostBuilder allows creation only of a single instance of WebHost
         /// </summary>
         internal static string WebHostBuilder_SingleInstance
         {
-            get { return GetString("WebHostBuilder_SingleInstance"); }
+            get => GetString("WebHostBuilder_SingleInstance");
         }
 
         /// <summary>
         /// WebHostBuilder allows creation only of a single instance of WebHost
         /// </summary>
         internal static string FormatWebHostBuilder_SingleInstance()
-        {
-            return GetString("WebHostBuilder_SingleInstance");
-        }
+            => GetString("WebHostBuilder_SingleInstance");
 
         private static string GetString(string name, params string[] formatterNames)
         {

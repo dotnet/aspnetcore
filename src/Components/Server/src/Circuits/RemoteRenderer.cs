@@ -3,29 +3,34 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
 using MessagePack;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Browser.Rendering
 {
-    internal class RemoteRenderer : Renderer
+    internal class RemoteRenderer : HtmlRenderer
     {
         // The purpose of the timeout is just to ensure server resources are released at some
         // point if the client disconnects without sending back an ACK after a render
         private const int TimeoutMilliseconds = 60 * 1000;
 
         private readonly int _id;
-        private readonly IClientProxy _client;
+        private IClientProxy _client;
         private readonly IJSRuntime _jsRuntime;
         private readonly RendererRegistry _rendererRegistry;
         private readonly ConcurrentDictionary<long, AutoCancelTaskCompletionSource<object>> _pendingRenders
             = new ConcurrentDictionary<long, AutoCancelTaskCompletionSource<object>>();
+        private readonly ILogger _logger;
         private long _nextRenderId = 1;
+        private bool _prerenderMode;
 
         /// <summary>
         /// Notifies when a rendering exception occured.
@@ -45,26 +50,17 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
             RendererRegistry rendererRegistry,
             IJSRuntime jsRuntime,
             IClientProxy client,
-            IDispatcher dispatcher)
-            : base(serviceProvider, dispatcher)
+            IDispatcher dispatcher,
+            HtmlEncoder encoder,
+            ILogger logger)
+            : base(serviceProvider, encoder.Encode, dispatcher)
         {
             _rendererRegistry = rendererRegistry;
             _jsRuntime = jsRuntime;
             _client = client;
 
             _id = _rendererRegistry.Add(this);
-        }
-
-        /// <summary>
-        /// Attaches a new root component to the renderer,
-        /// causing it to be displayed in the specified DOM element.
-        /// </summary>
-        /// <typeparam name="TComponent">The type of the component.</typeparam>
-        /// <param name="domElementSelector">A CSS selector that uniquely identifies a DOM element.</param>
-        public void AddComponent<TComponent>(string domElementSelector)
-            where TComponent : IComponent
-        {
-            AddComponent(typeof(TComponent), domElementSelector);
+            _logger = logger;
         }
 
         /// <summary>
@@ -73,7 +69,7 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
         /// </summary>
         /// <param name="componentType">The type of the component.</param>
         /// <param name="domElementSelector">A CSS selector that uniquely identifies a DOM element.</param>
-        public void AddComponent(Type componentType, string domElementSelector)
+        public Task AddComponentAsync(Type componentType, string domElementSelector)
         {
             var component = InstantiateComponent(componentType);
             var componentId = AssignRootComponentId(component);
@@ -85,7 +81,28 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
                 componentId);
             CaptureAsyncExceptions(attachComponentTask);
 
-            RenderRootComponent(componentId);
+            return RenderRootComponentAsync(componentId);
+        }
+
+        /// <inheritdoc />
+        protected override void HandleException(Exception exception)
+        {
+            if (exception is AggregateException aggregateException)
+            {
+                foreach (var innerException in aggregateException.Flatten().InnerExceptions)
+                {
+                    _logger.UnhandledExceptionRenderingComponent(innerException);
+                }
+            }
+            else
+            {
+                _logger.UnhandledExceptionRenderingComponent(exception);
+            }
+        }
+
+        internal void StartPrerender()
+        {
+            _prerenderMode = true;
         }
 
         /// <inheritdoc />
@@ -98,6 +115,14 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
         /// <inheritdoc />
         protected override Task UpdateDisplayAsync(in RenderBatch batch)
         {
+            if (_prerenderMode)
+            {
+                // Nothing to do in prerender mode for right now.
+                // In the future we will capture all the serialized render batches and
+                // resend them to the client upon the initial reconnect.
+                return Task.CompletedTask;
+            }
+
             // Note that we have to capture the data as a byte[] synchronously here, because
             // SignalR's SendAsync can wait an arbitrary duration before serializing the params.
             // The RenderBatch buffer will get reused by subsequent renders, so we need to

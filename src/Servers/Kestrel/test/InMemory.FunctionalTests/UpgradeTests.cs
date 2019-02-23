@@ -33,6 +33,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 {
                     await writer.WriteLineAsync("New protocol data");
                     await writer.FlushAsync();
+                    await writer.DisposeAsync();
                 }
 
                 upgrade.TrySetResult(true);
@@ -79,6 +80,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         Assert.Equal(send, line);
                         await writer.WriteLineAsync(recv);
                         await writer.FlushAsync();
+                        await writer.DisposeAsync();
                     }
 
                     upgrade.TrySetResult(true);

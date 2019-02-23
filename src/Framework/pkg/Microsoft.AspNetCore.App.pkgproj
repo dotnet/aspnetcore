@@ -1,6 +1,7 @@
 <Project>
   <PropertyGroup>
-    <BaseIntermediateOutputPath>$(RepositoryRoot)obj\pkg\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+    <OutputInRepoRoot>true</OutputInRepoRoot>
+    <OutDirName>$(MSBuildProjectName).Pkg</OutDirName>
 
     <!-- Don't add TFM to the project output path of shared framework projects -->
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
@@ -31,8 +32,6 @@ This package requires the ASP.NET Core runtime. This runtime is installed by the
       <OutputItemType>_ResolvedFxProjects</OutputItemType>
     </ProjectReference>
   </ItemGroup>
-
-  <Import Project="..\Microsoft.AspNetCore.App.props" />
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
   <Import Project="Metapackage.targets" />

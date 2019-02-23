@@ -28,9 +28,12 @@
 const logicalChildrenPropname = createSymbolOrFallback('_blazorLogicalChildren');
 const logicalParentPropname = createSymbolOrFallback('_blazorLogicalParent');
 
-export function toLogicalElement(element: Element) {
-  if (element.childNodes.length > 0) {
-    throw new Error('New logical elements must start empty');
+export function toLogicalElement(element: Element, allowExistingContents?: boolean) {
+  // Normally it's good to assert that the element has started empty, because that's the usual
+  // situation and we probably have a bug if it's not. But for the element that contain prerendered
+  // root components, we want to let them keep their content until we replace it.
+  if (element.childNodes.length > 0 && !allowExistingContents) {
+    throw new Error('New logical elements must start empty, or allowExistingContents must be true');
   }
 
   element[logicalChildrenPropname] = [];

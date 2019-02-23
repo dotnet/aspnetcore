@@ -11,9 +11,9 @@ namespace Microsoft.AspNetCore.Builder
         /// Gets or sets a value that controls whether synchronous IO is allowed for the <see cref="HttpContext.Request"/> and <see cref="HttpContext.Response"/>
         /// </summary>
         /// <remarks>
-        /// Defaults to true.
+        /// Defaults to false.
         /// </remarks>
-        public bool AllowSynchronousIO { get; set; } = true;
+        public bool AllowSynchronousIO { get; set; } = false;
 
         /// <summary>
         /// If true the server should set HttpContext.User. If false the server will only provide an

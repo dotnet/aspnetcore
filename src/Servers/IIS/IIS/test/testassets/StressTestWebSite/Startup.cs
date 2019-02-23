@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Net.Http.Headers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Extensions.Hosting;
 
 namespace ANCMStressTestApp
 {
@@ -172,7 +173,7 @@ namespace ANCMStressTestApp
                 // Get the WebSocket object
                 var ws = WebSocket.CreateFromStream(opaqueTransport, isServer: true, subProtocol: null, keepAliveInterval: TimeSpan.FromMinutes(2));
 
-                var appLifetime = app.ApplicationServices.GetRequiredService<IApplicationLifetime>();
+                var appLifetime = app.ApplicationServices.GetRequiredService<IHostApplicationLifetime>();
 
                 await Echo(ws, appLifetime.ApplicationStopping);
             });

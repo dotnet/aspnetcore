@@ -22,11 +22,6 @@ namespace Templates.Test
         public void RazorComponentsTemplateWorks()
         {
             RunDotNetNew("razorcomponents");
-
-            // Run the "server" project
-            ProjectName += ".Server";
-            TemplateOutputDir = Path.Combine(TemplateOutputDir, ProjectName);
-
             TestApplication(publish: false);
             TestApplication(publish: true);
         }

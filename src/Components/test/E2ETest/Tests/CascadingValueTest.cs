@@ -77,10 +77,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             decrementButton.Click();
             WaitAssert.Equal("98", () => currentCount.Text);
 
-            // Renders the descendant the same number of times we triggered
-            // events on it, because we always re-render components after they
-            // have an event
-            Assert.Equal("3", Browser.FindElement(By.Id("receive-by-interface-num-renders")).Text);
+            // Didn't re-render descendants
+            Assert.Equal("1", Browser.FindElement(By.Id("receive-by-interface-num-renders")).Text);
         }
     }
 }

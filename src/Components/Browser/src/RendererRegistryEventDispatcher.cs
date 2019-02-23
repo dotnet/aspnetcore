@@ -1,9 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.JSInterop;
-using System;
 
 namespace Microsoft.AspNetCore.Components.Browser
 {
@@ -16,15 +17,12 @@ namespace Microsoft.AspNetCore.Components.Browser
         /// For framework use only.
         /// </summary>
         [JSInvokable(nameof(DispatchEvent))]
-        public static void DispatchEvent(
+        public static Task DispatchEvent(
             BrowserEventDescriptor eventDescriptor, string eventArgsJson)
         {
             var eventArgs = ParseEventArgsJson(eventDescriptor.EventArgsType, eventArgsJson);
             var renderer = RendererRegistry.Current.Find(eventDescriptor.BrowserRendererId);
-            renderer.DispatchEvent(
-                eventDescriptor.ComponentId,
-                eventDescriptor.EventHandlerId,
-                eventArgs);
+            return renderer.DispatchEventAsync(eventDescriptor.EventHandlerId, eventArgs);
         }
 
         private static UIEventArgs ParseEventArgsJson(string eventArgsType, string eventArgsJson)
@@ -69,11 +67,6 @@ namespace Microsoft.AspNetCore.Components.Browser
             /// For framework use only.
             /// </summary>
             public int BrowserRendererId { get; set; }
-
-            /// <summary>
-            /// For framework use only.
-            /// </summary>
-            public int ComponentId { get; set; }
 
             /// <summary>
             /// For framework use only.

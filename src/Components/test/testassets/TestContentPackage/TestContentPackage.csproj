@@ -21,7 +21,6 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components" />
-    <Reference Include="Microsoft.NET.Sdk.Razor" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>

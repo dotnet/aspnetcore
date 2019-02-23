@@ -15,24 +15,43 @@ $repoRoot = Resolve-Path "$PSScriptRoot/../.."
 
 [string[]] $errors = @()
 
-function LogError([string]$message) {
+function LogError {
+    param(
+        [Parameter(Mandatory = $true, Position = 0)]
+        [string]$message,
+        [string]$FilePath
+    )
+    if ($env:TF_BUILD) {
+        $prefix = "##vso[task.logissue type=error"
+        if ($FilePath) {
+            $prefix = "${prefix};sourcepath=$FilePath"
+        }
+        Write-Host "${prefix}]${message}"
+    }
     Write-Host -f Red "error: $message"
     $script:errors += $message
 }
 
 try {
-    #
-    # Solutions
-    #
-
     if ($ci) {
-        & $repoRoot/build.ps1 -ci /t:InstallDotNet
+        # Install dotnet.exe
+        & $repoRoot/build.ps1 -ci -norestore /t:InstallDotNet
     }
+
+    #
+    # Versions.props and Version.Details.xml
+    #
 
     Write-Host "Checking that Versions.props and Version.Details.xml match"
     [xml] $versionProps = Get-Content "$repoRoot/eng/Versions.props"
     [xml] $versionDetails = Get-Content "$repoRoot/eng/Version.Details.xml"
-    foreach ($dep in $versionDetails.SelectNodes('//ProductDependencies/Dependency')) {
+
+    $versionVars = New-Object 'System.Collections.Generic.HashSet[string]'
+    foreach ($vars in $versionProps.SelectNodes("//PropertyGroup[`@Label=`"Automated`"]/*")) {
+        $versionVars.Add($vars.Name) | Out-Null
+    }
+
+    foreach ($dep in $versionDetails.SelectNodes('//Dependency')) {
         Write-Verbose "Found $dep"
         $varName = $dep.Name -replace '\.',''
         $varName = $varName -replace '\-',''
@@ -43,27 +62,41 @@ try {
             continue
         }
 
+        $versionVars.Remove($varName) | Out-Null
+
         $expectedVersion = $dep.Version
         $actualVersion = $versionVar.InnerText
 
         if ($expectedVersion -ne $actualVersion) {
-            LogError "Version variable '$varName' does not match the value in Version.Details.xml. Expected '$expectedVersion', actual '$actualVersion'"
+            LogError `
+                "Version variable '$varName' does not match the value in Version.Details.xml. Expected '$expectedVersion', actual '$actualVersion'" `
+                -filepath "$repoRoot\eng\Versions.props"
         }
     }
+
+    foreach ($unexpectedVar in $versionVars) {
+        LogError `
+            "Version variable '$unexpectedVar' does not have a matching entry in Version.Details.xml. See https://github.com/aspnet/AspNetCore/blob/master/docs/ReferenceResolution.md for instructions on how to add a new dependency." `
+            -filepath "$repoRoot\eng\Versions.props"
+    }
+
+    #
+    # Solutions
+    #
 
     Write-Host "Checking that solutions are up to date"
 
     Get-ChildItem "$repoRoot/*.sln" -Recurse `
         | ? {
-            # This .sln file is used by the templating engine.
-            $_.Name -ne "RazorComponentsWeb-CSharp.sln"
+            # These .sln files are used by the templating engine.
+            ($_.Name -ne "RazorComponentsWeb-CSharp.sln") -and ($_.Name -ne "GrpcService-CSharp.sln")
         } `
         | % {
         Write-Host "  Checking $(Split-Path -Leaf $_)"
         $slnDir = Split-Path -Parent $_
         $sln = $_
         & dotnet sln $_ list `
-            | ? { $_ -ne 'Project(s)' -and $_ -ne '----------' } `
+            | ? { $_ -like '*proj' } `
             | % {
                 $proj = Join-Path $slnDir $_
                 if (-not (Test-Path $proj)) {
@@ -83,6 +116,11 @@ try {
         & $PSScriptRoot\GenerateProjectList.ps1 -ci:$ci
     }
 
+    Write-Host "Re-generating references assemblies"
+    Invoke-Block {
+        & $PSScriptRoot\GenerateReferenceAssemblies.ps1 -ci:$ci
+    }
+
     Write-Host "Re-generating package baselines"
     $dotnet = 'dotnet'
     if ($ci) {
@@ -92,12 +130,21 @@ try {
         & $dotnet run -p "$repoRoot/eng/tools/BaselineGenerator/"
     }
 
-    Write-Host "git diff"
-    & git diff --ignore-space-at-eol --exit-code
-    if ($LastExitCode -ne 0) {
-        $status = git status -s | Out-String
-        $status = $status -replace "`n","`n    "
-        LogError "Generated code is not up to date."
+    Write-Host "Run git diff to check for pending changes"
+
+    # Redirect stderr to stdout because PowerShell does not consistently handle output to stderr
+    $changedFiles = & cmd /c 'git --no-pager diff --ignore-space-at-eol --name-only 2>&1'
+
+    if ($changedFiles) {
+        foreach ($file in $changedFiles) {
+            if (($file -like 'warning:*') -or ($file -like 'The file will have its original line endings*')) {
+                # git might emit warnings to stderr about CRLF vs LR, which can vary from machine to machine based on git's configuration
+                continue
+            }
+            $filePath = Resolve-Path "${repoRoot}/${file}"
+            LogError "Generated code is not up to date in $file." -filepath $filePath
+            & git --no-pager diff --ignore-space-at-eol $filePath
+        }
     }
 }
 finally {

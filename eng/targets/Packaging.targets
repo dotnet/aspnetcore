@@ -19,4 +19,17 @@
     </ItemGroup>
   </Target>
 
+  <PropertyGroup>
+    <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);_AppendRepostoryUrlToPackageDescription</GenerateNuspecDependsOn>
+  </PropertyGroup>
+
+  <Target Name="_AppendRepostoryUrlToPackageDescription"
+    DependsOnTargets="InitializeSourceControlInformation">
+    <PropertyGroup Condition="'$(RepositoryUrl)' != '' AND '$(SourceRevisionId)' != ''">
+      <PackageDescription>$(PackageDescription)
+
+This package was built from the source code at $(RepositoryUrl)/tree/$(SourceRevisionId)</PackageDescription>
+    </PropertyGroup>
+  </Target>
+
 </Project>

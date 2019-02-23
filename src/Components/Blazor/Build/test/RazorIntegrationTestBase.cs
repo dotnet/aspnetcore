@@ -376,6 +376,11 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         protected RenderTreeFrame[] GetRenderTree(IComponent component)
         {
             var renderer = new TestRenderer();
+            return GetRenderTree(renderer, component);
+        }
+
+        protected private RenderTreeFrame[] GetRenderTree(TestRenderer renderer, IComponent component)
+        {
             renderer.AttachComponent(component);
             var task = renderer.InvokeAsync(() => component.SetParametersAsync(ParameterCollection.Empty));
             // we will have to change this method if we add a test that does actual async work.
@@ -432,7 +437,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             public IEnumerable<Diagnostic> Diagnostics { get; set; }
         }
 
-        private class TestRenderer : Renderer
+        protected class TestRenderer : Renderer
         {
             public TestRenderer() : base(new TestServiceProvider(), CreateDefaultDispatcher())
             {
@@ -442,6 +447,11 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 
             public void AttachComponent(IComponent component)
                 => AssignRootComponentId(component);
+
+            protected override void HandleException(Exception exception)
+            {
+                throw new NotImplementedException();
+            }
 
             protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
             {

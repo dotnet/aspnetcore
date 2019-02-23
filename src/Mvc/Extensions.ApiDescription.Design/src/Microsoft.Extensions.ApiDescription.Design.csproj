@@ -1,0 +1,57 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- Execute PopulateNuspec fairly late. -->
+    <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);PopulateNuspec</GenerateNuspecDependsOn>
+
+    <!-- Do not complain about lack of lib folder. -->
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+
+    <AssemblyName>Microsoft.Extensions.ApiDescription.Tasks</AssemblyName>
+    <Description>MSBuild tasks and targets for code generation</Description>
+    <EnableApiCheck>false</EnableApiCheck>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <IncludeSource>false</IncludeSource>
+    <IncludeSymbols>false</IncludeSymbols>
+    <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
+    <PackageId>$(MSBuildProjectName)</PackageId>
+    <PackageTags>Build Tasks;MSBuild;Swagger;Open API;code generation; Web API client</PackageTags>
+    <IsShippingPackage>true</IsShippingPackage>
+    <PackageVersion>$(ExperimentalPackageVersion)</PackageVersion>
+    <RootNamespace>$(AssemblyName)</RootNamespace>
+    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
+    <VerifyVersion>false</VerifyVersion>
+    <VersionPrefix>$(ExperimentalVersionPrefix)</VersionPrefix>
+    <VersionSuffix>$(ExperimentalVersionSuffix)</VersionSuffix>
+    <HasReferenceAssembly>false</HasReferenceAssembly>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Build.Utilities.Core" />
+    <Reference Include="System.Net.Http" Condition="'$(TargetFramework)' == 'net461'" />
+  </ItemGroup>
+
+  <Target Name="PopulateNuspec">
+    <MSBuild Projects="../../dotnet-getdocument/src/dotnet-getdocument.csproj"
+        BuildInParallel="$(BuildInParallel)"
+        RemoveProperties="RuntimeIdentifier;TargetFrameworks;TargetFramework"
+        Targets="Publish" />
+
+    <PropertyGroup>
+      <NuspecProperties>
+        id=$(PackageId);
+        authors=$(Authors);
+        configuration=$(Configuration);
+        copyright=$(Copyright);
+        description=$(PackageDescription);
+        iconUrl=$(PackageIconUrl);
+        licenseUrl=$(PackageLicenseUrl);
+        owners=$(Company);
+        projectUrl=$(PackageProjectUrl);
+        repositoryCommit=$(SourceRevisionId);
+        repositoryUrl=$(RepositoryUrl);
+        tags=$(PackageTags.Replace(';', ' '));
+        version=$(PackageVersion);
+      </NuspecProperties>
+    </PropertyGroup>
+  </Target>
+</Project>

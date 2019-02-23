@@ -20,18 +20,18 @@ namespace signalr
             const std::function<void(const std::exception_ptr e)>& set_exception);
     }
 
-    std::shared_ptr<hub_connection_impl> hub_connection_impl::create(const utility::string_t& url, const utility::string_t& query_string,
-        trace_level trace_level, const std::shared_ptr<log_writer>& log_writer)
+    std::shared_ptr<hub_connection_impl> hub_connection_impl::create(const utility::string_t& url, trace_level trace_level,
+        const std::shared_ptr<log_writer>& log_writer)
     {
-        return hub_connection_impl::create(url, query_string, trace_level, log_writer,
+        return hub_connection_impl::create(url, trace_level, log_writer,
             std::make_unique<web_request_factory>(), std::make_unique<transport_factory>());
     }
 
-    std::shared_ptr<hub_connection_impl> hub_connection_impl::create(const utility::string_t& url, const utility::string_t& query_string,
-        trace_level trace_level, const std::shared_ptr<log_writer>& log_writer, std::unique_ptr<web_request_factory> web_request_factory,
+    std::shared_ptr<hub_connection_impl> hub_connection_impl::create(const utility::string_t& url, trace_level trace_level,
+        const std::shared_ptr<log_writer>& log_writer, std::unique_ptr<web_request_factory> web_request_factory,
         std::unique_ptr<transport_factory> transport_factory)
     {
-        auto connection = std::shared_ptr<hub_connection_impl>(new hub_connection_impl(url, query_string, trace_level,
+        auto connection = std::shared_ptr<hub_connection_impl>(new hub_connection_impl(url, trace_level,
             log_writer ? log_writer : std::make_shared<trace_log_writer>(), std::move(web_request_factory), std::move(transport_factory)));
 
         connection->initialize();
@@ -39,12 +39,13 @@ namespace signalr
         return connection;
     }
 
-    hub_connection_impl::hub_connection_impl(const utility::string_t& url, const utility::string_t& query_string, trace_level trace_level,
+    hub_connection_impl::hub_connection_impl(const utility::string_t& url, trace_level trace_level,
         const std::shared_ptr<log_writer>& log_writer, std::unique_ptr<web_request_factory> web_request_factory,
         std::unique_ptr<transport_factory> transport_factory)
-        : m_connection(connection_impl::create(url, query_string, trace_level, log_writer,
+        : m_connection(connection_impl::create(url, trace_level, log_writer,
         std::move(web_request_factory), std::move(transport_factory))),m_logger(log_writer, trace_level),
-        m_callback_manager(json::value::parse(_XPLATSTR("{ \"error\" : \"connection went out of scope before invocation result was received\"}")))
+        m_callback_manager(json::value::parse(_XPLATSTR("{ \"error\" : \"connection went out of scope before invocation result was received\"}"))),
+        m_disconnected([]() noexcept {}), m_handshakeReceived(false)
     { }
 
     void hub_connection_impl::initialize()
@@ -54,12 +55,22 @@ namespace signalr
         // weak_ptr prevents a circular dependency leading to memory leak and other problems
         auto weak_hub_connection = std::weak_ptr<hub_connection_impl>(this_hub_connection);
 
-        m_connection->set_message_received_json([weak_hub_connection](const web::json::value& message)
+        m_connection->set_message_received([weak_hub_connection](const utility::string_t& message)
         {
             auto connection = weak_hub_connection.lock();
             if (connection)
             {
                 connection->process_message(message);
+            }
+        });
+
+        m_connection->set_disconnected([weak_hub_connection]()
+        {
+            auto connection = weak_hub_connection.lock();
+            if (connection)
+            {
+                connection->m_handshakeTask.set_exception(signalr_exception(_XPLATSTR("connection closed while handshake was in progress.")));
+                connection->m_disconnected();
             }
         });
     }
@@ -89,7 +100,59 @@ namespace signalr
 
     pplx::task<void> hub_connection_impl::start()
     {
-        return m_connection->start();
+        if (m_connection->get_connection_state() != connection_state::disconnected)
+        {
+            throw signalr_exception(
+                _XPLATSTR("the connection can only be started if it is in the disconnected state"));
+        }
+
+        m_connection->set_client_config(m_signalr_client_config);
+        m_handshakeTask = pplx::task_completion_event<void>();
+        m_handshakeReceived = false;
+        auto weak_connection = weak_from_this();
+        return m_connection->start()
+            .then([weak_connection](pplx::task<void> startTask)
+            {
+                startTask.get();
+                auto connection = weak_connection.lock();
+                if (!connection)
+                {
+                    // The connection has been destructed
+                    return pplx::task_from_exception<void>(signalr_exception(_XPLATSTR("the hub connection has been deconstructed")));
+                }
+                return connection->m_connection->send(_XPLATSTR("{\"protocol\":\"json\",\"version\":1}\x1e"))
+                    .then([weak_connection](pplx::task<void> previous_task)
+                    {
+                        auto connection = weak_connection.lock();
+                        if (!connection)
+                        {
+                            // The connection has been destructed
+                            return pplx::task_from_exception<void>(signalr_exception(_XPLATSTR("the hub connection has been deconstructed")));
+                        }
+                        previous_task.get();
+                        return pplx::task<void>(connection->m_handshakeTask);
+                    })
+                    .then([weak_connection](pplx::task<void> previous_task)
+                    {
+                        try
+                        {
+                            previous_task.get();
+                            return previous_task;
+                        }
+                        catch (std::exception e)
+                        {
+                            auto connection = weak_connection.lock();
+                            if (connection)
+                            {
+                                return connection->m_connection->stop()
+                                    .then([e]() {
+                                        throw e;
+                                    });
+                            }
+                            throw e;
+                        }
+                    });
+            });
     }
 
     pplx::task<void> hub_connection_impl::stop()
@@ -98,27 +161,108 @@ namespace signalr
         return m_connection->stop();
     }
 
-    void hub_connection_impl::process_message(const web::json::value& message)
+    enum MessageType
     {
-        auto type = message.at(_XPLATSTR("type")).as_integer();
-        if (type == 3)
-        {
-            invoke_callback(message);
-            return;
-        }
-        else if (type == 1)
-        {
-            auto method = message.at(_XPLATSTR("target")).as_string();
-            auto event = m_subscriptions.find(method);
-            if (event != m_subscriptions.end())
-            {
-                event->second(message.at(_XPLATSTR("arguments")));
-            }
-            return;
-        }
+        Invocation = 1,
+        StreamItem,
+        Completion,
+        StreamInvocation,
+        CancelInvocation,
+        Ping,
+        Close,
+    };
 
-        m_logger.log(trace_level::info, utility::string_t(_XPLATSTR("non-hub message received and will be discarded. message: "))
-            .append(message.serialize()));
+    void hub_connection_impl::process_message(const utility::string_t& response)
+    {
+        try
+        {
+            auto pos = response.find('\x1e');
+            std::size_t lastPos = 0;
+            while (pos != utility::string_t::npos)
+            {
+                auto message = response.substr(lastPos, pos - lastPos);
+                const auto result = web::json::value::parse(message);
+
+                if (!result.is_object())
+                {
+                    m_logger.log(trace_level::info, utility::string_t(_XPLATSTR("unexpected response received from the server: "))
+                        .append(message));
+
+                    return;
+                }
+
+                if (!m_handshakeReceived)
+                {
+                    if (result.has_field(_XPLATSTR("error")))
+                    {
+                        auto error = result.at(_XPLATSTR("error")).as_string();
+                        m_logger.log(trace_level::errors, utility::string_t(_XPLATSTR("handshake error: "))
+                            .append(error));
+                        m_handshakeTask.set_exception(signalr_exception(utility::string_t(_XPLATSTR("Received an error during handshake: ")).append(error)));
+                        return;
+                    }
+                    else
+                    {
+                        if (result.has_field(_XPLATSTR("type")))
+                        {
+                            m_handshakeTask.set_exception(signalr_exception(utility::string_t(_XPLATSTR("Received unexpected message while waiting for the handshake response."))));
+                        }
+                        m_handshakeReceived = true;
+                        m_handshakeTask.set();
+                        return;
+                    }
+                }
+
+                auto messageType = result.at(_XPLATSTR("type"));
+                switch (messageType.as_integer())
+                {
+                case MessageType::Invocation:
+                {
+                    auto method = result.at(_XPLATSTR("target")).as_string();
+                    auto event = m_subscriptions.find(method);
+                    if (event != m_subscriptions.end())
+                    {
+                        event->second(result.at(_XPLATSTR("arguments")));
+                    }
+                    break;
+                }
+                case MessageType::StreamInvocation:
+                    // Sent to server only, should not be received by client
+                    throw std::runtime_error("Received unexpected message type 'StreamInvocation'.");
+                case MessageType::StreamItem:
+                    // TODO
+                    break;
+                case MessageType::Completion:
+                {
+                    if (result.has_field(_XPLATSTR("error")) && result.has_field(_XPLATSTR("result")))
+                    {
+                        // TODO: error
+                    }
+                    invoke_callback(result);
+                    break;
+                }
+                case MessageType::CancelInvocation:
+                    // Sent to server only, should not be received by client
+                    throw std::runtime_error("Received unexpected message type 'CancelInvocation'.");
+                case MessageType::Ping:
+                    // TODO
+                    break;
+                case MessageType::Close:
+                    // TODO
+                    break;
+                }
+
+                lastPos = pos + 1;
+                pos = response.find('\x1e', lastPos);
+            }
+        }
+        catch (const std::exception &e)
+        {
+            m_logger.log(trace_level::errors, utility::string_t(_XPLATSTR("error occured when parsing response: "))
+                .append(utility::conversions::to_string_t(e.what()))
+                .append(_XPLATSTR(". response: "))
+                .append(response));
+        }
     }
 
     bool hub_connection_impl::invoke_callback(const web::json::value& message)
@@ -133,7 +277,7 @@ namespace signalr
         return true;
     }
 
-    pplx::task<json::value> hub_connection_impl::invoke_json(const utility::string_t& method_name, const json::value& arguments)
+    pplx::task<json::value> hub_connection_impl::invoke(const utility::string_t& method_name, const json::value& arguments)
     {
         _ASSERTE(arguments.is_array());
 
@@ -144,12 +288,12 @@ namespace signalr
                 [tce](const std::exception_ptr e) { tce.set_exception(e); }));
 
         invoke_hub_method(method_name, arguments, callback_id, nullptr,
-            [tce](const std::exception_ptr e){tce.set_exception(e); });
+            [tce](const std::exception_ptr e){ tce.set_exception(e); });
 
         return pplx::create_task(tce);
     }
 
-    pplx::task<void> hub_connection_impl::invoke_void(const utility::string_t& method_name, const json::value& arguments)
+    pplx::task<void> hub_connection_impl::send(const utility::string_t& method_name, const json::value& arguments)
     {
         _ASSERTE(arguments.is_array());
 
@@ -203,7 +347,7 @@ namespace signalr
             });
     }
 
-    connection_state hub_connection_impl::get_connection_state() const
+    connection_state hub_connection_impl::get_connection_state() const noexcept
     {
         return m_connection->get_connection_state();
     }
@@ -215,12 +359,13 @@ namespace signalr
 
     void hub_connection_impl::set_client_config(const signalr_client_config& config)
     {
+        m_signalr_client_config = config;
         m_connection->set_client_config(config);
     }
 
     void hub_connection_impl::set_disconnected(const std::function<void()>& disconnected)
     {
-        m_connection->set_disconnected(disconnected);
+        m_disconnected = disconnected;
     }
 
     // unnamed namespace makes it invisble outside this translation unit

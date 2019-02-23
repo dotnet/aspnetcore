@@ -7,9 +7,9 @@ namespace Microsoft.AspNetCore.Blazor.E2EPerformance
 {
     public static class BenchmarkEvent
     {
-        public static void Send(string name)
+        public static void Send(IJSRuntime jsRuntime, string name)
         {
-            ((IJSInProcessRuntime)JSRuntime.Current).Invoke<object>(
+            ((IJSInProcessRuntime)jsRuntime).Invoke<object>(
                 "receiveBenchmarkEvent",
                 name);
         }

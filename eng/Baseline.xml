@@ -4,7 +4,7 @@ This file contains a list of all the packages and their versions which were rele
 build of ASP.NET Core 2.2.x. Update this list when preparing for a new patch.
 
 -->
-<Baseline Version="2.2.1">
+<Baseline Version="2.2.2">
   <Package Id="dotnet-dev-certs" Version="2.2.0" />
   <Package Id="dotnet-sql-cache" Version="2.2.0" />
   <Package Id="dotnet-user-secrets" Version="2.2.0" />
@@ -13,14 +13,14 @@ build of ASP.NET Core 2.2.x. Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" Version="2.2.0-preview-35687" />
   <Package Id="Microsoft.AspNetCore.ApplicationInsights.HostingStartup" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.AspNetCoreModule" Version="2.2.1" />
-  <Package Id="Microsoft.AspNetCore.AspNetCoreModuleV2" Version="2.2.1" />
+  <Package Id="Microsoft.AspNetCore.AspNetCoreModuleV2" Version="2.2.2" />
   <Package Id="Microsoft.AspNetCore.Authentication.Abstractions" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Authentication.AzureAD.UI" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Authentication.AzureADB2C.UI" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Authentication.Cookies" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Authentication.Core" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Authentication.Facebook" Version="2.2.0" />
-  <Package Id="Microsoft.AspNetCore.Authentication.Google" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.Authentication.Google" Version="2.2.2" />
   <Package Id="Microsoft.AspNetCore.Authentication.JwtBearer" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Authentication.MicrosoftAccount" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Authentication.OAuth" Version="2.2.0" />
@@ -30,8 +30,8 @@ build of ASP.NET Core 2.2.x. Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.Authentication" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Authorization.Policy" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Authorization" Version="2.2.0" />
-  <Package Id="Microsoft.AspNetCore.AzureAppServices.HostingStartup" Version="2.2.0" />
-  <Package Id="Microsoft.AspNetCore.AzureAppServicesIntegration" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.AzureAppServices.HostingStartup" Version="2.2.2" />
+  <Package Id="Microsoft.AspNetCore.AzureAppServicesIntegration" Version="2.2.2" />
   <Package Id="Microsoft.AspNetCore.Connections.Abstractions" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.CookiePolicy" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Cors" Version="2.2.0" />
@@ -61,7 +61,7 @@ build of ASP.NET Core 2.2.x. Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.Http.Connections" Version="1.1.0" />
   <Package Id="Microsoft.AspNetCore.Http.Extensions" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Http.Features" Version="2.2.0" />
-  <Package Id="Microsoft.AspNetCore.Http" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.Http" Version="2.2.2" />
   <Package Id="Microsoft.AspNetCore.HttpOverrides" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.HttpsPolicy" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="2.2.0" />
@@ -75,7 +75,7 @@ build of ASP.NET Core 2.2.x. Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.Mvc.Abstractions" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Mvc.Analyzers" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Mvc.ApiExplorer" Version="2.2.0" />
-  <Package Id="Microsoft.AspNetCore.Mvc.Core" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.Mvc.Core" Version="2.2.2" />
   <Package Id="Microsoft.AspNetCore.Mvc.Cors" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Mvc.DataAnnotations" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Mvc.Formatters.Json" Version="2.2.0" />
@@ -99,9 +99,9 @@ build of ASP.NET Core 2.2.x. Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.ResponseCompression" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Rewrite" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Routing.Abstractions" Version="2.2.0" />
-  <Package Id="Microsoft.AspNetCore.Routing" Version="2.2.0" />
+  <Package Id="Microsoft.AspNetCore.Routing" Version="2.2.2" />
   <Package Id="Microsoft.AspNetCore.Server.HttpSys" Version="2.2.0" />
-  <Package Id="Microsoft.AspNetCore.Server.IIS" Version="2.2.1" />
+  <Package Id="Microsoft.AspNetCore.Server.IIS" Version="2.2.2" />
   <Package Id="Microsoft.AspNetCore.Server.IISIntegration" Version="2.2.1" />
   <Package Id="Microsoft.AspNetCore.Server.Kestrel.Core" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Server.Kestrel.Https" Version="2.2.0" />

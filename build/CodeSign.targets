@@ -4,9 +4,18 @@
     <CodeSignDependsOn>$(CodeSignDependsOn);CollectFileSignInfo</CodeSignDependsOn>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- Configures signcheck to inspect well-known folders for signed content. -->
+    <SignCheckDirectory Include="$(ArtifactsPackagesDir)" />
+    <SignCheckDirectory Include="$(InstallersOutputPath)" />
+    <SignCheckDirectory Include="$(VisualStudioSetupOutputPath)" />
+    <!-- KoreBuild by default scans everything in artifacts/, but this causes problems because we put unsigned content in artifacts/obj/ and bin/ which can be ignored. -->
+    <SignCheckDirectory Remove="$(ArtifactsDir)" />
+  </ItemGroup>
+
   <Target Name="CollectFileSignInfo">
     <PropertyGroup>
-      <BaseRedistNetCorePath>$(IntermediateDir)ar\</BaseRedistNetCorePath>
+      <BaseRedistNetCorePath>$(ArtifactsDir)obj\ar\</BaseRedistNetCorePath>
       <RedistNetCorePath>$(BaseRedistNetCorePath)$(TargetRuntimeIdentifier)\</RedistNetCorePath>
     </PropertyGroup>
 

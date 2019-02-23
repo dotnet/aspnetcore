@@ -6,11 +6,11 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore" />
-    <Reference Include="Microsoft.NET.Sdk.Razor" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.Server" />
+    <Reference Include="Microsoft.AspNetCore.Mvc" />
     <ProjectReference Include="..\ComponentsApp.App\ComponentsApp.App.csproj" />
   </ItemGroup>
 

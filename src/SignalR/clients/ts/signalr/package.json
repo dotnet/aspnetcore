@@ -1,6 +1,6 @@
 {
   "name": "@aspnet/signalr",
-  "version": "3.0.0-preview-t000",
+  "version": "3.0.0-preview3-t000",
   "description": "ASP.NET Core SignalR Client",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
@@ -39,14 +39,14 @@
     "src/**/*"
   ],
   "devDependencies": {
-    "es6-promise": "^4.2.2",
-    "@types/node": "^10.9.4",
     "@types/eventsource": "^1.0.2",
-    "@types/request": "^2.47.1"
+    "@types/node": "^10.9.4",
+    "@types/request": "^2.47.1",
+    "es6-promise": "^4.2.2"
   },
   "dependencies": {
-    "ws": "^6.0.0",
     "eventsource": "^1.0.7",
-    "request": "^2.88.0"
+    "request": "^2.88.0",
+    "ws": "^6.0.0"
   }
 }

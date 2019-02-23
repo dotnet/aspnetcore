@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Http.Features
                 throw new ArgumentNullException(nameof(features));
             }
 
-            _features = new FeatureReferences<IHttpResponseFeature>(features);
+            _features.Initalize(features);
         }
 
         private IHttpResponseFeature HttpResponseFeature => _features.Fetch(ref _features.Cache, _nullResponseFeature);

@@ -41,7 +41,7 @@ void send_message(signalr::hub_connection& connection, const utility::string_t& 
 
 void chat(const utility::string_t& name)
 {
-    signalr::hub_connection connection(U("http://localhost:5000/default"), U(""), signalr::trace_level::all, std::make_shared<logger>());
+    signalr::hub_connection connection(U("http://localhost:5000/default"), signalr::trace_level::all, std::make_shared<logger>());
     connection.on(U("Send"), [](const web::json::value& m)
     {
         ucout << std::endl << m.at(0).as_string() << /*U(" wrote:") << m.at(1).as_string() <<*/ std::endl << U("Enter your message: ");

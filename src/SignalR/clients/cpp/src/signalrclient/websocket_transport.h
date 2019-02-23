@@ -31,7 +31,7 @@ namespace signalr
 
         pplx::task<void> disconnect() override;
 
-        transport_type get_transport_type() const override;
+        transport_type get_transport_type() const noexcept override;
 
     private:
         websocket_transport(const std::function<std::shared_ptr<websocket_client>()>& websocket_client_factory,

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
@@ -351,7 +352,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         }
 
         [Fact]
-        public void SupportsTwoWayBindingForTextboxes()
+        public async Task SupportsTwoWayBindingForTextboxes()
         {
             // Arrange/Act
             var component = CompileToComponent(
@@ -361,26 +362,32 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 }");
             var myValueProperty = component.GetType().GetProperty("MyValue");
 
+            var renderer = new TestRenderer();
+
             // Assert
-            var frames = GetRenderTree(component);
+            EventCallback setter = default;
+            var frames = GetRenderTree(renderer, component);
             Assert.Collection(frames,
                 frame => AssertFrame.Element(frame, "input", 3, 0),
                 frame => AssertFrame.Attribute(frame, "value", "Initial value", 1),
                 frame =>
                 {
                     AssertFrame.Attribute(frame, "onchange", 2);
-
-                    // Trigger the change event to show it updates the property
-                    ((Action<UIEventArgs>)frame.AttributeValue)(new UIChangeEventArgs
-                    {
-                        Value = "Modified value"
-                    });
-                    Assert.Equal("Modified value", myValueProperty.GetValue(component));
+                    setter = Assert.IsType<EventCallback>(frame.AttributeValue);
                 });
+
+            // Trigger the change event to show it updates the property
+            //
+            // This should always complete synchronously.
+            var task = renderer.InvokeAsync(() => setter.InvokeAsync(new UIChangeEventArgs { Value = "Modified value", }));
+            Assert.Equal(TaskStatus.RanToCompletion, task.Status);
+            await task;
+
+            Assert.Equal("Modified value", myValueProperty.GetValue(component));
         }
 
         [Fact]
-        public void SupportsTwoWayBindingForTextareas()
+        public async Task SupportsTwoWayBindingForTextareas()
         {
             // Arrange/Act
             var component = CompileToComponent(
@@ -390,26 +397,32 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 }");
             var myValueProperty = component.GetType().GetProperty("MyValue");
 
+            var renderer = new TestRenderer();
+
             // Assert
-            var frames = GetRenderTree(component);
+            EventCallback setter = default;
+            var frames = GetRenderTree(renderer, component);
             Assert.Collection(frames,
                 frame => AssertFrame.Element(frame, "textarea", 3, 0),
                 frame => AssertFrame.Attribute(frame, "value", "Initial value", 1),
                 frame =>
                 {
                     AssertFrame.Attribute(frame, "onchange", 2);
-
-                    // Trigger the change event to show it updates the property
-                    ((Action<UIEventArgs>)frame.AttributeValue)(new UIChangeEventArgs
-                    {
-                        Value = "Modified value"
-                    });
-                    Assert.Equal("Modified value", myValueProperty.GetValue(component));
+                    setter = Assert.IsType<EventCallback>(frame.AttributeValue);
                 });
+
+            // Trigger the change event to show it updates the property
+            //
+            // This should always complete synchronously.
+            var task = renderer.InvokeAsync(() => setter.InvokeAsync(new UIChangeEventArgs { Value = "Modified value", }));
+            Assert.Equal(TaskStatus.RanToCompletion, task.Status);
+            await task;
+
+            Assert.Equal("Modified value", myValueProperty.GetValue(component));
         }
 
         [Fact]
-        public void SupportsTwoWayBindingForDateValues()
+        public async Task SupportsTwoWayBindingForDateValues()
         {
             // Arrange/Act
             var component = CompileToComponent(
@@ -419,27 +432,34 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 }");
             var myDateProperty = component.GetType().GetProperty("MyDate");
 
+            var renderer = new TestRenderer();
+
             // Assert
-            var frames = GetRenderTree(component);
+            EventCallback setter = default;
+            var frames = GetRenderTree(renderer, component);
             Assert.Collection(frames,
                 frame => AssertFrame.Element(frame, "input", 3, 0),
                 frame => AssertFrame.Attribute(frame, "value", new DateTime(2018, 3, 4, 1, 2, 3).ToString(), 1),
                 frame =>
                 {
                     AssertFrame.Attribute(frame, "onchange", 2);
-
-                    // Trigger the change event to show it updates the property
-                    var newDateValue = new DateTime(2018, 3, 5, 4, 5, 6);
-                    ((Action<UIEventArgs>)frame.AttributeValue)(new UIChangeEventArgs
-                    {
-                        Value = newDateValue.ToString()
-                    });
-                    Assert.Equal(newDateValue, myDateProperty.GetValue(component));
+                    setter = Assert.IsType<EventCallback>(frame.AttributeValue);
                 });
+
+            // Trigger the change event to show it updates the property
+            // Trigger the change event to show it updates the property
+            //
+            // This should always complete synchronously.
+            var newDateValue = new DateTime(2018, 3, 5, 4, 5, 6);
+            var task = renderer.InvokeAsync(() => setter.InvokeAsync(new UIChangeEventArgs { Value = newDateValue.ToString(), }));
+            Assert.Equal(TaskStatus.RanToCompletion, task.Status);
+            await task;
+
+            Assert.Equal(newDateValue, myDateProperty.GetValue(component));
         }
 
         [Fact]
-        public void SupportsTwoWayBindingForDateValuesWithFormatString()
+        public async Task SupportsTwoWayBindingForDateValuesWithFormatString()
         {
             // Arrange/Act
             var testDateFormat = "ddd yyyy-MM-dd";
@@ -450,22 +470,28 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 }}");
             var myDateProperty = component.GetType().GetProperty("MyDate");
 
+            var renderer = new TestRenderer();
+
             // Assert
-            var frames = GetRenderTree(component);
+            EventCallback setter = default;
+            var frames = GetRenderTree(renderer, component);
             Assert.Collection(frames,
                 frame => AssertFrame.Element(frame, "input", 3, 0),
                 frame => AssertFrame.Attribute(frame, "value", new DateTime(2018, 3, 4).ToString(testDateFormat), 1),
                 frame =>
                 {
                     AssertFrame.Attribute(frame, "onchange", 2);
-
-                    // Trigger the change event to show it updates the property
-                    ((Action<UIEventArgs>)frame.AttributeValue)(new UIChangeEventArgs
-                    {
-                        Value = new DateTime(2018, 3, 5).ToString(testDateFormat)
-                    });
-                    Assert.Equal(new DateTime(2018, 3, 5), myDateProperty.GetValue(component));
+                    setter = Assert.IsType<EventCallback>(frame.AttributeValue);
                 });
+
+            // Trigger the change event to show it updates the property
+            //
+            // This should always complete synchronously.
+            var task = renderer.InvokeAsync(() => setter.InvokeAsync(new UIChangeEventArgs { Value = new DateTime(2018, 3, 5).ToString(testDateFormat), }));
+            Assert.Equal(TaskStatus.RanToCompletion, task.Status);
+            await task;
+
+            Assert.Equal(new DateTime(2018, 3, 5), myDateProperty.GetValue(component));
         }
 
         [Fact] // In this case, onclick is just a normal HTML attribute
@@ -496,8 +522,10 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 
             var clicked = component.GetType().GetProperty("Clicked");
 
+            var renderer = new TestRenderer();
+
             // Act
-            var frames = GetRenderTree(component);
+            var frames = GetRenderTree(renderer, component);
 
             // Assert
             Assert.Collection(frames,
@@ -527,26 +555,32 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 
             var clicked = component.GetType().GetProperty("Clicked");
 
+            var renderer = new TestRenderer();
+
             // Act
-            var frames = GetRenderTree(component);
+            var frames = GetRenderTree(renderer, component);
 
             // Assert
-            Assert.Collection(frames,
+            Action<UIMouseEventArgs> func = default; // Since this is a method group, we don't need to create an EventCallback
+            Assert.Collection(
+                frames,
                 frame => AssertFrame.Element(frame, "button", 2, 0),
                 frame =>
                 {
                     AssertFrame.Attribute(frame, "onclick", 1);
 
-                    var func = Assert.IsType<Action<UIMouseEventArgs>>(frame.AttributeValue);
+                    func = Assert.IsType<Action<UIMouseEventArgs>>(frame.AttributeValue);
                     Assert.False((bool)clicked.GetValue(component));
 
-                    func(new UIMouseEventArgs());
-                    Assert.True((bool)clicked.GetValue(component));
+
                 });
+
+            func.Invoke(new UIMouseEventArgs());
+            Assert.True((bool)clicked.GetValue(component));
         }
 
         [Fact]
-        public void SupportsTwoWayBindingForBoolValues()
+        public async Task SupportsTwoWayBindingForBoolValues()
         {
             // Arrange/Act
             var component = CompileToComponent(
@@ -556,26 +590,32 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 }");
             var myValueProperty = component.GetType().GetProperty("MyValue");
 
+            var renderer = new TestRenderer();
+
             // Assert
-            var frames = GetRenderTree(component);
+            EventCallback setter = default;
+            var frames = GetRenderTree(renderer, component);
             Assert.Collection(frames,
                 frame => AssertFrame.Element(frame, "input", 3, 0),
                 frame => AssertFrame.Attribute(frame, "value", true, 1),
                 frame =>
                 {
                     AssertFrame.Attribute(frame, "onchange", 2);
-
-                    // Trigger the change event to show it updates the property
-                    ((Action<UIEventArgs>)frame.AttributeValue)(new UIChangeEventArgs
-                    {
-                        Value = false
-                    });
-                    Assert.False((bool)myValueProperty.GetValue(component));
+                    setter = Assert.IsType<EventCallback>(frame.AttributeValue);
                 });
+
+            // Trigger the change event to show it updates the property
+            //
+            // This should always complete synchronously.
+            var task =  renderer.InvokeAsync(() => setter.InvokeAsync(new UIChangeEventArgs() { Value = false, }));
+            Assert.Equal(TaskStatus.RanToCompletion, task.Status);
+            await task;
+
+            Assert.False((bool)myValueProperty.GetValue(component));
         }
 
         [Fact]
-        public void SupportsTwoWayBindingForEnumValues()
+        public async Task SupportsTwoWayBindingForEnumValues()
         {
             // Arrange/Act
             var myEnumType = FullTypeName<MyEnum>();
@@ -586,22 +626,28 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 }}");
             var myValueProperty = component.GetType().GetProperty("MyValue");
 
+            var renderer = new TestRenderer();
+
             // Assert
-            var frames = GetRenderTree(component);
+            EventCallback setter = default;
+            var frames = GetRenderTree(renderer, component);
             Assert.Collection(frames,
                 frame => AssertFrame.Element(frame, "input", 3, 0),
                 frame => AssertFrame.Attribute(frame, "value", MyEnum.FirstValue.ToString(), 1),
                 frame =>
                 {
                     AssertFrame.Attribute(frame, "onchange", 2);
-
-                    // Trigger the change event to show it updates the property
-                    ((Action<UIEventArgs>)frame.AttributeValue)(new UIChangeEventArgs
-                    {
-                        Value = MyEnum.SecondValue.ToString()
-                    });
-                    Assert.Equal(MyEnum.SecondValue, (MyEnum)myValueProperty.GetValue(component));
+                    setter = Assert.IsType<EventCallback>(frame.AttributeValue);
                 });
+
+            // Trigger the change event to show it updates the property
+            //
+            // This should always complete synchronously.
+            var task = renderer.InvokeAsync(() => setter.InvokeAsync(new UIChangeEventArgs { Value = MyEnum.SecondValue.ToString(), }));
+            Assert.Equal(TaskStatus.RanToCompletion, task.Status);
+            await task;
+
+            Assert.Equal(MyEnum.SecondValue, (MyEnum)myValueProperty.GetValue(component));
         }
 
         public enum MyEnum { FirstValue, SecondValue }

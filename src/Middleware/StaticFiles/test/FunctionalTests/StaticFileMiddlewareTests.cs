@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.StaticFiles
 
             using (var server = builder.Start(TestUrlHelper.GetTestUrl(ServerType.Kestrel)))
             {
-                var hostingEnvironment = server.Services.GetService<IHostingEnvironment>();
+                var hostingEnvironment = server.Services.GetService<IWebHostEnvironment>();
 
                 using (var client = new HttpClient { BaseAddress = new Uri(server.GetAddress()) })
                 {
@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.StaticFiles
 
             using (var server = builder.Start(TestUrlHelper.GetTestUrl(ServerType.Kestrel)))
             {
-                var hostingEnvironment = server.Services.GetService<IHostingEnvironment>();
+                var hostingEnvironment = server.Services.GetService<IWebHostEnvironment>();
 
                 using (var client = new HttpClient { BaseAddress = new Uri(server.GetAddress()) })
                 {

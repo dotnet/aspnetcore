@@ -35,6 +35,7 @@ using Company.WebApplication1.Data;
 #endif
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 #if(MultiOrgAuth)
 using Microsoft.IdentityModel.Tokens;
 #endif
@@ -134,7 +135,7 @@ namespace Company.WebApplication1
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -160,7 +161,7 @@ namespace Company.WebApplication1
 
             app.UseRouting(routes =>
             {
-                routes.MapApplication();
+                routes.MapRazorPages();
             });
 
             app.UseCookiePolicy();

@@ -16,7 +16,7 @@ using namespace signalr;
 std::shared_ptr<hub_connection_impl> create_hub_connection(std::shared_ptr<websocket_client> websocket_client = create_test_websocket_client(),
     std::shared_ptr<log_writer> log_writer = std::make_shared<trace_log_writer>(), trace_level trace_level = trace_level::all)
 {
-    return hub_connection_impl::create(create_uri(), _XPLATSTR(""), trace_level, log_writer,
+    return hub_connection_impl::create(create_uri(), trace_level, log_writer,
         create_test_web_request_factory(), std::make_unique<test_transport_factory>(websocket_client));
 }
 
@@ -33,7 +33,7 @@ TEST(url, negotiate_appended_to_url)
             return std::unique_ptr<web_request>(new web_request_stub((unsigned short)404, _XPLATSTR("Bad request"), _XPLATSTR("")));
         });
 
-        auto hub_connection = hub_connection_impl::create(base_url, _XPLATSTR(""), trace_level::none,
+        auto hub_connection = hub_connection_impl::create(base_url, trace_level::none,
             std::make_shared<trace_log_writer>(), std::move(web_request_factory),
             std::make_unique<test_transport_factory>(create_test_websocket_client()));
 
@@ -56,6 +56,92 @@ TEST(start, start_starts_connection)
     hub_connection->start().get();
 
     ASSERT_EQ(connection_state::connected, hub_connection->get_connection_state());
+}
+
+TEST(start, start_sends_handshake)
+{
+    auto message = std::make_shared<utility::string_t>();
+    auto websocket_client = create_test_websocket_client(
+        /* receive function */ []() { return pplx::task_from_result(std::string("{ }\x1e")); },
+        /* send function */ [message](const utility::string_t& msg) { *message = msg; return pplx::task_from_result(); });
+    auto hub_connection = create_hub_connection(websocket_client);
+
+    hub_connection->start().get();
+
+    ASSERT_EQ(_XPLATSTR("{\"protocol\":\"json\",\"version\":1}\x1e"), *message);
+
+    ASSERT_EQ(connection_state::connected, hub_connection->get_connection_state());
+}
+
+TEST(start, start_waits_for_handshake_response)
+{
+    pplx::task_completion_event<void> tce;
+    pplx::task_completion_event<void> tceWaitForSend;
+    auto websocket_client = create_test_websocket_client(
+        /* receive function */ [tce, tceWaitForSend]()
+        {
+            tceWaitForSend.set();
+            pplx::task<void>(tce).get();
+            return pplx::task_from_result(std::string("{ }\x1e"));
+        });
+    auto hub_connection = create_hub_connection(websocket_client);
+
+    auto startTask = hub_connection->start();
+    pplx::task<void>(tceWaitForSend).get();
+    ASSERT_FALSE(startTask.is_done());
+    tce.set();
+    startTask.get();
+
+    ASSERT_EQ(connection_state::connected, hub_connection->get_connection_state());
+}
+
+TEST(start, start_fails_for_handshake_response_with_error)
+{
+    auto websocket_client = create_test_websocket_client(
+        /* receive function */ []() { return pplx::task_from_result(std::string("{\"error\":\"bad things\"}\x1e")); });
+    auto hub_connection = create_hub_connection(websocket_client);
+
+    try
+    {
+        hub_connection->start().get();
+        ASSERT_TRUE(false);
+    }
+    catch (std::exception ex)
+    {
+        ASSERT_STREQ("Received an error during handshake: bad things", ex.what());
+    }
+
+    ASSERT_EQ(connection_state::disconnected, hub_connection->get_connection_state());
+}
+
+TEST(start, start_fails_if_stop_called_before_handshake_response)
+{
+    pplx::task_completion_event<std::string> tce;
+    pplx::task_completion_event<void> tceWaitForSend;
+    auto websocket_client = create_test_websocket_client(
+        /* receive function */ [tce]() { return pplx::task<std::string>(tce); },
+        /* send function */ [tceWaitForSend](const utility::string_t &)
+        {
+            tceWaitForSend.set();
+            return pplx::task_from_result();
+        });
+    auto hub_connection = create_hub_connection(websocket_client);
+
+    auto startTask = hub_connection->start();
+    pplx::task<void>(tceWaitForSend).get();
+    hub_connection->stop();
+
+    try
+    {
+        startTask.get();
+        ASSERT_TRUE(false);
+    }
+    catch (std::exception ex)
+    {
+        ASSERT_STREQ("connection closed while handshake was in progress.", ex.what());
+    }
+
+    ASSERT_EQ(connection_state::disconnected, hub_connection->get_connection_state());
 }
 
 TEST(stop, stop_stops_connection)
@@ -85,8 +171,7 @@ TEST(stop, disconnected_callback_called_when_hub_connection_stops)
     ASSERT_TRUE(disconnected_invoked);
 }
 
-// Flaky test: ASSERT_EQ(4U, log_entries.size()) was 3
-TEST(stop, DISABLED_connection_stopped_when_going_out_of_scope)
+TEST(stop, connection_stopped_when_going_out_of_scope)
 {
     std::shared_ptr<log_writer> writer(std::make_shared<memory_log_writer>());
 
@@ -109,7 +194,7 @@ TEST(stop, DISABLED_connection_stopped_when_going_out_of_scope)
     }
 
     auto log_entries = memory_writer->get_log_entries();
-    ASSERT_EQ(4U, log_entries.size());
+    ASSERT_EQ(4U, log_entries.size()) << dump_vector(log_entries);
     ASSERT_EQ(_XPLATSTR("[state change] disconnected -> connecting\n"), remove_date_from_log_entry(log_entries[0]));
     ASSERT_EQ(_XPLATSTR("[state change] connecting -> connected\n"), remove_date_from_log_entry(log_entries[1]));
     ASSERT_EQ(_XPLATSTR("[state change] connected -> disconnecting\n"), remove_date_from_log_entry(log_entries[2]));
@@ -138,7 +223,7 @@ TEST(stop, stop_cancels_pending_callbacks)
 
     auto hub_connection = create_hub_connection(websocket_client);
     hub_connection->start().get();
-    auto t = hub_connection->invoke_json(_XPLATSTR("method"), json::value::array());
+    auto t = hub_connection->invoke(_XPLATSTR("method"), json::value::array());
     hub_connection->stop();
 
     try
@@ -177,7 +262,7 @@ TEST(stop, pending_callbacks_finished_if_hub_connections_goes_out_of_scope)
     {
         auto hub_connection = create_hub_connection(websocket_client);
         hub_connection->start().get();
-        t = hub_connection->invoke_json(_XPLATSTR("method"), json::value::array());
+        t = hub_connection->invoke(_XPLATSTR("method"), json::value::array());
     }
 
     try
@@ -224,17 +309,110 @@ TEST(hub_invocation, hub_connection_invokes_users_code_on_hub_invocations)
     ASSERT_EQ(_XPLATSTR("[\"message\",1]"), *payload);
 }
 
-// Flaky test: "error" thrown in test body
-TEST(invoke, DISABLED_invoke_creates_correct_payload)
+TEST(send, creates_correct_payload)
 {
     utility::string_t payload;
+    bool handshakeReceived = false;
 
     auto websocket_client = create_test_websocket_client(
         /* receive function */ []() { return pplx::task_from_result(std::string("{ }\x1e")); },
-        /* send function */[&payload](const utility::string_t& m)
+        /* send function */[&payload, &handshakeReceived](const utility::string_t& m)
+        {
+            if (handshakeReceived)
+            {
+                payload = m;
+                return pplx::task_from_result();
+            }
+            handshakeReceived = true;
+            return pplx::task_from_result();
+        });
+
+    auto hub_connection = create_hub_connection(websocket_client);
+    hub_connection->start().get();
+
+    hub_connection->send(_XPLATSTR("method"), json::value::array()).get();
+
+    ASSERT_EQ(_XPLATSTR("{\"arguments\":[],\"target\":\"method\",\"type\":1}\x1e"), payload);
+}
+
+TEST(send, does_not_wait_for_server_response)
+{
+    int call_number = -1;
+    pplx::task_completion_event<void> waitForSend;
+
+    auto websocket_client = create_test_websocket_client(
+    /* receive function */ [waitForSend, call_number]() mutable
+    {
+        std::string responses[]
+        {
+            "{ }\x1e",
+            "{}"
+        };
+
+        call_number = std::min(call_number + 1, 1);
+
+        if (call_number == 1)
+        {
+            pplx::task<void>(waitForSend).get();
+        }
+
+        return pplx::task_from_result(responses[call_number]);
+    });
+
+    auto hub_connection = create_hub_connection(websocket_client);
+    hub_connection->start().get();
+
+    // wont block waiting for server response
+    hub_connection->send(_XPLATSTR("method"), json::value::array()).get();
+    waitForSend.set();
+}
+
+TEST(invoke, creates_correct_payload)
+{
+    utility::string_t payload;
+    bool handshakeReceived = false;
+
+    auto websocket_client = create_test_websocket_client(
+        /* receive function */ []() { return pplx::task_from_result(std::string("{ }\x1e")); },
+        /* send function */[&payload, &handshakeReceived](const utility::string_t& m)
+    {
+        if (handshakeReceived)
         {
             payload = m;
             return pplx::task_from_exception<void>(std::runtime_error("error"));
+        }
+        handshakeReceived = true;
+        return pplx::task_from_result();
+    });
+
+    auto hub_connection = create_hub_connection(websocket_client);
+    hub_connection->start().get();
+
+    try
+    {
+        hub_connection->invoke(_XPLATSTR("method"), json::value::array()).get();
+    }
+    catch (...)
+    {
+        // the invoke is not setup to succeed because it's not needed in this test
+    }
+
+    ASSERT_EQ(_XPLATSTR("{\"arguments\":[],\"invocationId\":\"0\",\"target\":\"method\",\"type\":1}\x1e"), payload);
+}
+
+TEST(invoke, callback_not_called_if_send_throws)
+{
+    bool handshakeReceived = false;
+    auto websocket_client = create_test_websocket_client(
+        /* receive function */ []() { return pplx::task_from_result(std::string("{ }\x1e")); },
+        /* send function */[handshakeReceived](const utility::string_t&) mutable
+        {
+            if (handshakeReceived)
+            {
+                return pplx::task_from_exception<void>(std::runtime_error("error"));
+            }
+            handshakeReceived = true;
+            return pplx::task_from_result();
         });
 
     auto hub_connection = create_hub_connection(websocket_client);
@@ -242,29 +420,7 @@ TEST(invoke, DISABLED_invoke_creates_correct_payload)
 
     try
     {
-        hub_connection->invoke_void(_XPLATSTR("method"), json::value::array()).get();
-    }
-    catch (...)
-    {
-        // the send is not setup to succeed because it's not needed in this test
-    }
-
-    ASSERT_EQ(_XPLATSTR("{\"arguments\":[],\"target\":\"method\",\"type\":1}\x1e"), payload);
-}
-
-// "error" thrown in test body
-TEST(invoke, DISABLED_callback_not_called_if_send_throws)
-{
-    auto websocket_client = create_test_websocket_client(
-        /* receive function */ []() { return pplx::task_from_result(std::string("{ }\x1e")); },
-        /* send function */[](const utility::string_t&) { return pplx::task_from_exception<void>(std::runtime_error("error")); });
-
-    auto hub_connection = create_hub_connection(websocket_client);
-    hub_connection->start().get();
-
-    try
-    {
-        hub_connection->invoke_void(_XPLATSTR("method"), json::value::array()).get();
+        hub_connection->invoke(_XPLATSTR("method"), json::value::array()).get();
         ASSERT_TRUE(false); // exception expected but not thrown
     }
     catch (const std::runtime_error& e)
@@ -278,7 +434,7 @@ TEST(invoke, DISABLED_callback_not_called_if_send_throws)
     hub_connection->stop().get();
 }
 
-TEST(invoke_json, invoke_returns_value_returned_from_the_server)
+TEST(invoke, invoke_returns_value_returned_from_the_server)
 {
     auto callback_registered_event = std::make_shared<event>();
 
@@ -306,7 +462,7 @@ TEST(invoke_json, invoke_returns_value_returned_from_the_server)
     auto result = hub_connection->start()
         .then([hub_connection, callback_registered_event]()
         {
-            auto t = hub_connection->invoke_json(_XPLATSTR("method"), json::value::array());
+            auto t = hub_connection->invoke(_XPLATSTR("method"), json::value::array());
             callback_registered_event->set();
             return t;
         }).get();
@@ -314,7 +470,7 @@ TEST(invoke_json, invoke_returns_value_returned_from_the_server)
     ASSERT_EQ(_XPLATSTR("\"abc\""), result.serialize());
 }
 
-TEST(invoke_json, invoke_propagates_errors_from_server_as_exceptions)
+TEST(invoke, invoke_propagates_hub_errors_from_server_as_hub_exceptions)
 {
     auto callback_registered_event = std::make_shared<event>();
 
@@ -344,50 +500,7 @@ TEST(invoke_json, invoke_propagates_errors_from_server_as_exceptions)
         hub_connection->start()
             .then([hub_connection, callback_registered_event]()
         {
-            auto t = hub_connection->invoke_json(_XPLATSTR("method"), json::value::array());
-            callback_registered_event->set();
-            return t;
-        }).get();
-
-        ASSERT_TRUE(false); // exception expected but not thrown
-    }
-    catch (const std::runtime_error& e)
-    {
-        ASSERT_STREQ("\"Ooops\"", e.what());
-    }
-}
-
-TEST(invoke_json, invoke_propagates_hub_errors_from_server_as_hub_exceptions)
-{
-    auto callback_registered_event = std::make_shared<event>();
-
-    int call_number = -1;
-    auto websocket_client = create_test_websocket_client(
-        /* receive function */ [call_number, callback_registered_event]()
-        mutable {
-        std::string responses[]
-        {
-            "{ }\x1e",
-            "{ \"type\": 3, \"invocationId\": \"0\", \"error\": \"Ooops\" }\x1e"
-        };
-
-        call_number = std::min(call_number + 1, 1);
-
-        if (call_number > 0)
-        {
-            callback_registered_event->wait();
-        }
-
-        return pplx::task_from_result(responses[call_number]);
-    });
-
-    auto hub_connection = create_hub_connection(websocket_client);
-    try
-    {
-        hub_connection->start()
-            .then([hub_connection, callback_registered_event]()
-        {
-            auto t = hub_connection->invoke_json(_XPLATSTR("method"), json::value::array());
+            auto t = hub_connection->invoke(_XPLATSTR("method"), json::value::array());
             callback_registered_event->set();
             return t;
         }).get();
@@ -400,7 +513,7 @@ TEST(invoke_json, invoke_propagates_hub_errors_from_server_as_hub_exceptions)
     }
 }
 
-TEST(invoke_void, invoke_unblocks_task_when_server_completes_call)
+TEST(invoke, unblocks_task_when_server_completes_call)
 {
     auto callback_registered_event = std::make_shared<event>();
 
@@ -411,7 +524,7 @@ TEST(invoke_void, invoke_unblocks_task_when_server_completes_call)
         std::string responses[]
         {
             "{ }\x1e",
-            "{\"I\":\"0\"}\x1e"
+            "{ \"type\": 3, \"invocationId\": \"0\" }\x1e"
         };
 
         call_number = std::min(call_number + 1, 1);
@@ -428,7 +541,7 @@ TEST(invoke_void, invoke_unblocks_task_when_server_completes_call)
     hub_connection->start()
         .then([hub_connection, callback_registered_event]()
     {
-        auto t = hub_connection->invoke_void(_XPLATSTR("method"), json::value::array());
+        auto t = hub_connection->invoke(_XPLATSTR("method"), json::value::array());
         callback_registered_event->set();
         return t;
     }).get();
@@ -437,21 +550,23 @@ TEST(invoke_void, invoke_unblocks_task_when_server_completes_call)
     ASSERT_TRUE(true);
 }
 
-// Flaky test: crashes test process
-TEST(invoke_void, DISABLED_invoke_logs_if_callback_for_given_id_not_found)
+TEST(receive, logs_if_callback_for_given_id_not_found)
 {
     auto message_received_event = std::make_shared<event>();
+    auto handshake_sent = std::make_shared<event>();
 
     int call_number = -1;
     auto websocket_client = create_test_websocket_client(
-        /* receive function */ [call_number, message_received_event]()
+        /* receive function */ [call_number, message_received_event, handshake_sent]()
         mutable {
         std::string responses[]
         {
             "{ }\x1e",
-            "{ \"type\": 3, \"invocationId\": \"0\", \"error\": \"Ooops\" }\x1e"
+            "{ \"type\": 3, \"invocationId\": \"0\" }\x1e"
             "{}"
         };
+
+        handshake_sent->wait(1000);
 
         call_number = std::min(call_number + 1, 2);
 
@@ -461,6 +576,11 @@ TEST(invoke_void, DISABLED_invoke_logs_if_callback_for_given_id_not_found)
         }
 
         return pplx::task_from_result(responses[call_number]);
+    },
+    [handshake_sent](const utility::string_t&)
+    {
+        handshake_sent->set();
+        return pplx::task_from_result();
     });
 
     std::shared_ptr<log_writer> writer(std::make_shared<memory_log_writer>());
@@ -472,12 +592,12 @@ TEST(invoke_void, DISABLED_invoke_logs_if_callback_for_given_id_not_found)
     auto log_entries = std::dynamic_pointer_cast<memory_log_writer>(writer)->get_log_entries();
     ASSERT_TRUE(log_entries.size() > 1);
 
-    auto entry = remove_date_from_log_entry(log_entries[1]);
-    ASSERT_EQ(_XPLATSTR("[info        ] no callback found for id: 0\n"), entry);
+    auto entry = remove_date_from_log_entry(log_entries[2]);
+    ASSERT_EQ(_XPLATSTR("[info        ] no callback found for id: 0\n"), entry) << dump_vector(log_entries);
 }
 
 // TODO Flaky until hub_connection.start waits for handshake response
-TEST(invoke_void, DISABLED_invoke_propagates_errors_from_server_as_exceptions)
+TEST(invoke, DISABLED_invoke_propagates_errors_from_server_as_exceptions)
 {
    auto callback_registered_event = std::make_shared<event>();
 
@@ -508,7 +628,7 @@ TEST(invoke_void, DISABLED_invoke_propagates_errors_from_server_as_exceptions)
        hub_connection->start()
            .then([hub_connection, callback_registered_event]()
        {
-           auto t = hub_connection->invoke_void(_XPLATSTR("method"), json::value::array());
+           auto t = hub_connection->invoke(_XPLATSTR("method"), json::value::array());
            callback_registered_event->set();
            return t;
        }).get();
@@ -518,142 +638,6 @@ TEST(invoke_void, DISABLED_invoke_propagates_errors_from_server_as_exceptions)
    catch (const std::runtime_error& e)
    {
        ASSERT_STREQ("\"Ooops\"", e.what());
-   }
-}
-
-// TODO Flaky until hub_connection.start waits for handshake response
-TEST(invoke_void, DISABLED_invoke_propagates_hub_errors_from_server_as_hub_exceptions)
-{
-   auto callback_registered_event = std::make_shared<event>();
-
-   int call_number = -1;
-   auto websocket_client = create_test_websocket_client(
-       /* receive function */ [call_number, callback_registered_event]()
-       mutable {
-       std::string responses[]
-       {
-           "{ }\x1e",
-           "{ \"type\": 3, \"invocationId\": \"0\", \"error\": \"Ooops\" }\x1e"
-           "{}"
-       };
-
-       call_number = std::min(call_number + 1, 2);
-
-       if (call_number > 0)
-       {
-           callback_registered_event->wait();
-       }
-
-       return pplx::task_from_result(responses[call_number]);
-   });
-
-   auto hub_connection = create_hub_connection(websocket_client);
-   try
-   {
-       hub_connection->start()
-           .then([hub_connection, callback_registered_event]()
-       {
-           auto t = hub_connection->invoke_void(_XPLATSTR("method"), json::value::array());
-           callback_registered_event->set();
-           return t;
-       }).get();
-
-       ASSERT_TRUE(false); // exception expected but not thrown
-   }
-   catch (const hub_exception& e)
-   {
-       ASSERT_STREQ("\"Ooops\"", e.what());
-   }
-}
-
-// TODO Flaky until hub_connection.start waits for handshake response
-TEST(invoke_void, DISABLED_invoke_creates_hub_exception_even_if_no_error_data)
-{
-   auto callback_registered_event = std::make_shared<event>();
-
-   int call_number = -1;
-   auto websocket_client = create_test_websocket_client(
-       /* receive function */ [call_number, callback_registered_event]()
-       mutable {
-       std::string responses[]
-       {
-           "{ }\x1e",
-           "{ \"type\": 3, \"invocationId\": \"0\", \"error\": \"Ooops\" }\x1e"
-           "{}"
-       };
-
-       call_number = std::min(call_number + 1, 2);
-
-       if (call_number > 0)
-       {
-           callback_registered_event->wait();
-       }
-
-       return pplx::task_from_result(responses[call_number]);
-   });
-
-   auto hub_connection = create_hub_connection(websocket_client);
-   try
-   {
-       hub_connection->start()
-           .then([hub_connection, callback_registered_event]()
-       {
-           auto t = hub_connection->invoke_void(_XPLATSTR("method"), json::value::array());
-           callback_registered_event->set();
-           return t;
-       }).get();
-
-       ASSERT_TRUE(false); // exception expected but not thrown
-   }
-   catch (const hub_exception& e)
-   {
-       ASSERT_STREQ("\"Ooops\"", e.what());
-   }
-}
-
-// TODO Flaky until hub_connection.start waits for handshake response
-TEST(invoke_void, DISABLED_invoke_creates_runtime_error_when_hub_exception_indicator_false)
-{
-   auto callback_registered_event = std::make_shared<event>();
-
-   int call_number = -1;
-   auto websocket_client = create_test_websocket_client(
-       /* receive function */ [call_number, callback_registered_event]()
-       mutable {
-       std::string responses[]
-       {
-           "{ }\x1e",
-           "{ \"type\": 3, \"invocationId\": \"0\", \"error\": \"Ooops\" }\x1e"
-           "{}"
-       };
-
-       call_number = std::min(call_number + 1, 2);
-
-       if (call_number > 0)
-       {
-           callback_registered_event->wait();
-       }
-
-       return pplx::task_from_result(responses[call_number]);
-   });
-
-   auto hub_connection = create_hub_connection(websocket_client);
-   try
-   {
-       hub_connection->start()
-           .then([hub_connection, callback_registered_event]()
-       {
-           auto t = hub_connection->invoke_void(_XPLATSTR("method"), json::value::array());
-           callback_registered_event->set();
-           return t;
-       }).get();
-
-       ASSERT_TRUE(false); // exception expected but not thrown
-   }
-   catch (const signalr_exception& e)
-   {
-       ASSERT_STREQ("\"Ooops\"", e.what());
-       ASSERT_TRUE(dynamic_cast<const hub_exception *>(&e) == nullptr);
    }
 }
 
@@ -688,7 +672,7 @@ TEST(invoke_void, DISABLED_invoke_creates_runtime_error)
        hub_connection->start()
            .then([hub_connection, callback_registered_event]()
        {
-           auto t = hub_connection->invoke_void(_XPLATSTR("method"), json::value::array());
+           auto t = hub_connection->invoke(_XPLATSTR("method"), json::value::array());
            callback_registered_event->set();
            return t;
        }).get();
@@ -769,13 +753,13 @@ TEST(on, cannot_register_handler_if_connection_not_in_disconnected_state)
     }
 }
 
-TEST(invoke_json, invoke_throws_when_the_underlying_connection_is_not_valid)
+TEST(invoke, invoke_throws_when_the_underlying_connection_is_not_valid)
 {
     auto hub_connection = create_hub_connection();
 
     try
     {
-        hub_connection->invoke_json(_XPLATSTR("method"), json::value::array()).get();
+        hub_connection->invoke(_XPLATSTR("method"), json::value::array()).get();
         ASSERT_TRUE(true); // exception expected but not thrown
     }
     catch (const signalr_exception& e)
@@ -784,13 +768,13 @@ TEST(invoke_json, invoke_throws_when_the_underlying_connection_is_not_valid)
     }
 }
 
-TEST(invoke_void, send_throws_when_the_underlying_connection_is_not_valid)
+TEST(invoke, send_throws_when_the_underlying_connection_is_not_valid)
 {
     auto hub_connection = create_hub_connection();
 
     try
     {
-        hub_connection->invoke_void(_XPLATSTR("method"), json::value::array()).get();
+        hub_connection->invoke(_XPLATSTR("method"), json::value::array()).get();
         ASSERT_TRUE(true); // exception expected but not thrown
     }
     catch (const signalr_exception& e)

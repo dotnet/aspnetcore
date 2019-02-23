@@ -35,7 +35,7 @@ namespace signalr
 
     struct case_insensitive_hash : std::unary_function<utility::string_t, std::size_t>
     {
-        std::size_t operator()(const utility::string_t& s) const
+        std::size_t operator()(const utility::string_t& s) const noexcept
         {
             size_t hash = 0;
             std::hash<size_t> hasher;

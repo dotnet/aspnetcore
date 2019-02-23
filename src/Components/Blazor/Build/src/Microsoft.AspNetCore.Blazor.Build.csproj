@@ -6,6 +6,7 @@
     <OutputType>Exe</OutputType>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <IsShippingPackage>true</IsShippingPackage>
+    <HasReferenceAssembly>false</HasReferenceAssembly>
   </PropertyGroup>
 
   <!-- Pack settings -->
@@ -28,7 +29,7 @@
       componentsversion=$(ComponentsPackageVersion);
       razorversion=$(MicrosoftAspNetCoreRazorDesignPackageVersion);
       blazormonoversion=$(MicrosoftAspNetCoreBlazorMonoPackageVersion);
-      repositorycommit=$(RepositoryCommit);</NuspecProperties>
+      repositorycommit=$(SourceRevisionId);</NuspecProperties>
     </PropertyGroup>
     <ItemGroup>
       <_TargetFramework Include="$(TargetFramework)" />
@@ -39,7 +40,7 @@
   <ItemGroup>
     <ProjectReference Condition="'$(BuildNodeJS)' != 'false'" Include="$(RepositoryRoot)src\Components\Browser.JS\src\Microsoft.AspNetCore.Components.Browser.JS.npmproj" ReferenceOutputAssembly="false" />
     <Reference Include="Microsoft.AspNetCore.Components" />
-    <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" PrivateAssets="All" />
+    <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" />
     <Reference Include="Microsoft.Extensions.FileProviders.Composite" />
     <Reference Include="Microsoft.Extensions.FileProviders.Physical" />
     <Reference Include="Mono.Cecil" />

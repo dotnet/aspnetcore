@@ -7,21 +7,23 @@
   </PropertyGroup>
 
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
-  <Import Project="..\Microsoft.AspNetCore.App.props" />
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsShippingPackage>true</IsShippingPackage>
-
+    <IsPackable>true</IsPackable>
     <PackageDescription>Provides a default set of APIs for building an ASP.NET Core application. Contains reference assemblies, documentation, and other design-time assets.
 
 This package is an internal implementation of the .NET Core SDK and is not meant to be used as a normal PackageReference.</PackageDescription>
     <PackageTags>aspnetcore;targeting-pack</PackageTags>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
 
-    <!-- Subject to change: see https://github.com/dotnet/designs/pull/50 -->
-    <PackageType>TargetingPack</PackageType>
+    <PackageType>DotnetPlatform</PackageType>
     <RefAssemblyPackagePath>ref/$(TargetFramework)/</RefAssemblyPackagePath>
+
+    <LayoutTargetDir>$(TargetingPackLayoutRoot)packs/Microsoft.AspNetCore.App.Ref/$(PackageVersion)/</LayoutTargetDir>
+    <ArchiveOutputFileName>aspnetcore-targeting-pack-$(PackageVersion).zip</ArchiveOutputFileName>
+    <ArchiveOutputPath>$(InstallersOutputPath)$(ArchiveOutputFileName)</ArchiveOutputPath>
 
     <!-- There are no symbols for reference assemblies. -->
     <IncludeSymbols>false</IncludeSymbols>
@@ -36,11 +38,17 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
     <!-- This project should not be referenced via the `<Reference>` impementation. -->
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
+
+    <PackageConflictManifestFileName>PackageOverrides.txt</PackageConflictManifestFileName>
+    <PackageConflictManifestPackagePath>data/</PackageConflictManifestPackagePath>
+
+    <!-- Reference implementation assemblies in addition to ref assemblies to get xml docs -->
+    <ReferenceImplementationAssemblies>true</ReferenceImplementationAssemblies>
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Note: do not add _TransitiveExternalDependency to this list. This is intentionally not listed as a direct package reference. -->
-    <Reference Include="@(Dependency);@(ExternalDependency)" />
+    <!-- Note: do not add _TransitiveExternalAspNetCoreAppReference to this list. This is intentionally not listed as a direct package reference. -->
+    <Reference Include="@(AspNetCoreAppReference);@(AspNetCoreAppReferenceAndPackage);@(ExternalAspNetCoreAppReference)" />
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
@@ -48,8 +56,10 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   <PropertyGroup>
     <BuildDependsOn>
       $(BuildDependsOn);
+      GeneratePackageConflictManifest;
       _ResolveTargetingPackContent;
-      _BatchCopyToOutputDirectory;
+      _BatchCopyToLayoutTargetDir;
+      _CreateTargetingPackArchive;
     </BuildDependsOn>
   </PropertyGroup>
 
@@ -72,30 +82,53 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <ItemGroup>
       <AspNetCoreReferenceAssemblyPath
           Include="@(ReferencePathWithRefAssemblies)"
-          Exclude="@(ReferencePathWithRefAssemblies->WithMetadataValue('NuGetPackageId', 'Microsoft.NETCore.App'))" />
+          Exclude="
+            @(ReferencePathWithRefAssemblies->WithMetadataValue('NuGetPackageId', 'Microsoft.NETCore.App'));
+            @(ReferencePathWithRefAssemblies->WithMetadataValue('ReferenceGrouping', 'Microsoft.NETCore.App'));" />
 
-      <AspNetCoreReferenceDocXml Include="@(AspNetCoreReferenceAssemblyPath->'%(RootDir)%(Directory)%(FileName).xml')" />
+      <AspNetCoreReferenceDocXml Include="@(_ResolvedProjectReferencePaths->WithMetadataValue('IsReferenceAssembly', 'false')->'%(RootDir)%(Directory)%(FileName).xml')" />
+      <RefPackContent Include="@(AspNetCoreReferenceAssemblyPath)" PackagePath="$(RefAssemblyPackagePath)" />
+      <RefPackContent Include="@(AspNetCoreReferenceDocXml)" PackagePath="$(RefAssemblyPackagePath)" />
+      <RefPackContent Include="$(TargetDir)$(PackageConflictManifestFileName)" PackagePath="$(PackageConflictManifestPackagePath)" />
 
-      <!-- Exclude known missing XML docs files. Time-boxing this workaround because we want XML docs for everything. This can be removed when we get a new build with https://github.com/dotnet/core-setup/pull/5109. -->
-      <AspNetCoreReferenceDocXml Remove="@(AspNetCoreReferenceDocXml)"
-        Condition="'$(MicrosoftNETCoreAppPackageVersion)' == '3.0.0-preview-27405-2' AND ('%(FileName)' == 'Microsoft.Extensions.DependencyModel' OR '%(FileName)' == 'Microsoft.DotNet.PlatformAbstractions' )" />
-
-      <RefPackContent Include="@(AspNetCoreReferenceAssemblyPath)" />
-      <RefPackContent Include="@(AspNetCoreReferenceDocXml)" />
-
-      <_PackageFiles Include="@(RefPackContent)" PackagePath="$(RefAssemblyPackagePath)" />
+      <_PackageFiles Include="@(RefPackContent)" />
     </ItemGroup>
   </Target>
 
+  <Target Name="GeneratePackageConflictManifest"
+          DependsOnTargets="ResolveReferences"
+          Inputs="$(MSBuildAllProjects)"
+          Outputs="$(TargetDir)$(PackageConflictManifestFileName)">
+    <ItemGroup>
+      <_AspNetCoreAppPackageOverrides Include="@(ReferencePath->'%(NuGetPackageId)|%(NuGetPackageVersion)')" Condition=" '%(ReferencePath.NuGetPackageId)' != 'Microsoft.NETCore.App' AND '%(ReferencePath.NuGetSourceType)' == 'Package' " />
+      <_AspNetCoreAppPackageOverrides Include="@(ReferencePath->'%(FileName)|$(SharedFxVersion)')" Condition=" '%(ReferencePath.ReferenceSourceTarget)' == 'ProjectReference' " />
+    </ItemGroup>
+
+    <WriteLinesToFile
+        Lines="@(_AspNetCoreAppPackageOverrides)"
+        File="$(TargetDir)$(PackageConflictManifestFileName)"
+        Overwrite="true" />
+  </Target>
+
   <!-- Written to take advantage of target batching in MSBuild. -->
-  <Target Name="_BatchCopyToOutputDirectory"
+  <Target Name="_BatchCopyToLayoutTargetDir"
           DependsOnTargets="_ResolveTargetingPackContent"
           Inputs="@(RefPackContent)"
-          Outputs="@(RefPackContent->'$(TargetDir)%(FileName)%(Extension)')">
+          Outputs="@(RefPackContent->'$(LayoutTargetDir)%(PackagePath)%(FileName)%(Extension)')">
 
     <Copy SourceFiles="@(RefPackContent)"
-          DestinationFiles="@(RefPackContent->'$(TargetDir)%(FileName)%(Extension)')"
+          DestinationFiles="@(RefPackContent->'$(LayoutTargetDir)%(PackagePath)%(FileName)%(Extension)')"
           UseHardlinksIfPossible="true" />
+  </Target>
+
+  <Target Name="_CreateTargetingPackArchive"
+          Inputs="@(RefPackContent)"
+          Outputs="$(ArchiveOutputPath)"
+          Condition="'$(IsPackable)' != 'false'">
+    <ZipDirectory
+      SourceDirectory="$(TargetingPackLayoutRoot)"
+      DestinationFile="$(ArchiveOutputPath)"
+      Overwrite="true" />
   </Target>
 
 </Project>

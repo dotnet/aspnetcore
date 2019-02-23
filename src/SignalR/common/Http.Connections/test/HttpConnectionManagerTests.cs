@@ -8,7 +8,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Connections.Internal;
 using Microsoft.AspNetCore.SignalR.Tests;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Http.Connections.Tests
@@ -377,7 +379,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             }
         }
 
-        private static HttpConnectionManager CreateConnectionManager(ILoggerFactory loggerFactory, IApplicationLifetime lifetime = null)
+        private static HttpConnectionManager CreateConnectionManager(ILoggerFactory loggerFactory, IHostApplicationLifetime lifetime = null)
         {
             lifetime = lifetime ?? new EmptyApplicationLifetime();
             return new HttpConnectionManager(loggerFactory, lifetime);

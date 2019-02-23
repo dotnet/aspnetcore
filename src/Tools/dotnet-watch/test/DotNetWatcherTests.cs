@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             Assert.Equal("1", envValue);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore-Internal/issues/1826")]
         public async Task RunsWithIterationEnvVariable()
         {
             await _app.StartWatcherAsync();
@@ -49,19 +49,8 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 
                 await _app.IsWaitingForFileChange();
 
-                try
-                {
-                    File.SetLastWriteTime(source, DateTime.Now);
-                    await _app.HasRestarted();
-                }
-                catch (Exception ex)
-                {
-                    _logger.WriteLine("Retrying. First attempt to restart app failed: " + ex.Message);
-
-                    // retry
-                    File.SetLastWriteTime(source, DateTime.Now);
-                    await _app.HasRestarted();
-                }
+                File.SetLastWriteTime(source, DateTime.Now);
+                await _app.HasRestarted(TimeSpan.FromMinutes(1));
             }
         }
 

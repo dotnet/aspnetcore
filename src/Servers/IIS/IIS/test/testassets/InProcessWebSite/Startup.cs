@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.IISIntegration.FunctionalTests;
 using Microsoft.AspNetCore.Server.IIS;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
@@ -655,7 +656,7 @@ namespace TestSite
         private async Task Shutdown(HttpContext ctx)
         {
             await ctx.Response.WriteAsync("Shutting down");
-            ctx.RequestServices.GetService<IApplicationLifetime>().StopApplication();
+            ctx.RequestServices.GetService<IHostApplicationLifetime>().StopApplication();
         }
 
         private async Task ShutdownStopAsync(HttpContext ctx)

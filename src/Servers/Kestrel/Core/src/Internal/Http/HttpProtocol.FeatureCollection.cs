@@ -19,14 +19,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     public partial class HttpProtocol : IHttpRequestFeature,
                                         IHttpResponseFeature,
+                                        IResponseBodyPipeFeature,
+                                        IRequestBodyPipeFeature,
                                         IHttpUpgradeFeature,
                                         IHttpConnectionFeature,
                                         IHttpRequestLifetimeFeature,
                                         IHttpRequestIdentifierFeature,
                                         IHttpBodyControlFeature,
                                         IHttpMaxRequestBodySizeFeature,
-                                        IHttpResponseStartFeature,
-                                        IResponseBodyPipeFeature
+                                        IHttpResponseStartFeature
     {
         // NOTE: When feature interfaces are added to or removed from this HttpProtocol class implementation,
         // then the list of `implementedFeatures` in the generated code project MUST also be updated.
@@ -94,8 +95,39 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         Stream IHttpRequestFeature.Body
         {
-            get => RequestBody;
-            set => RequestBody = value;
+            get
+            {
+                return RequestBody;
+            }
+            set
+            {
+                RequestBody = value;
+                var requestPipeReader = new StreamPipeReader(RequestBody, new StreamPipeReaderOptions(
+                    minimumSegmentSize: KestrelMemoryPool.MinimumSegmentSize,
+                    minimumReadThreshold: KestrelMemoryPool.MinimumSegmentSize / 4,
+                    _context.MemoryPool));
+                RequestBodyPipeReader = requestPipeReader;
+
+                // The StreamPipeWrapper needs to be disposed as it hold onto blocks of memory
+                if (_wrapperObjectsToDispose == null)
+                {
+                    _wrapperObjectsToDispose = new List<IDisposable>();
+                }
+                _wrapperObjectsToDispose.Add(requestPipeReader);
+            }
+        }
+
+        PipeReader IRequestBodyPipeFeature.RequestBodyPipe
+        {
+            get
+            {
+                return RequestBodyPipeReader;
+            }
+            set
+            {
+                RequestBodyPipeReader = value;
+                RequestBody = new ReadOnlyPipeStream(RequestBodyPipeReader);
+            }
         }
 
         int IHttpResponseFeature.StatusCode
@@ -275,14 +307,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             await FlushAsync();
 
-            return _streams.Upgrade();
+            return bodyControl.Upgrade();
         }
 
         void IHttpRequestLifetimeFeature.Abort()
         {
             ApplicationAbort();
         }
-
 
         Task IHttpResponseStartFeature.StartAsync(CancellationToken cancellationToken)
         {

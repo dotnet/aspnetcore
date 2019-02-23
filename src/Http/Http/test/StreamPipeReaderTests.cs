@@ -4,6 +4,7 @@
 using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -373,6 +374,30 @@ namespace System.IO.Pipelines.Tests
         }
 
         [Fact]
+        public async Task ArrayPoolUsedByDefault()
+        {
+            WriteByteArray(20);
+            var reader = new StreamPipeReader(Stream);
+            var result = await reader.ReadAsync();
+
+            SequenceMarshal.TryGetReadOnlySequenceSegment(
+                result.Buffer,
+                out var startSegment,
+                out var startIndex,
+                out var endSegment,
+                out var endIndex);
+
+            var start = (BufferSegment)startSegment;
+            var end = (BufferSegment)endSegment;
+
+            Assert.Same(start, end);
+            Assert.IsType<byte[]>(start.MemoryOwner);
+
+            reader.AdvanceTo(result.Buffer.End);
+            reader.Complete();
+        }
+
+        [Fact]
         public void CancelledReadAsyncReturnsTaskWithValue()
         {
             Reader.CancelPendingRead();
@@ -593,7 +618,7 @@ namespace System.IO.Pipelines.Tests
         public async Task ReadAsyncWithEmptyDataCompletesStream()
         {
             WriteByteArray(0);
-            
+
             var readResult = await Reader.ReadAsync();
 
             Assert.True(readResult.IsCompleted);
@@ -617,9 +642,30 @@ namespace System.IO.Pipelines.Tests
             Assert.Equal(Stream, ((StreamPipeReader)Reader).InnerStream);
         }
 
+        [Fact]
+        public async Task BufferingDataPastEndOfStreamCanBeReadAgain()
+        {
+            var helloBytes = Encoding.ASCII.GetBytes("Hello World");
+            Write(helloBytes);
+
+            var readResult = await Reader.ReadAsync();
+            var buffer = readResult.Buffer;
+            Reader.AdvanceTo(buffer.Start, buffer.End);
+
+            // Make sure IsCompleted is true
+            readResult = await Reader.ReadAsync();
+            buffer = readResult.Buffer;
+            Reader.AdvanceTo(buffer.Start, buffer.End);
+            Assert.True(readResult.IsCompleted);
+
+            var value = await ReadFromPipeAsString();
+            Assert.Equal("Hello World", value);
+        }
+
         private async Task<string> ReadFromPipeAsString()
         {
             var readResult = await Reader.ReadAsync();
+            
             var result = Encoding.ASCII.GetString(readResult.Buffer.ToArray());
             Reader.AdvanceTo(readResult.Buffer.End);
             return result;

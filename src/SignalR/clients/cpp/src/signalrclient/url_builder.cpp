@@ -15,8 +15,8 @@ namespace signalr
             _ASSERTE(transport == transport_type::websockets || transport == transport_type::long_polling);
 
             return transport == transport_type::websockets
-                ? _XPLATSTR("webSockets")
-                : _XPLATSTR("longPolling");
+                ? utility::string_t(_XPLATSTR("webSockets"))
+                : utility::string_t(_XPLATSTR("longPolling"));
         }
 
         void append_transport(web::uri_builder &builder, transport_type transport)
@@ -76,23 +76,6 @@ namespace signalr
             return builder;
         }
 
-        web::uri_builder build_uri(const web::uri& base_url, const utility::string_t& command, transport_type transport,
-            const utility::string_t& connection_data, const utility::string_t& query_string,
-            const utility::string_t& last_message_id = _XPLATSTR(""), const utility::string_t& groups_token = _XPLATSTR(""))
-        {
-            _ASSERTE(last_message_id.length() == 0 && groups_token.length() == 0);
-
-            web::uri_builder builder(base_url);
-            builder.append_path(command);
-            append_transport(builder, transport);
-            builder.append_query(_XPLATSTR("clientProtocol"), PROTOCOL);
-            //append_connection_token(builder, connection_token);
-            append_connection_data(builder, connection_data);
-            append_message_id(builder, last_message_id);
-            append_groups_token(builder, groups_token);
-            return builder.append_query(query_string);
-        }
-
         web::uri_builder build_uri(const web::uri& base_url, const utility::string_t& command, const utility::string_t& query_string)
         {
             web::uri_builder builder(base_url);
@@ -100,9 +83,15 @@ namespace signalr
             return builder.append_query(query_string);
         }
 
-        web::uri build_negotiate(const web::uri& base_url, const utility::string_t& query_string)
+        web::uri_builder build_uri(const web::uri& base_url, const utility::string_t& command)
         {
-            return build_uri(base_url, _XPLATSTR("negotiate"), query_string).to_uri();
+            web::uri_builder builder(base_url);
+            return builder.append_path(command);
+        }
+
+        web::uri build_negotiate(const web::uri& base_url)
+        {
+            return build_uri(base_url, _XPLATSTR("negotiate")).to_uri();
         }
 
         web::uri build_connect(const web::uri& base_url, transport_type transport, const utility::string_t& query_string)
@@ -116,12 +105,6 @@ namespace signalr
         web::uri build_start(const web::uri &base_url, const utility::string_t &query_string)
         {
             return build_uri(base_url, _XPLATSTR(""), query_string).to_uri();
-        }
-
-        web::uri build_abort(const web::uri &base_url, transport_type transport,
-            const utility::string_t& connection_data, const utility::string_t &query_string)
-        {
-            return build_uri(base_url, _XPLATSTR("abort"), transport, connection_data, query_string).to_uri();
         }
     }
 }

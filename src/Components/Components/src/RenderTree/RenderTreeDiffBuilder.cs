@@ -652,7 +652,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             //
             // We're following a simple heuristic here that's reflected in the ts runtime
             // based on the common usage of attributes for DOM events.
-            if (newFrame.AttributeValue is MulticastDelegate &&
+            if ((newFrame.AttributeValue is MulticastDelegate || newFrame.AttributeValue is EventCallback) &&
                 newFrame.AttributeName.Length >= 3 &&
                 newFrame.AttributeName.StartsWith("on"))
             {

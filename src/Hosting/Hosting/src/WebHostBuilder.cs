@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
 
@@ -248,13 +249,17 @@ namespace Microsoft.AspNetCore.Hosting
             var contentRootPath = ResolveContentRootPath(_options.ContentRootPath, AppContext.BaseDirectory);
 
             // Initialize the hosting environment
-            _hostingEnvironment.Initialize(contentRootPath, _options);
+            ((IWebHostEnvironment)_hostingEnvironment).Initialize(contentRootPath, _options);
             _context.HostingEnvironment = _hostingEnvironment;
 
             var services = new ServiceCollection();
             services.AddSingleton(_options);
-            services.AddSingleton<IHostingEnvironment>(_hostingEnvironment);
+            services.AddSingleton<IWebHostEnvironment>(_hostingEnvironment);
+            services.AddSingleton<IHostEnvironment>(_hostingEnvironment);
+#pragma warning disable CS0618 // Type or member is obsolete
+            services.AddSingleton<AspNetCore.Hosting.IHostingEnvironment>(_hostingEnvironment);
             services.AddSingleton<Extensions.Hosting.IHostingEnvironment>(_hostingEnvironment);
+#pragma warning restore CS0618 // Type or member is obsolete
             services.AddSingleton(_context);
 
             var builder = new ConfigurationBuilder()
@@ -293,7 +298,7 @@ namespace Microsoft.AspNetCore.Hosting
                     {
                         services.AddSingleton(typeof(IStartup), sp =>
                         {
-                            var hostingEnvironment = sp.GetRequiredService<IHostingEnvironment>();
+                            var hostingEnvironment = sp.GetRequiredService<IHostEnvironment>();
                             var methods = StartupLoader.LoadMethods(sp, startupType, hostingEnvironment.EnvironmentName);
                             return new ConventionBasedStartup(methods);
                         });

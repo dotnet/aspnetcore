@@ -83,7 +83,7 @@ namespace signalr
 
     utility::string_t callback_manager::get_callback_id()
     {
-        auto callback_id = m_id++;
+        const auto callback_id = m_id++;
         utility::stringstream_t ss;
         ss << callback_id;
         return ss.str();
