@@ -1,6 +1,3 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
 using System;
 using System.IO;
 using System.Text.Encodings.Web;
@@ -10,16 +7,31 @@ using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponents;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
     public class HtmlHelperComponentExtensionsTests
     {
+        [Fact]
+        public async Task PrerenderComponentAsync_ThrowsInvalidOperationException_IfNoPrerendererHasBeenRegistered()
+        {
+            // Arrange
+            var helper = CreateHelper(null, s => { });
+            var writer = new StringWriter();
+            var expectedmessage = $"No 'IComponentPrerenderer' implementation has been registered in the dependency injection container. " +
+                    $"This typically means a call to 'services.AddRazorComponents()' is missing in 'Startup.ConfigureServices'.";
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => helper.PrerenderComponentAsync<TestComponent>());
+
+            // Assert
+            Assert.Equal(expectedmessage, exception.Message);
+        }
+
         [Fact]
         public async Task CanRender_ParameterlessComponent()
         {
@@ -28,7 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
             var writer = new StringWriter();
 
             // Act
-            var result = await helper.RenderComponentAsync<TestComponent>();
+            var result = await helper.PrerenderComponentAsync<TestComponent>();
             result.WriteTo(writer, HtmlEncoder.Default);
             var content = writer.ToString();
 
@@ -44,7 +56,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
             var writer = new StringWriter();
 
             // Act
-            var result = await helper.RenderComponentAsync<GreetingComponent>(new
+            var result = await helper.PrerenderComponentAsync<GreetingComponent>(new
             {
                 Name = "Steve"
             });
@@ -62,7 +74,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
             var helper = CreateHelper();
 
             // Act & Assert
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => helper.RenderComponentAsync<ExceptionComponent>(new
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => helper.PrerenderComponentAsync<ExceptionComponent>(new
             {
                 IsAsync = false
             }));
@@ -78,7 +90,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
             var helper = CreateHelper();
 
             // Act & Assert
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => helper.RenderComponentAsync<ExceptionComponent>(new
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => helper.PrerenderComponentAsync<ExceptionComponent>(new
             {
                 IsAsync = true
             }));
@@ -94,15 +106,16 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
             var helper = CreateHelper();
 
             // Act & Assert
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => helper.RenderComponentAsync<ExceptionComponent>(new
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => helper.PrerenderComponentAsync<ExceptionComponent>(new
             {
                 JsInterop = true
             }));
 
             // Assert
-            Assert.Equal("JavaScript interop calls cannot be issued during server-side prerendering, " +
-                    "because the page has not yet loaded in the browser. Prerendered components must wrap any JavaScript " +
-                    "interop calls in conditional logic to ensure those interop calls are not attempted during prerendering.",
+            Assert.Equal("JavaScript interop calls cannot be issued at this time. This is because the component is being " +
+                    "prerendered and the page has not yet loaded in the browser or because the circuit is currently disconnected. " +
+                    "Components must wrap any JavaScript interop calls in conditional logic to ensure those interop calls are not " +
+                    "attempted during prerendering or while the client is disconnected.",
                 exception.Message);
         }
 
@@ -121,14 +134,15 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
             var writer = new StringWriter();
 
             // Act
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => helper.RenderComponentAsync<RedirectComponent>(new
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => helper.PrerenderComponentAsync<RedirectComponent>(new
             {
                 RedirectUri = "http://localhost/redirect"
             }));
 
-            Assert.Equal("Navigation commands can not be issued during server-side prerendering because the page has not yet loaded in the browser" +
-                    "Components must wrap any navigation commands in conditional logic to ensure those navigation calls are not " +
-                    "attempted during prerendering.",
+            Assert.Equal("Navigation commands can not be issued at this time. This is because the component is being " +
+                    "prerendered and the page has not yet loaded in the browser or because the circuit is currently disconnected. " +
+                    "Components must wrap any navigation calls in conditional logic to ensure those navigation calls are not " +
+                    "attempted during prerendering or while the client is disconnected.",
                 exception.Message);
         }
 
@@ -182,7 +196,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
 </table>";
 
             // Act
-            var result = await helper.RenderComponentAsync<AsyncComponent>();
+            var result = await helper.PrerenderComponentAsync<AsyncComponent>();
             result.WriteTo(writer, HtmlEncoder.Default);
             var content = writer.ToString();
 
@@ -190,32 +204,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
             Assert.Equal(expectedContent.Replace("\r\n", "\n"), content);
         }
 
-        private static IHtmlHelper CreateHelper(HttpContext ctx = null, Action<IServiceCollection> configureServices = null)
-        {
-            var services = new ServiceCollection();
-            services.AddSingleton(HtmlEncoder.Default);
-            services.AddSingleton<IJSRuntime,UnsupportedJavaScriptRuntime>();
-            services.AddSingleton<IUriHelper,HttpUriHelper>();
-            services.AddSingleton<StaticComponentRenderer>();
-
-            configureServices?.Invoke(services);
-
-            var helper = new Mock<IHtmlHelper>();
-            var context = ctx ?? new DefaultHttpContext();
-            context.RequestServices = services.BuildServiceProvider();
-            context.Request.Scheme = "http";
-            context.Request.Host = new HostString("localhost");
-            context.Request.PathBase = "/base";
-            context.Request.Path = "/path";
-            context.Request.QueryString = QueryString.FromUriComponent("?query=value");
-
-            helper.Setup(h => h.ViewContext)
-                .Returns(new ViewContext()
-                {
-                    HttpContext = context
-                });
-            return helper.Object;
-        }
 
         private class TestComponent : IComponent
         {
@@ -433,6 +421,31 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Test
 
                 builder.CloseElement();
             }
+        }
+
+        private static IHtmlHelper CreateHelper(HttpContext ctx = null, Action<IServiceCollection> configureServices = null)
+        {
+            var services = new ServiceCollection();
+            //services.AddRazorComponents();
+            services.AddSingleton(HtmlEncoder.Default);
+            configureServices = configureServices ?? (s => s.AddRazorComponents());
+            configureServices?.Invoke(services);
+
+            var helper = new Mock<IHtmlHelper>();
+            var context = ctx ?? new DefaultHttpContext();
+            context.RequestServices = services.BuildServiceProvider();
+            context.Request.Scheme = "http";
+            context.Request.Host = new HostString("localhost");
+            context.Request.PathBase = "/base";
+            context.Request.Path = "/path";
+            context.Request.QueryString = QueryString.FromUriComponent("?query=value");
+
+            helper.Setup(h => h.ViewContext)
+                .Returns(new ViewContext()
+                {
+                    HttpContext = context
+                });
+            return helper.Object;
         }
     }
 }

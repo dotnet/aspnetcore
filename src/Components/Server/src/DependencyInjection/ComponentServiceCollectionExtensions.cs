@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Server.Circuits;
+using Microsoft.AspNetCore.Components.Server.Prerendering;
 using Microsoft.AspNetCore.Components.Services;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
@@ -23,6 +24,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="IServiceCollection"/>.</returns>
         public static IServiceCollection AddRazorComponents(this IServiceCollection services)
         {
+            services.AddLogging();
             services.AddSignalR().AddMessagePackProtocol();
 
             // Here we add a bunch of services that don't vary in any way based on the

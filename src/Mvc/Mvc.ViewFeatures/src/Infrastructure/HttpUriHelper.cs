@@ -52,8 +52,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         protected override void NavigateToCore(string uri, bool forceLoad)
         {
             // For now throw as we don't have a good way of aborting the request from here.
-            throw new InvalidOperationException(
-                "Redirects are not supported on a prerendering environment.");
+            throw new InvalidOperationException("Navigation commands can not be issued during server-side prerendering because the page has not yet loaded in the browser" +
+                    "Components must wrap any navigation commands in conditional logic to ensure those navigation calls are not " +
+                    "attempted during prerendering.");
         }
     }
 }

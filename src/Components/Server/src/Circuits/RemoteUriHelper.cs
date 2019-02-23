@@ -80,7 +80,10 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         {
             if (_jsRuntime == null)
             {
-                throw new InvalidOperationException("Navigation is not allowed during prerendering.");
+                throw new InvalidOperationException("Navigation commands can not be issued at this time. This is because the component is being " +
+                    "prerendered and the page has not yet loaded in the browser or because the circuit is currently disconnected. " +
+                    "Components must wrap any navigation calls in conditional logic to ensure those navigation calls are not " +
+                    "attempted during prerendering or while the client is disconnected.");
             }
             _jsRuntime.InvokeAsync<object>(Interop.NavigateTo, uri, forceLoad);
         }

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Runtime.ExceptionServices;
 using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
@@ -87,6 +88,12 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
         /// <inheritdoc />
         protected override void HandleException(Exception exception)
         {
+            if (_prerenderMode)
+            {
+                // If we are prerrendering just rethrow the exception as we want the caller to be notified.
+                ExceptionDispatchInfo.Capture(exception).Throw();
+            }
+
             if (exception is AggregateException aggregateException)
             {
                 foreach (var innerException in aggregateException.Flatten().InnerExceptions)
