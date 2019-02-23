@@ -168,7 +168,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(name));
             }
 
-            return AddTypeActivatedCheck<T>(builder, name, failureStatus: null, tags: null);
+            return AddTypeActivatedCheck<T>(builder, name, failureStatus: null, tags: null, args);
         }
 
         /// <summary>
@@ -203,7 +203,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(name));
             }
 
-            return AddTypeActivatedCheck<T>(builder, name, failureStatus, tags: null);
+            return AddTypeActivatedCheck<T>(builder, name, failureStatus, tags: null, args);
         }
 
         /// <summary>
