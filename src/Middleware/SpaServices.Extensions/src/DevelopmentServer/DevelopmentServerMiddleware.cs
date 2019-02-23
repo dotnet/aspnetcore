@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.SpaServices.DevelopmentServer
             // Start create-react-app and attach to middleware pipeline
             var appBuilder = spaBuilder.ApplicationBuilder;
             var logger = LoggerFinder.GetOrCreateLogger(appBuilder, LogCategoryName);
-            var portTask = StartCreateAppServerAsync(sourcePath, npmScriptName, waitText, serverName, logger);
+            var portTask = StartDevServerAsync(sourcePath, npmScriptName, waitText, serverName, logger);
 
             // Everything we proxy is hardcoded to target http://localhost because:
             // - the requests are always from the local machine (we're not accepting remote
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.SpaServices.DevelopmentServer
             });
         }
 
-        private static async Task<int> StartCreateAppServerAsync(
+        private static async Task<int> StartDevServerAsync(
             string sourcePath, string npmScriptName, string waitText, string serverName, ILogger logger)
         {
             var portNumber = TcpPortFinder.FindAvailablePort();
