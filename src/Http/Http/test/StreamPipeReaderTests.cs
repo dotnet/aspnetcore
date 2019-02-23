@@ -246,7 +246,7 @@ namespace System.IO.Pipelines.Tests
         [Fact]
         public void AdvanceWithoutReadingWithValidSequencePosition()
         {
-            var sequencePosition = new SequencePosition(new BufferSegment(), 5);
+            var sequencePosition = new SequencePosition(new BufferSegment<byte>(), 5);
             Assert.Throws<InvalidOperationException>(() => Reader.AdvanceTo(sequencePosition));
         }
 
@@ -387,8 +387,8 @@ namespace System.IO.Pipelines.Tests
                 out var endSegment,
                 out var endIndex);
 
-            var start = (BufferSegment)startSegment;
-            var end = (BufferSegment)endSegment;
+            var start = (BufferSegment<byte>)startSegment;
+            var end = (BufferSegment<byte>)endSegment;
 
             Assert.Same(start, end);
             Assert.IsType<byte[]>(start.MemoryOwner);

@@ -5,7 +5,6 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Pipelines;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,8 +22,9 @@ namespace Microsoft.AspNetCore.WebUtilities
         public const int DefaultValueLengthLimit = 1024 * 1024 * 4;
 
         private const int _rentedCharPoolLength = 8192;
-        private readonly PipeReader _pipeReader;
         private readonly TextReader _reader;
+        private readonly char[] _buffer;
+        private readonly ArrayPool<char> _charPool;
         private readonly StringBuilder _builder = new StringBuilder();
         private int _bufferOffset;
         private int _bufferCount;
@@ -77,12 +77,6 @@ namespace Microsoft.AspNetCore.WebUtilities
             _reader = new StreamReader(stream, encoding, detectEncodingFromByteOrderMarks: true, bufferSize: 1024 * 2, leaveOpen: true);
         }
 
-        public FormReader(PipeReader pipeReader, Encoding encoding)
-        {
-            _pipeReader = pipeReader;
-            _encoding = encoding;
-        }
-
         /// <summary>
         /// The limit on the number of form values to allow in ReadForm or ReadFormAsync.
         /// </summary>
@@ -106,7 +100,6 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// <returns>The next key value pair, or null when the end of the form is reached.</returns>
         public KeyValuePair<string, string>? ReadNextPair()
         {
-            // Should we support these?
             ReadNextPairImpl();
             if (ReadSucceeded())
             {
@@ -140,12 +133,29 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// <returns>The next key value pair, or null when the end of the form is reached.</returns>
         public async Task<KeyValuePair<string, string>?> ReadNextPairAsync(CancellationToken cancellationToken = new CancellationToken())
         {
-            await ReadNextPairPipeAsync(cancellationToken);
+            await ReadNextPairAsyncImpl(cancellationToken);
             if (ReadSucceeded())
             {
                 return new KeyValuePair<string, string>(_currentKey, _currentValue);
             }
             return null;
+        }
+
+        private async Task ReadNextPairAsyncImpl(CancellationToken cancellationToken = new CancellationToken())
+        {
+            StartReadNextPair();
+            while (!_endOfStream)
+            {
+                // Empty
+                if (_bufferCount == 0)
+                {
+                    await BufferAsync(cancellationToken);
+                }
+                if (TryReadNextPair())
+                {
+                    break;
+                }
+            }
         }
 
         private void StartReadNextPair()
@@ -242,31 +252,6 @@ namespace Microsoft.AspNetCore.WebUtilities
             _endOfStream = _bufferCount == 0;
         }
 
-        private bool TryReadPipePair()
-        {
-            if (_currentKey == null)
-            {
-                if (!TryReadWord('=', KeyLengthLimit, out _currentKey))
-                {
-                    return false;
-                }
-
-                if (_bufferCount == 0)
-                {
-                    return false;
-                }
-            }
-
-            if (_currentValue == null)
-            {
-                if (!TryReadWord('&', ValueLengthLimit, out _currentValue))
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-
         /// <summary>
         /// Parses text from an HTTP form body.
         /// </summary>
@@ -292,7 +277,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             var accumulator = new KeyValueAccumulator();
             while (!_endOfStream)
             {
-                await ReadNextPairPipeAsync(cancellationToken);
+                await ReadNextPairAsyncImpl(cancellationToken);
                 Append(ref accumulator);
             }
             return accumulator.GetResults();

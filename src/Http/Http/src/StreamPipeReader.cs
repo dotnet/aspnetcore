@@ -24,10 +24,10 @@ namespace System.IO.Pipelines
         private bool _isStreamCompleted;
         private ExceptionDispatchInfo _exceptionInfo;
 
-        private BufferSegment _readHead;
+        private BufferSegment<byte> _readHead;
         private int _readIndex;
 
-        private BufferSegment _readTail;
+        private BufferSegment<byte> _readTail;
         private long _bufferedBytes;
         private bool _examinedEverything;
         private object _lock = new object();
@@ -105,10 +105,10 @@ namespace System.IO.Pipelines
                 ThrowHelper.ThrowInvalidOperationException_NoDataRead();
             }
 
-            AdvanceTo((BufferSegment)consumed.GetObject(), consumed.GetInteger(), (BufferSegment)examined.GetObject(), examined.GetInteger());
+            AdvanceTo((BufferSegment<byte>)consumed.GetObject(), consumed.GetInteger(), (BufferSegment<byte>)examined.GetObject(), examined.GetInteger());
         }
 
-        private void AdvanceTo(BufferSegment consumedSegment, int consumedIndex, BufferSegment examinedSegment, int examinedIndex)
+        private void AdvanceTo(BufferSegment<byte> consumedSegment, int consumedIndex, BufferSegment<byte> examinedSegment, int examinedIndex)
         {
             if (consumedSegment == null)
             {
@@ -339,14 +339,14 @@ namespace System.IO.Pipelines
 
         private void CreateNewTailSegment()
         {
-            BufferSegment nextSegment = AllocateSegment();
+            BufferSegment<byte> nextSegment = AllocateSegment();
             _readTail.SetNext(nextSegment);
             _readTail = nextSegment;
         }
 
-        private BufferSegment AllocateSegment()
+        private BufferSegment<byte> AllocateSegment()
         {
-            var nextSegment = new BufferSegment();
+            var nextSegment = new BufferSegment<byte>();
 
             if (_pool is null)
             {
