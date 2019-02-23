@@ -29,8 +29,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private static readonly byte[] _bytesTransferEncodingChunked = Encoding.ASCII.GetBytes("\r\nTransfer-Encoding: chunked");
         private static readonly byte[] _bytesServer = Encoding.ASCII.GetBytes("\r\nServer: " + Constants.ServerName);
 
-        protected Streams _streams;
-        private HttpResponsePipeWriter _originalPipeWriter;
+        protected BodyControl bodyControl;
         private Stack<KeyValuePair<Func<object, Task>, object>> _onStarting;
         private Stack<KeyValuePair<Func<object, Task>, object>> _onCompleted;
 
@@ -74,8 +73,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         public IHttpResponseControl HttpResponseControl { get; set; }
-
-        public Pipe RequestBodyPipe { get; protected set; }
 
         public ServiceContext ServiceContext => _context.ServiceContext;
         private IPEndPoint LocalEndPoint => _context.LocalEndPoint;
@@ -193,6 +190,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public IHeaderDictionary RequestHeaders { get; set; }
         public Stream RequestBody { get; set; }
+        public PipeReader RequestBodyPipeReader { get; set; }
 
         private int _statusCode;
         public int StatusCode
@@ -293,20 +291,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        public void InitializeStreams(MessageBody messageBody)
+        public void InitializeBodyControl(MessageBody messageBody)
         {
-            if (_streams == null)
+            if (bodyControl == null)
             {
-                var pipeWriter = new HttpResponsePipeWriter(this);
-                _streams = new Streams(bodyControl: this, pipeWriter);
-                _originalPipeWriter = pipeWriter;
+                bodyControl = new BodyControl(bodyControl: this, this);
             }
 
-            (RequestBody, ResponseBody) = _streams.Start(messageBody);
-            ResponsePipeWriter = _originalPipeWriter;
+            (RequestBody, ResponseBody, RequestBodyPipeReader, ResponsePipeWriter) = bodyControl.Start(messageBody);
         }
 
-        public void StopStreams() => _streams.Stop();
+        public void StopBodies() => bodyControl.Stop();
 
         // For testing
         internal void ResetState()
@@ -460,7 +455,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected void PoisonRequestBodyStream(Exception abortReason)
         {
-            _streams?.Abort(abortReason);
+            bodyControl?.Abort(abortReason);
         }
 
         // Prevents the RequestAborted token from firing for the duration of the request.
@@ -566,7 +561,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 IsUpgradableRequest = messageBody.RequestUpgrade;
 
-                InitializeStreams(messageBody);
+                InitializeBodyControl(messageBody);
 
                 var context = application.CreateContext(this);
 
@@ -608,7 +603,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 // At this point all user code that needs use to the request or response streams has completed.
                 // Using these streams in the OnCompleted callback is not allowed.
-                StopStreams();
+                StopBodies();
 
                 // 4XX responses are written by TryProduceInvalidRequestResponse during connection tear down.
                 if (_requestRejectedException == null)
@@ -652,9 +647,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 if (HasStartedConsumingRequestBody)
                 {
-                    RequestBodyPipe.Reader.Complete();
-
-                    // Wait for Http1MessageBody.PumpAsync() to call RequestBodyPipe.Writer.Complete().
                     await messageBody.StopAsync();
                 }
             }
@@ -695,7 +687,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 return FireOnStartingMayAwait(onStarting);
             }
-
         }
 
         private Task FireOnStartingMayAwait(Stack<KeyValuePair<Func<object, Task>, object>> onStarting)
@@ -1250,8 +1241,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _requestRejectedException = ex;
         }
 
-        protected void ReportApplicationError(Exception ex)
+        public void ReportApplicationError(Exception ex)
         {
+            // ReportApplicationError can be called with a null exception from MessageBody
+            if (ex == null)
+            {
+                return;
+            }
+
             if (_applicationException == null)
             {
                 _applicationException = ex;

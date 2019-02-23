@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using AngleSharp.Parser.Html;
+using BasicWebSite;
 using BasicWebSite.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -15,10 +16,13 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
     {
         public ComponentRenderingFunctionalTests(MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting> fixture)
         {
+            Factory = fixture;
             Client = Client ?? CreateClient(fixture);
         }
 
         public HttpClient Client { get; }
+
+        public MvcTestFixture<StartupWithoutEndpointRouting> Factory { get; }
 
         [Fact]
         public async Task Renders_BasicComponent()
@@ -31,6 +35,53 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var content = await response.Content.ReadAsStringAsync();
 
             AssertComponent("\n    <p>Hello world!</p>\n", "Greetings", content);
+        }
+
+        [Fact]
+        public async Task Renders_BasicComponent_UsingRazorComponents_Prerrenderer()
+        {
+            // Arrange & Act
+            var client = Factory
+                .WithWebHostBuilder(builder => builder.ConfigureServices(services => services.AddRazorComponents()))
+                .CreateClient();
+
+            var response = await client.GetAsync("http://localhost/components");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var content = await response.Content.ReadAsStringAsync();
+
+            AssertComponent("\n    <p>Hello world!</p>\n", "Greetings", content);
+        }
+
+        [Fact]
+        public async Task Renders_RoutingComponent()
+        {
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/components/routable");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var content = await response.Content.ReadAsStringAsync();
+
+            AssertComponent("\n    Router component\n<p>Routed successfully</p>\n", "Routing", content);
+        }
+
+        [Fact]
+        public async Task Renders_RoutingComponent_UsingRazorComponents_Prerrenderer()
+        {
+            // Arrange & Act
+            var client = Factory
+                .WithWebHostBuilder(builder => builder.ConfigureServices(services => services.AddRazorComponents()))
+                .CreateClient();
+
+            var response = await client.GetAsync("http://localhost/components/routable");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var content = await response.Content.ReadAsStringAsync();
+
+            AssertComponent("\n    Router component\n<p>Routed successfully</p>\n", "Routing", content);
         }
 
         [Fact]

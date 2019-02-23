@@ -25,6 +25,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private readonly StreamInputFlowControl _inputFlowControl;
         private readonly StreamOutputFlowControl _outputFlowControl;
 
+        public Pipe RequestBodyPipe { get; }
+
         internal long DrainExpirationTicks { get; set; }
 
         private StreamCompletionFlags _completionState;

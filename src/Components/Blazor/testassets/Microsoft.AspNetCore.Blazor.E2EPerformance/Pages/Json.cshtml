@@ -1,4 +1,5 @@
 @page "/json"
+@inject IJSRuntime JSRuntime
 
 <h2>JSON performance</h2>
 
@@ -37,7 +38,7 @@
 
     protected override void OnAfterRender()
     {
-        BenchmarkEvent.Send("Finished JSON processing");
+        BenchmarkEvent.Send(JSRuntime, "Finished JSON processing");
     }
 
     string serializedValue;

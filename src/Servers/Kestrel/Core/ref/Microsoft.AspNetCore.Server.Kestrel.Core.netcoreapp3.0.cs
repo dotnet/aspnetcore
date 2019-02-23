@@ -399,11 +399,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             public DateHeaderValues() { }
         }
     }
+    public partial class Http1ChunkedEncodingMessageBody : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.Http1MessageBody
+    {
+        public Http1ChunkedEncodingMessageBody(bool keepAlive, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.Http1Connection context) : base (default(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.Http1Connection)) { }
+        public override void AdvanceTo(System.SequencePosition consumed) { }
+        public override void AdvanceTo(System.SequencePosition consumed, System.SequencePosition examined) { }
+        public override void CancelPendingRead() { }
+        public override void Complete(System.Exception exception) { }
+        protected void Copy(System.Buffers.ReadOnlySequence<byte> readableBuffer, System.IO.Pipelines.PipeWriter writableBuffer) { }
+        protected override void OnReadStarted() { }
+        protected override System.Threading.Tasks.Task OnStopAsync() { throw null; }
+        public override void OnWriterCompleted(System.Action<System.Exception, object> callback, object state) { }
+        protected bool Read(System.Buffers.ReadOnlySequence<byte> readableBuffer, System.IO.Pipelines.PipeWriter writableBuffer, out System.SequencePosition consumed, out System.SequencePosition examined) { throw null; }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public override System.Threading.Tasks.ValueTask<System.IO.Pipelines.ReadResult> ReadAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
+        public override bool TryRead(out System.IO.Pipelines.ReadResult readResult) { throw null; }
+    }
     public partial class Http1Connection : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpProtocol, Microsoft.AspNetCore.Server.Kestrel.Core.Features.IHttpMinRequestBodyDataRateFeature, Microsoft.AspNetCore.Server.Kestrel.Core.Features.IHttpMinResponseDataRateFeature, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.IRequestProcessor
     {
         protected readonly long _keepAliveTicks;
         public Http1Connection(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.HttpConnectionContext context) : base (default(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.HttpConnectionContext)) { }
         public System.IO.Pipelines.PipeReader Input { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Buffers.MemoryPool<byte> MemoryPool { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         Microsoft.AspNetCore.Server.Kestrel.Core.MinDataRate Microsoft.AspNetCore.Server.Kestrel.Core.Features.IHttpMinRequestBodyDataRateFeature.MinDataRate { get { throw null; } set { } }
         Microsoft.AspNetCore.Server.Kestrel.Core.MinDataRate Microsoft.AspNetCore.Server.Kestrel.Core.Features.IHttpMinResponseDataRateFeature.MinDataRate { get { throw null; } set { } }
         public Microsoft.AspNetCore.Server.Kestrel.Core.MinDataRate MinRequestBodyDataRate { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
@@ -430,15 +447,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public bool TakeStartLine(System.Buffers.ReadOnlySequence<byte> buffer, out System.SequencePosition consumed, out System.SequencePosition examined) { throw null; }
         protected override bool TryParseRequest(System.IO.Pipelines.ReadResult result, out bool endConnection) { throw null; }
     }
+    public partial class Http1ContentLengthMessageBody : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.Http1MessageBody
+    {
+        public Http1ContentLengthMessageBody(bool keepAlive, long contentLength, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.Http1Connection context) : base (default(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.Http1Connection)) { }
+        public override void AdvanceTo(System.SequencePosition consumed) { }
+        public override void AdvanceTo(System.SequencePosition consumed, System.SequencePosition examined) { }
+        public override void CancelPendingRead() { }
+        public override void Complete(System.Exception exception) { }
+        protected override void OnReadStarting() { }
+        protected override System.Threading.Tasks.Task OnStopAsync() { throw null; }
+        public override void OnWriterCompleted(System.Action<System.Exception, object> callback, object state) { }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public override System.Threading.Tasks.ValueTask<System.IO.Pipelines.ReadResult> ReadAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
+        public override bool TryRead(out System.IO.Pipelines.ReadResult readResult) { throw null; }
+    }
     public abstract partial class Http1MessageBody : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.MessageBody
     {
+        protected readonly Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.Http1Connection _context;
         protected Http1MessageBody(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.Http1Connection context) : base (default(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpProtocol), default(Microsoft.AspNetCore.Server.Kestrel.Core.MinDataRate)) { }
-        protected void Copy(System.Buffers.ReadOnlySequence<byte> readableBuffer, System.IO.Pipelines.PipeWriter writableBuffer) { }
+        protected void CheckCompletedReadResult(System.IO.Pipelines.ReadResult result) { }
         public static Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.MessageBody For(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersion httpVersion, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpRequestHeaders headers, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.Http1Connection context) { throw null; }
         protected override System.Threading.Tasks.Task OnConsumeAsync() { throw null; }
-        protected override void OnReadStarted() { }
-        protected override System.Threading.Tasks.Task OnStopAsync() { throw null; }
-        protected virtual bool Read(System.Buffers.ReadOnlySequence<byte> readableBuffer, System.IO.Pipelines.PipeWriter writableBuffer, out System.SequencePosition consumed, out System.SequencePosition examined) { throw null; }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        protected System.Threading.Tasks.Task OnConsumeAsyncAwaited() { throw null; }
     }
     public partial class Http1OutputProducer : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpOutputAborter, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpOutputProducer, System.IDisposable
     {
@@ -467,6 +498,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public Http1ParsingHandler(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.Http1Connection connection) { throw null; }
         public void OnHeader(System.Span<byte> name, System.Span<byte> value) { }
         public void OnStartLine(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod method, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersion version, System.Span<byte> target, System.Span<byte> path, System.Span<byte> query, System.Span<byte> customMethod, bool pathEncoded) { }
+    }
+    public partial class Http1UpgradeMessageBody : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.Http1MessageBody
+    {
+        public bool _completed;
+        public Http1UpgradeMessageBody(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.Http1Connection context) : base (default(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.Http1Connection)) { }
+        public override bool IsEmpty { get { throw null; } }
+        public override void AdvanceTo(System.SequencePosition consumed) { }
+        public override void AdvanceTo(System.SequencePosition consumed, System.SequencePosition examined) { }
+        public override void CancelPendingRead() { }
+        public override void Complete(System.Exception exception) { }
+        public override System.Threading.Tasks.Task ConsumeAsync() { throw null; }
+        public override void OnWriterCompleted(System.Action<System.Exception, object> callback, object state) { }
+        public override System.Threading.Tasks.ValueTask<System.IO.Pipelines.ReadResult> ReadAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
+        public override System.Threading.Tasks.Task StopAsync() { throw null; }
+        public override bool TryRead(out System.IO.Pipelines.ReadResult result) { throw null; }
     }
     public abstract partial class HttpHeaders : Microsoft.AspNetCore.Http.IHeaderDictionary, System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues>>, System.Collections.Generic.IDictionary<string, Microsoft.Extensions.Primitives.StringValues>, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues>>, System.Collections.IEnumerable
     {
@@ -538,14 +584,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public bool ParseHeaders(TRequestHandler handler, in System.Buffers.ReadOnlySequence<byte> buffer, out System.SequencePosition consumed, out System.SequencePosition examined, out int consumedBytes) { throw null; }
         public bool ParseRequestLine(TRequestHandler handler, in System.Buffers.ReadOnlySequence<byte> buffer, out System.SequencePosition consumed, out System.SequencePosition examined) { throw null; }
     }
-    public abstract partial class HttpProtocol : Microsoft.AspNetCore.Http.Features.IFeatureCollection, Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature, Microsoft.AspNetCore.Http.Features.IHttpConnectionFeature, Microsoft.AspNetCore.Http.Features.IHttpMaxRequestBodySizeFeature, Microsoft.AspNetCore.Http.Features.IHttpRequestFeature, Microsoft.AspNetCore.Http.Features.IHttpRequestIdentifierFeature, Microsoft.AspNetCore.Http.Features.IHttpRequestLifetimeFeature, Microsoft.AspNetCore.Http.Features.IHttpResponseFeature, Microsoft.AspNetCore.Http.Features.IHttpResponseStartFeature, Microsoft.AspNetCore.Http.Features.IHttpUpgradeFeature, Microsoft.AspNetCore.Http.Features.IResponseBodyPipeFeature, Microsoft.AspNetCore.Http.IDefaultHttpContextContainer, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpResponseControl, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.Type, object>>, System.Collections.IEnumerable
+    public abstract partial class HttpProtocol : Microsoft.AspNetCore.Http.Features.IFeatureCollection, Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature, Microsoft.AspNetCore.Http.Features.IHttpConnectionFeature, Microsoft.AspNetCore.Http.Features.IHttpMaxRequestBodySizeFeature, Microsoft.AspNetCore.Http.Features.IHttpRequestFeature, Microsoft.AspNetCore.Http.Features.IHttpRequestIdentifierFeature, Microsoft.AspNetCore.Http.Features.IHttpRequestLifetimeFeature, Microsoft.AspNetCore.Http.Features.IHttpResponseFeature, Microsoft.AspNetCore.Http.Features.IHttpResponseStartFeature, Microsoft.AspNetCore.Http.Features.IHttpUpgradeFeature, Microsoft.AspNetCore.Http.Features.IRequestBodyPipeFeature, Microsoft.AspNetCore.Http.Features.IResponseBodyPipeFeature, Microsoft.AspNetCore.Http.IDefaultHttpContextContainer, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpResponseControl, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.Type, object>>, System.Collections.IEnumerable
     {
+        protected Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.BodyControl bodyControl;
         protected System.Exception _applicationException;
         protected Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersion _httpVersion;
         protected volatile bool _keepAlive;
         protected string _methodText;
         protected Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.RequestProcessingStatus _requestProcessingStatus;
-        protected Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.Streams _streams;
         public HttpProtocol(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.HttpConnectionContext context) { }
         public bool AllowSynchronousIO { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.Http.Features.IFeatureCollection ConnectionFeatures { get { throw null; } }
@@ -593,6 +639,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         string Microsoft.AspNetCore.Http.Features.IHttpResponseFeature.ReasonPhrase { get { throw null; } set { } }
         int Microsoft.AspNetCore.Http.Features.IHttpResponseFeature.StatusCode { get { throw null; } set { } }
         bool Microsoft.AspNetCore.Http.Features.IHttpUpgradeFeature.IsUpgradableRequest { get { throw null; } }
+        System.IO.Pipelines.PipeReader Microsoft.AspNetCore.Http.Features.IRequestBodyPipeFeature.RequestBodyPipe { get { throw null; } set { } }
         System.IO.Pipelines.PipeWriter Microsoft.AspNetCore.Http.Features.IResponseBodyPipeFeature.ResponseBodyPipe { get { throw null; } set { } }
         Microsoft.AspNetCore.Http.DefaultHttpContext Microsoft.AspNetCore.Http.IDefaultHttpContextContainer.HttpContext { get { throw null; } }
         public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpOutputProducer Output { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]protected set { } }
@@ -605,7 +652,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public int RemotePort { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.Threading.CancellationToken RequestAborted { get { throw null; } set { } }
         public System.IO.Stream RequestBody { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.IO.Pipelines.Pipe RequestBodyPipe { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]protected set { } }
+        public System.IO.Pipelines.PipeReader RequestBodyPipeReader { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.Http.IHeaderDictionary RequestHeaders { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.IO.Stream ResponseBody { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.Http.IHeaderDictionary ResponseHeaders { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
@@ -632,10 +679,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public System.Memory<byte> GetMemory(int sizeHint = 0) { throw null; }
         public System.Span<byte> GetSpan(int sizeHint = 0) { throw null; }
         public void HandleNonBodyResponseWrite() { }
+        public void InitializeBodyControl(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.MessageBody messageBody) { }
         public System.Threading.Tasks.Task InitializeResponseAsync(int firstWriteByteCount) { throw null; }
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)][System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task InitializeResponseAwaited(System.Threading.Tasks.Task startingTask, int firstWriteByteCount) { throw null; }
-        public void InitializeStreams(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.MessageBody messageBody) { }
         TFeature Microsoft.AspNetCore.Http.Features.IFeatureCollection.Get<TFeature>() { throw null; }
         void Microsoft.AspNetCore.Http.Features.IFeatureCollection.Set<TFeature>(TFeature feature) { }
         void Microsoft.AspNetCore.Http.Features.IHttpRequestLifetimeFeature.Abort() { }
@@ -656,12 +703,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public System.Threading.Tasks.Task ProcessRequestsAsync<TContext>(Microsoft.AspNetCore.Hosting.Server.IHttpApplication<TContext> application) { throw null; }
         public void ProduceContinue() { }
         protected System.Threading.Tasks.Task ProduceEnd() { throw null; }
-        protected void ReportApplicationError(System.Exception ex) { }
+        public void ReportApplicationError(System.Exception ex) { }
         public void Reset() { }
         protected void ResetHttp1Features() { }
         protected void ResetHttp2Features() { }
         public void SetBadRequestState(Microsoft.AspNetCore.Server.Kestrel.Core.BadHttpRequestException ex) { }
-        public void StopStreams() { }
+        public void StopBodies() { }
         System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<System.Type, object>> System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.Type,System.Object>>.GetEnumerator() { throw null; }
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { throw null; }
         public void ThrowRequestTargetRejected(System.Span<byte> target) { }
@@ -745,6 +792,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             public bool MoveNext() { throw null; }
             public void Reset() { }
         }
+    }
+    public partial class HttpRequestPipeReader : System.IO.Pipelines.PipeReader
+    {
+        public HttpRequestPipeReader() { }
+        public void Abort(System.Exception error = null) { }
+        public override void AdvanceTo(System.SequencePosition consumed) { }
+        public override void AdvanceTo(System.SequencePosition consumed, System.SequencePosition examined) { }
+        public override void CancelPendingRead() { }
+        public override void Complete(System.Exception exception = null) { }
+        public override void OnWriterCompleted(System.Action<System.Exception, object> callback, object state) { }
+        public override System.Threading.Tasks.ValueTask<System.IO.Pipelines.ReadResult> ReadAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
+        public void StartAcceptingReads(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.MessageBody body) { }
+        public void StopAcceptingReads() { }
+        public override bool TryRead(out System.IO.Pipelines.ReadResult result) { throw null; }
     }
     public enum HttpRequestTarget
     {
@@ -932,6 +993,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     }
     public abstract partial class MessageBody
     {
+        protected long _alreadyTimedBytes;
+        protected bool _backpressure;
+        protected bool _timingEnabled;
         protected MessageBody(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpProtocol context, Microsoft.AspNetCore.Server.Kestrel.Core.MinDataRate minRequestBodyDataRate) { }
         public virtual bool IsEmpty { get { throw null; } }
         protected Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.IKestrelTrace Log { get { throw null; } }
@@ -940,18 +1004,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public static Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.MessageBody ZeroContentLengthClose { get { throw null; } }
         public static Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.MessageBody ZeroContentLengthKeepAlive { get { throw null; } }
         protected void AddAndCheckConsumedBytes(long consumedBytes) { }
+        public abstract void AdvanceTo(System.SequencePosition consumed);
+        public abstract void AdvanceTo(System.SequencePosition consumed, System.SequencePosition examined);
+        public abstract void CancelPendingRead();
+        public abstract void Complete(System.Exception exception);
         public virtual System.Threading.Tasks.Task ConsumeAsync() { throw null; }
-        [System.Diagnostics.DebuggerStepThroughAttribute]
-        public virtual System.Threading.Tasks.Task CopyToAsync(System.IO.Stream destination, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
         protected virtual System.Threading.Tasks.Task OnConsumeAsync() { throw null; }
         protected virtual void OnDataRead(long bytesRead) { }
         protected virtual void OnReadStarted() { }
         protected virtual void OnReadStarting() { }
         protected virtual System.Threading.Tasks.Task OnStopAsync() { throw null; }
-        [System.Diagnostics.DebuggerStepThroughAttribute]
-        public virtual System.Threading.Tasks.ValueTask<int> ReadAsync(System.Memory<byte> buffer, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
+        public abstract void OnWriterCompleted(System.Action<System.Exception, object> callback, object state);
+        public abstract System.Threading.Tasks.ValueTask<System.IO.Pipelines.ReadResult> ReadAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        protected System.Threading.Tasks.ValueTask<System.IO.Pipelines.ReadResult> StartTimingReadAsync(System.Threading.Tasks.ValueTask<System.IO.Pipelines.ReadResult> readAwaitable, System.Threading.CancellationToken cancellationToken) { throw null; }
         public virtual System.Threading.Tasks.Task StopAsync() { throw null; }
+        protected void StopTimingRead(long bytesRead) { }
         protected void TryProduceContinue() { }
+        public abstract bool TryRead(out System.IO.Pipelines.ReadResult readResult);
+        protected void TryStart() { }
+        protected void TryStop() { }
     }
     public static partial class PathNormalizer
     {
@@ -1023,6 +1094,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         Chunked = 1,
         None = 0,
         Other = 2,
+    }
+    public partial class ZeroContentLengthMessageBody : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.MessageBody
+    {
+        public ZeroContentLengthMessageBody(bool keepAlive) : base (default(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpProtocol), default(Microsoft.AspNetCore.Server.Kestrel.Core.MinDataRate)) { }
+        public override bool IsEmpty { get { throw null; } }
+        public override void AdvanceTo(System.SequencePosition consumed) { }
+        public override void AdvanceTo(System.SequencePosition consumed, System.SequencePosition examined) { }
+        public override void CancelPendingRead() { }
+        public override void Complete(System.Exception ex) { }
+        public override System.Threading.Tasks.Task ConsumeAsync() { throw null; }
+        public override void OnWriterCompleted(System.Action<System.Exception, object> callback, object state) { }
+        public override System.Threading.Tasks.ValueTask<System.IO.Pipelines.ReadResult> ReadAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
+        public override System.Threading.Tasks.Task StopAsync() { throw null; }
+        public override bool TryRead(out System.IO.Pipelines.ReadResult result) { throw null; }
     }
 }
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
@@ -1184,10 +1269,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
     public partial class Http2MessageBody : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.MessageBody
     {
         internal Http2MessageBody() : base (default(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpProtocol), default(Microsoft.AspNetCore.Server.Kestrel.Core.MinDataRate)) { }
+        public override void AdvanceTo(System.SequencePosition consumed) { }
+        public override void AdvanceTo(System.SequencePosition consumed, System.SequencePosition examined) { }
+        public override void CancelPendingRead() { }
+        public override void Complete(System.Exception exception) { }
         public static Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.MessageBody For(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2Stream context, Microsoft.AspNetCore.Server.Kestrel.Core.MinDataRate minRequestBodyDataRate) { throw null; }
         protected override void OnDataRead(long bytesRead) { }
         protected override void OnReadStarted() { }
         protected override void OnReadStarting() { }
+        protected override System.Threading.Tasks.Task OnStopAsync() { throw null; }
+        public override void OnWriterCompleted(System.Action<System.Exception, object> callback, object state) { }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public override System.Threading.Tasks.ValueTask<System.IO.Pipelines.ReadResult> ReadAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
+        public override bool TryRead(out System.IO.Pipelines.ReadResult readResult) { throw null; }
     }
     public partial class Http2OutputProducer : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpOutputAborter, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpOutputProducer
     {
@@ -1271,6 +1365,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         Microsoft.AspNetCore.Http.IHeaderDictionary Microsoft.AspNetCore.Http.Features.IHttpResponseTrailersFeature.Trailers { get { throw null; } set { } }
         int Microsoft.AspNetCore.Server.Kestrel.Core.Features.IHttp2StreamIdFeature.StreamId { get { throw null; } }
         public bool ReceivedEmptyRequestBody { get { throw null; } }
+        public System.IO.Pipelines.Pipe RequestBodyPipe { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public bool RequestBodyStarted { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public int StreamId { get { throw null; } }
         public void Abort(System.IO.IOException abortReason) { }
@@ -1467,6 +1562,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 }
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
+    public partial class BodyControl
+    {
+        public BodyControl(Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature bodyControl, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpResponseControl responseControl) { }
+        public void Abort(System.Exception error) { }
+        public (System.IO.Stream request, System.IO.Stream response, System.IO.Pipelines.PipeReader reader, System.IO.Pipelines.PipeWriter writer) Start(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.MessageBody body) { throw null; }
+        public void Stop() { }
+        public System.IO.Stream Upgrade() { throw null; }
+    }
     public partial class ConnectionManager
     {
         public ConnectionManager(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.IKestrelTrace trace, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.ResourceCounter upgradedConnections) { }
@@ -1635,14 +1738,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         public static Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.ResourceCounter Quota(long amount) { throw null; }
         public abstract void ReleaseOne();
         public abstract bool TryLockOne();
-    }
-    public partial class Streams
-    {
-        public Streams(Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature bodyControl, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpResponsePipeWriter writer) { }
-        public void Abort(System.Exception error) { }
-        public (System.IO.Stream request, System.IO.Stream response) Start(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.MessageBody body) { throw null; }
-        public void Stop() { }
-        public System.IO.Stream Upgrade() { throw null; }
     }
     public partial class ThrowingWasUpgradedWriteOnlyStream : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.WriteOnlyStream
     {

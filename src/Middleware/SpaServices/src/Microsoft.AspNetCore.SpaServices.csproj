@@ -20,8 +20,15 @@
     <Reference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" />
   </ItemGroup>
 
-  <Target Name="PrepublishScript" BeforeTargets="PrepareForPublish" Condition=" '$(IsCrossTargetingBuild)' != 'true' ">
-    <Exec Command="npm install" />
+  <!-- Version of this SDK is set in global.json -->
+  <Sdk Name="Yarn.MSBuild" />
+
+  <Target Name="YarnInstall">
+    <Message Text="Running yarn install on $(MSBuildProjectFile)" Importance="High" />
+    <Yarn Command="install" />
+  </Target>
+
+  <Target Name="PrepublishScript" DependsOnTargets="YarnInstall" BeforeTargets="PrepareForPublish" Condition=" '$(IsCrossTargetingBuild)' != 'true' ">
     <Exec Command="node node_modules/webpack/bin/webpack.js" />
   </Target>
 

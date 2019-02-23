@@ -114,10 +114,10 @@
     <MicrosoftEntityFrameworkCoreToolsPackageVersion>3.0.0-preview.19080.1</MicrosoftEntityFrameworkCoreToolsPackageVersion>
     <MicrosoftEntityFrameworkCorePackageVersion>3.0.0-preview.19080.1</MicrosoftEntityFrameworkCorePackageVersion>
     <!-- Packages from aspnet/AspNetCore-Tooling -->
-    <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>3.0.0-preview3.19119.5</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
-    <MicrosoftAspNetCoreRazorLanguagePackageVersion>3.0.0-preview3.19119.5</MicrosoftAspNetCoreRazorLanguagePackageVersion>
-    <MicrosoftCodeAnalysisRazorPackageVersion>3.0.0-preview3.19119.5</MicrosoftCodeAnalysisRazorPackageVersion>
-    <MicrosoftNETSdkRazorPackageVersion>3.0.0-preview3.19119.5</MicrosoftNETSdkRazorPackageVersion>
+    <MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>3.0.0-preview4.19121.3</MicrosoftAspNetCoreMvcRazorExtensionsPackageVersion>
+    <MicrosoftAspNetCoreRazorLanguagePackageVersion>3.0.0-preview4.19121.3</MicrosoftAspNetCoreRazorLanguagePackageVersion>
+    <MicrosoftCodeAnalysisRazorPackageVersion>3.0.0-preview4.19121.3</MicrosoftCodeAnalysisRazorPackageVersion>
+    <MicrosoftNETSdkRazorPackageVersion>3.0.0-preview4.19121.3</MicrosoftNETSdkRazorPackageVersion>
   </PropertyGroup>
   <!--
 
@@ -174,10 +174,13 @@
     <BenchmarkDotNetPackageVersion>0.10.13</BenchmarkDotNetPackageVersion>
     <CastleCorePackageVersion>4.2.1</CastleCorePackageVersion>
     <FSharpCorePackageVersion>4.2.1</FSharpCorePackageVersion>
+    <GoogleProtobufPackageVersion>3.6.1</GoogleProtobufPackageVersion>
+    <GrpcAspNetCoreServerPackageVersion>0.1.19-pre1</GrpcAspNetCoreServerPackageVersion>
+    <GrpcCorePackageVersion>1.19.0-pre1</GrpcCorePackageVersion>
+    <GrpcToolsPackageVersion>1.19.0-pre1</GrpcToolsPackageVersion>
     <IdentityServer4AspNetIdentityPackageVersion>2.3.0</IdentityServer4AspNetIdentityPackageVersion>
     <IdentityServer4EntityFrameworkPackageVersion>2.3.0</IdentityServer4EntityFrameworkPackageVersion>
     <IdentityServer4PackageVersion>2.3.0</IdentityServer4PackageVersion>
-    <GoogleProtobufPackageVersion>3.1.0</GoogleProtobufPackageVersion>
     <MessagePackPackageVersion>1.7.3.4</MessagePackPackageVersion>
     <MoqPackageVersion>4.10.0</MoqPackageVersion>
     <MonoCecilPackageVersion>0.10.1</MonoCecilPackageVersion>
