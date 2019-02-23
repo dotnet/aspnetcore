@@ -104,6 +104,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
             }
         }
 
+        // used to ensure each test uses a unique in-memory database
         private static int _testDbCounter;
 
         private static IServiceProvider CreateServices(
