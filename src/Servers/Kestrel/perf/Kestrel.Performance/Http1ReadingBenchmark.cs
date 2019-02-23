@@ -18,7 +18,7 @@ using Microsoft.AspNetCore.Testing;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
-    public class Http1WritingBenchmark
+    public class Http1ReadingBenchmark
     {
         // Standard completed task
         private static readonly Func<object, Task> _syncTaskFunc = (obj) => Task.CompletedTask;
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         private DuplexPipe.DuplexPipePair _pair;
         private MemoryPool<byte> _memoryPool;
 
-        private readonly byte[] _writeData = Encoding.ASCII.GetBytes("Hello, World!");
+        private readonly byte[] _readData = Encoding.ASCII.GetBytes(new string('a', 100));
 
         [GlobalSetup]
         public void GlobalSetup()
@@ -42,8 +42,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         [Params(true, false)]
         public bool WithHeaders { get; set; }
 
-        [Params(true, false)]
-        public bool Chunked { get; set; }
+        //[Params(true, false)]
+        //public bool Chunked { get; set; }
 
         [Params(Startup.None, Startup.Sync, Startup.Async)]
         public Startup OnStarting { get; set; }
@@ -52,14 +52,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         public void Setup()
         {
             _http1Connection.Reset();
-            if (Chunked)
-            {
-                _http1Connection.RequestHeaders.Add("Transfer-Encoding", "chunked");
-            }
-            else
-            {
-                _http1Connection.RequestHeaders.ContentLength = _writeData.Length;
-            }
+
+            _http1Connection.RequestHeaders.ContentLength = _readData.Length;
 
             if (!WithHeaders)
             {
@@ -88,11 +82,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         }
 
         [Benchmark]
-        public Task WriteAsync()
+        public Task ReadAsync()
         {
             ResetState();
 
-            return _http1Connection.ResponseBody.WriteAsync(_writeData, 0, _writeData.Length, default(CancellationToken));
+            return _http1Connection.ResponseBody.ReadAsync(new byte[100], default(CancellationToken)).AsTask();
         }
 
         private TestHttp1Connection MakeHttp1Connection()
@@ -119,7 +113,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             });
 
             http1Connection.Reset();
-            http1Connection.InitializeBodyControl(MessageBody.ZeroContentLengthKeepAlive);
+            http1Connection.InitializeBodyControl(new Http1ContentLengthMessageBody(keepAlive: true, 100, http1Connection));
             serviceContext.DateHeaderValueManager.OnHeartbeat(DateTimeOffset.UtcNow);
 
             return http1Connection;

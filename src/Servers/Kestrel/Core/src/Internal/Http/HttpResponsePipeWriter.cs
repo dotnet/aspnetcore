@@ -34,6 +34,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public override void Complete(Exception exception = null)
         {
+            ValidateState();
             _pipeControl.Complete(exception);
         }
 
@@ -57,6 +58,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public override void OnReaderCompleted(Action<Exception, object> callback, object state)
         {
+            ValidateState();
             throw new NotSupportedException();
         }
 

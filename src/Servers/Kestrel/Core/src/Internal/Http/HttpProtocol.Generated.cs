@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private static readonly Type IHttpRequestFeatureType = typeof(IHttpRequestFeature);
         private static readonly Type IHttpResponseFeatureType = typeof(IHttpResponseFeature);
         private static readonly Type IResponseBodyPipeFeatureType = typeof(IResponseBodyPipeFeature);
+        private static readonly Type IRequestBodyPipeFeatureType = typeof(IRequestBodyPipeFeature);
         private static readonly Type IHttpRequestIdentifierFeatureType = typeof(IHttpRequestIdentifierFeature);
         private static readonly Type IServiceProvidersFeatureType = typeof(IServiceProvidersFeature);
         private static readonly Type IHttpRequestLifetimeFeatureType = typeof(IHttpRequestLifetimeFeature);
@@ -41,6 +42,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private object _currentIHttpRequestFeature;
         private object _currentIHttpResponseFeature;
         private object _currentIResponseBodyPipeFeature;
+        private object _currentIRequestBodyPipeFeature;
         private object _currentIHttpRequestIdentifierFeature;
         private object _currentIServiceProvidersFeature;
         private object _currentIHttpRequestLifetimeFeature;
@@ -72,6 +74,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _currentIHttpRequestFeature = this;
             _currentIHttpResponseFeature = this;
             _currentIResponseBodyPipeFeature = this;
+            _currentIRequestBodyPipeFeature = this;
             _currentIHttpUpgradeFeature = this;
             _currentIHttpRequestIdentifierFeature = this;
             _currentIHttpRequestLifetimeFeature = this;
@@ -159,6 +162,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 else if (key == IResponseBodyPipeFeatureType)
                 {
                     feature = _currentIResponseBodyPipeFeature;
+                }
+                else if (key == IRequestBodyPipeFeatureType)
+                {
+                    feature = _currentIRequestBodyPipeFeature;
                 }
                 else if (key == IHttpRequestIdentifierFeatureType)
                 {
@@ -268,6 +275,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     _currentIResponseBodyPipeFeature = value;
                 }
+                else if (key == IRequestBodyPipeFeatureType)
+                {
+                    _currentIRequestBodyPipeFeature = value;
+                }
                 else if (key == IHttpRequestIdentifierFeatureType)
                 {
                     _currentIHttpRequestIdentifierFeature = value;
@@ -373,6 +384,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             else if (typeof(TFeature) == typeof(IResponseBodyPipeFeature))
             {
                 feature = (TFeature)_currentIResponseBodyPipeFeature;
+            }
+            else if (typeof(TFeature) == typeof(IRequestBodyPipeFeature))
+            {
+                feature = (TFeature)_currentIRequestBodyPipeFeature;
             }
             else if (typeof(TFeature) == typeof(IHttpRequestIdentifierFeature))
             {
@@ -486,6 +501,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 _currentIResponseBodyPipeFeature = feature;
             }
+            else if (typeof(TFeature) == typeof(IRequestBodyPipeFeature))
+            {
+                _currentIRequestBodyPipeFeature = feature;
+            }
             else if (typeof(TFeature) == typeof(IHttpRequestIdentifierFeature))
             {
                 _currentIHttpRequestIdentifierFeature = feature;
@@ -589,6 +608,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (_currentIResponseBodyPipeFeature != null)
             {
                 yield return new KeyValuePair<Type, object>(IResponseBodyPipeFeatureType, _currentIResponseBodyPipeFeature);
+            }
+            if (_currentIRequestBodyPipeFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(IRequestBodyPipeFeatureType, _currentIRequestBodyPipeFeature);
             }
             if (_currentIHttpRequestIdentifierFeature != null)
             {
