@@ -27,6 +27,12 @@ Copyright (c) .NET Foundation. All rights reserved.
       the runtime/toolset packages. Introduced in 2.1
     -->
     <ProjectCapability Include="DotNetCoreRazorConfiguration" Condition="'$(_TargetingNETCoreApp30OrLater)'=='true'"/>
+
+
+    <!--
+      Activates the set of nesting behaviors we want from solution explorer.
+    -->
+    <ProjectCapability Include="WebNestingDefaults" />
   </ItemGroup>
 
   <!-- 
