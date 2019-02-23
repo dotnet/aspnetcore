@@ -283,13 +283,6 @@ namespace CodeGenerator
                 ExistenceCheck = responseHeadersExistence.Contains(header),
                 PrimaryHeader = responsePrimaryHeaders.Contains(header)
             })
-            .Concat(new[] { new KnownHeader
-            {
-                Name = "Content-Length",
-                Index = 63,
-                EnhancedSetter = enhancedHeaders.Contains("Content-Length"),
-                PrimaryHeader = responsePrimaryHeaders.Contains("Content-Length")
-            }})
             .ToArray();
 
             // 63 for responseHeaders as it steals one bit for Content-Length in CopyTo(ref MemoryPoolIterator output)
@@ -666,8 +659,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {{{Each(loop.Headers.Where(header => header.Identifier != "ContentLength"), header => $@"
                     case {header.Index}:
                         goto Header{header.Identifier};")}
-                    case {loop.Headers.Count() - 1}:
-                        goto HeaderContentLength;
+                    {(!loop.ClassName.Contains("Trailers") ? $@"case {loop.Headers.Count() - 1}:
+                        goto HeaderContentLength;" : "")}
                     default:
                         goto ExtraHeaders;
                 }}
@@ -679,13 +672,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         _next = {header.Index + 1};
                         return true;
                     }}")}
-                HeaderContentLength: // case {loop.Headers.Count() - 1}
+                {(!loop.ClassName.Contains("Trailers") ? $@"HeaderContentLength: // case {loop.Headers.Count() - 1}
                     if (_collection._contentLength.HasValue)
                     {{
                         _current = new KeyValuePair<string, StringValues>(""Content-Length"", HeaderUtilities.FormatNonNegativeInt64(_collection._contentLength.Value));
                         _next = {loop.Headers.Count()};
                         return true;
-                    }}
+                    }}" : "")}
                 ExtraHeaders:
                     if (!_hasUnknown || !_unknownEnumerator.MoveNext())
                     {{

@@ -58,6 +58,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return parsed;
         }
 
+        private static void ThrowInvalidContentLengthException(string value)
+        {
+            throw new InvalidOperationException(CoreStrings.FormatInvalidContentLength_InvalidNumber(value));
+        }
+
         [MethodImpl(MethodImplOptions.NoInlining)]
         private void SetValueUnknown(string key, in StringValues value)
         {

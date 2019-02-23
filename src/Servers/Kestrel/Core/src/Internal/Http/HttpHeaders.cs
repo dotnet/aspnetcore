@@ -456,11 +456,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return transferEncodingOptions;
         }
 
-        protected static void ThrowInvalidContentLengthException(string value)
-        {
-            throw new InvalidOperationException(CoreStrings.FormatInvalidContentLength_InvalidNumber(value));
-        }
-
         private static void ThrowInvalidContentLengthException(long value)
         {
             throw new ArgumentOutOfRangeException(CoreStrings.FormatInvalidContentLength_InvalidNumber(value));
