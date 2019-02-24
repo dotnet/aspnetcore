@@ -382,23 +382,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             Assert.Equal("MyFeature/{name}", descriptor.AttributeRouteInfo.Template);
         }
 
-        private static PageRouteModel CreateModel()
-        {
-            return new PageRouteModel("/Home.cshtml", "/Home")
-            {
-                Selectors =
-                {
-                    new SelectorModel
-                    {
-                        AttributeRouteModel = new AttributeRouteModel
-                        {
-                            Template = "Home",
-                        }
-                    }
-                }
-            };
-        }
-
         private static IOptions<TOptions> GetAccessor<TOptions>(TOptions options = null)
             where TOptions : class, new()
         {
