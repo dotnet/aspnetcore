@@ -7,7 +7,6 @@
     <RootNamespace>Microsoft.AspNetCore.SignalR</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <IsShippingPackage>true</IsShippingPackage>
-    <NoWarn>$(NoWarn);3021</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

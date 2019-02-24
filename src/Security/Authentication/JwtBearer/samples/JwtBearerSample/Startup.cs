@@ -93,6 +93,7 @@ namespace JwtBearerSample
                     {
                         response.ContentType = "application/json";
                         response.Headers[HeaderNames.CacheControl] = "no-cache";
+                        await response.StartAsync();
                         Serialize(Todos, response.BodyPipe);
                         await response.BodyPipe.FlushAsync();
                     }

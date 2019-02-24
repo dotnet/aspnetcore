@@ -470,7 +470,7 @@ TEST(invoke, invoke_returns_value_returned_from_the_server)
     ASSERT_EQ(_XPLATSTR("\"abc\""), result.serialize());
 }
 
-TEST(invoke, invoke_propagates_hub_errors_from_server_as_hub_exceptions)
+TEST(invoke, invoke_propagates_errors_from_server_as_hub_exceptions)
 {
     auto callback_registered_event = std::make_shared<event>();
 
@@ -562,7 +562,7 @@ TEST(receive, logs_if_callback_for_given_id_not_found)
         std::string responses[]
         {
             "{ }\x1e",
-            "{ \"type\": 3, \"invocationId\": \"0\" }\x1e"
+            "{ \"type\": 3, \"invocationId\": \"0\" }\x1e",
             "{}"
         };
 
@@ -596,53 +596,7 @@ TEST(receive, logs_if_callback_for_given_id_not_found)
     ASSERT_EQ(_XPLATSTR("[info        ] no callback found for id: 0\n"), entry) << dump_vector(log_entries);
 }
 
-// TODO Flaky until hub_connection.start waits for handshake response
-TEST(invoke, DISABLED_invoke_propagates_errors_from_server_as_exceptions)
-{
-   auto callback_registered_event = std::make_shared<event>();
-
-   int call_number = -1;
-   auto websocket_client = create_test_websocket_client(
-       /* receive function */ [call_number, callback_registered_event]()
-       mutable {
-       std::string responses[]
-       {
-           "{ }\x1e",
-           "{ \"type\": 3, \"invocationId\": \"0\", \"error\": \"Ooops\" }\x1e"
-           "{}"
-       };
-
-       call_number = std::min(call_number + 1, 2);
-
-       if (call_number > 0)
-       {
-           callback_registered_event->wait();
-       }
-
-       return pplx::task_from_result(responses[call_number]);
-   });
-
-   auto hub_connection = create_hub_connection(websocket_client);
-   try
-   {
-       hub_connection->start()
-           .then([hub_connection, callback_registered_event]()
-       {
-           auto t = hub_connection->invoke(_XPLATSTR("method"), json::value::array());
-           callback_registered_event->set();
-           return t;
-       }).get();
-
-       ASSERT_TRUE(false); // exception expected but not thrown
-   }
-   catch (const std::runtime_error& e)
-   {
-       ASSERT_STREQ("\"Ooops\"", e.what());
-   }
-}
-
-// TODO Flaky until hub_connection.start waits for handshake response
-TEST(invoke_void, DISABLED_invoke_creates_runtime_error)
+TEST(invoke_void, invoke_creates_runtime_error)
 {
    auto callback_registered_event = std::make_shared<event>();
 
@@ -679,10 +633,10 @@ TEST(invoke_void, DISABLED_invoke_creates_runtime_error)
 
        ASSERT_TRUE(false); // exception expected but not thrown
    }
-   catch (const signalr_exception& e)
+   catch (const hub_exception & e)
    {
        ASSERT_STREQ("\"Ooops\"", e.what());
-       ASSERT_TRUE(dynamic_cast<const hub_exception *>(&e) == nullptr);
+       ASSERT_FALSE(callback_registered_event->wait(0));
    }
 }
 
