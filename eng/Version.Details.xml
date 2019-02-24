@@ -281,81 +281,81 @@
       <Uri>https://github.com/aspnet/Extensions</Uri>
       <Sha>321f30556d63ec8af6eb0bc43d534b6b2e5458a0</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Bcl.Json.Sources" Version="4.6.0-preview.19109.6">
+    <Dependency Name="Microsoft.Bcl.Json.Sources" Version="4.6.0-preview4.19123.2">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>0abec4390b30fdda97dc496594f9b1f9c9b20e17</Sha>
+      <Sha>327def063eb5eddb723edcee84815d9495b4021c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CSharp" Version="4.6.0-preview.19109.6">
+    <Dependency Name="Microsoft.CSharp" Version="4.6.0-preview4.19123.2">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>0abec4390b30fdda97dc496594f9b1f9c9b20e17</Sha>
+      <Sha>327def063eb5eddb723edcee84815d9495b4021c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Win32.Registry" Version="4.6.0-preview.19109.6">
+    <Dependency Name="Microsoft.Win32.Registry" Version="4.6.0-preview4.19123.2">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>0abec4390b30fdda97dc496594f9b1f9c9b20e17</Sha>
+      <Sha>327def063eb5eddb723edcee84815d9495b4021c</Sha>
     </Dependency>
-    <Dependency Name="System.ComponentModel.Annotations" Version="4.6.0-preview.19109.6">
+    <Dependency Name="System.ComponentModel.Annotations" Version="4.6.0-preview4.19123.2">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>0abec4390b30fdda97dc496594f9b1f9c9b20e17</Sha>
+      <Sha>327def063eb5eddb723edcee84815d9495b4021c</Sha>
     </Dependency>
-    <Dependency Name="System.Data.SqlClient" Version="4.7.0-preview.19109.6">
+    <Dependency Name="System.Data.SqlClient" Version="4.7.0-preview4.19123.2">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>0abec4390b30fdda97dc496594f9b1f9c9b20e17</Sha>
+      <Sha>327def063eb5eddb723edcee84815d9495b4021c</Sha>
     </Dependency>
-    <Dependency Name="System.Diagnostics.EventLog" Version="4.6.0-preview.19109.6">
+    <Dependency Name="System.Diagnostics.EventLog" Version="4.6.0-preview4.19123.2">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>0abec4390b30fdda97dc496594f9b1f9c9b20e17</Sha>
+      <Sha>327def063eb5eddb723edcee84815d9495b4021c</Sha>
     </Dependency>
-    <Dependency Name="System.IO.Pipelines" Version="4.6.0-preview.19109.6">
+    <Dependency Name="System.IO.Pipelines" Version="4.6.0-preview4.19123.2">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>0abec4390b30fdda97dc496594f9b1f9c9b20e17</Sha>
+      <Sha>327def063eb5eddb723edcee84815d9495b4021c</Sha>
     </Dependency>
-    <Dependency Name="System.Net.Http.WinHttpHandler" Version="4.6.0-preview.19109.6">
+    <Dependency Name="System.Net.Http.WinHttpHandler" Version="4.6.0-preview4.19123.2">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>0abec4390b30fdda97dc496594f9b1f9c9b20e17</Sha>
+      <Sha>327def063eb5eddb723edcee84815d9495b4021c</Sha>
     </Dependency>
-    <Dependency Name="System.Net.WebSockets.WebSocketProtocol" Version="4.6.0-preview.19109.6">
+    <Dependency Name="System.Net.WebSockets.WebSocketProtocol" Version="4.6.0-preview4.19123.2">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>0abec4390b30fdda97dc496594f9b1f9c9b20e17</Sha>
+      <Sha>327def063eb5eddb723edcee84815d9495b4021c</Sha>
     </Dependency>
-    <Dependency Name="System.Reflection.Metadata" Version="1.7.0-preview.19109.6">
+    <Dependency Name="System.Reflection.Metadata" Version="1.7.0-preview4.19123.2">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>0abec4390b30fdda97dc496594f9b1f9c9b20e17</Sha>
+      <Sha>327def063eb5eddb723edcee84815d9495b4021c</Sha>
     </Dependency>
-    <Dependency Name="System.Runtime.CompilerServices.Unsafe" Version="4.6.0-preview.19109.6">
+    <Dependency Name="System.Runtime.CompilerServices.Unsafe" Version="4.6.0-preview4.19123.2">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>0abec4390b30fdda97dc496594f9b1f9c9b20e17</Sha>
+      <Sha>327def063eb5eddb723edcee84815d9495b4021c</Sha>
     </Dependency>
-    <Dependency Name="System.Security.Cryptography.Cng" Version="4.6.0-preview.19109.6">
+    <Dependency Name="System.Security.Cryptography.Cng" Version="4.6.0-preview4.19123.2">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>0abec4390b30fdda97dc496594f9b1f9c9b20e17</Sha>
+      <Sha>327def063eb5eddb723edcee84815d9495b4021c</Sha>
     </Dependency>
-    <Dependency Name="System.Security.Cryptography.Pkcs" Version="4.6.0-preview.19109.6">
+    <Dependency Name="System.Security.Cryptography.Pkcs" Version="4.6.0-preview4.19123.2">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>0abec4390b30fdda97dc496594f9b1f9c9b20e17</Sha>
+      <Sha>327def063eb5eddb723edcee84815d9495b4021c</Sha>
     </Dependency>
-    <Dependency Name="System.Security.Cryptography.Xml" Version="4.6.0-preview.19109.6">
+    <Dependency Name="System.Security.Cryptography.Xml" Version="4.6.0-preview4.19123.2">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>0abec4390b30fdda97dc496594f9b1f9c9b20e17</Sha>
+      <Sha>327def063eb5eddb723edcee84815d9495b4021c</Sha>
     </Dependency>
-    <Dependency Name="System.Security.Permissions" Version="4.6.0-preview.19109.6">
+    <Dependency Name="System.Security.Permissions" Version="4.6.0-preview4.19123.2">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>0abec4390b30fdda97dc496594f9b1f9c9b20e17</Sha>
+      <Sha>327def063eb5eddb723edcee84815d9495b4021c</Sha>
     </Dependency>
-    <Dependency Name="System.Security.Principal.Windows" Version="4.6.0-preview.19109.6">
+    <Dependency Name="System.Security.Principal.Windows" Version="4.6.0-preview4.19123.2">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>0abec4390b30fdda97dc496594f9b1f9c9b20e17</Sha>
+      <Sha>327def063eb5eddb723edcee84815d9495b4021c</Sha>
     </Dependency>
-    <Dependency Name="System.ServiceProcess.ServiceController" Version="4.6.0-preview.19109.6">
+    <Dependency Name="System.ServiceProcess.ServiceController" Version="4.6.0-preview4.19123.2">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>0abec4390b30fdda97dc496594f9b1f9c9b20e17</Sha>
+      <Sha>327def063eb5eddb723edcee84815d9495b4021c</Sha>
     </Dependency>
-    <Dependency Name="System.Text.Encodings.Web" Version="4.6.0-preview.19109.6">
+    <Dependency Name="System.Text.Encodings.Web" Version="4.6.0-preview4.19123.2">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>0abec4390b30fdda97dc496594f9b1f9c9b20e17</Sha>
+      <Sha>327def063eb5eddb723edcee84815d9495b4021c</Sha>
     </Dependency>
-    <Dependency Name="System.Threading.Channels" Version="4.6.0-preview.19109.6">
+    <Dependency Name="System.Threading.Channels" Version="4.6.0-preview4.19123.2">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>0abec4390b30fdda97dc496594f9b1f9c9b20e17</Sha>
+      <Sha>327def063eb5eddb723edcee84815d9495b4021c</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.DependencyModel" Version="3.0.0-preview3-27414-8">
       <Uri>https://github.com/dotnet/core-setup</Uri>
@@ -372,9 +372,9 @@
   </ProductDependencies>
   <ToolsetDependencies>
     <!-- Listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
-    <Dependency Name="Microsoft.NETCore.Platforms" Version="3.0.0-preview.19109.6">
+    <Dependency Name="Microsoft.NETCore.Platforms" Version="3.0.0-preview4.19123.2">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>0abec4390b30fdda97dc496594f9b1f9c9b20e17</Sha>
+      <Sha>327def063eb5eddb723edcee84815d9495b4021c</Sha>
     </Dependency>
     <Dependency Name="Internal.AspNetCore.Analyzers" Version="3.0.0-preview3.19115.4">
       <Uri>https://github.com/aspnet/Extensions</Uri>
