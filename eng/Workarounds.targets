@@ -15,6 +15,11 @@
     <BundledNETCorePlatformsPackageVersion>$(MicrosoftNETCorePlatformsPackageVersion)</BundledNETCorePlatformsPackageVersion>
   </PropertyGroup>
 
+  <!-- Workaround https://github.com/dotnet/sdk/issues/2976 -->
+  <ItemGroup>
+    <PackageReference Update="Microsoft.NETCore.Platforms" PrivateAssets="All" />
+  </ItemGroup>
+
   <!-- Workaround https://github.com/aspnet/AspNetCore/issues/7503. This chains GenerateSourceLinkFile before razor component targets run. -->
   <Target Name="_EnsureSourceLinkHappensBeforeRazorComponentGeneration"
           BeforeTargets="PrepareForRazorComponentGenerate"
