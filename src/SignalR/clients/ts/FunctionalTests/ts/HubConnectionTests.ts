@@ -53,9 +53,7 @@ describe("hubConnection", () => {
         describe("using " + protocol.name + " over " + HttpTransportType[transportType] + " transport", async () => {
             it("can invoke server method and receive result", (done) => {
                 const message = "你好，世界！";
-                
                 expect(true).toBe(false);
-
                 const hubConnection = getConnectionBuilder(transportType)
                     .withHubProtocol(protocol)
                     .build();
