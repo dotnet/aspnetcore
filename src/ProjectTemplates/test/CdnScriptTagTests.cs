@@ -6,6 +6,7 @@ using AngleSharp.Dom;
 using AngleSharp.Dom.Html;
 using AngleSharp.Parser.Html;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.Extensions.Logging.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -160,10 +161,11 @@ namespace Templates.Test
 
         private async Task<HttpResponseMessage> GetFromCDN(string src)
         {
+            var logger = NullLogger.Instance;
             return await RetryHelper.RetryRequest(async () => {
                 var request = new HttpRequestMessage(HttpMethod.Get, new Uri(src));
                 return await _httpClient.SendAsync(request);
-            }, null);
+            }, logger);
         }
 
         private Task<string> GetShaIntegrity(ScriptTag scriptTag)
