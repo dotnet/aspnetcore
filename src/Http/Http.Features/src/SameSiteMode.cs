@@ -3,11 +3,16 @@
 
 namespace Microsoft.AspNetCore.Http
 {
-    // RFC Draft: https://tools.ietf.org/html/draft-ietf-httpbis-cookie-same-site-00
-    // This mirrors Microsoft.Net.Http.Headers.SameSiteMode
+    /// <summary>
+    /// Determines whether to send a cookies on "same-site" or "cross-site" requests
+    /// RFC Draft: https://tools.ietf.org/html/draft-ietf-httpbis-cookie-same-site-00
+    /// </summary>
+    /// <remarks>
+    /// This mirrors Microsoft.Net.Http.Headers.SameSiteMode
+    /// </remarks>
     public enum SameSiteMode
     {
-        /// <summary>The cookie will not be sent along with "same-site" requests, with "cross-site" top-level navigations</summary>
+        /// <summary>The cookie will not be sent along with "same-site" requests or with "cross-site" top-level navigations</summary>
         None = 0,
         /// <summary>The cookie will be sent with "same-site" requests, and with "cross-site" top-level navigations</summary>
         Lax,
