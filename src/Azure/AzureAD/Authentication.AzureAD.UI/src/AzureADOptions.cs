@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Authentication.AzureAD.UI
         /// <summary>
         /// Azure Active Directory Authority
         /// </summary>
-        public string Authority { get; set; } = "{Instance}{TenantId}";
+        public string Authority { get; set; } = "{Instance}{TenantId}/";
 
         /// <summary>
         /// Gets or sets the audience for a Web API (This audience needs
