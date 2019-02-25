@@ -267,6 +267,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SpaSer
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SpaServices.Extensions", "SpaServices.Extensions\src\Microsoft.AspNetCore.SpaServices.Extensions.csproj", "{5D5B7E54-9323-498A-8983-E9BDFA3B2D07}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HeaderPropagation", "HeaderPropagation", "{0437D207-864E-429C-92B4-9D08D290188C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Http.HeaderPropagation", "HeaderPropagation\src\Microsoft.AspNetCore.Http.HeaderPropagation.csproj", "{D66BD4A3-DA19-413B-8FC5-4BCCFB03E084}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Http.HeaderPropagation.Tests", "HeaderPropagation\test\Microsoft.AspNetCore.Http.HeaderPropagation.Tests.csproj", "{7E18FA09-5E08-4E41-836F-25C94B60C608}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{8CDBD9C6-96D8-4987-AFCD-D248FBC7F02D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1465,6 +1473,30 @@ Global
 		{5D5B7E54-9323-498A-8983-E9BDFA3B2D07}.Release|x64.Build.0 = Release|Any CPU
 		{5D5B7E54-9323-498A-8983-E9BDFA3B2D07}.Release|x86.ActiveCfg = Release|Any CPU
 		{5D5B7E54-9323-498A-8983-E9BDFA3B2D07}.Release|x86.Build.0 = Release|Any CPU
+		{D66BD4A3-DA19-413B-8FC5-4BCCFB03E084}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D66BD4A3-DA19-413B-8FC5-4BCCFB03E084}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D66BD4A3-DA19-413B-8FC5-4BCCFB03E084}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D66BD4A3-DA19-413B-8FC5-4BCCFB03E084}.Debug|x64.Build.0 = Debug|Any CPU
+		{D66BD4A3-DA19-413B-8FC5-4BCCFB03E084}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D66BD4A3-DA19-413B-8FC5-4BCCFB03E084}.Debug|x86.Build.0 = Debug|Any CPU
+		{D66BD4A3-DA19-413B-8FC5-4BCCFB03E084}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D66BD4A3-DA19-413B-8FC5-4BCCFB03E084}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D66BD4A3-DA19-413B-8FC5-4BCCFB03E084}.Release|x64.ActiveCfg = Release|Any CPU
+		{D66BD4A3-DA19-413B-8FC5-4BCCFB03E084}.Release|x64.Build.0 = Release|Any CPU
+		{D66BD4A3-DA19-413B-8FC5-4BCCFB03E084}.Release|x86.ActiveCfg = Release|Any CPU
+		{D66BD4A3-DA19-413B-8FC5-4BCCFB03E084}.Release|x86.Build.0 = Release|Any CPU
+		{7E18FA09-5E08-4E41-836F-25C94B60C608}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E18FA09-5E08-4E41-836F-25C94B60C608}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E18FA09-5E08-4E41-836F-25C94B60C608}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{7E18FA09-5E08-4E41-836F-25C94B60C608}.Debug|x64.Build.0 = Debug|Any CPU
+		{7E18FA09-5E08-4E41-836F-25C94B60C608}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7E18FA09-5E08-4E41-836F-25C94B60C608}.Debug|x86.Build.0 = Debug|Any CPU
+		{7E18FA09-5E08-4E41-836F-25C94B60C608}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E18FA09-5E08-4E41-836F-25C94B60C608}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E18FA09-5E08-4E41-836F-25C94B60C608}.Release|x64.ActiveCfg = Release|Any CPU
+		{7E18FA09-5E08-4E41-836F-25C94B60C608}.Release|x64.Build.0 = Release|Any CPU
+		{7E18FA09-5E08-4E41-836F-25C94B60C608}.Release|x86.ActiveCfg = Release|Any CPU
+		{7E18FA09-5E08-4E41-836F-25C94B60C608}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1580,6 +1612,9 @@ Global
 		{121DFA13-E965-4C91-A175-19EF20DFD5AC} = {D6FA4ABE-E685-4EDD-8B06-D8777E76B472}
 		{D9D02772-1D53-45C3-B2CC-888F9978958C} = {D6FA4ABE-E685-4EDD-8B06-D8777E76B472}
 		{5D5B7E54-9323-498A-8983-E9BDFA3B2D07} = {D6FA4ABE-E685-4EDD-8B06-D8777E76B472}
+		{D66BD4A3-DA19-413B-8FC5-4BCCFB03E084} = {0437D207-864E-429C-92B4-9D08D290188C}
+		{7E18FA09-5E08-4E41-836F-25C94B60C608} = {8CDBD9C6-96D8-4987-AFCD-D248FBC7F02D}
+		{8CDBD9C6-96D8-4987-AFCD-D248FBC7F02D} = {0437D207-864E-429C-92B4-9D08D290188C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {83786312-A93B-4BB4-AB06-7C6913A59AFA}
