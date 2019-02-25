@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <HelixProjectPlatform Remove="Linux;OSX" />
+    <HelixProjectTargetQueue Include="Windows.10.Amd64.EnterpriseRS3.ASPNET.Open" />
 
     <HelixContent Include="..\..\..\tools\update_schema.ps1" />
     <HelixContent Include="..\..\..\tools\UpdateIISExpressCertificate.ps1" />
