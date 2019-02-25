@@ -24,6 +24,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         private Memory<byte> _andEncoded;
         private string _key;
         private string _value;
+        private bool _endOfPipe;
 
         public FormReader2(PipeReader pipeReader)
             : this(pipeReader, Encoding.UTF8)
@@ -74,6 +75,12 @@ namespace Microsoft.AspNetCore.WebUtilities
         public async Task<KeyValuePair<string, string>?> ReadNextPairAsync(CancellationToken cancellationToken = new CancellationToken())
         {
             StartReadNextPair();
+
+            if (_endOfPipe)
+            {
+                return new KeyValuePair<string, string>(null, null);
+            }
+
             // TODO a bit of cleanup here.
             _key = await FindStringInReadOnlySequenceAsync(_equalEncoded, KeyLengthLimit);
             if (_key == null)
@@ -106,42 +113,57 @@ namespace Microsoft.AspNetCore.WebUtilities
                     continue;
                 }
 
-                if (readResult.IsCompleted && readResult.Buffer.IsEmpty)
-                {
-                    return null;
-                }
+                // Need to cover case where we get end of buffer.
+                // Original form reader had weird logic for handling it.
 
-                var buffer = readResult.Buffer;
-                if (TryFindDelimiter(ref buffer, ref delimiter, limit, out var stringRes))
+                if (TryFindDelimiter(ref readResult, ref delimiter, limit, out var stringRes))
                 {
                     return stringRes;
                 }
             }
         }
 
-        private bool TryFindDelimiter(ref ReadOnlySequence<byte> buffer, ref Memory<byte> delimiter, int limit, out string res)
+        private bool TryFindDelimiter(ref ReadResult readResult, ref Memory<byte> delimiter, int limit, out string res)
         {
             res = null;
-            var sequenceReader = new SequenceReader<byte>(buffer);
 
             // Should always have something in the buffer.
-            Debug.Assert(!sequenceReader.End);
+            ReadOnlySpan<byte> result;
+            SequencePosition position;
+            var sequenceReader = new SequenceReader<byte>(readResult.Buffer);
 
-            if (!sequenceReader.TryReadToAny(out ReadOnlySpan<byte> result, delimiter.Span, advancePastDelimiter: false)
+            if (!sequenceReader.TryReadToAny(out result, delimiter.Span, advancePastDelimiter: false)
                 || !sequenceReader.IsNext(delimiter.Span, advancePast: true))
             {
                 // need more memory no matter what.
-                _pipeReader.AdvanceTo(buffer.Start, buffer.End);
-                return false;
+                if (readResult.IsCompleted)
+                {
+                    // take whatever remains in the buffer and put it into the string.
+                    // TODO there is cleaner logic here
+                    result = sequenceReader.UnreadSpan;
+                    position = readResult.Buffer.End;
+                    _endOfPipe = true;
+                }
+                else
+                {
+                    _pipeReader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
+                    return false;
+                }
+            }
+            else
+            {
+                position = sequenceReader.Position;
             }
 
             res = _encoding.GetString(result);
+
             if (res.Length > limit)
             {
                 throw new InvalidDataException($"Form key or value length limit {limit} exceeded.");
             }
 
-            _pipeReader.AdvanceTo(sequenceReader.Position);
+            // return Uri.UnescapeDataString(result); // TODO: Replace this, it's not completely accurate.
+            _pipeReader.AdvanceTo(position);
 
             return true;
         }

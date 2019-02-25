@@ -225,6 +225,9 @@ namespace Microsoft.AspNetCore.WebUtilities
             // Bleh buffering doesn't do anything rn.
             await body.Writer.WriteAsync(formContent);
 
+            // Complete the writer so the reader will complete after processing all data.
+            // TODO tests will need to call complete at different times. Make that work well.
+            body.Writer.Complete();
             return body.Reader;
         }
     }
