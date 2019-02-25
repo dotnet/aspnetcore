@@ -316,6 +316,27 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             WaitAssert.Empty(emailMessagesAccessor);
         }
 
+        [Fact]
+        public async Task InputComponentsCauseContainerToRerenderOnChange()
+        {
+            var appElement = MountTestComponent<TypicalValidationComponent>();
+            var ticketClassInput = new SelectElement(appElement.FindElement(By.ClassName("ticket-class")).FindElement(By.TagName("select")));
+            var selectedTicketClassDisplay = appElement.FindElement(By.Id("selected-ticket-class"));
+            var select = ticketClassInput.WrappedElement;
+
+            // Shows initial state
+            WaitAssert.Equal("Economy", () => selectedTicketClassDisplay.Text);
+
+            // Refreshes on edit
+            ticketClassInput.SelectByValue("Premium");
+            WaitAssert.Equal("Premium", () => selectedTicketClassDisplay.Text);
+
+            // Leaves previous value unchanged if new entry is unparseable
+            ticketClassInput.SelectByText("(select)");
+            await Task.Delay(500); // Not expecting any UI change, so wait a moment to see if one happens
+            WaitAssert.Equal("Premium", () => selectedTicketClassDisplay.Text);
+        }
+
         private Func<string[]> CreateValidationMessagesAccessor(IWebElement appElement)
         {
             return () => appElement.FindElements(By.ClassName("validation-message"))

@@ -459,7 +459,8 @@ namespace Microsoft.AspNetCore.Components.Forms
                 {
                     childBuilder.OpenComponent<TComponent>(0);
                     childBuilder.AddAttribute(0, "Value", Value);
-                    childBuilder.AddAttribute(1, "ValueChanged", ValueChanged);
+                    childBuilder.AddAttribute(1, "ValueChanged",
+                        EventCallback.Factory.Create(this, ValueChanged));
                     childBuilder.AddAttribute(2, "ValueExpression", ValueExpression);
                     childBuilder.AddAttribute(3, nameof(Id), Id);
                     childBuilder.AddAttribute(4, nameof(Class), Class);
