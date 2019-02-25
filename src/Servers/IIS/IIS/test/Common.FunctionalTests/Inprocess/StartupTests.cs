@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 var installDir = DotNetCommands.GetDotNetInstallDir(runtimeArchitecture);
                 using (new TestRegistryKey(
                     localMachine,
-                    "SOFTWARE\\dotnet\\Setup\\InstalledVersions\\" + runtimeArchitecture + "\\sdk",
+                    "SOFTWARE\\dotnet\\Setup\\InstalledVersions\\" + runtimeArchitecture,
                     "InstallLocation",
                     installDir))
                 {
