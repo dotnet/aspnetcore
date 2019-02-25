@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.using Microsoft.AspNetCore.Authorization;
 
 using System;
@@ -29,7 +29,8 @@ namespace Microsoft.AspNetCore.Authentication.AzureAD.UI
 
             options.ClientId = azureADOptions.ClientId;
             options.ClientSecret = azureADOptions.ClientSecret;
-            options.Authority = new Uri(new Uri(azureADOptions.Instance), azureADOptions.TenantId).ToString();
+            options.Authority = string.Format(azureADOptions.Authority.Replace("{Instance}", "{0}").Replace("{TenantId}", "{1}"),
+                                              azureADOptions.Instance, azureADOptions.TenantId);
             options.CallbackPath = azureADOptions.CallbackPath ?? options.CallbackPath;
             options.SignedOutCallbackPath = azureADOptions.SignedOutCallbackPath ?? options.SignedOutCallbackPath;
             options.SignInScheme = azureADOptions.CookieSchemeName;

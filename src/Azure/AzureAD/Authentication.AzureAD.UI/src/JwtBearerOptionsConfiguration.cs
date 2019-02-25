@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.using Microsoft.AspNetCore.Authorization;
 
 using System;
@@ -30,8 +30,10 @@ namespace Microsoft.AspNetCore.Authentication
                 return;
             }
 
-            options.Audience = azureADOptions.ClientId;
-            options.Authority = new Uri(new Uri(azureADOptions.Instance), azureADOptions.TenantId).ToString();
+            options.Audience = string.Format(azureADOptions.Audience?.Replace("{ClientId}", "{0}"),
+                                             azureADOptions.ClientId);
+            options.Authority = string.Format(azureADOptions.Authority.Replace("{Instance}", "{0}").Replace("{TenantId}", "{1}"),
+                                              azureADOptions.Instance, azureADOptions.TenantId);
         }
 
         public void Configure(JwtBearerOptions options)
