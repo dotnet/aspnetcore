@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Components.Performance
             renderer = new FakeRenderer();
 
             // A simple component for basic tests -- this is similar to what MVC scaffolding generates
-            // for bootstrap3 form fields, but modified to be more Blazorey.
+            // for bootstrap3 form fields, but modified to be more Component-like.
             original = new RenderTreeBuilder(renderer);
             original.OpenElement(0, "div");
             original.AddAttribute(1, "class", "form-group");
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Components.Performance
             modified.AddAttribute(5, "data-unvalidated", false);
             modified.AddContent(6, "Car");
             modified.CloseElement();
-            
+
             modified.OpenElement(7, "input");
             modified.AddAttribute(8, "class", "form-control");
             modified.AddAttribute(9, "type", "text");
@@ -67,12 +67,12 @@ namespace Microsoft.AspNetCore.Components.Performance
             modified.AddAttribute(11, "data-validation-state", "invalid");
             modified.AddAttribute(12, "value", "Lamborghini");
             modified.CloseElement();
-            
+
             modified.OpenElement(13, "span");
             modified.AddAttribute(14, "class", "text-danger field-validation-invalid"); // changed
             modified.AddContent(15, "No, you can't afford that.");
             modified.CloseElement();
-            
+
             modified.CloseElement();
         }
 
