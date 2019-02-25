@@ -1,0 +1,21 @@
+@page "/ticker"
+
+<h1>Ticker</h1>
+<p class="tick-value">@tick</p>
+
+@functions {
+    int tick;
+
+    protected override void OnInit()
+    {
+        Task.Run(() => InvokeAsync(async () =>
+        {
+            while (true)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(1));
+                tick++;
+                StateHasChanged();
+            }
+        }));
+    }
+}

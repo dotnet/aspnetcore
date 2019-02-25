@@ -38,12 +38,12 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
     internal class CircuitRegistry
     {
         private readonly object CircuitRegistryLock = new object();
-        private readonly ComponentsServerOptions _options;
+        private readonly CircuitOptions _options;
         private readonly ILogger _logger;
         private readonly PostEvictionCallbackRegistration _postEvictionCallback;
 
         public CircuitRegistry(
-            IOptions<ComponentsServerOptions> options,
+            IOptions<CircuitOptions> options,
             ILogger<CircuitRegistry> logger)
         {
             _options = options.Value;
@@ -73,6 +73,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         {
             if (!ConnectedCircuits.TryAdd(circuitHost.CircuitId, circuitHost))
             {
+                // This will likely never happen, except perhaps in unit tests, since CircuitIds are unique.
                 throw new ArgumentException($"Circuit with identity {circuitHost.CircuitId} is already registered.");
             }
         }
@@ -153,7 +154,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             await circuitHost.OnConnectionUpAsync(cancellationToken);
 
             // If we acccumulated any renders during the disconnect, fire it off in the background. We don't need to wait for it to complete.
-            _ = circuitHost.Renderer.DispatchBufferedRenderAsync();
+            circuitHost.Renderer.DispatchBufferedRenders();
 
             return circuitHost;
         }

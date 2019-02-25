@@ -1,33 +1,47 @@
 import { CircuitHandler } from './CircuitHandler';
+import { UserSpecifiedDisplay } from './UserSpecifiedDisplay';
+import { DefaultReconnectDisplay } from './DefaultReconnectDisplay';
+import { ReconnectDisplay } from './ReconnectDisplay';
 export class AutoReconnectCircuitHandler implements CircuitHandler {
-  modal: HTMLDivElement;
-  message: Text;
+  static readonly MaxRetries = 5;
+  static readonly RetryInterval = 3000;
+  static readonly DialogId = 'components-reconnect-modal';
+  reconnectDisplay: ReconnectDisplay;
 
-  constructor(private maxRetries: number = 5, private retryInterval: number = 3000) {
-    this.modal = document.createElement('div');
-    this.modal.className = 'modal';
-    this.message = document.createTextNode('');
-    this.modal.appendChild(this.message);
-    document.addEventListener('DOMContentLoaded', () => document.body.appendChild(this.modal));
+  constructor() {
+    this.reconnectDisplay = new DefaultReconnectDisplay(document);
+    document.addEventListener('DOMContentLoaded', () => {
+      const modal = document.getElementById(AutoReconnectCircuitHandler.DialogId);
+      if (modal) {
+        this.reconnectDisplay = new UserSpecifiedDisplay(modal);
+      }
+    });
   }
-  onConnectionUp() {
-    this.modal.style.display = 'none';
+  onConnectionUp()  : void{
+    this.reconnectDisplay.hide();
   }
-  async onConnectionDown() {
-    this.message.textContent = 'Attempting to reconnect to the server...';
 
-    this.modal.style.display = 'block';
-    const delay = () => new Promise((resolve) => setTimeout(resolve, this.retryInterval));
-    for (let i = 0; i < this.maxRetries; i++) {
-      await delay();
+  delay() : Promise<void>{
+    return new Promise((resolve) => setTimeout(resolve, AutoReconnectCircuitHandler.RetryInterval));
+  }
+
+  async onConnectionDown() : Promise<void> {
+    this.reconnectDisplay.show();
+
+    for (let i = 0; i < AutoReconnectCircuitHandler.MaxRetries; i++) {
+      await this.delay();
       try {
-        await window['Blazor'].reconnect();
-        break;
+        const result = await window['Blazor'].reconnect();
+        if (!result) {
+          // If the server responded and refused to reconnect, stop auto-retrying.
+          break;
+        }
+        return;
       } catch (err) {
         console.error(err);
       }
     }
 
-    this.message.textContent = 'Failed to connect to server.';
+    this.reconnectDisplay.failed();
   }
 }

@@ -3,6 +3,7 @@
 
 using System;
 using BasicTestApp;
+using ComponentsApp.App.Pages;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.Components.E2ETest.Tests;
@@ -34,33 +35,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             WaitAssert.Contains(
                 $"{typeof(InvalidOperationException).FullName}: The current thread is not associated with the renderer's synchronization context",
                 () => result.Text);
-        }
-
-        [Fact]
-        public void ReconnectUI()
-        {
-            MountTestComponent<DispatchingComponent>();
-            var selector = By.CssSelector("div.modal");
-
-            var element = Browser.FindElement(selector);
-            Assert.False(element.Displayed);
-
-            var javascript = (IJavaScriptExecutor)Browser;
-            javascript.ExecuteScript(@"
-window.modalDisplayState = [];
-window['Blazor'].circuitHandlers.push({
-    onConnectionUp: () => window.modalDisplayState.push(document.querySelector('div.modal').style.display),
-    onConnectionDown: () => window.modalDisplayState.push(document.querySelector('div.modal').style.display)
-});
-window['Blazor']._internal.forceCloseConnection();");
-
-            new WebDriverWait(Browser, TimeSpan.FromSeconds(10)).Until(
-                driver => (long)javascript.ExecuteScript("return window.modalDisplayState.length") == 2);
-
-            var states = (string)javascript.ExecuteScript("return window.modalDisplayState.join(',')");
-
-            Assert.Equal("block,none", states);
-            Assert.False(element.Displayed);
         }
     }
 }

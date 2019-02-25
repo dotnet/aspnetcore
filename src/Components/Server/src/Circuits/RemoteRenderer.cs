@@ -29,8 +29,6 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
             = new ConcurrentDictionary<long, AutoCancelTaskCompletionSource<object>>();
         private readonly ILogger _logger;
         private long _nextRenderId = 1;
-        private byte[] _disconnectedBatchBytes;
-        private string _circuitId;
 
         /// <summary>
         /// Notifies when a rendering exception occured.
@@ -58,18 +56,13 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
             _logger = logger;
         }
 
-        private string CircuitId
-        {
-            get
-            {
-                if (_circuitId == null)
-                {
-                    _circuitId = CircuitHost.Current.CircuitId;
-                }
-
-                return _circuitId;
-            }
-        }
+        /// <remarks>
+        /// The RemoteRenderer may only render if we know the client is connected.
+        /// If the client disconnects during a render operation or if the underlying connection
+        /// to the client has been severed without the server knowing of it, SignalR will silently
+        /// fail the JS.RenderBatch call.
+        /// </remarks>
+        protected override bool CanRenderBatch => _client.Connected && base.CanRenderBatch;
 
         /// <summary>
         /// Associates the <see cref="IComponent"/> with the <see cref="RemoteRenderer"/>,
@@ -118,7 +111,7 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
         /// <inheritdoc />
         protected override Task UpdateDisplayAsync(in RenderBatch batch)
         {
-            Log.BeginUpdateDisplayAsync(_logger, CircuitId);
+            Log.BeginUpdateDisplayAsync(_logger, _client.ConnectionId);
 
             // Note that we have to capture the data as a byte[] synchronously here, because
             // SignalR's SendAsync can wait an arbitrary duration before serializing the params.
@@ -128,36 +121,6 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
             //       buffer on every render.
             var batchBytes = MessagePackSerializer.Serialize(batch, RenderBatchFormatterResolver.Instance);
 
-            if (_client.Connected)
-            {
-                // At this point, the server thinks that the client is connected and can be safely written to.
-                // If the client disconnects, writes using SignalR will fail silently so we don't need to do anything interesting here.
-                return WriteBatchBytes(batchBytes);
-            }
-            else
-            {
-                Log.SkippingRenderDisconnectedClient(_logger, CircuitId);
-
-                _disconnectedBatchBytes = batchBytes;
-                return Task.CompletedTask;
-            }
-        }
-
-        public virtual Task DispatchBufferedRenderAsync()
-        {
-            var disconnectedBatchBytes = Interlocked.Exchange(ref _disconnectedBatchBytes, null);
-            if (disconnectedBatchBytes != null)
-            {
-                // A render was stashed when the client was disconnected. Write it out first
-                return WriteBatchBytes(disconnectedBatchBytes);
-            }
-
-            return Task.CompletedTask;
-        }
-
-        private Task WriteBatchBytes(byte[] batchBytes)
-        {
-            // Prepare to track the render process with a timeout
             var renderId = Interlocked.Increment(ref _nextRenderId);
 
             var pendingRenderInfo = new AutoCancelTaskCompletionSource<object>(TimeoutMilliseconds);
@@ -192,6 +155,9 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
             });
         }
 
+        public void DispatchBufferedRenders()
+            => ProcessRenderQueue();
+
         public void OnRenderCompleted(long renderId, string errorMessageOrNull)
         {
             if (_pendingRenders.TryGetValue(renderId, out var pendingRenderInfo))
@@ -223,7 +189,7 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
         {
             private static readonly Action<ILogger, string, Exception> _unhandledExceptionRenderingComponent;
             private static readonly Action<ILogger, string, Exception> _beginUpdateDisplayAsync;
-            private static readonly Action<ILogger, string, Exception> _skippingRenderDisconnectedClient;
+            private static readonly Action<ILogger, string, Exception> _bufferingRenderDisconnectedClient;
 
             private static class EventIds
             {
@@ -242,12 +208,12 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
                 _beginUpdateDisplayAsync = LoggerMessage.Define<string>(
                     LogLevel.Trace,
                     EventIds.BeginUpdateDisplayAsync,
-                    "Begin remote rendering of components on circuit {Circuit}.");
+                    "Begin remote rendering of components on client {ConnectionId}.");
 
-                _skippingRenderDisconnectedClient = LoggerMessage.Define<string>(
+                _bufferingRenderDisconnectedClient = LoggerMessage.Define<string>(
                     LogLevel.Trace,
                     EventIds.SkipUpdateDisplayAsync,
-                    "Buffering remote render because the client on circuit {Circuit} is disconnected.");
+                    "Buffering remote render because the client on connection {ConnectionId} is disconnected.");
             }
 
             public static void UnhandledExceptionRenderingComponent(ILogger logger, Exception exception)
@@ -258,19 +224,19 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
                     exception);
             }
 
-            public static void BeginUpdateDisplayAsync(ILogger logger, string circuitId)
+            public static void BeginUpdateDisplayAsync(ILogger logger, string connectionId)
             {
                 _beginUpdateDisplayAsync(
                     logger,
-                    circuitId,
+                    connectionId,
                     null);
             }
 
-            public static void SkippingRenderDisconnectedClient(ILogger logger, string circuitId)
+            public static void BufferingRenderDisconnectedClient(ILogger logger, string connectionId)
             {
-                _skippingRenderDisconnectedClient(
+                _bufferingRenderDisconnectedClient(
                     logger,
-                    circuitId,
+                    connectionId,
                     null);
             }
         }

@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Components.Server
     /// <summary>
     /// Options to configure ASP.NET Core Components.
     /// </summary>
-    public class ComponentsServerOptions
+    public class CircuitOptions
     {
         /// <summary>
         /// Gets or sets a value that determines the maximum number of disconnected circuit state details

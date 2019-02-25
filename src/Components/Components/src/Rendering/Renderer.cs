@@ -18,9 +18,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
     {
         private readonly ComponentFactory _componentFactory;
         private readonly Dictionary<int, ComponentState> _componentStateById = new Dictionary<int, ComponentState>();
-        private readonly RenderBatchBuilder _batchBuilder = new RenderBatchBuilder();
         private readonly Dictionary<int, EventCallback> _eventBindings = new Dictionary<int, EventCallback>();
-        private IDispatcher _dispatcher;
 
         private int _nextComponentId = 0; // TODO: change to 'long' when Mono .NET->JS interop supports it
         private bool _isBatchInProgress;
@@ -34,7 +32,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         {
             add
             {
-                if (!(_dispatcher is RendererSynchronizationContext rendererSynchronizationContext))
+                if (!(Dispatcher is RendererSynchronizationContext rendererSynchronizationContext))
                 {
                     return;
                 }
@@ -42,7 +40,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             }
             remove
             {
-                if (!(_dispatcher is RendererSynchronizationContext rendererSynchronizationContext))
+                if (!(Dispatcher is RendererSynchronizationContext rendererSynchronizationContext))
                 {
                     return;
                 }
@@ -66,8 +64,24 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// <param name="dispatcher">The <see cref="IDispatcher"/> to be for invoking user actions into the <see cref="Renderer"/> context.</param>
         public Renderer(IServiceProvider serviceProvider, IDispatcher dispatcher) : this(serviceProvider)
         {
-            _dispatcher = dispatcher;
+            Dispatcher = dispatcher;
         }
+
+        /// <summary>
+        /// Gets the <see cref="IDispatcher"/>
+        /// </summary>
+        protected IDispatcher Dispatcher { get; }
+
+        internal RenderBatchBuilder RenderBatchBuilder { get; } = new RenderBatchBuilder();
+
+        /// <summary>
+        /// Gets a property that determines if this instance of <see cref="Renderer"/> can render a batch.
+        /// 
+        /// <para>
+        /// Derivied types can use this property to force queuing up renders for a batch.
+        /// </para>
+        /// </summary>
+        protected virtual bool CanRenderBatch { get; } = true;
 
         /// <summary>
         /// Creates an <see cref="IDispatcher"/> that can be used with one or more <see cref="Renderer"/>.
@@ -248,13 +262,13 @@ namespace Microsoft.AspNetCore.Components.Rendering
         public virtual Task Invoke(Action workItem)
         {
             // This is for example when we run on a system with a single thread, like WebAssembly.
-            if (_dispatcher == null)
+            if (Dispatcher == null)
             {
                 workItem();
                 return Task.CompletedTask;
             }
 
-            if (SynchronizationContext.Current == _dispatcher)
+            if (SynchronizationContext.Current == Dispatcher)
             {
                 // This is an optimization for when the dispatcher is also a syncronization context, like in the default case.
                 // No need to dispatch. Avoid deadlock by invoking directly.
@@ -263,7 +277,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             }
             else
             {
-                return _dispatcher.Invoke(workItem);
+                return Dispatcher.Invoke(workItem);
             }
         }
 
@@ -275,12 +289,12 @@ namespace Microsoft.AspNetCore.Components.Rendering
         public virtual Task InvokeAsync(Func<Task> workItem)
         {
             // This is for example when we run on a system with a single thread, like WebAssembly.
-            if (_dispatcher == null)
+            if (Dispatcher == null)
             {
                 return workItem();
             }
 
-            if (SynchronizationContext.Current == _dispatcher)
+            if (SynchronizationContext.Current == Dispatcher)
             {
                 // This is an optimization for when the dispatcher is also a syncronization context, like in the default case.
                 // No need to dispatch. Avoid deadlock by invoking directly.
@@ -288,7 +302,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             }
             else
             {
-                return _dispatcher.InvokeAsync(workItem);
+                return Dispatcher.InvokeAsync(workItem);
             }
         }
 
@@ -387,7 +401,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 return;
             }
 
-            _batchBuilder.ComponentRenderQueue.Enqueue(
+            RenderBatchBuilder.ComponentRenderQueue.Enqueue(
                 new RenderQueueEntry(componentState, renderFragment));
 
             if (!_isBatchInProgress)
@@ -403,7 +417,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             // Plus, any other logic that mutates state accessed during rendering also
             // needs not to run concurrently with rendering so should be dispatched to
             // the renderer's sync context.
-            if (_dispatcher is SynchronizationContext synchronizationContext && SynchronizationContext.Current != synchronizationContext)
+            if (Dispatcher is SynchronizationContext synchronizationContext && SynchronizationContext.Current != synchronizationContext)
             {
                 throw new InvalidOperationException(
                     "The current thread is not associated with the renderer's synchronization context. " +
@@ -419,24 +433,31 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
         private ComponentState GetOptionalComponentState(int componentId)
             => _componentStateById.TryGetValue(componentId, out var componentState)
-                ? componentState
+                ? componentState 
                 : null;
 
-        private void ProcessRenderQueue()
+        /// <summary>
+        /// Processes the render queue.
+        /// </summary>
+        protected void ProcessRenderQueue()
         {
-            _isBatchInProgress = true;
-            var updateDisplayTask = Task.CompletedTask;
+            if (!CanRenderBatch)
+            {
+                return;
+            }
 
+            var updateDisplayTask = Task.CompletedTask;
+            _isBatchInProgress = true;
             try
             {
                 // Process render queue until empty
-                while (_batchBuilder.ComponentRenderQueue.Count > 0)
+                while (CanRenderBatch && RenderBatchBuilder.ComponentRenderQueue.Count > 0)
                 {
-                    var nextToRender = _batchBuilder.ComponentRenderQueue.Dequeue();
+                    var nextToRender = RenderBatchBuilder.ComponentRenderQueue.Dequeue();
                     RenderInExistingBatch(nextToRender);
                 }
 
-                var batch = _batchBuilder.ToBatch();
+                var batch = RenderBatchBuilder.ToBatch();
                 updateDisplayTask = UpdateDisplayAsync(batch);
 
                 // Fire off the execution of OnAfterRenderAsync, but don't wait for it
@@ -445,8 +466,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
             }
             finally
             {
-                RemoveEventHandlerIds(_batchBuilder.DisposedEventHandlerIds.ToRange(), updateDisplayTask);
-                _batchBuilder.Clear();
+                RemoveEventHandlerIds(RenderBatchBuilder.DisposedEventHandlerIds.ToRange(), updateDisplayTask);
+                RenderBatchBuilder.Clear();
                 _isBatchInProgress = false;
             }
         }
@@ -495,15 +516,15 @@ namespace Microsoft.AspNetCore.Components.Rendering
         private void RenderInExistingBatch(RenderQueueEntry renderQueueEntry)
         {
             renderQueueEntry.ComponentState
-                .RenderIntoBatch(_batchBuilder, renderQueueEntry.RenderFragment);
+                .RenderIntoBatch(RenderBatchBuilder, renderQueueEntry.RenderFragment);
 
             // Process disposal queue now in case it causes further component renders to be enqueued
-            while (_batchBuilder.ComponentDisposalQueue.Count > 0)
+            while (RenderBatchBuilder.ComponentDisposalQueue.Count > 0)
             {
-                var disposeComponentId = _batchBuilder.ComponentDisposalQueue.Dequeue();
-                GetRequiredComponentState(disposeComponentId).DisposeInBatch(_batchBuilder);
+                var disposeComponentId = RenderBatchBuilder.ComponentDisposalQueue.Dequeue();
+                GetRequiredComponentState(disposeComponentId).DisposeInBatch(RenderBatchBuilder);
                 _componentStateById.Remove(disposeComponentId);
-                _batchBuilder.DisposedComponentIds.Append(disposeComponentId);
+                RenderBatchBuilder.DisposedComponentIds.Append(disposeComponentId);
             }
         }
 

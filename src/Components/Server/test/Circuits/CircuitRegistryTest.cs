@@ -223,7 +223,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         }
 
         [Fact]
-        public async Task DisconnectWhenAClientReconnects()
+        public async Task DisconnectWhenAConnectIsInProgress()
         {
             // Arrange
             var registry = new TestCircuitRegistry();
@@ -231,11 +231,12 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var circuitHost = TestCircuitHost.Create();
             registry.Register(circuitHost);
             var client = Mock.Of<IClientProxy>();
+            var oldId = circuitHost.Client.ConnectionId;
             var newId = "new-connection";
 
             // Act
             var connect = Task.Run(() => registry.ConnectAsync(circuitHost.CircuitId, client, newId, default));
-            var disconnect = Task.Run(() => registry.DisconnectAsync(circuitHost, circuitHost.Client.ConnectionId));
+            var disconnect = Task.Run(() => registry.DisconnectAsync(circuitHost, oldId));
             registry.BeforeConnect.Set();
             await Task.WhenAll(connect, disconnect);
 
@@ -252,7 +253,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         private class TestCircuitRegistry : CircuitRegistry
         {
             public TestCircuitRegistry()
-                : base(Options.Create(new ComponentsServerOptions()), NullLogger<CircuitRegistry>.Instance)
+                : base(Options.Create(new CircuitOptions()), NullLogger<CircuitRegistry>.Instance)
             {
             }
 
@@ -283,7 +284,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         private static CircuitRegistry CreateRegistry()
         {
             return new CircuitRegistry(
-                Options.Create(new ComponentsServerOptions()),
+                Options.Create(new CircuitOptions()),
                 NullLogger<CircuitRegistry>.Instance);
         }
 

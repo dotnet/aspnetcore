@@ -13,6 +13,7 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
 {
     public class TestRenderer : Renderer
     {
+        private bool _canRenderBatch = true;
         public TestRenderer() : this(new TestServiceProvider())
         {
         }
@@ -24,6 +25,10 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
         public TestRenderer(IServiceProvider serviceProvider) : base(serviceProvider, new RendererSynchronizationContext())
         {
         }
+
+        protected override bool CanRenderBatch => _canRenderBatch;
+
+        public bool SetCanRenderBatch(bool value) => _canRenderBatch = value;
 
         public Action<RenderBatch> OnUpdateDisplay { get; set; }
 

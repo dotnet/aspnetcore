@@ -1,0 +1,8 @@
+{
+  "extends": "../tsconfig.base.json",
+  "include": ["./**/*"],
+  "compilerOptions": {
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
+  }
+}

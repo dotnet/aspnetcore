@@ -109,6 +109,55 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             }
         }
 
+        [Fact]
+        public void ReconnectUI()
+        {
+            Browser.FindElement(By.LinkText("Counter")).Click();
+            var javascript = (IJavaScriptExecutor)Browser;
+            javascript.ExecuteScript(@"
+window.modalDisplayState = [];
+window.Blazor.circuitHandlers.push({
+    onConnectionUp: () => window.modalDisplayState.push(document.getElementById('components-reconnect-modal').style.display),
+    onConnectionDown: () => window.modalDisplayState.push(document.getElementById('components-reconnect-modal').style.display)
+});
+window.Blazor._internal.forceCloseConnection();");
+
+            new WebDriverWait(Browser, TimeSpan.FromSeconds(10)).Until(
+                driver => (long)javascript.ExecuteScript("console.log(window.modalDisplayState); return window.modalDisplayState.length") == 2);
+
+            var states = (string)javascript.ExecuteScript("return window.modalDisplayState.join(',')");
+
+            Assert.Equal("block,none", states);
+        }
+
+        [Fact]
+        public void RendersContinueAfterReconnect()
+        {
+            Browser.FindElement(By.LinkText("Ticker")).Click();
+            var selector = By.ClassName("tick-value");
+            var element = Browser.FindElement(selector);
+
+            var initialValue = element.Text;
+
+            var javascript = (IJavaScriptExecutor)Browser;
+            javascript.ExecuteScript(@"
+window.connectionUp = false;
+window.Blazor.circuitHandlers.push({
+    onConnectionUp: () => window.connectionUp = true
+});
+window.Blazor._internal.forceCloseConnection();");
+
+            new WebDriverWait(Browser, TimeSpan.FromSeconds(10)).Until(
+                driver => (bool)javascript.ExecuteScript("return window.connectionUp"));
+
+            var currentValue = element.Text;
+            Assert.NotEqual(initialValue, currentValue);
+
+            // Verify it continues to tick
+            new WebDriverWait(Browser, TimeSpan.FromSeconds(10)).Until(
+                _ => element.Text != currentValue);
+        }
+
         private void WaitUntilLoaded()
         {
             new WebDriverWait(Browser, TimeSpan.FromSeconds(30)).Until(

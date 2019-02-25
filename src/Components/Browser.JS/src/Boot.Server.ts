@@ -30,11 +30,12 @@ async function boot() {
 
   window['Blazor'].reconnect = async () => {
     const reconnection = await initializeConnection(circuitHandlers);
-    if (!await reconnection.invoke<Boolean>('ConnectCircuit', circuitId)) {
-      throw new Error('Failed to reconnect to the server. The supplied circuitId is invalid.');
+    if (!(await reconnection.invoke<Boolean>('ConnectCircuit', circuitId))) {
+      return false;
     }
 
     circuitHandlers.forEach(h => h.onConnectionUp && h.onConnectionUp());
+    return true;
   };
 
   circuitHandlers.forEach(h => h.onConnectionUp && h.onConnectionUp());

@@ -20,7 +20,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         {
             if (_clientProxy == CircuitClientProxy.OfflineClient)
             {
-                throw new InvalidOperationException("The JavaScript runtime is not available during prerendering.");
+                var errorMessage = "JavaScript interop calls cannot be issued while the client is not connected, because the server is not able to interop with the browser at this time. " +
+                    "Components must wrap any JavaScript interop calls in conditional logic to ensure those interop calls are not attempted during periods where the client is not connected.";
+                throw new InvalidOperationException(errorMessage);
             }
 
             _clientProxy.SendAsync("JS.BeginInvokeJS", asyncHandle, identifier, argsJson);
