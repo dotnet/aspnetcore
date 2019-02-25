@@ -99,6 +99,7 @@ namespace Microsoft.AspNetCore.Mvc.Localization
                 throw new NotImplementedException();
             }
 
+            [Obsolete("This method is obsolete. Use `CurrentCulture` and `CurrentUICulture` instead.")]
             public IHtmlLocalizer WithCulture(CultureInfo culture)
             {
                 throw new NotImplementedException();
@@ -127,6 +128,7 @@ namespace Microsoft.AspNetCore.Mvc.Localization
                 throw new NotImplementedException();
             }
 
+            [Obsolete("This method is obsolete. Use `CurrentCulture` and `CurrentUICulture` instead.")]
             public IHtmlLocalizer WithCulture(CultureInfo culture)
             {
                 throw new NotImplementedException();
