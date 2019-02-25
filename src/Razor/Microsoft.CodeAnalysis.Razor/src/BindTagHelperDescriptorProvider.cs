@@ -117,13 +117,13 @@ namespace Microsoft.CodeAnalysis.Razor
 
         private TagHelperDescriptor CreateFallbackBindTagHelper()
         {
-            var builder = TagHelperDescriptorBuilder.Create(BlazorMetadata.Bind.TagHelperKind, "Bind", ComponentsApi.AssemblyName);
+            var builder = TagHelperDescriptorBuilder.Create(ComponentMetadata.Bind.TagHelperKind, "Bind", ComponentsApi.AssemblyName);
             builder.Documentation = ComponentResources.BindTagHelper_Fallback_Documentation;
 
-            builder.Metadata.Add(BlazorMetadata.SpecialKindKey, BlazorMetadata.Bind.TagHelperKind);
+            builder.Metadata.Add(ComponentMetadata.SpecialKindKey, ComponentMetadata.Bind.TagHelperKind);
             builder.Metadata.Add(TagHelperMetadata.Common.ClassifyAttributesOnly, bool.TrueString);
-            builder.Metadata[TagHelperMetadata.Runtime.Name] = BlazorMetadata.Bind.RuntimeName;
-            builder.Metadata[BlazorMetadata.Bind.FallbackKey] = bool.TrueString;
+            builder.Metadata[TagHelperMetadata.Runtime.Name] = ComponentMetadata.Bind.RuntimeName;
+            builder.Metadata[ComponentMetadata.Bind.FallbackKey] = bool.TrueString;
 
             // WTE has a bug in 15.7p1 where a Tag Helper without a display-name that looks like
             // a C# property will crash trying to create the toolips.
@@ -251,17 +251,17 @@ namespace Microsoft.CodeAnalysis.Razor
                 var formatName = entry.Suffix == null ? "Format_" + entry.ValueAttribute : "Format_" + entry.Suffix;
                 var formatAttributeName = entry.Suffix == null ? "format-" + entry.ValueAttribute : "format-" + entry.Suffix;
 
-                var builder = TagHelperDescriptorBuilder.Create(BlazorMetadata.Bind.TagHelperKind, name, ComponentsApi.AssemblyName);
+                var builder = TagHelperDescriptorBuilder.Create(ComponentMetadata.Bind.TagHelperKind, name, ComponentsApi.AssemblyName);
                 builder.Documentation = string.Format(
                     ComponentResources.BindTagHelper_Element_Documentation,
                     entry.ValueAttribute,
                     entry.ChangeAttribute);
 
-                builder.Metadata.Add(BlazorMetadata.SpecialKindKey, BlazorMetadata.Bind.TagHelperKind);
+                builder.Metadata.Add(ComponentMetadata.SpecialKindKey, ComponentMetadata.Bind.TagHelperKind);
                 builder.Metadata.Add(TagHelperMetadata.Common.ClassifyAttributesOnly, bool.TrueString);
-                builder.Metadata[TagHelperMetadata.Runtime.Name] = BlazorMetadata.Bind.RuntimeName;
-                builder.Metadata[BlazorMetadata.Bind.ValueAttribute] = entry.ValueAttribute;
-                builder.Metadata[BlazorMetadata.Bind.ChangeAttribute] = entry.ChangeAttribute;
+                builder.Metadata[TagHelperMetadata.Runtime.Name] = ComponentMetadata.Bind.RuntimeName;
+                builder.Metadata[ComponentMetadata.Bind.ValueAttribute] = entry.ValueAttribute;
+                builder.Metadata[ComponentMetadata.Bind.ChangeAttribute] = entry.ChangeAttribute;
 
                 if (entry.TypeAttribute != null)
                 {
@@ -274,7 +274,7 @@ namespace Microsoft.CodeAnalysis.Razor
                     // 
                     // Therefore we use this metadata to know which one is more specific when two
                     // tag helpers match.
-                    builder.Metadata[BlazorMetadata.Bind.TypeAttribute] = entry.TypeAttribute;
+                    builder.Metadata[ComponentMetadata.Bind.TypeAttribute] = entry.TypeAttribute;
                 }
 
                 // WTE has a bug in 15.7p1 where a Tag Helper without a display-name that looks like
@@ -397,21 +397,21 @@ namespace Microsoft.CodeAnalysis.Razor
                         continue;
                     }
 
-                    var builder = TagHelperDescriptorBuilder.Create(BlazorMetadata.Bind.TagHelperKind, tagHelper.Name, tagHelper.AssemblyName);
+                    var builder = TagHelperDescriptorBuilder.Create(ComponentMetadata.Bind.TagHelperKind, tagHelper.Name, tagHelper.AssemblyName);
                     builder.DisplayName = tagHelper.DisplayName;
                     builder.Documentation = string.Format(
                         ComponentResources.BindTagHelper_Component_Documentation,
                         valueAttribute.Name,
                         changeAttribute.Name);
 
-                    builder.Metadata.Add(BlazorMetadata.SpecialKindKey, BlazorMetadata.Bind.TagHelperKind);
-                    builder.Metadata[TagHelperMetadata.Runtime.Name] = BlazorMetadata.Bind.RuntimeName;
-                    builder.Metadata[BlazorMetadata.Bind.ValueAttribute] = valueAttribute.Name;
-                    builder.Metadata[BlazorMetadata.Bind.ChangeAttribute] = changeAttribute.Name;
+                    builder.Metadata.Add(ComponentMetadata.SpecialKindKey, ComponentMetadata.Bind.TagHelperKind);
+                    builder.Metadata[TagHelperMetadata.Runtime.Name] = ComponentMetadata.Bind.RuntimeName;
+                    builder.Metadata[ComponentMetadata.Bind.ValueAttribute] = valueAttribute.Name;
+                    builder.Metadata[ComponentMetadata.Bind.ChangeAttribute] = changeAttribute.Name;
 
                     if (expressionAttribute != null)
                     {
-                        builder.Metadata[BlazorMetadata.Bind.ExpressionAttribute] = expressionAttribute.Name;
+                        builder.Metadata[ComponentMetadata.Bind.ExpressionAttribute] = expressionAttribute.Name;
                     }
 
                     // WTE has a bug 15.7p1 where a Tag Helper without a display-name that looks like

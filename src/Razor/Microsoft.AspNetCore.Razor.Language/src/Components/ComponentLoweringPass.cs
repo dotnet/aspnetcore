@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             // because we see the nodes in the wrong order.
             foreach (var childContent in component.ChildContents)
             {
-                childContent.ParameterName = childContent.ParameterName ?? component.ChildContentParameterName ?? BlazorMetadata.ChildContent.DefaultParameterName;
+                childContent.ParameterName = childContent.ParameterName ?? component.ChildContentParameterName ?? ComponentMetadata.ChildContent.DefaultParameterName;
             }
 
             return component;

@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Razor.Language.Intermediate;
 namespace Microsoft.AspNetCore.Razor.Language.Components
 {
     // We don't support 'complex' content for components (mixed C# and markup) right now.
-    // It's not clear yet if Blazor will have a good scenario to use these constructs.
+    // It's not clear yet if components will have a good scenario to use these constructs.
     //
     // This is where a lot of the complexity in the Razor/TagHelpers model creeps in and we
     // might be able to avoid it if these features aren't needed.

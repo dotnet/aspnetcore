@@ -51,9 +51,9 @@ namespace Test
             // here and then ignoring them.
             Assert.Empty(item.Diagnostics);
             Assert.False(item.HasErrors);
-            Assert.Equal(BlazorMetadata.EventHandler.TagHelperKind, item.Kind);
+            Assert.Equal(ComponentMetadata.EventHandler.TagHelperKind, item.Kind);
             Assert.Equal(bool.TrueString, item.Metadata[TagHelperMetadata.Common.ClassifyAttributesOnly]);
-            Assert.Equal(BlazorMetadata.EventHandler.RuntimeName, item.Metadata[TagHelperMetadata.Runtime.Name]);
+            Assert.Equal(ComponentMetadata.EventHandler.RuntimeName, item.Metadata[TagHelperMetadata.Runtime.Name]);
             Assert.False(item.IsDefaultKind());
             Assert.False(item.KindUsesDefaultTagHelperRuntime());
 
@@ -89,7 +89,7 @@ namespace Test
             // Invariants
             Assert.Empty(attribute.Diagnostics);
             Assert.False(attribute.HasErrors);
-            Assert.Equal(BlazorMetadata.EventHandler.TagHelperKind, attribute.Kind);
+            Assert.Equal(ComponentMetadata.EventHandler.TagHelperKind, attribute.Kind);
             Assert.False(attribute.IsDefaultKind());
             Assert.False(attribute.HasIndexer);
             Assert.Null(attribute.IndexerNamePrefix);
@@ -99,8 +99,8 @@ namespace Test
 
             Assert.Collection(
                 attribute.Metadata.OrderBy(kvp => kvp.Key),
-                kvp => Assert.Equal(kvp, new KeyValuePair<string, string>(BlazorMetadata.Component.WeaklyTypedKey, bool.TrueString)),
-                kvp => Assert.Equal(kvp, new KeyValuePair<string, string>("Common.PropertyName", "onclick")));
+                kvp => Assert.Equal(kvp, new KeyValuePair<string, string>("Common.PropertyName", "onclick")),
+                kvp => Assert.Equal(kvp, new KeyValuePair<string, string>(ComponentMetadata.Component.WeaklyTypedKey, bool.TrueString)));
 
             Assert.Equal(
                 "Sets the 'onclick' attribute to the provided string or delegate value. " +

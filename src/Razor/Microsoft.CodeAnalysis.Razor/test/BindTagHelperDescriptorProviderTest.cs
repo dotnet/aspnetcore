@@ -66,14 +66,14 @@ namespace Test
             // here and then ignoring them.
             Assert.Empty(bind.Diagnostics);
             Assert.False(bind.HasErrors);
-            Assert.Equal(BlazorMetadata.Bind.TagHelperKind, bind.Kind);
-            Assert.Equal(BlazorMetadata.Bind.RuntimeName, bind.Metadata[TagHelperMetadata.Runtime.Name]);
+            Assert.Equal(ComponentMetadata.Bind.TagHelperKind, bind.Kind);
+            Assert.Equal(ComponentMetadata.Bind.RuntimeName, bind.Metadata[TagHelperMetadata.Runtime.Name]);
             Assert.False(bind.IsDefaultKind());
             Assert.False(bind.KindUsesDefaultTagHelperRuntime());
 
-            Assert.Equal("MyProperty", bind.Metadata[BlazorMetadata.Bind.ValueAttribute]);
-            Assert.Equal("MyPropertyChanged", bind.Metadata[BlazorMetadata.Bind.ChangeAttribute]);
-            Assert.Equal("MyPropertyExpression", bind.Metadata[BlazorMetadata.Bind.ExpressionAttribute]);
+            Assert.Equal("MyProperty", bind.Metadata[ComponentMetadata.Bind.ValueAttribute]);
+            Assert.Equal("MyPropertyChanged", bind.Metadata[ComponentMetadata.Bind.ChangeAttribute]);
+            Assert.Equal("MyPropertyExpression", bind.Metadata[ComponentMetadata.Bind.ExpressionAttribute]);
 
             Assert.Equal(
                 "Binds the provided expression to the 'MyProperty' property and a change event " +
@@ -106,7 +106,7 @@ namespace Test
             // Invariants
             Assert.Empty(attribute.Diagnostics);
             Assert.False(attribute.HasErrors);
-            Assert.Equal(BlazorMetadata.Bind.TagHelperKind, attribute.Kind);
+            Assert.Equal(ComponentMetadata.Bind.TagHelperKind, attribute.Kind);
             Assert.False(attribute.IsDefaultKind());
             Assert.False(attribute.HasIndexer);
             Assert.Null(attribute.IndexerNamePrefix);
@@ -181,13 +181,13 @@ namespace Test
             // here and then ignoring them.
             Assert.Empty(bind.Diagnostics);
             Assert.False(bind.HasErrors);
-            Assert.Equal(BlazorMetadata.Bind.TagHelperKind, bind.Kind);
-            Assert.Equal(BlazorMetadata.Bind.RuntimeName, bind.Metadata[TagHelperMetadata.Runtime.Name]);
+            Assert.Equal(ComponentMetadata.Bind.TagHelperKind, bind.Kind);
+            Assert.Equal(ComponentMetadata.Bind.RuntimeName, bind.Metadata[TagHelperMetadata.Runtime.Name]);
             Assert.False(bind.IsDefaultKind());
             Assert.False(bind.KindUsesDefaultTagHelperRuntime());
 
-            Assert.Equal("MyProperty", bind.Metadata[BlazorMetadata.Bind.ValueAttribute]);
-            Assert.Equal("MyPropertyChanged", bind.Metadata[BlazorMetadata.Bind.ChangeAttribute]);
+            Assert.Equal("MyProperty", bind.Metadata[ComponentMetadata.Bind.ValueAttribute]);
+            Assert.Equal("MyPropertyChanged", bind.Metadata[ComponentMetadata.Bind.ChangeAttribute]);
 
             Assert.Equal(
                 "Binds the provided expression to the 'MyProperty' property and a change event " +
@@ -220,7 +220,7 @@ namespace Test
             // Invariants
             Assert.Empty(attribute.Diagnostics);
             Assert.False(attribute.HasErrors);
-            Assert.Equal(BlazorMetadata.Bind.TagHelperKind, attribute.Kind);
+            Assert.Equal(ComponentMetadata.Bind.TagHelperKind, attribute.Kind);
             Assert.False(attribute.IsDefaultKind());
             Assert.False(attribute.HasIndexer);
             Assert.Null(attribute.IndexerNamePrefix);
@@ -325,14 +325,14 @@ namespace Test
             // here and then ignoring them.
             Assert.Empty(bind.Diagnostics);
             Assert.False(bind.HasErrors);
-            Assert.Equal(BlazorMetadata.Bind.TagHelperKind, bind.Kind);
+            Assert.Equal(ComponentMetadata.Bind.TagHelperKind, bind.Kind);
             Assert.Equal(bool.TrueString, bind.Metadata[TagHelperMetadata.Common.ClassifyAttributesOnly]);
-            Assert.Equal(BlazorMetadata.Bind.RuntimeName, bind.Metadata[TagHelperMetadata.Runtime.Name]);
+            Assert.Equal(ComponentMetadata.Bind.RuntimeName, bind.Metadata[TagHelperMetadata.Runtime.Name]);
             Assert.False(bind.IsDefaultKind());
             Assert.False(bind.KindUsesDefaultTagHelperRuntime());
 
-            Assert.Equal("myprop", bind.Metadata[BlazorMetadata.Bind.ValueAttribute]);
-            Assert.Equal("myevent", bind.Metadata[BlazorMetadata.Bind.ChangeAttribute]);
+            Assert.Equal("myprop", bind.Metadata[ComponentMetadata.Bind.ValueAttribute]);
+            Assert.Equal("myevent", bind.Metadata[ComponentMetadata.Bind.ChangeAttribute]);
             Assert.False(bind.IsInputElementBindTagHelper());
             Assert.False(bind.IsInputElementFallbackBindTagHelper());
 
@@ -368,7 +368,7 @@ namespace Test
             // Invariants
             Assert.Empty(attribute.Diagnostics);
             Assert.False(attribute.HasErrors);
-            Assert.Equal(BlazorMetadata.Bind.TagHelperKind, attribute.Kind);
+            Assert.Equal(ComponentMetadata.Bind.TagHelperKind, attribute.Kind);
             Assert.False(attribute.IsDefaultKind());
             Assert.False(attribute.HasIndexer);
             Assert.Null(attribute.IndexerNamePrefix);
@@ -396,7 +396,7 @@ namespace Test
             // Invariants
             Assert.Empty(attribute.Diagnostics);
             Assert.False(attribute.HasErrors);
-            Assert.Equal(BlazorMetadata.Bind.TagHelperKind, attribute.Kind);
+            Assert.Equal(ComponentMetadata.Bind.TagHelperKind, attribute.Kind);
             Assert.False(attribute.IsDefaultKind());
             Assert.False(attribute.HasIndexer);
             Assert.Null(attribute.IndexerNamePrefix);
@@ -450,8 +450,8 @@ namespace Test
             var matches = GetBindTagHelpers(context);
             var bind = Assert.Single(matches);
 
-            Assert.Equal("myprop", bind.Metadata[BlazorMetadata.Bind.ValueAttribute]);
-            Assert.Equal("myevent", bind.Metadata[BlazorMetadata.Bind.ChangeAttribute]);
+            Assert.Equal("myprop", bind.Metadata[ComponentMetadata.Bind.ValueAttribute]);
+            Assert.Equal("myevent", bind.Metadata[ComponentMetadata.Bind.ChangeAttribute]);
             Assert.False(bind.IsInputElementBindTagHelper());
             Assert.False(bind.IsInputElementFallbackBindTagHelper());
 
@@ -504,9 +504,9 @@ namespace Test
             var matches = GetBindTagHelpers(context);
             var bind = Assert.Single(matches);
 
-            Assert.Equal("myprop", bind.Metadata[BlazorMetadata.Bind.ValueAttribute]);
-            Assert.Equal("myevent", bind.Metadata[BlazorMetadata.Bind.ChangeAttribute]);
-            Assert.False(bind.Metadata.ContainsKey(BlazorMetadata.Bind.TypeAttribute));
+            Assert.Equal("myprop", bind.Metadata[ComponentMetadata.Bind.ValueAttribute]);
+            Assert.Equal("myevent", bind.Metadata[ComponentMetadata.Bind.ChangeAttribute]);
+            Assert.False(bind.Metadata.ContainsKey(ComponentMetadata.Bind.TypeAttribute));
             Assert.True(bind.IsInputElementBindTagHelper());
             Assert.True(bind.IsInputElementFallbackBindTagHelper());
 
@@ -559,9 +559,9 @@ namespace Test
             var matches = GetBindTagHelpers(context);
             var bind = Assert.Single(matches);
 
-            Assert.Equal("myprop", bind.Metadata[BlazorMetadata.Bind.ValueAttribute]);
-            Assert.Equal("myevent", bind.Metadata[BlazorMetadata.Bind.ChangeAttribute]);
-            Assert.Equal("checkbox", bind.Metadata[BlazorMetadata.Bind.TypeAttribute]);
+            Assert.Equal("myprop", bind.Metadata[ComponentMetadata.Bind.ValueAttribute]);
+            Assert.Equal("myevent", bind.Metadata[ComponentMetadata.Bind.ChangeAttribute]);
+            Assert.Equal("checkbox", bind.Metadata[ComponentMetadata.Bind.TypeAttribute]);
             Assert.True(bind.IsInputElementBindTagHelper());
             Assert.False(bind.IsInputElementFallbackBindTagHelper());
 
@@ -626,9 +626,9 @@ namespace Test
             var matches = GetBindTagHelpers(context);
             var bind = Assert.Single(matches);
 
-            Assert.Equal("myprop", bind.Metadata[BlazorMetadata.Bind.ValueAttribute]);
-            Assert.Equal("myevent", bind.Metadata[BlazorMetadata.Bind.ChangeAttribute]);
-            Assert.Equal("checkbox", bind.Metadata[BlazorMetadata.Bind.TypeAttribute]);
+            Assert.Equal("myprop", bind.Metadata[ComponentMetadata.Bind.ValueAttribute]);
+            Assert.Equal("myevent", bind.Metadata[ComponentMetadata.Bind.ChangeAttribute]);
+            Assert.Equal("checkbox", bind.Metadata[ComponentMetadata.Bind.TypeAttribute]);
             Assert.True(bind.IsInputElementBindTagHelper());
             Assert.False(bind.IsInputElementFallbackBindTagHelper());
 
@@ -690,14 +690,14 @@ namespace Test
             // here and then ignoring them.
             Assert.Empty(bind.Diagnostics);
             Assert.False(bind.HasErrors);
-            Assert.Equal(BlazorMetadata.Bind.TagHelperKind, bind.Kind);
+            Assert.Equal(ComponentMetadata.Bind.TagHelperKind, bind.Kind);
             Assert.Equal(bool.TrueString, bind.Metadata[TagHelperMetadata.Common.ClassifyAttributesOnly]);
-            Assert.Equal(BlazorMetadata.Bind.RuntimeName, bind.Metadata[TagHelperMetadata.Runtime.Name]);
+            Assert.Equal(ComponentMetadata.Bind.RuntimeName, bind.Metadata[TagHelperMetadata.Runtime.Name]);
             Assert.False(bind.IsDefaultKind());
             Assert.False(bind.KindUsesDefaultTagHelperRuntime());
 
-            Assert.False(bind.Metadata.ContainsKey(BlazorMetadata.Bind.ValueAttribute));
-            Assert.False(bind.Metadata.ContainsKey(BlazorMetadata.Bind.ChangeAttribute));
+            Assert.False(bind.Metadata.ContainsKey(ComponentMetadata.Bind.ValueAttribute));
+            Assert.False(bind.Metadata.ContainsKey(ComponentMetadata.Bind.ChangeAttribute));
             Assert.True(bind.IsFallbackBindTagHelper());
 
             Assert.Equal(
@@ -734,7 +734,7 @@ namespace Test
             // Invariants
             Assert.Empty(attribute.Diagnostics);
             Assert.False(attribute.HasErrors);
-            Assert.Equal(BlazorMetadata.Bind.TagHelperKind, attribute.Kind);
+            Assert.Equal(ComponentMetadata.Bind.TagHelperKind, attribute.Kind);
             Assert.False(attribute.IsDefaultKind());
             Assert.False(attribute.IsIndexerBooleanProperty);
             Assert.False(attribute.IsIndexerStringProperty);
@@ -767,7 +767,7 @@ namespace Test
             // Invariants
             Assert.Empty(attribute.Diagnostics);
             Assert.False(attribute.HasErrors);
-            Assert.Equal(BlazorMetadata.Bind.TagHelperKind, attribute.Kind);
+            Assert.Equal(ComponentMetadata.Bind.TagHelperKind, attribute.Kind);
             Assert.False(attribute.IsDefaultKind());
             Assert.True(attribute.HasIndexer);
             Assert.Equal("format-", attribute.IndexerNamePrefix);

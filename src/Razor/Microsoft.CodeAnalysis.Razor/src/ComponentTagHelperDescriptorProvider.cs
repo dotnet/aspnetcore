@@ -86,16 +86,16 @@ namespace Microsoft.CodeAnalysis.Razor
             var typeName = type.ToDisplayString(FullNameTypeDisplayFormat);
             var assemblyName = type.ContainingAssembly.Identity.Name;
 
-            var builder = TagHelperDescriptorBuilder.Create(BlazorMetadata.Component.TagHelperKind, typeName, assemblyName);
+            var builder = TagHelperDescriptorBuilder.Create(ComponentMetadata.Component.TagHelperKind, typeName, assemblyName);
             builder.SetTypeName(typeName);
 
             // This opts out this 'component' tag helper for any processing that's specific to the default
             // Razor ITagHelper runtime.
-            builder.Metadata[TagHelperMetadata.Runtime.Name] = BlazorMetadata.Component.RuntimeName;
+            builder.Metadata[TagHelperMetadata.Runtime.Name] = ComponentMetadata.Component.RuntimeName;
 
             if (type.IsGenericType)
             {
-                builder.Metadata[BlazorMetadata.Component.GenericTypedKey] = bool.TrueString;
+                builder.Metadata[ComponentMetadata.Component.GenericTypedKey] = bool.TrueString;
 
                 for (var i = 0; i < type.TypeArguments.Length; i++)
                 {
@@ -127,7 +127,7 @@ namespace Microsoft.CodeAnalysis.Razor
             }
 
             if (builder.BoundAttributes.Any(a => a.IsParameterizedChildContentProperty()) &&
-                !builder.BoundAttributes.Any(a => string.Equals(a.Name, BlazorMetadata.ChildContent.ParameterAttributeName, StringComparison.OrdinalIgnoreCase)))
+                !builder.BoundAttributes.Any(a => string.Equals(a.Name, ComponentMetadata.ChildContent.ParameterAttributeName, StringComparison.OrdinalIgnoreCase)))
             {
                 // If we have any parameterized child content parameters, synthesize a 'Context' parameter to be
                 // able to set the variable name (for all child content). If the developer defined a 'Context' parameter
@@ -154,22 +154,22 @@ namespace Microsoft.CodeAnalysis.Razor
 
                 if (kind == PropertyKind.ChildContent)
                 {
-                    pb.Metadata.Add(BlazorMetadata.Component.ChildContentKey, bool.TrueString);
+                    pb.Metadata.Add(ComponentMetadata.Component.ChildContentKey, bool.TrueString);
                 }
 
                 if (kind == PropertyKind.EventCallback)
                 {
-                    pb.Metadata.Add(BlazorMetadata.Component.EventCallbackKey, bool.TrueString);
+                    pb.Metadata.Add(ComponentMetadata.Component.EventCallbackKey, bool.TrueString);
                 }
 
                 if (kind == PropertyKind.Delegate)
                 {
-                    pb.Metadata.Add(BlazorMetadata.Component.DelegateSignatureKey, bool.TrueString);
+                    pb.Metadata.Add(ComponentMetadata.Component.DelegateSignatureKey, bool.TrueString);
                 }
 
                 if (HasTypeParameter(property.Type))
                 {
-                    pb.Metadata.Add(BlazorMetadata.Component.GenericTypedKey, bool.TrueString);
+                    pb.Metadata.Add(ComponentMetadata.Component.GenericTypedKey, bool.TrueString);
                 }
 
                 var xml = property.GetDocumentationCommentXml();
@@ -229,7 +229,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 pb.TypeName = typeof(Type).FullName;
                 pb.SetPropertyName(typeParameter.Name);
 
-                pb.Metadata[BlazorMetadata.Component.TypeParameterKey] = bool.TrueString;
+                pb.Metadata[ComponentMetadata.Component.TypeParameterKey] = bool.TrueString;
 
                 pb.Documentation = string.Format(ComponentResources.ComponentTypeParameter_Documentation, typeParameter.Name, builder.Name);
             });
@@ -240,15 +240,15 @@ namespace Microsoft.CodeAnalysis.Razor
             var typeName = component.GetTypeName() + "." + attribute.Name;
             var assemblyName = component.AssemblyName;
 
-            var builder = TagHelperDescriptorBuilder.Create(BlazorMetadata.ChildContent.TagHelperKind, typeName, assemblyName);
+            var builder = TagHelperDescriptorBuilder.Create(ComponentMetadata.ChildContent.TagHelperKind, typeName, assemblyName);
             builder.SetTypeName(typeName);
 
             // This opts out this 'component' tag helper for any processing that's specific to the default
             // Razor ITagHelper runtime.
-            builder.Metadata[TagHelperMetadata.Runtime.Name] = BlazorMetadata.ChildContent.RuntimeName;
+            builder.Metadata[TagHelperMetadata.Runtime.Name] = ComponentMetadata.ChildContent.RuntimeName;
 
             // Opt out of processing as a component. We'll process this specially as part of the component's body.
-            builder.Metadata[BlazorMetadata.SpecialKindKey] = BlazorMetadata.ChildContent.TagHelperKind;
+            builder.Metadata[ComponentMetadata.SpecialKindKey] = ComponentMetadata.ChildContent.TagHelperKind;
 
             var xml = attribute.Documentation;
             if (!string.IsNullOrEmpty(xml))
@@ -279,9 +279,9 @@ namespace Microsoft.CodeAnalysis.Razor
         {
             builder.BindAttribute(b =>
             {
-                b.Name = BlazorMetadata.ChildContent.ParameterAttributeName;
+                b.Name = ComponentMetadata.ChildContent.ParameterAttributeName;
                 b.TypeName = typeof(string).FullName;
-                b.Metadata.Add(BlazorMetadata.Component.ChildContentParameterNameKey, bool.TrueString);
+                b.Metadata.Add(ComponentMetadata.Component.ChildContentParameterNameKey, bool.TrueString);
 
                 if (childContentName == null)
                 {

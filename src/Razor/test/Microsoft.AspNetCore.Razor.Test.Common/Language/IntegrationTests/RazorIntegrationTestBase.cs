@@ -236,7 +236,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             else
             {
                 // For single phase compilation tests just use the base compilation's references.
-                // This will include the built-in Blazor components.
+                // This will include the built-in components.
                 var projectEngine = CreateProjectEngine(Configuration, BaseCompilation.References.ToArray());
 
                 var projectItem = CreateProjectItem(cshtmlRelativePath, cshtmlContent);

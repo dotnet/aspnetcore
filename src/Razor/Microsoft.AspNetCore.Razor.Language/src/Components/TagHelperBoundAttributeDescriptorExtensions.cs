@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 throw new ArgumentNullException(nameof(attribute));
             }
 
-            var key = BlazorMetadata.Component.DelegateSignatureKey;
+            var key = ComponentMetadata.Component.DelegateSignatureKey;
             return 
                 attribute.Metadata.TryGetValue(key, out var value) &&
                 string.Equals(value, bool.TrueString);
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 throw new ArgumentNullException(nameof(attribute));
             }
 
-            var key = BlazorMetadata.Component.EventCallbackKey;
+            var key = ComponentMetadata.Component.EventCallbackKey;
             return
                 attribute.Metadata.TryGetValue(key, out var value) &&
                 string.Equals(value, bool.TrueString);
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             }
             
             return
-                attribute.Metadata.TryGetValue(BlazorMetadata.Component.GenericTypedKey, out var value) &&
+                attribute.Metadata.TryGetValue(ComponentMetadata.Component.GenericTypedKey, out var value) &&
                 string.Equals(value, bool.TrueString);
         }
 
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             }
 
             return
-                attribute.Metadata.TryGetValue(BlazorMetadata.Component.TypeParameterKey, out var value) &&
+                attribute.Metadata.TryGetValue(ComponentMetadata.Component.TypeParameterKey, out var value) &&
                 string.Equals(value, bool.TrueString);
         }
 
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 throw new ArgumentNullException(nameof(attribute));
             }
 
-            var key = BlazorMetadata.Component.WeaklyTypedKey;
+            var key = ComponentMetadata.Component.WeaklyTypedKey;
             return
                 attribute.Metadata.TryGetValue(key, out var value) &&
                 string.Equals(value, bool.TrueString);
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 throw new ArgumentNullException(nameof(attribute));
             }
 
-            var key = BlazorMetadata.Component.ChildContentKey;
+            var key = ComponentMetadata.Component.ChildContentKey;
             return
                 attribute.Metadata.TryGetValue(key, out var value) &&
                 string.Equals(value, bool.TrueString);
@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 throw new ArgumentNullException(nameof(attribute));
             }
 
-            var key = BlazorMetadata.Component.ChildContentKey;
+            var key = ComponentMetadata.Component.ChildContentKey;
             return
                 attribute.Metadata.TryGetValue(key, out var value) &&
                 string.Equals(value, bool.TrueString);
@@ -164,7 +164,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 throw new ArgumentNullException(nameof(attribute));
             }
 
-            var key = BlazorMetadata.Component.ChildContentParameterNameKey;
+            var key = ComponentMetadata.Component.ChildContentParameterNameKey;
             return
                 attribute.Metadata.TryGetValue(key, out var value) &&
                 string.Equals(value, bool.TrueString);

@@ -103,16 +103,16 @@ namespace Microsoft.CodeAnalysis.Razor
             {
                 var entry = data[i];
 
-                var builder = TagHelperDescriptorBuilder.Create(BlazorMetadata.EventHandler.TagHelperKind, entry.Attribute, ComponentsApi.AssemblyName);
+                var builder = TagHelperDescriptorBuilder.Create(ComponentMetadata.EventHandler.TagHelperKind, entry.Attribute, ComponentsApi.AssemblyName);
                 builder.Documentation = string.Format(
                     ComponentResources.EventHandlerTagHelper_Documentation,
                     entry.Attribute,
                     entry.EventArgsType.ToDisplayString());
 
-                builder.Metadata.Add(BlazorMetadata.SpecialKindKey, BlazorMetadata.EventHandler.TagHelperKind);
-                builder.Metadata.Add(BlazorMetadata.EventHandler.EventArgsType, entry.EventArgsType.ToDisplayString());
+                builder.Metadata.Add(ComponentMetadata.SpecialKindKey, ComponentMetadata.EventHandler.TagHelperKind);
+                builder.Metadata.Add(ComponentMetadata.EventHandler.EventArgsType, entry.EventArgsType.ToDisplayString());
                 builder.Metadata.Add(TagHelperMetadata.Common.ClassifyAttributesOnly, bool.TrueString);
-                builder.Metadata[TagHelperMetadata.Runtime.Name] = BlazorMetadata.EventHandler.RuntimeName;
+                builder.Metadata[TagHelperMetadata.Runtime.Name] = ComponentMetadata.EventHandler.RuntimeName;
 
                 // WTE has a bug in 15.7p1 where a Tag Helper without a display-name that looks like
                 // a C# property will crash trying to create the tooltips.
@@ -143,7 +143,7 @@ namespace Microsoft.CodeAnalysis.Razor
 
                     // But make this weakly typed (don't type check) - delegates have their own type-checking
                     // logic that we don't want to interfere with.
-                    a.Metadata.Add(BlazorMetadata.Component.WeaklyTypedKey, bool.TrueString);
+                    a.Metadata.Add(ComponentMetadata.Component.WeaklyTypedKey, bool.TrueString);
 
                     // WTE has a bug 15.7p1 where a Tag Helper without a display-name that looks like
                     // a C# property will crash trying to create the tooltips.

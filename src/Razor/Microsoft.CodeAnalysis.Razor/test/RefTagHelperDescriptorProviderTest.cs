@@ -30,9 +30,9 @@ namespace Microsoft.CodeAnalysis.Razor
             Assert.Null(item.TagOutputHint);
             Assert.Empty(item.Diagnostics);
             Assert.False(item.HasErrors);
-            Assert.Equal(BlazorMetadata.Ref.TagHelperKind, item.Kind);
+            Assert.Equal(ComponentMetadata.Ref.TagHelperKind, item.Kind);
             Assert.Equal(bool.TrueString, item.Metadata[TagHelperMetadata.Common.ClassifyAttributesOnly]);
-            Assert.Equal(BlazorMetadata.Ref.RuntimeName, item.Metadata[TagHelperMetadata.Runtime.Name]);
+            Assert.Equal(ComponentMetadata.Ref.RuntimeName, item.Metadata[TagHelperMetadata.Runtime.Name]);
             Assert.False(item.IsDefaultKind());
             Assert.False(item.KindUsesDefaultTagHelperRuntime());
 
@@ -64,7 +64,7 @@ namespace Microsoft.CodeAnalysis.Razor
             var attribute = Assert.Single(item.BoundAttributes);
             Assert.Empty(attribute.Diagnostics);
             Assert.False(attribute.HasErrors);
-            Assert.Equal(BlazorMetadata.Ref.TagHelperKind, attribute.Kind);
+            Assert.Equal(ComponentMetadata.Ref.TagHelperKind, attribute.Kind);
             Assert.False(attribute.IsDefaultKind());
             Assert.False(attribute.HasIndexer);
             Assert.Null(attribute.IndexerNamePrefix);

@@ -40,12 +40,12 @@ namespace Microsoft.CodeAnalysis.Razor
 
         private TagHelperDescriptor CreateRefTagHelper()
         {
-            var builder = TagHelperDescriptorBuilder.Create(BlazorMetadata.Ref.TagHelperKind, "Ref", ComponentsApi.AssemblyName);
+            var builder = TagHelperDescriptorBuilder.Create(ComponentMetadata.Ref.TagHelperKind, "Ref", ComponentsApi.AssemblyName);
             builder.Documentation = ComponentResources.RefTagHelper_Documentation;
 
-            builder.Metadata.Add(BlazorMetadata.SpecialKindKey, BlazorMetadata.Ref.TagHelperKind);
+            builder.Metadata.Add(ComponentMetadata.SpecialKindKey, ComponentMetadata.Ref.TagHelperKind);
             builder.Metadata.Add(TagHelperMetadata.Common.ClassifyAttributesOnly, bool.TrueString);
-            builder.Metadata[TagHelperMetadata.Runtime.Name] = BlazorMetadata.Ref.RuntimeName;
+            builder.Metadata[TagHelperMetadata.Runtime.Name] = ComponentMetadata.Ref.RuntimeName;
 
             // WTE has a bug in 15.7p1 where a Tag Helper without a display-name that looks like
             // a C# property will crash trying to create the tooltips.

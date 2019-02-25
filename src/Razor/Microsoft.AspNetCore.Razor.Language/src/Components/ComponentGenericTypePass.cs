@@ -284,7 +284,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 // Now we need to insert the type inference node into the tree.
                 var namespaceNode = documentNode.Children
                     .OfType<NamespaceDeclarationIntermediateNode>()
-                    .Where(n => n.Annotations.Contains(new KeyValuePair<object, object>(BlazorMetadata.Component.GenericTypedKey, bool.TrueString)))
+                    .Where(n => n.Annotations.Contains(new KeyValuePair<object, object>(ComponentMetadata.Component.GenericTypedKey, bool.TrueString)))
                     .FirstOrDefault();
                 if (namespaceNode == null)
                 {
@@ -292,7 +292,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     {
                         Annotations =
                         {
-                            { BlazorMetadata.Component.GenericTypedKey, bool.TrueString },
+                            { ComponentMetadata.Component.GenericTypedKey, bool.TrueString },
                         },
                         Content = @namespace,
                     };

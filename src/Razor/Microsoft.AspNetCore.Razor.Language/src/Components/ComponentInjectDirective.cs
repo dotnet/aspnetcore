@@ -6,7 +6,7 @@ using System;
 namespace Microsoft.AspNetCore.Razor.Language.Components
 {
     // Much of the following is equivalent to Microsoft.AspNetCore.Mvc.Razor.Extensions's InjectDirective,
-    // but this one outputs properties annotated for Blazor's property injector, plus it doesn't need to
+    // but this one outputs properties annotated for Components's property injector, plus it doesn't need to
     // support multiple CodeTargets.
 
     internal class ComponentInjectDirective
