@@ -35,15 +35,6 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         /// <summary>
-        /// Block the calling thread until shutdown is triggered via Ctrl+C or SIGTERM.
-        /// </summary>
-        /// <param name="host">The running <see cref="IWebHost"/>.</param>
-        public static void WaitForShutdown2(this IWebHost host)
-        {
-            host.WaitForShutdownAsync().GetAwaiter().GetResult();
-        }
-
-        /// <summary>
         /// Returns a Task that completes when shutdown is triggered via the given token, Ctrl+C or SIGTERM.
         /// </summary>
         /// <param name="host">The running <see cref="IWebHost"/>.</param>
