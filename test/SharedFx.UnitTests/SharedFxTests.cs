@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore
 
             var zipPath = Path.Combine(AppContext.BaseDirectory, zipName);
 
-            if (!Directory.Exists("unzipped"))
+            if (!Directory.Exists(zipPath + "unzipped"))
             {
                 ZipFile.ExtractToDirectory(zipPath, "unzipped");
             }
