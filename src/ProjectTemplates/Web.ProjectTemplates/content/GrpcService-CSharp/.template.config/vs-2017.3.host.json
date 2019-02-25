@@ -11,7 +11,7 @@
     "id": "1028"
   },
   "order": 303,
-  "icon": "vs-2017.3/Empty.png",
+  "icon": "vs-2017.3/gRPC.png",
   "learnMoreLink": "https://go.microsoft.com/fwlink/?LinkID=784883",
   "uiFilters": [ "oneaspnet" ],
   "supportsDocker": false,
