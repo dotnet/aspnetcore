@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             }
         }
 
-        [ConditionalFact]
+        [ConditionalFact(Skip = "https://github.com/aspnet/AspNetCore/issues/7925")]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
