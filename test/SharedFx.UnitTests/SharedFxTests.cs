@@ -26,7 +26,6 @@ namespace Microsoft.AspNetCore
             var url = new Uri($"https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/" + previousVersion + "/aspnetcore-runtime-internal-" + previousVersion + "-win-x64.zip");
             var zipName = "assemblies.zip";
             var nugetAssemblyVersions = new Dictionary<string, Version>();
-
             var root = TestData.GetDotNetRoot();
             var dir = Path.Combine(root, "shared", config.Name, config.Version);
 
@@ -38,9 +37,9 @@ namespace Microsoft.AspNetCore
 
             var zipPath = Path.Combine(AppContext.BaseDirectory, zipName);
 
-            if (!Directory.Exists(zipPath + "unzipped"))
+            if (!Directory.Exists(AppContext.BaseDirectory + "unzipped"))
             {
-                ZipFile.ExtractToDirectory(zipPath, "unzipped");
+                ZipFile.ExtractToDirectory(AppContext.BaseDirectory, "unzipped");
             }
 
             var nugetAssembliesPath = Path.Combine(AppContext.BaseDirectory, "unzipped", "shared", config.Name, previousVersion);
@@ -50,7 +49,7 @@ namespace Microsoft.AspNetCore
             {
                 try
                 {
-                    var assemblyVersion = AssemblyName.GetAssemblyName(file)?.Version;
+                    var assemblyVersion = AssemblyName.GetAssemblyName(file).Version;
                     var dllName = Path.GetFileName(file);
                     nugetAssemblyVersions.Add(dllName, assemblyVersion);
                 }
@@ -63,9 +62,8 @@ namespace Microsoft.AspNetCore
             {
                 try
                 {
-                    var localAssemblyVersion = AssemblyName.GetAssemblyName(file)?.Version;
-                    var splitPath = file.Split('\\');
-                    var dllName = splitPath[splitPath.Length - 1];
+                    var localAssemblyVersion = AssemblyName.GetAssemblyName(file).Version;
+                    var dllName = Path.GetFileName(file);
                     Assert.True(nugetAssemblyVersions.ContainsKey(dllName), $"Expected {dllName} to be in the downloaded dlls");
                     Assert.True(localAssemblyVersion.CompareTo(nugetAssemblyVersions[dllName]) >= 0, $"Expected the local version of {dllName} to be greater than or equal to the already released version.");
                 }
