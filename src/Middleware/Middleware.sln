@@ -269,9 +269,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SpaSer
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HeaderPropagation", "HeaderPropagation", "{0437D207-864E-429C-92B4-9D08D290188C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Http.HeaderPropagation", "HeaderPropagation\src\Microsoft.AspNetCore.Http.HeaderPropagation.csproj", "{D66BD4A3-DA19-413B-8FC5-4BCCFB03E084}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.HeaderPropagation", "HeaderPropagation\src\Microsoft.AspNetCore.HeaderPropagation.csproj", "{D66BD4A3-DA19-413B-8FC5-4BCCFB03E084}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Http.HeaderPropagation.Tests", "HeaderPropagation\test\Microsoft.AspNetCore.Http.HeaderPropagation.Tests.csproj", "{7E18FA09-5E08-4E41-836F-25C94B60C608}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.HeaderPropagation.Tests", "HeaderPropagation\test\Microsoft.AspNetCore.HeaderPropagation.Tests.csproj", "{7E18FA09-5E08-4E41-836F-25C94B60C608}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{8CDBD9C6-96D8-4987-AFCD-D248FBC7F02D}"
 EndProject

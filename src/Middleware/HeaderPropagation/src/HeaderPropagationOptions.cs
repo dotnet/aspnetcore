@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Microsoft.Extensions.Http.HeaderPropagation
+namespace Microsoft.AspNetCore.HeaderPropagation
 {
     public class HeaderPropagationOptions
     {

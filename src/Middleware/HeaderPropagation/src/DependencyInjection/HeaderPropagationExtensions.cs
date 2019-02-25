@@ -1,35 +1,38 @@
 using System;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Http;
-using Microsoft.Extensions.Http.HeaderPropagation;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.Extensions.DependencyInjection
+namespace Microsoft.AspNetCore.HeaderPropagation
 {
     public static class HeaderPropagationExtensions
     {
         public static IServiceCollection AddHeaderPropagation(this IServiceCollection services, Action<HeaderPropagationOptions> configure)
         {
-            services.AddHttpContextAccessor();
+            services.TryAddSingleton<HeaderPropagationState>();
             services.Configure(configure);
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<IHttpMessageHandlerBuilderFilter, HeaderPropagationMessageHandlerBuilderFilter>());
+
             return services;
         }
 
-        public static IHttpClientBuilder AddHeaderPropagation(this IHttpClientBuilder builder, Action<HeaderPropagationOptions> configure)
+        public static IHttpClientBuilder AddHeaderPropagation(this IHttpClientBuilder builder)
         {
-            builder.Services.AddHttpContextAccessor();
-            builder.Services.Configure(configure);
-            builder.AddHttpMessageHandler((sp) =>
+            builder.Services.TryAddSingleton<HeaderPropagationState>();
+            builder.Services.TryAddTransient<HeaderPropagationMessageHandler>();
+ 
+            builder.AddHttpMessageHandler(services =>
             {
-                var options = sp.GetRequiredService<IOptions<HeaderPropagationOptions>>();
-                var contextAccessor = sp.GetRequiredService<IHttpContextAccessor>();
-
-                return new HeaderPropagationMessageHandler(options.Value, contextAccessor);
+                var state = services.GetRequiredService<HeaderPropagationState>();
+                return new HeaderPropagationMessageHandler(services.GetRequiredService<IOptions<HeaderPropagationOptions>>(), state);
             });
 
             return builder;
+        }
+
+        public static IApplicationBuilder UseHeaderPropagation(this IApplicationBuilder builder)
+        {
+            return builder.UseMiddleware<HeaderPropagationMiddleware>();
         }
     }
 }

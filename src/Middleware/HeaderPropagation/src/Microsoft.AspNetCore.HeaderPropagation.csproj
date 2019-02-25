@@ -1,9 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>
-      The HttpClient factory is a pattern for configuring and retrieving named HttpClients in a composable way. This package add to IHttpClientFactory to propagating headers from the current request to an outgoing http request.
-    </Description>
+    <Description>ASP.NET Core middleware to propagate HTTP headers from the incoming request to the outgoing HTTP Client requests</Description>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
@@ -12,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="Microsoft.AspNetCore.Http.HeaderPropagation.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.HeaderPropagation.Tests" />
   </ItemGroup>
 
   <ItemGroup>
