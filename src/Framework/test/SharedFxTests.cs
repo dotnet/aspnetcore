@@ -35,9 +35,9 @@ namespace Microsoft.AspNetCore
                 .ToHashSet();
 
             _output.WriteLine("==== actual assemblies ====");
-            _output.WriteLine(string.Join('\n', actualAssemblies));
+            _output.WriteLine(string.Join('\n', actualAssemblies.OrderBy(i => i)));
             _output.WriteLine("==== expected assemblies ====");
-            _output.WriteLine(string.Join('\n', expectedAssemblies));
+            _output.WriteLine(string.Join('\n', expectedAssemblies.OrderBy(i => i)));
 
             var missing = expectedAssemblies.Except(actualAssemblies);
             var unexpected = actualAssemblies.Except(expectedAssemblies);
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore
             _output.WriteLine("==== file contents ====");
             _output.WriteLine(File.ReadAllText(platformManifestPath));
             _output.WriteLine("==== expected assemblies ====");
-            _output.WriteLine(string.Join('\n', expectedAssemblies));
+            _output.WriteLine(string.Join('\n', expectedAssemblies.OrderBy(i => i)));
 
             AssertEx.FileExists(platformManifestPath);
 

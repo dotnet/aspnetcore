@@ -5,6 +5,8 @@ using AngleSharp;
 using AngleSharp.Dom;
 using AngleSharp.Dom.Html;
 using AngleSharp.Parser.Html;
+using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.Extensions.Logging.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -112,7 +114,7 @@ namespace Templates.Test
                 .TrimStart('~')
                 .TrimStart('/');
 
-            var cdnContent = await _httpClient.GetStringAsync(scriptTag.Src);
+            var cdnContent = await GetStringFromCDN(scriptTag.Src);
             var fallbackSrcContent = GetFileContentFromArchive(scriptTag, fallbackSrc);
 
             Assert.Equal(RemoveLineEndings(cdnContent), RemoveLineEndings(fallbackSrcContent));
@@ -145,6 +147,27 @@ namespace Templates.Test
             }
         }
 
+        private async Task<string> GetStringFromCDN(string src)
+        {
+            var response = await GetFromCDN(src);
+            return await response.Content.ReadAsStringAsync();
+        }
+
+        private async Task<byte[]> GetByteArrayFromCDN(string src)
+        {
+            var response = await GetFromCDN(src);
+            return await response.Content.ReadAsByteArrayAsync();
+        }
+
+        private async Task<HttpResponseMessage> GetFromCDN(string src)
+        {
+            var logger = NullLogger.Instance;
+            return await RetryHelper.RetryRequest(async () => {
+                var request = new HttpRequestMessage(HttpMethod.Get, new Uri(src));
+                return await _httpClient.SendAsync(request);
+            }, logger);
+        }
+
         private Task<string> GetShaIntegrity(ScriptTag scriptTag)
         {
             return GetShaIntegrity(scriptTag.Integrity, scriptTag.Src);
@@ -158,7 +181,7 @@ namespace Templates.Test
         private async Task<string> GetShaIntegrity(string integrity, string src)
         {
             var prefix = integrity.Substring(0, 6);
-            using (var respStream = await _httpClient.GetStreamAsync(src))
+            var respStream = await GetByteArrayFromCDN(src);
             using (HashAlgorithm alg = string.Equals(prefix, "sha256") ? (HashAlgorithm)SHA256.Create() : (HashAlgorithm)SHA384.Create())
             {
                 var hash = alg.ComputeHash(respStream);

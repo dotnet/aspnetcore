@@ -13,7 +13,7 @@ namespace signalr
     class transport
     {
     public:
-        virtual pplx::task<void> connect(const web::uri &url) = 0;
+        virtual pplx::task<void> connect(const utility::string_t &url) = 0;
 
         virtual pplx::task<void> send(const utility::string_t &data) = 0;
 

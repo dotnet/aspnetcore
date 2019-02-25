@@ -52,7 +52,6 @@
 
     <!-- Dependencies from dotnet/corefx -->
     <ExternalAspNetCoreAppReference Include="System.IO.Pipelines"                                          Version="$(SystemIOPipelinesPackageVersion)" />
-    <ExternalAspNetCoreAppReference Include="System.Runtime.CompilerServices.Unsafe"                       Version="$(SystemRuntimeCompilerServicesUnsafePackageVersion)" />
     <ExternalAspNetCoreAppReference Include="System.Security.Cryptography.Xml"                             Version="$(SystemSecurityCryptographyXmlPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="System.Text.Encodings.Web"                                    Version="$(SystemTextEncodingsWebPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="System.Threading.Channels"                                    Version="$(SystemThreadingChannelsPackageVersion)" />
@@ -91,6 +90,7 @@
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <_CompilationOnlyReference Include="System.Buffers" />
     <_CompilationOnlyReference Include="System.ComponentModel.Annotations" />
+    <_CompilationOnlyReference Include="System.Runtime.CompilerServices.Unsafe" />
   </ItemGroup>
 
   <!--
