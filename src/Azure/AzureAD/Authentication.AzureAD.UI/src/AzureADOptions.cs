@@ -62,13 +62,13 @@ namespace Microsoft.AspNetCore.Authentication.AzureAD.UI
         /// Gets or sets the Azure Active Directory instance.
         /// Typical values are:
         /// <list type="table">
-        /// <item><term>https://login.microsoftonline.com</term><description>For Microsoft Azure public cloud</description></item>
-        /// <item><term>https://login.microsoftonline.us</term><description>For Azure US Government</description></item>
-        /// <item><term>https://login.partner.microsoftonline.cn</term><description>For Azure China 21Vianet</description></item>
-        /// <item><term>https://login.microsoftonline.de</term><description>For Azure Germany</description></item>
+        /// <item><term>https://login.microsoftonline.com/</term><description>For Microsoft Azure public cloud</description></item>
+        /// <item><term>https://login.microsoftonline.us/</term><description>For Azure US Government</description></item>
+        /// <item><term>https://login.partner.microsoftonline.cn/</term><description>For Azure China 21Vianet</description></item>
+        /// <item><term>https://login.microsoftonline.de/</term><description>For Azure Germany</description></item>
         /// </list>
         /// </summary>
-        public string Instance { get; set; } = "https://login.microsoftonline.com";
+        public string Instance { get; set; } = "https://login.microsoftonline.com/";
 
         /// <summary>
         /// Gets or sets the domain associated with the Azure Active Directory tenant.
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Authentication.AzureAD.UI
         /// <summary>
         /// Azure Active Directory Authority
         /// </summary>
-        public string Authority { get; set; } = "{Instance}/{TenantId}";
+        public string Authority { get; set; } = "{Instance}{TenantId}";
 
         /// <summary>
         /// Gets or sets the audience for a Web API (This audience needs
