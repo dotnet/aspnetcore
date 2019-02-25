@@ -1,10 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Diagnostics;
 using System.Text;
-using Microsoft.AspNetCore.Connections.Abstractions;
+using Microsoft.AspNetCore.Connections.Abstractions.Sources;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
@@ -20,8 +20,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (pathEncoded)
             {
                 // URI was encoded, unescape and then parse as UTF-8
-                // Disabling warning temporary
+#pragma warning disable CS0436 // Type conflicts with imported type
                 pathLength = UrlDecoder.DecodeInPlace(path);
+#pragma warning restore CS0436 // Type conflicts with imported type
 
                 // Removing dot segments must be done after unescaping. From RFC 3986:
                 //

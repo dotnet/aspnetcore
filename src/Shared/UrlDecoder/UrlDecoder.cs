@@ -4,9 +4,9 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Connections.Abstractions
+namespace Microsoft.AspNetCore.Connections.Abstractions.Sources
 {
-    internal class UrlDecoder
+    public class UrlDecoder
     {
         /// <summary>
         /// Unescape a URL path
