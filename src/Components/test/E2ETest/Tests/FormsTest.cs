@@ -317,12 +317,12 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        public async Task InputComponentsCauseContainerToRerenderOnChange()
+        public void InputComponentsCauseContainerToRerenderOnChange()
         {
             var appElement = MountTestComponent<TypicalValidationComponent>();
             var ticketClassInput = new SelectElement(appElement.FindElement(By.ClassName("ticket-class")).FindElement(By.TagName("select")));
             var selectedTicketClassDisplay = appElement.FindElement(By.Id("selected-ticket-class"));
-            var select = ticketClassInput.WrappedElement;
+            var messagesAccessor = CreateValidationMessagesAccessor(appElement);
 
             // Shows initial state
             WaitAssert.Equal("Economy", () => selectedTicketClassDisplay.Text);
@@ -333,7 +333,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             // Leaves previous value unchanged if new entry is unparseable
             ticketClassInput.SelectByText("(select)");
-            await Task.Delay(500); // Not expecting any UI change, so wait a moment to see if one happens
+            WaitAssert.Equal(new[] { "The TicketClass field is not valid." }, messagesAccessor);
             WaitAssert.Equal("Premium", () => selectedTicketClassDisplay.Text);
         }
 
