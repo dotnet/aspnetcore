@@ -25,6 +25,11 @@ namespace Microsoft.AspNetCore.WebUtilities
         private string _key;
         private string _value;
 
+        public FormReader2(PipeReader pipeReader)
+            : this(pipeReader, Encoding.UTF8)
+        {
+        }
+
         public FormReader2(PipeReader pipeReader, Encoding encoding)
         {
             _pipeReader = pipeReader;
