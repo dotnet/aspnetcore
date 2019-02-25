@@ -41,10 +41,13 @@
     <Message Text="test:sauce Args = $(_TestSauceArgs)" Importance="high" />
     <Exec Command="npm run test:sauce -- $(_TestSauceArgs)"
           Condition="'$(DailyTests)' == 'true'"
+          ContinueOnError="true"
           WorkingDirectory="$(RepositoryRoot)src/SignalR/clients/ts/FunctionalTests"
           IgnoreStandardErrorWarningFormat="true">
       <Output TaskParameter="ExitCode" PropertyName="ErrorCode"/>
     </Exec>
+    <Message Importance="high" Text="$(ErrorCode)"/>
+
     <Message Condition="'$(ErrorCode)' == '1'" Text="First run failed with $(ErrorCode) -- Rerunning sauce labs tests" Importance="high" />
     <Exec Command="npm run test:sauce -- $(_TestSauceArgs)"
       Condition="'$(ErrorCode)' == '1'"
