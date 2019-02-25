@@ -76,22 +76,19 @@ namespace Microsoft.AspNetCore.WebUtilities
         {
             StartReadNextPair();
 
-            if (_endOfPipe)
-            {
-                return new KeyValuePair<string, string>(null, null);
-            }
+
 
             // TODO a bit of cleanup here.
             _key = await FindStringInReadOnlySequenceAsync(_equalEncoded, KeyLengthLimit);
             if (_key == null)
             {
-                return new KeyValuePair<string, string>(null, null);
+                return null;
             }
 
             _value = await FindStringInReadOnlySequenceAsync(_andEncoded, ValueLengthLimit);
             if (_value == null)
             {
-                return new KeyValuePair<string, string>(null, null);
+                return null;
             }
 
             return new KeyValuePair<string, string>(_key, _value);
@@ -101,6 +98,11 @@ namespace Microsoft.AspNetCore.WebUtilities
         {
             while (true)
             {
+                if (_endOfPipe)
+                {
+                    return null;
+                }
+
                 ReadResult readResult;
                 if (!_pipeReader.TryRead(out readResult))
                 {
@@ -157,6 +159,10 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             res = _encoding.GetString(result);
 
+            // TODO check if utf8 here.
+            res = res.Replace('+', ' ');
+            res = Uri.UnescapeDataString(res);
+
             if (res.Length > limit)
             {
                 throw new InvalidDataException($"Form key or value length limit {limit} exceeded.");
@@ -175,7 +181,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         /// <returns>The collection containing the parsed HTTP form body.</returns>
         public async Task<Dictionary<string, StringValues>> ReadFormAsync(CancellationToken cancellationToken = default)
         {
-            var accumulator = new KeyValueAccumulator();
+            KeyValueAccumulator accumulator = default;
             while (true)
             {
                 await ReadNextPairAsync(cancellationToken);
