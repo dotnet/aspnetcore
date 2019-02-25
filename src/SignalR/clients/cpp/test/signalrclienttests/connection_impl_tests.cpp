@@ -56,8 +56,8 @@ TEST(connection_impl_start, connection_state_is_connecting_when_connection_is_be
 
     auto websocket_client = create_test_websocket_client(
         /* receive function */ []() { return pplx::task_from_exception<std::string>(std::runtime_error("should not be invoked")); },
-        /* send function */ [](const utility::string_t){ return pplx::task_from_exception<void>(std::runtime_error("should not be invoked"));  },
-        /* connect function */[](const web::uri&)
+        /* send function */ [](const std::string){ return pplx::task_from_exception<void>(std::runtime_error("should not be invoked"));  },
+        /* connect function */[](const std::string&)
         {
             return pplx::task_from_exception<void>(web::websockets::client::websocket_exception(_XPLATSTR("connecting failed")));
         });
@@ -92,9 +92,9 @@ TEST(connection_impl_start, connection_state_is_connected_when_connection_establ
 
 TEST(connection_impl_start, connection_state_is_disconnected_when_connection_cannot_be_established)
 {
-    auto web_request_factory = std::make_unique<test_web_request_factory>([](const web::uri &) -> std::unique_ptr<web_request>
+    auto web_request_factory = std::make_unique<test_web_request_factory>([](const std::string&) -> std::unique_ptr<web_request>
     {
-        return std::unique_ptr<web_request>(new web_request_stub((unsigned short)404, _XPLATSTR("Bad request"), _XPLATSTR("")));
+        return std::unique_ptr<web_request>(new web_request_stub((unsigned short)404, "Bad request", ""));
     });
 
     auto connection =
@@ -118,7 +118,7 @@ TEST(connection_impl_start, throws_for_invalid_uri)
     auto websocket_client = create_test_websocket_client(
         /* receive function */ []() { return pplx::task_from_result(std::string("{ }\x1e")); });
 
-    auto connection = connection_impl::create(_XPLATSTR(":1\t ä bad_uri&a=b"), trace_level::errors, writer, create_test_web_request_factory(), std::make_unique<test_transport_factory>(websocket_client));
+    auto connection = connection_impl::create(":1\t ä bad_uri&a=b", trace_level::errors, writer, create_test_web_request_factory(), std::make_unique<test_transport_factory>(websocket_client));
 
     try
     {
@@ -136,18 +136,18 @@ TEST(connection_impl_start, throws_for_invalid_uri)
 TEST(connection_impl_start, start_sets_id_query_string)
 {
     std::shared_ptr<log_writer> writer(std::make_shared<memory_log_writer>());
-    utility::string_t query_string;
+    std::string query_string;
 
     auto websocket_client = create_test_websocket_client(
         /* receive function */ []() { return pplx::task_from_exception<std::string>(std::runtime_error("should not be invoked")); },
-        /* send function */ [](const utility::string_t) { return pplx::task_from_exception<void>(std::runtime_error("should not be invoked"));  },
-        /* connect function */[&query_string](const web::uri& url)
+        /* send function */ [](const std::string&) { return pplx::task_from_exception<void>(std::runtime_error("should not be invoked"));  },
+        /* connect function */[&query_string](const std::string& url)
     {
-        query_string = url.query();
-        return pplx::task_from_exception<void>(web::websockets::client::websocket_exception(_XPLATSTR("connecting failed")));
+        query_string = utility::conversions::to_utf8string(url.substr(url.find('?') + 1));
+        return pplx::task_from_exception<void>(web::websockets::client::websocket_exception("connecting failed"));
     });
 
-    auto connection = connection_impl::create(create_uri(_XPLATSTR("")), trace_level::errors, writer, create_test_web_request_factory(), std::make_unique<test_transport_factory>(websocket_client));
+    auto connection = connection_impl::create(create_uri(""), trace_level::errors, writer, create_test_web_request_factory(), std::make_unique<test_transport_factory>(websocket_client));
 
     try
     {
@@ -157,24 +157,24 @@ TEST(connection_impl_start, start_sets_id_query_string)
     {
     }
 
-    ASSERT_EQ(_XPLATSTR("id=f7707523-307d-4cba-9abf-3eef701241e8"), query_string);
+    ASSERT_EQ("id=f7707523-307d-4cba-9abf-3eef701241e8", query_string);
 }
 
 TEST(connection_impl_start, start_appends_id_query_string)
 {
     std::shared_ptr<log_writer> writer(std::make_shared<memory_log_writer>());
-    utility::string_t query_string;
+    std::string query_string;
 
     auto websocket_client = create_test_websocket_client(
         /* receive function */ []() { return pplx::task_from_exception<std::string>(std::runtime_error("should not be invoked")); },
-        /* send function */ [](const utility::string_t) { return pplx::task_from_exception<void>(std::runtime_error("should not be invoked"));  },
-        /* connect function */[&query_string](const web::uri& url)
+        /* send function */ [](const std::string) { return pplx::task_from_exception<void>(std::runtime_error("should not be invoked"));  },
+        /* connect function */[&query_string](const std::string& url)
     {
-        query_string = url.query();
+        query_string = utility::conversions::to_utf8string(url.substr(url.find('?') + 1));
         return pplx::task_from_exception<void>(web::websockets::client::websocket_exception(_XPLATSTR("connecting failed")));
     });
 
-    auto connection = connection_impl::create(create_uri(_XPLATSTR("a=b&c=d")), trace_level::errors, writer, create_test_web_request_factory(), std::make_unique<test_transport_factory>(websocket_client));
+    auto connection = connection_impl::create(create_uri("a=b&c=d"), trace_level::errors, writer, create_test_web_request_factory(), std::make_unique<test_transport_factory>(websocket_client));
 
     try
     {
@@ -184,16 +184,16 @@ TEST(connection_impl_start, start_appends_id_query_string)
     {
     }
 
-    ASSERT_EQ(_XPLATSTR("a=b&c=d&id=f7707523-307d-4cba-9abf-3eef701241e8"), query_string);
+    ASSERT_EQ("a=b&c=d&id=f7707523-307d-4cba-9abf-3eef701241e8", query_string);
 }
 
 TEST(connection_impl_start, start_logs_exceptions)
 {
     std::shared_ptr<log_writer> writer(std::make_shared<memory_log_writer>());
 
-    auto web_request_factory = std::make_unique<test_web_request_factory>([](const web::uri &) -> std::unique_ptr<web_request>
+    auto web_request_factory = std::make_unique<test_web_request_factory>([](const std::string&) -> std::unique_ptr<web_request>
     {
-        return std::unique_ptr<web_request>(new web_request_stub((unsigned short)404, _XPLATSTR("Bad request"), _XPLATSTR("")));
+        return std::unique_ptr<web_request>(new web_request_stub((unsigned short)404, "Bad request", ""));
     });
 
     auto connection =
@@ -211,15 +211,15 @@ TEST(connection_impl_start, start_logs_exceptions)
     ASSERT_FALSE(log_entries.empty());
 
     auto entry = remove_date_from_log_entry(log_entries[0]);
-    ASSERT_EQ(_XPLATSTR("[error       ] connection could not be started due to: web exception - 404 Bad request\n"), entry);
+    ASSERT_EQ("[error       ] connection could not be started due to: web exception - 404 Bad request\n", entry);
 }
 
 
 TEST(connection_impl_start, start_propagates_exceptions_from_negotiate)
 {
-    auto web_request_factory = std::make_unique<test_web_request_factory>([](const web::uri &) -> std::unique_ptr<web_request>
+    auto web_request_factory = std::make_unique<test_web_request_factory>([](const std::string&) -> std::unique_ptr<web_request>
     {
-        return std::unique_ptr<web_request>(new web_request_stub((unsigned short)404, _XPLATSTR("Bad request"), _XPLATSTR("")));
+        return std::unique_ptr<web_request>(new web_request_stub((unsigned short)404, "Bad request", ""));
     });
 
     auto connection =
@@ -243,8 +243,8 @@ TEST(connection_impl_start, start_fails_if_transport_connect_throws)
 
     auto websocket_client = create_test_websocket_client(
         /* receive function */ []() { return pplx::task_from_exception<std::string>(std::runtime_error("should not be invoked")); },
-        /* send function */ [](const utility::string_t){ return pplx::task_from_exception<void>(std::runtime_error("should not be invoked"));  },
-        /* connect function */[](const web::uri&)
+        /* send function */ [](const std::string){ return pplx::task_from_exception<void>(std::runtime_error("should not be invoked"));  },
+        /* connect function */[](const std::string&)
         {
             return pplx::task_from_exception<void>(web::websockets::client::websocket_exception(_XPLATSTR("connecting failed")));
         });
@@ -265,7 +265,7 @@ TEST(connection_impl_start, start_fails_if_transport_connect_throws)
     ASSERT_TRUE(log_entries.size() > 1);
 
     auto entry = remove_date_from_log_entry(log_entries[1]);
-    ASSERT_EQ(_XPLATSTR("[error       ] transport could not connect due to: connecting failed\n"), entry);
+    ASSERT_EQ("[error       ] transport could not connect due to: connecting failed\n", entry);
 }
 
 #if defined(_WIN32)   //  https://github.com/aspnet/SignalR-Client-Cpp/issues/131
@@ -275,7 +275,7 @@ TEST(connection_impl_send, send_fails_if_transport_fails_when_receiving_messages
     std::shared_ptr<log_writer> writer(std::make_shared<memory_log_writer>());
 
     auto websocket_client = create_test_websocket_client([]() { return pplx::task_from_result(std::string("")); },
-        /* send function */ [](const utility::string_t &)
+        /* send function */ [](const std::string &)
         {
             return pplx::task_from_exception<void>(std::runtime_error("send error"));
         });
@@ -286,19 +286,19 @@ TEST(connection_impl_send, send_fails_if_transport_fails_when_receiving_messages
 
     try
     {
-        connection->send(_XPLATSTR("message")).get();
+        connection->send("message").get();
         ASSERT_TRUE(false); // exception not thrown
     }
     catch (const std::exception &e)
     {
-        ASSERT_EQ(_XPLATSTR("send error"), utility::conversions::to_string_t(e.what()));
+        ASSERT_STREQ("send error", e.what());
     }
 
     auto log_entries = std::dynamic_pointer_cast<memory_log_writer>(writer)->get_log_entries();
     ASSERT_TRUE(log_entries.size() == 1) << dump_vector(log_entries);
 
     auto entry = remove_date_from_log_entry(log_entries[0]);
-    ASSERT_EQ(_XPLATSTR("[error       ] error sending data: send error\n"), entry) << dump_vector(log_entries);
+    ASSERT_EQ("[error       ] error sending data: send error\n", entry) << dump_vector(log_entries);
 }
 
 #endif
@@ -307,9 +307,9 @@ TEST(connection_impl_start, start_fails_if_negotiate_request_fails)
 {
     std::shared_ptr<log_writer> writer(std::make_shared<memory_log_writer>());
 
-    auto web_request_factory = std::make_unique<test_web_request_factory>([](const web::uri&)
+    auto web_request_factory = std::make_unique<test_web_request_factory>([](const std::string&)
     {
-        return std::unique_ptr<web_request>(new web_request_stub((unsigned short)400, _XPLATSTR("Bad Request")));
+        return std::unique_ptr<web_request>(new web_request_stub((unsigned short)400, "Bad Request"));
     });
 
     auto websocket_client = std::make_shared<test_websocket_client>();
@@ -337,19 +337,19 @@ TEST(connection_impl_start, start_fails_if_negotiate_response_has_error)
 {
     std::shared_ptr<log_writer> writer(std::make_shared<memory_log_writer>());
 
-    auto web_request_factory = std::make_unique<test_web_request_factory>([](const web::uri & url)
+    auto web_request_factory = std::make_unique<test_web_request_factory>([](const std::string& url)
     {
         auto response_body =
-            url.path() == _XPLATSTR("/negotiate")
-            ? _XPLATSTR("{ \"error\": \"bad negotiate\" }")
-            : _XPLATSTR("");
+            url.find("/negotiate") != std::string::npos
+            ? "{ \"error\": \"bad negotiate\" }"
+            : "";
 
-        return std::unique_ptr<web_request>(new web_request_stub((unsigned short)200, _XPLATSTR("OK"), response_body));
+        return std::unique_ptr<web_request>(new web_request_stub((unsigned short)200, "OK", response_body));
     });
 
     pplx::task_completion_event<void> tce;
     auto websocket_client = std::make_shared<test_websocket_client>();
-    websocket_client->set_connect_function([tce](const web::uri&) mutable
+    websocket_client->set_connect_function([tce](const std::string&) mutable
     {
         return pplx::task<void>(tce);
     });
@@ -373,19 +373,19 @@ TEST(connection_impl_start, start_fails_if_negotiate_response_does_not_have_webs
 {
     std::shared_ptr<log_writer> writer(std::make_shared<memory_log_writer>());
 
-    auto web_request_factory = std::make_unique<test_web_request_factory>([](const web::uri & url)
+    auto web_request_factory = std::make_unique<test_web_request_factory>([](const std::string& url)
     {
         auto response_body =
-            url.path() == _XPLATSTR("/negotiate")
-            ? _XPLATSTR("{ \"availableTransports\": [ { \"transport\": \"ServerSentEvents\", \"transferFormats\": [ \"Text\" ] } ] }")
-            : _XPLATSTR("");
+            url.find("/negotiate") != std::string::npos
+            ? "{ \"availableTransports\": [ { \"transport\": \"ServerSentEvents\", \"transferFormats\": [ \"Text\" ] } ] }"
+            : "";
 
-        return std::unique_ptr<web_request>(new web_request_stub((unsigned short)200, _XPLATSTR("OK"), response_body));
+        return std::unique_ptr<web_request>(new web_request_stub((unsigned short)200, "OK", response_body));
     });
 
     pplx::task_completion_event<void> tce;
     auto websocket_client = std::make_shared<test_websocket_client>();
-    websocket_client->set_connect_function([tce](const web::uri&) mutable
+    websocket_client->set_connect_function([tce](const std::string&) mutable
     {
         return pplx::task<void>(tce);
     });
@@ -409,19 +409,19 @@ TEST(connection_impl_start, start_fails_if_negotiate_response_does_not_have_tran
 {
     std::shared_ptr<log_writer> writer(std::make_shared<memory_log_writer>());
 
-    auto web_request_factory = std::make_unique<test_web_request_factory>([](const web::uri & url)
+    auto web_request_factory = std::make_unique<test_web_request_factory>([](const std::string& url)
     {
         auto response_body =
-            url.path() == _XPLATSTR("/negotiate")
-            ? _XPLATSTR("{ \"availableTransports\": [ ] }")
-            : _XPLATSTR("");
+            url.find("/negotiate") != std::string::npos
+            ? "{ \"availableTransports\": [ ] }"
+            : "";
 
-        return std::unique_ptr<web_request>(new web_request_stub((unsigned short)200, _XPLATSTR("OK"), response_body));
+        return std::unique_ptr<web_request>(new web_request_stub((unsigned short)200, "OK", response_body));
     });
 
     pplx::task_completion_event<void> tce;
     auto websocket_client = std::make_shared<test_websocket_client>();
-    websocket_client->set_connect_function([tce](const web::uri&) mutable
+    websocket_client->set_connect_function([tce](const std::string&) mutable
     {
         return pplx::task<void>(tce);
     });
@@ -445,19 +445,19 @@ TEST(connection_impl_start, start_fails_if_negotiate_response_is_invalid)
 {
     std::shared_ptr<log_writer> writer(std::make_shared<memory_log_writer>());
 
-    auto web_request_factory = std::make_unique<test_web_request_factory>([](const web::uri & url)
+    auto web_request_factory = std::make_unique<test_web_request_factory>([](const std::string& url)
     {
         auto response_body =
-            url.path() == _XPLATSTR("/negotiate")
-            ? _XPLATSTR("{ \"availableTransports\": [ ")
-            : _XPLATSTR("");
+            url.find("/negotiate") != std::string::npos
+            ? "{ \"availableTransports\": [ "
+            : "";
 
-        return std::unique_ptr<web_request>(new web_request_stub((unsigned short)200, _XPLATSTR("OK"), response_body));
+        return std::unique_ptr<web_request>(new web_request_stub((unsigned short)200, "OK", response_body));
     });
 
     pplx::task_completion_event<void> tce;
     auto websocket_client = std::make_shared<test_websocket_client>();
-    websocket_client->set_connect_function([tce](const web::uri&) mutable
+    websocket_client->set_connect_function([tce](const std::string&) mutable
     {
         return pplx::task<void>(tce);
     });
@@ -481,31 +481,31 @@ TEST(connection_impl_start, negotiate_follows_redirect)
 {
     std::shared_ptr<log_writer> writer(std::make_shared<memory_log_writer>());
 
-    auto web_request_factory = std::make_unique<test_web_request_factory>([](const web::uri & url)
+    auto web_request_factory = std::make_unique<test_web_request_factory>([](const std::string& url)
     {
-        utility::string_t response_body = _XPLATSTR("");
-        if (url.path() == _XPLATSTR("/negotiate"))
+        std::string response_body = "";
+        if (url.find("/negotiate") != std::string::npos)
         {
-            if (url.host() == _XPLATSTR("redirected"))
+            if (url.find("redirected") != std::string::npos)
             {
-                response_body = _XPLATSTR("{\"connectionId\" : \"f7707523-307d-4cba-9abf-3eef701241e8\", ")
-                    _XPLATSTR("\"availableTransports\" : [ { \"transport\": \"WebSockets\", \"transferFormats\": [ \"Text\", \"Binary\" ] } ] }");
+                response_body = "{\"connectionId\" : \"f7707523-307d-4cba-9abf-3eef701241e8\", "
+                    "\"availableTransports\" : [ { \"transport\": \"WebSockets\", \"transferFormats\": [ \"Text\", \"Binary\" ] } ] }";
             }
             else
             {
-                response_body = _XPLATSTR("{ \"url\": \"http://redirected\" }");
+                response_body = "{ \"url\": \"http://redirected\" }";
             }
         }
 
-        return std::unique_ptr<web_request>(new web_request_stub((unsigned short)200, _XPLATSTR("OK"), response_body));
+        return std::unique_ptr<web_request>(new web_request_stub((unsigned short)200, "OK", response_body));
     });
 
     auto websocket_client = std::make_shared<test_websocket_client>();
 
-    utility::string_t connectUrl;
-    websocket_client->set_connect_function([&connectUrl](const web::uri& url)
+    std::string connectUrl;
+    websocket_client->set_connect_function([&connectUrl](const std::string& url)
     {
-        connectUrl = url.to_string();
+        connectUrl = url;
         return pplx::task_from_result();
     });
 
@@ -515,44 +515,44 @@ TEST(connection_impl_start, negotiate_follows_redirect)
 
     connection->start().get();
 
-    ASSERT_EQ(_XPLATSTR("ws://redirected/?id=f7707523-307d-4cba-9abf-3eef701241e8"), connectUrl);
+    ASSERT_EQ("ws://redirected/?id=f7707523-307d-4cba-9abf-3eef701241e8", connectUrl);
 }
 
 TEST(connection_impl_start, negotiate_redirect_uses_accessToken)
 {
     std::shared_ptr<log_writer> writer(std::make_shared<memory_log_writer>());
-    utility::string_t accessToken;
+    std::string accessToken;
 
-    auto web_request_factory = std::make_unique<test_web_request_factory>([&accessToken](const web::uri & url)
+    auto web_request_factory = std::make_unique<test_web_request_factory>([&accessToken](const std::string& url)
     {
-        utility::string_t response_body = _XPLATSTR("");
-        if (url.path() == _XPLATSTR("/negotiate"))
+        std::string response_body = "";
+        if (url.find("/negotiate") != std::string::npos)
         {
-            if (url.host() == _XPLATSTR("redirected"))
+            if (url.find("redirected") != std::string::npos)
             {
-                response_body = _XPLATSTR("{\"connectionId\" : \"f7707523-307d-4cba-9abf-3eef701241e8\", ")
-                    _XPLATSTR("\"availableTransports\" : [ { \"transport\": \"WebSockets\", \"transferFormats\": [ \"Text\", \"Binary\" ] } ] }");
+                response_body = "{\"connectionId\" : \"f7707523-307d-4cba-9abf-3eef701241e8\", "
+                    "\"availableTransports\" : [ { \"transport\": \"WebSockets\", \"transferFormats\": [ \"Text\", \"Binary\" ] } ] }";
             }
             else
             {
-                response_body = _XPLATSTR("{ \"url\": \"http://redirected\", \"accessToken\": \"secret\" }");
+                response_body = "{ \"url\": \"http://redirected\", \"accessToken\": \"secret\" }";
             }
         }
 
-        auto request = new web_request_stub((unsigned short)200, _XPLATSTR("OK"), response_body);
+        auto request = new web_request_stub((unsigned short)200, "OK", response_body);
         request->on_get_response = [&accessToken](web_request_stub& stub)
         {
-            accessToken = stub.m_signalr_client_config.get_http_headers()[_XPLATSTR("Authorization")];
+            accessToken = utility::conversions::to_utf8string(stub.m_signalr_client_config.get_http_headers()[_XPLATSTR("Authorization")]);
         };
         return std::unique_ptr<web_request>(request);
     });
 
     auto websocket_client = std::make_shared<test_websocket_client>();
 
-    utility::string_t connectUrl;
-    websocket_client->set_connect_function([&connectUrl](const web::uri& url)
+    std::string connectUrl;
+    websocket_client->set_connect_function([&connectUrl](const std::string& url)
     {
-        connectUrl = url.to_string();
+        connectUrl = url;
         return pplx::task_from_result();
     });
 
@@ -562,24 +562,24 @@ TEST(connection_impl_start, negotiate_redirect_uses_accessToken)
 
     connection->start().get();
 
-    ASSERT_EQ(_XPLATSTR("ws://redirected/?id=f7707523-307d-4cba-9abf-3eef701241e8"), connectUrl);
-    ASSERT_EQ(_XPLATSTR("Bearer secret"), accessToken);
+    ASSERT_EQ("ws://redirected/?id=f7707523-307d-4cba-9abf-3eef701241e8", connectUrl);
+    ASSERT_EQ("Bearer secret", accessToken);
 }
 
 TEST(connection_impl_start, negotiate_fails_after_too_many_redirects)
 {
     std::shared_ptr<log_writer> writer(std::make_shared<memory_log_writer>());
 
-    auto web_request_factory = std::make_unique<test_web_request_factory>([](const web::uri & url)
+    auto web_request_factory = std::make_unique<test_web_request_factory>([](const std::string& url)
     {
-        utility::string_t response_body = _XPLATSTR("");
-        if (url.path() == _XPLATSTR("/negotiate"))
+        std::string response_body = "";
+        if (url.find("/negotiate") != std::string::npos)
         {
             // infinite redirect
-            response_body = _XPLATSTR("{ \"url\": \"http://redirected\" }");
+            response_body = "{ \"url\": \"http://redirected\" }";
         }
 
-        return std::unique_ptr<web_request>(new web_request_stub((unsigned short)200, _XPLATSTR("OK"), response_body));
+        return std::unique_ptr<web_request>(new web_request_stub((unsigned short)200, "OK", response_body));
     });
 
     auto websocket_client = std::make_shared<test_websocket_client>();
@@ -602,15 +602,15 @@ TEST(connection_impl_start, negotiate_fails_if_ProtocolVersion_in_response)
 {
     std::shared_ptr<log_writer> writer(std::make_shared<memory_log_writer>());
 
-    auto web_request_factory = std::make_unique<test_web_request_factory>([](const web::uri & url)
+    auto web_request_factory = std::make_unique<test_web_request_factory>([](const std::string& url)
     {
-        utility::string_t response_body = _XPLATSTR("");
-        if (url.path() == _XPLATSTR("/negotiate"))
+        std::string response_body = "";
+        if (url.find("/negotiate") != std::string::npos)
         {
-            response_body = _XPLATSTR("{\"ProtocolVersion\" : \"\" }");
+            response_body = "{\"ProtocolVersion\" : \"\" }";
         }
 
-        return std::unique_ptr<web_request>(new web_request_stub((unsigned short)200, _XPLATSTR("OK"), response_body));
+        return std::unique_ptr<web_request>(new web_request_stub((unsigned short)200, "OK", response_body));
     });
 
     auto websocket_client = std::make_shared<test_websocket_client>();
@@ -634,24 +634,24 @@ TEST(connection_impl_start, negotiate_redirect_does_not_overwrite_url)
     std::shared_ptr<log_writer> writer(std::make_shared<memory_log_writer>());
     int redirectCount = 0;
 
-    auto web_request_factory = std::make_unique<test_web_request_factory>([&redirectCount](const web::uri & url)
+    auto web_request_factory = std::make_unique<test_web_request_factory>([&redirectCount](const std::string& url)
     {
-        utility::string_t response_body = _XPLATSTR("");
-        if (url.path() == _XPLATSTR("/negotiate"))
+        std::string response_body = "";
+        if (url.find("/negotiate") != std::string::npos)
         {
-            if (url.host() == _XPLATSTR("redirected"))
+            if (url.find("redirected") != std::string::npos)
             {
-                response_body = _XPLATSTR("{\"connectionId\" : \"f7707523-307d-4cba-9abf-3eef701241e8\", ")
-                    _XPLATSTR("\"availableTransports\" : [ { \"transport\": \"WebSockets\", \"transferFormats\": [ \"Text\", \"Binary\" ] } ] }");
+                response_body = "{\"connectionId\" : \"f7707523-307d-4cba-9abf-3eef701241e8\", "
+                    "\"availableTransports\" : [ { \"transport\": \"WebSockets\", \"transferFormats\": [ \"Text\", \"Binary\" ] } ] }";
             }
             else
             {
-                response_body = _XPLATSTR("{ \"url\": \"http://redirected\" }");
+                response_body = "{ \"url\": \"http://redirected\" }";
                 redirectCount++;
             }
         }
 
-        return std::unique_ptr<web_request>(new web_request_stub((unsigned short)200, _XPLATSTR("OK"), response_body));
+        return std::unique_ptr<web_request>(new web_request_stub((unsigned short)200, "OK", response_body));
     });
 
     auto websocket_client = std::make_shared<test_websocket_client>();
@@ -670,37 +670,37 @@ TEST(connection_impl_start, negotiate_redirect_does_not_overwrite_url)
 TEST(connection_impl_start, negotiate_redirect_uses_own_query_string)
 {
     std::shared_ptr<log_writer> writer(std::make_shared<memory_log_writer>());
-    utility::string_t query_string;
+    std::string query_string;
 
     auto websocket_client = create_test_websocket_client(
         /* receive function */ []() { return pplx::task_from_exception<std::string>(std::runtime_error("should not be invoked")); },
-        /* send function */ [](const utility::string_t) { return pplx::task_from_exception<void>(std::runtime_error("should not be invoked"));  },
-        /* connect function */[&query_string](const web::uri& url)
+        /* send function */ [](const std::string) { return pplx::task_from_exception<void>(std::runtime_error("should not be invoked"));  },
+        /* connect function */[&query_string](const std::string& url)
     {
-        query_string = url.query();
+        query_string = url.substr(url.find('?') + 1);
         return pplx::task_from_exception<void>(web::websockets::client::websocket_exception(_XPLATSTR("connecting failed")));
     });
 
-    auto web_request_factory = std::make_unique<test_web_request_factory>([](const web::uri & url)
+    auto web_request_factory = std::make_unique<test_web_request_factory>([](const std::string& url)
     {
-        utility::string_t response_body = _XPLATSTR("");
-        if (url.path() == _XPLATSTR("/negotiate"))
+        std::string response_body = "";
+        if (url.find("/negotiate") != std::string::npos)
         {
-            if (url.host() == _XPLATSTR("redirected"))
+            if (url.find("redirected") != std::string::npos)
             {
-                response_body = _XPLATSTR("{\"connectionId\" : \"f7707523-307d-4cba-9abf-3eef701241e8\", ")
-                    _XPLATSTR("\"availableTransports\" : [ { \"transport\": \"WebSockets\", \"transferFormats\": [ \"Text\", \"Binary\" ] } ] }");
+                response_body = "{\"connectionId\" : \"f7707523-307d-4cba-9abf-3eef701241e8\", "
+                    "\"availableTransports\" : [ { \"transport\": \"WebSockets\", \"transferFormats\": [ \"Text\", \"Binary\" ] } ] }";
             }
             else
             {
-                response_body = _XPLATSTR("{ \"url\": \"http://redirected?customQuery=1\" }");
+                response_body = "{ \"url\": \"http://redirected?customQuery=1\" }";
             }
         }
 
-        return std::unique_ptr<web_request>(new web_request_stub((unsigned short)200, _XPLATSTR("OK"), response_body));
+        return std::unique_ptr<web_request>(new web_request_stub((unsigned short)200, "OK", response_body));
     });
 
-    auto connection = connection_impl::create(create_uri(_XPLATSTR("a=b&c=d")), trace_level::errors, writer, std::move(web_request_factory), std::make_unique<test_transport_factory>(websocket_client));
+    auto connection = connection_impl::create(create_uri("a=b&c=d"), trace_level::errors, writer, std::move(web_request_factory), std::make_unique<test_transport_factory>(websocket_client));
 
     try
     {
@@ -710,7 +710,7 @@ TEST(connection_impl_start, negotiate_redirect_uses_own_query_string)
     {
     }
 
-    ASSERT_EQ(_XPLATSTR("customQuery=1&id=f7707523-307d-4cba-9abf-3eef701241e8"), query_string);
+    ASSERT_EQ("customQuery=1&id=f7707523-307d-4cba-9abf-3eef701241e8", query_string);
 }
 
 TEST(connection_impl_start, start_fails_if_connect_request_times_out)
@@ -721,7 +721,7 @@ TEST(connection_impl_start, start_fails_if_connect_request_times_out)
 
     pplx::task_completion_event<void> tce;
     auto websocket_client = std::make_shared<test_websocket_client>();
-    websocket_client->set_connect_function([tce](const web::uri&) mutable
+    websocket_client->set_connect_function([tce](const std::string&) mutable
     {
         return pplx::task<void>(tce);
     });
@@ -761,16 +761,16 @@ TEST(connection_impl_process_response, process_response_logs_messages)
     ASSERT_FALSE(log_entries.empty());
 
     auto entry = remove_date_from_log_entry(log_entries[0]);
-    ASSERT_EQ(_XPLATSTR("[message     ] processing message: { }\n"), entry);
+    ASSERT_EQ("[message     ] processing message: { }\n", entry);
 }
 
 TEST(connection_impl_send, message_sent)
 {
-    utility::string_t actual_message;
+    std::string actual_message;
 
     auto websocket_client = create_test_websocket_client(
         /* receive function */ []() { return pplx::task_from_result(std::string("{ }\x1e")); },
-        /* send function */ [&actual_message](const utility::string_t& message)
+        /* send function */ [&actual_message](const std::string& message)
     {
         actual_message = message;
         return pplx::task_from_result();
@@ -778,7 +778,7 @@ TEST(connection_impl_send, message_sent)
 
     auto connection = create_connection(websocket_client);
 
-    const utility::string_t message{ _XPLATSTR("Test message") };
+    const std::string message{ "Test message" };
 
     connection->start()
         .then([connection, message]()
@@ -796,7 +796,7 @@ TEST(connection_impl_send, send_throws_if_connection_not_connected)
 
     try
     {
-        connection->send(_XPLATSTR("whatever")).get();
+        connection->send("whatever").get();
         ASSERT_TRUE(false); // exception expected but not thrown
     }
     catch (const signalr_exception &e)
@@ -813,7 +813,7 @@ TEST(connection_impl_send, exceptions_from_send_logged_and_propagated)
         {
             return pplx::task_from_result(std::string("{}"));
         },
-        /* send function */ [](const utility::string_t&)
+        /* send function */ [](const std::string&)
         {
             return pplx::task_from_exception<void>(std::runtime_error("error"));
         });
@@ -825,7 +825,7 @@ TEST(connection_impl_send, exceptions_from_send_logged_and_propagated)
         connection->start()
             .then([connection]()
         {
-            return connection->send(_XPLATSTR("Test message"));
+            return connection->send("Test message");
         }).get();
 
         ASSERT_TRUE(false); // exception expected but not thrown
@@ -839,7 +839,7 @@ TEST(connection_impl_send, exceptions_from_send_logged_and_propagated)
     ASSERT_FALSE(log_entries.empty());
 
     auto entry = remove_date_from_log_entry(log_entries[0]);
-    ASSERT_EQ(_XPLATSTR("[error       ] error sending data: error\n"), entry);
+    ASSERT_EQ("[error       ] error sending data: error\n", entry);
 }
 
 TEST(connection_impl_set_message_received, callback_invoked_when_message_received)
@@ -862,17 +862,17 @@ TEST(connection_impl_set_message_received, callback_invoked_when_message_receive
 
     auto connection = create_connection(websocket_client);
 
-    auto message = std::make_shared<utility::string_t>();
+    auto message = std::make_shared<std::string>();
 
     auto message_received_event = std::make_shared<event>();
-    connection->set_message_received([message, message_received_event](const utility::string_t &m)
+    connection->set_message_received([message, message_received_event](const std::string &m)
     {
-        if (m == _XPLATSTR("Test"))
+        if (m == "Test")
         {
             *message = m;
         }
 
-        if (m == _XPLATSTR("release"))
+        if (m == "release")
         {
             message_received_event->set();
         }
@@ -882,7 +882,7 @@ TEST(connection_impl_set_message_received, callback_invoked_when_message_receive
 
     ASSERT_FALSE(message_received_event->wait(5000));
 
-    ASSERT_EQ(_XPLATSTR("Test"), *message);
+    ASSERT_EQ("Test", *message);
 }
 
 TEST(connection_impl_set_message_received, exception_from_callback_caught_and_logged)
@@ -907,14 +907,14 @@ TEST(connection_impl_set_message_received, exception_from_callback_caught_and_lo
     auto connection = create_connection(websocket_client, writer, trace_level::errors);
 
     auto message_received_event = std::make_shared<event>();
-    connection->set_message_received([message_received_event](const utility::string_t &m)
+    connection->set_message_received([message_received_event](const std::string &m)
     {
-        if (m == _XPLATSTR("throw"))
+        if (m == "throw")
         {
             throw std::runtime_error("oops");
         }
 
-        if (m == _XPLATSTR("release"))
+        if (m == "release")
         {
             message_received_event->set();
         }
@@ -928,7 +928,7 @@ TEST(connection_impl_set_message_received, exception_from_callback_caught_and_lo
     ASSERT_FALSE(log_entries.empty());
 
     auto entry = remove_date_from_log_entry(log_entries[0]);
-    ASSERT_EQ(_XPLATSTR("[error       ] message_received callback threw an exception: oops\n"), entry);
+    ASSERT_EQ("[error       ] message_received callback threw an exception: oops\n", entry);
 }
 
 TEST(connection_impl_set_message_received, non_std_exception_from_callback_caught_and_logged)
@@ -953,14 +953,14 @@ TEST(connection_impl_set_message_received, non_std_exception_from_callback_caugh
     auto connection = create_connection(websocket_client, writer, trace_level::errors);
 
     auto message_received_event = std::make_shared<event>();
-    connection->set_message_received([message_received_event](const utility::string_t &m)
+    connection->set_message_received([message_received_event](const std::string &m)
     {
-        if (m == _XPLATSTR("throw"))
+        if (m == "throw")
         {
             throw 42;
         }
 
-        if (m == _XPLATSTR("release"))
+        if (m == "release")
         {
             message_received_event->set();
         }
@@ -974,7 +974,7 @@ TEST(connection_impl_set_message_received, non_std_exception_from_callback_caugh
     ASSERT_FALSE(log_entries.empty());
 
     auto entry = remove_date_from_log_entry(log_entries[0]);
-    ASSERT_EQ(_XPLATSTR("[error       ] message_received callback threw an unknown exception\n"), entry);
+    ASSERT_EQ("[error       ] message_received callback threw an unknown exception\n", entry);
 }
 
 void can_be_set_only_in_disconnected_state(std::function<void(connection_impl *)> callback, const char* expected_exception_message)
@@ -999,7 +999,7 @@ void can_be_set_only_in_disconnected_state(std::function<void(connection_impl *)
 TEST(connection_impl_set_configuration, set_message_received_callback_can_be_set_only_in_disconnected_state)
 {
     can_be_set_only_in_disconnected_state(
-        [](connection_impl* connection) { connection->set_message_received([](const utility::string_t&){}); },
+        [](connection_impl* connection) { connection->set_message_received([](const std::string&){}); },
         "cannot set the callback when the connection is not in the disconnected state. current connection state: connected");
 }
 
@@ -1020,8 +1020,8 @@ TEST(connection_impl_stop, stopping_disconnected_connection_is_no_op)
 
     auto log_entries = std::dynamic_pointer_cast<memory_log_writer>(writer)->get_log_entries();
     ASSERT_EQ(2U, log_entries.size());
-    ASSERT_EQ(_XPLATSTR("[info        ] stopping connection\n"), remove_date_from_log_entry(log_entries[0]));
-    ASSERT_EQ(_XPLATSTR("[info        ] acquired lock in shutdown()\n"), remove_date_from_log_entry(log_entries[1]));
+    ASSERT_EQ("[info        ] stopping connection\n", remove_date_from_log_entry(log_entries[0]));
+    ASSERT_EQ("[info        ] acquired lock in shutdown()\n", remove_date_from_log_entry(log_entries[1]));
 }
 
 TEST(connection_impl_stop, stopping_disconnecting_connection_returns_cancelled_task)
@@ -1031,8 +1031,8 @@ TEST(connection_impl_stop, stopping_disconnecting_connection_returns_cancelled_t
 
     auto websocket_client = create_test_websocket_client(
         /* receive function */ []() { return pplx::task_from_result(std::string("{ }\x1e")); },
-        /* send function */ [](const utility::string_t){ return pplx::task_from_exception<void>(std::runtime_error("should not be invoked")); },
-        /* connect function */ [&close_event](const web::uri&) { return pplx::task_from_result(); },
+        /* send function */ [](const std::string){ return pplx::task_from_exception<void>(std::runtime_error("should not be invoked")); },
+        /* connect function */ [&close_event](const std::string&) { return pplx::task_from_result(); },
         /* close function */ [&close_event]()
         {
             return pplx::create_task([&close_event]()
@@ -1061,10 +1061,10 @@ TEST(connection_impl_stop, stopping_disconnecting_connection_returns_cancelled_t
 
     auto log_entries = std::dynamic_pointer_cast<memory_log_writer>(writer)->get_log_entries();
     ASSERT_EQ(4U, log_entries.size());
-    ASSERT_EQ(_XPLATSTR("[state change] disconnected -> connecting\n"), remove_date_from_log_entry(log_entries[0]));
-    ASSERT_EQ(_XPLATSTR("[state change] connecting -> connected\n"), remove_date_from_log_entry(log_entries[1]));
-    ASSERT_EQ(_XPLATSTR("[state change] connected -> disconnecting\n"), remove_date_from_log_entry(log_entries[2]));
-    ASSERT_EQ(_XPLATSTR("[state change] disconnecting -> disconnected\n"), remove_date_from_log_entry(log_entries[3]));
+    ASSERT_EQ("[state change] disconnected -> connecting\n", remove_date_from_log_entry(log_entries[0]));
+    ASSERT_EQ("[state change] connecting -> connected\n", remove_date_from_log_entry(log_entries[1]));
+    ASSERT_EQ("[state change] connected -> disconnecting\n", remove_date_from_log_entry(log_entries[2]));
+    ASSERT_EQ("[state change] disconnecting -> disconnected\n", remove_date_from_log_entry(log_entries[3]));
 }
 
 TEST(connection_impl_stop, can_start_and_stop_connection)
@@ -1083,10 +1083,10 @@ TEST(connection_impl_stop, can_start_and_stop_connection)
 
     auto log_entries = std::dynamic_pointer_cast<memory_log_writer>(writer)->get_log_entries();
     ASSERT_EQ(4U, log_entries.size());
-    ASSERT_EQ(_XPLATSTR("[state change] disconnected -> connecting\n"), remove_date_from_log_entry(log_entries[0]));
-    ASSERT_EQ(_XPLATSTR("[state change] connecting -> connected\n"), remove_date_from_log_entry(log_entries[1]));
-    ASSERT_EQ(_XPLATSTR("[state change] connected -> disconnecting\n"), remove_date_from_log_entry(log_entries[2]));
-    ASSERT_EQ(_XPLATSTR("[state change] disconnecting -> disconnected\n"), remove_date_from_log_entry(log_entries[3]));
+    ASSERT_EQ("[state change] disconnected -> connecting\n", remove_date_from_log_entry(log_entries[0]));
+    ASSERT_EQ("[state change] connecting -> connected\n", remove_date_from_log_entry(log_entries[1]));
+    ASSERT_EQ("[state change] connected -> disconnecting\n", remove_date_from_log_entry(log_entries[2]));
+    ASSERT_EQ("[state change] disconnecting -> disconnected\n", remove_date_from_log_entry(log_entries[3]));
 }
 
 TEST(connection_impl_stop, can_start_and_stop_connection_multiple_times)
@@ -1121,14 +1121,14 @@ TEST(connection_impl_stop, can_start_and_stop_connection_multiple_times)
 
     auto log_entries = memory_writer->get_log_entries();
     ASSERT_EQ(8U, log_entries.size());
-    ASSERT_EQ(_XPLATSTR("[state change] disconnected -> connecting\n"), remove_date_from_log_entry(log_entries[0]));
-    ASSERT_EQ(_XPLATSTR("[state change] connecting -> connected\n"), remove_date_from_log_entry(log_entries[1]));
-    ASSERT_EQ(_XPLATSTR("[state change] connected -> disconnecting\n"), remove_date_from_log_entry(log_entries[2]));
-    ASSERT_EQ(_XPLATSTR("[state change] disconnecting -> disconnected\n"), remove_date_from_log_entry(log_entries[3]));
-    ASSERT_EQ(_XPLATSTR("[state change] disconnected -> connecting\n"), remove_date_from_log_entry(log_entries[4]));
-    ASSERT_EQ(_XPLATSTR("[state change] connecting -> connected\n"), remove_date_from_log_entry(log_entries[5]));
-    ASSERT_EQ(_XPLATSTR("[state change] connected -> disconnecting\n"), remove_date_from_log_entry(log_entries[6]));
-    ASSERT_EQ(_XPLATSTR("[state change] disconnecting -> disconnected\n"), remove_date_from_log_entry(log_entries[7]));
+    ASSERT_EQ("[state change] disconnected -> connecting\n", remove_date_from_log_entry(log_entries[0]));
+    ASSERT_EQ("[state change] connecting -> connected\n", remove_date_from_log_entry(log_entries[1]));
+    ASSERT_EQ("[state change] connected -> disconnecting\n", remove_date_from_log_entry(log_entries[2]));
+    ASSERT_EQ("[state change] disconnecting -> disconnected\n", remove_date_from_log_entry(log_entries[3]));
+    ASSERT_EQ("[state change] disconnected -> connecting\n", remove_date_from_log_entry(log_entries[4]));
+    ASSERT_EQ("[state change] connecting -> connected\n", remove_date_from_log_entry(log_entries[5]));
+    ASSERT_EQ("[state change] connected -> disconnecting\n", remove_date_from_log_entry(log_entries[6]));
+    ASSERT_EQ("[state change] disconnecting -> disconnected\n", remove_date_from_log_entry(log_entries[7]));
 }
 
 TEST(connection_impl_stop, dtor_stops_the_connection)
@@ -1159,10 +1159,10 @@ TEST(connection_impl_stop, dtor_stops_the_connection)
 
     auto log_entries = memory_writer->get_log_entries();
     ASSERT_EQ(4U, log_entries.size());
-    ASSERT_EQ(_XPLATSTR("[state change] disconnected -> connecting\n"), remove_date_from_log_entry(log_entries[0]));
-    ASSERT_EQ(_XPLATSTR("[state change] connecting -> connected\n"), remove_date_from_log_entry(log_entries[1]));
-    ASSERT_EQ(_XPLATSTR("[state change] connected -> disconnecting\n"), remove_date_from_log_entry(log_entries[2]));
-    ASSERT_EQ(_XPLATSTR("[state change] disconnecting -> disconnected\n"), remove_date_from_log_entry(log_entries[3]));
+    ASSERT_EQ("[state change] disconnected -> connecting\n", remove_date_from_log_entry(log_entries[0]));
+    ASSERT_EQ("[state change] connecting -> connected\n", remove_date_from_log_entry(log_entries[1]));
+    ASSERT_EQ("[state change] connected -> disconnecting\n", remove_date_from_log_entry(log_entries[2]));
+    ASSERT_EQ("[state change] disconnecting -> disconnected\n", remove_date_from_log_entry(log_entries[3]));
 }
 
 TEST(connection_impl_stop, stop_cancels_ongoing_start_request)
@@ -1198,24 +1198,24 @@ TEST(connection_impl_stop, stop_cancels_ongoing_start_request)
 
     auto log_entries = std::dynamic_pointer_cast<memory_log_writer>(writer)->get_log_entries();
     ASSERT_EQ(5U, log_entries.size());
-    ASSERT_EQ(_XPLATSTR("[state change] disconnected -> connecting\n"), remove_date_from_log_entry(log_entries[0]));
-    ASSERT_EQ(_XPLATSTR("[info        ] stopping connection\n"), remove_date_from_log_entry(log_entries[1]));
-    ASSERT_EQ(_XPLATSTR("[info        ] acquired lock in shutdown()\n"), remove_date_from_log_entry(log_entries[2]));
-    ASSERT_EQ(_XPLATSTR("[info        ] starting the connection has been canceled.\n"), remove_date_from_log_entry(log_entries[3]));
-    ASSERT_EQ(_XPLATSTR("[state change] connecting -> disconnected\n"), remove_date_from_log_entry(log_entries[4]));
+    ASSERT_EQ("[state change] disconnected -> connecting\n", remove_date_from_log_entry(log_entries[0]));
+    ASSERT_EQ("[info        ] stopping connection\n", remove_date_from_log_entry(log_entries[1]));
+    ASSERT_EQ("[info        ] acquired lock in shutdown()\n", remove_date_from_log_entry(log_entries[2]));
+    ASSERT_EQ("[info        ] starting the connection has been canceled.\n", remove_date_from_log_entry(log_entries[3]));
+    ASSERT_EQ("[state change] connecting -> disconnected\n", remove_date_from_log_entry(log_entries[4]));
 }
 
 TEST(connection_impl_stop, ongoing_start_request_canceled_if_connection_stopped_before_init_message_received)
 {
-    auto web_request_factory = std::make_unique<test_web_request_factory>([](const web::uri& url)
+    auto web_request_factory = std::make_unique<test_web_request_factory>([](const std::string& url)
     {
         auto response_body =
-            url.path() == _XPLATSTR("/negotiate")
-            ? _XPLATSTR("{ \"connectionId\" : \"f7707523-307d-4cba-9abf-3eef701241e8\", ")
-              _XPLATSTR("\"availableTransports\" : [ { \"transport\": \"WebSockets\", \"transferFormats\": [ \"Text\", \"Binary\" ] } ] }")
-            : _XPLATSTR("");
+            url.find("/negotiate") != std::string::npos
+            ? "{ \"connectionId\" : \"f7707523-307d-4cba-9abf-3eef701241e8\", "
+              "\"availableTransports\" : [ { \"transport\": \"WebSockets\", \"transferFormats\": [ \"Text\", \"Binary\" ] } ] }"
+            : "";
 
-        return std::unique_ptr<web_request>(new web_request_stub((unsigned short)200, _XPLATSTR("OK"), response_body));
+        return std::unique_ptr<web_request>(new web_request_stub((unsigned short)200, "OK", response_body));
     });
 
     auto websocket_client = create_test_websocket_client(/*receive function*/ []()
@@ -1243,11 +1243,11 @@ TEST(connection_impl_stop, ongoing_start_request_canceled_if_connection_stopped_
 
     auto log_entries = std::dynamic_pointer_cast<memory_log_writer>(writer)->get_log_entries();
     ASSERT_EQ(5U, log_entries.size()) << dump_vector(log_entries);
-    ASSERT_EQ(_XPLATSTR("[state change] disconnected -> connecting\n"), remove_date_from_log_entry(log_entries[0]));
-    ASSERT_EQ(_XPLATSTR("[info        ] stopping connection\n"), remove_date_from_log_entry(log_entries[1]));
-    ASSERT_EQ(_XPLATSTR("[info        ] acquired lock in shutdown()\n"), remove_date_from_log_entry(log_entries[2]));
-    ASSERT_EQ(_XPLATSTR("[info        ] starting the connection has been canceled.\n"), remove_date_from_log_entry(log_entries[3]));
-    ASSERT_EQ(_XPLATSTR("[state change] connecting -> disconnected\n"), remove_date_from_log_entry(log_entries[4]));
+    ASSERT_EQ("[state change] disconnected -> connecting\n", remove_date_from_log_entry(log_entries[0]));
+    ASSERT_EQ("[info        ] stopping connection\n", remove_date_from_log_entry(log_entries[1]));
+    ASSERT_EQ("[info        ] acquired lock in shutdown()\n", remove_date_from_log_entry(log_entries[2]));
+    ASSERT_EQ("[info        ] starting the connection has been canceled.\n", remove_date_from_log_entry(log_entries[3]));
+    ASSERT_EQ("[state change] connecting -> disconnected\n", remove_date_from_log_entry(log_entries[4]));
 }
 
 TEST(connection_impl_stop, stop_invokes_disconnected_callback)
@@ -1298,7 +1298,7 @@ TEST(connection_impl_stop, std_exception_for_disconnected_callback_caught_and_lo
 
     auto log_entries = std::dynamic_pointer_cast<memory_log_writer>(writer)->get_log_entries();
     ASSERT_EQ(1U, log_entries.size());
-    ASSERT_EQ(_XPLATSTR("[error       ] disconnected callback threw an exception: exception from disconnected\n"), remove_date_from_log_entry(log_entries[0]));
+    ASSERT_EQ("[error       ] disconnected callback threw an exception: exception from disconnected\n", remove_date_from_log_entry(log_entries[0]));
 }
 
 TEST(connection_impl_stop, exception_for_disconnected_callback_caught_and_logged)
@@ -1331,22 +1331,22 @@ TEST(connection_impl_stop, exception_for_disconnected_callback_caught_and_logged
 
     auto log_entries = std::dynamic_pointer_cast<memory_log_writer>(writer)->get_log_entries();
     ASSERT_EQ(1U, log_entries.size());
-    ASSERT_EQ(_XPLATSTR("[error       ] disconnected callback threw an unknown exception\n"), remove_date_from_log_entry(log_entries[0]));
+    ASSERT_EQ("[error       ] disconnected callback threw an unknown exception\n", remove_date_from_log_entry(log_entries[0]));
 }
 
 TEST(connection_impl_config, custom_headers_set_in_requests)
 {
     auto writer = std::shared_ptr<log_writer>{std::make_shared<memory_log_writer>()};
 
-    auto web_request_factory = std::make_unique<test_web_request_factory>([](const web::uri& url)
+    auto web_request_factory = std::make_unique<test_web_request_factory>([](const std::string& url)
     {
-        auto response_body =
-            url.path() == _XPLATSTR("/negotiate")
-            ? _XPLATSTR("{\"connectionId\" : \"f7707523-307d-4cba-9abf-3eef701241e8\", ")
-            _XPLATSTR("\"availableTransports\" : [ { \"transport\": \"WebSockets\", \"transferFormats\": [ \"Text\", \"Binary\" ] } ] }")
-            : _XPLATSTR("");
+            auto response_body =
+            url.find("/negotiate") != std::string::npos
+            ? "{\"connectionId\" : \"f7707523-307d-4cba-9abf-3eef701241e8\", "
+            "\"availableTransports\" : [ { \"transport\": \"WebSockets\", \"transferFormats\": [ \"Text\", \"Binary\" ] } ] }"
+            : "";
 
-        auto request = new web_request_stub((unsigned short)200, _XPLATSTR("OK"), response_body);
+        auto request = new web_request_stub((unsigned short)200, "OK", response_body);
         request->on_get_response = [](web_request_stub& request)
         {
             auto http_headers = request.m_signalr_client_config.get_http_headers();
@@ -1402,7 +1402,7 @@ TEST(connection_impl_change_state, change_state_logs)
     ASSERT_FALSE(log_entries.empty());
 
     auto entry = remove_date_from_log_entry(log_entries[0]);
-    ASSERT_EQ(_XPLATSTR("[state change] disconnected -> connecting\n"), entry);
+    ASSERT_EQ("[state change] disconnected -> connecting\n", entry);
 }
 
 TEST(connection_id, connection_id_is_set_if_start_fails_but_negotiate_request_succeeds)
@@ -1411,8 +1411,8 @@ TEST(connection_id, connection_id_is_set_if_start_fails_but_negotiate_request_su
 
     auto websocket_client = create_test_websocket_client(
         /* receive function */ [](){ return pplx::task_from_exception<std::string>(std::runtime_error("should not be invoked")); },
-        /* send function */ [](const utility::string_t){ return pplx::task_from_exception<void>(std::runtime_error("should not be invoked"));  },
-        /* connect function */[](const web::uri&)
+        /* send function */ [](const std::string){ return pplx::task_from_exception<void>(std::runtime_error("should not be invoked"));  },
+        /* connect function */[](const std::string&)
         {
             return pplx::task_from_exception<void>(web::websockets::client::websocket_exception(_XPLATSTR("connecting failed")));
         });
@@ -1433,9 +1433,9 @@ TEST(connection_id, connection_id_is_set_if_start_fails_but_negotiate_request_su
             }
         });
 
-    ASSERT_EQ(_XPLATSTR(""), connection->get_connection_id());
+    ASSERT_EQ("", connection->get_connection_id());
     start_task.get();
-    ASSERT_EQ(_XPLATSTR("f7707523-307d-4cba-9abf-3eef701241e8"), connection->get_connection_id());
+    ASSERT_EQ("f7707523-307d-4cba-9abf-3eef701241e8", connection->get_connection_id());
 }
 
 TEST(connection_id, can_get_connection_id_when_connection_in_connected_state)
@@ -1446,7 +1446,7 @@ TEST(connection_id, can_get_connection_id_when_connection_in_connected_state)
         /* receive function */ [](){ return pplx::task_from_result(std::string("{ }\x1e")); });
     auto connection = create_connection(websocket_client, writer, trace_level::state_changes);
 
-    utility::string_t connection_id;
+    std::string connection_id;
     connection->start()
         .then([connection, &connection_id]()
         mutable {
@@ -1454,7 +1454,7 @@ TEST(connection_id, can_get_connection_id_when_connection_in_connected_state)
             return connection->stop();
         }).get();
 
-    ASSERT_EQ(_XPLATSTR("f7707523-307d-4cba-9abf-3eef701241e8"), connection_id);
+    ASSERT_EQ("f7707523-307d-4cba-9abf-3eef701241e8", connection_id);
 }
 
 TEST(connection_id, can_get_connection_id_after_connection_has_stopped)
@@ -1471,7 +1471,7 @@ TEST(connection_id, can_get_connection_id_after_connection_has_stopped)
             return connection->stop();
         }).get();
 
-    ASSERT_EQ(_XPLATSTR("f7707523-307d-4cba-9abf-3eef701241e8"), connection->get_connection_id());
+    ASSERT_EQ("f7707523-307d-4cba-9abf-3eef701241e8", connection->get_connection_id());
 }
 
 TEST(connection_id, connection_id_reset_when_starting_connection)
@@ -1483,19 +1483,19 @@ TEST(connection_id, connection_id_reset_when_starting_connection)
     auto websocket_client = create_test_websocket_client(
         /* receive function */ [](){ return pplx::task_from_result(std::string("{ }\x1e")); });
 
-    auto web_request_factory = std::make_unique<test_web_request_factory>([&fail_http_requests](const web::uri &url) -> std::unique_ptr<web_request>
+    auto web_request_factory = std::make_unique<test_web_request_factory>([&fail_http_requests](const std::string &url) -> std::unique_ptr<web_request>
     {
         if (!fail_http_requests) {
             auto response_body =
-                url.path() == _XPLATSTR("/negotiate")
-                ? _XPLATSTR("{\"connectionId\" : \"f7707523-307d-4cba-9abf-3eef701241e8\", ")
-                _XPLATSTR("\"availableTransports\" : [ { \"transport\": \"WebSockets\", \"transferFormats\": [ \"Text\", \"Binary\" ] } ] }")
-                : _XPLATSTR("");
+                url.find("/negotiate") != std::string::npos
+                ? "{\"connectionId\" : \"f7707523-307d-4cba-9abf-3eef701241e8\", "
+                "\"availableTransports\" : [ { \"transport\": \"WebSockets\", \"transferFormats\": [ \"Text\", \"Binary\" ] } ] }"
+                : "";
 
-            return std::unique_ptr<web_request>(new web_request_stub((unsigned short)200, _XPLATSTR("OK"), response_body));
+            return std::unique_ptr<web_request>(new web_request_stub((unsigned short)200, "OK", response_body));
         }
 
-        return std::unique_ptr<web_request>(new web_request_stub((unsigned short)500, _XPLATSTR("Internal Server Error"), _XPLATSTR("")));
+        return std::unique_ptr<web_request>(new web_request_stub((unsigned short)500, "Internal Server Error", ""));
     });
 
     auto connection =
@@ -1508,7 +1508,7 @@ TEST(connection_id, connection_id_reset_when_starting_connection)
             return connection->stop();
         }).get();
 
-    ASSERT_EQ(_XPLATSTR("f7707523-307d-4cba-9abf-3eef701241e8"), connection->get_connection_id());
+    ASSERT_EQ("f7707523-307d-4cba-9abf-3eef701241e8", connection->get_connection_id());
 
     fail_http_requests = true;
 
@@ -1526,5 +1526,5 @@ TEST(connection_id, connection_id_reset_when_starting_connection)
             }
         }).get();
 
-    ASSERT_EQ(_XPLATSTR(""), connection->get_connection_id());
+    ASSERT_EQ("", connection->get_connection_id());
 }

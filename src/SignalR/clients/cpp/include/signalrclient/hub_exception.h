@@ -5,14 +5,13 @@
 
 #include <stdexcept>
 #include "signalr_exception.h"
-#include "cpprest/details/basic_types.h"
 
 namespace signalr
 {
     class hub_exception : public signalr_exception
     {
     public:
-        hub_exception(const utility::string_t &what)
+        hub_exception(const std::string &what)
             : signalr_exception(what)
         {}
     };

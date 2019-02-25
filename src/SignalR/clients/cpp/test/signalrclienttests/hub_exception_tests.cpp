@@ -8,7 +8,7 @@ using namespace signalr;
 
 TEST(hub_exception_initialization, hub_exception_initialized_correctly)
 {
-    auto e = hub_exception{ _XPLATSTR("error") };
+    auto e = hub_exception{ "error" };
 
     ASSERT_STREQ("error", e.what());
 }

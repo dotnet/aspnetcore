@@ -14,9 +14,9 @@ namespace signalr
     public:
         explicit default_websocket_client(const signalr_client_config& signalr_client_config = signalr_client_config{}) noexcept;
 
-        pplx::task<void> connect(const web::uri &url) override;
+        pplx::task<void> connect(const std::string& url) override;
 
-        pplx::task<void> send(const utility::string_t &message) override;
+        pplx::task<void> send(const std::string& message) override;
 
         pplx::task<std::string> receive() override;
 

@@ -10,7 +10,7 @@
 #include "connection.h"
 #include "hub_connection.h"
 
-extern utility::string_t url;
+extern std::string url;
 
 TEST(connection_tests, connection_status_start_stop)
 {
@@ -29,10 +29,10 @@ TEST(connection_tests, connection_status_start_stop)
 TEST(connection_tests, send_message)
 {
     auto conn = std::make_shared<signalr::connection>(url + U("raw-connection"));
-    auto message = std::make_shared<utility::string_t>();
+    auto message = std::make_shared<std::string>();
     auto received_event = std::make_shared<signalr::event>();
 
-    conn->set_message_received([message, received_event](const utility::string_t& payload)
+    conn->set_message_received([message, received_event](const std::string& payload)
     {
         *message = payload;
         received_event->set();
@@ -55,10 +55,10 @@ TEST(connection_tests, send_message)
 TEST(connection_tests, send_message_after_connection_restart)
 {
     auto conn = std::make_shared<signalr::connection>(url + U("raw-connection"));
-    auto message = std::make_shared<utility::string_t>();
+    auto message = std::make_shared<std::string>();
     auto received_event = std::make_shared<signalr::event>();
 
-    conn->set_message_received([message, received_event](const utility::string_t& payload)
+    conn->set_message_received([message, received_event](const std::string& payload)
     {
         *message = payload;
         received_event->set();
