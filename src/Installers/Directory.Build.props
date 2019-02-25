@@ -4,6 +4,7 @@
 
   <PropertyGroup>
     <RuntimeInstallerBaseName>aspnetcore-runtime</RuntimeInstallerBaseName>
+    <TargetingPackInstallerBaseName>aspnetcore-targeting-pack</TargetingPackInstallerBaseName>
     <!-- Name = aspnet-runtime-internal for files are only produced so we can hand them off to the dotnet/cli repo. -->
     <InternalInstallerBaseName>$(RuntimeInstallerBaseName)-internal</InternalInstallerBaseName>
 

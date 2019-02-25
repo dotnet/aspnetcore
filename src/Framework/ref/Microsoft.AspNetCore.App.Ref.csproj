@@ -12,6 +12,10 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsShippingPackage>true</IsShippingPackage>
     <IsPackable>true</IsPackable>
+    <IsPackable Condition="'$(IsTargetingPackBuilding)' == 'false'">false</IsPackable>
+    <PackageId>$(TargetingPackName)</PackageId>
+    <PackageVersion>$(TargetingPackVersion)</PackageVersion>
+
     <PackageDescription>Provides a default set of APIs for building an ASP.NET Core application. Contains reference assemblies, documentation, and other design-time assets.
 
 This package is an internal implementation of the .NET Core SDK and is not meant to be used as a normal PackageReference.</PackageDescription>
@@ -22,7 +26,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <RefAssemblyPackagePath>ref/$(TargetFramework)/</RefAssemblyPackagePath>
 
     <LayoutTargetDir>$(TargetingPackLayoutRoot)packs/Microsoft.AspNetCore.App.Ref/$(PackageVersion)/</LayoutTargetDir>
-    <ArchiveOutputFileName>aspnetcore-targeting-pack-$(PackageVersion).zip</ArchiveOutputFileName>
+    <ArchiveOutputFileName Condition="'$(TargetRuntimeIdentifier)' == 'win-x64'">aspnetcore-targeting-pack-$(PackageVersion).zip</ArchiveOutputFileName>
+    <ArchiveOutputFileName Condition="'$(TargetRuntimeIdentifier)' == 'linux-x64'">aspnetcore-targeting-pack-$(PackageVersion).tar.gz</ArchiveOutputFileName>
     <ArchiveOutputPath>$(InstallersOutputPath)$(ArchiveOutputFileName)</ArchiveOutputPath>
 
     <!-- There are no symbols for reference assemblies. -->
@@ -54,7 +59,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <BuildDependsOn>
+    <!-- If this project won't produce a package, don't bother building anything. -->
+    <BuildDependsOn Condition="'$(IsPackable)' != 'false'">
       $(BuildDependsOn);
       GeneratePackageConflictManifest;
       _ResolveTargetingPackContent;
@@ -65,9 +71,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
   <!-- Override the default MSBuild targets so that nothing is returned from the project since it represents a collection of assemblies. -->
   <Target Name="GetTargetPath" />
-  <Target Name="Build" DependsOnTargets="$(BuildDependsOn)">
-    <Message Importance="High" Text="$(MSBuildProjectName) -> $(TargetDir)" />
-  </Target>
+  <Target Name="Build" DependsOnTargets="$(BuildDependsOn)" />
 
   <!-- This project doesn't compile anything. -->
   <Target Name="CoreCompile" />
@@ -115,20 +119,25 @@ This package is an internal implementation of the .NET Core SDK and is not meant
           DependsOnTargets="_ResolveTargetingPackContent"
           Inputs="@(RefPackContent)"
           Outputs="@(RefPackContent->'$(LayoutTargetDir)%(PackagePath)%(FileName)%(Extension)')">
-
     <Copy SourceFiles="@(RefPackContent)"
           DestinationFiles="@(RefPackContent->'$(LayoutTargetDir)%(PackagePath)%(FileName)%(Extension)')"
           UseHardlinksIfPossible="true" />
+    <Message Importance="High" Text="$(MSBuildProjectName) -> $(LayoutTargetDir)" />
   </Target>
 
   <Target Name="_CreateTargetingPackArchive"
           Inputs="@(RefPackContent)"
-          Outputs="$(ArchiveOutputPath)"
-          Condition="'$(IsPackable)' != 'false'">
+          Outputs="$(ArchiveOutputPath)">
     <ZipDirectory
       SourceDirectory="$(TargetingPackLayoutRoot)"
       DestinationFile="$(ArchiveOutputPath)"
-      Overwrite="true" />
+      Overwrite="true"
+      Condition="'$(TargetRuntimeIdentifier)' == 'win-x64'" />
+    <Exec
+      Command="tar -czf $(ArchiveOutputPath) ."
+      WorkingDirectory="$(TargetingPackLayoutRoot)"
+      Condition="'$(TargetRuntimeIdentifier)' == 'linux-x64'" />
+    <Message Importance="High" Text="$(MSBuildProjectName) -> $(ArchiveOutputPath)" />
   </Target>
 
 </Project>
