@@ -11,7 +11,7 @@
 #include "hub_connection.h"
 #include "signalr_exception.h"
 
-extern utility::string_t url;
+extern std::string url;
 
 TEST(hub_connection_tests, connection_status_start_stop_start)
 {
@@ -31,7 +31,7 @@ TEST(hub_connection_tests, connection_status_start_stop_start)
 TEST(hub_connection_tests, send_message)
 {
     auto hub_conn = std::make_shared<signalr::hub_connection>(url + U("custom"), signalr::trace_level::all, nullptr);
-    auto message = std::make_shared<utility::string_t>();
+    auto message = std::make_shared<std::string>();
     auto received_event = std::make_shared<signalr::event>();
 
     hub_conn->on(U("sendString"), [message, received_event](const web::json::value& arguments)
@@ -73,7 +73,7 @@ TEST(hub_connection_tests, send_message_return)
 TEST(hub_connection_tests, send_message_after_connection_restart)
 {
     auto hub_conn = std::make_shared<signalr::hub_connection>(url);
-    auto message = std::make_shared<utility::string_t>();
+    auto message = std::make_shared<std::string>();
     auto received_event = std::make_shared<signalr::event>();
 
     hub_conn->on(U("sendString"), [message, received_event](const web::json::value& arguments)
@@ -103,7 +103,7 @@ TEST(hub_connection_tests, send_message_after_connection_restart)
 TEST(hub_connection_tests, send_message_empty_param)
 {
     auto hub_conn = std::make_shared<signalr::hub_connection>(url);
-    auto message = std::make_shared<utility::string_t>();
+    auto message = std::make_shared<std::string>();
     auto received_event = std::make_shared<signalr::event>();
 
     hub_conn->on(U("sendString"), [message, received_event](const web::json::value& arguments)
@@ -126,7 +126,7 @@ TEST(hub_connection_tests, send_message_empty_param)
 TEST(hub_connection_tests, send_message_primitive_params)
 {
     auto hub_conn = std::make_shared<signalr::hub_connection>(url);
-    auto message = std::make_shared<utility::string_t>();
+    auto message = std::make_shared<std::string>();
     auto received_event = std::make_shared<signalr::event>();
 
     hub_conn->on(U("sendPrimitiveParams"), [message, received_event](const web::json::value& arguments)
@@ -162,7 +162,7 @@ TEST(hub_connection_tests, send_message_primitive_params)
 TEST(hub_connection_tests, send_message_complex_type)
 {
     auto hub_conn = std::make_shared<signalr::hub_connection>(url);
-    auto message = std::make_shared<utility::string_t>();
+    auto message = std::make_shared<std::string>();
     auto received_event = std::make_shared<signalr::event>();
 
     hub_conn->on(U("sendComplexType"), [message, received_event](const web::json::value& arguments)
@@ -220,7 +220,7 @@ TEST(hub_connection_tests, connection_id_start_stop_start)
     auto hub_conn = std::make_shared<signalr::hub_connection>(url);
     auto weak_hub_conn = std::weak_ptr<signalr::hub_connection>(hub_conn);
 
-    utility::string_t connection_id;
+    std::string connection_id;
 
     ASSERT_EQ(U(""), hub_conn->get_connection_id());
 

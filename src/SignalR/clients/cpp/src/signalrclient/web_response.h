@@ -4,14 +4,13 @@
 #pragma once
 
 #include "pplx/pplxtasks.h"
-#include "cpprest/details/basic_types.h"
 
 namespace signalr
 {
     struct web_response
     {
         unsigned short status_code;
-        utility::string_t reason_phrase;
-        pplx::task<utility::string_t> body;
+        std::string reason_phrase;
+        pplx::task<std::string> body;
     };
 }

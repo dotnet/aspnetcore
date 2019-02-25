@@ -11,10 +11,10 @@ namespace signalr
     class web_request
     {
     public:
-        explicit web_request(const utility::string_t& url);
+        explicit web_request(const std::string& url);
 
-        virtual void set_method(const utility::string_t &method);
-        virtual void set_user_agent(const utility::string_t &user_agent_string);
+        virtual void set_method(const std::string &method);
+        virtual void set_user_agent(const std::string &user_agent_string);
         virtual void set_client_config(const signalr_client_config& signalr_client_config);
 
         virtual pplx::task<web_response> get_response();
@@ -24,9 +24,9 @@ namespace signalr
         virtual ~web_request();
 
     private:
-        const utility::string_t m_url;
+        const std::string m_url;
         web::http::http_request m_request;
-        utility::string_t m_user_agent_string;
+        std::string m_user_agent_string;
         signalr_client_config m_signalr_client_config;
     };
 }

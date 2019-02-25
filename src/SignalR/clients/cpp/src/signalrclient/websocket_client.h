@@ -4,16 +4,15 @@
 #pragma once
 
 #include "pplx/pplxtasks.h"
-#include "cpprest/base_uri.h"
 
 namespace signalr
 {
     class websocket_client
     {
     public:
-        virtual pplx::task<void> connect(const web::uri &url) = 0;
+        virtual pplx::task<void> connect(const std::string& url) = 0;
 
-        virtual pplx::task<void> send(const utility::string_t &message) = 0;
+        virtual pplx::task<void> send(const std::string& message) = 0;
 
         virtual pplx::task<std::string> receive() = 0;
 

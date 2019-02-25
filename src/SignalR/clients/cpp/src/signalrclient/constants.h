@@ -3,6 +3,6 @@
 
 #pragma once
 
-#define SIGNALR_VERSION _XPLATSTR("0.1.0-alpha0")
-#define USER_AGENT _XPLATSTR("SignalR.Client.Cpp/") SIGNALR_VERSION
+#define SIGNALR_VERSION "0.1.0-alpha0"
+#define USER_AGENT "SignalR.Client.Cpp/" SIGNALR_VERSION
 #define MAX_NEGOTIATE_REDIRECTS 100

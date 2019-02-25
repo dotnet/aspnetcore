@@ -7,16 +7,16 @@
 
 namespace signalr
 {
-    web_request::web_request(const utility::string_t& url)
+    web_request::web_request(const std::string& url)
         : m_url(url)
     { }
 
-    void web_request::set_method(const utility::string_t &method)
+    void web_request::set_method(const std::string &method)
     {
-        m_request.set_method(method);
+        m_request.set_method(utility::conversions::to_string_t(method));
     }
 
-    void web_request::set_user_agent(const utility::string_t &user_agent_string)
+    void web_request::set_user_agent(const std::string &user_agent_string)
     {
         m_user_agent_string = user_agent_string;
     }
@@ -28,12 +28,12 @@ namespace signalr
 
     pplx::task<web_response> web_request::get_response()
     {
-        web::http::client::http_client client(m_url, m_signalr_client_config.get_http_client_config());
+        web::http::client::http_client client(utility::conversions::to_string_t(m_url), m_signalr_client_config.get_http_client_config());
 
         m_request.headers() = m_signalr_client_config.get_http_headers();
         if (!m_user_agent_string.empty())
         {
-            m_request.headers()[_XPLATSTR("User-Agent")] = m_user_agent_string;
+            m_request.headers()[_XPLATSTR("User-Agent")] = utility::conversions::to_string_t(m_user_agent_string);
         }
 
         return client.request(m_request)
@@ -42,8 +42,11 @@ namespace signalr
             return web_response
             {
                 response.status_code(),
-                response.reason_phrase(),
-                response.extract_string()
+                utility::conversions::to_utf8string(response.reason_phrase()),
+                response.extract_string().then([](const utility::string_t& body)
+                {
+                    return utility::conversions::to_utf8string(body);
+                })
             };
         });
     }

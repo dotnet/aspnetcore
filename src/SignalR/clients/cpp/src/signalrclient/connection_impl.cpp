@@ -18,26 +18,26 @@ namespace signalr
     namespace
     {
         // this is a workaround for a compiler bug where mutable lambdas won't sometimes compile
-        static void log(const logger& logger, trace_level level, const utility::string_t& entry);
+        static void log(const logger& logger, trace_level level, const std::string& entry);
     }
 
-    std::shared_ptr<connection_impl> connection_impl::create(const utility::string_t& url, trace_level trace_level, const std::shared_ptr<log_writer>& log_writer)
+    std::shared_ptr<connection_impl> connection_impl::create(const std::string& url, trace_level trace_level, const std::shared_ptr<log_writer>& log_writer)
     {
         return connection_impl::create(url, trace_level, log_writer, std::make_unique<web_request_factory>(), std::make_unique<transport_factory>());
     }
 
-    std::shared_ptr<connection_impl> connection_impl::create(const utility::string_t& url, trace_level trace_level, const std::shared_ptr<log_writer>& log_writer,
+    std::shared_ptr<connection_impl> connection_impl::create(const std::string& url, trace_level trace_level, const std::shared_ptr<log_writer>& log_writer,
         std::unique_ptr<web_request_factory> web_request_factory, std::unique_ptr<transport_factory> transport_factory)
     {
         return std::shared_ptr<connection_impl>(new connection_impl(url, trace_level,
             log_writer ? log_writer : std::make_shared<trace_log_writer>(), std::move(web_request_factory), std::move(transport_factory)));
     }
 
-    connection_impl::connection_impl(const utility::string_t& url, trace_level trace_level, const std::shared_ptr<log_writer>& log_writer,
+    connection_impl::connection_impl(const std::string& url, trace_level trace_level, const std::shared_ptr<log_writer>& log_writer,
         std::unique_ptr<web_request_factory> web_request_factory, std::unique_ptr<transport_factory> transport_factory)
         : m_base_url(url), m_connection_state(connection_state::disconnected), m_logger(log_writer, trace_level),
         m_transport(nullptr), m_web_request_factory(std::move(web_request_factory)), m_transport_factory(std::move(transport_factory)),
-        m_message_received([](const utility::string_t&) noexcept {}), m_disconnected([]() noexcept {})
+        m_message_received([](const std::string&) noexcept {}), m_disconnected([]() noexcept {})
     { }
 
     connection_impl::~connection_impl()
@@ -72,7 +72,7 @@ namespace signalr
             if (!change_state(connection_state::disconnected, connection_state::connecting))
             {
                 return pplx::task_from_exception<void>(
-                    signalr_exception(_XPLATSTR("cannot start a connection that is not in the disconnected state")));
+                    signalr_exception("cannot start a connection that is not in the disconnected state"));
             }
 
             // there should not be any active transport at this point
@@ -80,17 +80,17 @@ namespace signalr
 
             m_disconnect_cts = pplx::cancellation_token_source();
             m_start_completed_event.reset();
-            m_connection_id = _XPLATSTR("");
+            m_connection_id = "";
         }
 
         return start_negotiate(m_base_url, 0);
     }
 
-    pplx::task<void> connection_impl::start_negotiate(const utility::string_t& url, int redirect_count)
+    pplx::task<void> connection_impl::start_negotiate(const std::string& url, int redirect_count)
     {
         if (redirect_count >= MAX_NEGOTIATE_REDIRECTS)
         {
-            return pplx::task_from_exception<void>(signalr_exception(_XPLATSTR("Negotiate redirection limit exceeded.")));
+            return pplx::task_from_exception<void>(signalr_exception("Negotiate redirection limit exceeded."));
         }
 
         pplx::task_completion_event<void> start_tce;
@@ -103,7 +103,7 @@ namespace signalr
             auto connection = weak_connection.lock();
             if (!connection)
             {
-                return pplx::task_from_exception<negotiation_response>(_XPLATSTR("connection no longer exists"));
+                return pplx::task_from_exception<negotiation_response>("connection no longer exists");
             }
             return request_sender::negotiate(*connection->m_web_request_factory, url, connection->m_signalr_client_config);
         }, m_disconnect_cts.get_token())
@@ -112,7 +112,7 @@ namespace signalr
             auto connection = weak_connection.lock();
             if (!connection)
             {
-                return pplx::task_from_exception<void>(_XPLATSTR("connection no longer exists"));
+                return pplx::task_from_exception<void>("connection no longer exists");
             }
 
             if (!negotiation_response.error.empty())
@@ -125,7 +125,7 @@ namespace signalr
                 if (!negotiation_response.accessToken.empty())
                 {
                     auto headers = connection->m_signalr_client_config.get_http_headers();
-                    headers[_XPLATSTR("Authorization")] = _XPLATSTR("Bearer ") + negotiation_response.accessToken;
+                    headers[_XPLATSTR("Authorization")] = utility::conversions::to_string_t("Bearer " + negotiation_response.accessToken);
                     connection->m_signalr_client_config.set_http_headers(headers);
                 }
                 return connection->start_negotiate(negotiation_response.url, redirect_count + 1);
@@ -138,7 +138,7 @@ namespace signalr
             bool foundWebsockets = false;
             for (auto availableTransport : negotiation_response.availableTransports)
             {
-                if (availableTransport.transport == _XPLATSTR("WebSockets"))
+                if (availableTransport.transport == "WebSockets")
                 {
                     foundWebsockets = true;
                     break;
@@ -147,7 +147,7 @@ namespace signalr
 
             if (!foundWebsockets)
             {
-                return pplx::task_from_exception<void>(signalr_exception(_XPLATSTR("The server does not support WebSockets which is currently the only transport supported by this client.")));
+                return pplx::task_from_exception<void>(signalr_exception("The server does not support WebSockets which is currently the only transport supported by this client."));
             }
 
             // TODO: use transfer format
@@ -158,14 +158,14 @@ namespace signalr
                 auto connection = weak_connection.lock();
                 if (!connection)
                 {
-                    return pplx::task_from_exception<void>(_XPLATSTR("connection no longer exists"));
+                    return pplx::task_from_exception<void>("connection no longer exists");
                 }
                 connection->m_transport = transport;
 
                 if (!connection->change_state(connection_state::connecting, connection_state::connected))
                 {
                     connection->m_logger.log(trace_level::errors,
-                        utility::string_t(_XPLATSTR("internal error - transition from an unexpected state. expected state: connecting, actual state: "))
+                        std::string("internal error - transition from an unexpected state. expected state: connecting, actual state: ")
                         .append(translate_connection_state(connection->get_connection_state())));
 
                     _ASSERTE(false);
@@ -193,13 +193,13 @@ namespace signalr
                 if (task_canceled_exception)
                 {
                     connection->m_logger.log(trace_level::info,
-                        _XPLATSTR("starting the connection has been canceled."));
+                        "starting the connection has been canceled.");
                 }
                 else
                 {
                     connection->m_logger.log(trace_level::errors,
-                        utility::string_t(_XPLATSTR("connection could not be started due to: "))
-                        .append(utility::conversions::to_string_t(e.what())));
+                        std::string("connection could not be started due to: ")
+                        .append(e.what()));
                 }
 
                 connection->m_transport = nullptr;
@@ -214,7 +214,7 @@ namespace signalr
         return pplx::create_task(start_tce);
     }
 
-    pplx::task<std::shared_ptr<transport>> connection_impl::start_transport(const utility::string_t& url)
+    pplx::task<std::shared_ptr<transport>> connection_impl::start_transport(const std::string& url)
     {
         auto connection = shared_from_this();
 
@@ -225,7 +225,7 @@ namespace signalr
         const auto& logger = m_logger;
 
         auto process_response_callback =
-            [weak_connection, disconnect_cts, logger](const utility::string_t& response) mutable
+            [weak_connection, disconnect_cts, logger](const std::string& response) mutable
             {
                 // When a connection is stopped we don't wait for its transport to stop. As a result if the same connection
                 // is immediately re-started the old transport can still invoke this callback. To prevent this we capture
@@ -234,7 +234,7 @@ namespace signalr
                 if (disconnect_cts.get_token().is_canceled())
                 {
                     logger.log(trace_level::info,
-                        utility::string_t{ _XPLATSTR("ignoring stray message received after connection was restarted. message: " })
+                        std::string{ "ignoring stray message received after connection was restarted. message: " }
                         .append(response));
                     return;
                 }
@@ -257,8 +257,8 @@ namespace signalr
                 if (disconnect_cts.get_token().is_canceled())
                 {
                     logger.log(trace_level::info,
-                        utility::string_t{ _XPLATSTR("ignoring stray error received after connection was restarted. error: " })
-                        .append(utility::conversions::to_string_t(e.what())));
+                        std::string{ "ignoring stray error received after connection was restarted. error: " }
+                        .append(e.what()));
 
                     return;
                 }
@@ -286,7 +286,7 @@ namespace signalr
             }
             else
             {
-                connect_request_tce.set_exception(signalr_exception(_XPLATSTR("transport timed out when trying to connect")));
+                connect_request_tce.set_exception(signalr_exception("transport timed out when trying to connect"));
             }
         });
 
@@ -294,10 +294,10 @@ namespace signalr
             .then([transport](){ return pplx::task_from_result(transport); });
     }
 
-    pplx::task<void> connection_impl::send_connect_request(const std::shared_ptr<transport>& transport, const utility::string_t& url, const pplx::task_completion_event<void>& connect_request_tce)
+    pplx::task<void> connection_impl::send_connect_request(const std::shared_ptr<transport>& transport, const std::string& url, const pplx::task_completion_event<void>& connect_request_tce)
     {
         auto logger = m_logger;
-        auto query_string = _XPLATSTR("id=" + m_connection_id);
+        auto query_string = "id=" + m_connection_id;
         auto connect_url = url_builder::build_connect(url, transport->get_transport_type(), query_string);
 
         transport->connect(connect_url)
@@ -312,8 +312,8 @@ namespace signalr
                 {
                     logger.log(
                         trace_level::errors,
-                        utility::string_t(_XPLATSTR("transport could not connect due to: "))
-                            .append(utility::conversions::to_string_t(e.what())));
+                        std::string("transport could not connect due to: ")
+                            .append(e.what()));
 
                     connect_request_tce.set_exception(std::current_exception());
                 }
@@ -322,15 +322,15 @@ namespace signalr
         return pplx::create_task(connect_request_tce);
     }
 
-    void connection_impl::process_response(const utility::string_t& response)
+    void connection_impl::process_response(const std::string& response)
     {
         m_logger.log(trace_level::messages,
-            utility::string_t(_XPLATSTR("processing message: ")).append(response));
+            std::string("processing message: ").append(response));
 
         invoke_message_received(response);
     }
 
-    void connection_impl::invoke_message_received(const utility::string_t& message)
+    void connection_impl::invoke_message_received(const std::string& message)
     {
         try
         {
@@ -340,16 +340,16 @@ namespace signalr
         {
             m_logger.log(
                 trace_level::errors,
-                utility::string_t(_XPLATSTR("message_received callback threw an exception: "))
-                .append(utility::conversions::to_string_t(e.what())));
+                std::string("message_received callback threw an exception: ")
+                .append(e.what()));
         }
         catch (...)
         {
-            m_logger.log(trace_level::errors, _XPLATSTR("message_received callback threw an unknown exception"));
+            m_logger.log(trace_level::errors, "message_received callback threw an unknown exception");
         }
     }
 
-    pplx::task<void> connection_impl::send(const utility::string_t& data)
+    pplx::task<void> connection_impl::send(const std::string& data)
     {
         // To prevent an (unlikely) condition where the transport is nulled out after we checked the connection_state
         // and before sending data we store the pointer in the local variable. In this case `send()` will throw but
@@ -360,13 +360,13 @@ namespace signalr
         if (connection_state != signalr::connection_state::connected || !transport)
         {
             return pplx::task_from_exception<void>(signalr_exception(
-                utility::string_t(_XPLATSTR("cannot send data when the connection is not in the connected state. current connection state: "))
+                std::string("cannot send data when the connection is not in the connected state. current connection state: ")
                     .append(translate_connection_state(connection_state))));
         }
 
         auto logger = m_logger;
 
-        logger.log(trace_level::info, utility::string_t(_XPLATSTR("sending data: ")).append(data));
+        logger.log(trace_level::info, std::string("sending data: ").append(data));
 
         return transport->send(data)
             .then([logger](pplx::task<void> send_task)
@@ -379,8 +379,8 @@ namespace signalr
                 {
                     logger.log(
                         trace_level::errors,
-                        utility::string_t(_XPLATSTR("error sending data: "))
-                        .append(utility::conversions::to_string_t(e.what())));
+                        std::string("error sending data: ")
+                        .append(e.what()));
 
                     throw;
                 }
@@ -389,7 +389,7 @@ namespace signalr
 
     pplx::task<void> connection_impl::stop()
     {
-        m_logger.log(trace_level::info, _XPLATSTR("stopping connection"));
+        m_logger.log(trace_level::info, "stopping connection");
 
         auto connection = shared_from_this();
         return shutdown()
@@ -415,14 +415,14 @@ namespace signalr
                 {
                     connection->m_logger.log(
                         trace_level::errors,
-                        utility::string_t(_XPLATSTR("disconnected callback threw an exception: "))
-                        .append(utility::conversions::to_string_t(e.what())));
+                        std::string("disconnected callback threw an exception: ")
+                        .append(e.what()));
                 }
                 catch (...)
                 {
                     connection->m_logger.log(
                         trace_level::errors,
-                        utility::string_t(_XPLATSTR("disconnected callback threw an unknown exception")));
+                        std::string("disconnected callback threw an unknown exception"));
                 }
             });
     }
@@ -432,7 +432,7 @@ namespace signalr
     {
         {
             std::lock_guard<std::mutex> lock(m_stop_lock);
-            m_logger.log(trace_level::info, _XPLATSTR("acquired lock in shutdown()"));
+            m_logger.log(trace_level::info, "acquired lock in shutdown()");
 
             const auto current_state = get_connection_state();
             if (current_state == connection_state::disconnected)
@@ -456,7 +456,7 @@ namespace signalr
             while (m_start_completed_event.wait(60000) != 0)
             {
                 m_logger.log(trace_level::errors,
-                    _XPLATSTR("internal error - stopping the connection is still waiting for the start operation to finish which should have already finished or timed out"));
+                    "internal error - stopping the connection is still waiting for the start operation to finish which should have already finished or timed out");
             }
 
             // at this point we are either in the connected or disconnected state. If we are in the disconnected state
@@ -479,41 +479,41 @@ namespace signalr
         return m_connection_state.load();
     }
 
-    utility::string_t connection_impl::get_connection_id() const noexcept
+    std::string connection_impl::get_connection_id() const noexcept
     {
         if (m_connection_state.load() == connection_state::connecting)
         {
-            return _XPLATSTR("");
+            return "";
         }
 
         return m_connection_id;
     }
 
-    void connection_impl::set_message_received(const std::function<void(const utility::string_t&)>& message_received)
+    void connection_impl::set_message_received(const std::function<void(const std::string&)>& message_received)
     {
-        ensure_disconnected(_XPLATSTR("cannot set the callback when the connection is not in the disconnected state. "));
+        ensure_disconnected("cannot set the callback when the connection is not in the disconnected state. ");
         m_message_received = message_received;
     }
 
     void connection_impl::set_client_config(const signalr_client_config& config)
     {
-        ensure_disconnected(_XPLATSTR("cannot set client config when the connection is not in the disconnected state. "));
+        ensure_disconnected("cannot set client config when the connection is not in the disconnected state. ");
         m_signalr_client_config = config;
     }
 
     void connection_impl::set_disconnected(const std::function<void()>& disconnected)
     {
-        ensure_disconnected(_XPLATSTR("cannot set the disconnected callback when the connection is not in the disconnected state. "));
+        ensure_disconnected("cannot set the disconnected callback when the connection is not in the disconnected state. ");
         m_disconnected = disconnected;
     }
 
-    void connection_impl::ensure_disconnected(const utility::string_t& error_message) const
+    void connection_impl::ensure_disconnected(const std::string& error_message) const
     {
         const auto state = get_connection_state();
         if (state != connection_state::disconnected)
         {
             throw signalr_exception(
-                error_message + _XPLATSTR("current connection state: ") + translate_connection_state(state));
+                error_message + "current connection state: " + translate_connection_state(state));
         }
     }
 
@@ -544,7 +544,7 @@ namespace signalr
         m_logger.log(
             trace_level::state_changes,
             translate_connection_state(old_state)
-            .append(_XPLATSTR(" -> "))
+            .append(" -> ")
             .append(translate_connection_state(new_state)));
 
         // Words of wisdom (if we decide to add a state_changed callback and invoke it from here):
@@ -553,21 +553,21 @@ namespace signalr
         // stopped while / after transitioning into the connecting state."
     }
 
-    utility::string_t connection_impl::translate_connection_state(connection_state state)
+    std::string connection_impl::translate_connection_state(connection_state state)
     {
         switch (state)
         {
         case connection_state::connecting:
-            return _XPLATSTR("connecting");
+            return "connecting";
         case connection_state::connected:
-            return _XPLATSTR("connected");
+            return "connected";
         case connection_state::disconnecting:
-            return _XPLATSTR("disconnecting");
+            return "disconnecting";
         case connection_state::disconnected:
-            return _XPLATSTR("disconnected");
+            return "disconnected";
         default:
             _ASSERTE(false);
-            return _XPLATSTR("(unknown)");
+            return "(unknown)";
         }
     }
 }
