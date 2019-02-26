@@ -65,12 +65,12 @@ namespace CodeGenerator
             public bool FastCount { get; set; }
             public bool EnhancedSetter { get; set; }
             public bool PrimaryHeader { get; set; }
-            public string TestBit() => $"(_bits & {1L << Index}L) != 0";
-            public string TestTempBit() => $"(tempBits & {1L << Index}L) != 0";
-            public string TestNotTempBit() => $"(tempBits & ~{1L << Index}L) == 0";
-            public string TestNotBit() => $"(_bits & {1L << Index}L) == 0";
-            public string SetBit() => $"_bits |= {1L << Index}L";
-            public string ClearBit() => $"_bits &= ~{1L << Index}L";
+            public string TestBit() => $"(_bits & {"0x" + (1L << Index).ToString("x")}L) != 0";
+            public string TestTempBit() => $"(tempBits & {"0x" + (1L << Index).ToString("x")}L) != 0";
+            public string TestNotTempBit() => $"(tempBits & ~{"0x" + (1L << Index).ToString("x")}L) == 0";
+            public string TestNotBit() => $"(_bits & {"0x" + (1L << Index).ToString("x")}L) == 0";
+            public string SetBit() => $"_bits |= {"0x" + (1L << Index).ToString("x")}L";
+            public string ClearBit() => $"_bits &= ~{"0x" + (1L << Index).ToString("x")}L";
 
             public string EqualIgnoreCaseBytes()
             {
@@ -133,6 +133,7 @@ namespace CodeGenerator
                 "Date",
                 "Content-Type",
                 "Server",
+                "Content-Length",
             };
             var commonHeaders = new[]
             {
@@ -264,7 +265,7 @@ namespace CodeGenerator
             .Concat(new[] { new KnownHeader
             {
                 Name = "Content-Length",
-                Index = -1,
+                Index = 63,
                 EnhancedSetter = enhancedHeaders.Contains("Content-Length"),
                 PrimaryHeader = responsePrimaryHeaders.Contains("Content-Length")
             }})
@@ -286,7 +287,7 @@ namespace CodeGenerator
 
             // 63 for responseHeaders as it steals one bit for Content-Length in CopyTo(ref MemoryPoolIterator output)
             Debug.Assert(responseHeaders.Length <= 63);
-            Debug.Assert(responseHeaders.Max(x => x.Index) <= 62);
+            Debug.Assert(responseHeaders.Count(x => x.Index == 63) == 1);
 
             var loops = new[]
             {
@@ -327,9 +328,9 @@ namespace CodeGenerator
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using System.Buffers;
 using System.IO.Pipelines;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
@@ -339,7 +340,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     public partial class {loop.ClassName}
     {{{(loop.Bytes != null ?
         $@"
-        private static byte[] _headerBytes = new byte[]
+        private static ReadOnlySpan<byte> HeaderBytes => new byte[]
         {{
             {Each(loop.Bytes, b => $"{b},")}
         }};"
@@ -529,7 +530,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {{
                     return;
                 }}
-                tempBits &= ~{1L << header.Index}L;
+                tempBits &= ~{"0x" + (1L << header.Index).ToString("x")}L;
             }}
             ")}
         }}
@@ -564,47 +565,66 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return true;
         }}
         {(loop.ClassName == "HttpResponseHeaders" ? $@"
-        internal void CopyToFast(ref BufferWriter<PipeWriter> output)
+        internal unsafe void CopyToFast(ref BufferWriter<PipeWriter> output)
         {{
-            var tempBits = _bits | (_contentLength.HasValue ? {1L << 63}L : 0);
-            {Each(loop.Headers.Where(header => header.Identifier != "ContentLength").OrderBy(h => !h.PrimaryHeader), header => $@"
-                if ({header.TestTempBit()})
-                {{ {(header.EnhancedSetter == false ? "" : $@"
-                    if (_headers._raw{header.Identifier} != null)
-                    {{
-                        output.Write(_headers._raw{header.Identifier});
-                    }}
-                    else ")}
-                    {{
-                        var valueCount = _headers._{header.Identifier}.Count;
-                        for (var i = 0; i < valueCount; i++)
+            var tempBits = (ulong)_bits | (_contentLength.HasValue ? {"0x" + (1L << 63).ToString("x")}L : 0);
+            var next = 0;
+            var keyStart = 0;
+            var keyLength = 0;
+            ref readonly StringValues values = ref Unsafe.AsRef<StringValues>(null);
+
+            do
+            {{
+                switch (next)
+                {{{Each(loop.Headers.OrderBy(h => !h.PrimaryHeader).Select((h, i) => (Header: h, Index: i)), hi => $@"
+                    case {hi.Index}: // Header: ""{hi.Header.Name}""
+                        if ({hi.Header.TestTempBit()})
                         {{
-                            var value = _headers._{header.Identifier}[i];
-                            if (value != null)
+                            tempBits ^= {"0x" + (1L << hi.Header.Index).ToString("x")}L;{(hi.Header.Identifier != "ContentLength" ? $@"{(hi.Header.EnhancedSetter == false ? $@"
+                            values = ref _headers._{hi.Header.Identifier};
+                            keyStart = {hi.Header.BytesOffset};
+                            keyLength = {hi.Header.BytesCount};
+                            next = {hi.Index + 1};
+                            break; // OutputHeader" : $@"
+                            if (_headers._raw{hi.Header.Identifier} != null)
                             {{
-                                output.Write(new ReadOnlySpan<byte>(_headerBytes, {header.BytesOffset}, {header.BytesCount}));
-                                output.WriteAsciiNoValidation(value);
+                                output.Write(_headers._raw{hi.Header.Identifier});
                             }}
+                            else
+                            {{
+                                values = ref _headers._{hi.Header.Identifier};
+                                keyStart = {hi.Header.BytesOffset};
+                                keyLength = {hi.Header.BytesCount};
+                                next = {hi.Index + 1};
+                                break; // OutputHeader
+                            }}")}" : $@"
+                            output.Write(HeaderBytes.Slice({hi.Header.BytesOffset}, {hi.Header.BytesCount}));
+                            output.WriteNumeric((ulong)ContentLength.Value);
+                            if (tempBits == 0)
+                            {{
+                                return;
+                            }}")}
+                        }}
+                        {(hi.Index + 1 < loop.Headers.Count() ? $"goto case {hi.Index + 1};" : "return;")}")}
+                    default:
+                        return;
+                }}
+
+                // OutputHeader
+                {{
+                    var valueCount = values.Count;
+                    var headerKey = HeaderBytes.Slice(keyStart, keyLength);
+                    for (var i = 0; i < valueCount; i++)
+                    {{
+                        var value = values[i];
+                        if (value != null)
+                        {{
+                            output.Write(headerKey);
+                            output.WriteAsciiNoValidation(value);
                         }}
                     }}
-
-                    if({header.TestNotTempBit()})
-                    {{
-                        return;
-                    }}
-                    tempBits &= ~{1L << header.Index}L;
-                }}{(header.Identifier == "Server" ? $@"
-                if ((tempBits & {1L << 63}L) != 0)
-                {{
-                    output.Write(new ReadOnlySpan<byte>(_headerBytes, {loop.Headers.First(x => x.Identifier == "ContentLength").BytesOffset}, {loop.Headers.First(x => x.Identifier == "ContentLength").BytesCount}));
-                    output.WriteNumeric((ulong)ContentLength.Value);
-
-                    if((tempBits & ~{1L << 63}L) == 0)
-                    {{
-                        return;
-                    }}
-                    tempBits &= ~{1L << 63}L;
-                }}" : "")}")}
+                }}
+            }} while (tempBits != 0);
         }}" : "")}
         {(loop.ClassName == "HttpRequestHeaders" ? $@"
         public unsafe void Append(byte* pKeyBytes, int keyLength, string value)
@@ -632,36 +652,34 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public partial struct Enumerator
         {{
+            // Compiled to Jump table
             public bool MoveNext()
             {{
-                switch (_state)
-                {{
-                    {Each(loop.Headers.Where(header => header.Identifier != "ContentLength"), header => $@"
+                switch (_next)
+                {{{Each(loop.Headers.Where(header => header.Identifier != "ContentLength"), header => $@"
                     case {header.Index}:
-                        goto state{header.Index};
-                    ")}
-                    case {loop.Headers.Count()}:
-                        goto state{loop.Headers.Count()};
+                        goto Header{header.Identifier};")}
+                    {(!loop.ClassName.Contains("Trailers") ? $@"case {loop.Headers.Count() - 1}:
+                        goto HeaderContentLength;" : "")}
                     default:
-                        goto state_default;
+                        goto ExtraHeaders;
                 }}
                 {Each(loop.Headers.Where(header => header.Identifier != "ContentLength"), header => $@"
-                state{header.Index}:
+                Header{header.Identifier}: // case {header.Index}
                     if ({header.TestBit()})
                     {{
                         _current = new KeyValuePair<string, StringValues>(""{header.Name}"", _collection._headers._{header.Identifier});
-                        _state = {header.Index + 1};
+                        _next = {header.Index + 1};
                         return true;
-                    }}
-                ")}
-                state{loop.Headers.Count()}:
+                    }}")}
+                {(!loop.ClassName.Contains("Trailers") ? $@"HeaderContentLength: // case {loop.Headers.Count() - 1}
                     if (_collection._contentLength.HasValue)
                     {{
                         _current = new KeyValuePair<string, StringValues>(""Content-Length"", HeaderUtilities.FormatNonNegativeInt64(_collection._contentLength.Value));
-                        _state = {loop.Headers.Count() + 1};
+                        _next = {loop.Headers.Count()};
                         return true;
-                    }}
-                state_default:
+                    }}" : "")}
+                ExtraHeaders:
                     if (!_hasUnknown || !_unknownEnumerator.MoveNext())
                     {{
                         _current = default(KeyValuePair<string, StringValues>);

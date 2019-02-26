@@ -22,6 +22,7 @@
     <VerifyVersion>false</VerifyVersion>
     <VersionPrefix>$(ExperimentalVersionPrefix)</VersionPrefix>
     <VersionSuffix>$(ExperimentalVersionSuffix)</VersionSuffix>
+    <HasReferenceAssembly>false</HasReferenceAssembly>
   </PropertyGroup>
 
   <ItemGroup>

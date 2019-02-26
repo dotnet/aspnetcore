@@ -8,12 +8,10 @@
     <_TestSauceArgs>--verbose --no-color --configuration $(Configuration) --sauce-user "$(SauceUser)" --sauce-key "$(SauceKey)"</_TestSauceArgs>
     <_TestSauceArgs Condition="'$(BrowserTestHostName)' != ''">$(_TestSauceArgs) --use-hostname "$(BrowserTestHostName)"</_TestSauceArgs>
     <NpmTestArgs Condition="'$(DailyTests)' != 'true'">run test:local -- --no-color --configuration $(Configuration)</NpmTestArgs>
-
-
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="FunctionalTests.csproj" Condition="'$(BuildManaged)' != 'false'" />
+    <ProjectReference Include="FunctionalTests.csproj" Condition="'$(BuildManaged)' == 'true'" />
     <ProjectReference Include="..\signalr\signalr.npmproj" />
     <ProjectReference Include="..\signalr-protocol-msgpack\signalr-protocol-msgpack.npmproj" />
   </ItemGroup>
@@ -21,21 +19,20 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
 
   <Target Name="Test" Condition="'$(IsTestProject)' == 'true'">
-    <Message Importance="High" Text="Running npm tests for $(MSBuildProjectName)" />
-    <Exec Condition="'$(DailyTests)' != 'true'" Command="npm $(NpmTestArgs)" IgnoreStandardErrorWarningFormat="true" />
+    <Message Importance="High" Text="Running tests for $(MSBuildProjectName)" />
+    <Yarn Condition="'$(DailyTests)' != 'true'" Command="$(NpmTestArgs)" />
     <CallTarget Condition="'$(DailyTests)' == 'true'" Targets="RunBrowserTests" />
   </Target>
 
   <Target Name="RunBrowserTests">
     <Message Text="Running JavaScript client Browser tests" Importance="high" />
-    <Exec Command="npm run test:inner -- --no-color --configuration $(Configuration)" WorkingDirectory="$(RepositoryRoot)src/SignalR/clients/ts/FunctionalTests" IgnoreStandardErrorWarningFormat="true" />
+    <Yarn Command="run test:inner -- --no-color --configuration $(Configuration)" WorkingDirectory="$(RepositoryRoot)src/SignalR/clients/ts/FunctionalTests" />
     <Message Text="Running JavaScript tests" Importance="high" />
 
     <!-- Skip the "inner" test run when we're running DailyTests -->
-    <Exec Command="npm run test:inner -- --no-color --configuration $(Configuration)"
+    <Yarn Command="run test:inner -- --no-color --configuration $(Configuration)"
           Condition="'$(DailyTests)' != 'true'"
-          WorkingDirectory="$(RepositoryRoot)src/SignalR/clients/ts/FunctionalTests"
-          IgnoreStandardErrorWarningFormat="true" />
+          WorkingDirectory="$(RepositoryRoot)src/SignalR/clients/ts/FunctionalTests" />
 
     <PropertyGroup>
       <BrowserTestHostName Condition="'$(CI)' == 'true'">sauce.local</BrowserTestHostName>

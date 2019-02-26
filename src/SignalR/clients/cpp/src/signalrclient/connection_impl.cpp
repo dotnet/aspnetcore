@@ -80,13 +80,13 @@ namespace signalr
 
             m_disconnect_cts = pplx::cancellation_token_source();
             m_start_completed_event.reset();
-            m_message_id = m_groups_token = m_connection_id = _XPLATSTR("");
+            m_connection_id = _XPLATSTR("");
         }
 
         return start_negotiate(m_base_url, 0);
     }
 
-    pplx::task<void> connection_impl::start_negotiate(const web::uri& url, int redirect_count)
+    pplx::task<void> connection_impl::start_negotiate(const utility::string_t& url, int redirect_count)
     {
         if (redirect_count >= MAX_NEGOTIATE_REDIRECTS)
         {
@@ -214,7 +214,7 @@ namespace signalr
         return pplx::create_task(start_tce);
     }
 
-    pplx::task<std::shared_ptr<transport>> connection_impl::start_transport(const web::uri& url)
+    pplx::task<std::shared_ptr<transport>> connection_impl::start_transport(const utility::string_t& url)
     {
         auto connection = shared_from_this();
 
@@ -294,7 +294,7 @@ namespace signalr
             .then([transport](){ return pplx::task_from_result(transport); });
     }
 
-    pplx::task<void> connection_impl::send_connect_request(const std::shared_ptr<transport>& transport, const web::uri& url, const pplx::task_completion_event<void>& connect_request_tce)
+    pplx::task<void> connection_impl::send_connect_request(const std::shared_ptr<transport>& transport, const utility::string_t& url, const pplx::task_completion_event<void>& connect_request_tce)
     {
         auto logger = m_logger;
         auto query_string = _XPLATSTR("id=" + m_connection_id);
@@ -479,7 +479,7 @@ namespace signalr
         return m_connection_state.load();
     }
 
-    utility::string_t connection_impl::get_connection_id() const
+    utility::string_t connection_impl::get_connection_id() const noexcept
     {
         if (m_connection_state.load() == connection_state::connecting)
         {
@@ -507,7 +507,7 @@ namespace signalr
         m_disconnected = disconnected;
     }
 
-    void connection_impl::ensure_disconnected(const utility::string_t& error_message)
+    void connection_impl::ensure_disconnected(const utility::string_t& error_message) const
     {
         const auto state = get_connection_state();
         if (state != connection_state::disconnected)

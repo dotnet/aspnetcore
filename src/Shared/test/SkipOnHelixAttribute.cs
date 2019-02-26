@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Testing.xunit
         {
             get
             {
-                return !string.Equals(Environment.GetEnvironmentVariable("helix"), "true", StringComparison.OrdinalIgnoreCase);
+                return !OnHelix();
             }
         }
 
@@ -27,5 +27,7 @@ namespace Microsoft.AspNetCore.Testing.xunit
                 return $"This test is skipped on helix";
             }
         }
+
+        public static bool OnHelix() => string.Equals(Environment.GetEnvironmentVariable("helix"), "true", StringComparison.OrdinalIgnoreCase);
     }
 }
