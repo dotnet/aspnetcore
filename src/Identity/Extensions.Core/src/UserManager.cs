@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Identity
 
         private bool _disposed;
         private static readonly RandomNumberGenerator _rng = RandomNumberGenerator.Create();
-        private IServiceProvider _services;
+        private readonly IServiceProvider _services;
 
         /// <summary>
         /// The cancellation token used to cancel operations.
