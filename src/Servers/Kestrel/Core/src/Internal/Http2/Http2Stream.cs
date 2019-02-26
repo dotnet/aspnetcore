@@ -369,6 +369,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                             RequestBodyPipe.Writer.Write(segment.Span);
                         }
 
+                        // If the stream is completed go ahead and call RequestBodyPipe.Writer.Complete().
+                        // Data will still be available to the reader.
                         if (endStream)
                         {
                             OnEndStreamReceived();
