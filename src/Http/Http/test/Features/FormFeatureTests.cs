@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Pipelines;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
@@ -12,8 +13,6 @@ namespace Microsoft.AspNetCore.Http.Features
 {
     public class FormFeatureTests
     {
-        // TODO add more tests here for replacing pipewriter
-        // rather than the stream
         [Fact]
         public async Task ReadFormAsync_0ContentLength_ReturnsEmptyForm()
         {
@@ -73,6 +72,49 @@ namespace Microsoft.AspNetCore.Http.Features
             {
                 Assert.Equal(0, context.Request.Body.Position);
             }
+
+            // Cached
+            formFeature = context.Features.Get<IFormFeature>();
+            Assert.NotNull(formFeature);
+            Assert.NotNull(formFeature.Form);
+            Assert.Same(formFeature.Form, formCollection);
+
+            // Cleanup
+            await responseFeature.CompleteAsync();
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task ReadFormAsync_SimpleData_ReplacePipeReader_ReturnsParsedFormCollection(bool bufferRequest)
+        {
+            var formContent = Encoding.UTF8.GetBytes("foo=bar&baz=2");
+            var context = new DefaultHttpContext();
+            var responseFeature = new FakeResponseFeature();
+            context.Features.Set<IHttpResponseFeature>(responseFeature);
+            context.Request.ContentType = "application/x-www-form-urlencoded; charset=utf-8";
+
+            var pipe = new Pipe();
+            await pipe.Writer.WriteAsync(formContent);
+            pipe.Writer.Complete();
+
+            context.Request.BodyPipe = pipe.Reader;
+
+            IFormFeature formFeature = new FormFeature(context.Request, new FormOptions() { BufferBody = bufferRequest });
+            context.Features.Set<IFormFeature>(formFeature);
+
+            var formCollection = await context.Request.ReadFormAsync();
+
+            Assert.Equal("bar", formCollection["foo"]);
+            Assert.Equal("2", formCollection["baz"]);
+
+            // TODO this returns a null stream because we don't wrap stream/pipereader like we do in Kestrel
+            // Ex: when we set the request body, set the request pipe.
+            //Assert.Equal(bufferRequest, context.Request.Body.CanSeek);
+            //if (bufferRequest)
+            //{
+            //    Assert.Equal(0, context.Request.Body.Position);
+            //}
 
             // Cached
             formFeature = context.Features.Get<IFormFeature>();
