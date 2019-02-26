@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         public void Setup()
         {
             _smallBytes = Encoding.UTF8.GetBytes("foo=bar&baz=boo");
-            _largeBytes = Encoding.UTF8.GetBytes(string.Concat(Enumerable.Repeat("%22%25%2D%2E%3C%3E%5C%5E%5F%60%7B%7C%7D%7E=%22%25%2D%2E%3C%3E%5C%5E%5F%60%7B%7C%7D%7E&", 1000)) + "foo=bar");
+            _largeBytes = Encoding.UTF8.GetBytes(string.Concat(Enumerable.Repeat("%22%25%2D%2E%3C%3E%5C%5E%5F%60%7B%7C%7D%7E=%22%25%2D%2E%3C%3E%5C%5E%5F%60%7B%7C%7D%7E&", 200)) + "foo=bar");
         }
 
         [Benchmark]
@@ -44,6 +44,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         public async Task CreateLargePipe()
         {
             var pipe = new Pipe();
+            // TODO test this
             await pipe.Writer.WriteAsync(_largeBytes);
             pipe.Writer.Complete();
             var formReader = new FormPipeReader(pipe.Reader);
