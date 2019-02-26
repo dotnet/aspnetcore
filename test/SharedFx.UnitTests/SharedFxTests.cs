@@ -1,14 +1,77 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
+using System.Net;
+using System.Reflection;
+using System.Threading.Tasks;
+using McMaster.Extensions.CommandLineUtils;
 using Newtonsoft.Json.Linq;
+using TriageBuildFailures;
 using Xunit;
 
 namespace Microsoft.AspNetCore
 {
     public class SharedFxTests
     {
+
+        [Theory]
+        [MemberData(nameof(GetSharedFxConfig))]
+        public async Task BaselineTest(SharedFxConfig config)
+        {
+            var previousVersion = TestData.GetPreviousAspNetCoreReleaseVersion();
+            var url = new Uri($"https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/" + previousVersion + "/aspnetcore-runtime-internal-" + previousVersion + "-win-x64.zip");
+            var zipName = "assemblies.zip";
+            var nugetAssemblyVersions = new Dictionary<string, Version>();
+            var root = TestData.GetDotNetRoot();
+            var dir = Path.Combine(root, "shared", config.Name, config.Version);
+
+            using (var testClient = new WebClient())
+            {
+                var reporter = new ConsoleReporter(PhysicalConsole.Singleton);
+                await RetryHelpers.RetryAsync(async () => await testClient.DownloadFileTaskAsync(url, zipName), reporter);
+            }
+
+            var zipPath = Path.Combine(AppContext.BaseDirectory, zipName);
+
+            if (!Directory.Exists(AppContext.BaseDirectory + "unzipped"))
+            {
+                ZipFile.ExtractToDirectory(AppContext.BaseDirectory, "unzipped");
+            }
+
+            var nugetAssembliesPath = Path.Combine(AppContext.BaseDirectory, "unzipped", "shared", config.Name, previousVersion);
+
+            var files = Directory.GetFiles(nugetAssembliesPath, "*.dll");
+            foreach (var file in files)
+            {
+                try
+                {
+                    var assemblyVersion = AssemblyName.GetAssemblyName(file).Version;
+                    var dllName = Path.GetFileName(file);
+                    nugetAssemblyVersions.Add(dllName, assemblyVersion);
+                }
+                catch (BadImageFormatException) { }
+            }
+
+            files = Directory.GetFiles(dir, "*.dll");
+
+            Assert.All(files, file =>
+            {
+                try
+                {
+                    var localAssemblyVersion = AssemblyName.GetAssemblyName(file).Version;
+                    var dllName = Path.GetFileName(file);
+                    Assert.True(nugetAssemblyVersions.ContainsKey(dllName), $"Expected {dllName} to be in the downloaded dlls");
+                    Assert.True(localAssemblyVersion.CompareTo(nugetAssemblyVersions[dllName]) >= 0, $"Expected the local version of {dllName} to be greater than or equal to the already released version.");
+                }
+                catch (BadImageFormatException) { }
+
+            });
+        }
+
         [Theory]
         [MemberData(nameof(GetSharedFxConfig))]
         public void ItContainsValidRuntimeConfigFile(SharedFxConfig config)

@@ -26,6 +26,10 @@
       <_Parameter1>MicrosoftNETCoreAppPackageVersion</_Parameter1>
       <_Parameter2>$(RuntimeFrameworkVersion)</_Parameter2>
     </AssemblyAttribute>
+    <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
+      <_Parameter1>PreviousAspNetCoreReleaseVersion</_Parameter1>
+      <_Parameter2>$(PreviousAspNetCoreReleaseVersion)</_Parameter2>
+    </AssemblyAttribute>
   </ItemGroup>
 
   <ItemGroup>
@@ -34,6 +38,7 @@
     <PackageReference Include="xunit" Version="$(XunitPackageVersion)" />
     <PackageReference Include="xunit.analyzers" Version="$(XunitAnalyzersPackageVersion)" />
     <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualstudioPackageVersion)" />
+    <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="2.2.2" />
   </ItemGroup>
 
 </Project>

@@ -10,6 +10,8 @@ namespace Microsoft.AspNetCore
     {
         public static string GetPackageVersion() => GetTestDataValue("PackageVersion");
 
+        public static string GetPreviousAspNetCoreReleaseVersion() => GetTestDataValue("PreviousAspNetCoreReleaseVersion");
+
         public static string GetMicrosoftNETCoreAppPackageVersion() => GetTestDataValue("MicrosoftNETCoreAppPackageVersion");
 
         public static string GetDotNetRoot() => GetTestDataValue("DotNetRoot");
