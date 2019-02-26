@@ -109,14 +109,14 @@ if ($Mode -eq "Setup")
 
 if ($Mode -eq "SetupDumps")
 {
-    Shutdown-appverif signalrclienttests
+    Shutdown-appverif signalrclienttests.exe
 
     Setup-Dumps;
 }
 
 if ($Mode -eq "Shutdown")
 {
-    Shutdown-appverif signalrclienttests
+    Shutdown-appverif signalrclienttests.exe
 
     Shutdown-Dumps;
 }
