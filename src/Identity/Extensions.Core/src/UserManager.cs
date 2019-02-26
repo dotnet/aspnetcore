@@ -1044,7 +1044,6 @@ namespace Microsoft.AspNetCore.Identity
         public virtual Task<IdentityResult> AddClaimAsync(TUser user, Claim claim)
         {
             ThrowIfDisposed();
-            var claimStore = GetClaimStore();
             if (claim == null)
             {
                 throw new ArgumentNullException(nameof(claim));
