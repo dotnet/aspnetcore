@@ -1122,7 +1122,6 @@ namespace Microsoft.AspNetCore.Identity
         public virtual Task<IdentityResult> RemoveClaimAsync(TUser user, Claim claim)
         {
             ThrowIfDisposed();
-            var claimStore = GetClaimStore();
             if (user == null)
             {
                 throw new ArgumentNullException(nameof(user));
