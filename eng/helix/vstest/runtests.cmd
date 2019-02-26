@@ -9,6 +9,6 @@ set PATH=%DOTNET_ROOT%;%PATH%
 set DOTNET_MULTILEVEL_LOOKUP=0
 set DOTNET_CLI_HOME=%HELIX_CORRELATION_PAYLOAD%\home
 set helix=true
-%DOTNET_ROOT%\dotnet vstest %target% --logger:trx
+%DOTNET_ROOT%\dotnet vstest %target% --logger:trx --logger:console;verbosity=normal
 
 
