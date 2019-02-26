@@ -13,7 +13,6 @@ $DumpFolder = Resolve-Path $DumpFolder
 $werHive = "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting";
 $ldHive = "$werHive\LocalDumps\signalrclienttests.exe";
 
-
 function Setup-appverif($application)
 {
     appverif.exe -enable Exceptions Handles Heaps Leak Locks Memory Threadpool TLS SRWLock -for $application
@@ -57,9 +56,10 @@ function Shutdown-appverif($application)
 
 function Setup-Dumps()
 {
-    if (!(Test-Path $ldHive ))
+    if (!(Test-Path $ldHive))
     {
         New-Item -Path $werHive -Name LocalDumps
+        New-Item -Path $werHive\LocalDumps -Name signalrclienttests.exe
     }
 
     Move-Item $env:windir\System32\vsjitdebugger.exe $env:windir\System32\_vsjitdebugger.exe -ErrorAction Ignore;
