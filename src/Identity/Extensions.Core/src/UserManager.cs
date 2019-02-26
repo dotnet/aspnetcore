@@ -40,7 +40,6 @@ namespace Microsoft.AspNetCore.Identity
         private readonly Dictionary<string, IUserTwoFactorTokenProvider<TUser>> _tokenProviders =
             new Dictionary<string, IUserTwoFactorTokenProvider<TUser>>();
 
-        private TimeSpan _defaultLockout = TimeSpan.Zero;
         private bool _disposed;
         private static readonly RandomNumberGenerator _rng = RandomNumberGenerator.Create();
         private IServiceProvider _services;
