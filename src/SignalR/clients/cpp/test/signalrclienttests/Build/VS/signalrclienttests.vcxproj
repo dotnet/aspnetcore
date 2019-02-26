@@ -96,12 +96,4 @@
   <PropertyGroup>
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
-  <Target Name="Test" Condition="'$(IsTestProject)' == 'true'" >
-    <Exec Condition="'$(CI)' == 'true'" Command="..\..\..\..\tools\SetupTestEnvironment.ps1 Setup" />
-    <Exec Command="&quot;$(TargetPath)&quot;" ContinueOnError="true" >
-      <Output TaskParameter="ExitCode" PropertyName="ErrorCode" />
-    </Exec>
-    <Exec Condition="'$(CI)' == 'true'" Command="..\..\..\..\tools\SetupTestEnvironment.ps1 Shutdown" />
-    <Error Condition="'$(ErrorCode)' != '0'" Text="SignalRClientTests failed. Check the output for test failures and if it's just a big exit code then look at the dump files." />
-  </Target>
 </Project>

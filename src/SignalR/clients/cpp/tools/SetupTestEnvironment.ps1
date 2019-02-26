@@ -10,13 +10,6 @@ if (!(Test-Path $DumpFolder))
 }
 $DumpFolder = Resolve-Path $DumpFolder
 
-$LogsFolder = "$PSScriptRoot\..\..\..\..\..\artifacts\logs"
-if (!(Test-Path $LogsFolder))
-{
-    New-Item $LogsFolder -ItemType Directory;
-}
-$LogsFolder = Resolve-Path $LogsFolder
-
 $werHive = "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting";
 $ldHive = "$werHive\LocalDumps\signalrclienttests.exe";
 
