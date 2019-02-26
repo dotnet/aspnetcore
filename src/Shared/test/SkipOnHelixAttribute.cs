@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Testing.xunit
         {
             get
             {
-                return !OnHelix()
+                return !OnHelix();
             }
         }
 

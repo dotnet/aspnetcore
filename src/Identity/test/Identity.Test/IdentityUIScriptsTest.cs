@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         {
             var dir = new DirectoryInfo(AppContext.BaseDirectory);
             // On helix we use the published copy
-            if (!string.Equals(Environment.GetEnvironmentVariable("helix"), "true", StringComparison.OrdinalIgnoreCase))
+            if (!SkipOnHelixAttribute.OnHelix())
             {
                 while (dir != null)
                 {

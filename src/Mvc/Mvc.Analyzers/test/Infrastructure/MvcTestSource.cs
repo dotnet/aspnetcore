@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using Microsoft.AspNetCore.Analyzer.Testing;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 
 namespace Microsoft.AspNetCore.Mvc
 {
@@ -27,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc
         private static string GetProjectDirectory()
         {
             // On helix we use the published test files 
-            if (string.Equals(Environment.GetEnvironmentVariable("helix"), "true", StringComparison.OrdinalIgnoreCase))
+            if (SkipOnHelixAttribute.OnHelix())
             {
                 return AppContext.BaseDirectory;
             }
