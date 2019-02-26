@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
     public sealed partial class SocketSender : Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal.SocketSenderReceiverBase
     {
         public SocketSender(System.Net.Sockets.Socket socket, System.IO.Pipelines.PipeScheduler scheduler) : base (default(System.Net.Sockets.Socket), default(System.IO.Pipelines.PipeScheduler)) { }
-        public Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal.SocketAwaitableEventArgs SendAsync(System.Buffers.ReadOnlySequence<byte> buffers) { throw null; }
+        public Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal.SocketAwaitableEventArgs SendAsync(in System.Buffers.ReadOnlySequence<byte> buffers) { throw null; }
     }
     public abstract partial class SocketSenderReceiverBase : System.IDisposable
     {
