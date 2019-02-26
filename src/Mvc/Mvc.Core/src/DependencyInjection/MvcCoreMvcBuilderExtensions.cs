@@ -42,6 +42,12 @@ namespace Microsoft.Extensions.DependencyInjection
             return builder;
         }
 
+        /// <summary>
+        /// Configures <see cref="FormatterMappings"/> for the specified <paramref name="builder"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="IMvcBuilder"/>.</param>
+        /// <param name="setupAction">An <see cref="Action"/> to configure the <see cref="FormatterMappings"/>.</param>
+        /// <returns>The <see cref="IMvcBuilder"/>.</returns>
         public static IMvcBuilder AddFormatterMappings(
             this IMvcBuilder builder,
             Action<FormatterMappings> setupAction)
