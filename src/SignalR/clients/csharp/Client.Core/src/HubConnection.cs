@@ -63,6 +63,31 @@ namespace Microsoft.AspNetCore.SignalR.Client
         private ConnectionState _connectionState;
         private int _serverProtocolMinorVersion;
 
+        /// <summary>
+        /// Occurs when the connection is closed, either by a call to <see cref="StopAsync(CancellationToken)"/> or a connection error.
+        /// </summary>
+        /// <remarks>
+        /// If this event was triggered from a connection error, the <see cref="Exception"/> that occurred will be passed in as the
+        /// sole argument to this handler. If this event was triggered from a call to <see cref="StopAsync(CancellationToken)"/>, then
+        /// the argument will be <see langword="null"/>.
+        /// </remarks>
+        /// <example>
+        /// The following example attaches a handler to the <see cref="Closed"/> event, and checks the provided argument to determine
+        /// if there was an error:
+        ///
+        /// <code>
+        /// connection.Closed += (exception) => {
+        ///     if (exception == null)
+        ///     {
+        ///         Console.WriteLine("Connection closed without error.");
+        ///     }
+        ///     else
+        ///     {
+        ///         Console.WriteLine($"Connection closed due to an error: {exception.Message}");
+        ///     }
+        /// };
+        /// </code>
+        /// </example>
         public event Func<Exception, Task> Closed;
 
         // internal for testing purposes
@@ -985,11 +1010,17 @@ namespace Microsoft.AspNetCore.SignalR.Client
             }
         }
 
+        /// <summary>
+        /// This method is for internal framework use and should not be called by user code.
+        /// </summary>
         public void ResetSendPing()
         {
             Volatile.Write(ref _nextActivationSendPing, (DateTime.UtcNow + KeepAliveInterval).Ticks);
         }
 
+        /// <summary>
+        /// This method is for internal framework use and should not be called by user code.
+        /// </summary>
         public void ResetTimeout()
         {
             Volatile.Write(ref _nextActivationServerTimeout, (DateTime.UtcNow + ServerTimeout).Ticks);
