@@ -105,19 +105,6 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
         }
 
         [Fact]
-        public async Task Asdf() // TODO what does this do?
-        {
-            var bodyPipe = await MakePipeReader("foo");
-
-            var formCollection = await ReadFormAsync(new FormPipeReader(bodyPipe) { KeyLengthLimit = 10 });
-
-            Assert.Equal("1", formCollection["foo"].ToString());
-            Assert.Equal("2", formCollection["bar"].ToString());
-            Assert.Equal("3,4", formCollection["baz"].ToString());
-            Assert.Equal(3, formCollection.Count);
-        }
-
-        [Fact]
         public async Task ReadFormAsync_KeyLengthLimitExceeded_Throw()
         {
             var bodyPipe = await MakePipeReader("foo=1&baz1234567890=2");
@@ -155,9 +142,9 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
         {
             var singleSegmentReadOnlySequence = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("Hello world"));
             var formPipeReader = new FormPipeReader(null);
-            KeyValueAccumulator accumulator = default;
+            //KeyValueAccumulator accumulator = default;
 
-            formPipeReader.TryParseFormValues(ref singleSegmentReadOnlySequence, ref accumulator, false);
+            //formPipeReader.TryParseFormValues(ref singleSegmentReadOnlySequence, ref accumulator, false);
         }
 
         [Fact]
@@ -204,7 +191,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
             Assert.Equal(expectedValue, form[key]);
         }
 
-        protected virtual Task<Dictionary<string, StringValues>> ReadFormAsync(FormPipeReader reader)
+        internal virtual Task<Dictionary<string, StringValues>> ReadFormAsync(FormPipeReader reader)
         {
             return reader.ReadFormAsync();
         }
