@@ -160,6 +160,31 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
             formPipeReader.TryParseFormValues(ref singleSegmentReadOnlySequence, ref accumulator, false);
         }
 
+        [Fact]
+        public async Task Test2()
+        {
+            var pipe = new Pipe();
+            pipe.Writer.WriteAsync(Encoding.UTF8.GetBytes("foo=bar&baz=boo")).AsTask().GetAwaiter().GetResult();
+            pipe.Writer.Complete();
+            var reader = new FormPipeReader(pipe.Reader);
+
+            await reader.ReadFormAsync();
+        }
+
+        [Fact]
+        public async Task CheckPipeIsUsableAndAdvancedAfterReadingFromFormOnce()
+        {
+            var pipe = new Pipe();
+            await pipe.Writer.WriteAsync(Encoding.UTF8.GetBytes("foo=bar&baz=boo"));
+            pipe.Writer.Complete();
+
+            var reader = new FormPipeReader(pipe.Reader);
+
+            var res = await reader.ReadFormAsync();
+
+            reader = new FormPipeReader(pipe.Reader);
+        }
+
         // TODO test FF
 
         // https://en.wikipedia.org/wiki/Percent-encoding
