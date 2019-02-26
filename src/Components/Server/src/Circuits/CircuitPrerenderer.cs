@@ -13,6 +13,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
     internal class CircuitPrerenderer : IComponentPrerenderer
     {
+        private static object CircuitHostKey = new object();
+
         private readonly CircuitFactory _circuitFactory;
 
         public CircuitPrerenderer(CircuitFactory circuitFactory)
@@ -23,40 +25,36 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         public async Task<ComponentPrerenderResult> PrerenderComponentAsync(ComponentPrerenderingContext prerenderingContext)
         {
             var context = prerenderingContext.Context;
-            var circuitHost = _circuitFactory.CreateCircuitHost(
-                context,
-                client: null,
-                GetFullUri(context.Request),
-                GetFullBaseUri(context.Request));
-
+            var circuitHost = GetOrCreateCircuitHost(context);
 
             // For right now we just do prerendering and dispose the circuit. In the future we will keep the circuit around and
             // reconnect to it from the ComponentsHub.
-            try
-            {
-                circuitHost.Renderer.UnhandledException += PrerenderException;
-                circuitHost.Renderer.UnhandledSynchronizationException += PrerenderUnhandledException;
                 var renderResult = await circuitHost.PrerenderComponentAsync(
                     prerenderingContext.ComponentType,
                     prerenderingContext.Parameters);
+
                 return new ComponentPrerenderResult(renderResult);
-            }
-            finally
-            {
-                await circuitHost.DisposeAsync();
-            }
-
-            void PrerenderException(object sender, Exception e)
-            {
-                ExceptionDispatchInfo.Capture(e).Throw();
-            }
-
-            void PrerenderUnhandledException(object sender, UnhandledExceptionEventArgs e)
-            {
-                ExceptionDispatchInfo.Capture((Exception)e.ExceptionObject).Throw();
-            }
         }
 
+        private CircuitHost GetOrCreateCircuitHost(HttpContext context)
+        {
+            if(context.Items.TryGetValue(CircuitHostKey, out var existingHost)) {
+                return (CircuitHost)existingHost;
+            }
+            else
+            {
+                var result = _circuitFactory.CreateCircuitHost(
+                    context,
+                    client: null,
+                    GetFullUri(context.Request),
+                    GetFullBaseUri(context.Request));
+
+                context.Items.Add(CircuitHostKey, result);
+                context.Response.RegisterForDisposeAsync(result);
+
+                return result;
+            }
+        }
 
         private string GetFullUri(HttpRequest request)
         {

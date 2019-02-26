@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Services;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponents
@@ -16,6 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponents
     internal class StaticComponentRenderer
     {
         private readonly HtmlEncoder _encoder;
+        private bool _initialized = false;
 
         public StaticComponentRenderer(HtmlEncoder encoder)
         {
@@ -29,15 +31,40 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponents
         {
             var dispatcher = Renderer.CreateDefaultDispatcher();
 
-            // This shouldn't be moved to the constructor as we want a request scoped service.
-            var helper = (HttpUriHelper)httpContext.RequestServices.GetRequiredService<IUriHelper>();
-            helper.InitializeState(httpContext);
+            InitializeUriHelper(httpContext);
             using (var htmlRenderer = new HtmlRenderer(httpContext.RequestServices, _encoder.Encode, dispatcher))
             {
                 return await dispatcher.InvokeAsync(() => htmlRenderer.RenderComponentAsync(
                     componentType,
                     parameters));
             }
+        }
+
+        private void InitializeUriHelper(HttpContext httpContext)
+        {
+            // The UriHelper might have been already initialized by a previous render.
+            if (!_initialized)
+            {
+                // This shouldn't be moved to the constructor as we want a request scoped service.
+                var helper = (UriHelperBase)httpContext.RequestServices.GetRequiredService<IUriHelper>();
+                helper.InitializeState(GetFullUri(httpContext.Request), GetContextBaseUri(httpContext.Request));
+                _initialized = true;
+            }
+        }
+
+        private string GetFullUri(HttpRequest request)
+        {
+            return UriHelper.BuildAbsolute(
+                request.Scheme,
+                request.Host,
+                request.PathBase,
+                request.Path,
+                request.QueryString);
+        }
+
+        private string GetContextBaseUri(HttpRequest request)
+        {
+            return UriHelper.BuildAbsolute(request.Scheme, request.Host, request.PathBase);
         }
     }
 }

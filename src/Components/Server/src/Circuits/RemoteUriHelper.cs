@@ -26,10 +26,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         /// <param name="uriAbsolute">The absolute URI of the current page.</param>
         /// <param name="baseUriAbsolute">The absolute base URI of the current page.</param>
         /// <param name="jsRuntime">The <see cref="IJSRuntime"/> to use for interoperability.</param>
-        public void Initialize(string uriAbsolute, string baseUriAbsolute)
+        public override void InitializeState(string uriAbsolute, string baseUriAbsolute)
         {
-            SetAbsoluteBaseUri(baseUriAbsolute);
-            SetAbsoluteUri(uriAbsolute);
+            base.InitializeState(uriAbsolute, baseUriAbsolute);
             TriggerOnLocationChanged();
         }
 
@@ -39,7 +38,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         /// <param name="uriAbsolute">The absolute URI of the current page.</param>
         /// <param name="baseUriAbsolute">The absolute base URI of the current page.</param>
         /// <param name="jsRuntime">The <see cref="IJSRuntime"/> to use for interoperability.</param>
-        public void Initialize(string uriAbsolute, string baseUriAbsolute, IJSRuntime jsRuntime)
+        internal void AttachJsRuntime(IJSRuntime jsRuntime)
         {
             if (_jsRuntime != null)
             {
@@ -47,15 +46,11 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
 
             _jsRuntime = jsRuntime;
-
-            Initialize(uriAbsolute, baseUriAbsolute);
-
             _jsRuntime.InvokeAsync<object>(
                     Interop.EnableNavigationInterception,
                     typeof(RemoteUriHelper).Assembly.GetName().Name,
                     nameof(NotifyLocationChanged));
         }
-
 
         /// <summary>
         /// For framework use only.

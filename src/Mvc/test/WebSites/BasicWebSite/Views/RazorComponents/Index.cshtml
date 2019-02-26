@@ -26,10 +26,10 @@
 <div id="Routing">
     @if (Model)
     {
-        await Html.RenderComponentAsync<RouterContainer>();
+        @(await Html.RenderComponentAsync<RouterContainer>());
     }
     else
     {
-        await Html.PrerenderComponentAsync<RouterContainer>();
+        @(await Html.PrerenderComponentAsync<RouterContainer>());
     }
 </div>

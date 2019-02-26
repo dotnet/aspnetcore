@@ -73,8 +73,26 @@ namespace Microsoft.AspNetCore.Components.Services
         /// Called to initialize BaseURI and current URI before those values the first time.
         /// Override this method to dynamically calculate the those values.
         /// </summary>
-        protected virtual void InitializeState()
+        public virtual void InitializeState(string uriAbsolute, string baseUriAbsolute)
         {
+            if (uriAbsolute == null)
+            {
+                throw new ArgumentNullException(nameof(uriAbsolute));
+            }
+
+            if (baseUriAbsolute == null)
+            {
+                throw new ArgumentNullException(nameof(baseUriAbsolute));
+            }
+
+            if (_isInitialized)
+            {
+                throw new InvalidOperationException($"'{typeof(UriHelperBase).Name}' already initialized.");
+            }
+            _isInitialized = true;
+
+            SetAbsoluteUri(uriAbsolute);
+            SetAbsoluteBaseUri(baseUriAbsolute);
         }
 
         /// <summary>
@@ -189,8 +207,7 @@ namespace Microsoft.AspNetCore.Components.Services
         {
             if (!_isInitialized)
             {
-                InitializeState();
-                _isInitialized = true;
+                throw new InvalidOperationException($"'{this.GetType().Name}' has not been initialized.");
             }
         }
     }

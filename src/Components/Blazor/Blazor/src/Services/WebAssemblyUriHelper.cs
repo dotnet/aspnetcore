@@ -16,20 +16,20 @@ namespace Microsoft.AspNetCore.Blazor.Services
         /// <summary>
         /// Gets the instance of <see cref="WebAssemblyUriHelper"/>.
         /// </summary>
-        public static readonly WebAssemblyUriHelper Instance = new WebAssemblyUriHelper();
+        public static readonly WebAssemblyUriHelper Instance = new WebAssemblyUriHelper(initialize: true);
 
         // For simplicity we force public consumption of the BrowserUriHelper through
         // a singleton. Only a single instance can be updated by the browser through
         // interop. We can construct instances for testing.
-        internal WebAssemblyUriHelper()
+        internal WebAssemblyUriHelper(bool initialize)
         {
+            if (initialize)
+            {
+                AttachJsRuntime();
+            }
         }
 
-        /// <summary>
-        /// Called to initialize BaseURI and current URI before those values are used the first time.
-        /// Override this method to dynamically calculate those values.
-        /// </summary>
-        protected override void InitializeState()
+        private void AttachJsRuntime()
         {
             WebAssemblyJSRuntime.Instance.Invoke<object>(
                 Interop.EnableNavigationInterception,
@@ -40,8 +40,7 @@ namespace Microsoft.AspNetCore.Blazor.Services
             // client-side (Mono) use, so it's OK to rely on synchronicity here.
             var baseUri = WebAssemblyJSRuntime.Instance.Invoke<string>(Interop.GetBaseUri);
             var uri = WebAssemblyJSRuntime.Instance.Invoke<string>(Interop.GetLocationHref);
-            SetAbsoluteBaseUri(baseUri);
-            SetAbsoluteUri(uri);
+            base.InitializeState(uri, baseUri);
         }
 
         /// <inheritdoc />

@@ -38,6 +38,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
         {
             var solutionDir = FindSolutionDir();
             return Directory.GetFiles(solutionDir, "*.csproj", SearchOption.AllDirectories)
+                .Where(file => !file.Contains("\\ref\\"))
+                .Distinct()
                 .ToDictionary(Path.GetFileNameWithoutExtension, Path.GetDirectoryName);
         }
 
