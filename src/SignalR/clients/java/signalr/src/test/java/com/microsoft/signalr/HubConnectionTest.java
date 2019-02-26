@@ -1278,7 +1278,7 @@ class HubConnectionTest {
 
         RuntimeException exception = assertThrows(RuntimeException.class,
                 () -> hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait());
-        assertEquals("Detected a connection attempt to an ASP.NET SignalR Server. This client only supports connecting to an ASP.NET Core SignalR Server. See https://aka.ms/signalr-core-differences for details.",
+        assertEquals("Detected an ASP.NET SignalR Server. This client only supports connecting to an ASP.NET Core SignalR Server. See https://aka.ms/signalr-core-differences for details.",
                 exception.getMessage());
     }
 
