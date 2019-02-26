@@ -11,7 +11,7 @@ if (!(Test-Path $DumpFolder))
 $DumpFolder = Resolve-Path $DumpFolder
 
 $werHive = "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting";
-$ldHive = "$werHive\LocalDumps\signalrclienttests.exe";
+$ldHive = "$werHive\LocalDumps";
 
 function Setup-appverif($application)
 {
@@ -59,7 +59,6 @@ function Setup-Dumps()
     if (!(Test-Path $ldHive))
     {
         New-Item -Path $werHive -Name LocalDumps
-        New-Item -Path $werHive\LocalDumps -Name signalrclienttests.exe
     }
 
     Move-Item $env:windir\System32\vsjitdebugger.exe $env:windir\System32\_vsjitdebugger.exe -ErrorAction Ignore;
