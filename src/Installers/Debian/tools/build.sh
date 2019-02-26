@@ -26,7 +26,7 @@ execute(){
     package_all
     generate_all
     create_source_tarball
-    
+
     # Actually Build Package Files
     (cd ${PACKAGE_SOURCE_DIR}; debuild -us -uc)
 
@@ -36,7 +36,7 @@ execute(){
 parse_args_and_set_env_vars(){
     OPTIND=1 # Reset in case getopts has been used previously in the shell.
 
-    while getopts ":n:v:i:o:h" opt; do
+    while getopts ":n:v:i:o:h:C:" opt; do
       case $opt in
         n)
           export PACKAGE_NAME="$OPTARG"
@@ -46,6 +46,9 @@ parse_args_and_set_env_vars(){
           ;;
         i)
           export INPUT_DIR="$OPTARG"
+          ;;
+        C)
+          export CONTENT_DIR="$OPTARG"
           ;;
         o)
           export OUTPUT_DIR="$OPTARG"
@@ -64,21 +67,22 @@ parse_args_and_set_env_vars(){
           ;;
       esac
     done
-    
+
      # Special Input Directories + Paths
     ABSOLUTE_PLACEMENT_DIR="${INPUT_DIR}/\$"
-    PACKAGE_ROOT_PLACEMENT_DIR="${INPUT_DIR}/package_root"
+    PACKAGE_ROOT_PLACEMENT_DIR="${CONTENT_DIR}"
     CONFIG="$INPUT_DIR/debian_config.json"
 
     return 0
 }
 
 print_help(){
-    echo "Usage: package_tool [-i <INPUT_DIR>] [-o <OUTPUT_DIRECTORY>] 
+    echo "Usage: package_tool [-i <INPUT_DIR>] [-o <OUTPUT_DIRECTORY>]
     [-n <PACKAGE_NAME>] [-v <PACKAGE_VERSION>] [-h]
 
     REQUIRED:
         -i <INPUT_DIR>: Input directory conforming to package_tool conventions and debian_config.json
+        -C <CONTENT_DIR>: Directory containing the files which should be packaged.
         -o <OUTPUT_DIR>: Output directory for debian package and other artifacts
 
     OPTIONAL:
@@ -104,9 +108,11 @@ validate_inputs(){
         ret=1
     fi
 
-    if [[ ! -d "$PACKAGE_ROOT_PLACEMENT_DIR" ]]; then
-        echo "ERROR: package_root directory does not exist"
-        echo $PACKAGE_ROOT_PLACEMENT_DIR
+    if [[ -z "$CONTENT_DIR" ]]; then
+        echo "ERROR: -C <CONTENT_DIR> Not Specified."
+        ret=1
+    elif [[ ! -d "$PACKAGE_ROOT_PLACEMENT_DIR" ]]; then
+        echo "ERROR: '$PACKAGE_ROOT_PLACEMENT_DIR' directory does not exist"
         ret=1
     fi
 
@@ -115,13 +121,13 @@ validate_inputs(){
         echo $CONFIG
         ret=1
     fi
-    
+
     return $ret
 }
 
 parse_config_and_set_env_vars(){
     extract_base_cmd="python $SCRIPT_DIR/scripts/extract_json_value.py"
-    
+
     # Arguments Take Precedence over Config
     [ -z "$PACKAGE_VERSION" ] && PACKAGE_VERSION="$($extract_base_cmd $CONFIG "release.package_version")"
     [ -z "$PACKAGE_NAME" ] && PACKAGE_NAME="$($extract_base_cmd $CONFIG "package_name")"
@@ -152,7 +158,7 @@ package_all(){
     package_absolute_placement
     package_samples
     package_docs
-    package_install_scripts 
+    package_install_scripts
 }
 
 generate_all(){
@@ -187,18 +193,18 @@ package_package_root_placement(){
 package_absolute_placement(){
     if [[ -d "$ABSOLUTE_PLACEMENT_DIR" ]]; then
         abs_in_package_dir="\$"
-    
+
         add_dir_to_install ${ABSOLUTE_PLACEMENT_DIR} $abs_in_package_dir
-    
+
         # Get List of all files in directory tree, relative to ABSOLUTE_PLACEMENT_DIR
         abs_files=( $(_get_files_in_dir_tree $ABSOLUTE_PLACEMENT_DIR) )
-    
+
         # For each file add a a system placement
         for abs_file in ${abs_files[@]}
         do
             parent_dir=$(dirname $abs_file)
             filename=$(basename $abs_file)
-    
+
             add_system_file_placement "$abs_in_package_dir/$abs_file" "/$parent_dir"
         done
     fi
@@ -232,7 +238,7 @@ generate_config_templates(){
 generate_manpages(){
     if [[ -f "$DOCS_JSON_PATH" ]]; then
         mkdir -p $DOCS_DIR
-        
+
         # Generate the manpages from json spec
         python ${SCRIPT_DIR}/scripts/manpage_generator.py ${DOCS_JSON_PATH} ${DOCS_DIR}
     fi

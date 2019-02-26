@@ -6,6 +6,8 @@
 
   <PropertyGroup>
     <TargetFileName>$(TargetingPackInstallerBaseName)-$(TargetingPackVersion).deb</TargetFileName>
+    <PackageContentRoot>$(TargetingPackLayoutRoot)</PackageContentRoot>
+
     <!-- CLI would take a dependency such as 'aspnetcore-targeting-pack-M.N >= M.N.P'. Here M.N is part of the id and M.N.P is the PackageVersion -->
     <PackageId>$(TargetingPackInstallerBaseName)-$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)</PackageId>
 
@@ -19,7 +21,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- This is here to enforce build order. -->
     <ProjectReference Include="..\..\..\Framework\ref\Microsoft.AspNetCore.App.Ref.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
@@ -29,19 +30,8 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
 
   <PropertyGroup>
-    <DebBuildDependsOn>$(DebBuildDependsOn);LayoutTargetingPack</DebBuildDependsOn>
     <!-- Suppresses building this project completely during servicing builds. -->
     <DebBuildDependsOn Condition="'$(IsTargetingPackBuilding)' == 'false'" />
   </PropertyGroup>
 
-  <Target Name="LayoutTargetingPack" DependsOnTargets="PrepareForBuild;ResolveProjectReferences">
-    <!-- Layout files in package_root/ for the build.sh script. -->
-    <ItemGroup>
-      <PackageFiles Include="$(TargetingPackLayoutRoot)**\*" />
-    </ItemGroup>
-
-    <Copy SourceFiles="@(PackageFiles)"
-          DestinationFolder="$(IntermediatePackageRoot)"
-          UseHardlinksIfPossible="true" />
-  </Target>
 </Project>

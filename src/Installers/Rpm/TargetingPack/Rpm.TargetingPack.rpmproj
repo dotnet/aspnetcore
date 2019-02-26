@@ -5,7 +5,7 @@
     <RpmPackageInstallRoot>/usr/share/dotnet/</RpmPackageInstallRoot>
     <TargetFileName>$(TargetingPackInstallerBaseName)-$(TargetingPackVersion)-x64.rpm</TargetFileName>
 
-    <IntermediatePackageRoot>$(TargetingPackLayoutRoot)</IntermediatePackageRoot>
+    <PackageContentRoot>$(TargetingPackLayoutRoot)</PackageContentRoot>
 
     <!-- installer versions -->
     <!-- CLI would take a dependency such as 'aspnetcore-targeting-pack-M.N >= M.N.P'. Here M.N is the part of the id and M.N.P is the package version -->

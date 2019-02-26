@@ -14,34 +14,16 @@
     <PackageSummary>$(SharedFxProductName)</PackageSummary>
     <PackageDescription>$(SharedFxDescription)</PackageDescription>
 
-    <IntermediatePackageRoot>$(IntermediateOutputPath)content\</IntermediatePackageRoot>
+    <PackageContentRoot>$(SharedFrameworkLayoutRoot)</PackageContentRoot>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(MSBuildThisFileDirectory)..\..\Framework\src\Microsoft.AspNetCore.App.shfxproj">
+    <ProjectReference Include="..\..\Framework\src\Microsoft.AspNetCore.App.Runtime.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
-      <OutputItemType>_ResolvedFxProjects</OutputItemType>
     </ProjectReference>
 
     <InstallerOwnedDirectory Include="$(RpmPackageInstallRoot)shared/Microsoft.AspNetCore.App" />
     <RpmDependency Include="dotnet-runtime-$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)" Version="$(MicrosoftNETCoreAppPackageVersion.Split('-')[0])" />
   </ItemGroup>
-
-  <PropertyGroup>
-    <RpmBuildDependsOn>$(RpmBuildDependsOn);LayoutSharedFramework;</RpmBuildDependsOn>
-  </PropertyGroup>
-
-  <Target Name="LayoutSharedFramework" DependsOnTargets="PrepareForBuild;ResolveProjectReferences">
-    <ItemGroup>
-      <SharedFxAssetFolder Include="%(_ResolvedFxProjects.InstallerAssetPaths)" SharedFxName="%(_ResolvedFxProjects.SharedFxName)" />
-      <PackageFiles Include="%(SharedFxAssetFolder.Identity)\**\*">
-        <DestinationDir>$(IntermediatePackageRoot)shared\%(SharedFxAssetFolder.SharedFxName)\$(SharedFxVersion)\</DestinationDir>
-      </PackageFiles>
-    </ItemGroup>
-
-    <Copy SourceFiles="@(PackageFiles)"
-          DestinationFiles="@(PackageFiles->'%(DestinationDir)%(RecursiveDir)%(FileName)%(Extension)')"
-          UseHardlinksIfPossible="true" />
-  </Target>
-
 </Project>
