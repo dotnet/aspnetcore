@@ -65,11 +65,11 @@ namespace Microsoft.AspNetCore.Razor.Performance
             var services = TestServices.Create(
                 new IWorkspaceService[]
                 {
+                    TagHelperResolver,
                     new StaticProjectSnapshotProjectEngineFactory(),
                 },
                 new ILanguageService[]
                 {
-                    TagHelperResolver,
                 });
 
             return new DefaultProjectSnapshotManager(
