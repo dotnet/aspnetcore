@@ -37,6 +37,24 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         /// </summary>
         /// <typeparam name="TComponent">The type of the component.</typeparam>
         /// <param name="domElementSelector">A CSS selector that uniquely identifies a DOM element.</param>
+        /// <param name="initialParameters">A <see cref="ParameterCollection"/> with the initial parameters to render the component.</param>
+        /// <returns>A <see cref="Task"/> that represents the asynchronous rendering of the added component.</returns>
+        /// <remarks>
+        /// Callers of this method may choose to ignore the returned <see cref="Task"/> if they do not
+        /// want to await the rendering of the added component.
+        /// </remarks>
+        public Task AddComponentAsync<TComponent>(string domElementSelector, ParameterCollection initialParameters)
+            where TComponent : IComponent
+        {
+            return AddComponentAsync(typeof(TComponent), domElementSelector, initialParameters);
+        }
+
+        /// <summary>
+        /// Attaches a new root component to the renderer,
+        /// causing it to be displayed in the specified DOM element.
+        /// </summary>
+        /// <typeparam name="TComponent">The type of the component.</typeparam>
+        /// <param name="domElementSelector">A CSS selector that uniquely identifies a DOM element.</param>
         /// <returns>A <see cref="Task"/> that represents the asynchronous rendering of the added component.</returns>
         /// <remarks>
         /// Callers of this method may choose to ignore the returned <see cref="Task"/> if they do not
@@ -57,6 +75,21 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         /// want to await the rendering of the added component.
         /// </remarks>
         public Task AddComponentAsync(Type componentType, string domElementSelector)
+           => AddComponentAsync(componentType, domElementSelector, ParameterCollection.Empty);
+
+        /// <summary>
+        /// Associates the <see cref="IComponent"/> with the <see cref="WebAssemblyRenderer"/>,
+        /// causing it to be displayed in the specified DOM element.
+        /// </summary>
+        /// <param name="componentType">The type of the component.</param>
+        /// <param name="domElementSelector">A CSS selector that uniquely identifies a DOM element.</param>
+        /// <param name="initialParameters">A <see cref="ParameterCollection"/> with the initial parameters to render the component.</param>
+        /// <returns>A <see cref="Task"/> that represents the asynchronous rendering of the added component.</returns>
+        /// <remarks>
+        /// Callers of this method may choose to ignore the returned <see cref="Task"/> if they do not
+        /// want to await the rendering of the added component.
+        /// </remarks>
+        public Task AddComponentAsync(Type componentType, string domElementSelector, ParameterCollection initialParameters)
         {
             var component = InstantiateComponent(componentType);
             var componentId = AssignRootComponentId(component);
@@ -73,7 +106,7 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
                 domElementSelector,
                 componentId);
 
-            return RenderRootComponentAsync(componentId);
+            return RenderRootComponentAsync(componentId, initialParameters);
         }
 
         /// <inheritdoc />
