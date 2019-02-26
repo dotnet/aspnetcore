@@ -1022,7 +1022,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
                 var readResult = await context.Request.BodyPipe.ReadAsync();
                 Assert.Equal(12, readResult.Buffer.Length);
-                Assert.True(readResult.IsCompleted);
                 context.Request.BodyPipe.AdvanceTo(readResult.Buffer.End);
 
                 readResult = await context.Request.BodyPipe.ReadAsync();
