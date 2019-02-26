@@ -271,28 +271,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             |                           Padding (*)                       ...
             +---------------------------------------------------------------+
         */
-        private void WriteDataUnsynchronized(int streamId, ReadOnlySequence<byte> data, long dataLength, bool endStream)
+        private void WriteDataUnsynchronized(int streamId, in ReadOnlySequence<byte> data, long dataLength, bool endStream)
         {
+            Debug.Assert(dataLength == data.Length);
+
             // Note padding is not implemented
             _outgoingFrame.PrepareData(streamId);
 
-            var dataPayloadLength = (int)_maxFrameSize; // Minus padding
-
-            while (data.Length > dataPayloadLength)
+            if (dataLength > _maxFrameSize) // Minus padding
             {
-                var currentData = data.Slice(0, dataPayloadLength);
-                _outgoingFrame.PayloadLength = dataPayloadLength; // Plus padding
-
-                WriteHeaderUnsynchronized();
-
-                foreach (var buffer in currentData)
-                {
-                    _outputWriter.Write(buffer.Span);
-                }
-
-                // Plus padding
-
-                data = data.Slice(dataPayloadLength);
+                TrimAndWriteDataUnsynchronized(in data, dataLength, endStream);
+                return;
             }
 
             if (endStream)
@@ -300,7 +289,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 _outgoingFrame.DataFlags |= Http2DataFrameFlags.END_STREAM;
             }
 
-            _outgoingFrame.PayloadLength = (int)data.Length; // Plus padding
+            _outgoingFrame.PayloadLength = (int)dataLength; // Plus padding
 
             WriteHeaderUnsynchronized();
 
@@ -310,6 +299,52 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
 
             // Plus padding
+            return;
+
+            // TODO: In C#8 we can shadow the param and var names and don't have to change them
+            void TrimAndWriteDataUnsynchronized(in ReadOnlySequence<byte> dataToWrite, long remainingLength, bool isEnd)
+            {
+                Debug.Assert(remainingLength == dataToWrite.Length);
+
+                var dataPayloadLength = (int)_maxFrameSize; // Minus padding
+
+                Debug.Assert(remainingLength > dataPayloadLength);
+
+                var remainingData = dataToWrite;
+                do
+                {
+                    var currentData = remainingData.Slice(0, dataPayloadLength);
+                    _outgoingFrame.PayloadLength = dataPayloadLength; // Plus padding
+
+                    WriteHeaderUnsynchronized();
+
+                    foreach (var buffer in currentData)
+                    {
+                        _outputWriter.Write(buffer.Span);
+                    }
+
+                    // Plus padding
+                    remainingLength -= dataPayloadLength;
+                    remainingData = remainingData.Slice(dataPayloadLength);
+
+                } while (remainingLength > dataPayloadLength);
+
+                if (isEnd)
+                {
+                    _outgoingFrame.DataFlags |= Http2DataFrameFlags.END_STREAM;
+                }
+
+                _outgoingFrame.PayloadLength = (int)remainingLength; // Plus padding
+
+                WriteHeaderUnsynchronized();
+
+                foreach (var buffer in remainingData)
+                {
+                    _outputWriter.Write(buffer.Span);
+                }
+
+                // Plus padding
+            }
         }
 
         private async ValueTask<FlushResult> WriteDataAsync(int streamId, StreamOutputFlowControl flowControl, ReadOnlySequence<byte> data, long dataLength, bool endStream)
