@@ -2070,12 +2070,12 @@ namespace Microsoft.AspNetCore.Identity
         public virtual Task<IList<TUser>> GetUsersForClaimAsync(Claim claim)
         {
             ThrowIfDisposed();
-            var store = GetClaimStore();
+            var claimStore = GetClaimStore();
             if (claim == null)
             {
                 throw new ArgumentNullException(nameof(claim));
             }
-            return store.GetUsersForClaimAsync(claim, CancellationToken);
+            return claimStore.GetUsersForClaimAsync(claim, CancellationToken);
         }
 
         /// <summary>
