@@ -5,7 +5,7 @@ param(
 
 if (!($DumpFolder))
 {
-    $DumpFolder = "$PSScriptRoot\..\..\..\..\..\artifacts\logs\dumps"
+    $DumpFolder = "$PSScriptRoot\..\..\..\artifacts\logs\dumps"
 }
 if (!(Test-Path $DumpFolder))
 {
