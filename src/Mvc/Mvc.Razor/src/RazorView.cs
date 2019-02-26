@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.Razor
@@ -284,9 +285,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 {
                     // This means we're writing to a 'real' writer, probably to the actual output stream.
                     // We're using PagedBufferedTextWriter here to 'smooth' synchronous writes of IHtmlContent values.
-                    using (var writer = _bufferScope.CreateWriter(context.Writer))
+
+                    await context.HttpContext.Response.StartAsync();
+                    using (var writer = new PipeWriterTextWriter(context.HttpContext.Response.BodyPipe, context.Writer.Encoding))
                     {
                         await bodyWriter.Buffer.WriteToAsync(writer, _htmlEncoder);
+
+                        writer.Flush();
+                        await context.HttpContext.Response.BodyPipe.FlushAsync();
                     }
                 }
                 else

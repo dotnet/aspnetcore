@@ -55,7 +55,7 @@
                         </td>
                     }
                     <td>
-                        <form asp-page-handler="Make">
+                        <form>
                             <input type="hidden" name="Id" value="@((int)Model.Value3)" />
                             <input type="hidden" name="ResType" value="@data.Id" />
                             <input type="text" name="Quantity" style="width: 35px; font-size: 11px; text-align: left;" placeholder="@data.Max.ToString(System.Globalization.NumberFormatInfo.InvariantInfo)" />
@@ -120,7 +120,7 @@
                         <span class="progTime" data-start="@startDate" data-end="@endDate">@(CompleteDate.Subtract(DateTime.UtcNow).ToString())</span>
                     </td>
                     <td>
-                        <form method="post" asp-page-handler="Cancel">
+                        <form method="post">
                             <input type="hidden" name="id" value="@data.Id" />
                             <button class="small">Cancel</button>
                         </form>

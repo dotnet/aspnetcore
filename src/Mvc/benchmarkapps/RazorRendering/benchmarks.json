@@ -1,0 +1,18 @@
+{
+  "Default": {
+    "Client": "Wrk",
+    "Headers": {
+      "Cache-Control": "no-cache"
+    },
+    "PresetHeaders": "Html",
+    "ReadyStateText": "Application started.",
+    "Source": {
+      "Repository": "https://github.com/aspnet/AspNetCore.git",
+      "BranchOrCommit": "master",
+      "Project": "src/Mvc/benchmarkapps/RazorRendering/RazorRendering.csproj"
+    }
+  },
+  "BenThing": {
+    "Path": "/Category/PageA"
+  }
+}
