@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 
-namespace Microsoft.AspNetCore.Components.Server
+namespace Microsoft.AspNetCore.Blazor.Server
 {
     internal class BlazorConfig
     {

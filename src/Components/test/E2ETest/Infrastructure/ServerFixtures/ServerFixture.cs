@@ -37,7 +37,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
         private static Dictionary<string, string> FindProjects()
         {
             var solutionDir = FindSolutionDir();
-            return Directory.GetFiles(solutionDir, "*.csproj", SearchOption.AllDirectories)
+            return 
+                Directory.GetFiles(solutionDir, "*.csproj", SearchOption.AllDirectories)
+                .Where(f => !f.Contains("\\ref\\")) // Exclude ref-assembly projects
                 .ToDictionary(Path.GetFileNameWithoutExtension, Path.GetDirectoryName);
         }
 

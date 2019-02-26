@@ -1,15 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Components.Server;
-using Microsoft.AspNetCore.StaticFiles;
-using Microsoft.Extensions.FileProviders;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Net.Http.Headers;
-using System.Net.Mime;
 using System;
 using System.IO;
+using System.Net.Mime;
+using Microsoft.AspNetCore.Blazor.Server;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Builder
@@ -70,7 +69,7 @@ namespace Microsoft.AspNetCore.Builder
             {
                 FileProvider = new PhysicalFileProvider(config.DistPath),
                 ContentTypeProvider = CreateContentTypeProvider(config.EnableDebugging),
-                OnPrepareResponse = SetCacheHeaders
+                OnPrepareResponse = CacheHeaderSettings.SetCacheHeaders,
             });
 
             // * Before publishing, we serve the wwwroot files directly from source
@@ -84,7 +83,7 @@ namespace Microsoft.AspNetCore.Builder
                 app.UseStaticFiles(new StaticFileOptions
                 {
                     FileProvider = new PhysicalFileProvider(config.WebRootPath),
-                    OnPrepareResponse = SetCacheHeaders
+                    OnPrepareResponse = CacheHeaderSettings.SetCacheHeaders,
                 });
             }
 
@@ -97,7 +96,7 @@ namespace Microsoft.AspNetCore.Builder
                     ? null : new StaticFileOptions
                     {
                         FileProvider = new PhysicalFileProvider(Path.GetDirectoryName(indexHtmlPath)),
-                        OnPrepareResponse = SetCacheHeaders
+                        OnPrepareResponse = CacheHeaderSettings.SetCacheHeaders,
                     };
 
                 childAppBuilder.UseSpa(spa =>
@@ -134,24 +133,6 @@ namespace Microsoft.AspNetCore.Builder
             // Since there's no index.html, we'll use the default DefaultPageStaticFileOptions,
             // hence we'll look for index.html in the host server app's wwwroot.
             return null;
-        }
-
-        internal static void SetCacheHeaders(StaticFileResponseContext ctx)
-        {
-            // By setting "Cache-Control: no-cache", we're allowing the browser to store
-            // a cached copy of the response, but telling it that it must check with the
-            // server for modifications (based on Etag) before using that cached copy.
-            // Longer term, we should generate URLs based on content hashes (at least
-            // for published apps) so that the browser doesn't need to make any requests
-            // for unchanged files.
-            var headers = ctx.Context.Response.GetTypedHeaders();
-            if (headers.CacheControl == null)
-            {
-                headers.CacheControl = new CacheControlHeaderValue
-                {
-                    NoCache = true
-                };
-            }
         }
 
         private static bool IsNotFrameworkDir(HttpContext context)
