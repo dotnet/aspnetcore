@@ -440,11 +440,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         protected override void OnRequestProcessingEnding() { }
         protected override void OnReset() { }
         public void OnStartLine(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod method, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersion version, System.Span<byte> target, System.Span<byte> path, System.Span<byte> query, System.Span<byte> customMethod, bool pathEncoded) { }
-        public void ParseRequest(System.Buffers.ReadOnlySequence<byte> buffer, out System.SequencePosition consumed, out System.SequencePosition examined) { throw null; }
+        public void ParseRequest(in System.Buffers.ReadOnlySequence<byte> buffer, out System.SequencePosition consumed, out System.SequencePosition examined) { throw null; }
         public void SendTimeoutResponse() { }
         public void StopProcessingNextRequest() { }
-        public bool TakeMessageHeaders(System.Buffers.ReadOnlySequence<byte> buffer, out System.SequencePosition consumed, out System.SequencePosition examined) { throw null; }
-        public bool TakeStartLine(System.Buffers.ReadOnlySequence<byte> buffer, out System.SequencePosition consumed, out System.SequencePosition examined) { throw null; }
+        public bool TakeMessageHeaders(in System.Buffers.ReadOnlySequence<byte> buffer, out System.SequencePosition consumed, out System.SequencePosition examined) { throw null; }
+        public bool TakeStartLine(in System.Buffers.ReadOnlySequence<byte> buffer, out System.SequencePosition consumed, out System.SequencePosition examined) { throw null; }
         protected override bool TryParseRequest(System.IO.Pipelines.ReadResult result, out bool endConnection) { throw null; }
     }
     public partial class Http1ContentLengthMessageBody : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.Http1MessageBody
@@ -1035,7 +1035,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     {
         public static System.ArraySegment<byte> GetArray(this System.Memory<byte> buffer) { throw null; }
         public static System.ArraySegment<byte> GetArray(this System.ReadOnlyMemory<byte> memory) { throw null; }
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public static System.ReadOnlySpan<byte> ToSpan(this System.Buffers.ReadOnlySequence<byte> buffer) { throw null; }
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public static System.ReadOnlySpan<byte> ToSpan(this in System.Buffers.ReadOnlySequence<byte> buffer) { throw null; }
     }
     public enum ProduceEndType
     {
@@ -1220,8 +1220,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         public const int HeaderLength = 9;
         public const int SettingSize = 6;
         public static int GetPayloadFieldsLength(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2Frame frame) { throw null; }
-        public static bool ReadFrame(System.Buffers.ReadOnlySequence<byte> readableBuffer, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2Frame frame, uint maxFrameSize, out System.Buffers.ReadOnlySequence<byte> framePayload) { throw null; }
-        public static System.Collections.Generic.IList<Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2PeerSetting> ReadSettings(System.Buffers.ReadOnlySequence<byte> payload) { throw null; }
+        public static bool ReadFrame(in System.Buffers.ReadOnlySequence<byte> readableBuffer, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2Frame frame, uint maxFrameSize, out System.Buffers.ReadOnlySequence<byte> framePayload) { throw null; }
+        public static System.Collections.Generic.IList<Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2PeerSetting> ReadSettings(in System.Buffers.ReadOnlySequence<byte> payload) { throw null; }
     }
     public enum Http2FrameType : byte
     {
@@ -1247,9 +1247,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         public bool TryUpdateStreamWindow(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl.StreamOutputFlowControl flowControl, int bytes) { throw null; }
         public void UpdateMaxFrameSize(uint maxFrameSize) { }
         public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> Write100ContinueAsync(int streamId) { throw null; }
-        public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> WriteDataAsync(int streamId, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl.StreamOutputFlowControl flowControl, System.Buffers.ReadOnlySequence<byte> data, bool endStream) { throw null; }
+        public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> WriteDataAsync(int streamId, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl.StreamOutputFlowControl flowControl, in System.Buffers.ReadOnlySequence<byte> data, bool endStream) { throw null; }
         public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> WriteGoAwayAsync(int lastStreamId, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2ErrorCode errorCode) { throw null; }
-        public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> WritePingAsync(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2PingFrameFlags flags, System.Buffers.ReadOnlySequence<byte> payload) { throw null; }
+        public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> WritePingAsync(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2PingFrameFlags flags, in System.Buffers.ReadOnlySequence<byte> payload) { throw null; }
         public void WriteResponseHeaders(int streamId, int statusCode, Microsoft.AspNetCore.Http.IHeaderDictionary headers) { }
         public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> WriteResponseTrailers(int streamId, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpResponseTrailers headers) { throw null; }
         public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> WriteRstStreamAsync(int streamId, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2ErrorCode errorCode) { throw null; }
@@ -1374,7 +1374,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         protected override Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.MessageBody CreateMessageBody() { throw null; }
         protected override string CreateRequestId() { throw null; }
         public abstract void Execute();
-        public System.Threading.Tasks.Task OnDataAsync(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2Frame dataFrame, System.Buffers.ReadOnlySequence<byte> payload) { throw null; }
+        public System.Threading.Tasks.Task OnDataAsync(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2Frame dataFrame, in System.Buffers.ReadOnlySequence<byte> payload) { throw null; }
         public void OnDataRead(int bytesRead) { }
         public void OnEndStreamReceived() { }
         protected override void OnErrorAfterResponseStarted() { }
@@ -1507,7 +1507,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
     public partial class HPackDecoder
     {
         public HPackDecoder(int maxDynamicTableSize, int maxRequestHeaderFieldSize) { }
-        public void Decode(System.Buffers.ReadOnlySequence<byte> data, bool endHeaders, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpHeadersHandler handler) { }
+        public void Decode(in System.Buffers.ReadOnlySequence<byte> data, bool endHeaders, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpHeadersHandler handler) { }
     }
     public partial class HPackDecodingException : System.Exception
     {
