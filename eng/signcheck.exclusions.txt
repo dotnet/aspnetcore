@@ -1,5 +1,6 @@
 */AppHostTemplate/apphost.exe;AspNetCoreRuntime.*.nupkg; Exclude the apphost because this is expected to be code-signed by customers after the SDK modifies it.
 */runtime.*.microsoft.netcore.dotnetapphost/*/apphost.exe;Microsoft.AspNetCore.AzureAppServices.SiteExtension.*.nupkg; Exclude the apphost because this is expected to be code-signed by customers after the SDK modifies it.
+*/Microsoft.NETCore.App/*/comhost.dll;AspNetCoreRuntime.3.0.*.nupkg; Workaround https://github.com/dotnet/core-setup/issues/5253
 *.js;; Exclude all JavaScript files from codesigning because we don't expect these to run on Windows Script Host
 *.binlog;; Exclude msbuild log files
 *.symbols.nupkg;; Exclude NuGet symbols packages. These are not shipped to customers and should not be code signed.
