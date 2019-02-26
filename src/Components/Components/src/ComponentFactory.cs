@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Components.Reflection;
@@ -10,7 +10,10 @@ using System.Reflection;
 
 namespace Microsoft.AspNetCore.Components
 {
-    internal class ComponentFactory
+    /// <summary>
+    /// A factory that can be used to instantiate components.
+    /// </summary>
+    public class ComponentFactory : IComponentFactory
     {
         private readonly static BindingFlags _injectablePropertyBindingFlags
             = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
@@ -19,14 +22,31 @@ namespace Microsoft.AspNetCore.Components
         private readonly IDictionary<Type, Action<IComponent>> _cachedInitializers
             = new ConcurrentDictionary<Type, Action<IComponent>>();
 
+        /// <summary>
+        /// Constructs an instance of <see cref="ComponentFactory"/>.
+        /// </summary>
+        /// <param name="serviceProvider">A <see cref="IServiceProvider"/> used to resolve services.</param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="serviceProvider"/> is <c>null</c>.</exception>
         public ComponentFactory(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider
                 ?? throw new ArgumentNullException(nameof(serviceProvider));
         }
 
+        /// <summary>
+        /// Instantiates a component of the specified type.
+        /// </summary>
+        /// <param name="componentType">The component type.</param>
+        /// <returns>The instantiated component of type <paramref name="componentType"/>.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="componentType"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">Thrown when instances of type <paramref name="componentType"/> are not assignable to <see cref="IComponent"/>.</exception>
         public IComponent InstantiateComponent(Type componentType)
         {
+            if (componentType == null)
+            {
+                throw new ArgumentNullException(nameof(componentType));
+            }
+
             if (!typeof(IComponent).IsAssignableFrom(componentType))
             {
                 throw new ArgumentException($"The type {componentType.FullName} does not " +
