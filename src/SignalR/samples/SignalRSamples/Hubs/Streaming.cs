@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Reactive.Linq;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -11,6 +12,15 @@ namespace SignalRSamples.Hubs
 {
     public class Streaming : Hub
     {
+        public async IAsyncEnumerable<int> AsyncEnumerableCounter(int count, int delay)
+        {
+            for (var i = 0; i < count; i++)
+            {
+                yield return i;
+                await Task.Delay(delay);
+            }
+        }
+
         public ChannelReader<int> ObservableCounter(int count, int delay)
         {
             var observable = Observable.Interval(TimeSpan.FromMilliseconds(delay))

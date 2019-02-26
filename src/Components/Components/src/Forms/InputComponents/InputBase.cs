@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <summary>
         /// Gets or sets a callback that updates the bound value.
         /// </summary>
-        [Parameter] Action<T> ValueChanged { get; set; }
+        [Parameter] EventCallback<T> ValueChanged { get; set; }
 
         /// <summary>
         /// Gets or sets an expression that identifies the bound value.
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Components.Forms
                 if (hasChanged)
                 {
                     Value = value;
-                    ValueChanged?.Invoke(value);
+                    _ = ValueChanged.InvokeAsync(value);
                     EditContext.NotifyFieldChanged(FieldIdentifier);
                 }
             }

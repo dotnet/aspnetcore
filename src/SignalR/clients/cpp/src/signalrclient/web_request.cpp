@@ -7,7 +7,7 @@
 
 namespace signalr
 {
-    web_request::web_request(const web::uri &url)
+    web_request::web_request(const utility::string_t& url)
         : m_url(url)
     { }
 

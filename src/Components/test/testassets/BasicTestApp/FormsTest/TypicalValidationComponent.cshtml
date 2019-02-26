@@ -34,6 +34,7 @@
             <option value="@TicketClass.Premium">Premium class</option>
             <option value="@TicketClass.First">First class</option>
         </InputSelect>
+        <span id="selected-ticket-class">@person.TicketClass</span>
     </p>
     <p class="accepts-terms">
         Accepts terms: <InputCheckbox bind-Value="@person.AcceptsTerms" />

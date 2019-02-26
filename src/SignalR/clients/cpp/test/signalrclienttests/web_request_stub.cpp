@@ -5,7 +5,7 @@
 #include "web_request_stub.h"
 
 web_request_stub::web_request_stub(unsigned short status_code, const utility::string_t& reason_phrase, const utility::string_t& response_body)
-    : web_request(web::uri(_XPLATSTR(""))), m_status_code(status_code), m_reason_phrase(reason_phrase), m_response_body(response_body)
+    : web_request(_XPLATSTR("")), m_status_code(status_code), m_reason_phrase(reason_phrase), m_response_body(response_body)
 { }
 
 void web_request_stub::set_method(const utility::string_t &method)

@@ -85,6 +85,7 @@ namespace Microsoft.AspNetCore.Mvc.Localization
             _localizer.GetAllStrings(includeParentCultures);
 
         /// <inheritdoc />
+        [Obsolete("This method is obsolete. Use `CurrentCulture` and `CurrentUICulture` instead.")]
         public virtual IHtmlLocalizer WithCulture(CultureInfo culture)
         {
             if (culture == null)
@@ -92,7 +93,9 @@ namespace Microsoft.AspNetCore.Mvc.Localization
                 throw new ArgumentNullException(nameof(culture));
             }
 
+#pragma warning disable CS0618 // Type or member is obsolete
             return new HtmlLocalizer(_localizer.WithCulture(culture));
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         /// <summary>

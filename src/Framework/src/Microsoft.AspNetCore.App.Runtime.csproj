@@ -12,7 +12,6 @@
     <RuntimeIdentifier>$(TargetRuntimeIdentifier)</RuntimeIdentifier>
     <!-- Even though RuntimeIdentifier is set, shared framework projects are not self-contained projects -->
     <SelfContained>false</SelfContained>
-    <SharedFxName>Microsoft.AspNetCore.App</SharedFxName>
     <PackageId>$(MSBuildProjectName).$(RuntimeIdentifier)</PackageId>
     <IsShippingPackage>true</IsShippingPackage>
     <HasReferenceAssembly>false</HasReferenceAssembly>

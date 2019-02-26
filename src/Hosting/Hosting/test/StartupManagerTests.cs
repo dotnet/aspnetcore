@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.AspNetCore.Hosting.Tests.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Xunit;
 
@@ -510,7 +511,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             serviceCollection.AddSingleton<IServiceProviderFactory<MyContainer>, MyContainerFactory>();
             var services = serviceCollection.BuildServiceProvider();
 
-            var startup = StartupLoader.LoadMethods(services, typeof(MyContainerStartup), EnvironmentName.Development);
+            var startup = StartupLoader.LoadMethods(services, typeof(MyContainerStartup), Environments.Development);
 
             var app = new ApplicationBuilder(services);
             app.ApplicationServices = startup.ConfigureServicesDelegate(serviceCollection);
@@ -526,7 +527,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             serviceCollection.AddSingleton<IServiceProviderFactory<MyContainer>, MyContainerFactory>();
             var services = serviceCollection.BuildServiceProvider();
 
-            var startup = StartupLoader.LoadMethods(services, typeof(MyContainerStartupBaseClass), EnvironmentName.Development);
+            var startup = StartupLoader.LoadMethods(services, typeof(MyContainerStartupBaseClass), Environments.Development);
 
             var app = new ApplicationBuilder(services);
             app.ApplicationServices = startup.ConfigureServicesDelegate(serviceCollection);
@@ -542,13 +543,13 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             serviceCollection.AddSingleton<IServiceProviderFactory<MyContainer>, MyContainerFactory>();
             var services = serviceCollection.BuildServiceProvider();
 
-            var startup = StartupLoader.LoadMethods(services, typeof(MyContainerStartupEnvironmentBased), EnvironmentName.Production);
+            var startup = StartupLoader.LoadMethods(services, typeof(MyContainerStartupEnvironmentBased), Environments.Production);
 
             var app = new ApplicationBuilder(services);
             app.ApplicationServices = startup.ConfigureServicesDelegate(serviceCollection);
 
             Assert.IsType<MyContainer>(app.ApplicationServices);
-            Assert.Equal(((MyContainer)app.ApplicationServices).Environment, EnvironmentName.Production);
+            Assert.Equal(((MyContainer)app.ApplicationServices).Environment, Environments.Production);
         }
 
         [Fact]
@@ -557,7 +558,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             var serviceCollection = new ServiceCollection();
             var services = serviceCollection.BuildServiceProvider();
 
-            var startup = StartupLoader.LoadMethods(services, typeof(MyContainerStartup), EnvironmentName.Development);
+            var startup = StartupLoader.LoadMethods(services, typeof(MyContainerStartup), Environments.Development);
 
             Assert.Throws<InvalidOperationException>(() => startup.ConfigureServicesDelegate(serviceCollection));
         }
@@ -568,7 +569,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             var serviceCollection = new ServiceCollection();
             var services = serviceCollection.BuildServiceProvider();
 
-            Assert.Throws<InvalidOperationException>(() => StartupLoader.LoadMethods(services, typeof(MyContainerStartupBaseClass), EnvironmentName.Development));
+            Assert.Throws<InvalidOperationException>(() => StartupLoader.LoadMethods(services, typeof(MyContainerStartupBaseClass), Environments.Development));
         }
 
         [Fact]
@@ -578,7 +579,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             serviceCollection.AddSingleton<IServiceProviderFactory<MyContainer>, MyContainerFactory>();
             var services = serviceCollection.BuildServiceProvider();
 
-            Assert.Throws<InvalidOperationException>(() => StartupLoader.LoadMethods(services, typeof(MyContainerStartupWithOverloads), EnvironmentName.Development));
+            Assert.Throws<InvalidOperationException>(() => StartupLoader.LoadMethods(services, typeof(MyContainerStartupWithOverloads), Environments.Development));
         }
 
         [Fact]
@@ -588,7 +589,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             serviceCollection.AddSingleton<IServiceProviderFactory<MyContainer>, MyBadContainerFactory>();
             var services = serviceCollection.BuildServiceProvider();
 
-            var startup = StartupLoader.LoadMethods(services, typeof(MyContainerStartup), EnvironmentName.Development);
+            var startup = StartupLoader.LoadMethods(services, typeof(MyContainerStartup), Environments.Development);
 
             var app = new ApplicationBuilder(services);
             app.ApplicationServices = startup.ConfigureServicesDelegate(serviceCollection);
@@ -629,12 +630,12 @@ namespace Microsoft.AspNetCore.Hosting.Tests
 
             public void ConfigureDevelopmentContainer(MyContainer container)
             {
-                container.Environment = EnvironmentName.Development;
+                container.Environment = Environments.Development;
             }
 
             public void ConfigureProductionContainer(MyContainer container)
             {
-                container.Environment = EnvironmentName.Production;
+                container.Environment = Environments.Production;
             }
 
             public void Configure(IApplicationBuilder app)

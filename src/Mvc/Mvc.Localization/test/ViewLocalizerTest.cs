@@ -280,7 +280,9 @@ namespace Microsoft.AspNetCore.Mvc.Localization.Test
             viewLocalizer.Contextualize(viewContext);
 
             // Act
+#pragma warning disable CS0618 // Type or member is obsolete
             var actualLocalizedString = viewLocalizer.WithCulture(new CultureInfo("fr"))["John"];
+#pragma warning restore CS0618 // Type or member is obsolete
 
             // Assert
             Assert.Equal("Bonjour John", actualLocalizedString.Value);
@@ -325,6 +327,7 @@ namespace Microsoft.AspNetCore.Mvc.Localization.Test
                 return _stringLocalizer.GetAllStrings(includeParentCultures);
             }
 
+            [Obsolete("This method is obsolete. Use `CurrentCulture` and `CurrentUICulture` instead.")]
             public IHtmlLocalizer WithCulture(CultureInfo culture)
             {
                 return new TestHtmlLocalizer(new TestStringLocalizer(culture));
