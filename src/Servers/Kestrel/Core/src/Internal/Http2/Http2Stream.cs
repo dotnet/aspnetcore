@@ -321,7 +321,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        public Task OnDataAsync(Http2Frame dataFrame, ReadOnlySequence<byte> payload)
+        public Task OnDataAsync(Http2Frame dataFrame, in ReadOnlySequence<byte> payload)
         {
             // Since padding isn't buffered, immediately count padding bytes as read for flow control purposes.
             if (dataFrame.DataHasPadding)

@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             SendTimeoutResponse();
         }
 
-        public void ParseRequest(ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
+        public void ParseRequest(in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
         {
             consumed = buffer.Start;
             examined = buffer.End;
@@ -155,10 +155,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 case RequestProcessingStatus.ParsingRequestLine:
                     if (TakeStartLine(buffer, out consumed, out examined))
                     {
-                        buffer = buffer.Slice(consumed, buffer.End);
-
-                        _requestProcessingStatus = RequestProcessingStatus.ParsingHeaders;
-                        goto case RequestProcessingStatus.ParsingHeaders;
+                        TrimAndParseHeaders(buffer, ref consumed, out examined);
+                        return;
                     }
                     else
                     {
@@ -171,52 +169,80 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     break;
             }
+
+            // TODO: In C#8 we can shadow the param and var names and don't have to change them
+            void TrimAndParseHeaders(in ReadOnlySequence<byte> buf, ref SequencePosition cons, out SequencePosition exam)
+            {
+                var trimmedBuffer = buf.Slice(cons, buf.End);
+                _requestProcessingStatus = RequestProcessingStatus.ParsingHeaders;
+
+                if (TakeMessageHeaders(trimmedBuffer, out cons, out exam))
+                {
+                    _requestProcessingStatus = RequestProcessingStatus.AppStarted;
+                }
+            }
         }
 
-        public bool TakeStartLine(ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
-        {
-            var overLength = false;
-            if (buffer.Length >= ServerOptions.Limits.MaxRequestLineSize)
-            {
-                buffer = buffer.Slice(buffer.Start, ServerOptions.Limits.MaxRequestLineSize);
-                overLength = true;
-            }
-
-            var result = _parser.ParseRequestLine(new Http1ParsingHandler(this), buffer, out consumed, out examined);
-            if (!result && overLength)
-            {
-                BadHttpRequestException.Throw(RequestRejectionReason.RequestLineTooLong);
-            }
-
-            return result;
-        }
-
-        public bool TakeMessageHeaders(ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
+        public bool TakeStartLine(in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
         {
             // Make sure the buffer is limited
-            bool overLength = false;
-            if (buffer.Length >= _remainingRequestHeadersBytesAllowed)
+            if (buffer.Length > ServerOptions.Limits.MaxRequestLineSize)
             {
-                buffer = buffer.Slice(buffer.Start, _remainingRequestHeadersBytesAllowed);
+                return TrimAndTakeStartLine(buffer, out consumed, out examined);
+            }
 
-                // If we sliced it means the current buffer bigger than what we're
-                // allowed to look at
-                overLength = true;
+            return _parser.ParseRequestLine(new Http1ParsingHandler(this), buffer, out consumed, out examined);
+
+            // TODO: In C#8 we can shadow the param and var names and don't have to change them
+            bool TrimAndTakeStartLine(in ReadOnlySequence<byte> buf, out SequencePosition cons, out SequencePosition exam)
+            {
+                var trimmedBuffer = buf.Slice(buf.Start, ServerOptions.Limits.MaxRequestLineSize);
+                var result = _parser.ParseRequestLine(new Http1ParsingHandler(this), trimmedBuffer, out cons, out exam);
+                if (!result)
+                {
+                    // Is overlength, so error if not parsed
+                    BadHttpRequestException.Throw(RequestRejectionReason.RequestLineTooLong);
+                }
+
+                return result;
+            }
+        }
+
+        public bool TakeMessageHeaders(in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
+        {
+            // Make sure the buffer is limited
+            if (buffer.Length > _remainingRequestHeadersBytesAllowed)
+            {
+                return TrimAndTakeMessageHeaders(buffer, out consumed, out examined);
             }
 
             var result = _parser.ParseHeaders(new Http1ParsingHandler(this), buffer, out consumed, out examined, out var consumedBytes);
             _remainingRequestHeadersBytesAllowed -= consumedBytes;
 
-            if (!result && overLength)
-            {
-                BadHttpRequestException.Throw(RequestRejectionReason.HeadersExceedMaxTotalSize);
-            }
             if (result)
             {
                 TimeoutControl.CancelTimeout();
             }
 
             return result;
+
+            // TODO: In C#8 we can shadow the param and var names and don't have to change them
+            bool TrimAndTakeMessageHeaders(in ReadOnlySequence<byte> buf, out SequencePosition cons, out SequencePosition exam)
+            {
+                var trimmedBuffer = buf.Slice(buf.Start, _remainingRequestHeadersBytesAllowed);
+
+                var res = _parser.ParseHeaders(new Http1ParsingHandler(this), trimmedBuffer, out cons, out exam, out var consBytes);
+                _remainingRequestHeadersBytesAllowed -= consBytes;
+
+                if (!res)
+                {
+                    BadHttpRequestException.Throw(RequestRejectionReason.HeadersExceedMaxTotalSize);
+                }
+
+                TimeoutControl.CancelTimeout();
+
+                return res;
+            }
         }
 
         public void OnStartLine(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, bool pathEncoded)
