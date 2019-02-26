@@ -4,17 +4,17 @@
 namespace Microsoft.AspNetCore.Http
 {
     /// <summary>
-    /// Determines whether to send a cookies on "same-site" or "cross-site" requests.
+    /// Used to set the SameSite field on response cookies to indicate if those cookies should be included by the client on future "same-site" or "cross-site" requests.
     /// RFC Draft: https://tools.ietf.org/html/draft-ietf-httpbis-cookie-same-site-00
     /// </summary>
     // This mirrors Microsoft.Net.Http.Headers.SameSiteMode
     public enum SameSiteMode
     {
-        /// <summary>The cookie will not be sent along with "same-site" requests or with "cross-site" top-level navigations.</summary>
+        /// <summary>No SameSite field will be set, the client should follow its default cookie policy.</summary>
         None = 0,
-        /// <summary>The cookie will be sent with "same-site" requests, and with "cross-site" top-level navigations.</summary>
+        /// <summary>Indicates the client should send the cookie with "same-site" requests, and with "cross-site" top-level navigations.</summary>
         Lax,
-        /// <summary>The cookie will only be sent along with "same-site" requests.</summary>
+        /// <summary>Indicates the client should only send the cookie with "same-site" requests.</summary>
         Strict
     }
 }
