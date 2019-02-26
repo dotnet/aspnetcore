@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <BuildSharedFxDependsOn>_BuildSharedFxProjects</BuildSharedFxDependsOn>
+    <BuildSharedFxDependsOn>_BuildSharedFxProjects;RemoveSharedFrameworkOnlyRefsFromNuspec</BuildSharedFxDependsOn>
     <BuildSharedFxDependsOn Condition="'$(TestOnly)' != 'true'">$(BuildSharedFxDependsOn);CodeSign</BuildSharedFxDependsOn>
   </PropertyGroup>
 
