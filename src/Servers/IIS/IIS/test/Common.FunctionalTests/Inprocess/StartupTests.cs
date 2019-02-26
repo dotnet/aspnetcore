@@ -31,7 +31,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         private readonly string _dotnetLocation = DotNetCommands.GetDotNetExecutable(RuntimeArchitecture.x64);
 
-        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/6549
         [ConditionalFact]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         public async Task ExpandEnvironmentVariableInWebConfig()
@@ -68,7 +67,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.Contains("HTTP Error 500.0 - ANCM In-Process Handler Load Failure", await response.Content.ReadAsStringAsync());
         }
 
-        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/6549
         [ConditionalFact]
         public async Task StartsWithDotnetLocationWithoutExe()
         {
@@ -80,7 +78,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             await StartAsync(deploymentParameters);
         }
 
-        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/6549
         [ConditionalFact]
         public async Task StartsWithDotnetLocationUppercase()
         {
@@ -92,7 +89,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             await StartAsync(deploymentParameters);
         }
 
-        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/6549
         [ConditionalTheory]
         [InlineData("dotnet")]
         [InlineData("dotnet.EXE")]
@@ -113,7 +109,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
 
-        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/6549
         [ConditionalTheory]
         [InlineData(RuntimeArchitecture.x64)]
         [InlineData(RuntimeArchitecture.x86)]
@@ -190,7 +185,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             await StartAsync(deploymentParameters);
         }
 
-        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/6549
         [ConditionalFact]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         public async Task StartsWithPortableAndBootstraperExe()
