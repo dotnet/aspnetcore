@@ -7,10 +7,10 @@ using System.Runtime.CompilerServices;
 
 namespace System.IO.Pipelines
 {
-    internal sealed class BufferSegment<T> : ReadOnlySequenceSegment<T>
+    internal sealed class BufferSegment : ReadOnlySequenceSegment<byte>
     {
         private object _memoryOwner;
-        private BufferSegment<T> _next;
+        private BufferSegment _next;
         private int _end;
 
         /// <summary>
@@ -36,7 +36,7 @@ namespace System.IO.Pipelines
         /// working memory. The "active" memory is grown when bytes are copied in, End is increased, and Next is assigned. The "active"
         /// memory is shrunk when bytes are consumed, Start is increased, and blocks are returned to the pool.
         /// </summary>
-        public BufferSegment<T> NextSegment
+        public BufferSegment NextSegment
         {
             get => _next;
             set
@@ -48,11 +48,11 @@ namespace System.IO.Pipelines
 
         public void SetMemory(object memoryOwner)
         {
-            if (memoryOwner is IMemoryOwner<T> owner)
+            if (memoryOwner is IMemoryOwner<byte> owner)
             {
                 SetMemory(owner);
             }
-            else if (memoryOwner is T[] array)
+            else if (memoryOwner is byte[] array)
             {
                 SetMemory(array);
             }
@@ -62,14 +62,14 @@ namespace System.IO.Pipelines
             }
         }
 
-        public void SetMemory(IMemoryOwner<T> memoryOwner)
+        public void SetMemory(IMemoryOwner<byte> memoryOwner)
         {
             _memoryOwner = memoryOwner;
 
             SetUnownedMemory(memoryOwner.Memory);
         }
 
-        public void SetMemory(T[] arrayPoolBuffer)
+        public void SetMemory(byte[] arrayPoolBuffer)
         {
             _memoryOwner = arrayPoolBuffer;
 
@@ -77,7 +77,7 @@ namespace System.IO.Pipelines
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void SetUnownedMemory(Memory<T> memory)
+        public void SetUnownedMemory(Memory<byte> memory)
         {
             AvailableMemory = memory;
             RunningIndex = 0;
@@ -87,13 +87,13 @@ namespace System.IO.Pipelines
 
         public void ResetMemory()
         {
-            if (_memoryOwner is IMemoryOwner<T> owner)
+            if (_memoryOwner is IMemoryOwner<byte> owner)
             {
                 owner.Dispose();
             }
-            else if (_memoryOwner is T[] array)
+            else if (_memoryOwner is byte[] array)
             {
-                ArrayPool<T>.Shared.Return(array);
+                ArrayPool<byte>.Shared.Return(array);
             }
 
             _memoryOwner = null;
@@ -103,7 +103,7 @@ namespace System.IO.Pipelines
         // Exposed for testing
         internal object MemoryOwner => _memoryOwner;
 
-        public Memory<T> AvailableMemory { get; private set; }
+        public Memory<byte> AvailableMemory { get; private set; }
 
         public int Length => End;
 
@@ -116,7 +116,7 @@ namespace System.IO.Pipelines
             get => AvailableMemory.Length - End;
         }
 
-        public void SetNext(BufferSegment<T> segment)
+        public void SetNext(BufferSegment segment)
         {
             Debug.Assert(segment != null);
             Debug.Assert(Next == null);

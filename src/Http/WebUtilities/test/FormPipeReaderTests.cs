@@ -14,8 +14,6 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
 {
     public class FormPipeReaderTests
     {
-        // TODO add more tests for encodings
-        // And multisegment
         [Fact]
         public async Task ReadFormAsync_EmptyKeyAtEndAllowed()
         {
@@ -137,43 +135,6 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
             Assert.Equal("Form key or value length limit 10 exceeded.", exception.Message);
         }
 
-        [Fact]
-        public void TestReadOnlySequence()
-        {
-            var singleSegmentReadOnlySequence = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("Hello world"));
-            var formPipeReader = new FormPipeReader(null);
-            //KeyValueAccumulator accumulator = default;
-
-            //formPipeReader.TryParseFormValues(ref singleSegmentReadOnlySequence, ref accumulator, false);
-        }
-
-        [Fact]
-        public async Task Test2()
-        {
-            var pipe = new Pipe();
-            pipe.Writer.WriteAsync(Encoding.UTF8.GetBytes("foo=bar&baz=boo")).AsTask().GetAwaiter().GetResult();
-            pipe.Writer.Complete();
-            var reader = new FormPipeReader(pipe.Reader);
-
-            await reader.ReadFormAsync();
-        }
-
-        [Fact]
-        public async Task CheckPipeIsUsableAndAdvancedAfterReadingFromFormOnce()
-        {
-            var pipe = new Pipe();
-            await pipe.Writer.WriteAsync(Encoding.UTF8.GetBytes("foo=bar&baz=boo"));
-            pipe.Writer.Complete();
-
-            var reader = new FormPipeReader(pipe.Reader);
-
-            var res = await reader.ReadFormAsync();
-
-            reader = new FormPipeReader(pipe.Reader);
-        }
-
-        // TODO test FF
-
         // https://en.wikipedia.org/wiki/Percent-encoding
         [Theory]
         [InlineData("++=hello", "  ", "hello")]
@@ -191,6 +152,98 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
             Assert.Equal(expectedValue, form[key]);
         }
 
+        public static TheoryData<Encoding> Encodings =>
+                 new TheoryData<Encoding>
+                 {
+                     { Encoding.UTF8 },
+                     { Encoding.UTF32 },
+                     { Encoding.ASCII },
+                     { Encoding.Unicode }
+                 };
+
+        [Theory]
+        [MemberData(nameof(Encodings))]
+        public void TryParseFormValues_SingleSegmentWorks(Encoding encoding)
+        {
+            var readOnlySequence = new ReadOnlySequence<byte>(encoding.GetBytes("foo=bar&baz=boo"));
+
+            KeyValueAccumulator accumulator = default;
+
+            FormPipeReader.TryParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true, encoding);
+
+            Assert.Equal(2, accumulator.KeyCount);
+            var dict = accumulator.GetResults();
+            Assert.Equal("bar", dict["foo"]);
+            Assert.Equal("boo", dict["baz"]);
+        }
+
+        [Theory]
+        [MemberData(nameof(Encodings))]
+        public void TryParseFormValues_MultiSegmentWorks(Encoding encoding)
+        {
+            var readOnlySequence = ReadOnlySequenceFactory.CreateSegments(encoding.GetBytes("foo=bar&baz=boo&"), encoding.GetBytes("t="));
+
+            KeyValueAccumulator accumulator = default;
+
+            FormPipeReader.TryParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true, encoding);
+
+            Assert.Equal(3, accumulator.KeyCount);
+            var dict = accumulator.GetResults();
+            Assert.Equal("bar", dict["foo"]);
+            Assert.Equal("boo", dict["baz"]);
+            Assert.Equal("", dict["t"]);
+        }
+
+        [Theory]
+        [MemberData(nameof(Encodings))]
+        public void TryParseFormValues_MultiSegmentSplitAcrossSegmentsWorks(Encoding encoding)
+        {
+            var readOnlySequence = ReadOnlySequenceFactory.CreateSegments(encoding.GetBytes("foo=bar&baz=bo"), encoding.GetBytes("o&t="));
+
+            KeyValueAccumulator accumulator = default;
+
+            FormPipeReader.TryParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true, encoding);
+
+            Assert.Equal(3, accumulator.KeyCount);
+            var dict = accumulator.GetResults();
+            Assert.Equal("bar", dict["foo"]);
+            Assert.Equal("boo", dict["baz"]);
+            Assert.Equal("", dict["t"]);
+        }
+
+        [Theory]
+        [MemberData(nameof(Encodings))]
+        public void TryParseFormValues_MultiSegmentSplitAcrossSegmentsWithPlusesWorks(Encoding encoding)
+        {
+            var readOnlySequence = ReadOnlySequenceFactory.CreateSegments(encoding.GetBytes("+++=+++&++++=+++"), encoding.GetBytes("+&+="));
+
+            KeyValueAccumulator accumulator = default;
+
+            FormPipeReader.TryParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true, encoding);
+
+            Assert.Equal(3, accumulator.KeyCount);
+            var dict = accumulator.GetResults();
+            Assert.Equal("    ", dict["    "]);
+            Assert.Equal("   ", dict["   "]);
+            Assert.Equal("", dict[" "]);
+        }
+
+        [Theory]
+        [MemberData(nameof(Encodings))]
+        public void TryParseFormValues_MultiSegmentSplitAcrossSegmentsThatNeedDecodingWorks(Encoding encoding)
+        {
+            var readOnlySequence = ReadOnlySequenceFactory.CreateSegments(encoding.GetBytes("\"%-.<>\\^_`{|}~=\"%-.<>\\^_`{|}~&\"%-.<>"), encoding.GetBytes("\\^_`{|}=wow"));
+
+            KeyValueAccumulator accumulator = default;
+
+            FormPipeReader.TryParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true, encoding);
+
+            Assert.Equal(2, accumulator.KeyCount);
+            var dict = accumulator.GetResults();
+            Assert.Equal("\"%-.<>\\^_`{|}~", dict["\"%-.<>\\^_`{|}~"]);
+            Assert.Equal("wow", dict["\"%-.<>\\^_`{|}"]);
+        }
+
         internal virtual Task<Dictionary<string, StringValues>> ReadFormAsync(FormPipeReader reader)
         {
             return reader.ReadFormAsync();
@@ -201,11 +254,9 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
             var formContent = Encoding.UTF8.GetBytes(text);
             Pipe bodyPipe = new Pipe();
 
-            // Bleh buffering doesn't do anything rn.
             await bodyPipe.Writer.WriteAsync(formContent);
 
             // Complete the writer so the reader will complete after processing all data.
-            // TODO tests will need to call complete at different times. Make that work well.
             bodyPipe.Writer.Complete();
             return bodyPipe.Reader;
         }

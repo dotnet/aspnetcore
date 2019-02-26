@@ -17,6 +17,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)Buffer.Testing\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)Buffers.Testing\**\*.cs" />
   </ItemGroup>
 </Project>
