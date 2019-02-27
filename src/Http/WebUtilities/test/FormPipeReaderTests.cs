@@ -216,6 +216,23 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
 
         [Theory]
         [MemberData(nameof(Encodings))]
+        public void TryParseFormValues_MultiSegmentWithArrayPoolAcrossSegmentsWorks(Encoding encoding)
+        {
+            var readOnlySequence = ReadOnlySequenceFactory.CreateSegments(encoding.GetBytes("foo=bar&baz=bo"), encoding.GetBytes(new string('a', 128)));
+
+            KeyValueAccumulator accumulator = default;
+
+            var formReader = new FormPipeReader(null, encoding);
+            formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true);
+
+            Assert.Equal(2, accumulator.KeyCount);
+            var dict = accumulator.GetResults();
+            Assert.Equal("bar", dict["foo"]);
+            Assert.Equal("bo" + new string('a', 128), dict["baz"]);
+        }
+
+        [Theory]
+        [MemberData(nameof(Encodings))]
         public void TryParseFormValues_MultiSegmentSplitAcrossSegmentsWithPlusesWorks(Encoding encoding)
         {
             var readOnlySequence = ReadOnlySequenceFactory.CreateSegments(encoding.GetBytes("+++=+++&++++=+++"), encoding.GetBytes("+&+="));

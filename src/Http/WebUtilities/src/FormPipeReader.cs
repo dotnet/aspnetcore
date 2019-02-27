@@ -22,17 +22,20 @@ namespace Microsoft.AspNetCore.WebUtilities
     /// </summary>
     public class FormPipeReader
     {
-        private static int DefaultValueCountLimit = 1024;
-        private static int DefaultKeyLengthLimit = 1024 * 2;
-        private static int DefaultValueLengthLimit = 1024 * 1024 * 4;
+        private const int StackAllocThreshold = 128;
+        private const int DefaultValueCountLimit = 1024;
+        private const int DefaultKeyLengthLimit = 1024 * 2;
+        private const int DefaultValueLengthLimit = 1024 * 1024 * 4;
+
+        // Used for UTF8/ASCII (precalculated for fast path)
         private static ReadOnlySpan<byte> UTF8EqualEncoded => new byte[] { (byte)'=' };
         private static ReadOnlySpan<byte> UTF8AndEncoded => new byte[] { (byte)'&' };
+        // Used for other encodings
+        private static ReadOnlyMemory<byte> _otherEqualEncoding;
+        private static ReadOnlyMemory<byte> _otherAndEncoding;
 
         private PipeReader _pipeReader;
         private Encoding _encoding;
-
-        private static ReadOnlyMemory<byte> _otherEqualEncoding;
-        private static ReadOnlyMemory<byte> _otherAndEncoding;
 
         public FormPipeReader(PipeReader pipeReader)
             : this(pipeReader, Encoding.UTF8)
@@ -240,7 +243,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 return GetDecodedString(ros.First.Span);
             }
 
-            if (ros.Length < 128)
+            if (ros.Length < StackAllocThreshold)
             {
                 Span<byte> buffer = stackalloc byte[(int)ros.Length];
                 ros.CopyTo(buffer);
