@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 namespace Microsoft.AspNetCore.Mvc.RazorPages
 {
     /// <summary>
-    /// Provides configuration for RazorPages.
+    /// Provides configuration for Razor Pages.
     /// </summary>
     public class RazorPagesOptions : IEnumerable<ICompatibilitySwitch>
     {
