@@ -26,7 +26,6 @@
   <Target Name="Gather" BeforeTargets="Build">
     <MSBuild Projects="@(ProjectToBuild)"
               Targets="CreateHelixPayload"
-              BuildInParallel="true"
               SkipNonexistentTargets="true">
       <Output TaskParameter="TargetOutputs" ItemName="HelixWorkItem" />
     </MSBuild>
