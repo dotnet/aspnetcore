@@ -50,12 +50,12 @@ namespace Microsoft.AspNetCore.Builder
             EnsureControllerServices(endpoints);
 
             var dataSource = GetOrCreateDataSource(endpoints);
-            dataSource.AddRoute(new ConventionalRouteEntry(
+            dataSource.AddRoute(
                 "default",
                 "{controller=Home}/{action=Index}/{id?}",
                 defaults: null,
                 constraints: null,
-                dataTokens: null));
+                dataTokens: null);
 
             return dataSource;
         }
@@ -96,12 +96,12 @@ namespace Microsoft.AspNetCore.Builder
             EnsureControllerServices(endpoints);
 
             var dataSource = GetOrCreateDataSource(endpoints);
-            dataSource.AddRoute(new ConventionalRouteEntry(
+            dataSource.AddRoute(
                 name,
                 pattern,
                 new RouteValueDictionary(defaults),
                 new RouteValueDictionary(constraints),
-                new RouteValueDictionary(dataTokens)));
+                new RouteValueDictionary(dataTokens));
         }
 
         /// <summary>

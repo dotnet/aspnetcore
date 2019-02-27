@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Routing.Patterns;
 
 namespace Microsoft.AspNetCore.Mvc.Performance
 {
-    public class ActionEndpointDataSourceBenchmark
+    public class ControllerActionEndpointDataSourceBenchmark
     {
         private const string DefaultRoute = "{Controller=Home}/{Action=Index}/{id?}";
 
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.Performance
 
         private MockActionDescriptorCollectionProvider _conventionalActionProvider;
         private MockActionDescriptorCollectionProvider _attributeActionProvider;
-        private List<ConventionalRouteEntry> _routes;
+        private List<(string routeName, string pattern)> _routes;
 
         [Params(1, 100, 1000)]
         public int ActionCount;
@@ -41,14 +41,9 @@ namespace Microsoft.AspNetCore.Mvc.Performance
                 Enumerable.Range(0, ActionCount).Select(i => CreateAttributeRoutedAction(i)).ToList()
                 );
 
-            _routes = new List<ConventionalRouteEntry>
+            _routes = new List<(string routeName, string pattern)>
             {
-                new ConventionalRouteEntry(
-                    "Default",
-                    DefaultRoute,
-                    new RouteValueDictionary(),
-                    new Dictionary<string, object>(),
-                    new RouteValueDictionary())
+                ("Default", DefaultRoute)
             };
         }
 
@@ -67,7 +62,8 @@ namespace Microsoft.AspNetCore.Mvc.Performance
             var dataSource = CreateDataSource(_conventionalActionProvider);
             for (var i = 0; i < _routes.Count; i++)
             {
-                dataSource.AddRoute(_routes[i]);
+                var (routeName, pattern) = _routes[i];
+                dataSource.AddRoute(routeName, pattern, defaults: null, constraints: null, dataTokens: null);
             }
 
             var endpoints = dataSource.Endpoints;
@@ -110,9 +106,9 @@ namespace Microsoft.AspNetCore.Mvc.Performance
             };
         }
 
-        private ActionEndpointDataSource CreateDataSource(IActionDescriptorCollectionProvider actionDescriptorCollectionProvider)
+        private ControllerActionEndpointDataSource CreateDataSource(IActionDescriptorCollectionProvider actionDescriptorCollectionProvider)
         {
-            var dataSource = new ActionEndpointDataSource(
+            var dataSource = new ControllerActionEndpointDataSource(
                 actionDescriptorCollectionProvider,
                 new ActionEndpointFactory(new MockRoutePatternTransformer()));
 

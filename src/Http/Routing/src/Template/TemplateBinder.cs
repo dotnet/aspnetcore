@@ -178,7 +178,7 @@ namespace Microsoft.AspNetCore.Routing.Template
                             throw new InvalidOperationException($"Unable to find required value '{key}' on route pattern.");
                         }
 
-                        if (!RoutePartsEqual(ambientValue, _pattern.RequiredValues[key]))
+                        if (!RoutePartsEqual(ambientValue, _pattern.RequiredValues[key]) && !object.ReferenceEquals(RoutePattern.RequiredValueAny, _pattern.RequiredValues[key]))
                         {
                             copyAmbientValues = false;
                             break;
@@ -261,10 +261,11 @@ namespace Microsoft.AspNetCore.Routing.Template
                 //
                 // OR in plain English... when linking from a page in an area to an action in the same area, it should
                 // be possible to use the area as an ambient value.
-                if (!copyAmbientValues && _pattern.RequiredValues.TryGetValue(key, out var requiredValue))
+                if (!copyAmbientValues && !hasExplicitValue && _pattern.RequiredValues.TryGetValue(key, out var requiredValue))
                 {
                     hasAmbientValue = ambientValues != null && ambientValues.TryGetValue(key, out ambientValue);
-                    if (hasAmbientValue && RoutePartsEqual(requiredValue, ambientValue))
+                    if (hasAmbientValue &&
+                        (RoutePartsEqual(requiredValue, ambientValue) || object.ReferenceEquals(RoutePattern.RequiredValueAny, requiredValue)))
                     {
                         // Treat this an an explicit value to *force it*. 
                         slots[i] = new KeyValuePair<string, object>(key, ambientValue);

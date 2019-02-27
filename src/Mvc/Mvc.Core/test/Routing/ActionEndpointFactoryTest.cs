@@ -269,8 +269,8 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var action = CreateActionDescriptor(values);
             var routes = new[]
             {
-                CreateRoute(routeName: "test1", pattern: "{controller}/{action}/{id?}"),
-                CreateRoute(routeName: "test2", pattern: "named/{controller}/{action}/{id?}"),
+                CreateRoute(routeName: "test1", pattern: "{controller}/{action}/{id?}", order: 1),
+                CreateRoute(routeName: "test2", pattern: "named/{controller}/{action}/{id?}", order: 2),
             };
 
             // Act
@@ -306,7 +306,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
         private RouteEndpoint CreateConventionalRoutedEndpoint(ActionDescriptor action, string template)
         {
-            return CreateConventionalRoutedEndpoint(action, new ConventionalRouteEntry(routeName: null, template, null, null, null));
+            return CreateConventionalRoutedEndpoint(action, new ConventionalRouteEntry(routeName: null, template, null, null, null, order: 0));
         }
 
         private RouteEndpoint CreateConventionalRoutedEndpoint(ActionDescriptor action, ConventionalRouteEntry route)
@@ -340,9 +340,10 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             string pattern,
             RouteValueDictionary defaults = null,
             IDictionary<string, object> constraints = null,
-            RouteValueDictionary dataTokens = null)
+            RouteValueDictionary dataTokens = null,
+            int order = 0)
         {
-            return new ConventionalRouteEntry(routeName, pattern, defaults, constraints, dataTokens);
+            return new ConventionalRouteEntry(routeName, pattern, defaults, constraints, dataTokens, order);
         }
 
         private ActionDescriptor CreateActionDescriptor(

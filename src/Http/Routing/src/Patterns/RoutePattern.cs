@@ -17,6 +17,12 @@ namespace Microsoft.AspNetCore.Routing.Patterns
     [DebuggerDisplay("{DebuggerToString()}")]
     public sealed class RoutePattern
     {
+        /// <summary>
+        /// A marker object that can be used in <see cref="RequiredValues"/> to designate that
+        /// any non-null or non-empty value is required.
+        /// </summary>
+        public static object RequiredValueAny = new object();
+
         private const string SeparatorString = "/";
 
         internal RoutePattern(
