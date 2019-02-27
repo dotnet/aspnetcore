@@ -168,8 +168,9 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
             var readOnlySequence = new ReadOnlySequence<byte>(encoding.GetBytes("foo=bar&baz=boo"));
 
             KeyValueAccumulator accumulator = default;
+            var formReader = new FormPipeReader(null, encoding);
 
-            FormPipeReader.TryParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true, encoding);
+            formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true);
 
             Assert.Equal(2, accumulator.KeyCount);
             var dict = accumulator.GetResults();
@@ -185,7 +186,8 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
 
             KeyValueAccumulator accumulator = default;
 
-            FormPipeReader.TryParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true, encoding);
+            var formReader = new FormPipeReader(null, encoding);
+            formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true);
 
             Assert.Equal(3, accumulator.KeyCount);
             var dict = accumulator.GetResults();
@@ -202,7 +204,8 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
 
             KeyValueAccumulator accumulator = default;
 
-            FormPipeReader.TryParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true, encoding);
+            var formReader = new FormPipeReader(null, encoding);
+            formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true);
 
             Assert.Equal(3, accumulator.KeyCount);
             var dict = accumulator.GetResults();
@@ -219,7 +222,8 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
 
             KeyValueAccumulator accumulator = default;
 
-            FormPipeReader.TryParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true, encoding);
+            var formReader = new FormPipeReader(null, encoding);
+            formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true);
 
             Assert.Equal(3, accumulator.KeyCount);
             var dict = accumulator.GetResults();
@@ -236,7 +240,8 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
 
             KeyValueAccumulator accumulator = default;
 
-            FormPipeReader.TryParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true, encoding);
+            var formReader = new FormPipeReader(null, encoding);
+            formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true);
 
             Assert.Equal(2, accumulator.KeyCount);
             var dict = accumulator.GetResults();

@@ -4,7 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Text;
-using Microsoft.AspNetCore.Connections.Abstractions.Sources;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
@@ -20,9 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (pathEncoded)
             {
                 // URI was encoded, unescape and then parse as UTF-8
-#pragma warning disable CS0436 // Type conflicts with imported type
-                pathLength = UrlDecoder.DecodeInPlace(path);
-#pragma warning restore CS0436 // Type conflicts with imported type
+                pathLength = UrlDecoder.DecodeInPlace(path, isFormEncoding: false);
 
                 // Removing dot segments must be done after unescaping. From RFC 3986:
                 //

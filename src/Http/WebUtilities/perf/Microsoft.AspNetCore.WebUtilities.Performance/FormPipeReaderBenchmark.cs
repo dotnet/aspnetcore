@@ -44,7 +44,6 @@ namespace Microsoft.AspNetCore.WebUtilities
         public async Task CreateLargePipe()
         {
             var pipe = new Pipe();
-            // TODO test this
             await pipe.Writer.WriteAsync(_largeBytes);
             pipe.Writer.Complete();
             var formReader = new FormPipeReader(pipe.Reader);
