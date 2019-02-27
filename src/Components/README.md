@@ -31,7 +31,7 @@ Blazor uses only the latest web standards. No plugins or transpilation needed. I
 
 > Note: client-side Blazor is an *experimental* project. It's not yet a committed product . This is to allow time to fully investigate the technical issues associated with running .NET in the browser and to ensure we can build something that developers love and can be productive with. During this experimental phase, we expect to engage deeply with early Blazor adopters like you to hear your feedback and suggestions.
 
-To see Blazor in action, check out [Steve Sanderson's demo at NDC Minnesota](https://www.youtube.com/watch?v=JU-6pAxqAa4). You can also try out a [simple live Blazor app](https://blazor-demo.github.io/).
+To see Blazor in action, check out [Steve Sanderson's demo at NDC London](https://www.youtube.com/watch?v=Qe8UW5543-s). You can also try out a [simple live Blazor app](https://blazor-demo.github.io/).
 
 ## Getting Started
 
