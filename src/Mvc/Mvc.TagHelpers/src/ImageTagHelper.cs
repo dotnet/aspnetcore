@@ -32,13 +32,31 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         /// <summary>
         /// Creates a new <see cref="ImageTagHelper"/>.
         /// </summary>
-        /// <param name="hostingEnvironment">The <see cref="IHostingEnvironment"/>.</param>
-        /// <param name="cacheProvider">The <see cref="TagHelperMemoryCacheProvider"/>.</param>
         /// <param name="fileVersionProvider">The <see cref="IFileVersionProvider"/>.</param>
         /// <param name="htmlEncoder">The <see cref="HtmlEncoder"/> to use.</param>
         /// <param name="urlHelperFactory">The <see cref="IUrlHelperFactory"/>.</param>
         // Decorated with ActivatorUtilitiesConstructor since we want to influence tag helper activation
         // to use this constructor in the default case.
+        [ActivatorUtilitiesConstructor]
+        public ImageTagHelper(
+            IFileVersionProvider fileVersionProvider,
+            HtmlEncoder htmlEncoder,
+            IUrlHelperFactory urlHelperFactory)
+            : base(urlHelperFactory, htmlEncoder)
+        {
+            FileVersionProvider = fileVersionProvider;
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="ImageTagHelper"/>.
+        /// This constructor is obsolete and will be removed in a future version.
+        /// </summary>
+        /// <param name="hostingEnvironment">The <see cref="IHostingEnvironment"/>.</param>
+        /// <param name="cacheProvider">The <see cref="TagHelperMemoryCacheProvider"/>.</param>
+        /// <param name="fileVersionProvider">The <see cref="IFileVersionProvider"/>.</param>
+        /// <param name="htmlEncoder">The <see cref="HtmlEncoder"/> to use.</param>
+        /// <param name="urlHelperFactory">The <see cref="IUrlHelperFactory"/>.</param>
+        [Obsolete("This constructor is obsolete and will be removed in a future version.")]
         public ImageTagHelper(
             IWebHostEnvironment hostingEnvironment,
             TagHelperMemoryCacheProvider cacheProvider,
@@ -73,8 +91,18 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         [HtmlAttributeName(AppendVersionAttributeName)]
         public bool AppendVersion { get; set; }
 
+        /// <summary>
+        /// Gets the <see cref="IWebHostEnvironment"/> for the application.
+        /// This property is obsolete and will be removed in a future version.
+        /// </summary>
+        [Obsolete("This property is obsolete and will be removed in a future version.")]
         protected internal IWebHostEnvironment HostingEnvironment { get; }
 
+        /// <summary>
+        /// Gets the <see cref="IMemoryCache"/> used to store globbed urls.
+        /// This property is obsolete and will be removed in a future version.
+        /// </summary>
+        [Obsolete("This property is obsolete and will be removed in a future version.")]
         protected internal IMemoryCache Cache { get; }
 
         internal IFileVersionProvider FileVersionProvider { get; private set; }

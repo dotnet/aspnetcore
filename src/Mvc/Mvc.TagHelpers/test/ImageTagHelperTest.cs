@@ -264,8 +264,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var fileVersionProvider = new DefaultFileVersionProvider(hostingEnvironment, cacheProvider);
 
             return new ImageTagHelper(
-                hostingEnvironment,
-                new TagHelperMemoryCacheProvider(),
                 fileVersionProvider,
                 new HtmlTestEncoder(),
                 urlHelperFactory)
