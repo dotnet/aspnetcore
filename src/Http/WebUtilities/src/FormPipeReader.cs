@@ -240,12 +240,23 @@ namespace Microsoft.AspNetCore.WebUtilities
                 return GetDecodedString(ros.First.Span);
             }
 
-            var buffer = ArrayPool<byte>.Shared.Rent((int)ros.Length);
-            ros.CopyTo(buffer);
-            var decodedString = GetDecodedString(buffer);
+            if (ros.Length < 128)
+            {
+                Span<byte> buffer = stackalloc byte[(int)ros.Length];
+                ros.CopyTo(buffer);
+                return GetDecodedString(buffer);
+            }
+            else
+            {
+                Memory<byte> memory = ArrayPool<byte>.Shared.Rent((int)ros.Length);
+                Span<byte> buffer = memory.Span.Slice(0, (int)ros.Length);
 
-            ArrayPool<byte>.Shared.Return(buffer);
-            return decodedString;
+                ros.CopyTo(buffer);
+                var decodedString = GetDecodedString(buffer);
+
+                ArrayPool<byte>.Shared.Return(memory.ToArray());
+                return decodedString;
+            }
         }
 
         // Check that key/value constraints are met and appends value to accumulator.
@@ -271,7 +282,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             return accumulator;
         }
 
-        private string GetDecodedString(ReadOnlySpan<byte> readOnlySpan)
+        private string GetDecodedString(in ReadOnlySpan<byte> readOnlySpan)
         {
             if (readOnlySpan.Length == 0)
             {
