@@ -9,8 +9,16 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Builder
 {
+    /// <summary>
+    /// Contains extension methods for using Razor pages with <see cref="IEndpointRouteBuilder"/>.
+    /// </summary>
     public static class RazorPagesEndpointRouteBuilderExtensions
     {
+        /// <summary>
+        /// Adds endpoints for Razor pages to the <see cref="IEndpointRouteBuilder"/>.
+        /// </summary>
+        /// <param name="routes">The <see cref="IEndpointRouteBuilder"/>.</param>
+        /// <returns>An <see cref="IEndpointConventionBuilder"/> for endpoints associated with Razor pages.</returns>
         public static IEndpointConventionBuilder MapRazorPages(this IEndpointRouteBuilder routes)
         {
             if (routes == null)
