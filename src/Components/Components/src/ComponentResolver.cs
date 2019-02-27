@@ -20,9 +20,9 @@ namespace Microsoft.AspNetCore.Components
         /// <returns></returns>
         public static IEnumerable<Type> ResolveComponents(Assembly appAssembly)
         {
-            var componentAssembly = typeof(IComponent).Assembly;
+            var componentsAssembly = typeof(IComponent).Assembly;
 
-            return EnumerateAssemblies(appAssembly.GetName(), componentAssembly, new HashSet<Assembly>(new AssemblyComparer()))
+            return EnumerateAssemblies(appAssembly.GetName(), componentsAssembly, new HashSet<Assembly>(new AssemblyComparer()))
                 .SelectMany(a => a.ExportedTypes)
                 .Where(t => typeof(IComponent).IsAssignableFrom(t));
         }

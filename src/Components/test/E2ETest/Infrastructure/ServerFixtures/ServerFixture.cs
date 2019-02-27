@@ -37,10 +37,16 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
         private static Dictionary<string, string> FindProjects()
         {
             var solutionDir = FindSolutionDir();
-            return 
-                Directory.GetFiles(solutionDir, "*.csproj", SearchOption.AllDirectories)
-                .Where(f => !f.Contains("\\ref\\")) // Exclude ref-assembly projects
-                .ToDictionary(Path.GetFileNameWithoutExtension, Path.GetDirectoryName);
+
+            var testAssetsDirectories = new[]
+            {
+                Path.Combine(solutionDir, "test", "testassets"),
+                Path.Combine(solutionDir, "blazor", "testassets"),
+            };
+
+            return testAssetsDirectories
+                .SelectMany(d => new DirectoryInfo(d).EnumerateDirectories())
+                .ToDictionary(d => d.Name, d => d.FullName);
         }
 
         protected static string FindSampleOrTestSitePath(string projectName)
