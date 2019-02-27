@@ -1023,8 +1023,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await InitializeConnectionAsync(async context =>
             {
                 var readResult = await context.Request.BodyPipe.ReadAsync();
-                Assert.Equal(12, readResult.Buffer.Length);
                 Assert.True(readResult.IsCompleted);
+                Assert.Equal(12, readResult.Buffer.Length);
                 context.Request.BodyPipe.AdvanceTo(readResult.Buffer.End);
 
                 readResult = await context.Request.BodyPipe.ReadAsync();
