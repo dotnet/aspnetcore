@@ -64,6 +64,21 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
 
         public override void Encode(TextWriter output, string value, int startIndex, int characterCount)
         {
+            if (output == null)
+            {
+                throw new ArgumentNullException(nameof(output));
+            }
+
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
+            if (characterCount == 0)
+            {
+                return;
+            }
+
             var span = value.AsSpan();
             output.Write(span.Slice(startIndex, characterCount));
         }
