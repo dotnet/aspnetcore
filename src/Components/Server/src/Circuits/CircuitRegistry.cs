@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
@@ -80,23 +81,24 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         public virtual Task DisconnectAsync(CircuitHost circuitHost, string connectionId)
         {
-            bool disconnected;
+            Task circuitHandlerTask;
             lock (CircuitRegistryLock)
             {
-                disconnected = DisconnectCore(circuitHost, connectionId);
+                if (DisconnectCore(circuitHost, connectionId))
+                {
+                    circuitHandlerTask = circuitHost.Dispatcher.InvokeAsync(() => circuitHost.OnConnectionDownAsync(default));
+                }
+                else
+                {
+                    // DisconnectCore may fail to disconnect the circuit if it was previously marked inactive or
+                    // has been transfered to a new connection. Do not invoke the circuit handlers in this instance.
+
+                    // We have to do in this instance.
+                    return Task.CompletedTask;
+                }
             }
 
-            if (disconnected)
-            {
-                // DisconnectCore may fail to disconnect the circuit if it was previously marked inactive or
-                // has been transfered to a new connection. Do not invoke the circuit handlers in this instance.
-
-                // CircuitHandler events are invoked outside the critical section. This may result in simultaneous
-                // execution of a disconnect and connect events, however we make no guarantees of the order in which they execute.
-                return circuitHost.OnConnectionDownAsync();
-            }
-
-            return Task.CompletedTask;
+            return circuitHandlerTask;
         }
 
         protected virtual bool DisconnectCore(CircuitHost circuitHost, string connectionId)
@@ -132,41 +134,60 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         public virtual async Task<CircuitHost> ConnectAsync(string circuitId, IClientProxy clientProxy, string connectionId, CancellationToken cancellationToken)
         {
-            CircuitHost circuitHost = null;
+            CircuitHost circuitHost;
+            bool previouslyConnected;
+
+            Task circuitHandlerTask;
 
             lock (CircuitRegistryLock)
             {
                 // Transition the host from disconnected to connected if it's available. In this critical section, we return
                 // an existing host if it's currently considered connected or transition a disconnected host to connected.
                 // Transfering also wires up the client to the new set.
-                circuitHost = ConnectCore(circuitId, clientProxy, connectionId);
+                (circuitHost, previouslyConnected) = ConnectCore(circuitId, clientProxy, connectionId);
+
+                if (circuitHost == null)
+                {
+                    // Failed to connect. Nothing to do here.
+                    return null;
+                }
+
+                // CircuitHandler events do not need to be executed inside the critical section, however we
+                // a) do not want concurrent execution of handler events i.e. a  OnConnectionDownAsync occuring in tandem with a OnConnectionUpAsync for a single circuit.
+                // b) out of order connection-up \ connection-down events e.g. a client that disconnects as soon it finishes reconnecting.
+
+                // Dispatch the circuit handlers inside the sync context to ensure the order of execution. CircuitHost executes circuit handlers inside of
+                // 
+                circuitHandlerTask = circuitHost.Dispatcher.InvokeAsync(async () =>
+                {
+                    if (previouslyConnected)
+                    {
+                        // During reconnects, we may transition from Connect->Connect i.e.without ever having invoking OnConnectionDownAsync during
+                        // a formal client disconnect. To allow authors of CircuitHandlers to have reasonable expectations will pair the connection up with a connection down.
+                        await circuitHost.OnConnectionDownAsync(cancellationToken);
+                    }
+
+                    await circuitHost.OnConnectionUpAsync(cancellationToken);
+                });
+
             }
 
-            if (circuitHost == null)
-            {
-                return null;
-            }
+            await circuitHandlerTask;
 
-            // CircuitHandler events are invoked outside the critical section. This may result in simultaneous
-            // execution of a disconnect and connect events, however we make no guarantees of the order in which they execute.
-            // If we transfered a circuit that was considered active, we will invoke OnConnectionUpAsync without having
-            // a corresponding OnConnectionDownAsync.
-            await circuitHost.OnConnectionUpAsync(cancellationToken);
-
-            // If we acccumulated any renders during the disconnect, fire it off in the background. We don't need to wait for it to complete.
-            circuitHost.Renderer.DispatchBufferedRenders();
+            // Dispatch any buffered renders we accumulated during a disconnect.
+            await circuitHost.Renderer.ProcessBufferedRenderBatches();
 
             return circuitHost;
         }
 
-        protected virtual CircuitHost ConnectCore(string circuitId, IClientProxy clientProxy, string connectionId)
+        protected virtual (CircuitHost circuitHost, bool previouslyConnected) ConnectCore(string circuitId, IClientProxy clientProxy, string connectionId)
         {
             if (ConnectedCircuits.TryGetValue(circuitId, out var circuitHost))
             {
                 // The host is still active i.e. the server hasn't detected the client disconnect.
                 // However the client reconnected establishing a new connection.
                 circuitHost.Client.Transfer(clientProxy, connectionId);
-                return circuitHost;
+                return (circuitHost, true);
             }
 
             if (DisconnectedCircuits.TryGetValue(circuitId, out circuitHost))
@@ -177,10 +198,10 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
                 circuitHost.Client.Transfer(clientProxy, connectionId);
 
-                return circuitHost;
+                return (circuitHost, false);
             }
 
-            return null;
+            return default;
         }
 
         private void OnEntryEvicted(object key, object value, EvictionReason reason, object state)

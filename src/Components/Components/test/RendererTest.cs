@@ -3103,27 +3103,6 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.Contains(exception2, renderer.HandledExceptions);
         }
 
-        [Fact]
-        public void RendersAreBuffered_WhenCanRenderBatchIsReset()
-        {
-            // Arrange
-            var renderer = new TestRenderer();
-            renderer.SetCanRenderBatch(false);
-            var component = new TestComponent(builder =>
-            {
-                builder.AddContent(0, "Hello");
-                builder.OpenComponent<DisposableComponent>(1);
-                builder.CloseComponent();
-            });
-
-            var componentId = renderer.AssignRootComponentId(component);
-            component.TriggerRender();
-
-            Assert.Empty(renderer.Batches);
-            var entry = Assert.Single(renderer.RenderBatchBuilder.ComponentRenderQueue);
-            Assert.Equal(componentId, entry.ComponentState.ComponentId);
-        }
-
         private class NoOpRenderer : Renderer
         {
             public NoOpRenderer() : base(new TestServiceProvider(), new RendererSynchronizationContext())

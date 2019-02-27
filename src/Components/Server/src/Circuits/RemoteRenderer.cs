@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,7 +23,6 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
         private const int TimeoutMilliseconds = 60 * 1000;
 
         private readonly int _id;
-        private readonly CircuitClientProxy _client;
         private readonly IJSRuntime _jsRuntime;
         private readonly RendererRegistry _rendererRegistry;
         private readonly ConcurrentDictionary<long, AutoCancelTaskCompletionSource<object>> _pendingRenders
@@ -50,19 +50,15 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
         {
             _rendererRegistry = rendererRegistry;
             _jsRuntime = jsRuntime;
-            _client = client;
+            Client = client;
 
             _id = _rendererRegistry.Add(this);
             _logger = logger;
         }
 
-        /// <remarks>
-        /// The RemoteRenderer may only render if we know the client is connected.
-        /// If the client disconnects during a render operation or if the underlying connection
-        /// to the client has been severed without the server knowing of it, SignalR will silently
-        /// fail the JS.RenderBatch call.
-        /// </remarks>
-        protected override bool CanRenderBatch => _client.Connected && base.CanRenderBatch;
+        internal ConcurrentQueue<RenderBatch> OfflineRenderBatches = new ConcurrentQueue<RenderBatch>();
+
+        internal CircuitClientProxy Client { get; }
 
         /// <summary>
         /// Associates the <see cref="IComponent"/> with the <see cref="RemoteRenderer"/>,
@@ -111,15 +107,36 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
         /// <inheritdoc />
         protected override Task UpdateDisplayAsync(in RenderBatch batch)
         {
-            Log.BeginUpdateDisplayAsync(_logger, _client.ConnectionId);
+            if (!Client.Connected)
+            {
+                // Buffer the rendered batches while the client is disconnected. We'll send it down once the client reconnects.
+                OfflineRenderBatches.Enqueue(batch);
+                return Task.CompletedTask;
+            }
 
+            Log.BeginUpdateDisplayAsync(_logger, Client.ConnectionId);
+            return WriteBatchBytes(batch);
+        }
+
+        public async Task ProcessBufferedRenderBatches()
+        {
+            // The server may discover that the client disconnected while we're attempting to write empty rendered batches.
+            // Discontinue writing in this event.
+            while (Client.Connected && OfflineRenderBatches.TryDequeue(out var renderBatch))
+            {
+                await WriteBatchBytes(renderBatch);
+            }
+        }
+
+        private Task WriteBatchBytes(in RenderBatch renderBatch)
+        {
             // Note that we have to capture the data as a byte[] synchronously here, because
             // SignalR's SendAsync can wait an arbitrary duration before serializing the params.
             // The RenderBatch buffer will get reused by subsequent renders, so we need to
             // snapshot its contents now.
             // TODO: Consider using some kind of array pool instead of allocating a new
             //       buffer on every render.
-            var batchBytes = MessagePackSerializer.Serialize(batch, RenderBatchFormatterResolver.Instance);
+            var batchBytes = MessagePackSerializer.Serialize(renderBatch, RenderBatchFormatterResolver.Instance);
 
             var renderId = Interlocked.Increment(ref _nextRenderId);
 
@@ -131,7 +148,7 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
             // the whole render with that exception
             try
             {
-                _client.SendAsync("JS.RenderBatch", _id, renderId, batchBytes).ContinueWith(sendTask =>
+                Client.SendAsync("JS.RenderBatch", _id, renderId, batchBytes).ContinueWith(sendTask =>
                 {
                     if (sendTask.IsFaulted)
                     {
@@ -154,9 +171,6 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
                 }
             });
         }
-
-        public void DispatchBufferedRenders()
-            => ProcessRenderQueue();
 
         public void OnRenderCompleted(long renderId, string errorMessageOrNull)
         {

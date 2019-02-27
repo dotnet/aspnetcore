@@ -65,7 +65,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
             {
                 lock (builder)
                 {
-                    Console.WriteLine(e.Data);
                     builder.AppendLine(e.Data);
                 }
             }
