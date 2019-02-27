@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -287,12 +288,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                     // We're using PagedBufferedTextWriter here to 'smooth' synchronous writes of IHtmlContent values.
 
                     await context.HttpContext.Response.StartAsync();
-                    using (var writer = new PipeWriterTextWriter(context.HttpContext.Response.BodyPipe, context.Writer.Encoding))
+                    using (var writer = new PipeWriterTextWriter(
+                        context.HttpContext.Response.BodyPipe, 
+                        context.Writer.Encoding,
+                        1024 * 16,
+                        ArrayPool<byte>.Shared,
+                        ArrayPool<char>.Shared))
                     {
                         await bodyWriter.Buffer.WriteToAsync(writer, _htmlEncoder);
-
-                        writer.Flush();
-                        await context.HttpContext.Response.BodyPipe.FlushAsync();
+                        await bodyWriter.FlushAsync();
                     }
                 }
                 else

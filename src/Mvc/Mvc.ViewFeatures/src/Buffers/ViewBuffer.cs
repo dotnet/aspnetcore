@@ -260,7 +260,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers
                     if (value.Value is IHtmlContent valueAsHtmlContent)
                     {
                         valueAsHtmlContent.WriteTo(writer, encoder);
-                        await writer.FlushAsync();
                         continue;
                     }
                 }
