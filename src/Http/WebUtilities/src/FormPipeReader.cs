@@ -96,6 +96,11 @@ namespace Microsoft.AspNetCore.WebUtilities
 
                 if (readResult.IsCompleted)
                 {
+                    if (!buffer.IsEmpty)
+                    {
+                        throw new InvalidOperationException("End of body before form was fully parsed.");
+                    }
+
                     break;
                 }
 
@@ -197,14 +202,14 @@ namespace Microsoft.AspNetCore.WebUtilities
             while (!sequenceReader.End)
             {
                 // TODO seems there is a bug with TryReadTo (advancePastDelimiter: true). It isn't advancing past the delimiter on second read.
-                if (!sequenceReader.TryReadTo(out ReadOnlySequence<byte> key, equalsDelimiter, advancePastDelimiter: false)
-                    || !sequenceReader.IsNext(equalsDelimiter, true))
+                if (!sequenceReader.TryReadTo(out ReadOnlySequence<byte> key, equalsDelimiter, advancePastDelimiter: false) ||
+                    !sequenceReader.IsNext(equalsDelimiter, true))
                 {
                     break;
                 }
 
-                if (!sequenceReader.TryReadTo(out ReadOnlySequence<byte> value, andDelimiter, false)
-                    || !sequenceReader.IsNext(andDelimiter, true))
+                if (!sequenceReader.TryReadTo(out ReadOnlySequence<byte> value, andDelimiter, false) ||
+                    !sequenceReader.IsNext(andDelimiter, true))
                 {
                     if (!isFinalBlock)
                     {
@@ -217,15 +222,30 @@ namespace Microsoft.AspNetCore.WebUtilities
                 }
 
                 // Need to call ToArray if the key/value spans multiple segments 
-                var decodedKey = GetDecodedString((key.IsSingleSegment ? key.First : key.ToArray()).Span);
-                var decodedValue = GetDecodedString((value.IsSingleSegment ? value.First : value.ToArray()).Span);
+                var decodedKey = GetDecodedStringFromReadOnlySequence(key);
+                var decodedValue = GetDecodedStringFromReadOnlySequence(value);
 
-                AppendAndVerify(ref accumulator,decodedKey, decodedValue);
+                AppendAndVerify(ref accumulator, decodedKey, decodedValue);
 
                 consumed = sequenceReader.Position;
             }
 
             buffer = buffer.Slice(consumed);
+        }
+
+        private string GetDecodedStringFromReadOnlySequence(ReadOnlySequence<byte> ros)
+        {
+            if (ros.IsSingleSegment)
+            {
+                return GetDecodedString(ros.First.Span);
+            }
+
+            var buffer = ArrayPool<byte>.Shared.Rent((int)ros.Length);
+            ros.CopyTo(buffer);
+            var decodedString = GetDecodedString(buffer);
+
+            ArrayPool<byte>.Shared.Return(buffer);
+            return decodedString;
         }
 
         // Check that key/value constraints are met and appends value to accumulator.
