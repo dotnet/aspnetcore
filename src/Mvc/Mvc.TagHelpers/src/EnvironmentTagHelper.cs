@@ -59,6 +59,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         /// </remarks>
         public string Exclude { get; set; }
 
+        /// <summary>
+        /// Gets the <see cref="IWebHostEnvironment"/> for the application.
+        /// </summary>
         protected IWebHostEnvironment HostingEnvironment { get; }
 
         /// <inheritdoc />
