@@ -210,7 +210,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _requestBodyPipe.Reset();
         }
 
-        protected void Copy(ReadOnlySequence<byte> readableBuffer, PipeWriter writableBuffer)
+        protected void Copy(in ReadOnlySequence<byte> readableBuffer, PipeWriter writableBuffer)
         {
             if (readableBuffer.IsSingleSegment)
             {
@@ -311,7 +311,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return _mode == Mode.Complete;
         }
 
-        private void ParseChunkedPrefix(ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
+        private void ParseChunkedPrefix(in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
         {
             consumed = buffer.Start;
             examined = buffer.Start;
@@ -417,7 +417,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             } while (_mode == Mode.Extension);
         }
 
-        private void ReadChunkedData(ReadOnlySequence<byte> buffer, PipeWriter writableBuffer, out SequencePosition consumed, out SequencePosition examined)
+        private void ReadChunkedData(in ReadOnlySequence<byte> buffer, PipeWriter writableBuffer, out SequencePosition consumed, out SequencePosition examined)
         {
             var actual = Math.Min(buffer.Length, _inputLength);
             consumed = buffer.GetPosition(actual);
@@ -434,7 +434,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        private void ParseChunkedSuffix(ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
+        private void ParseChunkedSuffix(in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
         {
             consumed = buffer.Start;
             examined = buffer.Start;
@@ -460,7 +460,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        private void ParseChunkedTrailer(ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
+        private void ParseChunkedTrailer(in ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
         {
             consumed = buffer.Start;
             examined = buffer.Start;

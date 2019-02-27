@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
             _bufs = handle + requestSize;
         }
 
-        public LibuvAwaitable<UvWriteReq> WriteAsync(UvStreamHandle handle, ReadOnlySequence<byte> buffer)
+        public LibuvAwaitable<UvWriteReq> WriteAsync(UvStreamHandle handle, in ReadOnlySequence<byte> buffer)
         {
             Write(handle, buffer, LibuvAwaitable<UvWriteReq>.Callback, _awaitable);
             return _awaitable;
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
 
         private unsafe void Write(
             UvStreamHandle handle,
-            ReadOnlySequence<byte> buffer,
+            in ReadOnlySequence<byte> buffer,
             Action<UvWriteReq, int, UvException, object> callback,
             object state)
         {

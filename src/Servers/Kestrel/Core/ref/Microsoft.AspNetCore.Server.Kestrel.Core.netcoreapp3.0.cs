@@ -406,7 +406,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public override void AdvanceTo(System.SequencePosition consumed, System.SequencePosition examined) { }
         public override void CancelPendingRead() { }
         public override void Complete(System.Exception exception) { }
-        protected void Copy(System.Buffers.ReadOnlySequence<byte> readableBuffer, System.IO.Pipelines.PipeWriter writableBuffer) { }
+        protected void Copy(in System.Buffers.ReadOnlySequence<byte> readableBuffer, System.IO.Pipelines.PipeWriter writableBuffer) { }
         protected override void OnReadStarted() { }
         protected override System.Threading.Tasks.Task OnStopAsync() { throw null; }
         public override void OnWriterCompleted(System.Action<System.Exception, object> callback, object state) { }
