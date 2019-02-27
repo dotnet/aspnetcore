@@ -226,6 +226,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 { ".pfx", "application/x-pkcs12" },
                 { ".pgm", "image/x-portable-graymap" },
                 { ".pko", "application/vnd.ms-pki.pko" },
+                { ".pkpass", "application/vnd.apple.pkpass" },
                 { ".pma", "application/x-perfmon" },
                 { ".pmc", "application/x-perfmon" },
                 { ".pml", "application/x-perfmon" },
