@@ -18,9 +18,9 @@
   -->
   <PropertyGroup Label="Automated">
     <!-- Packages from dotnet/core-setup -->
-    <MicrosoftExtensionsDependencyModelPackageVersion>3.0.0-preview3-27426-8</MicrosoftExtensionsDependencyModelPackageVersion>
-    <MicrosoftNETCoreAppPackageVersion>3.0.0-preview3-27426-8</MicrosoftNETCoreAppPackageVersion>
-    <MicrosoftDotNetPlatformAbstractionsPackageVersion>3.0.0-preview3-27426-8</MicrosoftDotNetPlatformAbstractionsPackageVersion>
+    <MicrosoftExtensionsDependencyModelPackageVersion>3.0.0-preview3-27426-9</MicrosoftExtensionsDependencyModelPackageVersion>
+    <MicrosoftNETCoreAppPackageVersion>3.0.0-preview3-27426-9</MicrosoftNETCoreAppPackageVersion>
+    <MicrosoftDotNetPlatformAbstractionsPackageVersion>3.0.0-preview3-27426-9</MicrosoftDotNetPlatformAbstractionsPackageVersion>
     <!-- Packages from dotnet/corefx -->
     <MicrosoftBclJsonSourcesPackageVersion>4.6.0-preview3.19126.9</MicrosoftBclJsonSourcesPackageVersion>
     <MicrosoftCSharpPackageVersion>4.6.0-preview3.19126.9</MicrosoftCSharpPackageVersion>
