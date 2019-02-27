@@ -251,6 +251,24 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
 
         [Theory]
         [MemberData(nameof(Encodings))]
+        public void TryParseFormValues_DecodedPlusesWorks(Encoding encoding)
+        {
+            var readOnlySequence = ReadOnlySequenceFactory.CreateSegments(encoding.GetBytes("++%2B=+++%2B&++++=+++"), encoding.GetBytes("+&+="));
+
+            KeyValueAccumulator accumulator = default;
+
+            var formReader = new FormPipeReader(null, encoding);
+            formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true);
+
+            Assert.Equal(3, accumulator.KeyCount);
+            var dict = accumulator.GetResults();
+            Assert.Equal("    ", dict["    "]);
+            Assert.Equal("   +", dict["  +"]);
+            Assert.Equal("", dict[" "]);
+        }
+
+        [Theory]
+        [MemberData(nameof(Encodings))]
         public void TryParseFormValues_MultiSegmentSplitAcrossSegmentsThatNeedDecodingWorks(Encoding encoding)
         {
             var readOnlySequence = ReadOnlySequenceFactory.CreateSegments(encoding.GetBytes("\"%-.<>\\^_`{|}~=\"%-.<>\\^_`{|}~&\"%-.<>"), encoding.GetBytes("\\^_`{|}=wow"));

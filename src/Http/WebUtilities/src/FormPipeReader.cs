@@ -31,8 +31,8 @@ namespace Microsoft.AspNetCore.WebUtilities
         private static ReadOnlySpan<byte> UTF8EqualEncoded => new byte[] { (byte)'=' };
         private static ReadOnlySpan<byte> UTF8AndEncoded => new byte[] { (byte)'&' };
         // Used for other encodings
-        private static ReadOnlyMemory<byte> _otherEqualEncoding;
-        private static ReadOnlyMemory<byte> _otherAndEncoding;
+        private ReadOnlyMemory<byte> _otherEqualEncoding;
+        private ReadOnlyMemory<byte> _otherAndEncoding;
 
         private PipeReader _pipeReader;
         private Encoding _encoding;
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             _pipeReader = pipeReader;
             _encoding = encoding;
 
-            if (_encoding != Encoding.UTF8 || _encoding != Encoding.ASCII)
+            if (_encoding != Encoding.UTF8 && _encoding != Encoding.ASCII)
             {
                 _otherEqualEncoding = _encoding.GetBytes("=");
                 _otherAndEncoding = _encoding.GetBytes("&");
@@ -298,14 +298,15 @@ namespace Microsoft.AspNetCore.WebUtilities
                 // We need to create a Span from a ReadOnlySpan. This cast is safe because the memory is still held by the pipe
                 // We will also create a string from it by the end of the function.
                 var span = MemoryMarshal.CreateSpan(ref Unsafe.AsRef(readOnlySpan[0]), readOnlySpan.Length);
-                var bytes = UrlDecoder.DecodeInPlace(span, isFormEncoding: true);
-                span = span.Slice(0, bytes);
 
                 int index;
                 while ((index = span.IndexOf((byte)'+')) != -1)
                 {
                     span[index] = (byte)' ';
                 }
+
+                var bytes = UrlDecoder.DecodeInPlace(span, isFormEncoding: true);
+                span = span.Slice(0, bytes);
 
                 return _encoding.GetString(span);
             }
