@@ -41,9 +41,10 @@ namespace signalr
         return transport_type::websockets;
     }
 
-    pplx::task<void> websocket_transport::connect(const web::uri &url)
+    pplx::task<void> websocket_transport::connect(const utility::string_t& url)
     {
-        _ASSERTE(url.scheme() == _XPLATSTR("ws") || url.scheme() == _XPLATSTR("wss"));
+        web::uri uri(url);
+        _ASSERTE(uri.scheme() == _XPLATSTR("ws") || uri.scheme() == _XPLATSTR("wss"));
 
         {
             std::lock_guard<std::mutex> stop_lock(m_start_stop_lock);
@@ -55,7 +56,7 @@ namespace signalr
 
             m_logger.log(trace_level::info,
                 utility::string_t(_XPLATSTR("[websocket transport] connecting to: "))
-                .append(url.to_string()));
+                .append(url));
 
             auto websocket_client = m_websocket_client_factory();
 

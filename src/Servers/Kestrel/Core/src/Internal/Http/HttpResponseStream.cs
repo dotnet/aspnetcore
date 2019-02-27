@@ -38,20 +38,5 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             base.Flush();
         }
-
-        public void StartAcceptingWrites()
-        {
-            _pipeWriter.StartAcceptingWrites();
-        }
-
-        public void StopAcceptingWrites()
-        {
-            _pipeWriter.StopAcceptingWrites();
-        }
-
-        public void Abort()
-        {
-            _pipeWriter.Abort();
-        }
     }
 }

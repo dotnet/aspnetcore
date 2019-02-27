@@ -1,0 +1,56 @@
+<!--
+  This project produces a debian installer for Linux x64 platforms only.
+-->
+<Project DefaultTargets="Build">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" />
+
+  <PropertyGroup>
+    <TargetFileName>$(RuntimeInstallerBaseName)-$(SharedFxVersion)-x64.deb</TargetFileName>
+
+    <!-- CLI would take a dependency such as 'aspnetcore-runtime-M.N >= M.N.P'. Here M.N is part of the id and M.N.P is the PackageVersion -->
+    <PackageId>$(RuntimeInstallerBaseName)-$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)</PackageId>
+
+    <!-- PackageVersion does not match the ASP.NET Core runtime verison. -->
+    <PackageVersion>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion)</PackageVersion>
+    <!-- Deb installers are versioned as M.N.P~PreReleaseLabel-Build following the core-setup convention -->
+    <PackageVersion Condition="'$(IncludePreReleaseLabelInPackageVersion)' == 'true'">$(PackageVersion)~$(VersionSuffix)</PackageVersion>
+    <PackageRevision>1</PackageRevision>
+
+    <!-- Needed some creativity to convert the PackageVersion M.N.P-PreReleaseLabel-Build to the installer version M.N.P~PreReleaseLabel-Build, The conditional handles stabilized builds -->
+    <DotnetRuntimeDependencyVersion>$(MicrosoftNETCoreAppPackageVersion)</DotnetRuntimeDependencyVersion>
+    <DotnetRuntimeDependencyVersion Condition="$(DotnetRuntimeDependencyVersion.Contains('-'))">$(DotnetRuntimeDependencyVersion.Substring(0, $(DotnetRuntimeDependencyVersion.IndexOf('-'))))~$(DotnetRuntimeDependencyVersion.Substring($([MSBuild]::Add($(DotnetRuntimeDependencyVersion.IndexOf('-')), 1))))</DotnetRuntimeDependencyVersion>
+
+    <PackageSummary>$(SharedFxProductName)</PackageSummary>
+    <PackageDescription>$(SharedFxDescription)</PackageDescription>
+    <DebianConfigProperties>
+      DotnetRuntimeDependencyVersion=$(DotnetRuntimeDependencyVersion);
+    </DebianConfigProperties>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Framework\src\Microsoft.AspNetCore.App.shfxproj">
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+      <OutputItemType>_ResolvedFxProjects</OutputItemType>
+    </ProjectReference>
+  </ItemGroup>
+
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
+
+  <PropertyGroup>
+    <DebBuildDependsOn>$(DebBuildDependsOn);LayoutSharedFramework</DebBuildDependsOn>
+  </PropertyGroup>
+
+  <Target Name="LayoutSharedFramework" DependsOnTargets="PrepareForBuild;ResolveProjectReferences">
+    <!-- Layout files in package_root/ for the build.sh script. -->
+    <ItemGroup>
+      <SharedFxAssetFolder Include="%(_ResolvedFxProjects.InstallerAssetPaths)" SharedFxName="%(_ResolvedFxProjects.SharedFxName)" />
+      <PackageFiles Include="%(SharedFxAssetFolder.Identity)\**\*" Condition="'%(SharedFxAssetFolder.Identity)' != ''">
+        <DestinationDir>$(IntermediatePackageRoot)shared\%(SharedFxAssetFolder.SharedFxName)\$(SharedFxVersion)\</DestinationDir>
+      </PackageFiles>
+    </ItemGroup>
+
+    <Copy SourceFiles="@(PackageFiles)"
+          DestinationFiles="@(PackageFiles->'%(DestinationDir)%(RecursiveDir)%(FileName)%(Extension)')"
+          UseHardlinksIfPossible="true" />
+  </Target>
+</Project>

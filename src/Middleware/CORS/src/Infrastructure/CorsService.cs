@@ -8,7 +8,6 @@ using System.Linq;
 using Microsoft.AspNetCore.Cors.Internal;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
@@ -77,7 +76,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
 
             if (policy.AllowAnyOrigin && policy.SupportsCredentials)
             {
-                _logger.InsecureConfiguration();
+                throw new ArgumentException(Resources.InsecureConfiguration, nameof(policy));
             }
 
             var origin = context.Request.Headers[CorsConstants.Origin];

@@ -108,6 +108,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.Equal(1, TestSink.Writes.Count(w => w.Message.Contains("Invoking where.exe to find dotnet.exe")));
         }
 
+
+        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/7972
         [ConditionalTheory]
         [InlineData(RuntimeArchitecture.x64)]
         [InlineData(RuntimeArchitecture.x86)]
@@ -129,7 +131,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 var installDir = DotNetCommands.GetDotNetInstallDir(runtimeArchitecture);
                 using (new TestRegistryKey(
                     localMachine,
-                    "SOFTWARE\\dotnet\\Setup\\InstalledVersions\\" + runtimeArchitecture + "\\sdk",
+                    "SOFTWARE\\dotnet\\Setup\\InstalledVersions\\" + runtimeArchitecture,
                     "InstallLocation",
                     installDir))
                 {
@@ -184,6 +186,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             await StartAsync(deploymentParameters);
         }
 
+        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/7972
         [ConditionalFact]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         public async Task StartsWithPortableAndBootstraperExe()

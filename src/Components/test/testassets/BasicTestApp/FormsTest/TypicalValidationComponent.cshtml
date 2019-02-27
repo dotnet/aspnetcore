@@ -1,42 +1,43 @@
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Components.Forms
 
-<EditForm Model="@person" OnValidSubmit="@(EventCallback.Factory.Create<EditContext>(this, HandleValidSubmit))">
+<EditForm Model="@person" OnValidSubmit="@HandleValidSubmit">
     <DataAnnotationsValidator />
 
     <p class="name">
-        Name: <InputText bind-Value="@person.Name" ValueExpression="@(() => person.Name)" />
+        Name: <InputText bind-Value="@person.Name" />
     </p>
     <p class="email">
-        Email: <InputText bind-Value="@person.Email" ValueExpression="@(() => person.Email)" />
+        Email: <InputText bind-Value="@person.Email" />
         <ValidationMessage For="@(() => person.Email)" />
     </p>
     <p class="age">
-        Age (years): <InputNumber bind-Value="@person.AgeInYears" ValueExpression="@(() => person.AgeInYears)" />
+        Age (years): <InputNumber bind-Value="@person.AgeInYears" />
     </p>
     <p class="height">
-        Height (optional): <InputNumber bind-Value="@person.OptionalHeight" ValueExpression="@(() => person.OptionalHeight)" />
+        Height (optional): <InputNumber bind-Value="@person.OptionalHeight" />
     </p>
     <p class="description">
-        Description: <InputTextArea bind-Value="@person.Description" ValueExpression="@(() => person.Description)" />
+        Description: <InputTextArea bind-Value="@person.Description" />
     </p>
     <p class="renewal-date">
-        Renewal date: <InputDate bind-Value="@person.RenewalDate" ValueExpression="@(() => person.RenewalDate)" />
+        Renewal date: <InputDate bind-Value="@person.RenewalDate" />
     </p>
     <p class="expiry-date">
-        Expiry date (optional): <InputDate bind-Value="@person.OptionalExpiryDate" ValueExpression="@(() => person.OptionalExpiryDate)" />
+        Expiry date (optional): <InputDate bind-Value="@person.OptionalExpiryDate" />
     </p>
     <p class="ticket-class">
         Ticket class:
-        <InputSelect bind-Value="@person.TicketClass" ValueExpression="@(() => person.TicketClass)">
+        <InputSelect bind-Value="@person.TicketClass">
             <option>(select)</option>
             <option value="@TicketClass.Economy">Economy class</option>
             <option value="@TicketClass.Premium">Premium class</option>
             <option value="@TicketClass.First">First class</option>
         </InputSelect>
+        <span id="selected-ticket-class">@person.TicketClass</span>
     </p>
     <p class="accepts-terms">
-        Accepts terms: <InputCheckbox bind-Value="@person.AcceptsTerms" ValueExpression="@(() => person.AcceptsTerms)" />
+        Accepts terms: <InputCheckbox bind-Value="@person.AcceptsTerms" />
     </p>
 
     <button type="submit">Submit</button>

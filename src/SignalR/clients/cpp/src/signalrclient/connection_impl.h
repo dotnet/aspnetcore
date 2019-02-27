@@ -41,14 +41,14 @@ namespace signalr
         pplx::task<void> stop();
 
         connection_state get_connection_state() const noexcept;
-        utility::string_t get_connection_id() const;
+        utility::string_t get_connection_id() const noexcept;
 
         void set_message_received(const std::function<void(const utility::string_t&)>& message_received);
         void set_disconnected(const std::function<void()>& disconnected);
         void set_client_config(const signalr_client_config& config);
 
     private:
-        web::uri m_base_url;
+        utility::string_t m_base_url;
         std::atomic<connection_state> m_connection_state;
         logger m_logger;
         std::shared_ptr<transport> m_transport;
@@ -63,17 +63,14 @@ namespace signalr
         std::mutex m_stop_lock;
         event m_start_completed_event;
         utility::string_t m_connection_id;
-        utility::string_t m_connection_data;
-        utility::string_t m_message_id;
-        utility::string_t m_groups_token;
 
         connection_impl(const utility::string_t& url, trace_level trace_level, const std::shared_ptr<log_writer>& log_writer,
             std::unique_ptr<web_request_factory> web_request_factory, std::unique_ptr<transport_factory> transport_factory);
 
-        pplx::task<std::shared_ptr<transport>> start_transport(const web::uri& url);
+        pplx::task<std::shared_ptr<transport>> start_transport(const utility::string_t& url);
         pplx::task<void> send_connect_request(const std::shared_ptr<transport>& transport,
-            const web::uri& url, const pplx::task_completion_event<void>& connect_request_tce);
-        pplx::task<void> start_negotiate(const web::uri& url, int redirect_count);
+            const utility::string_t& url, const pplx::task_completion_event<void>& connect_request_tce);
+        pplx::task<void> start_negotiate(const utility::string_t& url, int redirect_count);
 
         void process_response(const utility::string_t& response);
 
@@ -85,6 +82,6 @@ namespace signalr
         void invoke_message_received(const utility::string_t& message);
 
         static utility::string_t translate_connection_state(connection_state state);
-        void ensure_disconnected(const utility::string_t& error_message);
+        void ensure_disconnected(const utility::string_t& error_message) const;
     };
 }

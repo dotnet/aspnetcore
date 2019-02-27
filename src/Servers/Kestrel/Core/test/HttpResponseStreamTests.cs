@@ -98,8 +98,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var pipeWriter = new HttpResponsePipeWriter(Mock.Of<IHttpResponseControl>());
             var stream = new HttpResponseStream(Mock.Of<IHttpBodyControlFeature>(), pipeWriter);
-            stream.StartAcceptingWrites();
-            stream.StopAcceptingWrites();
+            pipeWriter.StartAcceptingWrites();
+            pipeWriter.StopAcceptingWrites();
             var ex = Assert.Throws<ObjectDisposedException>(() => { stream.WriteAsync(new byte[1], 0, 1); });
             Assert.Contains(CoreStrings.WritingToResponseBodyAfterResponseCompleted, ex.Message);
         }
@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var pipeWriter = new HttpResponsePipeWriter(mockHttpResponseControl.Object);
             var stream = new HttpResponseStream(mockBodyControl.Object, pipeWriter);
-            stream.StartAcceptingWrites();
+            pipeWriter.StartAcceptingWrites();
 
             // WriteAsync doesn't throw.
             await stream.WriteAsync(new byte[1], 0, 1);

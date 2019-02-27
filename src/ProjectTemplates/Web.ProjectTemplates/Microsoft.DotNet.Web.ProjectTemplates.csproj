@@ -12,6 +12,10 @@
   <PropertyGroup>
     <!-- Lists the versions of dependencies not built in this repo. Packages produced from this repo should be listed as a PackageVersionVariableReference.  -->
     <GeneratedContentProperties>
+      GoogleProtobufPackageVersion=$(GoogleProtobufPackageVersion);
+      GrpcAspNetCoreServerPackageVersion=$(GrpcAspNetCoreServerPackageVersion);
+      GrpcCorePackageVersion=$(GrpcCorePackageVersion);
+      GrpcToolsPackageVersion=$(GrpcToolsPackageVersion);
       MicrosoftAspNetCoreMvcRazorRuntimeCompilationPackageVersion=$(MicrosoftAspNetCoreMvcRazorRuntimeCompilationPackageVersion);
       MicrosoftEntityFrameworkCoreSqlitePackageVersion=$(MicrosoftEntityFrameworkCoreSqlitePackageVersion);
       MicrosoftEntityFrameworkCoreSqlServerPackageVersion=$(MicrosoftEntityFrameworkCoreSqlServerPackageVersion);
@@ -39,6 +43,8 @@
   <ItemGroup>
     <GeneratedContent Include="EmptyWeb-CSharp.csproj.in" OutputPath="content/EmptyWeb-CSharp/Company.WebApplication1.csproj" />
     <GeneratedContent Include="EmptyWeb-FSharp.fsproj.in" OutputPath="content/EmptyWeb-FSharp/Company.WebApplication1.fsproj" />
+    <GeneratedContent Include="GrpcService-CSharp.Server.csproj.in" OutputPath="content/GrpcService-CSharp/GrpcService-CSharp.Server/GrpcService-CSharp.Server.csproj" />
+    <GeneratedContent Include="GrpcService-CSharp.Client.csproj.in" OutputPath="content/GrpcService-CSharp/GrpcService-CSharp.Client/GrpcService-CSharp.Client.csproj" />
     <GeneratedContent Include="RazorComponentsWeb-CSharp.csproj.in" OutputPath="content/RazorComponentsWeb-CSharp/RazorComponentsWeb-CSharp.csproj" />
     <GeneratedContent Include="RazorPagesWeb-CSharp.csproj.in" OutputPath="content/RazorPagesWeb-CSharp/Company.WebApplication1.csproj" />
     <GeneratedContent Include="RazorClassLibrary-CSharp.csproj.in" OutputPath="content/RazorClassLibrary-CSharp/Company.RazorClassLibrary1.csproj" />

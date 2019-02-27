@@ -1,0 +1,5 @@
+# Manually implemented - https://github.com/dotnet/arcade/pull/2033
+T:Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrame
+# Manually implemented - https://github.com/dotnet/arcade/issues/2066
+T:Microsoft.AspNetCore.Mvc.ApplicationModels.PageParameterModel
+T:Microsoft.AspNetCore.Mvc.ApplicationModels.PagePropertyModel

@@ -17,8 +17,8 @@
           Inputs="@(WebpackInputs)"
           Outputs="dist\components.webassembly.js;dist\components.server.js">
     <RemoveDir Directories="dist" />
-    <Exec Command="npm run build:debug" Condition="'$(Configuration)' == 'Debug'" />
-    <Exec Command="npm run build:production" Condition="'$(Configuration)' != 'Debug'" />
+    <Yarn Command="run build:debug" Condition="'$(Configuration)' == 'Debug'" />
+    <Yarn Command="run build:production" Condition="'$(Configuration)' != 'Debug'" />
   </Target>
 
 </Project>
