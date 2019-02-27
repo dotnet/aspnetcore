@@ -1,14 +1,11 @@
-param($Mode)
-
-# TEMP TEMP TEMP
-# While doing https://github.com/aspnet/AspNetCore/pull/5705 I accidentally disabled ANCM on CI machines using
-# the registy key. Remove it to allow tests to pass
-
-Remove-Item "HKLM:\SOFTWARE\Microsoft\IIS Extensions\IIS AspNetCore Module V2\Parameters" -ErrorAction Ignore;
+param(
+    [string]$Mode,
+    [string[]]$exes
+)
 
 if (!($DumpFolder))
 {
-    $DumpFolder = "$PSScriptRoot\..\..\..\..\artifacts\logs\dumps"
+    $DumpFolder = "$PSScriptRoot\..\..\..\artifacts\logs\dumps"
 }
 if (!(Test-Path $DumpFolder))
 {
@@ -16,16 +13,8 @@ if (!(Test-Path $DumpFolder))
 }
 $DumpFolder = Resolve-Path $DumpFolder
 
-$LogsFolder = "$PSScriptRoot\..\artifacts\logs"
-if (!(Test-Path $LogsFolder))
-{
-    New-Item $LogsFolder -ItemType Directory;
-}
-$LogsFolder = Resolve-Path $LogsFolder
-
 $werHive = "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting";
 $ldHive = "$werHive\LocalDumps";
-
 
 function Setup-appverif($application)
 {
@@ -70,7 +59,7 @@ function Shutdown-appverif($application)
 
 function Setup-Dumps()
 {
-    if (!(Test-Path $ldHive ))
+    if (!(Test-Path $ldHive))
     {
         New-Item -Path $werHive -Name LocalDumps
     }
@@ -116,24 +105,27 @@ function Shutdown-Dumps()
 
 if ($Mode -eq "Setup")
 {
-    Setup-appverif w3wp.exe
-    Setup-appverif iisexpress.exe
+    foreach ($element in $exes) {
+        Setup-appverif $element
+    }
 
     Setup-Dumps;
 }
 
 if ($Mode -eq "SetupDumps")
 {
-    Shutdown-appverif w3wp.exe
-    Shutdown-appverif iisexpress.exe
+    foreach ($element in $exes) {
+        Shutdown-appverif $element
+    }
 
     Setup-Dumps;
 }
 
 if ($Mode -eq "Shutdown")
 {
-    Shutdown-appverif w3wp.exe
-    Shutdown-appverif iisexpress.exe
+    foreach ($element in $exes) {
+        Shutdown-appverif $element
+    }
 
     Shutdown-Dumps;
 }
