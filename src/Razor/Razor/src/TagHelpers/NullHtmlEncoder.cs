@@ -62,6 +62,12 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
             output.Write(value, startIndex, characterCount);
         }
 
+        public override void Encode(TextWriter output, string value, int startIndex, int characterCount)
+        {
+            var span = value.AsSpan();
+            output.Write(span.Slice(startIndex, characterCount));
+        }
+
         /// <inheritdoc />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override unsafe int FindFirstCharacterToEncode(char* text, int textLength)
