@@ -3,6 +3,9 @@
 
 package com.microsoft.signalr;
 
+/**
+ *  Used to specify the transport the client will use.
+ */
 public enum TransportEnum {
     ALL,
     WEBSOCKETS,
