@@ -95,6 +95,11 @@ namespace Microsoft.AspNetCore.Components.Server
             if (circuitHost != null)
             {
                 CircuitHost = circuitHost;
+
+                // Dispatch any buffered renders we accumulated during a disconnect.
+                // Note that while the rendering is async, we cannot await it here. The Task returned by ProcessBufferedRenderBatches relies on
+                // OnRenderCompleted to be invoked to complete, and SignalR does not allow concurrent hub method invocations.
+                _ = circuitHost.Renderer.ProcessBufferedRenderBatches();
                 return true;
             }
 

@@ -18,8 +18,9 @@ namespace Microsoft.AspNetCore.Components.Rendering
     {
         private readonly ComponentFactory _componentFactory;
         private readonly Dictionary<int, ComponentState> _componentStateById = new Dictionary<int, ComponentState>();
+        private readonly RenderBatchBuilder _batchBuilder = new RenderBatchBuilder();
         private readonly Dictionary<int, EventCallback> _eventBindings = new Dictionary<int, EventCallback>();
-        private IDispatcher _dispatcher { get; }
+        private readonly IDispatcher _dispatcher;
 
         private int _nextComponentId = 0; // TODO: change to 'long' when Mono .NET->JS interop supports it
         private bool _isBatchInProgress;
@@ -67,8 +68,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
         {
             _dispatcher = dispatcher;
         }
-
-        internal RenderBatchBuilder RenderBatchBuilder { get; } = new RenderBatchBuilder();
 
         /// <summary>
         /// Creates an <see cref="IDispatcher"/> that can be used with one or more <see cref="Renderer"/>.
@@ -389,7 +388,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 return;
             }
 
-            RenderBatchBuilder.ComponentRenderQueue.Enqueue(
+            _batchBuilder.ComponentRenderQueue.Enqueue(
                 new RenderQueueEntry(componentState, renderFragment));
 
             if (!_isBatchInProgress)
@@ -421,23 +420,24 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
         private ComponentState GetOptionalComponentState(int componentId)
             => _componentStateById.TryGetValue(componentId, out var componentState)
-                ? componentState 
+                ? componentState
                 : null;
 
         private void ProcessRenderQueue()
         {
-            var updateDisplayTask = Task.CompletedTask;
             _isBatchInProgress = true;
+            var updateDisplayTask = Task.CompletedTask;
+
             try
             {
                 // Process render queue until empty
-                while (RenderBatchBuilder.ComponentRenderQueue.Count > 0)
+                while (_batchBuilder.ComponentRenderQueue.Count > 0)
                 {
-                    var nextToRender = RenderBatchBuilder.ComponentRenderQueue.Dequeue();
+                    var nextToRender = _batchBuilder.ComponentRenderQueue.Dequeue();
                     RenderInExistingBatch(nextToRender);
                 }
 
-                var batch = RenderBatchBuilder.ToBatch();
+                var batch = _batchBuilder.ToBatch();
                 updateDisplayTask = UpdateDisplayAsync(batch);
 
                 // Fire off the execution of OnAfterRenderAsync, but don't wait for it
@@ -446,8 +446,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
             }
             finally
             {
-                RemoveEventHandlerIds(RenderBatchBuilder.DisposedEventHandlerIds.ToRange(), updateDisplayTask);
-                RenderBatchBuilder.Clear();
+                RemoveEventHandlerIds(_batchBuilder.DisposedEventHandlerIds.ToRange(), updateDisplayTask);
+                _batchBuilder.Clear();
                 _isBatchInProgress = false;
             }
         }
@@ -496,15 +496,15 @@ namespace Microsoft.AspNetCore.Components.Rendering
         private void RenderInExistingBatch(RenderQueueEntry renderQueueEntry)
         {
             renderQueueEntry.ComponentState
-                .RenderIntoBatch(RenderBatchBuilder, renderQueueEntry.RenderFragment);
+                .RenderIntoBatch(_batchBuilder, renderQueueEntry.RenderFragment);
 
             // Process disposal queue now in case it causes further component renders to be enqueued
-            while (RenderBatchBuilder.ComponentDisposalQueue.Count > 0)
+            while (_batchBuilder.ComponentDisposalQueue.Count > 0)
             {
-                var disposeComponentId = RenderBatchBuilder.ComponentDisposalQueue.Dequeue();
-                GetRequiredComponentState(disposeComponentId).DisposeInBatch(RenderBatchBuilder);
+                var disposeComponentId = _batchBuilder.ComponentDisposalQueue.Dequeue();
+                GetRequiredComponentState(disposeComponentId).DisposeInBatch(_batchBuilder);
                 _componentStateById.Remove(disposeComponentId);
-                RenderBatchBuilder.DisposedComponentIds.Append(disposeComponentId);
+                _batchBuilder.DisposedComponentIds.Append(disposeComponentId);
             }
         }
 

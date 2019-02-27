@@ -174,9 +174,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
             await circuitHandlerTask;
 
-            // Dispatch any buffered renders we accumulated during a disconnect.
-            await circuitHost.Renderer.ProcessBufferedRenderBatches();
-
             return circuitHost;
         }
 

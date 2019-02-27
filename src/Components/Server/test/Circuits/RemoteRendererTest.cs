@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
             component.TriggerRender();
 
             // Act
-            renderer.Client.Transfer(client.Object, "new-connection");
+            circuitClient.Transfer(client.Object, "new-connection");
             var task = renderer.ProcessBufferedRenderBatches();
             foreach (var id in renderIds)
             {
