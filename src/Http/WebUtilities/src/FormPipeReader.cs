@@ -251,13 +251,13 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
             else
             {
-                Memory<byte> memory = ArrayPool<byte>.Shared.Rent((int)ros.Length);
-                Span<byte> buffer = memory.Span.Slice(0, (int)ros.Length);
+                var byteArray = ArrayPool<byte>.Shared.Rent((int)ros.Length);
+                Span<byte> buffer = byteArray.AsSpan(0, (int)ros.Length);
 
                 ros.CopyTo(buffer);
                 var decodedString = GetDecodedString(buffer);
 
-                ArrayPool<byte>.Shared.Return(memory.ToArray());
+                ArrayPool<byte>.Shared.Return(byteArray);
                 return decodedString;
             }
         }
