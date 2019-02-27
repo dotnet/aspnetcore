@@ -3,6 +3,7 @@
 
 namespace Microsoft.AspNetCore.Hosting
 {
+    [System.ObsoleteAttribute("This type is obsolete and will be removed in a future version. The recommended alternative is Microsoft.Extensions.Hosting.Environments.", false)]
     public static partial class EnvironmentName
     {
         public static readonly string Development;
