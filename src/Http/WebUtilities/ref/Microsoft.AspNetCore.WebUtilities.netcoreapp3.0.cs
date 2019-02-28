@@ -1,6 +1,15 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+namespace Microsoft.AspNetCore.Internal
+{
+    public partial class UrlDecoder
+    {
+        public UrlDecoder() { }
+        public static int DecodeInPlace(System.Span<byte> buffer, bool isFormEncoding) { throw null; }
+        public static int DecodeRequestLine(System.ReadOnlySpan<byte> source, System.Span<byte> destination, bool isFormEncoding) { throw null; }
+    }
+}
 namespace Microsoft.AspNetCore.WebUtilities
 {
     public static partial class Base64UrlTextEncoder
@@ -78,6 +87,16 @@ namespace Microsoft.AspNetCore.WebUtilities
         public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public Microsoft.AspNetCore.WebUtilities.MultipartSection Section { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public System.Threading.Tasks.Task<string> GetValueAsync() { throw null; }
+    }
+    public partial class FormPipeReader
+    {
+        public FormPipeReader(System.IO.Pipelines.PipeReader pipeReader) { }
+        public FormPipeReader(System.IO.Pipelines.PipeReader pipeReader, System.Text.Encoding encoding) { }
+        public int KeyLengthLimit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public int ValueCountLimit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public int ValueLengthLimit { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public System.Threading.Tasks.Task<System.Collections.Generic.Dictionary<string, Microsoft.Extensions.Primitives.StringValues>> ReadFormAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
     }
     public partial class FormReader : System.IDisposable
     {

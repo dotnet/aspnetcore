@@ -156,17 +156,18 @@ namespace Microsoft.AspNetCore.WebUtilities
                 {
                     if (span.Length > KeyLengthLimit)
                     {
-                        throw new InvalidDataException($"Form key or value length limit {KeyLengthLimit} exceeded.");
+                        ThrowKeyTooLargeException();
+                        return;
                     }
                     break;
                 }
 
-                key = span.Slice(0, equals);
-
-                if (key.Length > KeyLengthLimit)
+                if (equals > KeyLengthLimit)
                 {
-                    throw new InvalidDataException($"Form key or value length limit {KeyLengthLimit} exceeded.");
+                    ThrowKeyTooLargeException();
                 }
+
+                key = span.Slice(0, equals);
 
                 span = span.Slice(key.Length + equalsDelimiter.Length);
                 value = span;
@@ -175,15 +176,16 @@ namespace Microsoft.AspNetCore.WebUtilities
 
                 if (ampersand == -1)
                 {
+                    if (span.Length > ValueLengthLimit)
+                    {
+                        ThrowValueTooLargeException();
+                        return;
+                    }
+
                     if (!isFinalBlock)
                     {
                         // We can't know that what is currently read is the end of the form value, that's only the case if this is the final block
                         // If we're not in the final block, then consume nothing
-                        if (span.Length > ValueLengthLimit)
-                        {
-                            throw new InvalidDataException($"Form key or value length limit {ValueLengthLimit} exceeded.");
-                        }
-
                         break;
                     }
 
@@ -193,13 +195,13 @@ namespace Microsoft.AspNetCore.WebUtilities
                 }
                 else
                 {
+                    if (ampersand > ValueLengthLimit)
+                    {
+                        ThrowValueTooLargeException();
+                    }
+
                     value = span.Slice(0, ampersand);
                     span = span.Slice(ampersand + andDelimiter.Length);
-                }
-
-                if (value.Length > ValueLengthLimit)
-                {
-                    throw new InvalidDataException($"Form key or value length limit {ValueLengthLimit} exceeded.");
                 }
 
                 var decodedKey = GetDecodedString(key);
@@ -231,7 +233,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 {
                     if (sequenceReader.Length > KeyLengthLimit)
                     {
-                        throw new InvalidDataException($"Form key or value length limit {KeyLengthLimit} exceeded.");
+                        ThrowKeyTooLargeException();
                     }
 
                     break;
@@ -239,7 +241,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
                 if (key.Length > KeyLengthLimit)
                 {
-                    throw new InvalidDataException($"Form key or value length limit {KeyLengthLimit} exceeded.");
+                    ThrowKeyTooLargeException();
                 }
 
                 if (!sequenceReader.TryReadTo(out ReadOnlySequence<byte> value, andDelimiter, false) ||
@@ -249,7 +251,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                     {
                         if (sequenceReader.Length > ValueLengthLimit)
                         {
-                            throw new InvalidDataException($"Form key or value length limit {ValueLengthLimit} exceeded.");
+                            ThrowValueTooLargeException();
                         }
 
                         break;
@@ -262,7 +264,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
                 if (value.Length > ValueLengthLimit)
                 {
-                    throw new InvalidDataException($"Form key or value length limit {ValueLengthLimit} exceeded.");
+                    ThrowValueTooLargeException();
                 }
 
                 // Need to call ToArray if the key/value spans multiple segments 
@@ -275,6 +277,16 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
 
             buffer = buffer.Slice(consumed);
+        }
+
+        private void ThrowKeyTooLargeException()
+        {
+            throw new InvalidDataException($"Form key length limit {KeyLengthLimit} exceeded.");
+        }
+
+        private void ThrowValueTooLargeException()
+        {
+            throw new InvalidDataException($"Form value length limit {ValueLengthLimit} exceeded.");
         }
 
         private string GetDecodedStringFromReadOnlySequence(ReadOnlySequence<byte> ros)
@@ -298,8 +310,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 {
                     Span<byte> buffer = byteArray.AsSpan(0, (int)ros.Length);
                     ros.CopyTo(buffer);
-                    var decodedString = GetDecodedString(buffer);
-                    return decodedString;
+                    return GetDecodedString(buffer);
                 }
                 finally
                 {

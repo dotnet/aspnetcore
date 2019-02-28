@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
 
             var exception = await Assert.ThrowsAsync<InvalidDataException>(
                 () => ReadFormAsync(new FormPipeReader(bodyPipe) { KeyLengthLimit = 10 }));
-            Assert.Equal("Form key or value length limit 10 exceeded.", exception.Message);
+            Assert.Equal("Form key length limit 10 exceeded.", exception.Message);
         }
 
         [Fact]
@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
 
             var exception = await Assert.ThrowsAsync<InvalidDataException>(
                 () => ReadFormAsync(new FormPipeReader(bodyPipe) { ValueLengthLimit = 10 }));
-            Assert.Equal("Form key or value length limit 10 exceeded.", exception.Message);
+            Assert.Equal("Form value length limit 10 exceeded.", exception.Message);
         }
 
         // https://en.wikipedia.org/wiki/Percent-encoding
@@ -271,7 +271,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
         [MemberData(nameof(Encodings))]
         public void TryParseFormValues_MultiSegmentSplitAcrossSegmentsThatNeedDecodingWorks(Encoding encoding)
         {
-            var readOnlySequence = ReadOnlySequenceFactory.CreateSegments(encoding.GetBytes("\"%-.<>\\^_`{|}~=\"%-.<>\\^_`{|}~&\"%-.<>"), encoding.GetBytes("\\^_`{|}=wow"));
+            var readOnlySequence = ReadOnlySequenceFactory.SingleSegmentFactory.CreateWithContent(encoding.GetBytes("\"%-.<>\\^_`{|}~=\"%-.<>\\^_`{|}~&\"%-.<>\\^_`{|}=wow"));
 
             KeyValueAccumulator accumulator = default;
 
@@ -294,7 +294,22 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
             var formReader = new FormPipeReader(null);
             formReader.KeyLengthLimit = 2;
 
-            Assert.Throws<InvalidDataException>(() => formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true));
+            var exception = Assert.Throws<InvalidDataException>(() => formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true));
+            Assert.Equal("Form key length limit 2 exceeded.", exception.Message);
+        }
+
+        [Fact]
+        public void TryParseFormValues_MultiSegmentExceedKeyLengthThrowsInSplitSegment()
+        {
+            var readOnlySequence = ReadOnlySequenceFactory.CreateSegments(Encoding.UTF8.GetBytes("fo=bar&ba"), Encoding.UTF8.GetBytes("z=boo&t="));
+
+            KeyValueAccumulator accumulator = default;
+
+            var formReader = new FormPipeReader(null);
+            formReader.KeyLengthLimit = 2;
+
+            var exception = Assert.Throws<InvalidDataException>(() => formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true));
+            Assert.Equal("Form key length limit 2 exceeded.", exception.Message);
         }
 
         [Fact]
@@ -307,7 +322,22 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
             var formReader = new FormPipeReader(null);
             formReader.ValueLengthLimit = 2;
 
-            Assert.Throws<InvalidDataException>(() => formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true));
+            var exception = Assert.Throws<InvalidDataException>(() => formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true));
+            Assert.Equal("Form value length limit 2 exceeded.", exception.Message);
+        }
+
+        [Fact]
+        public void TryParseFormValues_MultiSegmentExceedValueLengthThrowsInSplitSegment()
+        {
+            var readOnlySequence = ReadOnlySequenceFactory.CreateSegments(Encoding.UTF8.GetBytes("foo=ba&baz=bo"), Encoding.UTF8.GetBytes("o&t="));
+
+            KeyValueAccumulator accumulator = default;
+
+            var formReader = new FormPipeReader(null);
+            formReader.ValueLengthLimit = 2;
+
+            var exception = Assert.Throws<InvalidDataException>(() => formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true));
+            Assert.Equal("Form value length limit 2 exceeded.", exception.Message);
         }
 
         [Fact]
