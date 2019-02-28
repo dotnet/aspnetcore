@@ -4,10 +4,13 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <TestGroupName>Libuv.BindTests</TestGroupName>
-    <!-- https://github.com/aspnet/AspNetCore/issues/8046 -->
-    <HelixProjectPlatform Remove="OSX" />
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- https://github.com/aspnet/AspNetCore/issues/8046 -->
+    <HelixProjectPlatform Remove="OSX" />
+  </ItemGroup>
+    
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
     <Compile Include="..\BindTests\**\*.cs" />
