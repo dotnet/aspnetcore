@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.NodeServices
         }
 
         private static string ModulePath(string testModuleName)
-            => $"../../../node/{testModuleName}";
+            => $"../../../js/{testModuleName}";
 
         public void Dispose()
         {
