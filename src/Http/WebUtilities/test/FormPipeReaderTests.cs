@@ -182,7 +182,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
         [MemberData(nameof(Encodings))]
         public void TryParseFormValues_MultiSegmentWorks(Encoding encoding)
         {
-            var readOnlySequence = ReadOnlySequenceFactory.CreateSegments(encoding.GetBytes("foo=bar&baz=boo&"), encoding.GetBytes("t="));
+            var readOnlySequence = ReadOnlySequenceFactory.SingleSegmentFactory.CreateWithContent(encoding.GetBytes("foo=bar&baz=boo&t="));
 
             KeyValueAccumulator accumulator = default;
 
@@ -200,7 +200,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
         [MemberData(nameof(Encodings))]
         public void TryParseFormValues_MultiSegmentSplitAcrossSegmentsWorks(Encoding encoding)
         {
-            var readOnlySequence = ReadOnlySequenceFactory.CreateSegments(encoding.GetBytes("foo=bar&baz=bo"), encoding.GetBytes("o&t="));
+            var readOnlySequence = ReadOnlySequenceFactory.SingleSegmentFactory.CreateWithContent(encoding.GetBytes("foo=bar&baz=boo&t="));
 
             KeyValueAccumulator accumulator = default;
 
@@ -218,7 +218,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
         [MemberData(nameof(Encodings))]
         public void TryParseFormValues_MultiSegmentWithArrayPoolAcrossSegmentsWorks(Encoding encoding)
         {
-            var readOnlySequence = ReadOnlySequenceFactory.CreateSegments(encoding.GetBytes("foo=bar&baz=bo"), encoding.GetBytes(new string('a', 128)));
+            var readOnlySequence = ReadOnlySequenceFactory.SingleSegmentFactory.CreateWithContent(encoding.GetBytes("foo=bar&baz=bo" + new string('a', 128)));
 
             KeyValueAccumulator accumulator = default;
 
@@ -235,7 +235,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
         [MemberData(nameof(Encodings))]
         public void TryParseFormValues_MultiSegmentSplitAcrossSegmentsWithPlusesWorks(Encoding encoding)
         {
-            var readOnlySequence = ReadOnlySequenceFactory.CreateSegments(encoding.GetBytes("+++=+++&++++=+++"), encoding.GetBytes("+&+="));
+            var readOnlySequence = ReadOnlySequenceFactory.SingleSegmentFactory.CreateWithContent(encoding.GetBytes("+++=+++&++++=++++&+="));
 
             KeyValueAccumulator accumulator = default;
 
@@ -253,7 +253,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
         [MemberData(nameof(Encodings))]
         public void TryParseFormValues_DecodedPlusesWorks(Encoding encoding)
         {
-            var readOnlySequence = ReadOnlySequenceFactory.CreateSegments(encoding.GetBytes("++%2B=+++%2B&++++=+++"), encoding.GetBytes("+&+="));
+            var readOnlySequence = ReadOnlySequenceFactory.SingleSegmentFactory.CreateWithContent(encoding.GetBytes("++%2B=+++%2B&++++=++++&+="));
 
             KeyValueAccumulator accumulator = default;
 
@@ -287,7 +287,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
         [Fact]
         public void TryParseFormValues_MultiSegmentExceedKeyLengthThrows()
         {
-            var readOnlySequence = ReadOnlySequenceFactory.CreateSegments(Encoding.UTF8.GetBytes("foo=bar&baz=bo"), Encoding.UTF8.GetBytes("o&t="));
+            var readOnlySequence = ReadOnlySequenceFactory.SingleSegmentFactory.CreateWithContent(Encoding.UTF8.GetBytes("foo=bar&baz=boo&t="));
 
             KeyValueAccumulator accumulator = default;
 
