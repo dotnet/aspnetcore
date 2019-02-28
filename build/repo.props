@@ -147,6 +147,7 @@
         <DotNetProjects Include="
                           $(RepositoryRoot)src\Framework\ref\Microsoft.AspNetCore.App.Ref.csproj;
                           $(RepositoryRoot)src\Framework\src\Microsoft.AspNetCore.App.Runtime.csproj;
+                          $(RepositoryRoot)src\Framework\test\Microsoft.AspNetCore.App.UnitTests.csproj;
                           $(RepositoryRoot)src\DefaultBuilder\**\*.*proj;
                           $(RepositoryRoot)src\Features\JsonPatch\**\*.*proj;
                           $(RepositoryRoot)src\DataProtection\**\*.*proj;

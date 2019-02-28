@@ -1,17 +1,10 @@
 <Project>
   <PropertyGroup>
-    <UnitTestFxProject>$(RepositoryRoot)src\Framework\test\Microsoft.AspNetCore.App.UnitTests.csproj</UnitTestFxProject>
-    <UnitTestFxProject>$([MSBuild]::NormalizePath($(UnitTestFxProject)))</UnitTestFxProject>
-    <BuildSharedFxDependsOn>_BuildSharedFxProjects;TestSharedFx</BuildSharedFxDependsOn>
+    <BuildSharedFxDependsOn>_BuildSharedFxProjects;RemoveSharedFrameworkOnlyRefsFromNuspec</BuildSharedFxDependsOn>
     <BuildSharedFxDependsOn Condition="'$(TestOnly)' != 'true'">$(BuildSharedFxDependsOn);CodeSign</BuildSharedFxDependsOn>
   </PropertyGroup>
 
   <ItemGroup>
-    <FxProjectToBuild Include="$(RepositoryRoot)src\Framework\**\*.pkgproj" />
-    <FxProjectToBuild Include="$(RepositoryRoot)src\Framework\**\*.shfxproj" />
-    <FxProjectToBuild Include="$(UnitTestFxProject)" />
-    <FxProjectToBuild Condition=" '$(BuildRuntimeArchive)' != 'false' " Include="$(RepositoryRoot)src\Installers\Archive\*.*proj" />
-
     <FxProjectToBuild Condition=" '$(TargetRuntimeIdentifier)' == 'linux-x64' AND '$(LinuxInstallerType)' == 'deb' " Include="$(RepositoryRoot)src\Installers\Debian\**\*.*proj" />
     <FxProjectToBuild Condition=" '$(TargetRuntimeIdentifier)' == 'linux-x64' AND '$(LinuxInstallerType)' == 'rpm' " Include="$(RepositoryRoot)src\Installers\Rpm\**\*.*proj" />
 
@@ -21,7 +14,7 @@
 
   <Target Name="BuildSharedFx" DependsOnTargets="$(BuildSharedFxDependsOn)" />
 
-  <Target Name="_BuildSharedFxProjects">
+  <Target Name="_BuildSharedFxProjects" Condition="@(FxProjectToBuild->Count()) != 0">
 
     <PropertyGroup>
       <_RestoreGraphProjectInput>@(FxProjectToBuild)</_RestoreGraphProjectInput>
@@ -40,37 +33,6 @@
              Properties="$(BuildProperties);NoBuild=true"
              BuildInParallel="false"
              SkipNonexistentTargets="true" />
-  </Target>
-
-  <Target Name="TestSharedFx" DependsOnTargets="InstallDotNet">
-
-    <PropertyGroup>
-      <!-- The file path to the log file, from within the container -->
-      <UnitTestFxTrxLogFile>$(LogOutputDir)SharedFx-UnitTests-$(PackageVersion)-$(TargetRuntimeIdentifier).trx</UnitTestFxTrxLogFile>
-      <!-- The trx file path from the perspective of the TeamCity agent -->
-      <UnitTestFxTrxPhysicalFilePath>$(UnitTestFxTrxLogFile)</UnitTestFxTrxPhysicalFilePath>
-      <UnitTestFxTrxPhysicalFilePath Condition="'$(HostMachineRepositoryRoot)' != ''">$(HostMachineRepositoryRoot)/artifacts/logs/SharedFx-UnitTests.trx</UnitTestFxTrxPhysicalFilePath>
-    </PropertyGroup>
-
-    <MSBuild Projects="$(UnitTestFxProject)" Targets="GetTargetPath" Properties="$(BuildProperties)">
-      <Output TaskParameter="TargetOutputs" ItemName="SharedFxTestAssembly" />
-    </MSBuild>
-
-    <RunDotNet
-      IgnoreStandardErrorWarningFormat="true"
-      IgnoreExitCode="true"
-      Arguments="vstest;
-      --Framework:%(TargetFrameworkIdentifier),Version=v%(TargetFrameworkVersion);
-      --Logger:$([MSBuild]::Escape('trx;LogFileName=$(UnitTestFxTrxLogFile)'));
-      %(SharedFxTestAssembly.Identity);
-      --;RunConfiguration.NoAutoReporters=true">
-      <Output TaskParameter="ExitCode" PropertyName="VsTestExitCode" />
-    </RunDotNet>
-
-    <Message Text="##teamcity[importData type='vstest' path='$(UnitTestFxTrxPhysicalFilePath)']"
-      Importance="High"
-      Condition="'$(TEAMCITY_VERSION)' != '' AND Exists('$(UnitTestFxTrxLogFile)')" />
-    <Error Text="SharedFx.UnitTests failed with exit code '$(VsTestExitCode)'." Condition=" $(VsTestExitCode) != 0 " />
   </Target>
 
 </Project>

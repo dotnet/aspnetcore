@@ -1,13 +1,14 @@
-
 <Project>
+  <PropertyGroup>
+    <OutputInRepoRoot>true</OutputInRepoRoot>
+  </PropertyGroup>
+
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
 
   <PropertyGroup>
-    <!-- Temporary - some projects in this folder require a restore target against just-built packages. -->
-    <RestoreSources Condition="'$(_DisableRestoreFromLocalPackages)' != 'true'">
-      $(RestoreSources);
-      $(ArtifactsShippingPackagesDir);
-      $(ArtifactsNonShippingPackagesDir)
-    </RestoreSources>
+    <!-- Shared between targeting pack and runtime build. -->
+    <PlatformManifestFileName>Microsoft.AspNetCore.App.PlatformManifest.txt</PlatformManifestFileName>
+    <PlatformManifestOutputPath>$(ArtifactsObjDir)$(PlatformManifestFileName)</PlatformManifestOutputPath>
   </PropertyGroup>
+
 </Project>

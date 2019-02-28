@@ -10,8 +10,6 @@
   <PropertyGroup>
     <OutputPath>$(InstallersOutputPath)</OutputPath>
     <IntermediateOutputPath>$(IntermediateOutputPath)$(TargetRuntimeIdentifier)\</IntermediateOutputPath>
-    <!-- Must be named "package_root/". This is expected by the build.sh script in the tools folder. -->
-    <IntermediatePackageRoot>$(IntermediateOutputPath)package_root\</IntermediatePackageRoot>
 
     <!-- Installer settings -->
     <DebianPackageInstallRoot>/usr/share/dotnet</DebianPackageInstallRoot>

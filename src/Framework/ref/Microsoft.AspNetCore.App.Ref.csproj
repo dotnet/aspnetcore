@@ -25,7 +25,10 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <PackageType>DotnetPlatform</PackageType>
     <RefAssemblyPackagePath>ref/$(TargetFramework)/</RefAssemblyPackagePath>
 
-    <LayoutTargetDir>$(TargetingPackLayoutRoot)packs/Microsoft.AspNetCore.App.Ref/$(PackageVersion)/</LayoutTargetDir>
+    <TargetingPackSubPath>packs\Microsoft.AspNetCore.App.Ref\$(PackageVersion)\</TargetingPackSubPath>
+    <LayoutTargetDir>$(TargetingPackLayoutRoot)$(TargetingPackSubPath)</LayoutTargetDir>
+    <LocalInstallationOutputPath>$(LocalDotNetRoot)$(TargetingPackSubPath)</LocalInstallationOutputPath>
+
     <ArchiveOutputFileName Condition="'$(TargetRuntimeIdentifier)' == 'win-x64'">aspnetcore-targeting-pack-$(PackageVersion).zip</ArchiveOutputFileName>
     <ArchiveOutputFileName Condition="'$(TargetRuntimeIdentifier)' == 'linux-x64'">aspnetcore-targeting-pack-$(PackageVersion).tar.gz</ArchiveOutputFileName>
     <ArchiveOutputPath>$(InstallersOutputPath)$(ArchiveOutputFileName)</ArchiveOutputPath>
@@ -45,7 +48,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
 
     <PackageConflictManifestFileName>PackageOverrides.txt</PackageConflictManifestFileName>
-    <PackageConflictManifestPackagePath>data/</PackageConflictManifestPackagePath>
+    <ManifestsPackagePath>data/</ManifestsPackagePath>
 
     <!-- Reference implementation assemblies in addition to ref assemblies to get xml docs -->
     <ReferenceImplementationAssemblies>true</ReferenceImplementationAssemblies>
@@ -54,6 +57,12 @@ This package is an internal implementation of the .NET Core SDK and is not meant
   <ItemGroup>
     <!-- Note: do not add _TransitiveExternalAspNetCoreAppReference to this list. This is intentionally not listed as a direct package reference. -->
     <Reference Include="@(AspNetCoreAppReference);@(AspNetCoreAppReferenceAndPackage);@(ExternalAspNetCoreAppReference)" />
+
+    <!-- Enforce build order. Targeting pack needs to bundle information about the runtime. -->
+    <ProjectReference Include="..\src\Microsoft.AspNetCore.App.Runtime.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
+    </ProjectReference>
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
@@ -65,6 +74,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       GeneratePackageConflictManifest;
       _ResolveTargetingPackContent;
       _BatchCopyToLayoutTargetDir;
+      _InstallTargetingPackIntoLocalDotNet;
       _CreateTargetingPackArchive;
     </BuildDependsOn>
   </PropertyGroup>
@@ -93,7 +103,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       <AspNetCoreReferenceDocXml Include="@(_ResolvedProjectReferencePaths->WithMetadataValue('IsReferenceAssembly', 'false')->'%(RootDir)%(Directory)%(FileName).xml')" />
       <RefPackContent Include="@(AspNetCoreReferenceAssemblyPath)" PackagePath="$(RefAssemblyPackagePath)" />
       <RefPackContent Include="@(AspNetCoreReferenceDocXml)" PackagePath="$(RefAssemblyPackagePath)" />
-      <RefPackContent Include="$(TargetDir)$(PackageConflictManifestFileName)" PackagePath="$(PackageConflictManifestPackagePath)" />
+      <RefPackContent Include="$(TargetDir)$(PackageConflictManifestFileName)" PackagePath="$(ManifestsPackagePath)" />
+      <RefPackContent Include="$(PlatformManifestOutputPath)" PackagePath="$(ManifestsPackagePath)" />
 
       <_PackageFiles Include="@(RefPackContent)" />
     </ItemGroup>
@@ -123,6 +134,21 @@ This package is an internal implementation of the .NET Core SDK and is not meant
           DestinationFiles="@(RefPackContent->'$(LayoutTargetDir)%(PackagePath)%(FileName)%(Extension)')"
           UseHardlinksIfPossible="true" />
     <Message Importance="High" Text="$(MSBuildProjectName) -> $(LayoutTargetDir)" />
+  </Target>
+
+  <ItemGroup>
+    <CreateDirectory Include="$(LocalInstallationOutputPath)" />
+  </ItemGroup>
+
+  <!-- Workaround https://github.com/dotnet/sdk/issues/2910 by copying targeting pack into local installation. -->
+  <Target Name="_InstallTargetingPackIntoLocalDotNet"
+          DependsOnTargets="_ResolveTargetingPackContent"
+          Inputs="@(RefPackContent)"
+          Outputs="@(RefPackContent->'$(LocalInstallationOutputPath)%(PackagePath)%(FileName)%(Extension)')">
+    <Copy SourceFiles="@(RefPackContent)"
+          DestinationFiles="@(RefPackContent->'$(LocalInstallationOutputPath)%(PackagePath)%(FileName)%(Extension)')"
+          UseHardlinksIfPossible="true" />
+    <Message Importance="High" Text="$(MSBuildProjectName) -> $(LocalInstallationOutputPath)" />
   </Target>
 
   <Target Name="_CreateTargetingPackArchive"
