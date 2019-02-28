@@ -327,6 +327,7 @@ namespace Microsoft.AspNetCore.Mvc
                         {
                             typeof(ConsumesMatcherPolicy),
                             typeof(ActionConstraintMatcherPolicy),
+                            typeof(DynamicControllerEndpointMatcherPolicy),
                         }
                     },
                 };

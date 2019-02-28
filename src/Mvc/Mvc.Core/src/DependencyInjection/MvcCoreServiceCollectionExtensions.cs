@@ -272,6 +272,8 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<ActionEndpointDataSource>();
             services.TryAddSingleton<ControllerActionEndpointDataSource>();
             services.TryAddSingleton<ActionEndpointFactory>();
+            services.TryAddSingleton<DynamicControllerEndpointSelector>();
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, DynamicControllerEndpointMatcherPolicy>());
 
             //
             // Middleware pipeline filter related
