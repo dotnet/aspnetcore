@@ -399,12 +399,17 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             {
                 htmlAttributes["multiple"] = "multiple";
             }
-
+			
+            // Handle special characters into a passed model. Otherwise the generated html-output is broken.
+            var encodedModel = modelExplorer.Model is string modelAsString
+                ? System.Web.HttpUtility.HtmlEncode(modelAsString)
+                : modelExplorer.Model;
+			
             return Generator.GenerateTextBox(
                 ViewContext,
                 modelExplorer,
-                For.Name,
-                modelExplorer.Model,
+                SourceExpression.Name,
+                encodedModel,
                 format,
                 htmlAttributes);
         }
