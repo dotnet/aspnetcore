@@ -615,18 +615,6 @@ namespace Microsoft.AspNetCore.Components
         public double DeltaZ { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
 }
-namespace Microsoft.AspNetCore.Components.Builder
-{
-    public static partial class ComponentsApplicationBuilderExtensions
-    {
-        public static void AddComponent<TComponent>(this Microsoft.AspNetCore.Components.Builder.IComponentsApplicationBuilder app, string domElementSelector) where TComponent : Microsoft.AspNetCore.Components.IComponent { }
-    }
-    public partial interface IComponentsApplicationBuilder
-    {
-        System.IServiceProvider Services { get; }
-        void AddComponent(System.Type componentType, string domElementSelector);
-    }
-}
 namespace Microsoft.AspNetCore.Components.Forms
 {
     public partial class DataAnnotationsValidator : Microsoft.AspNetCore.Components.ComponentBase
