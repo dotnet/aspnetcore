@@ -85,11 +85,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             KeyValueAccumulator accumulator = default;
             while (true)
             {
-                ReadResult readResult;
-                if (!_pipeReader.TryRead(out readResult))
-                {
-                    readResult = await _pipeReader.ReadAsync(cancellationToken);
-                }
+                var readResult = await _pipeReader.ReadAsync(cancellationToken);
 
                 var buffer = readResult.Buffer;
 
