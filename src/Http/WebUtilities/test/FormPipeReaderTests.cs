@@ -285,6 +285,32 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
         }
 
         [Fact]
+        public void TryParseFormValues_MultiSegmentExceedKeyLengthThrows()
+        {
+            var readOnlySequence = ReadOnlySequenceFactory.CreateSegments(Encoding.UTF8.GetBytes("foo=bar&baz=bo"), Encoding.UTF8.GetBytes("o&t="));
+
+            KeyValueAccumulator accumulator = default;
+
+            var formReader = new FormPipeReader(null);
+            formReader.KeyLengthLimit = 2;
+
+            Assert.Throws<InvalidDataException>(() => formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true));
+        }
+
+        [Fact]
+        public void TryParseFormValues_MultiSegmentExceedValueLengthThrows()
+        {
+            var readOnlySequence = ReadOnlySequenceFactory.CreateSegments(Encoding.UTF8.GetBytes("foo=bar&baz=bo"), Encoding.UTF8.GetBytes("o&t="));
+
+            KeyValueAccumulator accumulator = default;
+
+            var formReader = new FormPipeReader(null);
+            formReader.ValueLengthLimit = 2;
+
+            Assert.Throws<InvalidDataException>(() => formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true));
+        }
+
+        [Fact]
         public async Task ResetPipeWorks()
         {
             // Same test that is in the benchmark

@@ -30,12 +30,13 @@ namespace Microsoft.AspNetCore.WebUtilities
         // Used for UTF8/ASCII (precalculated for fast path)
         private static ReadOnlySpan<byte> UTF8EqualEncoded => new byte[] { (byte)'=' };
         private static ReadOnlySpan<byte> UTF8AndEncoded => new byte[] { (byte)'&' };
+
         // Used for other encodings
         private ReadOnlyMemory<byte> _otherEqualEncoding;
         private ReadOnlyMemory<byte> _otherAndEncoding;
 
-        private PipeReader _pipeReader;
-        private Encoding _encoding;
+        private readonly PipeReader _pipeReader;
+        private readonly Encoding _encoding;
 
         public FormPipeReader(PipeReader pipeReader)
             : this(pipeReader, Encoding.UTF8)
@@ -153,10 +154,19 @@ namespace Microsoft.AspNetCore.WebUtilities
 
                 if (equals == -1)
                 {
+                    if (span.Length > KeyLengthLimit)
+                    {
+                        throw new InvalidDataException($"Form key or value length limit {KeyLengthLimit} exceeded.");
+                    }
                     break;
                 }
 
                 key = span.Slice(0, equals);
+
+                if (key.Length > KeyLengthLimit)
+                {
+                    throw new InvalidDataException($"Form key or value length limit {KeyLengthLimit} exceeded.");
+                }
 
                 span = span.Slice(key.Length + equalsDelimiter.Length);
                 value = span;
@@ -169,6 +179,11 @@ namespace Microsoft.AspNetCore.WebUtilities
                     {
                         // We can't know that what is currently read is the end of the form value, that's only the case if this is the final block
                         // If we're not in the final block, then consume nothing
+                        if (span.Length > ValueLengthLimit)
+                        {
+                            throw new InvalidDataException($"Form key or value length limit {ValueLengthLimit} exceeded.");
+                        }
+
                         break;
                     }
 
@@ -180,6 +195,11 @@ namespace Microsoft.AspNetCore.WebUtilities
                 {
                     value = span.Slice(0, ampersand);
                     span = span.Slice(ampersand + andDelimiter.Length);
+                }
+
+                if (value.Length > ValueLengthLimit)
+                {
+                    throw new InvalidDataException($"Form key or value length limit {ValueLengthLimit} exceeded.");
                 }
 
                 var decodedKey = GetDecodedString(key);
@@ -209,7 +229,17 @@ namespace Microsoft.AspNetCore.WebUtilities
                 if (!sequenceReader.TryReadTo(out ReadOnlySequence<byte> key, equalsDelimiter, advancePastDelimiter: false) ||
                     !sequenceReader.IsNext(equalsDelimiter, true))
                 {
+                    if (sequenceReader.Length > KeyLengthLimit)
+                    {
+                        throw new InvalidDataException($"Form key or value length limit {KeyLengthLimit} exceeded.");
+                    }
+
                     break;
+                }
+
+                if (key.Length > KeyLengthLimit)
+                {
+                    throw new InvalidDataException($"Form key or value length limit {KeyLengthLimit} exceeded.");
                 }
 
                 if (!sequenceReader.TryReadTo(out ReadOnlySequence<byte> value, andDelimiter, false) ||
@@ -217,12 +247,22 @@ namespace Microsoft.AspNetCore.WebUtilities
                 {
                     if (!isFinalBlock)
                     {
+                        if (sequenceReader.Length > ValueLengthLimit)
+                        {
+                            throw new InvalidDataException($"Form key or value length limit {ValueLengthLimit} exceeded.");
+                        }
+
                         break;
                     }
 
                     value = buffer.Slice(sequenceReader.Position);
 
                     sequenceReader.Advance(value.Length);
+                }
+
+                if (value.Length > ValueLengthLimit)
+                {
+                    throw new InvalidDataException($"Form key or value length limit {ValueLengthLimit} exceeded.");
                 }
 
                 // Need to call ToArray if the key/value spans multiple segments 
@@ -253,29 +293,24 @@ namespace Microsoft.AspNetCore.WebUtilities
             else
             {
                 var byteArray = ArrayPool<byte>.Shared.Rent((int)ros.Length);
-                Span<byte> buffer = byteArray.AsSpan(0, (int)ros.Length);
 
-                ros.CopyTo(buffer);
-                var decodedString = GetDecodedString(buffer);
-
-                ArrayPool<byte>.Shared.Return(byteArray);
-                return decodedString;
+                try
+                {
+                    Span<byte> buffer = byteArray.AsSpan(0, (int)ros.Length);
+                    ros.CopyTo(buffer);
+                    var decodedString = GetDecodedString(buffer);
+                    return decodedString;
+                }
+                finally
+                {
+                    ArrayPool<byte>.Shared.Return(byteArray);
+                }
             }
         }
 
         // Check that key/value constraints are met and appends value to accumulator.
         private KeyValueAccumulator AppendAndVerify(ref KeyValueAccumulator accumulator, string decodedKey, string decodedValue)
         {
-            if (decodedKey.Length > KeyLengthLimit)
-            {
-                throw new InvalidDataException($"Form key or value length limit {KeyLengthLimit} exceeded.");
-            }
-
-            if (decodedValue.Length > ValueLengthLimit)
-            {
-                throw new InvalidDataException($"Form key or value length limit {ValueLengthLimit} exceeded.");
-            }
-
             accumulator.Append(decodedKey, decodedValue);
 
             if (accumulator.ValueCount > ValueCountLimit)
@@ -286,7 +321,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             return accumulator;
         }
 
-        private string GetDecodedString(in ReadOnlySpan<byte> readOnlySpan)
+        private string GetDecodedString(ReadOnlySpan<byte> readOnlySpan)
         {
             if (readOnlySpan.Length == 0)
             {
