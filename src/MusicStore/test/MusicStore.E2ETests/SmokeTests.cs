@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -26,12 +28,15 @@ namespace E2ETests
         public async Task Smoke_Tests(TestVariant variant)
         {
             var testName = $"SmokeTestSuite_{variant}";
+            var logFolder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+
             using (StartLog(out var loggerFactory, testName))
             {
                 var logger = loggerFactory.CreateLogger("SmokeTestSuite");
+
                 var musicStoreDbName = DbUtils.GetUniqueName();
 
-                var deploymentParameters = new DeploymentParameters(variant)
+                var deploymentParameters = new IISDeploymentParameters(variant)
                 {
                     ApplicationPath = Helpers.GetApplicationPath(),
                     EnvironmentName = "SocialTesting",
@@ -39,20 +44,35 @@ namespace E2ETests
                     UserAdditionalCleanup = parameters =>
                     {
                         DbUtils.DropDatabase(musicStoreDbName, logger);
-                    }
+                    },
+                    PublishApplicationBeforeDeployment = true
                 };
+
+                deploymentParameters.EnableLogging(logFolder);
 
                 // Override the connection strings using environment based configuration
                 deploymentParameters.EnvironmentVariables
-                    .Add(new KeyValuePair<string, string>(
-                        MusicStoreConfig.ConnectionStringKey,
-                        DbUtils.CreateConnectionString(musicStoreDbName)));
+                .Add(new KeyValuePair<string, string>(
+                    MusicStoreConfig.ConnectionStringKey,
+                    DbUtils.CreateConnectionString(musicStoreDbName)));
 
-                using (var deployer = IISApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
+                try
                 {
-                    var deploymentResult = await deployer.DeployAsync();
+                    using (var deployer = IISApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
+                    {
 
-                    await RunTestsAsync(deploymentResult, logger);
+                        var deploymentResult = await deployer.DeployAsync();
+
+                        await RunTestsAsync(deploymentResult, logger);
+                    }
+                }
+                finally
+                {
+                    if (variant.Server == ServerType.IISExpress)
+                    {
+                        var text = File.ReadAllText(Directory.GetFiles(logFolder).Single());
+                        logger.LogError(text);
+                    }
                 }
             }
         }
