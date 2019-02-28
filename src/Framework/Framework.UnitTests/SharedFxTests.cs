@@ -25,8 +25,7 @@ namespace Microsoft.AspNetCore
             var url = new Uri($"https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/" + previousVersion + "/aspnetcore-runtime-internal-" + previousVersion + "-win-x64.zip");
             var zipName = "assemblies.zip";
             var nugetAssemblyVersions = new Dictionary<string, Version>();
-            var root = TestData.GetTestDataValue($"RuntimeAssetsOutputPath:{config.Name}");
-            var dir = Path.Combine(root, "shared", config.Name, config.Version);
+            var dir = TestData.GetTestDataValue($"RuntimeAssetsOutputPath:{config.Name}");
 
             using (var testClient = new WebClient())
             {
@@ -36,12 +35,13 @@ namespace Microsoft.AspNetCore
 
             var zipPath = Path.Combine(AppContext.BaseDirectory, zipName);
 
-            if (!Directory.Exists(AppContext.BaseDirectory + "unzipped"))
+            var tempPath = Path.GetTempPath();
+            if (!Directory.Exists(Path.Combine(tempPath, "unzipped")))
             {
-                ZipFile.ExtractToDirectory(AppContext.BaseDirectory, "unzipped");
+                ZipFile.ExtractToDirectory(zipPath, Path.Combine(tempPath, "unzipped"));
             }
 
-            var nugetAssembliesPath = Path.Combine(AppContext.BaseDirectory, "unzipped", "shared", config.Name, previousVersion);
+            var nugetAssembliesPath = Path.Combine(tempPath, "unzipped", "shared", config.Name, previousVersion);
 
             var files = Directory.GetFiles(nugetAssembliesPath, "*.dll");
             foreach (var file in files)
