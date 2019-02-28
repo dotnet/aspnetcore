@@ -79,8 +79,9 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
                 return;
             }
 
-            var span = value.AsSpan();
-            output.Write(span.Slice(startIndex, characterCount));
+            var span = value.AsSpan(startIndex, characterCount);
+            
+            output.Write(span);
         }
 
         /// <inheritdoc />
