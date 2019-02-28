@@ -40,6 +40,88 @@ namespace Microsoft.AspNetCore.NodeServices
             Assert.StartsWith("This is an error from Node", ex.Message);
         }
 
+        [Fact]
+        public async Task CanGetResultAsynchronously()
+        {
+            // Arrange
+            var nodeServices = CreateNodeServices();
+
+            // Act
+            // All the invocations are async, but this test shows we're not reliant
+            // on the response coming back immediately
+            var result = await nodeServices.InvokeExportAsync<string>(
+                ModulePath("testCases"),
+                "getFixedStringWithDelay");
+
+            // Assert
+            Assert.Equal("delayed test result", result);
+        }
+
+        [Fact]
+        public async Task CanPassParameters()
+        {
+            // Arrange
+            var nodeServices = CreateNodeServices();
+
+            // Act
+            var result = await nodeServices.InvokeExportAsync<string>(
+                ModulePath("testCases"),
+                "echoSimpleParameters",
+                "Hey",
+                123);
+
+            // Assert
+            Assert.Equal("Param0: Hey; Param1: 123", result);
+        }
+
+        [Fact]
+        public async Task CanPassParametersWithCamelCaseNameConversion()
+        {
+            // Arrange
+            var nodeServices = CreateNodeServices();
+
+            // Act
+            var result = await nodeServices.InvokeExportAsync<string>(
+                ModulePath("testCases"),
+                "echoComplexParameters",
+                new ComplexModel { StringProp = "Abc", IntProp = 123, BoolProp = true });
+
+            // Assert
+            Assert.Equal("Received: [{\"stringProp\":\"Abc\",\"intProp\":123,\"boolProp\":true}]", result);
+        }
+
+        [Fact]
+        public async Task CanReceiveComplexResultWithPascalCaseNameConversion()
+        {
+            // Arrange
+            var nodeServices = CreateNodeServices();
+
+            // Act
+            var result = await nodeServices.InvokeExportAsync<ComplexModel>(
+                ModulePath("testCases"),
+                "getComplexObject");
+
+            // Assert
+            Assert.Equal("Hi from Node", result.StringProp);
+            Assert.Equal(456, result.IntProp);
+            Assert.True(result.BoolProp);
+        }
+
+        [Fact]
+        public async Task CanInvokeDefaultModuleExport()
+        {
+            // Arrange
+            var nodeServices = CreateNodeServices();
+
+            // Act
+            var result = await nodeServices.InvokeAsync<string>(
+                ModulePath("moduleWithDefaultExport"),
+                "This is from .NET");
+
+            // Assert
+            Assert.Equal("Hello from the default export. You passed: This is from .NET", result);
+        }
+
         private static string ModulePath(string testModuleName)
             => $"../../../node/{testModuleName}";
 
@@ -49,6 +131,15 @@ namespace Microsoft.AspNetCore.NodeServices
             var options = new NodeServicesOptions(serviceProvider);
             configure?.Invoke(options);
             return NodeServicesFactory.CreateNodeServices(options);
+        }
+
+        class ComplexModel
+        {
+            public string StringProp { get; set; }
+
+            public int IntProp { get; set; }
+
+            public bool BoolProp { get; set; }
         }
     }
 }
