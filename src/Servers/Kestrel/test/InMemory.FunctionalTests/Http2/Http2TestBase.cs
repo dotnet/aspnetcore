@@ -25,6 +25,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
@@ -177,7 +178,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _mockConnectionContext.Setup(c => c.Abort(It.IsAny<ConnectionAbortedException>())).Callback<ConnectionAbortedException>(ex =>
             {
                 // Emulate transport abort so the _connectionTask completes.
-                Task.Run(() => _pair.Application.Output.Complete(ex));
+                Task.Run(() =>
+                {
+                    TestApplicationErrorLogger.LogInformation($"ConnectionAbortedException thrown, Exception message: {ex.Message}. Completing transport Output.");
+                    _pair.Application.Output.Complete(ex);
+                });
             });
 
             _noopApplication = context => Task.CompletedTask;
