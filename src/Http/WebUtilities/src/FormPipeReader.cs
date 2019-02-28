@@ -113,6 +113,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             return accumulator.GetResults();
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         internal void ParseFormValues(
             ref ReadOnlySequence<byte> buffer,
             ref KeyValueAccumulator accumulator,
@@ -129,7 +130,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 return;
             }
 
-            TryParseValuesSlow(ref buffer,
+            ParseValuesSlow(ref buffer,
                 ref accumulator,
                 isFinalBlock);
         }
@@ -184,7 +185,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 var decodedKey = GetDecodedString(key);
                 var decodedValue = GetDecodedString(value);
 
-                AppendAndVerify(ref accumulator,decodedKey, decodedValue);
+                AppendAndVerify(ref accumulator, decodedKey, decodedValue);
 
                 // Cover case where we don't have an ampersand at the end.
                 consumed += key.Length + value.Length + (ampersand == -1 ? equalsDelimiter.Length : equalsDelimiter.Length + andDelimiter.Length);
@@ -192,7 +193,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         // For multi-segment parsing of a read only sequence
-        private void TryParseValuesSlow(
+        private void ParseValuesSlow(
             ref ReadOnlySequence<byte> buffer,
             ref KeyValueAccumulator accumulator,
             bool isFinalBlock)
@@ -298,12 +299,6 @@ namespace Microsoft.AspNetCore.WebUtilities
                 // We need to create a Span from a ReadOnlySpan. This cast is safe because the memory is still held by the pipe
                 // We will also create a string from it by the end of the function.
                 var span = MemoryMarshal.CreateSpan(ref Unsafe.AsRef(readOnlySpan[0]), readOnlySpan.Length);
-
-                int index;
-                while ((index = span.IndexOf((byte)'+')) != -1)
-                {
-                    span[index] = (byte)' ';
-                }
 
                 var bytes = UrlDecoder.DecodeInPlace(span, isFormEncoding: true);
                 span = span.Slice(0, bytes);

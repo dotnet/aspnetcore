@@ -54,7 +54,12 @@ namespace Microsoft.AspNetCore.Internal
                     break;
                 }
 
-                if (buffer[sourceIndex] == '%')
+                if (buffer[sourceIndex] == '+' && isFormEncoding)
+                {
+                    // Set it to ' ' when we are doing form encoding.
+                    buffer[sourceIndex] = 0x20;
+                }
+                else if (buffer[sourceIndex] == '%')
                 {
                     var decodeIndex = sourceIndex;
 
@@ -87,12 +92,12 @@ namespace Microsoft.AspNetCore.Internal
         /// <param name="sourceIndex">The iterator point to the first % char</param>
         /// <param name="destinationIndex">The place to write to</param>
         /// <param name="buffer">The byte array</param>
-        /// <param name="formEncoding">Whether we are doing form encodoing</param>
-        private static bool DecodeCore(ref int sourceIndex, ref int destinationIndex, Span<byte> buffer, bool formEncoding)
+        /// <param name="isFormEncoding">Whether we are doing form encodoing</param>
+        private static bool DecodeCore(ref int sourceIndex, ref int destinationIndex, Span<byte> buffer, bool isFormEncoding)
         {
             // preserves the original head. if the percent-encodings cannot be interpreted as sequence of UTF-8 octets,
             // bytes from this till the last scanned one will be copied to the memory pointed by writer.
-            var byte1 = UnescapePercentEncoding(ref sourceIndex, buffer, formEncoding);
+            var byte1 = UnescapePercentEncoding(ref sourceIndex, buffer, isFormEncoding);
             if (byte1 == -1)
             {
                 return false;
@@ -153,7 +158,7 @@ namespace Microsoft.AspNetCore.Internal
                 }
 
                 var nextSourceIndex = sourceIndex;
-                var nextByte = UnescapePercentEncoding(ref nextSourceIndex, buffer, formEncoding);
+                var nextByte = UnescapePercentEncoding(ref nextSourceIndex, buffer, isFormEncoding);
                 if (nextByte == -1)
                 {
                     return false;
@@ -252,9 +257,9 @@ namespace Microsoft.AspNetCore.Internal
         /// </summary>
         /// <param name="scan">The value to read</param>
         /// <param name="buffer">The byte array</param>
-        /// <param name="formDecoding">Whether we are decoding a form or not. Will escape '/' if we are doing form encoding</param>
+        /// <param name="isFormEncoding">Whether we are decoding a form or not. Will escape '/' if we are doing form encoding</param>
         /// <returns>The unescaped byte if success. Otherwise return -1.</returns>
-        private static int UnescapePercentEncoding(ref int scan, Span<byte> buffer, bool formDecoding)
+        private static int UnescapePercentEncoding(ref int scan, Span<byte> buffer, bool isFormEncoding)
         {
             if (buffer[scan++] != '%')
             {
@@ -275,12 +280,9 @@ namespace Microsoft.AspNetCore.Internal
                 return -1;
             }
 
-            if (!formDecoding)
+            if (SkipUnescape(value1, value2, isFormEncoding))
             {
-                if (SkipUnescape(value1, value2))
-                {
-                    return -1;
-                }
+                return -1;
             }
 
             scan = probe;
@@ -328,8 +330,13 @@ namespace Microsoft.AspNetCore.Internal
             }
         }
 
-        private static bool SkipUnescape(int value1, int value2)
+        private static bool SkipUnescape(int value1, int value2, bool isFormEncoding)
         {
+            if (isFormEncoding)
+            {
+                return false;
+            }
+
             // skip %2F - '/'
             if (value1 == 2 && value2 == 15)
             {
@@ -338,6 +345,5 @@ namespace Microsoft.AspNetCore.Internal
 
             return false;
         }
-
     }
 }

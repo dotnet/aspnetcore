@@ -284,6 +284,24 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
             Assert.Equal("wow", dict["\"%-.<>\\^_`{|}"]);
         }
 
+        [Fact]
+        public async Task ResetPipeWorks()
+        {
+            // Same test that is in the benchmark
+            var pipe = new Pipe();
+            var bytes = Encoding.UTF8.GetBytes("foo=bar&baz=boo");
+
+            for (var i = 0; i < 1000; i++)
+            {
+                pipe.Writer.Write(bytes);
+                pipe.Writer.Complete();
+                var formReader = new FormPipeReader(pipe.Reader);
+                await formReader.ReadFormAsync();
+                pipe.Reader.Complete();
+                pipe.Reset();
+            }
+        }
+
         internal virtual Task<Dictionary<string, StringValues>> ReadFormAsync(FormPipeReader reader)
         {
             return reader.ReadFormAsync();

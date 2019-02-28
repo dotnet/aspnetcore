@@ -12,47 +12,33 @@ namespace Microsoft.AspNetCore.WebUtilities.Performance
     /// </summary>
     public class FormPipeReaderInternalsBenchmark
     {
-        private ReadOnlySequence<byte> _singleSegmentUtf8ReadOnlySequence;
-        private ReadOnlySequence<byte> _multiSegmentUtf8ReadOnlySequence;
-        private ReadOnlySequence<byte> _singleSegmentUnicodeReadOnlySequence;
-        private ReadOnlySequence<byte> _multiSegmentUnicodeReadOnlySequence;
-        private KeyValueAccumulator _accumulator;
+        private byte[] _singleUtf8 = Encoding.UTF8.GetBytes("foo=bar&baz=boo&haha=hehe&lol=temp");
+        private byte[] _firstUtf8 = Encoding.UTF8.GetBytes("foo=bar&baz=boo");
+        private byte[] _secondUtf8 = Encoding.UTF8.GetBytes("&haha=hehe&lol=temp");
         private FormPipeReader _formPipeReader;
 
         [IterationSetup]
         public void Setup()
         {
-            _singleSegmentUtf8ReadOnlySequence = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes("foo=bar&baz=boo"));
-            _multiSegmentUtf8ReadOnlySequence = ReadOnlySequenceFactory.CreateSegments(Encoding.UTF8.GetBytes("foo=bar&baz=boo"), Encoding.UTF8.GetBytes("&haha=hehe&lol=temp"));
-            _singleSegmentUnicodeReadOnlySequence = new ReadOnlySequence<byte>(Encoding.Unicode.GetBytes("foo=bar&baz=boo"));
-            _multiSegmentUnicodeReadOnlySequence = ReadOnlySequenceFactory.CreateSegments(Encoding.Unicode.GetBytes("foo=bar&baz=boo"), Encoding.Unicode.GetBytes("&haha=hehe&lol=temp"));
-            _formPipeReader = new FormPipeReader(null, encoding: Encoding.UTF8);
-
-            _accumulator = default;
+            _formPipeReader = new FormPipeReader(null);
         }
 
         [Benchmark]
         public void ReadUtf8Data()
         {
-            _formPipeReader.ParseFormValues(ref _singleSegmentUtf8ReadOnlySequence, ref _accumulator, isFinalBlock: true);
-        }
+            var buffer = new ReadOnlySequence<byte>(_singleUtf8);
+            KeyValueAccumulator accum = default;
 
-        [Benchmark]
-        public void ReadUnicodeData()
-        {
-            _formPipeReader.ParseFormValues(ref _singleSegmentUnicodeReadOnlySequence, ref _accumulator, isFinalBlock: true);
+            _formPipeReader.ParseFormValues(ref buffer, ref accum, isFinalBlock: true);
         }
 
         [Benchmark]
         public void ReadUtf8MultipleBlockData()
         {
-            _formPipeReader.ParseFormValues(ref _multiSegmentUtf8ReadOnlySequence, ref _accumulator, isFinalBlock: true);
-        }
+            var buffer = ReadOnlySequenceFactory.CreateSegments(_firstUtf8, _secondUtf8);
+            KeyValueAccumulator accum = default;
 
-        [Benchmark]
-        public void ReadUnicodeMultipleBlockData()
-        {
-            _formPipeReader.ParseFormValues(ref _multiSegmentUnicodeReadOnlySequence, ref _accumulator, isFinalBlock: true);
+            _formPipeReader.ParseFormValues(ref buffer, ref accum, isFinalBlock: true);
         }
     }
 }

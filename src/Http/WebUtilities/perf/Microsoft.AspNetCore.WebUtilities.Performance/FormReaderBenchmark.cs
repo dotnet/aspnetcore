@@ -1,8 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Pipelines;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,47 +15,35 @@ namespace Microsoft.AspNetCore.WebUtilities
 {
     public class FormReaderBenchmark
     {
-        private byte[] _smallBytes;
-        private byte[] _largeBytes;
-
-        [GlobalSetup]
-        public void Setup()
+        [Benchmark]
+        public async Task ReadSmallFormAsyncStream()
         {
-            _smallBytes = Encoding.UTF8.GetBytes("foo=bar&baz=boo");
-            _largeBytes = Encoding.UTF8.GetBytes(string.Concat(Enumerable.Repeat("%22%25%2D%2E%3C%3E%5C%5E%5F%60%7B%7C%7D%7E=%22%25%2D%2E%3C%3E%5C%5E%5F%60%7B%7C%7D%7E&", 200)) + "foo=bar");
+            var bytes = Encoding.UTF8.GetBytes("foo=bar&baz=boo");
+            var stream = new MemoryStream(bytes);
+
+            for (var i = 0; i < 1000; i++)
+            {
+                var formReader = new FormReader(stream);
+                await formReader.ReadFormAsync();
+                stream.Position = 0;
+            }
         }
 
         [Benchmark]
-        public void CreateSmallForm()
+        public async Task ReadSmallFormAsyncPipe()
         {
-            var stream = new MemoryStream(_smallBytes);
-            var formReader = new FormReader(stream);
-        }
+            var pipe = new Pipe();
+            var bytes = Encoding.UTF8.GetBytes("foo=bar&baz=boo");
 
-        [Benchmark]
-        public async Task ReadSmallFormAsync()
-        {
-            var stream = new MemoryStream(_smallBytes);
-            var formReader = new FormReader(stream);
-            await formReader.ReadFormAsync();
-        }
-
-        [Benchmark]
-        public void CreateLargeForm()
-        {
-            var stream = new MemoryStream(_largeBytes);
-            var formReader = new FormReader(stream);
-            formReader.ValueCountLimit = 5000;
-        }
-
-        [Benchmark]
-        public async Task ReadLargeFormAsync()
-        {
-            var stream = new MemoryStream(_largeBytes);
-            var formReader = new FormReader(stream);
-            formReader.ValueCountLimit = 5000;
-
-            await formReader.ReadFormAsync();
+            for (var i = 0; i < 1000; i++)
+            {
+                pipe.Writer.Write(bytes);
+                pipe.Writer.Complete();
+                var formReader = new FormPipeReader(pipe.Reader);
+                await formReader.ReadFormAsync();
+                pipe.Reader.Complete();
+                pipe.Reset();
+            }
         }
     }
 }
