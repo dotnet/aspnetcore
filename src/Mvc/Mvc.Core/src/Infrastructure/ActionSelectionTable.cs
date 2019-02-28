@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 // Only include RouteEndpoints and only those that aren't suppressed. 
                 items: endpoints.OfType<RouteEndpoint>().Where(e =>
                 {
-                    return e.Metadata.GetMetadata<ISuppressMatchingMetadata>().SuppressMatching != true;
+                    return e.Metadata.GetMetadata<ISuppressMatchingMetadata>()?.SuppressMatching != true;
                 }),
 
                 getRouteKeys: e => e.RoutePattern.RequiredValues.Keys,

@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
@@ -60,20 +59,14 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 return 0;
             }
 
-            var hash = new HashCodeCombiner();
+            var hash = new HashCode();
             for (var i = 0; i < obj.Length; i++)
             {
-                var o = obj[i];
-
                 // Route values define null and "" to be equivalent.
-                if (string.IsNullOrEmpty(o))
-                {
-                    o = null;
-                }
-                hash.Add(o, _valueComparer);
+                hash.Add(obj[i] ?? string.Empty, _valueComparer);
             }
 
-            return hash.CombinedHash;
+            return hash.ToHashCode();
         }
     }
 }

@@ -9,6 +9,10 @@ namespace Microsoft.AspNetCore.Builder
         public static void MapControllerRoute(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes, string name, string template, object defaults = null, object constraints = null, object dataTokens = null) { }
         public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapControllers(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes) { throw null; }
         public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapDefaultControllerRoute(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes) { throw null; }
+        public static void MapFallbackToAreaController(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes, string action, string controller, string area) { }
+        public static void MapFallbackToAreaController(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes, string pattern, string action, string controller, string area) { }
+        public static void MapFallbackToController(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes, string action, string controller) { }
+        public static void MapFallbackToController(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes, string pattern, string action, string controller) { }
     }
     public static partial class MvcApplicationBuilderExtensions
     {
