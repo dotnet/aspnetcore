@@ -65,8 +65,8 @@ namespace Microsoft.AspNetCore
                     {
                         var localAssemblyVersion = AssemblyName.GetAssemblyName(file).Version;
                         var dllName = Path.GetFileName(file);
-                        Assert.True(nugetAssemblyVersions.ContainsKey(dllName), $"Expected {dllName} to be in the downloaded dlls");
-                        Assert.True(localAssemblyVersion.CompareTo(nugetAssemblyVersions[dllName]) >= 0, $"Expected the local version of {dllName} to be greater than or equal to the already released version.");
+                        Assert.Contains(dllName, nugetAssemblyVersions.Keys);
+                        Assert.InRange(localAssemblyVersion.CompareTo(nugetAssemblyVersions[dllName]), 0, int.MaxValue);
                     }
                     catch (BadImageFormatException) { }
 
