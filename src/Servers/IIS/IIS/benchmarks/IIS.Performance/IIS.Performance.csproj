@@ -24,8 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\test\IISExpress.FunctionalTests\IISExpress.FunctionalTests.csproj" />
-    <ProjectReference Include="..\..\test\IIS.Tests\IIS.Tests.csproj" >
-    </ProjectReference>
+    <ProjectReference Include="..\..\test\IIS.Tests\IIS.Tests.csproj" />
     <ProjectReference Include="..\..\test\testassets\InProcessWebSite\InProcessWebSite.csproj">
       <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
     </ProjectReference>
