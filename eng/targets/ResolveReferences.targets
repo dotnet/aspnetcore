@@ -137,7 +137,7 @@
 
       <!-- Ensure only content asset are consumed from .Sources packages -->
       <Reference>
-        <IncludeAssets Condition="'%(IsSharedSource)' == 'true'">ContentFiles</IncludeAssets>
+        <IncludeAssets Condition="'%(IsSharedSource)' == 'true'">ContentFiles;Build</IncludeAssets>
         <PrivateAssets Condition="'%(IsSharedSource)' == 'true'">All</PrivateAssets>
       </Reference>
 
