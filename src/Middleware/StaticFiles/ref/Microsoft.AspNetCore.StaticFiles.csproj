@@ -7,6 +7,7 @@
     <Compile Include="Microsoft.AspNetCore.StaticFiles.netcoreapp3.0.cs" />
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions"  />
     <Reference Include="Microsoft.AspNetCore.Http.Extensions"  />
+    <Reference Include="Microsoft.AspNetCore.Routing"  />
     <Reference Include="Microsoft.Extensions.FileProviders.Abstractions"  />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions"  />
     <Reference Include="Microsoft.Extensions.WebEncoders"  />
