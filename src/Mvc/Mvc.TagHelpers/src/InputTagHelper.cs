@@ -408,7 +408,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             return Generator.GenerateTextBox(
                 ViewContext,
                 modelExplorer,
-                SourceExpression.Name,
+                For.Name,
                 encodedModel,
                 format,
                 htmlAttributes);
