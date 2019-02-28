@@ -96,11 +96,12 @@ namespace Microsoft.AspNetCore.WebUtilities
 
                 if (readResult.IsCompleted)
                 {
+                    _pipeReader.AdvanceTo(buffer.End);
+
                     if (!buffer.IsEmpty)
                     {
                         throw new InvalidOperationException("End of body before form was fully parsed.");
                     }
-
                     break;
                 }
 
