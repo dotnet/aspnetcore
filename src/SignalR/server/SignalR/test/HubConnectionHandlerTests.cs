@@ -2668,21 +2668,18 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     var hubActivator = serviceProvider.GetService<IHubActivator<LongRunningHub>>() as CustomHubActivator<LongRunningHub>;
 
-                    // OnConnectedAsync and SimpleMethod hubs have been disposed at this point
-                    Assert.Equal(2, hubActivator.ReleaseCount);
-
                     await client.SendHubMessageAsync(new CancelInvocationMessage(streamInvocationId)).OrTimeout();
 
                     // Completion message for canceled Stream
                     await client.ReadAsync().OrTimeout();
 
-                    // Stream method is now disposed
-                    Assert.Equal(3, hubActivator.ReleaseCount);
-
                     // Shut down
                     client.Dispose();
 
                     await connectionHandlerTask.OrTimeout();
+
+                    // OnConnectedAsync, SimpleMethod, LongRunningStream, OnDisconnectedAsync
+                    Assert.Equal(4, hubActivator.ReleaseCount);
                 }
             }
         }
