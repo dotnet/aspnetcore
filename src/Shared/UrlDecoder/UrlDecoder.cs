@@ -6,7 +6,7 @@ using System;
 
 namespace Microsoft.AspNetCore.Internal
 {
-    public class UrlDecoder
+    internal class UrlDecoder
     {
         /// <summary>
         /// Unescape a URL path

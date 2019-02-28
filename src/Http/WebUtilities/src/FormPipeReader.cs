@@ -32,8 +32,8 @@ namespace Microsoft.AspNetCore.WebUtilities
         private static ReadOnlySpan<byte> UTF8AndEncoded => new byte[] { (byte)'&' };
 
         // Used for other encodings
-        private ReadOnlyMemory<byte> _otherEqualEncoding;
-        private ReadOnlyMemory<byte> _otherAndEncoding;
+        private byte[] _otherEqualEncoding;
+        private byte[] _otherAndEncoding;
 
         private readonly PipeReader _pipeReader;
         private readonly Encoding _encoding;
@@ -157,7 +157,6 @@ namespace Microsoft.AspNetCore.WebUtilities
                     if (span.Length > KeyLengthLimit)
                     {
                         ThrowKeyTooLargeException();
-                        return;
                     }
                     break;
                 }
@@ -320,7 +319,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         // Check that key/value constraints are met and appends value to accumulator.
-        private KeyValueAccumulator AppendAndVerify(ref KeyValueAccumulator accumulator, string decodedKey, string decodedValue)
+        private void AppendAndVerify(ref KeyValueAccumulator accumulator, string decodedKey, string decodedValue)
         {
             accumulator.Append(decodedKey, decodedValue);
 
@@ -328,15 +327,13 @@ namespace Microsoft.AspNetCore.WebUtilities
             {
                 throw new InvalidDataException($"Form value count limit {ValueCountLimit} exceeded.");
             }
-
-            return accumulator;
         }
 
         private string GetDecodedString(ReadOnlySpan<byte> readOnlySpan)
         {
             if (readOnlySpan.Length == 0)
             {
-                return "";
+                return string.Empty;
             }
             else if (_encoding == Encoding.UTF8 || _encoding == Encoding.ASCII)
             {
@@ -369,7 +366,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
             else
             {
-                return _otherEqualEncoding.Span;
+                return _otherEqualEncoding;
             }
         }
 
@@ -381,7 +378,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
             else
             {
-                return _otherAndEncoding.Span;
+                return _otherAndEncoding;
             }
         }
     }

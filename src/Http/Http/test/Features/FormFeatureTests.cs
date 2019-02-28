@@ -108,14 +108,6 @@ namespace Microsoft.AspNetCore.Http.Features
             Assert.Equal("bar", formCollection["foo"]);
             Assert.Equal("2", formCollection["baz"]);
 
-            // TODO this returns a null stream because we don't wrap stream/pipereader like we do in Kestrel
-            // Ex: when we set the request body, set the request pipe.
-            //Assert.Equal(bufferRequest, context.Request.Body.CanSeek);
-            //if (bufferRequest)
-            //{
-            //    Assert.Equal(0, context.Request.Body.Position);
-            //}
-
             // Cached
             formFeature = context.Features.Get<IFormFeature>();
             Assert.NotNull(formFeature);
