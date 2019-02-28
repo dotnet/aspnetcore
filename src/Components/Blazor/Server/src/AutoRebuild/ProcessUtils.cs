@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,7 +6,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.AspNetCore.Components.Server.AutoRebuild
+namespace Microsoft.AspNetCore.Blazor.Server.AutoRebuild
 {
     internal static class ProcessUtils
     {

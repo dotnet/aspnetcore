@@ -2513,7 +2513,7 @@ namespace Microsoft.AspNetCore.Components.Test
         {
             // This represents the scenario where the same event handler is being triggered
             // rapidly, such as an input event while typing. It only applies to asynchronous
-            // batch updates, i.e., server-side Blazor.
+            // batch updates, i.e., server-side Components.
             // Sequence:
             // 1. The client dispatches event X twice (say) in quick succession
             // 2. The server receives the first instance, handles the event, and re-renders

@@ -11,9 +11,4 @@
     <Reference Include="Microsoft.AspNetCore.Components.Browser" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Include="$(ComponentsSharedSourceRoot)src\ConventionBasedStartup.cs" Link="Hosting\ConventionBasedStartup.cs" />
-    <Compile Include="$(ComponentsSharedSourceRoot)src\IBlazorStartup.cs" Link="Hosting\IBlazorStartup.cs" />
-  </ItemGroup>
-
 </Project>
