@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AppWithP2PReference\AppWithP2PReference.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\ClassLibrary\ClassLibrary.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\ClassLibrary2\ClassLibrary2.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\SimpleMvc\SimpleMvc.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\SimpleMvcFSharp\SimpleMvcFSharp.fsproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\SimplePages\SimplePages.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+</Project>

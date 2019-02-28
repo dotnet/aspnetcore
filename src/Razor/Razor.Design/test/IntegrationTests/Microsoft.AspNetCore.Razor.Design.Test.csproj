@@ -32,6 +32,7 @@
     <Reference Include="Microsoft.AspNetCore.Razor.Design" />
     <Reference Include="rzc" />
     <Reference Include="Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib" />
+    <ProjectReference Include="..\testassets\RestoreTestProjects\RestoreTestProjects.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <Target Name="GenerateBuildVariablesFile" BeforeTargets="BeforeBuild">
