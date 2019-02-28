@@ -198,6 +198,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [InlineData(Http2FrameType.CONTINUATION)]
         public async Task AbortedStream_ResetsAndDrainsRequest_RefusesFramesAfterCooldownExpires(Http2FrameType finalFrameType)
         {
+            // Remove callback that completes _pair.Application.Output on abort.
+            _mockConnectionContext.Reset();
+
             var mockSystemClock = _serviceContext.MockSystemClock;
 
             var headers = new[]
