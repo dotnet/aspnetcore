@@ -9,16 +9,22 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.NodeServices
 {
-    public class NodeServicesTest
+    public class NodeServicesTest : IDisposable
     {
+        private readonly INodeServices _nodeServices;
+
+        public NodeServicesTest()
+        {
+            var serviceProvider = new ServiceCollection().BuildServiceProvider();
+            var options = new NodeServicesOptions(serviceProvider);
+            _nodeServices = NodeServicesFactory.CreateNodeServices(options);
+        }
+
         [Fact]
         public async Task CanGetSuccessResult()
         {
-            // Arrange
-            var nodeServices = CreateNodeServices();
-
             // Act
-            var result = await nodeServices.InvokeExportAsync<string>(
+            var result = await _nodeServices.InvokeExportAsync<string>(
                 ModulePath("testCases"),
                 "getFixedString");
 
@@ -29,12 +35,9 @@ namespace Microsoft.AspNetCore.NodeServices
         [Fact]
         public async Task CanGetErrorResult()
         {
-            // Arrange
-            var nodeServices = CreateNodeServices();
-
             // Act/Assert
             var ex = await Assert.ThrowsAsync<NodeInvocationException>(() =>
-                nodeServices.InvokeExportAsync<string>(
+                _nodeServices.InvokeExportAsync<string>(
                     ModulePath("testCases"),
                     "raiseError"));
             Assert.StartsWith("This is an error from Node", ex.Message);
@@ -43,13 +46,10 @@ namespace Microsoft.AspNetCore.NodeServices
         [Fact]
         public async Task CanGetResultAsynchronously()
         {
-            // Arrange
-            var nodeServices = CreateNodeServices();
-
             // Act
             // All the invocations are async, but this test shows we're not reliant
             // on the response coming back immediately
-            var result = await nodeServices.InvokeExportAsync<string>(
+            var result = await _nodeServices.InvokeExportAsync<string>(
                 ModulePath("testCases"),
                 "getFixedStringWithDelay");
 
@@ -60,11 +60,8 @@ namespace Microsoft.AspNetCore.NodeServices
         [Fact]
         public async Task CanPassParameters()
         {
-            // Arrange
-            var nodeServices = CreateNodeServices();
-
             // Act
-            var result = await nodeServices.InvokeExportAsync<string>(
+            var result = await _nodeServices.InvokeExportAsync<string>(
                 ModulePath("testCases"),
                 "echoSimpleParameters",
                 "Hey",
@@ -77,11 +74,8 @@ namespace Microsoft.AspNetCore.NodeServices
         [Fact]
         public async Task CanPassParametersWithCamelCaseNameConversion()
         {
-            // Arrange
-            var nodeServices = CreateNodeServices();
-
             // Act
-            var result = await nodeServices.InvokeExportAsync<string>(
+            var result = await _nodeServices.InvokeExportAsync<string>(
                 ModulePath("testCases"),
                 "echoComplexParameters",
                 new ComplexModel { StringProp = "Abc", IntProp = 123, BoolProp = true });
@@ -93,11 +87,8 @@ namespace Microsoft.AspNetCore.NodeServices
         [Fact]
         public async Task CanReceiveComplexResultWithPascalCaseNameConversion()
         {
-            // Arrange
-            var nodeServices = CreateNodeServices();
-
             // Act
-            var result = await nodeServices.InvokeExportAsync<ComplexModel>(
+            var result = await _nodeServices.InvokeExportAsync<ComplexModel>(
                 ModulePath("testCases"),
                 "getComplexObject");
 
@@ -110,11 +101,8 @@ namespace Microsoft.AspNetCore.NodeServices
         [Fact]
         public async Task CanInvokeDefaultModuleExport()
         {
-            // Arrange
-            var nodeServices = CreateNodeServices();
-
             // Act
-            var result = await nodeServices.InvokeAsync<string>(
+            var result = await _nodeServices.InvokeAsync<string>(
                 ModulePath("moduleWithDefaultExport"),
                 "This is from .NET");
 
@@ -125,12 +113,9 @@ namespace Microsoft.AspNetCore.NodeServices
         private static string ModulePath(string testModuleName)
             => $"../../../node/{testModuleName}";
 
-        private static INodeServices CreateNodeServices(Action<NodeServicesOptions> configure = null)
+        public void Dispose()
         {
-            var serviceProvider = new ServiceCollection().BuildServiceProvider();
-            var options = new NodeServicesOptions(serviceProvider);
-            configure?.Invoke(options);
-            return NodeServicesFactory.CreateNodeServices(options);
+            _nodeServices.Dispose();
         }
 
         class ComplexModel
