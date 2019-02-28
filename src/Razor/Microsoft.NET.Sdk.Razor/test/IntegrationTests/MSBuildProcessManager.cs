@@ -41,6 +41,10 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             {
                 processStartInfo.FileName = DotNetMuxer.MuxerPathOrDefault();
                 processStartInfo.Arguments = $"msbuild {arguments}";
+
+                // Suppresses the 'Welcome to .NET Core!' output that times out tests and causes locked file issues.
+                // When using dotnet we're not guarunteed to run in an environment where the dotnet.exe has had its first run experience already invoked.
+                processStartInfo.EnvironmentVariables["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = "true";
             }
 
             var processResult = await RunProcessCoreAsync(processStartInfo, timeout);
