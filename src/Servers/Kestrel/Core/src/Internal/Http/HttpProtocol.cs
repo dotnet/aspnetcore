@@ -1285,25 +1285,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public Memory<byte> GetMemory(int sizeHint = 0)
         {
-            ThrowIfResponseNotStarted();
-
             return Output.GetMemory(sizeHint);
         }
 
         public Span<byte> GetSpan(int sizeHint = 0)
         {
-            ThrowIfResponseNotStarted();
-
             return Output.GetSpan(sizeHint);
-        }
-
-        [StackTraceHidden]
-        private void ThrowIfResponseNotStarted()
-        {
-            if (!HasResponseStarted)
-            {
-                throw new InvalidOperationException(CoreStrings.StartAsyncBeforeGetMemory);
-            }
         }
 
         public ValueTask<FlushResult> FlushPipeAsync(CancellationToken cancellationToken)
