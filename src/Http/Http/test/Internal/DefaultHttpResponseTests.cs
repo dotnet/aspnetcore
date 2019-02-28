@@ -133,6 +133,25 @@ namespace Microsoft.AspNetCore.Http.Internal
         }
 
         [Fact]
+        public async Task ResponseStart_DoesNotCallStartIfHasStartedIsTrue()
+        {
+            var features = new FeatureCollection();
+
+            var startMock = new Mock<IHttpResponseStartFeature>();
+            startMock.Setup(o => o.StartAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+            features.Set(startMock.Object);
+
+            var responseMock = new Mock<IHttpResponseFeature>();
+            responseMock.Setup(o => o.HasStarted).Returns(true);
+            features.Set(responseMock.Object);
+
+            var context = new DefaultHttpContext(features);
+            await context.Response.StartAsync();
+
+            startMock.Verify(m => m.StartAsync(default), Times.Never());
+        }
+
+        [Fact]
         public async Task ResponseStart_CallsResponseBodyFlushIfNotSet()
         {
             var context = new DefaultHttpContext();
