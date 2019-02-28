@@ -15,6 +15,10 @@ namespace Microsoft.AspNetCore.NodeServices
 
         public NodeServicesTest()
         {
+            // In typical ASP.NET Core applications, INodeServices is made available
+            // through DI using services.AddNodeServices(). But for these tests we
+            // create our own INodeServices instance manually, since the tests are
+            // not about DI (and we might want different config for each test).
             var serviceProvider = new ServiceCollection().BuildServiceProvider();
             var options = new NodeServicesOptions(serviceProvider);
             _nodeServices = NodeServicesFactory.CreateNodeServices(options);
