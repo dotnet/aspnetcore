@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <!-- https://github.com/aspnet/AspNetCore/issues/8044 -->
-    <BuildHelixPayload>false<BuildHelixPayload>
+    <BuildHelixPayload>false</BuildHelixPayload>
   </PropertyGroup>
 
   <ItemGroup>
