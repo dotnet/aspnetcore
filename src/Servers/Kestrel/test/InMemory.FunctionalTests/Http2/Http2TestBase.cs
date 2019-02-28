@@ -180,7 +180,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 // Emulate transport abort so the _connectionTask completes.
                 Task.Run(() =>
                 {
-                    TestApplicationErrorLogger.LogInformation($"ConnectionAbortedException thrown, Exception message: {ex.Message}. Completing transport Output.");
+                    TestApplicationErrorLogger.LogInformation(0, ex, "ConnectionContext.Abort() was called. Completing _pair.Application.Output.");
                     _pair.Application.Output.Complete(ex);
                 });
             });
