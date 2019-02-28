@@ -37,12 +37,13 @@ namespace Microsoft.AspNetCore
 
             var zipPath = Path.Combine(AppContext.BaseDirectory, zipName);
 
-            if (!Directory.Exists(AppContext.BaseDirectory + "unzipped"))
+            var tempPath = Path.GetTempPath();
+            if (!Directory.Exists(Path.Combine(tempPath, "unzipped")))
             {
-                ZipFile.ExtractToDirectory(AppContext.BaseDirectory, "unzipped");
+                ZipFile.ExtractToDirectory(zipPath, Path.Combine(tempPath, "unzipped"));
             }
 
-            var nugetAssembliesPath = Path.Combine(AppContext.BaseDirectory, "unzipped", "shared", config.Name, previousVersion);
+            var nugetAssembliesPath = Path.Combine(tempPath, "unzipped", "shared", config.Name, previousVersion);
 
             var files = Directory.GetFiles(nugetAssembliesPath, "*.dll");
             foreach (var file in files)
@@ -70,6 +71,8 @@ namespace Microsoft.AspNetCore
                 catch (BadImageFormatException) { }
 
             });
+
+            Directory.Delete(Path.Combine(tempPath, "unzipped"), true);
         }
 
         [Theory]
