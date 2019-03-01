@@ -92,11 +92,11 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
         [Fact]
         public async Task ReadFormAsync_KeyLengthLimitMet_Success()
         {
-            var bodyPipe = await MakePipeReader("foo=1&bar=2&bazzzzzzzz=3&baz=4");
+            var bodyPipe = await MakePipeReader("fooooooooo=1&bar=2&baz=3&baz=4");
 
             var formCollection = await ReadFormAsync(new FormPipeReader(bodyPipe) { KeyLengthLimit = 10 });
 
-            Assert.Equal("1", formCollection["foo"].ToString());
+            Assert.Equal("1", formCollection["fooooooooo"].ToString());
             Assert.Equal("2", formCollection["bar"].ToString());
             Assert.Equal("3,4", formCollection["baz"].ToString());
             Assert.Equal(3, formCollection.Count);
@@ -338,6 +338,34 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
 
             var exception = Assert.Throws<InvalidDataException>(() => formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true));
             Assert.Equal("Form value length limit 2 exceeded.", exception.Message);
+        }
+
+        [Fact]
+        public void TryParseFormValues_MultiSegmentExceedKeLengthThrowsInSplitSegmentEnd()
+        {
+            var readOnlySequence = ReadOnlySequenceFactory.CreateSegments(Encoding.UTF8.GetBytes("foo=ba&baz=bo"), Encoding.UTF8.GetBytes("o&asdfasdfasd="));
+
+            KeyValueAccumulator accumulator = default;
+
+            var formReader = new FormPipeReader(null);
+            formReader.KeyLengthLimit = 10;
+
+            var exception = Assert.Throws<InvalidDataException>(() => formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true));
+            Assert.Equal("Form key length limit 10 exceeded.", exception.Message);
+        }
+
+        [Fact]
+        public void TryParseFormValues_MultiSegmentExceedValueLengthThrowsInSplitSegmentEnd()
+        {
+            var readOnlySequence = ReadOnlySequenceFactory.CreateSegments(Encoding.UTF8.GetBytes("foo=ba&baz=bo"), Encoding.UTF8.GetBytes("o&t=asdfasdfasd"));
+
+            KeyValueAccumulator accumulator = default;
+
+            var formReader = new FormPipeReader(null);
+            formReader.ValueLengthLimit = 10;
+
+            var exception = Assert.Throws<InvalidDataException>(() => formReader.ParseFormValues(ref readOnlySequence, ref accumulator, isFinalBlock: true));
+            Assert.Equal("Form value length limit 10 exceeded.", exception.Message);
         }
 
         [Fact]
