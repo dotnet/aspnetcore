@@ -25,7 +25,7 @@ export class NodeHttpClient extends HttpClient {
     public constructor(logger: ILogger) {
         super();
         if (typeof requestModule === "undefined") {
-            throw new Error("error");
+            throw new Error("The 'request' module could not be loaded.");
         }
 
         this.logger = logger;
