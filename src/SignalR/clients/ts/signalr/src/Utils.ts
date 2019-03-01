@@ -76,8 +76,8 @@ export function formatArrayBuffer(data: ArrayBuffer): string {
 export function isArrayBuffer(val: any): val is ArrayBuffer {
     return val && typeof ArrayBuffer !== "undefined" &&
         (val instanceof ArrayBuffer ||
-        // Sometimes we get an ArrayBuffer that doesn't satisfy instanceof
-        (val.constructor && val.constructor.name === "ArrayBuffer"));
+            // Sometimes we get an ArrayBuffer that doesn't satisfy instanceof
+            (val.constructor && val.constructor.name === "ArrayBuffer"));
 }
 
 /** @private */
