@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -10,34 +11,35 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
-    internal class DefaultPageLoader : PageLoaderBase
+    internal class DefaultPageLoader : PageLoader
     {
+        private readonly IActionDescriptorCollectionProvider _collectionProvider;
         private readonly IPageApplicationModelProvider[] _applicationModelProviders;
         private readonly IViewCompilerProvider _viewCompilerProvider;
         private readonly ActionEndpointFactory _endpointFactory;
         private readonly PageConventionCollection _conventions;
         private readonly FilterCollection _globalFilters;
-        private readonly MemoryCache _memoryCache;
+        private volatile InnerCache _currentCache;
 
         public DefaultPageLoader(
+            IActionDescriptorCollectionProvider actionDescriptorCollectionProvider,
             IEnumerable<IPageApplicationModelProvider> applicationModelProviders,
             IViewCompilerProvider viewCompilerProvider,
             ActionEndpointFactory endpointFactory,
             IOptions<RazorPagesOptions> pageOptions,
             IOptions<MvcOptions> mvcOptions)
         {
+            _collectionProvider = actionDescriptorCollectionProvider;
             _applicationModelProviders = applicationModelProviders
                 .OrderBy(p => p.Order)
                 .ToArray();
-
-            _memoryCache = new MemoryCache(new MemoryCacheOptions());
 
             _viewCompilerProvider = viewCompilerProvider;
             _endpointFactory = endpointFactory;
@@ -47,31 +49,42 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
         private IViewCompiler Compiler => _viewCompilerProvider.GetCompiler();
 
-        public async override ValueTask<CompiledPageActionDescriptor> LoadAsync(PageActionDescriptor actionDescriptor)
+        private ConcurrentDictionary<PageActionDescriptor, Task<CompiledPageActionDescriptor>> CurrentCache
+        {
+            get
+            {
+                var current = _currentCache;
+                var actionDescriptors = _collectionProvider.ActionDescriptors;
+
+                if (current == null || current.Version != actionDescriptors.Version)
+                {
+                    current = new InnerCache(actionDescriptors.Version);
+                    _currentCache = current;
+                }
+
+                return current.Entries;
+            }
+        }
+
+        public override Task<CompiledPageActionDescriptor> LoadAsync(PageActionDescriptor actionDescriptor)
         {
             if (actionDescriptor == null)
             {
                 throw new ArgumentNullException(nameof(actionDescriptor));
             }
 
-            if (_memoryCache.TryGetValue(actionDescriptor, out CompiledPageActionDescriptor compiledDescriptor))
+            var cache = CurrentCache;
+            if (cache.TryGetValue(actionDescriptor, out var compiledDescriptorTask))
             {
-                return compiledDescriptor;
+                return compiledDescriptorTask;
             }
 
-            var viewDescriptor = await Compiler.CompileAsync(actionDescriptor.RelativePath);
-            var compiledPageActionDescriptor = GetCompiledPageActionDescriptor(actionDescriptor, viewDescriptor);
-            var entryOptions = new MemoryCacheEntryOptions();
-            for (var i = 0; i < viewDescriptor.ExpirationTokens.Count; i++)
-            {
-                entryOptions.ExpirationTokens.Add(viewDescriptor.ExpirationTokens[i]);
-            }
-
-            return _memoryCache.Set(actionDescriptor, compiledPageActionDescriptor, entryOptions);
+            return cache.GetOrAdd(actionDescriptor, LoadAsyncCore(actionDescriptor));
         }
 
-        private CompiledPageActionDescriptor GetCompiledPageActionDescriptor(PageActionDescriptor actionDescriptor, CompiledViewDescriptor viewDescriptor)
+        private async Task<CompiledPageActionDescriptor> LoadAsyncCore(PageActionDescriptor actionDescriptor)
         {
+            var viewDescriptor = await Compiler.CompileAsync(actionDescriptor.RelativePath);
             var context = new PageApplicationModelProviderContext(actionDescriptor, viewDescriptor.Type.GetTypeInfo());
             for (var i = 0; i < _applicationModelProviders.Length; i++)
             {
@@ -148,6 +161,19 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                     conventions.OfType<TConvention>(),
                     attributes.OfType<TConvention>());
             }
+        }
+
+        private sealed class InnerCache
+        {
+            public InnerCache(int version)
+            {
+                Version = version;
+                Entries = new ConcurrentDictionary<PageActionDescriptor, Task<CompiledPageActionDescriptor>>();
+            }
+
+            public ConcurrentDictionary<PageActionDescriptor, Task<CompiledPageActionDescriptor>> Entries { get; }
+
+            public int Version { get; }
         }
     }
 }

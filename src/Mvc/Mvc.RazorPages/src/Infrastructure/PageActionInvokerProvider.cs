@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
     internal class PageActionInvokerProvider : IActionInvokerProvider
     {
-        private readonly PageLoaderBase _loader;
+        private readonly PageLoader _loader;
         private readonly IPageFactoryProvider _pageFactoryProvider;
         private readonly IPageModelFactoryProvider _modelFactoryProvider;
         private readonly IModelBinderFactory _modelBinderFactory;
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         private volatile InnerCache _currentCache;
 
         public PageActionInvokerProvider(
-            PageLoaderBase loader,
+            PageLoader loader,
             IPageFactoryProvider pageFactoryProvider,
             IPageModelFactoryProvider modelFactoryProvider,
             IRazorPageFactoryProvider razorPageFactoryProvider,
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         }
 
         public PageActionInvokerProvider(
-            PageLoaderBase loader,
+            PageLoader loader,
             IPageFactoryProvider pageFactoryProvider,
             IPageModelFactoryProvider modelFactoryProvider,
             IRazorPageFactoryProvider razorPageFactoryProvider,
@@ -139,14 +139,15 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             if (!cache.Entries.TryGetValue(actionDescriptor, out var cacheEntry))
             {
                 CompiledPageActionDescriptor compiledPageActionDescriptor;
-                var endpointFeature = actionContext.HttpContext.Features.Get<IEndpointFeature>();
-                if (endpointFeature != null)
+                if (_mvcOptions.EnableEndpointRouting)
                 {
                     // With endpoint routing, PageLoaderMatcherPolicy should have already produced a CompiledPageActionDescriptor.
                     compiledPageActionDescriptor = (CompiledPageActionDescriptor)actionDescriptor;
                 }
                 else
                 {
+                    // With legacy routing, we're forced to perform a blocking call. The exceptation is that
+                    // in the most common case - build time views or successsively cached runtime views - this should finish synchronously.
                     compiledPageActionDescriptor = _loader.LoadAsync(actionDescriptor).GetAwaiter().GetResult();
                 }
 

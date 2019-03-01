@@ -117,9 +117,9 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IPageFactoryProvider, DefaultPageFactoryProvider>();
 
 #pragma warning disable CS0618 // Type or member is obsolete
-            services.TryAddSingleton<IPageLoader>(s => s.GetRequiredService<PageLoaderBase>());
+            services.TryAddSingleton<IPageLoader>(s => s.GetRequiredService<PageLoader>());
 #pragma warning restore CS0618 // Type or member is obsolete
-            services.TryAddSingleton<PageLoaderBase, DefaultPageLoader>();
+            services.TryAddSingleton<PageLoader, DefaultPageLoader>();
             services.TryAddSingleton<IPageHandlerMethodSelector, DefaultPageHandlerMethodSelector>();
 
             // Action executors

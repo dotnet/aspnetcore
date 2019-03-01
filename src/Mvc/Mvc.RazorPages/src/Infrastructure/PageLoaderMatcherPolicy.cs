@@ -12,9 +12,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
     internal class PageLoaderMatcherPolicy : MatcherPolicy, IEndpointSelectorPolicy
     {
-        private readonly PageLoaderBase _loader;
+        private readonly PageLoader _loader;
 
-        public PageLoaderMatcherPolicy(PageLoaderBase loader)
+        public PageLoaderMatcherPolicy(PageLoader loader)
         {
             if (loader == null)
             {
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             {
                 throw new ArgumentNullException(nameof(candidates));
             }
-            
+
             for (var i = 0; i < candidates.Count; i++)
             {
                 ref var candidate = ref candidates[i];
@@ -86,9 +86,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                     }
                     else
                     {
-                        // In the most common case, LoadAsync will return a synchronous result.
+                        // In the most common case, GetOrAddAsync will return a synchronous result.
                         // Avoid going async since this is a fairly hot path.
-                        return ApplyAsyncAwaited(candidates);
+                        return ApplyAsyncAwaited(candidates, compiled, i);
                     }
                 }
             }
@@ -96,9 +96,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             return Task.CompletedTask;
         }
 
-        private async Task ApplyAsyncAwaited(CandidateSet candidates)
+        private async Task ApplyAsyncAwaited(CandidateSet candidates, Task<CompiledPageActionDescriptor> actionDescriptorTask, int index)
         {
-            for (var i = 0; i < candidates.Count; i++)
+            var compiled = await actionDescriptorTask;
+            candidates.ReplaceEndpoint(index, compiled.Endpoint, candidates[index].Values);
+
+            for (var i = index + 1; i < candidates.Count; i++)
             {
                 var candidate = candidates[i];
                 var endpoint = candidate.Endpoint;
@@ -106,7 +109,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 var page = endpoint.Metadata.GetMetadata<PageActionDescriptor>();
                 if (page != null)
                 {
-                    var compiled = await _loader.LoadAsync(page);
+                    compiled = await _loader.LoadAsync(page);
                     candidates.ReplaceEndpoint(i, compiled.Endpoint, candidates[i].Values);
                 }
             }

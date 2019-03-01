@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
     /// <summary>
     /// Creates a <see cref="CompiledPageActionDescriptor"/> from a <see cref="PageActionDescriptor"/>.
     /// </summary>
-    [Obsolete("This type is obsolete. Use PageLoaderBase instead.")]
+    [Obsolete("This type is obsolete. Use " + nameof(PageLoader) + " instead.")]
     public interface IPageLoader
     {
         /// <summary>

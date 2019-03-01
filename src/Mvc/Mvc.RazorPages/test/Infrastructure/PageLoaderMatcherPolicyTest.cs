@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -25,7 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
             var candidateSet = CreateCandidateSet(compiled);
 
-            var loader = Mock.Of<PageLoaderBase>(p => p.LoadAsync(It.IsAny<PageActionDescriptor>()) == new ValueTask<CompiledPageActionDescriptor>(compiled));
+            var loader = Mock.Of<PageLoader>(p => p.LoadAsync(It.IsAny<PageActionDescriptor>()) == Task.FromResult(compiled));
             var policy = new PageLoaderMatcherPolicy(loader);
 
             // Act
@@ -50,7 +49,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 await tcs.Task;
                 return compiled;
             });
-            var loader = Mock.Of<PageLoaderBase>(p => p.LoadAsync(It.IsAny<PageActionDescriptor>()) == new ValueTask<CompiledPageActionDescriptor>(loadTask));
+            var loader = Mock.Of<PageLoader>(p => p.LoadAsync(It.IsAny<PageActionDescriptor>()) == loadTask);
             var policy = new PageLoaderMatcherPolicy(loader);
 
             // Act

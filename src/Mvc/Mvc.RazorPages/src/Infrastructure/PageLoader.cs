@@ -9,10 +9,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
     /// Creates a <see cref="CompiledPageActionDescriptor"/> from a <see cref="PageActionDescriptor"/>.
     /// </summary>
 #pragma warning disable CS0618 // Type or member is obsolete
-    public abstract class PageLoaderBase : IPageLoader
+    public abstract class PageLoader : IPageLoader
 #pragma warning restore CS0618 // Type or member is obsolete
     {
-        public abstract ValueTask<CompiledPageActionDescriptor> LoadAsync(PageActionDescriptor actionDescriptor);
+        public abstract Task<CompiledPageActionDescriptor> LoadAsync(PageActionDescriptor actionDescriptor);
 
         CompiledPageActionDescriptor IPageLoader.Load(PageActionDescriptor actionDescriptor)
             => LoadAsync(actionDescriptor).GetAwaiter().GetResult();
