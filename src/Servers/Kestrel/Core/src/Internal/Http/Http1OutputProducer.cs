@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Threading;
@@ -55,6 +56,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private Memory<byte> _currentChunkMemory;
         private bool _currentChunkMemoryUpdated;
         private IMemoryOwner<byte> _fakeMemoryOwner;
+        private bool _startCalled;
+
+        private List<CompletedBuffer> _completedSegments;
+        private Memory<byte> _currentSegment;
+        private IMemoryOwner<byte> _currentSegmentOwner;
+        private int _position;
 
         public Http1OutputProducer(
             PipeWriter pipeWriter,
@@ -72,6 +79,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _minResponseDataRateFeature = minResponseDataRateFeature;
             _flusher = new TimingPipeFlusher(pipeWriter, timeoutControl, log);
             _memoryPool = memoryPool;
+            _completedSegments = new List<CompletedBuffer>();
         }
 
         public Task WriteDataAsync(ReadOnlySpan<byte> buffer, CancellationToken cancellationToken = default)
@@ -158,6 +166,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return GetFakeMemory(sizeHint);
                 }
+                else if (!_startCalled)
+                {
+                    // TODO how does chunked play with this?
+                    return LeasedMemory(sizeHint);
+                }
                 else if (_autoChunk)
                 {
                     return GetChunkedMemory(sizeHint);
@@ -177,6 +190,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     return GetFakeMemory(sizeHint).Span;
                 }
+                else if (!_startCalled)
+                {
+                    return LeasedMemory(sizeHint).Span;
+                }
                 else if (_autoChunk)
                 {
                     return GetChunkedMemory(sizeHint).Span;
@@ -195,6 +212,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 if (_completed)
                 {
                     return;
+                }
+
+                if (!_startCalled)
+                {
+                    if (bytes >= 0)
+                    {
+                        if (_currentSegment.Length < _position + bytes)
+                        {
+                            throw new InvalidOperationException("Can't advance past buffer size.");
+                        }
+
+                        _position += bytes;
+                    }
                 }
 
                 if (_autoChunk)
@@ -290,6 +320,37 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             _unflushedBytes += writer.BytesCommitted;
             _autoChunk = autoChunk;
+            // I think I should copy everything to the pipe here....
+
+            // try it for now?
+            var count = _completedSegments.Count;
+            for (var i = 0; i < count; i++)
+            {
+                var segment = _completedSegments[i];
+                var memory = _pipeWriter.GetMemory(segment.Length);
+                segment.Buffer.CopyTo(memory);
+                _pipeWriter.Advance(segment.Length);
+                segment.Return();
+            }
+
+            _completedSegments.Clear();
+
+            if (!_currentSegment.IsEmpty)
+            {
+                var segment = _currentSegment.Slice(0, _position);
+                var memory = _pipeWriter.GetMemory(segment.Length);
+                segment.CopyTo(memory);
+                _pipeWriter.Advance(segment.Length);
+                _position = 0;
+
+                if (_currentSegmentOwner != null)
+                {
+                    _currentSegmentOwner.Dispose();
+                    _currentSegmentOwner = null;
+                }
+            }
+
+            _startCalled = true;
         }
 
         public void Dispose()
@@ -300,6 +361,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     _fakeMemoryOwner.Dispose();
                     _fakeMemoryOwner = null;
+                }
+
+                if (_completedSegments != null)
+                {
+                    foreach (var segment in _completedSegments)
+                    {
+                        segment.Return();
+                    }
+                }
+                if (_currentSegmentOwner != null)
+                {
+                    _currentSegmentOwner.Dispose();
                 }
 
                 CompletePipe();
@@ -505,6 +578,91 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 _fakeMemoryOwner = _memoryPool.Rent(sizeHint);
             }
             return _fakeMemoryOwner.Memory;
+        }
+
+        private Memory<byte> LeasedMemory(int sizeHint)
+        {
+            EnsureCapacity(sizeHint);
+            return _currentSegment.Slice(_position);
+        }
+
+        private void EnsureCapacity(int sizeHint)
+        {
+            // This does the Right Thing. It only subtracts _position from the current segment length if it's non-null.
+            // If _currentSegment is null, it returns 0.
+            var remainingSize = _currentSegment.Length - _position;
+
+            // If the sizeHint is 0, any capacity will do
+            // Otherwise, the buffer must have enough space for the entire size hint, or we need to add a segment.
+            if ((sizeHint == 0 && remainingSize > 0) || (sizeHint > 0 && remainingSize >= Math.Min(MemorySizeThreshold, sizeHint)))
+            {
+                // We have capacity in the current segment
+                return;
+            }
+
+            AddSegment(sizeHint);
+        }
+
+        private void AddSegment(int sizeHint = 0)
+        {
+            if (_currentSegment.Length != 0)
+            {
+                // We're adding a segment to the list
+                if (_completedSegments == null)
+                {
+                    _completedSegments = new List<CompletedBuffer>();
+                }
+
+                // Position might be less than the segment length if there wasn't enough space to satisfy the sizeHint when
+                // GetMemory was called. In that case we'll take the current segment and call it "completed", but need to
+                // ignore any empty space in it.
+                _completedSegments.Add(new CompletedBuffer(_currentSegmentOwner, _currentSegment, _position));
+            }
+
+            if (sizeHint <= _memoryPool.MaxBufferSize)
+            {
+                // Get a new buffer using the minimum segment size, unless the size hint is larger than a single segment.
+                // Also, the size cannot be larger than the MaxBufferSize of the MemoryPool
+                var owner = _memoryPool.Rent(Math.Min(sizeHint, _memoryPool.MaxBufferSize));
+                _currentSegment = owner.Memory;
+                _currentSegmentOwner = owner;
+            }
+            else
+            {
+                _currentSegment = new byte[sizeHint];
+                _currentSegmentOwner = null;
+            }
+
+            _position = 0;
+        }
+
+        /// <summary>
+        /// Holds a byte[] from the pool and a size value. Basically a Memory but guaranteed to be backed by an ArrayPool byte[], so that we know we can return it.
+        /// </summary>
+        private readonly struct CompletedBuffer
+        {
+            private readonly IMemoryOwner<byte> _memoryOwner;
+
+            public Memory<byte> Buffer { get; }
+            public int Length { get; }
+
+            public ReadOnlySpan<byte> Span => Buffer.Span;
+
+            public CompletedBuffer(IMemoryOwner<byte> owner, Memory<byte> buffer, int length)
+            {
+                _memoryOwner = owner;
+
+                Buffer = buffer;
+                Length = length;
+            }
+
+            public void Return()
+            {
+                if (_memoryOwner != null)
+                {
+                    _memoryOwner.Dispose();
+                }
+            }
         }
     }
 }

@@ -49,7 +49,6 @@ namespace Microsoft.AspNetCore.Testing
             if (buffer.Length > 0)
             {
                 await request.Body.ReadUntilEndAsync(buffer).DefaultTimeout();
-                await response.StartAsync();
                 var memory = response.BodyWriter.GetMemory(buffer.Length);
                 buffer.CopyTo(memory);
                 response.BodyWriter.Advance(buffer.Length);
@@ -66,7 +65,6 @@ namespace Microsoft.AspNetCore.Testing
             var bytes = data.ToArray();
 
             response.Headers["Content-Length"] = bytes.Length.ToString();
-            await response.StartAsync();
 
             var memory = response.BodyWriter.GetMemory(bytes.Length);
             bytes.CopyTo(memory);

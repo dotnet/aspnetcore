@@ -2634,8 +2634,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             };
             await InitializeConnectionAsync(async httpContext =>
             {
+                await Task.CompletedTask;
                 var response = httpContext.Response;
-                await response.StartAsync();
                 var memory = response.BodyWriter.GetMemory();
                 var fisrtPartOfResponse = Encoding.ASCII.GetBytes("hello,");
                 fisrtPartOfResponse.CopyTo(memory);
@@ -2681,7 +2681,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await InitializeConnectionAsync(async httpContext =>
             {
                 var response = httpContext.Response;
-                await response.StartAsync();
 
                 var memory = response.BodyWriter.GetMemory();
                 Assert.Equal(4096, memory.Length);
@@ -2884,7 +2883,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
                 var response = httpContext.Response;
 
-                await response.StartAsync();
 
                 var memory = response.BodyWriter.GetMemory(4096);
                 var fisrtPartOfResponse = Encoding.ASCII.GetBytes("hello,");
@@ -2931,7 +2929,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
                 var response = httpContext.Response;
 
-                await response.StartAsync();
+                await Task.CompletedTask;
 
                 var memory = response.BodyWriter.GetMemory(0);
                 Assert.Equal(4096, memory.Length);
@@ -2972,7 +2970,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await InitializeConnectionAsync(async httpContext =>
             {
                 var response = httpContext.Response;
-                await response.StartAsync();
                 var memory = response.BodyWriter.GetMemory(4096);
                 var fisrtPartOfResponse = Encoding.ASCII.GetBytes("hello,");
                 fisrtPartOfResponse.CopyTo(memory);
@@ -3037,7 +3034,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
                 var response = httpContext.Response;
                 response.ContentLength = 12;
-                await response.StartAsync();
+                await Task.CompletedTask;
 
                 void NonAsyncMethod()
                 {
@@ -3088,7 +3085,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
                 var response = httpContext.Response;
                 response.ContentLength = 12;
-                await response.StartAsync();
+                await Task.CompletedTask;
 
                 var memory = response.BodyWriter.GetMemory(4096);
                 var fisrtPartOfResponse = Encoding.ASCII.GetBytes("Hello ");
@@ -3174,8 +3171,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
                 var response = httpContext.Response;
                 response.ContentLength = 54;
-                await response.StartAsync();
                 var memory = response.BodyWriter.GetMemory(4096);
+
                 var fisrtPartOfResponse = Encoding.ASCII.GetBytes("hello,");
                 fisrtPartOfResponse.CopyTo(memory);
                 response.BodyWriter.Advance(6);
