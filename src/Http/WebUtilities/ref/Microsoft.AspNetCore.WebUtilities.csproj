@@ -7,5 +7,6 @@
     <Compile Include="Microsoft.AspNetCore.WebUtilities.netcoreapp3.0.cs" />
     <Reference Include="Microsoft.Net.Http.Headers"  />
     <Reference Include="System.Text.Encodings.Web"  />
+    <Reference Include="System.IO.Pipelines"  />
   </ItemGroup>
 </Project>
