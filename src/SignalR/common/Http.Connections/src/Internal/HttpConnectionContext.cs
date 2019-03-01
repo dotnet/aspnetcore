@@ -35,6 +35,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         private PipeWriterStream _applicationStream;
         private IDuplexPipe _application;
         private IDictionary<object, object> _items;
+        internal int _status;
 
         // This tcs exists so that multiple calls to DisposeAsync all wait asynchronously
         // on the same task
@@ -68,6 +69,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             Features.Set<IHttpContextFeature>(this);
             Features.Set<IHttpTransportFeature>(this);
             Features.Set<IConnectionInherentKeepAliveFeature>(this);
+
+            _status = (int)HttpConnectionStatus.Inactive;
         }
 
         public HttpConnectionContext(string id, IDuplexPipe transport, IDuplexPipe application, ILogger logger = null)
@@ -95,7 +98,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         public DateTime LastSeenUtc { get; set; }
 
-        public HttpConnectionStatus Status { get; set; } = HttpConnectionStatus.Inactive;
+        public HttpConnectionStatus Status { get => (HttpConnectionStatus)_status; set => Interlocked.Exchange(ref _status, (int)value); }
 
         public override string ConnectionId { get; set; }
 

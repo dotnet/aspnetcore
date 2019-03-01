@@ -331,7 +331,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                         // Mark the connection as inactive
                         connection.LastSeenUtc = DateTime.UtcNow;
 
-                        connection.Status = HttpConnectionStatus.Inactive;
+                        // This is done outside a lock because the next poll might be waiting in the lock already and waiting for currentRequestTcs to complete
+                        Interlocked.CompareExchange(ref connection._status, (int)HttpConnectionStatus.Inactive, (int)HttpConnectionStatus.Active);
                     }
                 }
                 finally
