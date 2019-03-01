@@ -110,12 +110,12 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvc.Views.dll");
         }
 
-        [Fact(Skip = "https://github.com/aspnet/Razor/issues/2723")]
+        [Fact]
         [InitializeTestProject("SimpleMvc")]
         public async Task Build_ServerConnectionMutexCreationFails_FallsBackToInProcessRzc()
         {
-            // Use a pipe name longer that 260 characters to make the Mutex constructor throw.
-            var pipeName = new string('P', 261);
+            // Use an invalid pipe name to make the Mutex constructor throw.
+            var pipeName = "Invalid\\name";
             var result = await DotnetMSBuild(
                 "Build",
                 "/p:_RazorForceBuildServer=true",
