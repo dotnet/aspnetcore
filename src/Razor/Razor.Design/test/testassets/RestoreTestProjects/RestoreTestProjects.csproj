@@ -4,11 +4,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AppWithP2PReference\AppWithP2PReference.csproj" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="..\ClassLibrary\ClassLibrary.csproj" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="..\ClassLibrary2\ClassLibrary2.csproj" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="..\SimpleMvc\SimpleMvc.csproj" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="..\SimpleMvcFSharp\SimpleMvcFSharp.fsproj" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="..\SimplePages\SimplePages.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\AppWithP2PReference\AppWithP2PReference.csproj" />
+    <ProjectReference Include="..\ClassLibrary\ClassLibrary.csproj" />
+    <ProjectReference Include="..\ClassLibrary2\ClassLibrary2.csproj" />
+    <ProjectReference Include="..\SimpleMvc\SimpleMvc.csproj" />
+    <ProjectReference Include="..\SimpleMvcFSharp\SimpleMvcFSharp.fsproj" />
+    <ProjectReference Include="..\SimplePages\SimplePages.csproj" />
   </ItemGroup>
 </Project>
