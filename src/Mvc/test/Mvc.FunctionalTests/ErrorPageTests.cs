@@ -33,13 +33,12 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         {
             _assemblyTestLog = AssemblyTestLog.ForAssembly(GetType().Assembly);
 
-            // var loggerProvider = new XunitLoggerProvider(testOutputHelper);
             var loggerProvider = _assemblyTestLog.CreateLoggerFactory(testOutputHelper, GetType().Name);
 
-
-            var factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(b => b.UseStartup<ErrorPageMiddlewareWebSite.Startup>())
-                .WithWebHostBuilder(builder => builder.ConfigureLogging(l => l.Services.AddSingleton<ILoggerFactory>(loggerProvider)));
-            Client = factory.CreateDefaultClient();
+            var factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(b => b.UseStartup<ErrorPageMiddlewareWebSite.Startup>());
+            Client = factory
+                .WithWebHostBuilder(builder => builder.ConfigureLogging(l => l.Services.AddSingleton<ILoggerFactory>(loggerProvider)))
+                .CreateDefaultClient();
         }
 
         public HttpClient Client { get; }
