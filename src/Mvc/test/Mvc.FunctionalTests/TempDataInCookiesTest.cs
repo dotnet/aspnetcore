@@ -23,6 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
         protected override HttpClient Client { get; }
 
+
         [Theory]
         [InlineData(ChunkingCookieManager.DefaultChunkSize)]
         [InlineData(ChunkingCookieManager.DefaultChunkSize * 1.5)]
