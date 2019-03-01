@@ -76,8 +76,14 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         /// <inheritdoc />
         public override int Order => -1000;
 
+        /// <summary>
+        /// Gets the <see cref="IHtmlGenerator"/> used to generate the <see cref="InputTagHelper"/>'s output.
+        /// </summary>
         protected IHtmlGenerator Generator { get; }
 
+        /// <summary>
+        /// Gets the <see cref="Rendering.ViewContext"/> of the executing view.
+        /// </summary>
         [HtmlAttributeNotBound]
         [ViewContext]
         public ViewContext ViewContext { get; set; }

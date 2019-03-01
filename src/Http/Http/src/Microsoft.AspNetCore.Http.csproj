@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)CopyOnWriteDictionary\*.cs" />
+    <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>

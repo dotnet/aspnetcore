@@ -151,12 +151,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
             var stopTask = Task.CompletedTask;
             using (var server = new TestServer(requestDelegate, serviceContext, listenOptions))
-            using (var shutdownCts = new CancellationTokenSource(TimeSpan.FromSeconds(5)))
+            using (var shutdownCts = new CancellationTokenSource(TestConstants.DefaultTimeout))
             {
                 using (var connection = server.CreateConnection())
                 {
-                    // Use the default 5 second shutdown timeout. If it hangs that long, we'll look
-                    // at the collected memory dump.
+                    // We assume all CI servers are really slow, so we use a 30 second default test timeout
+                    // instead of the 5 second default production timeout. If this test is still flaky,
+                    // *then* we can consider collecting and investigating memory dumps.
                     stopTask = server.StopAsync(shutdownCts.Token);
                 }
 

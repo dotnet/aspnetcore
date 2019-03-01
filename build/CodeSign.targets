@@ -15,7 +15,7 @@
 
   <Target Name="CollectFileSignInfo">
     <PropertyGroup>
-      <BaseRedistNetCorePath>$(ArtifactsDir)obj\ar\</BaseRedistNetCorePath>
+      <BaseRedistNetCorePath>$(ArtifactsDir)obj\RedistSharedFx.Layout\$(Configuration)\</BaseRedistNetCorePath>
       <RedistNetCorePath>$(BaseRedistNetCorePath)$(TargetRuntimeIdentifier)\</RedistNetCorePath>
     </PropertyGroup>
 

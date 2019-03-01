@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 using Xunit;
@@ -1015,14 +1016,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.IsType<Http2StreamErrorException>(thrownEx.InnerException);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/7000  
         public async Task ContentLength_Received_ReadViaPipes()
         {
             await InitializeConnectionAsync(async context =>
             {
                 var readResult = await context.Request.BodyPipe.ReadAsync();
-                Assert.Equal(12, readResult.Buffer.Length);
                 Assert.True(readResult.IsCompleted);
+                Assert.Equal(12, readResult.Buffer.Length);
                 context.Request.BodyPipe.AdvanceTo(readResult.Buffer.End);
 
                 readResult = await context.Request.BodyPipe.ReadAsync();

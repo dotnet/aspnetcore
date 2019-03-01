@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Authentication.AzureADB2C.UI
         public string Instance { get; set; }
 
         /// <summary>
-        /// Gets or sets the domain of the Azure Active Directory B2C tennant.
+        /// Gets or sets the domain of the Azure Active Directory B2C tenant.
         /// </summary>
         public string Domain { get; set; }
 

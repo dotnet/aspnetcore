@@ -6,7 +6,7 @@
 
   <PropertyGroup>
     <Name>AspNetCoreTargetingPack</Name>
-    <OutputName>aspnetcore-targeting-pack-$(PackageVersion)-win-$(Platform)</OutputName>
+    <OutputName>$(TargetingPackInstallerBaseName)-$(PackageVersion)-win-$(Platform)</OutputName>
     <OutputType>Package</OutputType>
     <IsProductInstaller>true</IsProductInstaller>
     <ProjectGuid>0AC34F1B-8056-4FFB-A398-E6BB7D67B48D</ProjectGuid>
@@ -64,4 +64,9 @@
   </Target>
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
+
+  <PropertyGroup>
+    <!-- Suppresses building this project completely during servicing builds. -->
+    <BuildDependsOn Condition="'$(IsTargetingPackBuilding)' == 'false'" />
+  </PropertyGroup>
 </Project>

@@ -5,10 +5,12 @@
     <TestGroupName>IISBackwardsCompatibility.FunctionalTests</TestGroupName>
     <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
     <SkipTests Condition=" '$(SkipIISBackwardsCompatibilityTests)' == 'true' ">true</SkipTests>
+    <IsIISTest>true</IsIISTest>
   </PropertyGroup>
 
+  <Import Project="../FunctionalTest.props" />
+
   <ItemGroup>
-    <Content Include="..\Common.FunctionalTests\AppHostConfig\*.config" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="..\Common.FunctionalTests\**\*.cs" />
     <Compile Include="..\IIS.Shared.FunctionalTests\**\*.cs" />
   </ItemGroup>
@@ -18,8 +20,12 @@
     <ProjectReference Include="..\testassets\**\*.csproj">
       <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="$(RepositoryRoot)src\Servers\IIS\IntegrationTesting.IIS\src\Microsoft.AspNetCore.Server.IntegrationTesting.IIS.csproj" />
-    <ProjectReference Include="$(RepositoryRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
+    <ProjectReference Include="..\testassets\InProcessWebSite\InProcessWebSite.csproj">
+      <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\testassets\OutOfProcessWebSite\OutOfProcessWebSite.csproj">
+      <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
+    </ProjectReference>
   </ItemGroup>
 
   <ItemGroup>

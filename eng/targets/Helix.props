@@ -1,0 +1,38 @@
+<Project>
+
+    <Import Project="Helix.Common.props" />
+
+    <ItemDefinitionGroup>
+        <HelixContent>
+            <CopyToBuildDirectory>Never</CopyToBuildDirectory>
+            <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+        </HelixContent>
+    </ItemDefinitionGroup>
+
+    <PropertyGroup>
+        <CreateHelixPayload>true</CreateHelixPayload>
+        <HelixTimeout>00:30:00</HelixTimeout>
+        <IsWindowsHelixQueue>$(HelixTargetQueue.Contains('Windows'))</IsWindowsHelixQueue>
+        <HelixTestName>$(MSBuildProjectName)-$(TargetFramework)</HelixTestName>
+        <HelixUseArchive>false</HelixUseArchive>
+        <LoggingTestingDisableFileLogging Condition="'$(IsHelixJob)' == 'true'">true</LoggingTestingDisableFileLogging>
+    </PropertyGroup>
+
+    <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+        <HelixProjectPlatform Include="Windows" />
+
+        <HelixContent Include="$(RepositoryRoot)eng\helix\xunit\runtests.cmd" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'">
+        <HelixProjectPlatform Include="@(HelixAvailblePlatform)" />
+
+        <HelixContent Include="$(RepositoryRoot)eng\helix\vstest\runtests.sh" />
+        <HelixContent Include="$(RepositoryRoot)eng\helix\vstest\runtests.cmd" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <HelixContent Include="$(RepositoryRoot)eng\scripts\RunPowershell.cmd" />
+    </ItemGroup>
+
+</Project>

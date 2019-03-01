@@ -5,6 +5,7 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <IsShippingPackage>true</IsShippingPackage>
     <IsTestProject>false</IsTestProject>
+    <HasReferenceAssembly>false</HasReferenceAssembly>
   </PropertyGroup>
 
   <ItemGroup>

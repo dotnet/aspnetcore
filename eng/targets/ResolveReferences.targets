@@ -46,6 +46,12 @@
     <UseProjectReferences Condition=" '$(UseProjectReferences)' == '' AND '$(IsServicingBuild)' != 'true'  ">true</UseProjectReferences>
     <UseProjectReferences Condition=" '$(UseProjectReferences)' == '' AND '$(IsImplementationProject)' != 'true' ">true</UseProjectReferences>
     <UseProjectReferences Condition=" '$(UseProjectReferences)' == '' ">false</UseProjectReferences>
+
+    <ReferenceReferenceAssemblies Condition=" '$(ReferenceReferenceAssemblies)' == '' AND '$(IsReferenceAssemblyProject)' == 'true'">true</ReferenceReferenceAssemblies>
+    <ReferenceReferenceAssemblies Condition=" '$(ReferenceReferenceAssemblies)' == '' ">false</ReferenceReferenceAssemblies>
+
+    <ReferenceImplementationAssemblies Condition=" '$(ReferenceImplementationAssemblies)' == '' AND '$(IsReferenceAssemblyProject)' != 'true'">true</ReferenceImplementationAssemblies>
+    <ReferenceImplementationAssemblies Condition=" '$(ReferenceImplementationAssemblies)' == '' ">false</ReferenceImplementationAssemblies>
   </PropertyGroup>
 
   <ItemDefinitionGroup>
@@ -80,7 +86,7 @@
         @(_CompilationOnlyReference);
         @(Reference->WithMetadataValue('IsSharedSource', 'true'))" />
     <!-- TODO: remove Newtonsoft.Json from this list once https://github.com/aspnet/AspNetCore/issues/4260 is resolved -->
-
+    <_OriginalReferences Include="@(Reference)" />
     <!--
       Turn Reference items into a ProjectReference when UseProjectReferences is true.
       Order matters. This comes before package resolution because projects should be used when possible instead of packages.
@@ -89,7 +95,14 @@
       Include="@(ProjectReferenceProvider)"
       Exclude="@(_UnusedProjectReferenceProvider)" />
 
-    <ProjectReference Include="@(_ProjectReferenceByAssemblyName->'%(ProjectPath)')" />
+    <!-- Use ref assembly project paths for ref assembly projects -->
+    <ProjectReference Condition="'$(ReferenceImplementationAssemblies)' == 'true'" Include="@(_ProjectReferenceByAssemblyName->'%(ProjectPath)')" >
+      <IsReferenceAssembly>false</IsReferenceAssembly>
+    </ProjectReference>
+
+    <ProjectReference Condition="'$(ReferenceReferenceAssemblies)' == 'true'" Include="@(_ProjectReferenceByAssemblyName->'%(RefProjectPath)')" >
+      <IsReferenceAssembly>true</IsReferenceAssembly>
+    </ProjectReference>
 
     <Reference Remove="@(_ProjectReferenceByAssemblyName)" />
 
@@ -113,6 +126,11 @@
            Text="Cannot reference &quot;%(_InvalidReferenceToNonSharedFxAssembly.Identity)&quot;. This dependency is not in the shared framework. See docs/SharedFramework.md for instructions on how to modify what is in the shared framework." />
   </Target>
 
+  <Target Name="_WarnAboutRedundantRef" AfterTargets="ResolveFrameworkReferences">
+    <Warning Condition="@(FrameworkReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.App')->Count()) &gt; 1"
+             Text="Redundant &lt;FrameworkReference&gt;. If you have an explicit item in the project file, you might be able to remove it. Some SDKs, like Microsoft.NET.Sdk.Web, add this implicitly." />
+  </Target>
+
   <!--
     This target resolves remaining Referene items to Packages, if possible. If not, they are left as Reference items fo the SDK to resolve.
     This executes on NuGet restore and during DesignTimeBuild. It should not run in the outer, cross-targeting build.
@@ -124,7 +142,7 @@
 
       <!-- Ensure only content asset are consumed from .Sources packages -->
       <Reference>
-        <IncludeAssets Condition="'%(IsSharedSource)' == 'true'">ContentFiles</IncludeAssets>
+        <IncludeAssets Condition="'%(IsSharedSource)' == 'true'">ContentFiles;Build</IncludeAssets>
         <PrivateAssets Condition="'%(IsSharedSource)' == 'true'">All</PrivateAssets>
       </Reference>
 
@@ -207,11 +225,20 @@
   </Target>
 
   <Target Name="_GetReferencesProvided" Returns="@(ProvidesReference)">
+    <PropertyGroup>
+      <ReferenceAssemblyDirectory>$(MSBuildProjectDirectory)/../ref/</ReferenceAssemblyDirectory>
+      <ReferenceAssemblyProjectFileRelativePath>$([MSBuild]::MakeRelative($(RepositoryRoot), '$(ReferenceAssemblyDirectory)$(MSBuildProjectFile)'))</ReferenceAssemblyProjectFileRelativePath>
+    </PropertyGroup>
+
+    <Error Condition="'$(SkipRefDirectoryCheck)' != 'true' AND '$(IsImplementationProject)' == 'true' AND '$(HasReferenceAssembly)' != 'true' AND Exists($(ReferenceAssemblyDirectory))" Text="Project shouldn't have reference assembly but folder exists $(ReferenceAssemblyDirectory)" />
+    <Error Condition=" '$(IsAspNetCoreApp)' == 'true' AND '$(IsImplementationProject)' == 'true' AND '$(HasReferenceAssembly)' != 'true'" Text="All assemblies which have set IsAspNetCoreApp=true should produce a reference assembly." />
+
     <ItemGroup Condition=" '$(IsProjectReferenceProvider)' == 'true' ">
       <ProvidesReference Include="$(AssemblyName)">
         <IsAspNetCoreApp>$([MSBuild]::ValueOrDefault($(IsAspNetCoreApp),'false'))</IsAspNetCoreApp>
         <IsShippingPackage>$([MSBuild]::ValueOrDefault($(IsShippingPackage),'false'))</IsShippingPackage>
         <ProjectFileRelativePath>$([MSBuild]::MakeRelative($(RepositoryRoot), $(MSBuildProjectFullPath)))</ProjectFileRelativePath>
+        <ReferenceAssemblyProjectFileRelativePath Condition="'$(HasReferenceAssembly)' == 'true'">$(ReferenceAssemblyProjectFileRelativePath)</ReferenceAssemblyProjectFileRelativePath>
       </ProvidesReference>
     </ItemGroup>
   </Target>

@@ -207,7 +207,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Ne
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.JsonPatch", "..\Features\JsonPatch\src\Microsoft.AspNetCore.JsonPatch.csproj", "{DC47C40A-FC38-44E4-94A4-ADE794E76309}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.VisualStudio.BlazorExtension", "blazor\BlazorExtension\src\Microsoft.VisualStudio.BlazorExtension.csproj", "{9088E4E4-B855-457F-AE9E-D86709A5E1F4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.VisualStudio.BlazorExtension", "blazor\BlazorExtension\src\Microsoft.VisualStudio.BlazorExtension.csproj", "{9088E4E4-B855-457F-AE9E-D86709A5E1F4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{BB236B66-28C0-49DD-9CD4-C4673CD4E7B4}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\.editorconfig = ..\..\.editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

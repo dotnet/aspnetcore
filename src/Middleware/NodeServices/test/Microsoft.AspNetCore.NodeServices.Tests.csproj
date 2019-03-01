@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <!-- https://github.com/aspnet/AspNetCore/issues/8044 -->
+    <BuildHelixPayload>false</BuildHelixPayload>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.NodeServices" />
+    <Reference Include="Microsoft.AspNetCore.TestHost" />
+    <Reference Include="Microsoft.Extensions.Logging.Testing" />
+  </ItemGroup>
+
+</Project>

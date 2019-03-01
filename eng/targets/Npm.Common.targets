@@ -1,11 +1,15 @@
 <Project DefaultTargets="Build" InitialTargets="_CheckForInvalidConfiguration">
 
+  <!-- Version of this SDK is set in global.json -->
+  <Sdk Name="Yarn.MSBuild" />
+
   <PropertyGroup>
     <NormalizedPackageId>$(PackageId.Replace('@','').Replace('/','-'))</NormalizedPackageId>
     <PackageFileName>$(NormalizedPackageId)-$(PackageVersion).tgz</PackageFileName>
     <PackageJson>$(MSBuildProjectDirectory)\package.json</PackageJson>
     <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)' == ''">$(MSBuildProjectDirectory)\obj\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$([MSBuild]::NormalizeDirectory('$(BaseIntermediateOutputPath)'))$(Configuration)\</IntermediateOutputPath>
+    <InstallArgs Condition="'$(RestoreLockedMode)' == 'true'">--frozen-lockfile</InstallArgs>
   </PropertyGroup>
 
   <Target Name="_CheckForInvalidConfiguration">
@@ -13,9 +17,8 @@
   </Target>
 
   <Target Name="Restore">
-    <Message Importance="High" Text="Running npm install on $(MSBuildProjectFullPath)" />
-    <Exec Command="npm ci" Condition="'$(CI)' == 'true'" />
-    <Exec Command="npm install --no-optional" Condition="'$(CI)' != 'true'" />
+    <Message Importance="High" Text="Running yarn install on $(MSBuildProjectFullPath)" />
+    <Yarn Command="install $(InstallArgs)" />
   </Target>
 
   <Target Name="PrepareForBuild">
@@ -28,7 +31,7 @@
   </Target>
 
   <Target Name="Build" DependsOnTargets="PrepareForBuild;ResolveProjectReferences">
-    <Exec Command="npm run build" IgnoreStandardErrorWarningFormat="true" Condition="'$(IsBuildable)' != 'false'" />
+    <Yarn Command="run build" Condition="'$(IsBuildable)' != 'false'" StandardOutputImportance="High" StandardErrorImportance="High" />
   </Target>
 
   <PropertyGroup>
@@ -50,8 +53,8 @@
 
     <Copy SourceFiles="$(PackageJson)" DestinationFiles="$(_BackupPackageJson)" />
 
-    <Exec Command="npm --no-git-tag-version --allow-same-version version $(PackageVersion)" StandardOutputImportance="Normal" StandardErrorImportance="Normal" />
-    <Exec Command="npm pack" StandardOutputImportance="Normal" StandardErrorImportance="Normal" />
+    <Yarn Command="version --no-git-tag-version --new-version $(PackageVersion)" />
+    <Yarn Command="pack --filename $(PackageFileName)" />
 
     <Move SourceFiles="$(_PackageTargetPath)" DestinationFolder="$(PackageOutputPath)" />
     <Message Importance="High" Text="$(MSBuildProjectName) -> $(_PackageTargetPath)" />
@@ -66,7 +69,7 @@
 
   <Target Name="Test" Condition="'$(IsTestProject)' == 'true'">
     <Message Importance="High" Text="Running npm tests for $(MSBuildProjectName)" />
-    <Exec Command="npm $(NpmTestArgs)" IgnoreStandardErrorWarningFormat="true" />
+    <Yarn Command="$(NpmTestArgs)" StandardOutputImportance="High" StandardErrorImportance="High" />
   </Target>
 
 </Project>

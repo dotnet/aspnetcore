@@ -591,6 +591,31 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return CounterChannel(count);
         }
 
+        public async IAsyncEnumerable<string> CounterAsyncEnumerable(int count)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                await Task.Yield();
+                yield return i.ToString();
+            }
+        }
+
+        public async Task<IAsyncEnumerable<string>> CounterAsyncEnumerableAsync(int count)
+        {
+            await Task.Yield();
+            return CounterAsyncEnumerable(count);
+        }
+
+        public AsyncEnumerableImpl<string> CounterAsyncEnumerableImpl(int count)
+        {
+            return new AsyncEnumerableImpl<string>(CounterAsyncEnumerable(count));
+        }
+
+        public AsyncEnumerableImplChannelThrows<string> AsyncEnumerableIsPreferedOverChannelReader(int count)
+        {
+            return new AsyncEnumerableImplChannelThrows<string>(CounterChannel(count));
+        }
+
         public ChannelReader<string> BlockingStream()
         {
             return Channel.CreateUnbounded<string>().Reader;
@@ -626,6 +651,99 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             });
 
             return output.Reader;
+        }
+
+        public class AsyncEnumerableImpl<T> : IAsyncEnumerable<T>
+        {
+            private readonly IAsyncEnumerable<T> _inner;
+
+            public AsyncEnumerableImpl(IAsyncEnumerable<T> inner)
+            {
+                _inner = inner;
+            }
+
+            public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+            {
+                return _inner.GetAsyncEnumerator(cancellationToken);
+            }
+        }
+
+        public class AsyncEnumerableImplChannelThrows<T> : ChannelReader<T>, IAsyncEnumerable<T>
+        {
+            private ChannelReader<T> _inner;
+
+            public AsyncEnumerableImplChannelThrows(ChannelReader<T> inner)
+            {
+                _inner = inner;
+            }
+
+            public override bool TryRead(out T item)
+            {
+                // Not implemented to verify this is consumed as an IAsyncEnumerable<T> instead of a ChannelReader<T>.
+                throw new NotImplementedException();
+            }
+
+            public override ValueTask<bool> WaitToReadAsync(CancellationToken cancellationToken = default)
+            {
+                // Not implemented to verify this is consumed as an IAsyncEnumerable<T> instead of a ChannelReader<T>.
+                throw new NotImplementedException();
+            }
+
+            public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+            {
+                return new ChannelAsyncEnumerator(_inner, cancellationToken);
+            }
+
+            // Copied from AsyncEnumeratorAdapters
+            private class ChannelAsyncEnumerator : IAsyncEnumerator<T>
+            {
+                /// <summary>The channel being enumerated.</summary>
+                private readonly ChannelReader<T> _channel;
+                /// <summary>Cancellation token used to cancel the enumeration.</summary>
+                private readonly CancellationToken _cancellationToken;
+                /// <summary>The current element of the enumeration.</summary>
+                private T _current;
+
+                public ChannelAsyncEnumerator(ChannelReader<T> channel, CancellationToken cancellationToken)
+                {
+                    _channel = channel;
+                    _cancellationToken = cancellationToken;
+                }
+
+                public T Current => _current;
+
+                public ValueTask<bool> MoveNextAsync()
+                {
+                    var result = _channel.ReadAsync(_cancellationToken);
+
+                    if (result.IsCompletedSuccessfully)
+                    {
+                        _current = result.Result;
+                        return new ValueTask<bool>(true);
+                    }
+
+                    return new ValueTask<bool>(MoveNextAsyncAwaited(result));
+                }
+
+                private async Task<bool> MoveNextAsyncAwaited(ValueTask<T> channelReadTask)
+                {
+                    try
+                    {
+                        _current = await channelReadTask;
+                    }
+                    catch (ChannelClosedException ex) when (ex.InnerException == null)
+                    {
+                        return false;
+                    }
+
+                    return true;
+                }
+
+                public ValueTask DisposeAsync()
+                {
+                    return default;
+                }
+            }
         }
     }
 
@@ -681,7 +799,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return Channel.CreateUnbounded<string>().Reader;
         }
 
-        public ChannelReader<int> CancelableStream(CancellationToken token)
+        public ChannelReader<int> CancelableStreamSingleParameter(CancellationToken token)
         {
             var channel = Channel.CreateBounded<int>(10);
 
@@ -696,7 +814,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return channel.Reader;
         }
 
-        public ChannelReader<int> CancelableStream2(int ignore, int ignore2, CancellationToken token)
+        public ChannelReader<int> CancelableStreamMultiParameter(int ignore, int ignore2, CancellationToken token)
         {
             var channel = Channel.CreateBounded<int>(10);
 
@@ -711,7 +829,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return channel.Reader;
         }
 
-        public ChannelReader<int> CancelableStreamMiddle(int ignore, CancellationToken token, int ignore2)
+        public ChannelReader<int> CancelableStreamMiddleParameter(int ignore, CancellationToken token, int ignore2)
         {
             var channel = Channel.CreateBounded<int>(10);
 
@@ -724,18 +842,73 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             });
 
             return channel.Reader;
+        }
+
+        public async IAsyncEnumerable<int> CancelableStreamGeneratedAsyncEnumerable(CancellationToken token)
+        {
+            _tcsService.StartedMethod.SetResult(null);
+            await token.WaitForCancellationAsync();
+            _tcsService.EndMethod.SetResult(null);
+            yield break;
+        }
+
+        public IAsyncEnumerable<int> CancelableStreamCustomAsyncEnumerable()
+        {
+            return new CustomAsyncEnumerable(_tcsService);
         }
 
         public int SimpleMethod()
         {
             return 21;
         }
+
+        private class CustomAsyncEnumerable : IAsyncEnumerable<int>
+        {
+            private readonly TcsService _tcsService;
+
+            public CustomAsyncEnumerable(TcsService tcsService)
+            {
+                _tcsService = tcsService;
+            }
+
+            public IAsyncEnumerator<int> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+            {
+                return new CustomAsyncEnumerator(_tcsService, cancellationToken);
+            }
+
+            private class CustomAsyncEnumerator : IAsyncEnumerator<int>
+            {
+                private readonly TcsService _tcsService;
+                private readonly CancellationToken _cancellationToken;
+
+                public CustomAsyncEnumerator(TcsService tcsService, CancellationToken cancellationToken)
+                {
+                    _tcsService = tcsService;
+                    _cancellationToken = cancellationToken;
+                }
+
+                public int Current => throw new NotImplementedException();
+
+                public ValueTask DisposeAsync()
+                {
+                    return default;
+                }
+
+                public async ValueTask<bool> MoveNextAsync()
+                {
+                    _tcsService.StartedMethod.SetResult(null);
+                    await _cancellationToken.WaitForCancellationAsync();
+                    _tcsService.EndMethod.SetResult(null);
+                    return false;
+                }
+            }
+        }
     }
 
     public class TcsService
     {
-        public TaskCompletionSource<object> StartedMethod = new TaskCompletionSource<object>();
-        public TaskCompletionSource<object> EndMethod = new TaskCompletionSource<object>();
+        public TaskCompletionSource<object> StartedMethod = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource<object> EndMethod = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
     }
 
     public interface ITypedHubClient
