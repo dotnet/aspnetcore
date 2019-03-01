@@ -11,6 +11,7 @@ using BasicTestApp;
 using BasicTestApp.HierarchicalImportsTest.Subdir;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
+using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using Xunit;

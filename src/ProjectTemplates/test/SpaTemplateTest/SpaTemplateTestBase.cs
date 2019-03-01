@@ -1,11 +1,12 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
+using ProjectTemplates.Tests.Helpers;
 using System.IO;
 using System.Net;
 using Templates.Test.Helpers;
-using Templates.Test.Infrastructure;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -13,21 +14,25 @@ using Xunit.Abstractions;
 #if EDGE
 [assembly: CollectionBehavior(CollectionBehavior.CollectionPerAssembly)]
 #endif
-[assembly: TestFramework("Templates.Test.Helpers.XunitExtensions.XunitTestFrameworkWithAssemblyFixture", "Templates.Test")]
+[assembly: TestFramework("Microsoft.AspNetCore.E2ETesting.XunitTestFrameworkWithAssemblyFixture", "ProjectTemplates.Tests")]
 namespace Templates.Test.SpaTemplateTest
 {
     public class SpaTemplateTestBase : BrowserTestBase
     {
-        public SpaTemplateTestBase(BrowserFixture browserFixture, ITestOutputHelper output) : base(browserFixture, output)
+        public SpaTemplateTestBase(
+            ProjectFactoryFixture projectFactory, BrowserFixture browserFixture, ITestOutputHelper output) : base(browserFixture, output)
         {
+            Project = projectFactory.CreateProject(output);
         }
+
+        public Project Project { get; }
 
         // Rather than using [Theory] to pass each of the different values for 'template',
         // it's important to distribute the SPA template tests over different test classes
         // so they can be run in parallel. Xunit doesn't parallelize within a test class.
         protected void SpaTemplateImpl(string template, bool noHttps = false)
         {
-            RunDotNetNew(template, noHttps: noHttps);
+            Project.RunDotNetNew(template, noHttps: noHttps);
 
             // For some SPA templates, the NPM root directory is './ClientApp'. In other
             // templates it's at the project root. Strictly speaking we shouldn't have
@@ -35,7 +40,7 @@ namespace Templates.Test.SpaTemplateTest
             // build time, but by doing it up front we can avoid having multiple NPM
             // installs run concurrently which otherwise causes errors when tests run
             // in parallel.
-            var clientAppSubdirPath = Path.Combine(TemplateOutputDir, "ClientApp");
+            var clientAppSubdirPath = Path.Combine(Project.TemplateOutputDir, "ClientApp");
             Assert.True(File.Exists(Path.Combine(clientAppSubdirPath, "package.json")), "Missing a package.json");
 
             Npm.RestoreWithRetry(Output, clientAppSubdirPath);
@@ -47,11 +52,11 @@ namespace Templates.Test.SpaTemplateTest
 
         private void TestApplication(bool publish)
         {
-            using (var aspNetProcess = StartAspNetProcess(publish))
+            using (var aspNetProcess = Project.StartAspNetProcess(publish))
             {
                 aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
 
-                if (WebDriverFactory.HostSupportsBrowserAutomation)
+                if (BrowserFixture.IsHostAutomationSupported())
                 {
                     aspNetProcess.VisitInBrowser(Browser);
                     TestBasicNavigation();
@@ -63,7 +68,7 @@ namespace Templates.Test.SpaTemplateTest
         {
             Browser.WaitForElement("ul");
             // <title> element gets project ID injected into it during template execution
-            Assert.Contains(ProjectGuid, Browser.Title);
+            Assert.Contains(Project.ProjectGuid, Browser.Title);
 
             // Initially displays the home page
             Assert.Equal("Hello, world!", Browser.GetText("h1"));

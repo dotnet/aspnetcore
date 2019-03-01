@@ -1,26 +1,30 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Testing.xunit;
+using ProjectTemplates.Tests.Helpers;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Templates.Test
 {
-    public class RazorPagesTemplateTest : TemplateTestBase
+    public class RazorPagesTemplateTest
     {
-        public RazorPagesTemplateTest(ITestOutputHelper output) : base(output)
+        public RazorPagesTemplateTest(ProjectFactoryFixture projectFactory, ITestOutputHelper output)
         {
+            Project = projectFactory.CreateProject(output);
         }
+
+        public Project Project { get; }
 
         [Fact]
         private void RazorPagesTemplate_NoAuthImpl()
         {
-            RunDotNetNew("razor");
+            Project.RunDotNetNew("razor");
 
-            AssertFileExists("Pages/Shared/_LoginPartial.cshtml", false);
+            Project.AssertFileExists("Pages/Shared/_LoginPartial.cshtml", false);
 
-            var projectFileContents = ReadFile($"{ProjectName}.csproj");
+            var projectFileContents = Project.ReadFile($"{Project.ProjectName}.csproj");
             Assert.DoesNotContain(".db", projectFileContents);
             Assert.DoesNotContain("Microsoft.EntityFrameworkCore.Tools", projectFileContents);
             Assert.DoesNotContain("Microsoft.VisualStudio.Web.CodeGeneration.Design", projectFileContents);
@@ -29,7 +33,7 @@ namespace Templates.Test
 
             foreach (var publish in new[] { false, true })
             {
-                using (var aspNetProcess = StartAspNetProcess(publish))
+                using (var aspNetProcess = Project.StartAspNetProcess(publish))
                 {
                     aspNetProcess.AssertOk("/");
                     aspNetProcess.AssertOk("/Privacy");
@@ -42,23 +46,23 @@ namespace Templates.Test
         [InlineData(true)]
         public void RazorPagesTemplate_IndividualAuthImpl( bool useLocalDB)
         {
-            RunDotNetNew("razor", auth: "Individual", useLocalDB: useLocalDB);
+            Project.RunDotNetNew("razor", auth: "Individual", useLocalDB: useLocalDB);
 
-            AssertFileExists("Pages/Shared/_LoginPartial.cshtml", true);
+            Project.AssertFileExists("Pages/Shared/_LoginPartial.cshtml", true);
 
-            var projectFileContents = ReadFile($"{ProjectName}.csproj");
+            var projectFileContents = Project.ReadFile($"{Project.ProjectName}.csproj");
             if (!useLocalDB)
             {
                 Assert.Contains(".db", projectFileContents);
             }
 
-            RunDotNetEfCreateMigration("razorpages");
+            Project.RunDotNetEfCreateMigration("razorpages");
 
-            AssertEmptyMigration("razorpages");
+            Project.AssertEmptyMigration("razorpages");
 
             foreach (var publish in new[] { false, true })
             {
-                using (var aspNetProcess = StartAspNetProcess(publish))
+                using (var aspNetProcess = Project.StartAspNetProcess(publish))
                 {
                     aspNetProcess.AssertOk("/");
                     aspNetProcess.AssertOk("/Privacy");

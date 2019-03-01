@@ -1,12 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Shared testing infrastructure for running E2E tests using selenium -->
+  <Import Project="$(SharedSourceRoot)E2ETesting\E2ETesting.props" />
+
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TestGroupName>ProjectTemplates.E2ETests</TestGroupName>
     <DefineConstants>$(DefineConstants);XPLAT</DefineConstants>
-    <!-- WebDriver is not strong-named, so this test project cannot be strong named either. -->
-    <SignAssembly>false</SignAssembly>
 
-    <!-- Workaround until https://github.com/aspnet/AspNetCore/issues/4321 is resolved. -->
-    <RunTemplateTests Condition="'$(OS)' != 'Windows_NT'">true</RunTemplateTests>
+    <RunTemplateTests>true</RunTemplateTests>
     <SkipTests Condition="'$(RunTemplateTests)' != 'true'">true</SkipTests>
     <!-- https://github.com/aspnet/AspNetCore/issues/6857 -->
     <BuildHelixPayload>false</BuildHelixPayload>
@@ -14,16 +16,13 @@
 
   <ItemGroup>
     <EmbeddedResource Include="template-baselines.json" />
-    <Compile Include="$(SharedSourceRoot)Process\*.cs" />
-    <Compile Include="$(SharedSourceRoot)CertificateGeneration\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)Process\*.cs" LinkBase="shared\Process" />
+    <Compile Include="$(SharedSourceRoot)CertificateGeneration\**\*.cs" LinkBase="shared\CertificateGeneration" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="AngleSharp" />
     <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" />
-    <Reference Include="Selenium.Support" />
-    <Reference Include="Selenium.WebDriver.MicrosoftDriver" />
-    <Reference Include="Selenium.WebDriver" />
   </ItemGroup>
 
   <ItemGroup>
@@ -49,5 +48,8 @@
       <_Parameter2>$([MSBuild]::EnsureTrailingSlash('$(RepositoryRoot)'))obj\template-restore\</_Parameter2>
     </AssemblyAttribute>
   </ItemGroup>
+
+  <!-- Shared testing infrastructure for running E2E tests using selenium -->
+  <Import Project="$(SharedSourceRoot)E2ETesting\E2ETesting.targets" />
 
 </Project>
