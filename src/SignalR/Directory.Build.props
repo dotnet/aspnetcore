@@ -16,8 +16,8 @@
     <Content Include="$(MSBuildThisFileDirectory)xunit.runner.json" Link="xunit.runner.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Reference Include="Microsoft.Extensions.Logging.Testing" />
-  </ItemGroup>
+      <Reference Include="Microsoft.Extensions.Logging.Testing" PrivateAssets="All" />
+   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Internal.AspNetCore.Analyzers" PrivateAssets="All" Version="$(InternalAspNetCoreAnalyzersPackageVersion)" AllowExplicitReference="true" />
