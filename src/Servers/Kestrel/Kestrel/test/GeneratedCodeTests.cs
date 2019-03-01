@@ -17,12 +17,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2223", FlakyOn.Helix.All)]
         public void GeneratedCodeIsUpToDate()
         {
-            var repositoryRoot = typeof(GeneratedCodeTests).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>().First(f => string.Equals(f.Key, "RepositoryRoot", StringComparison.OrdinalIgnoreCase)).Value;
+            var repositoryRoot = TestPathUtilities.GetSolutionRootDirectory("Kestrel");
 
-            var httpHeadersGeneratedPath = Path.Combine(repositoryRoot, "src/Servers/Kestrel/Core/src/Internal/Http/HttpHeaders.Generated.cs");
-            var httpProtocolGeneratedPath = Path.Combine(repositoryRoot, "src/Servers/Kestrel/Core/src/Internal/Http/HttpProtocol.Generated.cs");
-            var httpUtilitiesGeneratedPath = Path.Combine(repositoryRoot, "src/Servers/Kestrel/Core/src/Internal/Infrastructure/HttpUtilities.Generated.cs");
-            var transportConnectionGeneratedPath = Path.Combine(repositoryRoot, "src/Servers/Kestrel/Transport.Abstractions/src/Internal/TransportConnection.Generated.cs");
+            var httpHeadersGeneratedPath = Path.Combine(repositoryRoot, "Kestrel/Core/src/Internal/Http/HttpHeaders.Generated.cs");
+            var httpProtocolGeneratedPath = Path.Combine(repositoryRoot, "Kestrel/Core/src/Internal/Http/HttpProtocol.Generated.cs");
+            var httpUtilitiesGeneratedPath = Path.Combine(repositoryRoot, "Kestrel/Core/src/Internal/Infrastructure/HttpUtilities.Generated.cs");
+            var transportConnectionGeneratedPath = Path.Combine(repositoryRoot, "Kestrel/Transport.Abstractions/src/Internal/TransportConnection.Generated.cs");
 
             var testHttpHeadersGeneratedPath = Path.GetTempFileName();
             var testHttpProtocolGeneratedPath = Path.GetTempFileName();

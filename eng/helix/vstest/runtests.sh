@@ -79,7 +79,6 @@ if [ $nonflaky_exitcode != 0 ]; then
     echo "Non-flaky tests failed!" 1>&2
     # DO NOT EXIT
 fi
-
 FLAKY_FILTER="Flaky:All=true|Flaky:Helix:All=true|Flaky:Helix:Queue:All=true|Flaky:Helix:Queue:$HELIX=true"
 echo "Running known-flaky tests."
 $DOTNET_ROOT/dotnet vstest $1 --logger:trx --TestCaseFilter:"$FLAKY_FILTER"
