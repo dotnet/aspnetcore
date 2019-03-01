@@ -227,7 +227,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 if (!sequenceReader.TryReadTo(out ReadOnlySequence<byte> key, equalsDelimiter, advancePastDelimiter: false) ||
                     !sequenceReader.IsNext(equalsDelimiter, true))
                 {
-                    if (sequenceReader.Length > KeyLengthLimit)
+                    if (sequenceReader.Consumed > KeyLengthLimit)
                     {
                         ThrowKeyTooLargeException();
                     }
@@ -245,11 +245,10 @@ namespace Microsoft.AspNetCore.WebUtilities
                 {
                     if (!isFinalBlock)
                     {
-                        if (sequenceReader.Length > ValueLengthLimit)
+                        if (sequenceReader.Consumed - key.Length > ValueLengthLimit)
                         {
                             ThrowValueTooLargeException();
                         }
-
                         break;
                     }
 

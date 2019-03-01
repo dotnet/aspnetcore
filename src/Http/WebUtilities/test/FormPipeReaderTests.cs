@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
         [Fact]
         public async Task ReadFormAsync_KeyLengthLimitMet_Success()
         {
-            var bodyPipe = await MakePipeReader("foo=1&bar=2&baz=3&baz=4");
+            var bodyPipe = await MakePipeReader("foo=1&bar=2&bazzzzzzzz=3&baz=4");
 
             var formCollection = await ReadFormAsync(new FormPipeReader(bodyPipe) { KeyLengthLimit = 10 });
 
@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
         [Fact]
         public async Task ReadFormAsync_KeyLengthLimitExceeded_Throw()
         {
-            var bodyPipe = await MakePipeReader("foo=1&baz1234567890=2");
+            var bodyPipe = await MakePipeReader("foo=1&baz12345678=2");
 
             var exception = await Assert.ThrowsAsync<InvalidDataException>(
                 () => ReadFormAsync(new FormPipeReader(bodyPipe) { KeyLengthLimit = 10 }));
@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
         [Fact]
         public async Task ReadFormAsync_ValueLengthLimitExceeded_Throw()
         {
-            var bodyPipe = await MakePipeReader("foo=1&baz=1234567890123");
+            var bodyPipe = await MakePipeReader("foo=1&baz=12345678901");
 
             var exception = await Assert.ThrowsAsync<InvalidDataException>(
                 () => ReadFormAsync(new FormPipeReader(bodyPipe) { ValueLengthLimit = 10 }));
