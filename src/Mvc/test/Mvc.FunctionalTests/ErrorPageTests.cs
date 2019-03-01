@@ -1,27 +1,44 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.Razor.Internal;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
     /// <summary>
     /// Functional test to verify the error reporting of Razor compilation by diagnostic middleware.
     /// </summary>
-    public class ErrorPageTests : IClassFixture<MvcTestFixture<ErrorPageMiddlewareWebSite.Startup>>
+    public class ErrorPageTests : IClassFixture<MvcTestFixture<ErrorPageMiddlewareWebSite.Startup>>, IDisposable
     {
         private static readonly string PreserveCompilationContextMessage = HtmlEncoder.Default.Encode(
             "One or more compilation references are missing. Ensure that your project is referencing " +
             "'Microsoft.NET.Sdk.Web' and the 'PreserveCompilationContext' property is not set to false.");
-        public ErrorPageTests(MvcTestFixture<ErrorPageMiddlewareWebSite.Startup> fixture)
+        private readonly AssemblyTestLog _assemblyTestLog;
+
+        public ErrorPageTests(
+            MvcTestFixture<ErrorPageMiddlewareWebSite.Startup> fixture,
+            ITestOutputHelper testOutputHelper)
         {
-            Client = fixture.CreateDefaultClient();
+            _assemblyTestLog = AssemblyTestLog.ForAssembly(GetType().Assembly);
+
+            var loggerProvider = _assemblyTestLog.CreateLoggerFactory(testOutputHelper, GetType().Name);
+
+            var factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(b => b.UseStartup<ErrorPageMiddlewareWebSite.Startup>());
+            Client = factory
+                .WithWebHostBuilder(builder => builder.ConfigureLogging(l => l.Services.AddSingleton<ILoggerFactory>(loggerProvider)))
+                .CreateDefaultClient();
         }
 
         public HttpClient Client { get; }
@@ -143,6 +160,11 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Contains(aggregateException, content);
             Assert.Contains(nullReferenceException, content);
             Assert.Contains(indexOutOfRangeException, content);
+        }
+
+        public void Dispose()
+        {
+            _assemblyTestLog.Dispose();
         }
     }
 }
