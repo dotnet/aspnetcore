@@ -375,6 +375,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
         }
 
         [ConditionalFact]
+        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/8091
         public async Task Caching_VariousStatusCodes_Cached()
         {
             var requestCount = 1;
