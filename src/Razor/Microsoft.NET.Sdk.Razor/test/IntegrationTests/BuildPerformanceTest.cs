@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         {
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore-Internal/issues/1860")]
         [InitializeTestProject("SimpleMvc")]
         public async Task BuildMvcApp()
         {
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore-Internal/issues/1860")]
         [InitializeTestProject("MvcWithComponents")]
         public async Task BuildMvcAppWithComponents()
         {
