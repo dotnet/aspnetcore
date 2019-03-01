@@ -10,6 +10,7 @@
 
     <FxProjectToBuild Condition=" '$(BuildSiteExtensions)' == 'true' " Include="$(RepositoryRoot)src\SiteExtensions\Runtime\Microsoft.AspNetCore.Runtime.SiteExtension.pkgproj" />
     <FxProjectToBuild Condition=" '$(BuildSiteExtensions)' == 'true' " Include="$(RepositoryRoot)src\SiteExtensions\LoggingBranch\LoggingBranch.csproj" />
+    <FxProjectToBuild Include="$(RepositoryRoot)src\Framework\src\Microsoft.AspNetCore.App.Runtime.csproj" />
   </ItemGroup>
 
   <Target Name="BuildSharedFx" DependsOnTargets="$(BuildSharedFxDependsOn)" />
