@@ -1,20 +1,21 @@
-<Project>
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AppWithP2PReference\AppWithP2PReference.csproj" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="..\ClassLibrary\ClassLibrary.csproj" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="..\ClassLibrary2\ClassLibrary2.csproj" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="..\ClassLibraryMvc21\ClassLibraryMvc21.csproj" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="..\ComponentLibrary\ComponentLibrary.csproj" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="..\LargeProject\LargeProject.csproj" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="..\SimpleMvcFSharp\SimpleMvcFSharp.fsproj" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="..\SimpleMvc\SimpleMvc.csproj" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="..\SimpleMvc11\SimpleMvc11.csproj" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="..\SimpleMvc21\SimpleMvc21.csproj" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="..\SimpleMvc22\SimpleMvc22.csproj" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="..\SimplePages\SimplePages.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\AppWithP2PReference\AppWithP2PReference.csproj" />
+    <ProjectReference Include="..\ClassLibrary\ClassLibrary.csproj" />
+    <ProjectReference Include="..\ClassLibrary2\ClassLibrary2.csproj" />
+    <ProjectReference Include="..\ClassLibraryMvc21\ClassLibraryMvc21.csproj" />
+    <ProjectReference Include="..\ComponentLibrary\ComponentLibrary.csproj" />
+    <ProjectReference Include="..\LargeProject\LargeProject.csproj" />
+    <ProjectReference Include="..\SimpleMvcFSharp\SimpleMvcFSharp.fsproj" />
+    <ProjectReference Include="..\SimpleMvc\SimpleMvc.csproj" />
+    <ProjectReference Include="..\SimpleMvc11\SimpleMvc11.csproj" />
+    <ProjectReference Include="..\SimpleMvc21\SimpleMvc21.csproj" />
+    <ProjectReference Include="..\SimpleMvc22\SimpleMvc22.csproj" />
+    <ProjectReference Include="..\SimplePages\SimplePages.csproj" />
   </ItemGroup>
+
 </Project>

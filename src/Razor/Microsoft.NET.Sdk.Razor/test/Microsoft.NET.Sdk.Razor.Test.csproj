@@ -38,7 +38,6 @@
     <!-- We don't need anything in this assembly, we just want to make sure it's built -->
     <ProjectReference Include="..\..\src\Microsoft.NET.Sdk.Razor\Microsoft.NET.Sdk.Razor.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Mvc.Razor.Extensions\Microsoft.AspNetCore.Mvc.Razor.Extensions.csproj" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="..\testapps\RestoreTestProjects\RestoreTestProjects.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -91,6 +90,10 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
       <FileWrites Include="$(MSBuildLocationFileOutput)" />
     </ItemGroup>
 
+  </Target>
+
+  <Target Name="RestoreTestProjects" BeforeTargets="Restore">
+    <MSBuild Projects="..\testapps\RestoreTestProjects\RestoreTestProjects.csproj" Targets="Restore" />
   </Target>
 
 </Project>
