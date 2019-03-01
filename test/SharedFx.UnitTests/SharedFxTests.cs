@@ -36,40 +36,45 @@ namespace Microsoft.AspNetCore
             }
 
             var zipPath = Path.Combine(AppContext.BaseDirectory, zipName);
+            var tempDirectoryPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
 
-            if (!Directory.Exists(AppContext.BaseDirectory + "unzipped"))
+            try
             {
-                ZipFile.ExtractToDirectory(AppContext.BaseDirectory, "unzipped");
-            }
+                Directory.CreateDirectory(tempDirectoryPath);
+                ZipFile.ExtractToDirectory(zipPath, tempDirectoryPath);
+                var nugetAssembliesPath = Path.Combine(tempDirectoryPath, "shared", config.Name, previousVersion);
 
-            var nugetAssembliesPath = Path.Combine(AppContext.BaseDirectory, "unzipped", "shared", config.Name, previousVersion);
-
-            var files = Directory.GetFiles(nugetAssembliesPath, "*.dll");
-            foreach (var file in files)
-            {
-                try
+                var files = Directory.GetFiles(nugetAssembliesPath, "*.dll");
+                foreach (var file in files)
                 {
-                    var assemblyVersion = AssemblyName.GetAssemblyName(file).Version;
-                    var dllName = Path.GetFileName(file);
-                    nugetAssemblyVersions.Add(dllName, assemblyVersion);
+                    try
+                    {
+                        var assemblyVersion = AssemblyName.GetAssemblyName(file).Version;
+                        var dllName = Path.GetFileName(file);
+                        nugetAssemblyVersions.Add(dllName, assemblyVersion);
+                    }
+                    catch (BadImageFormatException) { }
                 }
-                catch (BadImageFormatException) { }
-            }
 
-            files = Directory.GetFiles(dir, "*.dll");
+                files = Directory.GetFiles(dir, "*.dll");
 
-            Assert.All(files, file =>
-            {
-                try
+                Assert.All(files, file =>
                 {
-                    var localAssemblyVersion = AssemblyName.GetAssemblyName(file).Version;
-                    var dllName = Path.GetFileName(file);
-                    Assert.True(nugetAssemblyVersions.ContainsKey(dllName), $"Expected {dllName} to be in the downloaded dlls");
-                    Assert.True(localAssemblyVersion.CompareTo(nugetAssemblyVersions[dllName]) >= 0, $"Expected the local version of {dllName} to be greater than or equal to the already released version.");
-                }
-                catch (BadImageFormatException) { }
+                    try
+                    {
+                        var localAssemblyVersion = AssemblyName.GetAssemblyName(file).Version;
+                        var dllName = Path.GetFileName(file);
+                        Assert.Contains(dllName, nugetAssemblyVersions.Keys);
+                        Assert.InRange(localAssemblyVersion.CompareTo(nugetAssemblyVersions[dllName]), 0, int.MaxValue);
+                    }
+                    catch (BadImageFormatException) { }
 
-            });
+                });
+            }
+            finally
+            {
+                Directory.Delete(tempDirectoryPath, true);
+            }
         }
 
         [Theory]
