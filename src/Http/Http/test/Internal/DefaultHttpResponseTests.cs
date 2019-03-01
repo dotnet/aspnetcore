@@ -110,6 +110,10 @@ namespace Microsoft.AspNetCore.Http.Internal
             mock.Setup(o => o.StartAsync(It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
             features.Set(mock.Object);
 
+            var responseMock = new Mock<IHttpResponseFeature>();
+            responseMock.Setup(o => o.HasStarted).Returns(false);
+            features.Set(responseMock.Object);
+
             var context = new DefaultHttpContext(features);
             await context.Response.StartAsync();
 
@@ -125,6 +129,10 @@ namespace Microsoft.AspNetCore.Http.Internal
             var ct = new CancellationToken();
             mock.Setup(o => o.StartAsync(It.Is<CancellationToken>((localCt) => localCt.Equals(ct)))).Returns(Task.CompletedTask);
             features.Set(mock.Object);
+
+            var responseMock = new Mock<IHttpResponseFeature>();
+            responseMock.Setup(o => o.HasStarted).Returns(false);
+            features.Set(responseMock.Object);
 
             var context = new DefaultHttpContext(features);
             await context.Response.StartAsync(ct);
