@@ -24,7 +24,6 @@
     <ConfigurationType>Application</ConfigurationType>
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
-    <AdditionalLibraryDirectories>..\InProcessRequestHandler\$(Platform)\$(Configuration)\;</AdditionalLibraryDirectories>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -100,6 +99,7 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
+      <AdditionalLibraryDirectories>..\InProcessRequestHandler\Win32\$(Configuration)\;</AdditionalLibraryDirectories>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;inprocessapplication.obj;inprocesshandler.obj;ahadmin.lib;Rpcrt4.lib;inprocessapplicationbase.obj;stdafx.obj;version.lib;inprocessoptions.obj;%(AdditionalDependencies)</AdditionalDependencies>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
@@ -126,6 +126,7 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
+      <AdditionalLibraryDirectories>..\InProcessRequestHandler\x64\$(Configuration)\;</AdditionalLibraryDirectories>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;inprocessapplication.obj;inprocesshandler.obj;ahadmin.lib;Rpcrt4.lib;inprocessapplicationbase.obj;stdafx.obj;version.lib;inprocessoptions.obj;%(AdditionalDependencies)</AdditionalDependencies>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
@@ -154,6 +155,7 @@
       <AdditionalOptions>/NODEFAULTLIB:libucrt.lib /DEFAULTLIB:ucrt.lib %(AdditionalOptions)</AdditionalOptions>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <AdditionalLibraryDirectories>..\InProcessRequestHandler\Win32\$(Configuration)\;</AdditionalLibraryDirectories>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;inprocessapplication.obj;inprocesshandler.obj;ahadmin.lib;Rpcrt4.lib;inprocessapplicationbase.obj;stdafx.obj;version.lib;inprocessoptions.obj;%(AdditionalDependencies)</AdditionalDependencies>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
@@ -182,6 +184,7 @@
       <AdditionalOptions>/NODEFAULTLIB:libucrt.lib /DEFAULTLIB:ucrt.lib %(AdditionalOptions)</AdditionalOptions>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <AdditionalLibraryDirectories>..\InProcessRequestHandler\x64\$(Configuration)\;</AdditionalLibraryDirectories>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;inprocessapplication.obj;inprocesshandler.obj;ahadmin.lib;Rpcrt4.lib;inprocessapplicationbase.obj;stdafx.obj;version.lib;inprocessoptions.obj;%(AdditionalDependencies)</AdditionalDependencies>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
