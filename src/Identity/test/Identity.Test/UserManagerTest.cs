@@ -657,9 +657,9 @@ namespace Microsoft.AspNetCore.Identity.Test
         {
             var manager = MockHelpers.TestUserManager(new NoopUserStore());
             Assert.False(manager.SupportsUserClaim);
-            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.AddClaimAsync(null, null));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.AddClaimsAsync(null, null));
             await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.ReplaceClaimAsync(null, null, null));
-            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.RemoveClaimAsync(null, null));
+            await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.RemoveClaimsAsync(null, null));
             await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.GetClaimsAsync(null));
         }
 
