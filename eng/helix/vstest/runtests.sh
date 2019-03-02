@@ -62,7 +62,8 @@ export helix="true"
 
 $DOTNET_ROOT/dotnet vstest $1 -lt >discovered.txt
 if grep -Fxq "Exception thrown" discovered.txt then
-    echo Exception thrown during test discovery.
+    echo -e "${RED}Exception thrown during test discovery${RESET}".
+    cat discovered.txt
     exit 1
 fi
 
