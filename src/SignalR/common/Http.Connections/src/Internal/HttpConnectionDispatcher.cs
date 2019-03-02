@@ -235,7 +235,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                     }
 
                     // Mark the connection as active
-                    connection.Status = HttpConnectionStatus.Active;
+                    connection.ChangeState(from: HttpConnectionStatus.Inactive, to: HttpConnectionStatus.Active);
 
                     // Raise OnConnected for new connections only since polls happen all the time
                     if (connection.ApplicationTask == null)
@@ -372,7 +372,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 }
 
                 // Mark the connection as active
-                connection.Status = HttpConnectionStatus.Active;
+                connection.ChangeState(HttpConnectionStatus.Inactive, HttpConnectionStatus.Active);
 
                 // Call into the end point passing the connection
                 connection.ApplicationTask = ExecuteApplication(connectionDelegate, connection);
