@@ -19,6 +19,7 @@ set HELIX=true
 find /c "Exception thrown" discovered.txt
 if %errorlevel% equ 0 (
     echo Exception thrown during test discovery.
+    type discovered.txt
     exit 1
 )
 
