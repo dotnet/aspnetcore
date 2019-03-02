@@ -29,14 +29,11 @@
 
     <PackageReference Include="Internal.AspNetCore.Sdk" PrivateAssets="All" Version="$(InternalAspNetCoreSdkPackageVersion)" />
 
-    <ProjectReference Include="..\..\Framework\pkg\Microsoft.AspNetCore.App.pkgproj">
-      <Targets>Pack</Targets>
+    <ProjectReference Include="..\..\Framework\ref\Microsoft.AspNetCore.App.Ref.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
     </ProjectReference>
-
-     <ProjectReference Include="..\..\Framework\src\Microsoft.AspNetCore.App.shfxproj">
-      <Targets>Pack</Targets>
+    <ProjectReference Include="..\..\Framework\src\Microsoft.AspNetCore.App.Runtime.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
     </ProjectReference>

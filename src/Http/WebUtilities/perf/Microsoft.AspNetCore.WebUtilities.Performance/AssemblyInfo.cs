@@ -1,0 +1,1 @@
+[assembly: BenchmarkDotNet.Attributes.AspNetCoreBenchmark]

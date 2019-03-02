@@ -25,7 +25,7 @@ namespace signalr
 
         websocket_transport& operator=(const websocket_transport&) = delete;
 
-        pplx::task<void> connect(const web::uri &url) override;
+        pplx::task<void> connect(const utility::string_t& url) override;
 
         pplx::task<void> send(const utility::string_t &data) override;
 

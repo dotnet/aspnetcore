@@ -307,7 +307,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
-        [ConditionalTheory]
+        [ConditionalTheory(Skip = "https://github.com/aspnet/AspNetCore-Internal/issues/1383")]
         [WebSocketsSupportedCondition]
         [InlineData(5 * 4096)]
         [InlineData(1000 * 4096 + 32)]
@@ -335,7 +335,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     logger.LogInformation("Receiving message");
                     // Big timeout here because it can take a while to receive all the bytes
-                    var receivedData = await connection.Transport.Input.ReadAsync(bytes.Length);
+                    var receivedData = await connection.Transport.Input.ReadAsync(bytes.Length).OrTimeout(TimeSpan.FromMinutes(2));
                     Assert.Equal(message, Encoding.UTF8.GetString(receivedData));
                     logger.LogInformation("Completed receive");
                 }

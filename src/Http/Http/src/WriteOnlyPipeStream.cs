@@ -3,6 +3,7 @@
 
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Internal;
 
 namespace System.IO.Pipelines
 {
@@ -76,14 +77,14 @@ namespace System.IO.Pipelines
             {
                 ThrowHelper.ThrowInvalidOperationException_SynchronousFlushesDisallowed();
             }
-            
+
             FlushAsync(default).GetAwaiter().GetResult();
         }
 
         /// <inheritdoc />
-        public override async Task FlushAsync(CancellationToken cancellationToken)
+        public override Task FlushAsync(CancellationToken cancellationToken)
         {
-            await InnerPipeWriter.FlushAsync(cancellationToken);
+            return InnerPipeWriter.FlushAsync(cancellationToken).GetAsTask();
         }
 
         /// <inheritdoc />
@@ -162,16 +163,7 @@ namespace System.IO.Pipelines
 
         private Task WriteAsyncInternal(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
         {
-            var task = InnerPipeWriter.WriteAsync(source, cancellationToken);
-
-            if (task.IsCompletedSuccessfully)
-            {
-                // Most ValueTask implementations reset in GetResult, so call it before returning completed task
-                task.GetAwaiter().GetResult();
-                return Task.CompletedTask;
-            }
-
-            return task.AsTask();
+            return InnerPipeWriter.WriteAsync(source, cancellationToken).GetAsTask();
         }
     }
 }

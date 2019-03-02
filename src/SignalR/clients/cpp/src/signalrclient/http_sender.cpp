@@ -10,7 +10,7 @@ namespace signalr
 {
     namespace http_sender
     {
-        pplx::task<utility::string_t> get(web_request_factory& request_factory, const web::uri& url,
+        pplx::task<utility::string_t> get(web_request_factory& request_factory, const utility::string_t& url,
             const signalr_client_config& signalr_client_config)
         {
             auto request = request_factory.create_web_request(url);
@@ -32,7 +32,7 @@ namespace signalr
             });
         }
 
-        pplx::task<utility::string_t> post(web_request_factory& request_factory, const web::uri& url,
+        pplx::task<utility::string_t> post(web_request_factory& request_factory, const utility::string_t& url,
             const signalr_client_config& signalr_client_config)
         {
             auto request = request_factory.create_web_request(url);

@@ -264,11 +264,11 @@ HostFxrResolver::GetAbsolutePathToDotnet(
 
     if (isWow64Process)
     {
-        regKeySubSection = L"SOFTWARE\\WOW6432Node\\dotnet\\Setup\\InstalledVersions\\x64\\sdk";
+        regKeySubSection = L"SOFTWARE\\WOW6432Node\\dotnet\\Setup\\InstalledVersions\\x64";
     }
     else
     {
-        regKeySubSection = L"SOFTWARE\\dotnet\\Setup\\InstalledVersions\\x86\\sdk";
+        regKeySubSection = L"SOFTWARE\\dotnet\\Setup\\InstalledVersions\\x86";
     }
 
     const auto installationLocation = RegistryKey::TryGetString(

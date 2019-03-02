@@ -93,9 +93,6 @@
     <PackageReference Include="cpprestsdk.v140.windesktop.msvcstl.dyn.rt-dyn" Version="2.9.1" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <Target Name="AfterBuild">
-    <Exec Command="copy /y &quot;$(SolutionDir)bin\Desktop\$(Platform)\$(Configuration)\dll\$(SignalrClientTargetName).dll&quot; &quot;$(SolutionDir)bin\Desktop\$(Platform)\$(Configuration)\$(SignalrClientTargetName).dll&quot;" />
-  </Target>
   <PropertyGroup>
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>

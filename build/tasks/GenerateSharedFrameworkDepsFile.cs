@@ -7,11 +7,11 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.DotNet.Build.Tasks;
 using Microsoft.Extensions.DependencyModel;
-using RepoTasks.Utilities;
 
 namespace RepoTasks
 {
@@ -38,6 +38,9 @@ namespace RepoTasks
         [Required]
         public string RuntimePackageName { get; set; }
 
+        [Required]
+        public string PlatformManifestOutputPath { get; set; }
+
         public override bool Execute()
         {
             ExecuteCore();
@@ -51,6 +54,7 @@ namespace RepoTasks
             var runtimeFiles = new List<RuntimeFile>();
             var nativeFiles = new List<RuntimeFile>();
             var resourceAssemblies = new List<ResourceAssembly>();
+            var platformManifest = new List<string>();
 
             foreach (var reference in References)
             {
@@ -62,6 +66,7 @@ namespace RepoTasks
                 {
                     var nativeFile = new RuntimeFile(fileName, null, fileVersion);
                     nativeFiles.Add(nativeFile);
+                    platformManifest.Add($"{fileName}|{FrameworkName}||{fileVersion}");
                 }
                 else
                 {
@@ -69,6 +74,7 @@ namespace RepoTasks
                         fileVersion: fileVersion,
                         assemblyVersion: assemblyVersion.ToString());
                     runtimeFiles.Add(runtimeFile);
+                    platformManifest.Add($"{fileName}|{FrameworkName}|{assemblyVersion}|{fileVersion}");
                 }
             }
 
@@ -91,6 +97,12 @@ namespace RepoTasks
                 Enumerable.Empty<RuntimeFallbacks>());
 
             Directory.CreateDirectory(Path.GetDirectoryName(DepsFilePath));
+            Directory.CreateDirectory(Path.GetDirectoryName(PlatformManifestOutputPath));
+
+            File.WriteAllText(
+                PlatformManifestOutputPath,
+                string.Join("\n", platformManifest.OrderBy(n => n)),
+                Encoding.UTF8);
 
             try
             {

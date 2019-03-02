@@ -44,14 +44,14 @@ namespace Microsoft.AspNetCore.Components.Server
             var prepareResponse = options.OnPrepareResponse;
             if (prepareResponse == null)
             {
-                options.OnPrepareResponse = BlazorApplicationBuilderExtensions.SetCacheHeaders;
+                options.OnPrepareResponse = CacheHeaderSettings.SetCacheHeaders;
             }
             else
             {
                 void PrepareResponse(StaticFileResponseContext context)
                 {
                     prepareResponse(context);
-                    BlazorApplicationBuilderExtensions.SetCacheHeaders(context);
+                    CacheHeaderSettings.SetCacheHeaders(context);
                 }
 
                 options.OnPrepareResponse = PrepareResponse;

@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -31,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             private readonly HttpResponseTrailers _collection;
             private readonly long _bits;
-            private int _state;
+            private int _next;
             private KeyValuePair<string, StringValues> _current;
             private readonly bool _hasUnknown;
             private Dictionary<string, StringValues>.Enumerator _unknownEnumerator;
@@ -40,7 +41,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 _collection = collection;
                 _bits = collection._bits;
-                _state = 0;
+                _next = 0;
                 _current = default;
                 _hasUnknown = collection.MaybeUnknown != null;
                 _unknownEnumerator = _hasUnknown
@@ -58,7 +59,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             public void Reset()
             {
-                _state = 0;
+                _next = 0;
             }
         }
     }
