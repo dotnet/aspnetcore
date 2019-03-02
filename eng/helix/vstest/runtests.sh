@@ -64,6 +64,6 @@ $DOTNET_ROOT/dotnet vstest $1 -lt >discovered.txt
 if grep -Fxq "Exception thrown" discovered.txt then
     echo Exception thrown during test discovery.
     exit 1
-if
+fi
 
 $DOTNET_ROOT/dotnet vstest $1 --logger:trx
