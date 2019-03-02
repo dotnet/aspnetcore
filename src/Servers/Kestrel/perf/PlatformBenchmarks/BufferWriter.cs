@@ -30,6 +30,9 @@ namespace PlatformBenchmarks
             {
                 _buffered = 0;
                 _output.Advance(buffered);
+                
+                // Calling IBufferWriter<T>.Advance(int) may have invalidated our cached Span<T>, so reacquire next time.
+                _span = default;
             }
         }
 
