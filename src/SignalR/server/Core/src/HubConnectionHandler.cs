@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.SignalR
             _dispatcher = dispatcher;
 
             _enableDetailedErrors = _hubOptions.EnableDetailedErrors ?? _globalHubOptions.EnableDetailedErrors ?? false;
-            _maximumMessageSize = _hubOptions.MaximumMessageSize ?? _globalHubOptions.MaximumMessageSize;
+            _maximumMessageSize = _hubOptions.MaximumReceiveMessageSize ?? _globalHubOptions.MaximumReceiveMessageSize;
         }
 
         /// <inheritdoc />

@@ -42,9 +42,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 options.HandshakeTimeout = DefaultHandshakeTimeout;
             }
 
-            if (options.MaximumMessageSize == null)
+            if (options.MaximumReceiveMessageSize == null)
             {
-                options.MaximumMessageSize = DefaultMaximumMessageSize;
+                options.MaximumReceiveMessageSize = DefaultMaximumMessageSize;
             }
 
             if (options.SupportedProtocols == null)

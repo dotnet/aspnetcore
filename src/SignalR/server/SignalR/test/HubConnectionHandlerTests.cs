@@ -473,7 +473,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             using (StartVerifiableLog(ExpectedErrors))
             {
                 var connectionHandler = HubConnectionHandlerTestUtils.GetHubConnectionHandler(typeof(HubT), LoggerFactory,
-                    services => services.AddSignalR().AddHubOptions<HubT>(o => o.MaximumMessageSize = maximumMessageSize));
+                    services => services.AddSignalR().AddHubOptions<HubT>(o => o.MaximumReceiveMessageSize = maximumMessageSize));
 
                 using (var client = new TestClient())
                 {
@@ -511,7 +511,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             using (StartVerifiableLog(ExpectedErrors))
             {
                 var connectionHandler = HubConnectionHandlerTestUtils.GetHubConnectionHandler(typeof(HubT), LoggerFactory,
-                    services => services.AddSignalR().AddHubOptions<HubT>(o => o.MaximumMessageSize = maximumMessageSize));
+                    services => services.AddSignalR().AddHubOptions<HubT>(o => o.MaximumReceiveMessageSize = maximumMessageSize));
 
                 using (var client = new TestClient())
                 {
@@ -555,7 +555,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             using (StartVerifiableLog(ExpectedErrors))
             {
                 var connectionHandler = HubConnectionHandlerTestUtils.GetHubConnectionHandler(typeof(HubT), LoggerFactory,
-                    services => services.AddSignalR().AddHubOptions<HubT>(o => o.MaximumMessageSize = maximumMessageSize));
+                    services => services.AddSignalR().AddHubOptions<HubT>(o => o.MaximumReceiveMessageSize = maximumMessageSize));
 
                 using (var client = new TestClient())
                 {
@@ -604,7 +604,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             using (StartVerifiableLog())
             {
                 var connectionHandler = HubConnectionHandlerTestUtils.GetHubConnectionHandler(typeof(HubT), LoggerFactory,
-                    services => services.AddSignalR().AddHubOptions<HubT>(o => o.MaximumMessageSize = maximumMessageSize));
+                    services => services.AddSignalR().AddHubOptions<HubT>(o => o.MaximumReceiveMessageSize = maximumMessageSize));
 
                 using (var client = new TestClient())
                 {
