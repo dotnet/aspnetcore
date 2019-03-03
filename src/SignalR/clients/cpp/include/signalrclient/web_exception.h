@@ -4,7 +4,6 @@
 #pragma once
 
 #include <stdexcept>
-#include "cpprest/asyncrt_utils.h"
 
 namespace signalr
 {
@@ -12,7 +11,7 @@ namespace signalr
     {
     public:
         web_exception(const std::string &what, unsigned short status_code)
-            : runtime_error(utility::conversions::to_utf8string(what)), m_status_code(status_code)
+            : runtime_error(what), m_status_code(status_code)
         {}
 
         unsigned short status_code() const noexcept

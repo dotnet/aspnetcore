@@ -29,7 +29,7 @@ namespace signalr
     pplx::task<void> default_websocket_client::send(const std::string &message)
     {
         web::websockets::client::websocket_outgoing_message msg;
-        msg.set_utf8_message(utility::conversions::to_utf8string(message));
+        msg.set_utf8_message(message);
         return m_underlying_client.send(msg);
     }
 

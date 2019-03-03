@@ -4,7 +4,6 @@
 #pragma once
 
 #include <stdexcept>
-#include "cpprest/asyncrt_utils.h"
 
 namespace signalr
 {
@@ -12,7 +11,7 @@ namespace signalr
     {
     public:
         explicit signalr_exception(const std::string &what)
-            : runtime_error(utility::conversions::to_utf8string(what))
+            : runtime_error(what)
         {}
     };
 }
