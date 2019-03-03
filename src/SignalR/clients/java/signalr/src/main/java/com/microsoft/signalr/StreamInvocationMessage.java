@@ -3,16 +3,26 @@
 
 package com.microsoft.signalr;
 
+import java.util.Collection;
+
 final class StreamInvocationMessage extends HubMessage {
     private final int type = HubMessageType.STREAM_INVOCATION.value;
     private final String invocationId;
     private final String target;
     private final Object[] arguments;
+    private Collection<String> streamIds;
 
     public StreamInvocationMessage(String invocationId, String target, Object[] args) {
+        this(invocationId, target, args, null);
+    }
+
+    public StreamInvocationMessage(String invocationId, String target, Object[] args, Collection<String> streamIds) {
         this.invocationId = invocationId;
         this.target = target;
         this.arguments = args;
+        if(streamIds != null && !streamIds.isEmpty()) {
+            this.streamIds = streamIds;
+        }
     }
 
     public String getInvocationId() {
