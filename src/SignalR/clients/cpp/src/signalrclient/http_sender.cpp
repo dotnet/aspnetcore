@@ -10,11 +10,11 @@ namespace signalr
 {
     namespace http_sender
     {
-        pplx::task<utility::string_t> get(web_request_factory& request_factory, const utility::string_t& url,
+        pplx::task<std::string> get(web_request_factory& request_factory, const std::string& url,
             const signalr_client_config& signalr_client_config)
         {
             auto request = request_factory.create_web_request(url);
-            request->set_method(web::http::methods::GET);
+            request->set_method(utility::conversions::to_utf8string(web::http::methods::GET));
 
             request->set_user_agent(USER_AGENT);
             request->set_client_config(signalr_client_config);
@@ -23,8 +23,8 @@ namespace signalr
             {
                 if (response.status_code != 200)
                 {
-                    utility::ostringstream_t oss;
-                    oss << _XPLATSTR("web exception - ") << response.status_code << _XPLATSTR(" ") << response.reason_phrase;
+                    std::stringstream oss;
+                    oss << "web exception - " << response.status_code << " " << response.reason_phrase;
                     throw web_exception(oss.str(), response.status_code);
                 }
 
@@ -32,11 +32,11 @@ namespace signalr
             });
         }
 
-        pplx::task<utility::string_t> post(web_request_factory& request_factory, const utility::string_t& url,
+        pplx::task<std::string> post(web_request_factory& request_factory, const std::string& url,
             const signalr_client_config& signalr_client_config)
         {
             auto request = request_factory.create_web_request(url);
-            request->set_method(web::http::methods::POST);
+            request->set_method(utility::conversions::to_utf8string(web::http::methods::POST));
 
             request->set_user_agent(USER_AGENT);
             request->set_client_config(signalr_client_config);
@@ -45,8 +45,8 @@ namespace signalr
             {
                 if (response.status_code != 200)
                 {
-                    utility::ostringstream_t oss;
-                    oss << _XPLATSTR("web exception - ") << response.status_code << _XPLATSTR(" ") << response.reason_phrase;
+                    std::stringstream oss;
+                    oss << "web exception - " << response.status_code << " " << response.reason_phrase;
                     throw web_exception(oss.str(), response.status_code);
                 }
 

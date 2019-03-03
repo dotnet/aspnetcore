@@ -22,15 +22,15 @@ std::shared_ptr<hub_connection_impl> create_hub_connection(std::shared_ptr<webso
 
 TEST(url, negotiate_appended_to_url)
 {
-    utility::string_t base_urls[] = { _XPLATSTR("http://fakeuri"), _XPLATSTR("http://fakeuri/") };
+    std::string base_urls[] = { "http://fakeuri", "http://fakeuri/" };
 
     for (const auto& base_url : base_urls)
     {
-        web::uri requested_url;
-        auto web_request_factory = std::make_unique<test_web_request_factory>([&requested_url](const web::uri &url)
+        std::string requested_url;
+        auto web_request_factory = std::make_unique<test_web_request_factory>([&requested_url](const std::string& url)
         {
             requested_url = url;
-            return std::unique_ptr<web_request>(new web_request_stub((unsigned short)404, _XPLATSTR("Bad request"), _XPLATSTR("")));
+            return std::unique_ptr<web_request>(new web_request_stub((unsigned short)404, "Bad request", ""));
         });
 
         auto hub_connection = hub_connection_impl::create(base_url, trace_level::none,
@@ -43,7 +43,7 @@ TEST(url, negotiate_appended_to_url)
         }
         catch (const std::exception&) {}
 
-        ASSERT_EQ(web::uri(_XPLATSTR("http://fakeuri/negotiate")), requested_url);
+        ASSERT_EQ("http://fakeuri/negotiate", requested_url);
     }
 }
 
@@ -60,15 +60,15 @@ TEST(start, start_starts_connection)
 
 TEST(start, start_sends_handshake)
 {
-    auto message = std::make_shared<utility::string_t>();
+    auto message = std::make_shared<std::string>();
     auto websocket_client = create_test_websocket_client(
         /* receive function */ []() { return pplx::task_from_result(std::string("{ }\x1e")); },
-        /* send function */ [message](const utility::string_t& msg) { *message = msg; return pplx::task_from_result(); });
+        /* send function */ [message](const std::string& msg) { *message = msg; return pplx::task_from_result(); });
     auto hub_connection = create_hub_connection(websocket_client);
 
     hub_connection->start().get();
 
-    ASSERT_EQ(_XPLATSTR("{\"protocol\":\"json\",\"version\":1}\x1e"), *message);
+    ASSERT_EQ("{\"protocol\":\"json\",\"version\":1}\x1e", *message);
 
     ASSERT_EQ(connection_state::connected, hub_connection->get_connection_state());
 }
@@ -120,7 +120,7 @@ TEST(start, start_fails_if_stop_called_before_handshake_response)
     pplx::task_completion_event<void> tceWaitForSend;
     auto websocket_client = create_test_websocket_client(
         /* receive function */ [tce]() { return pplx::task<std::string>(tce); },
-        /* send function */ [tceWaitForSend](const utility::string_t &)
+        /* send function */ [tceWaitForSend](const std::string &)
         {
             tceWaitForSend.set();
             return pplx::task_from_result();
@@ -195,10 +195,10 @@ TEST(stop, connection_stopped_when_going_out_of_scope)
 
     auto log_entries = memory_writer->get_log_entries();
     ASSERT_EQ(4U, log_entries.size()) << dump_vector(log_entries);
-    ASSERT_EQ(_XPLATSTR("[state change] disconnected -> connecting\n"), remove_date_from_log_entry(log_entries[0]));
-    ASSERT_EQ(_XPLATSTR("[state change] connecting -> connected\n"), remove_date_from_log_entry(log_entries[1]));
-    ASSERT_EQ(_XPLATSTR("[state change] connected -> disconnecting\n"), remove_date_from_log_entry(log_entries[2]));
-    ASSERT_EQ(_XPLATSTR("[state change] disconnecting -> disconnected\n"), remove_date_from_log_entry(log_entries[3]));
+    ASSERT_EQ("[state change] disconnected -> connecting\n", remove_date_from_log_entry(log_entries[0]));
+    ASSERT_EQ("[state change] connecting -> connected\n", remove_date_from_log_entry(log_entries[1]));
+    ASSERT_EQ("[state change] connected -> disconnecting\n", remove_date_from_log_entry(log_entries[2]));
+    ASSERT_EQ("[state change] disconnecting -> disconnected\n", remove_date_from_log_entry(log_entries[3]));
 }
 
 TEST(stop, stop_cancels_pending_callbacks)
@@ -223,7 +223,7 @@ TEST(stop, stop_cancels_pending_callbacks)
 
     auto hub_connection = create_hub_connection(websocket_client);
     hub_connection->start().get();
-    auto t = hub_connection->invoke(_XPLATSTR("method"), json::value::array());
+    auto t = hub_connection->invoke("method", json::value::array());
     hub_connection->stop();
 
     try
@@ -262,7 +262,7 @@ TEST(stop, pending_callbacks_finished_if_hub_connections_goes_out_of_scope)
     {
         auto hub_connection = create_hub_connection(websocket_client);
         hub_connection->start().get();
-        t = hub_connection->invoke(_XPLATSTR("method"), json::value::array());
+        t = hub_connection->invoke("method", json::value::array());
     }
 
     try
@@ -295,28 +295,28 @@ TEST(hub_invocation, hub_connection_invokes_users_code_on_hub_invocations)
 
     auto hub_connection = create_hub_connection(websocket_client);
 
-    auto payload = std::make_shared<utility::string_t>();
+    auto payload = std::make_shared<std::string>();
     auto on_broadcast_event = std::make_shared<event>();
-    hub_connection->on(_XPLATSTR("broadCAST"), [on_broadcast_event, payload](const json::value& message)
+    hub_connection->on("broadCAST", [on_broadcast_event, payload](const json::value& message)
     {
-        *payload = message.serialize();
+        *payload = utility::conversions::to_utf8string(message.serialize());
         on_broadcast_event->set();
     });
 
     hub_connection->start().get();
     ASSERT_FALSE(on_broadcast_event->wait(5000));
 
-    ASSERT_EQ(_XPLATSTR("[\"message\",1]"), *payload);
+    ASSERT_EQ("[\"message\",1]", *payload);
 }
 
 TEST(send, creates_correct_payload)
 {
-    utility::string_t payload;
+    std::string payload;
     bool handshakeReceived = false;
 
     auto websocket_client = create_test_websocket_client(
         /* receive function */ []() { return pplx::task_from_result(std::string("{ }\x1e")); },
-        /* send function */[&payload, &handshakeReceived](const utility::string_t& m)
+        /* send function */[&payload, &handshakeReceived](const std::string& m)
         {
             if (handshakeReceived)
             {
@@ -330,9 +330,9 @@ TEST(send, creates_correct_payload)
     auto hub_connection = create_hub_connection(websocket_client);
     hub_connection->start().get();
 
-    hub_connection->send(_XPLATSTR("method"), json::value::array()).get();
+    hub_connection->send("method", json::value::array()).get();
 
-    ASSERT_EQ(_XPLATSTR("{\"arguments\":[],\"target\":\"method\",\"type\":1}\x1e"), payload);
+    ASSERT_EQ("{\"arguments\":[],\"target\":\"method\",\"type\":1}\x1e", payload);
 }
 
 TEST(send, does_not_wait_for_server_response)
@@ -363,18 +363,18 @@ TEST(send, does_not_wait_for_server_response)
     hub_connection->start().get();
 
     // wont block waiting for server response
-    hub_connection->send(_XPLATSTR("method"), json::value::array()).get();
+    hub_connection->send("method", json::value::array()).get();
     waitForSend.set();
 }
 
 TEST(invoke, creates_correct_payload)
 {
-    utility::string_t payload;
+    std::string payload;
     bool handshakeReceived = false;
 
     auto websocket_client = create_test_websocket_client(
         /* receive function */ []() { return pplx::task_from_result(std::string("{ }\x1e")); },
-        /* send function */[&payload, &handshakeReceived](const utility::string_t& m)
+        /* send function */[&payload, &handshakeReceived](const std::string& m)
     {
         if (handshakeReceived)
         {
@@ -390,14 +390,14 @@ TEST(invoke, creates_correct_payload)
 
     try
     {
-        hub_connection->invoke(_XPLATSTR("method"), json::value::array()).get();
+        hub_connection->invoke("method", json::value::array()).get();
     }
     catch (...)
     {
         // the invoke is not setup to succeed because it's not needed in this test
     }
 
-    ASSERT_EQ(_XPLATSTR("{\"arguments\":[],\"invocationId\":\"0\",\"target\":\"method\",\"type\":1}\x1e"), payload);
+    ASSERT_EQ("{\"arguments\":[],\"invocationId\":\"0\",\"target\":\"method\",\"type\":1}\x1e", payload);
 }
 
 TEST(invoke, callback_not_called_if_send_throws)
@@ -405,7 +405,7 @@ TEST(invoke, callback_not_called_if_send_throws)
     bool handshakeReceived = false;
     auto websocket_client = create_test_websocket_client(
         /* receive function */ []() { return pplx::task_from_result(std::string("{ }\x1e")); },
-        /* send function */[handshakeReceived](const utility::string_t&) mutable
+        /* send function */[handshakeReceived](const std::string&) mutable
         {
             if (handshakeReceived)
             {
@@ -420,7 +420,7 @@ TEST(invoke, callback_not_called_if_send_throws)
 
     try
     {
-        hub_connection->invoke(_XPLATSTR("method"), json::value::array()).get();
+        hub_connection->invoke("method", json::value::array()).get();
         ASSERT_TRUE(false); // exception expected but not thrown
     }
     catch (const std::runtime_error& e)
@@ -462,7 +462,7 @@ TEST(invoke, invoke_returns_value_returned_from_the_server)
     auto result = hub_connection->start()
         .then([hub_connection, callback_registered_event]()
         {
-            auto t = hub_connection->invoke(_XPLATSTR("method"), json::value::array());
+            auto t = hub_connection->invoke("method", json::value::array());
             callback_registered_event->set();
             return t;
         }).get();
@@ -500,7 +500,7 @@ TEST(invoke, invoke_propagates_errors_from_server_as_hub_exceptions)
         hub_connection->start()
             .then([hub_connection, callback_registered_event]()
         {
-            auto t = hub_connection->invoke(_XPLATSTR("method"), json::value::array());
+            auto t = hub_connection->invoke("method", json::value::array());
             callback_registered_event->set();
             return t;
         }).get();
@@ -541,7 +541,7 @@ TEST(invoke, unblocks_task_when_server_completes_call)
     hub_connection->start()
         .then([hub_connection, callback_registered_event]()
     {
-        auto t = hub_connection->invoke(_XPLATSTR("method"), json::value::array());
+        auto t = hub_connection->invoke("method", json::value::array());
         callback_registered_event->set();
         return t;
     }).get();
@@ -577,7 +577,7 @@ TEST(receive, logs_if_callback_for_given_id_not_found)
 
         return pplx::task_from_result(responses[call_number]);
     },
-    [handshake_sent](const utility::string_t&)
+    [handshake_sent](const std::string&)
     {
         handshake_sent->set();
         return pplx::task_from_result();
@@ -593,7 +593,7 @@ TEST(receive, logs_if_callback_for_given_id_not_found)
     ASSERT_TRUE(log_entries.size() > 1);
 
     auto entry = remove_date_from_log_entry(log_entries[2]);
-    ASSERT_EQ(_XPLATSTR("[info        ] no callback found for id: 0\n"), entry) << dump_vector(log_entries);
+    ASSERT_EQ("[info        ] no callback found for id: 0\n", entry) << dump_vector(log_entries);
 }
 
 TEST(invoke_void, invoke_creates_runtime_error)
@@ -626,7 +626,7 @@ TEST(invoke_void, invoke_creates_runtime_error)
        hub_connection->start()
            .then([hub_connection, callback_registered_event]()
        {
-           auto t = hub_connection->invoke(_XPLATSTR("method"), json::value::array());
+           auto t = hub_connection->invoke("method", json::value::array());
            callback_registered_event->set();
            return t;
        }).get();
@@ -646,14 +646,14 @@ TEST(connection_id, can_get_connection_id)
         /* receive function */ []() { return pplx::task_from_result(std::string("{ }\x1e")); });
     auto hub_connection = create_hub_connection(websocket_client);
 
-    ASSERT_EQ(_XPLATSTR(""), hub_connection->get_connection_id());
+    ASSERT_EQ("", hub_connection->get_connection_id());
 
     hub_connection->start().get();
     auto connection_id = hub_connection->get_connection_id();
     hub_connection->stop().get();
 
-    ASSERT_EQ(_XPLATSTR("f7707523-307d-4cba-9abf-3eef701241e8"), connection_id);
-    ASSERT_EQ(_XPLATSTR("f7707523-307d-4cba-9abf-3eef701241e8"), hub_connection->get_connection_id());
+    ASSERT_EQ("f7707523-307d-4cba-9abf-3eef701241e8", connection_id);
+    ASSERT_EQ("f7707523-307d-4cba-9abf-3eef701241e8", hub_connection->get_connection_id());
 }
 
 TEST(on, event_name_must_not_be_empty_string)
@@ -661,7 +661,7 @@ TEST(on, event_name_must_not_be_empty_string)
     auto hub_connection = create_hub_connection();
     try
     {
-        hub_connection->on(_XPLATSTR(""), [](const json::value&) {});
+        hub_connection->on("", [](const json::value&) {});
 
         ASSERT_TRUE(false); // exception expected but not thrown
     }
@@ -674,11 +674,11 @@ TEST(on, event_name_must_not_be_empty_string)
 TEST(on, cannot_register_multiple_handlers_for_event)
 {
     auto hub_connection = create_hub_connection();
-    hub_connection->on(_XPLATSTR("ping"), [](const json::value&) {});
+    hub_connection->on("ping", [](const json::value&) {});
 
     try
     {
-        hub_connection->on(_XPLATSTR("ping"), [](const json::value&) {});
+        hub_connection->on("ping", [](const json::value&) {});
         ASSERT_TRUE(false); // exception expected but not thrown
     }
     catch (const signalr_exception& e)
@@ -697,7 +697,7 @@ TEST(on, cannot_register_handler_if_connection_not_in_disconnected_state)
 
         hub_connection->start().get();
 
-        hub_connection->on(_XPLATSTR("myfunc"), [](const web::json::value&) {});
+        hub_connection->on("myfunc", [](const web::json::value&) {});
 
         ASSERT_TRUE(false); // exception expected but not thrown
     }
@@ -713,7 +713,7 @@ TEST(invoke, invoke_throws_when_the_underlying_connection_is_not_valid)
 
     try
     {
-        hub_connection->invoke(_XPLATSTR("method"), json::value::array()).get();
+        hub_connection->invoke("method", json::value::array()).get();
         ASSERT_TRUE(true); // exception expected but not thrown
     }
     catch (const signalr_exception& e)
@@ -728,7 +728,7 @@ TEST(invoke, send_throws_when_the_underlying_connection_is_not_valid)
 
     try
     {
-        hub_connection->invoke(_XPLATSTR("method"), json::value::array()).get();
+        hub_connection->invoke("method", json::value::array()).get();
         ASSERT_TRUE(true); // exception expected but not thrown
     }
     catch (const signalr_exception& e)
