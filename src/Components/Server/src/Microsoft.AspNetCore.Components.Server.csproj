@@ -13,19 +13,23 @@
     <IsPackable>false</IsPackable>
     <GenerateEmbeddedFilesManifest>false</GenerateEmbeddedFilesManifest>
   </PropertyGroup>
-
+  
   <ItemGroup>
-    <Compile Include="$(ComponentsSharedSourceRoot)\src\ConventionBasedStartup.cs" Link="Hosting\ConventionBasedStartup.cs" />
-    <Compile Include="$(ComponentsSharedSourceRoot)\src\IBlazorStartup.cs" Link="Hosting\IBlazorStartup.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)\src\CacheHeaderSettings.cs" Link="Shared\CacheHeaderSettings.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.Browser" />
     <Reference Include="Microsoft.AspNetCore.SignalR" />
-    <Reference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" />  
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
-    <Reference Include="Microsoft.AspNetCore.SpaServices.Extensions" />
+    <Reference Include="Microsoft.Extensions.FileProviders.Composite" />
     <Reference Include="Microsoft.Extensions.FileProviders.Embedded" />
+
+    <!--
+      Temporary until we move the prerendering APIs into this assembly.
+    -->
+    <Reference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(BuildNodeJS)' != 'false'">

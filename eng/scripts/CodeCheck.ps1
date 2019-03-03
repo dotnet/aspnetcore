@@ -133,14 +133,10 @@ try {
     Write-Host "Run git diff to check for pending changes"
 
     # Redirect stderr to stdout because PowerShell does not consistently handle output to stderr
-    $changedFiles = & cmd /c 'git --no-pager diff --ignore-space-at-eol --name-only 2>&1'
+    $changedFiles = & cmd /c 'git --no-pager diff --ignore-space-at-eol --name-only 2>nul'
 
     if ($changedFiles) {
         foreach ($file in $changedFiles) {
-            if (($file -like 'warning:*') -or ($file -like 'The file will have its original line endings*')) {
-                # git might emit warnings to stderr about CRLF vs LR, which can vary from machine to machine based on git's configuration
-                continue
-            }
             $filePath = Resolve-Path "${repoRoot}/${file}"
             LogError "Generated code is not up to date in $file." -filepath $filePath
             & git --no-pager diff --ignore-space-at-eol $filePath

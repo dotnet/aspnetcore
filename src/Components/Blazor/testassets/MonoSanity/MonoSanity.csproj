@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore" />
-    <Reference Include="Microsoft.AspNetCore.Components.Server" />
+    <Reference Include="Microsoft.AspNetCore.Blazor.Server" />
   </ItemGroup>
 
 </Project>

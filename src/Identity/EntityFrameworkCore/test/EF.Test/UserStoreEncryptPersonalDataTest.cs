@@ -137,10 +137,12 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
                 {
                     if (reader.Read())
                     {
+                        Assert.Equal("Default:ink", reader.GetString(0));
                         return reader.GetString(0) == "Default:ink";
                     }
                 }
             }
+            Assert.False(true, "Didn't find user");
             return false;
         }
 
@@ -157,6 +159,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
                 {
                     if (reader.Read())
                     {
+                        Assert.Equal("Default:ink", reader.GetString(0));
                         return reader.GetString(0) == "Default:ink";
                     }
                 }
@@ -168,7 +171,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         /// Test.
         /// </summary>
         /// <returns>Task</returns>
-        [Theory]
+        [Theory(Skip = "https://github.com/aspnet/AspNetCore/issues/7925")]
         [InlineData(true)]
         [InlineData(false)]
         public async Task CustomPersonalDataPropertiesAreProtected(bool protect)

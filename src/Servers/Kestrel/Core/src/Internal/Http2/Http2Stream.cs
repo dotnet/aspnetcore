@@ -368,11 +368,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         {
                             RequestBodyPipe.Writer.Write(segment.Span);
                         }
-                        var flushTask = RequestBodyPipe.Writer.FlushAsync();
 
-                        // It shouldn't be possible for the RequestBodyPipe to fill up an return an incomplete task if
-                        // _inputFlowControl.Advance() didn't throw.
-                        Debug.Assert(flushTask.IsCompleted);
+                        // If the stream is completed go ahead and call RequestBodyPipe.Writer.Complete().
+                        // Data will still be available to the reader.
+                        if (!endStream)
+                        {
+                            var flushTask = RequestBodyPipe.Writer.FlushAsync();
+                            // It shouldn't be possible for the RequestBodyPipe to fill up an return an incomplete task if
+                            // _inputFlowControl.Advance() didn't throw.
+                            Debug.Assert(flushTask.IsCompleted);
+                        }
                     }
                 }
             }

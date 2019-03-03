@@ -50,7 +50,7 @@
           BeforeTargets="AssignTargetPaths"
           Condition="$(PackNativeAssets) == 'true'">
     <ItemGroup>
-      <None Include="%(InProcessComponents.DllLocation)" CopyToOutputDirectory="PreserveNewest" Link="%(InProcessComponents.Platform)\%(InProcessComponents.NativeAsset).dll" />
+      <None Include="%(InProcessComponents.DllLocation)" CopyToPublishDirectory="PreserveNewest" CopyToOutputDirectory="PreserveNewest" Link="%(InProcessComponents.Platform)\%(InProcessComponents.NativeAsset).dll" />
     </ItemGroup>
   </Target>
 </Project>

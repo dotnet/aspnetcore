@@ -78,3 +78,15 @@ namespace Microsoft.AspNetCore.Blazor.Services
         public static void NotifyLocationChanged(string newAbsoluteUri) { }
     }
 }
+namespace Microsoft.AspNetCore.Components.Builder
+{
+    public static partial class ComponentsApplicationBuilderExtensions
+    {
+        public static void AddComponent<TComponent>(this Microsoft.AspNetCore.Components.Builder.IComponentsApplicationBuilder app, string domElementSelector) where TComponent : Microsoft.AspNetCore.Components.IComponent { }
+    }
+    public partial interface IComponentsApplicationBuilder
+    {
+        System.IServiceProvider Services { get; }
+        void AddComponent(System.Type componentType, string domElementSelector);
+    }
+}

@@ -7,9 +7,15 @@ using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
+    /// <summary>
+    /// A model for configuring controllers in an MVC application.
+    /// </summary>
     [DebuggerDisplay("ApplicationModel: Controllers: {Controllers.Count}, Filters: {Filters.Count}")]
     public class ApplicationModel : IPropertyModel, IFilterModel, IApiExplorerModel
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="ApplicationModel"/>.
+        /// </summary>
         public ApplicationModel()
         {
             ApiExplorer = new ApiExplorerModel();
@@ -31,8 +37,14 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// </remarks>
         public ApiExplorerModel ApiExplorer { get; set; }
 
+        /// <summary>
+        /// Gets the <see cref="ControllerModel"/> instances.
+        /// </summary>
         public IList<ControllerModel> Controllers { get; }
 
+        /// <summary>
+        /// Gets the global <see cref="IFilterMetadata"/> instances.
+        /// </summary>
         public IList<IFilterMetadata> Filters { get; }
 
         /// <summary>
