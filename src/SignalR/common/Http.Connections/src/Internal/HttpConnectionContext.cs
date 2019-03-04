@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         private PipeWriterStream _applicationStream;
         private IDuplexPipe _application;
         private IDictionary<object, object> _items;
-        internal int _status = (int)HttpConnectionStatus.Inactive;
+        private int _status = (int)HttpConnectionStatus.Inactive;
 
         // This tcs exists so that multiple calls to DisposeAsync all wait asynchronously
         // on the same task
