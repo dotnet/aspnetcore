@@ -246,7 +246,13 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 File.WriteAllText(Path.Combine(dir, "foo2"), string.Empty);
                 File.WriteAllText(Path.Combine(dir, "foo3"), string.Empty);
                 File.WriteAllText(Path.Combine(dir, "foo4"), string.Empty);
-                File.WriteAllText(Path.Combine(dir, "foo4"), string.Empty);
+
+                // On Unix the native file watcher may surface events from
+                // the recent past. Delay to avoid those.
+                // On Unix the file write time is in 1s increments;
+                // if we don't wait, there's a chance that the polling
+                // watcher will not detect the change
+                await Task.Delay(1250);
 
                 var testFileFullPath = Path.Combine(dir, "foo3");
 
@@ -266,11 +272,6 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 
                     watcher.OnFileChange += handler;
                     watcher.EnableRaisingEvents = true;
-
-                    // On Unix the file write time is in 1s increments;
-                    // if we don't wait, there's a chance that the polling
-                    // watcher will not detect the change
-                    await Task.Delay(1000);
 
                     File.WriteAllText(testFileFullPath, string.Empty);
 

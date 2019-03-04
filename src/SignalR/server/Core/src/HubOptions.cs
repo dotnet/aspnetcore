@@ -37,6 +37,11 @@ namespace Microsoft.AspNetCore.SignalR
         public IList<string> SupportedProtocols { get; set; } = null;
 
         /// <summary>
+        /// Gets or sets the maximum message size of a single incoming hub message. The default is 32KB.
+        /// </summary>
+        public long? MaximumReceiveMessageSize { get; set; } = null;
+
+        /// <summary>
         /// Gets or sets a value indicating whether detailed error messages are sent to the client.
         /// Detailed error messages include details from exceptions thrown on the server.
         /// </summary>

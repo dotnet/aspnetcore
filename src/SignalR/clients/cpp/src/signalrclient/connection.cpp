@@ -8,7 +8,7 @@
 
 namespace signalr
 {
-    connection::connection(const utility::string_t& url, trace_level trace_level, std::shared_ptr<log_writer> log_writer)
+    connection::connection(const std::string& url, trace_level trace_level, std::shared_ptr<log_writer> log_writer)
         : m_pImpl(connection_impl::create(url, trace_level, std::move(log_writer)))
     {}
 
@@ -21,7 +21,7 @@ namespace signalr
         return m_pImpl->start();
     }
 
-    pplx::task<void> connection::send(const utility::string_t& data)
+    pplx::task<void> connection::send(const std::string& data)
     {
         return m_pImpl->send(data);
     }
@@ -51,7 +51,7 @@ namespace signalr
         return m_pImpl->get_connection_state();
     }
 
-    utility::string_t connection::get_connection_id() const
+    std::string connection::get_connection_id() const
     {
         return m_pImpl->get_connection_id();
     }

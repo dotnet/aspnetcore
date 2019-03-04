@@ -83,6 +83,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             }
         }
 
+        /// <inheritdoc />
         public void OnProvidersExecuted(ApiDescriptionProviderContext context)
         {
         }

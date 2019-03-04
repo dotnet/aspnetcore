@@ -4,6 +4,5 @@
 #pragma once
 
 #include "stdafx.h"
-#include "cpprest/details/basic_types.h"
 
-void get_url(int argc, utility::char_t* argv[]);
+void get_url(int argc, char* argv[]);

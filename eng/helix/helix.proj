@@ -1,25 +1,14 @@
 <Project DefaultTargets="Test">
 
   <!-- Version included until we get global.json generation to support this SDK. -->
-  <Sdk Name="Microsoft.DotNet.Helix.Sdk" Version="2.0.0-beta.19073.6" />
+  <Sdk Name="Microsoft.DotNet.Helix.Sdk" Version="2.0.0-beta.19105.2" />
 
-  <Target Name="Gather" BeforeTargets="Test">
-    <ItemGroup>
-      <ProjectsToTest Include="$(ProjectsToTest)" />
-    </ItemGroup>
-    <MSBuild Projects="@(ProjectsToTest)"
-              Targets="CreateHelixPayload"
-              BuildInParallel="true">
-      <Output TaskParameter="TargetOutputs" ItemName="HelixPayload" />
-    </MSBuild>
-    <ItemGroup>
-      <HelixWorkItem Include="%(HelixPayload.TestName)">
-        <Command>%(HelixPayload.Command)</Command>
-        <PayloadDirectory>%(HelixPayload.Identity)</PayloadDirectory>
-        <Timeout>%(HelixPayload.TestTimeout)</Timeout>
-      </HelixWorkItem>
-    </ItemGroup>
-  </Target>
+  <Import Project="$(RepositoryRoot)\eng\targets\Helix.Common.props" />
+  <Import Project="$(RepositoryRoot)\build\repo.props" />
+
+  <ItemGroup>
+    <HelixTargetQueue Include="@(HelixAvailibleTargetQueue)" />
+  </ItemGroup>
 
   <PropertyGroup>
     <HelixSource>pr/aspnet/aspnetcore</HelixSource>
@@ -32,20 +21,15 @@
     <EnableAzurePipelinesReporter>false</EnableAzurePipelinesReporter>
     <IsExternal>true</IsExternal>
     <Creator>aspnetcore</Creator>
-
-    <HelixTargetQueues>
-      Windows.10.Amd64.ClientRS4.VS2017.Open;
-      OSX.1012.Amd64.Open;
-      Ubuntu.1810.Amd64.Open;
-      Ubuntu.1604.Amd64.Open;
-      Centos.7.Amd64.Open;
-      Debian.8.Amd64.Open;
-      Debian.9.Amd64.Open;
-      Redhat.7.Amd64.Open;
-      Fedora.27.Amd64.Open;
-      Fedora.28.Amd64.Open;      
-    </HelixTargetQueues>
-    <!--  TODO: re-enable Debian.9.Arm64.Open and Ubuntu.1804.Arm64.Open    -->
-    <!--  TODO: re-enable Ubuntu.1604.Arm64.Open; curl not found -->
+    <SkipInvalidConfigurations>true</SkipInvalidConfigurations>
   </PropertyGroup>
-</Project> 
+
+  <Target Name="Gather" BeforeTargets="Build">
+    <MSBuild Projects="@(ProjectToBuild)"
+              Targets="CreateHelixPayload"
+              SkipNonexistentTargets="true">
+      <Output TaskParameter="TargetOutputs" ItemName="HelixWorkItem" />
+    </MSBuild>
+  </Target>
+
+</Project>

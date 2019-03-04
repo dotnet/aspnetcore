@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             }
 
             // We have to block. That's the contract of Send - we don't expect this to be used
-            // in many scenarios in Blazor.
+            // in many scenarios in Components.
             //
             // Using Wait here is ok because the antecedant task will never throw.
             antecedant.Wait();

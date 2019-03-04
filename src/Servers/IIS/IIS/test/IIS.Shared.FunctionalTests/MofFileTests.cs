@@ -15,6 +15,7 @@ namespace IIS.FunctionalTests
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         [RequiresIIS(IISCapability.TracingModule)]
+        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/7972
         public void CheckMofFile()
         {
             var path = Path.Combine(TestPathUtilities.GetSolutionRootDirectory("IISIntegration"), "aspnetcoremodulev2", "aspnetcore", "ancm.mof");

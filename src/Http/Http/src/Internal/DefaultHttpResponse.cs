@@ -151,6 +151,11 @@ namespace Microsoft.AspNetCore.Http.Internal
 
         public override Task StartAsync(CancellationToken cancellationToken = default)
         {
+            if (HasStarted)
+            {
+                return Task.CompletedTask;
+            }
+
             if (HttpResponseStartFeature == null)
             {
                 return HttpResponseFeature.Body.FlushAsync(cancellationToken);

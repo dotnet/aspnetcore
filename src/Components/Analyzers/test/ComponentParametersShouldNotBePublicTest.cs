@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
 {
     public class ComponentParametersShouldNotBePublic : CodeFixVerifier
     {
-        static string BlazorParameterSource = $@"
+        static string ParameterSource = $@"
     namespace {typeof(ParameterAttribute).Namespace}
     {{
         public class {typeof(ParameterAttribute).Name} : System.Attribute
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
         {
             public string MyProperty { get; set; }
         }
-    }" + BlazorParameterSource;
+    }" + ParameterSource;
 
             VerifyCSharpDiagnostic(test);
         }
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
             [Parameter] protected string MyPropertyProtected { get; set; }
             [Parameter] internal string MyPropertyInternal { get; set; }
         }
-    }" + BlazorParameterSource;
+    }" + ParameterSource;
 
             VerifyCSharpDiagnostic(test);
         }
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
             [Parameter] public string BadProperty1 { get; set; }
             [Parameter] public object BadProperty2 { get; set; }
         }
-    }" + BlazorParameterSource;
+    }" + ParameterSource;
 
             VerifyCSharpDiagnostic(test,
                 new DiagnosticResult
@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
             [Parameter] string BadProperty1 { get; set; }
             [Parameter] object BadProperty2 { get; set; }
         }
-    }" + BlazorParameterSource);
+    }" + ParameterSource);
         }
 
         [Fact]
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
             [Parameter] public object MyProperty2 { get; protected set; }
             [Parameter] public object MyProperty2 { get; internal set; }
         }
-    }" + BlazorParameterSource;
+    }" + ParameterSource;
 
             VerifyCSharpDiagnostic(test);
         }

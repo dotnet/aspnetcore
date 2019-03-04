@@ -10,8 +10,8 @@ namespace signalr
 {
     namespace url_builder
     {
-        web::uri build_negotiate(const web::uri& base_url);
-        web::uri build_connect(const web::uri& base_url, transport_type transport, const utility::string_t& query_string);
-        web::uri build_start(const web::uri& base_url, const utility::string_t& query_string);
+        std::string build_negotiate(const std::string& base_url);
+        std::string build_connect(const std::string& base_url, transport_type transport, const std::string& query_string);
+        std::string build_start(const std::string& base_url, const std::string& query_string);
     }
 }

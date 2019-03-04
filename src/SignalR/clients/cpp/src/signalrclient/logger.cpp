@@ -12,46 +12,46 @@ namespace signalr
         : m_log_writer(log_writer), m_trace_level(trace_level)
     { }
 
-    void logger::log(trace_level level, const utility::string_t& entry) const
+    void logger::log(trace_level level, const std::string& entry) const
     {
         if ((level & m_trace_level) != trace_level::none)
         {
             try
             {
-                utility::ostringstream_t os;
-                os << utility::datetime::utc_now().to_string(utility::datetime::date_format::ISO_8601) << _XPLATSTR(" [")
+                std::stringstream os;
+                os << utility::conversions::to_utf8string(utility::datetime::utc_now().to_string(utility::datetime::date_format::ISO_8601)) << " ["
                     << std::left << std::setw(12) << translate_trace_level(level) << "] "<< entry << std::endl;
                 m_log_writer->write(os.str());
             }
             catch (const std::exception &e)
             {
-                ucerr << _XPLATSTR("error occurred when logging: ") << utility::conversions::to_string_t(e.what())
-                    << std::endl << _XPLATSTR("    entry: ") << entry << std::endl;
+                std::cerr << "error occurred when logging: " << e.what()
+                    << std::endl << "    entry: " << entry << std::endl;
             }
             catch (...)
             {
-                ucerr << _XPLATSTR("unknown error occurred when logging") << std::endl << _XPLATSTR("    entry: ") << entry << std::endl;
+                std::cerr << "unknown error occurred when logging" << std::endl << "    entry: " << entry << std::endl;
             }
         }
     }
 
-    utility::string_t logger::translate_trace_level(trace_level trace_level)
+    std::string logger::translate_trace_level(trace_level trace_level)
     {
         switch (trace_level)
         {
         case signalr::trace_level::messages:
-            return _XPLATSTR("message");
+            return "message";
         case signalr::trace_level::state_changes:
-            return _XPLATSTR("state change");
+            return "state change";
         case signalr::trace_level::events:
-            return _XPLATSTR("event");
+            return "event";
         case signalr::trace_level::errors:
-            return _XPLATSTR("error");
+            return "error";
         case signalr::trace_level::info:
-            return _XPLATSTR("info");
+            return "info";
         default:
             _ASSERTE(false);
-            return _XPLATSTR("(unknown)");
+            return "(unknown)";
         }
     }
 }

@@ -11,7 +11,7 @@
 #include "hub_connection.h"
 #include "signalr_exception.h"
 
-extern utility::string_t url;
+extern std::string url;
 
 TEST(hub_connection_tests, connection_status_start_stop_start)
 {
@@ -30,13 +30,13 @@ TEST(hub_connection_tests, connection_status_start_stop_start)
 
 TEST(hub_connection_tests, send_message)
 {
-    auto hub_conn = std::make_shared<signalr::hub_connection>(url + U("custom"), signalr::trace_level::all, nullptr);
-    auto message = std::make_shared<utility::string_t>();
+    auto hub_conn = std::make_shared<signalr::hub_connection>(url + "custom", signalr::trace_level::all, nullptr);
+    auto message = std::make_shared<std::string>();
     auto received_event = std::make_shared<signalr::event>();
 
-    hub_conn->on(U("sendString"), [message, received_event](const web::json::value& arguments)
+    hub_conn->on("sendString", [message, received_event](const web::json::value& arguments)
     {
-        *message = arguments.serialize();
+        *message = utility::conversions::to_utf8string(arguments.serialize());
         received_event->set();
     });
 
@@ -45,13 +45,13 @@ TEST(hub_connection_tests, send_message)
         web::json::value obj{};
         obj[0] = web::json::value(U("test"));
 
-        return hub_conn->send(U("invokeWithString"), obj);
+        return hub_conn->send("invokeWithString", obj);
 
     }).get();
 
     ASSERT_FALSE(received_event->wait(2000));
 
-    ASSERT_EQ(*message, U("[\"Send: test\"]"));
+    ASSERT_EQ(*message, "[\"Send: test\"]");
 }
 
 TEST(hub_connection_tests, send_message_return)
@@ -63,7 +63,7 @@ TEST(hub_connection_tests, send_message_return)
         web::json::value obj{};
         obj[0] = web::json::value(U("test"));
 
-        return hub_conn->invoke(U("returnString"), obj);
+        return hub_conn->invoke("returnString", obj);
 
     }).get();
 
@@ -73,12 +73,12 @@ TEST(hub_connection_tests, send_message_return)
 TEST(hub_connection_tests, send_message_after_connection_restart)
 {
     auto hub_conn = std::make_shared<signalr::hub_connection>(url);
-    auto message = std::make_shared<utility::string_t>();
+    auto message = std::make_shared<std::string>();
     auto received_event = std::make_shared<signalr::event>();
 
-    hub_conn->on(U("sendString"), [message, received_event](const web::json::value& arguments)
+    hub_conn->on("sendString", [message, received_event](const web::json::value& arguments)
     {
-        *message = arguments.serialize();
+        *message = utility::conversions::to_utf8string(arguments.serialize());
         received_event->set();
     });
 
@@ -91,47 +91,47 @@ TEST(hub_connection_tests, send_message_after_connection_restart)
         web::json::value obj{};
         obj[0] = web::json::value(U("test"));
 
-        return hub_conn->send(U("invokeWithString"), obj);
+        return hub_conn->send("invokeWithString", obj);
 
     }).get();
 
     ASSERT_FALSE(received_event->wait(2000));
 
-    ASSERT_EQ(*message, U("[\"Send: test\"]"));
+    ASSERT_EQ(*message, "[\"Send: test\"]");
 }
 
 TEST(hub_connection_tests, send_message_empty_param)
 {
     auto hub_conn = std::make_shared<signalr::hub_connection>(url);
-    auto message = std::make_shared<utility::string_t>();
+    auto message = std::make_shared<std::string>();
     auto received_event = std::make_shared<signalr::event>();
 
-    hub_conn->on(U("sendString"), [message, received_event](const web::json::value& arguments)
+    hub_conn->on("sendString", [message, received_event](const web::json::value& arguments)
     {
-        *message = arguments.serialize();
+        *message = utility::conversions::to_utf8string(arguments.serialize());
         received_event->set();
     });
 
     hub_conn->start().then([&hub_conn]()
     {
-        return hub_conn->invoke(U("invokeWithEmptyParam"));
+        return hub_conn->invoke("invokeWithEmptyParam");
 
     }).get();
 
     ASSERT_FALSE(received_event->wait(2000));
 
-    ASSERT_EQ(*message, U("[\"Send\"]"));
+    ASSERT_EQ(*message, "[\"Send\"]");
 }
 
 TEST(hub_connection_tests, send_message_primitive_params)
 {
     auto hub_conn = std::make_shared<signalr::hub_connection>(url);
-    auto message = std::make_shared<utility::string_t>();
+    auto message = std::make_shared<std::string>();
     auto received_event = std::make_shared<signalr::event>();
 
-    hub_conn->on(U("sendPrimitiveParams"), [message, received_event](const web::json::value& arguments)
+    hub_conn->on("sendPrimitiveParams", [message, received_event](const web::json::value& arguments)
     {
-        *message = arguments.serialize();
+        *message = utility::conversions::to_utf8string(arguments.serialize());
         received_event->set();
     });
 
@@ -143,7 +143,7 @@ TEST(hub_connection_tests, send_message_primitive_params)
         obj[2] = web::json::value(8.999999999);
         obj[3] = web::json::value(true);
         obj[4] = web::json::value('a');
-        return hub_conn->send(U("invokeWithPrimitiveParams"), obj);
+        return hub_conn->send("invokeWithPrimitiveParams", obj);
 
     }).get();
 
@@ -156,18 +156,18 @@ TEST(hub_connection_tests, send_message_primitive_params)
     obj[3] = web::json::value(true);
     obj[4] = web::json::value::string(U("a"));
 
-    ASSERT_EQ(*message, obj.serialize());
+    ASSERT_EQ(*message, utility::conversions::to_utf8string(obj.serialize()));
 }
 
 TEST(hub_connection_tests, send_message_complex_type)
 {
     auto hub_conn = std::make_shared<signalr::hub_connection>(url);
-    auto message = std::make_shared<utility::string_t>();
+    auto message = std::make_shared<std::string>();
     auto received_event = std::make_shared<signalr::event>();
 
-    hub_conn->on(U("sendComplexType"), [message, received_event](const web::json::value& arguments)
+    hub_conn->on("sendComplexType", [message, received_event](const web::json::value& arguments)
     {
-        *message = arguments.serialize();
+        *message = utility::conversions::to_utf8string(arguments.serialize());
         received_event->set();
     });
 
@@ -183,13 +183,13 @@ TEST(hub_connection_tests, send_message_complex_type)
         person[U("age")] = web::json::value::number(15);
         obj[0] = person;
 
-        return hub_conn->send(U("invokeWithComplexType"), obj);
+        return hub_conn->send("invokeWithComplexType", obj);
 
     }).get();
 
     ASSERT_FALSE(received_event->wait(2000));
 
-    ASSERT_EQ(*message, U("[{\"Address\":{\"Street\":\"main st\",\"Zip\":\"98052\"},\"Age\":15,\"Name\":\"test\"}]"));
+    ASSERT_EQ(*message, "[{\"Address\":{\"Street\":\"main st\",\"Zip\":\"98052\"},\"Age\":15,\"Name\":\"test\"}]");
 }
 
 TEST(hub_connection_tests, send_message_complex_type_return)
@@ -208,7 +208,7 @@ TEST(hub_connection_tests, send_message_complex_type_return)
         person[U("age")] = web::json::value::number(15);
         obj[0] = person;
 
-        return hub_conn->invoke(U("returnComplexType"), obj);
+        return hub_conn->invoke("returnComplexType", obj);
 
     }).get();
 
@@ -220,19 +220,19 @@ TEST(hub_connection_tests, connection_id_start_stop_start)
     auto hub_conn = std::make_shared<signalr::hub_connection>(url);
     auto weak_hub_conn = std::weak_ptr<signalr::hub_connection>(hub_conn);
 
-    utility::string_t connection_id;
+    std::string connection_id;
 
-    ASSERT_EQ(U(""), hub_conn->get_connection_id());
+    ASSERT_EQ(u8"", hub_conn->get_connection_id());
 
     hub_conn->start().get();
     connection_id = hub_conn->get_connection_id();
-    ASSERT_NE(connection_id, U(""));
+    ASSERT_NE(connection_id, u8"");
 
     hub_conn->stop().get();
     ASSERT_EQ(hub_conn->get_connection_id(), connection_id);
 
     hub_conn->start().get();
-    ASSERT_NE(hub_conn->get_connection_id(), U(""));
+    ASSERT_NE(hub_conn->get_connection_id(), u8"");
     ASSERT_NE(hub_conn->get_connection_id(), connection_id);
 
     connection_id = hub_conn->get_connection_id();

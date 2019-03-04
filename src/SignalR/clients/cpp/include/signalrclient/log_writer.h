@@ -3,14 +3,12 @@
 
 #pragma once
 
-#include "cpprest/details/basic_types.h"
-
 namespace signalr
 {
     class log_writer
     {
     public:
         // NOTE: the caller does not enforce thread safety of this call
-        virtual void __cdecl write(const utility::string_t &entry) = 0;
+        virtual void __cdecl write(const std::string &entry) = 0;
     };
 }

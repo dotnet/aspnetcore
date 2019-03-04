@@ -14,12 +14,12 @@ namespace signalr
     public:
         logger(const std::shared_ptr<log_writer>& log_writer, trace_level trace_level) noexcept;
 
-        void log(trace_level level, const utility::string_t& entry) const;
+        void log(trace_level level, const std::string& entry) const;
 
     private:
         std::shared_ptr<log_writer> m_log_writer;
         trace_level m_trace_level;
 
-        static utility::string_t translate_trace_level(trace_level trace_level);
+        static std::string translate_trace_level(trace_level trace_level);
     };
 }

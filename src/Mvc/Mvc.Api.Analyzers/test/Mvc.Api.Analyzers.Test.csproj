@@ -3,12 +3,14 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <RootNamespace>Microsoft.AspNetCore.Mvc.Api.Analyzers</RootNamespace>
-    <!-- https://github.com/aspnet/AspNetCore/issues/6549 -->
+    <!-- https://github.com/aspnet/AspNetCore/issues/6549 -->	
     <BuildHelixPayload>false</BuildHelixPayload>
-  </PropertyGroup>
+   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="..\..\Mvc.Analyzers\test\Infrastructure\MvcDiagnosticAnalyzerRunner.cs" Link="Infrastructure\MvcDiagnosticAnalyzerRunner.cs" />
+    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
+    <Content Include="TestFiles\**\*.*" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

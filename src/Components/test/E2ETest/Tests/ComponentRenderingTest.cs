@@ -318,11 +318,11 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             var appElement = MountTestComponent<ExternalContentPackage>();
 
-            // NuGet packages can use Blazor's JS interop features to provide
+            // NuGet packages can use JS interop features to provide
             // .NET code access to browser APIs
             var showPromptButton = appElement.FindElements(By.TagName("button")).First();
             showPromptButton.Click();
-            
+
             var modal = new WebDriverWait(Browser, TimeSpan.FromSeconds(3))
                 .Until(SwitchToAlert);
             modal.SendKeys("Some value from test");
@@ -330,14 +330,14 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var promptResult = appElement.FindElement(By.TagName("strong"));
             WaitAssert.Equal("Some value from test", () => promptResult.Text);
 
-            // NuGet packages can also embed entire Blazor components (themselves
+            // NuGet packages can also embed entire components (themselves
             // authored as Razor files), including static content. The CSS value
             // here is in a .css file, so if it's correct we know that static content
             // file was loaded.
             var specialStyleDiv = appElement.FindElement(By.ClassName("special-style"));
             Assert.Equal("50px", specialStyleDiv.GetCssValue("padding"));
 
-            // The external Blazor components are fully functional, not just static HTML
+            // The external components are fully functional, not just static HTML
             var externalComponentButton = specialStyleDiv.FindElement(By.TagName("button"));
             Assert.Equal("Click me", externalComponentButton.Text);
             externalComponentButton.Click();
