@@ -11,8 +11,10 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import io.reactivex.subjects.CompletableSubject;
 import org.junit.jupiter.api.Test;
 
 import io.reactivex.Observable;
@@ -1217,6 +1219,51 @@ class HubConnectionTest {
         String[] sentMessages = transport.getSentMessages();
         assertEquals(1, sentMessages.length);
         assertEquals("{\"protocol\":\"json\",\"version\":1}" + RECORD_SEPARATOR, sentMessages[0]);
+    }
+
+    @Test
+    public void TransportAllUsesLongPollingWhenServerOnlySupportLongPolling() {
+        AtomicInteger requestCount = new AtomicInteger(0);
+        TestHttpClient client = new TestHttpClient().on("POST",
+                (req) -> Single.just(new HttpResponse(200, "",
+                        "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                + "availableTransports\":[{\"transport\":\"LongPolling\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")))
+                .on("GET", (req) -> {
+                    if (requestCount.get() == 0) {
+                        requestCount.incrementAndGet();
+                        return Single.just(new HttpResponse(200, "", ""));
+                    }
+                    return Single.just(new HttpResponse(204, "", ""));
+                });
+
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example.com")
+                .withTransport(TransportEnum.ALL)
+                .withHttpClient(client)
+                .build();
+
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        assertTrue(hubConnection.getTransport() instanceof LongPollingTransport);
+        hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
+    }
+
+    @Test
+    public void ClientThatSelectsWebsocketsThrowsWhenWebsocketsArentAvailable() {
+        TestHttpClient client = new TestHttpClient().on("POST",
+                (req) -> Single.just(new HttpResponse(200, "",
+                        "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                + "availableTransports\":[{\"transport\":\"LongPolling\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
+
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example.com")
+                .withTransport(TransportEnum.WEBSOCKETS)
+                .withHttpClient(client)
+                .build();
+
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait());
+
+        assertEquals(exception.getMessage(), "There were no compatible transports on the server.");
     }
 
     @Test
