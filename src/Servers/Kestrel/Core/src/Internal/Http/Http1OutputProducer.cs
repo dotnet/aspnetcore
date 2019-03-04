@@ -226,14 +226,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         _position += bytes;
                     }
                 }
-
-                if (_autoChunk)
+                else if (_autoChunk)
                 {
-                    if (bytes < 0)
-                    {
-                        throw new ArgumentOutOfRangeException(nameof(bytes));
-                    }
-
                     if (bytes + _advancedBytesForChunk > _currentChunkMemory.Length - BeginChunkLengthMax - EndChunkLength)
                     {
                         throw new InvalidOperationException("Can't advance past buffer size.");
@@ -318,7 +312,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             writer.Commit();
 
-            _unflushedBytes += writer.BytesCommitted;
             _autoChunk = autoChunk;
             // I think I should copy everything to the pipe here....
 
@@ -327,9 +320,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             for (var i = 0; i < count; i++)
             {
                 var segment = _completedSegments[i];
-                var memory = _pipeWriter.GetMemory(segment.Length);
-                segment.Buffer.CopyTo(memory);
-                _pipeWriter.Advance(segment.Length);
+
+                if (_autoChunk)
+                {
+                    CommitChunkInternal(ref writer, segment.Span);
+                }
+                else
+                {
+                    writer.Write(segment.Span);
+                    writer.Commit();
+                }
                 segment.Return();
             }
 
@@ -338,10 +338,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (!_currentSegment.IsEmpty)
             {
                 var segment = _currentSegment.Slice(0, _position);
-                var memory = _pipeWriter.GetMemory(segment.Length);
-                segment.CopyTo(memory);
-                _pipeWriter.Advance(segment.Length);
-                _position = 0;
+
+                if (_autoChunk)
+                {
+                    CommitChunkInternal(ref writer, segment.Span);
+                }
+                else
+                {
+                    writer.Write(segment.Span);
+                    writer.Commit();
+                    _position = 0;
+                }
 
                 if (_currentSegmentOwner != null)
                 {
@@ -350,6 +357,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
             }
 
+            _unflushedBytes += writer.BytesCommitted;
             _startCalled = true;
         }
 

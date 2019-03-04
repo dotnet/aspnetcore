@@ -421,14 +421,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
-        public async Task ChunksWithGetMemoryBeforeFirstFlushStillFlushes()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task ChunksWithGetMemoryBeforeFirstFlushStillFlushes(bool start)
         {
             var testContext = new TestServiceContext(LoggerFactory);
 
             using (var server = new TestServer(async httpContext =>
             {
                 var response = httpContext.Response;
+
+                if (start)
+                {
+                    await response.StartAsync();
+                }
                 var memory = response.BodyWriter.GetMemory();
 
                 var fisrtPartOfResponse = Encoding.ASCII.GetBytes("Hello ");
@@ -466,8 +473,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
-        public async Task ChunksWithGetMemoryLargeWriteBeforeFirstFlush()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task ChunksWithGetMemoryLargeWriteBeforeFirstFlush(bool start)
         {
             var length = new IntAsRef();
             var semaphore = new SemaphoreSlim(initialCount: 0);
@@ -476,6 +485,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             using (var server = new TestServer(async httpContext =>
             {
                 var response = httpContext.Response;
+                if (start)
+                {
+                    await response.StartAsync();
+                }
 
                 var memory = response.BodyWriter.GetMemory();
                 length.Value = memory.Length;
@@ -522,8 +535,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
-        public async Task ChunksWithGetMemoryWithInitialFlushWorks()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task ChunksWithGetMemoryWithInitialFlushWorks(bool start)
         {
             var length = new IntAsRef();
             var semaphore = new SemaphoreSlim(initialCount: 0);
@@ -532,6 +547,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             using (var server = new TestServer(async httpContext =>
             {
                 var response = httpContext.Response;
+
+                if (start)
+                {
+                    await response.StartAsync();
+                }
 
                 await response.BodyWriter.FlushAsync();
 
@@ -580,8 +600,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
-        public async Task ChunkGetMemoryMultipleAdvance()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task ChunkGetMemoryMultipleAdvance(bool start)
         {
             var testContext = new TestServiceContext(LoggerFactory);
 
@@ -589,7 +611,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             {
                 var response = httpContext.Response;
 
-                await Task.CompletedTask;
+                if (start)
+                {
+                    await response.StartAsync();
+                }
 
                 var memory = response.BodyWriter.GetMemory(4096);
                 var fisrtPartOfResponse = Encoding.ASCII.GetBytes("Hello ");
@@ -624,16 +649,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
-        public async Task ChunkGetSpanMultipleAdvance()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task ChunkGetSpanMultipleAdvance(bool start)
         {
             var testContext = new TestServiceContext(LoggerFactory);
 
             using (var server = new TestServer(async httpContext =>
             {
                 var response = httpContext.Response;
-                await Task.CompletedTask;
-
+                if (start)
+                {
+                    await response.StartAsync();
+                }
                 // To avoid using span in an async method
                 void NonAsyncMethod()
                 {
@@ -682,6 +711,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             {
                 var response = httpContext.Response;
 
+                await response.StartAsync();
+
                 var memory = response.BodyWriter.GetMemory(4096);
 
                 var fisrtPartOfResponse = Encoding.ASCII.GetBytes("Hello ");
@@ -715,6 +746,48 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
+        public async Task ChunkGetMemoryAndWriteWithoutStart()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                var response = httpContext.Response;
+
+                var memory = response.BodyWriter.GetMemory(4096);
+                var fisrtPartOfResponse = Encoding.ASCII.GetBytes("Hello ");
+                fisrtPartOfResponse.CopyTo(memory);
+                response.BodyWriter.Advance(6);
+
+                await response.WriteAsync("World!");
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host: ",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "6",
+                        "Hello ",
+                        "6",
+                        "World!",
+                        "0",
+                        "",
+                        "");
+                }
+
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
         public async Task GetMemoryWithSizeHint()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -722,7 +795,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             using (var server = new TestServer(async httpContext =>
             {
                 var response = httpContext.Response;
-                await Task.CompletedTask;
+
+                await response.StartAsync();
 
                 var memory = response.BodyWriter.GetMemory(0);
 
@@ -754,17 +828,60 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Theory]
-        [InlineData(15)]
-        [InlineData(255)]
-        public async Task ChunkGetMemoryWithSmallerSizesWork(int writeSize)
+        [Fact]
+        public async Task GetMemoryWithSizeHintWithoutStartAsync()
         {
             var testContext = new TestServiceContext(LoggerFactory);
 
             using (var server = new TestServer(async httpContext =>
             {
                 var response = httpContext.Response;
+
+                var memory = response.BodyWriter.GetMemory(0);
+
+                Assert.Equal(4096, memory.Length);
+
+                memory = response.BodyWriter.GetMemory(1000000);
+                Assert.Equal(4096, memory.Length);
                 await Task.CompletedTask;
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host: ",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+
+                await server.StopAsync();
+            }
+        }
+
+        [Theory]
+        [InlineData(15, false)]
+        [InlineData(255, false)]
+        [InlineData(15, true)]
+        [InlineData(255, true)]
+        public async Task ChunkGetMemoryWithSmallerSizesWork(int writeSize, bool start)
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                var response = httpContext.Response;
+
+                if (start)
+                {
+                    await response.StartAsync();
+                }
 
                 var memory = response.BodyWriter.GetMemory(4096);
                 var fisrtPartOfResponse = Encoding.ASCII.GetBytes(new string('a', writeSize));
@@ -795,13 +912,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
-        public async Task ChunkedWithBothPipeAndStreamWorks()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task ChunkedWithBothPipeAndStreamWorks(bool start)
         {
             using (var server = new TestServer(async httpContext =>
             {
                 var response = httpContext.Response;
+
+                if (start)
+                {
+                    await response.StartAsync();
+                }
+
                 var memory = response.BodyWriter.GetMemory(4096);
+
                 var fisrtPartOfResponse = Encoding.ASCII.GetBytes("hello,");
                 fisrtPartOfResponse.CopyTo(memory);
                 response.BodyWriter.Advance(6);

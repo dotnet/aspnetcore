@@ -45,7 +45,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         // Keep-alive is default for HTTP/1.1 and HTTP/2; parsing and errors will change its value
         // volatile, see: https://msdn.microsoft.com/en-us/library/x13ttww7.aspx
         protected volatile bool _keepAlive = true;
-        private bool _canWriteResponseBody;
+        private bool _canWriteResponseBody = true;
+        private bool _hasWritten;
         private bool _autoChunk;
         protected Exception _applicationException;
         private BadHttpRequestException _requestRejectedException;
@@ -1066,7 +1067,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     _keepAlive = false;
                 }
-                else if (appCompleted || !_canWriteResponseBody)
+                else if ((appCompleted || !_canWriteResponseBody) && !_hasWritten)
                 {
                     // Don't set the Content-Length header automatically for HEAD requests, 204 responses, or 304 responses.
                     if (CanAutoSetContentLengthZeroResponseHeader())
@@ -1268,6 +1269,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public void Advance(int bytes)
         {
+            // EW, fix this asap TODO
+            if (bytes < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(bytes));
+            }
+            else if (bytes > 0)
+            {
+                _hasWritten = true;
+            }
+
             if (_canWriteResponseBody)
             {
                 VerifyAndUpdateWrite(bytes);

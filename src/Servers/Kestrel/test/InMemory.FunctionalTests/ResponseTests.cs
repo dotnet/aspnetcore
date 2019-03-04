@@ -3240,7 +3240,41 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public async Task AdvanceWithTooLargeOfAValueThrowInvalidOperationException()
+        public async Task AdvanceNegativeValueThrowsArgumentOutOfRangeExceptionWithStart()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            using (var server = new TestServer(httpContext =>
+            {
+                var response = httpContext.Response;
+
+                Assert.Throws<ArgumentOutOfRangeException>(() => response.BodyWriter.Advance(-1));
+                return Task.CompletedTask;
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host: ",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+
+                await server.StopAsync();
+            }
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task AdvanceWithTooLargeOfAValueThrowInvalidOperationException(bool start)
         {
             var testContext = new TestServiceContext(LoggerFactory);
 
@@ -3248,7 +3282,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             {
                 var response = httpContext.Response;
 
-                await response.StartAsync();
+                if (start)
+                {
+                    await response.StartAsync();
+                }
 
                 Assert.Throws<InvalidOperationException>(() => response.BodyWriter.Advance(1));
             }, testContext))
@@ -3274,38 +3311,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
-        public async Task GetMemoryBeforeStartAsyncThrows()
-        {
-            var testContext = new TestServiceContext(LoggerFactory);
-
-            using (var server = new TestServer(httpContext =>
-            {
-                Assert.Throws<InvalidOperationException>(() => httpContext.Response.BodyWriter.GetMemory());
-                return Task.CompletedTask;
-            }, testContext))
-            {
-                using (var connection = server.CreateConnection())
-                {
-                    await connection.Send(
-                        "GET / HTTP/1.1",
-                        "Host: ",
-                        "",
-                        "");
-                    await connection.Receive(
-                        "HTTP/1.1 200 OK",
-                        $"Date: {testContext.DateHeaderValue}",
-                        "Content-Length: 0",
-                        "",
-                        "");
-                }
-
-                await server.StopAsync();
-            }
-        }
-
-        [Fact]
-        public async Task ContentLengthWithGetSpanWorks()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task ContentLengthWithGetSpanWorks(bool start)
         {
             var testContext = new TestServiceContext(LoggerFactory);
 
@@ -3313,8 +3322,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             {
                 var response = httpContext.Response;
                 response.ContentLength = 12;
-                await response.StartAsync();
-
+                if (start)
+                {
+                    await response.StartAsync();
+                }
                 void NonAsyncMethod()
                 {
                     var span = response.BodyWriter.GetSpan(4096);
@@ -3350,8 +3361,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
-        public async Task ContentLengthWithGetMemoryWorks()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task ContentLengthWithGetMemoryWorks(bool start)
         {
             var testContext = new TestServiceContext(LoggerFactory);
 
@@ -3359,9 +3372,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             {
                 var response = httpContext.Response;
                 response.ContentLength = 12;
-                await response.StartAsync();
 
+                if (start)
+                {
+                    await response.StartAsync();
+                }
                 var memory = response.BodyWriter.GetMemory(4096);
+
                 var fisrtPartOfResponse = Encoding.ASCII.GetBytes("Hello ");
                 fisrtPartOfResponse.CopyTo(memory);
                 response.BodyWriter.Advance(6);
@@ -3580,11 +3597,46 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public async Task ResponseCompleteGetMemoryAdvanceInLoopDoesNotThrow()
+        public async Task ResponseCompleteGetMemoryReturnsRentedMemoryWithoutStartAsync()
         {
             using (var server = new TestServer(async httpContext =>
             {
-                await httpContext.Response.StartAsync();
+                httpContext.Response.BodyWriter.Complete();
+                var memory = httpContext.Response.BodyWriter.GetMemory(); // Shouldn't throw
+                Assert.Equal(4096, memory.Length);
+
+                await Task.CompletedTask;
+            }, new TestServiceContext(LoggerFactory)))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+                await server.StopAsync();
+            }
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task ResponseCompleteGetMemoryAdvanceInLoopDoesNotThrow(bool start)
+        {
+            using (var server = new TestServer(async httpContext =>
+            {
+                if (start)
+                {
+                    await httpContext.Response.StartAsync();
+                }
 
                 httpContext.Response.BodyWriter.Complete();
                 for (var i = 0; i < 5; i++)
