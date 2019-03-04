@@ -1256,10 +1256,29 @@ class HubConnectionTest {
 
         HubConnection hubConnection = HubConnectionBuilder
                 .create("http://example.com")
-                .withTransport(TransportEnum.WEBSOCKETS)
                 .withHttpClient(client)
                 .build();
 
+        assertEquals(TransportEnum.ALL, hubConnection.getTransportEnum());
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait());
+
+        assertEquals(exception.getMessage(), "There were no compatible transports on the server.");
+    }
+
+    @Test
+    public void ClientThatSelectsLongPngThrowsWhenLongPollingIsntAvailable() {
+        TestHttpClient client = new TestHttpClient().on("POST",
+                (req) -> Single.just(new HttpResponse(200, "", "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                        + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
+
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example.com")
+                .withTransport(TransportEnum.LONG_POLLING)
+                .withHttpClient(client)
+                .build();
+
+        assertEquals(TransportEnum.LONG_POLLING, hubConnection.getTransportEnum());
         RuntimeException exception = assertThrows(RuntimeException.class,
                 () -> hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait());
 
