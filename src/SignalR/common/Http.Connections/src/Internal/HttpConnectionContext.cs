@@ -310,7 +310,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             }
         }
 
-        public bool ChangeState(HttpConnectionStatus from, HttpConnectionStatus to)
+        public bool TryChangeState(HttpConnectionStatus from, HttpConnectionStatus to)
         {
             return Interlocked.CompareExchange(ref _status, (int)to, (int)from) == (int)from;
         }

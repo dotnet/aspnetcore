@@ -98,11 +98,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         public Microsoft.AspNetCore.Http.Connections.HttpTransportType TransportType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.Security.Claims.ClaimsPrincipal User { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.Threading.SemaphoreSlim WriteLock { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public bool ChangeState(Microsoft.AspNetCore.Http.Connections.Internal.HttpConnectionStatus from, Microsoft.AspNetCore.Http.Connections.Internal.HttpConnectionStatus to) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task DisposeAsync(bool closeGracefully = false) { throw null; }
         public void OnHeartbeat(System.Action<object> action, object state) { }
         public void TickHeartbeat() { }
+        public bool TryChangeState(Microsoft.AspNetCore.Http.Connections.Internal.HttpConnectionStatus from, Microsoft.AspNetCore.Http.Connections.Internal.HttpConnectionStatus to) { throw null; }
     }
     public partial class HttpConnectionDispatcher
     {

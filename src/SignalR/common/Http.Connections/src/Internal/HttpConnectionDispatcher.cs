@@ -235,7 +235,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                     }
 
                     // Mark the connection as active
-                    connection.ChangeState(from: HttpConnectionStatus.Inactive, to: HttpConnectionStatus.Active);
+                    connection.TryChangeState(from: HttpConnectionStatus.Inactive, to: HttpConnectionStatus.Active);
 
                     // Raise OnConnected for new connections only since polls happen all the time
                     if (connection.ApplicationTask == null)
@@ -333,7 +333,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
                         // This is done outside a lock because the next poll might be waiting in the lock already and waiting for currentRequestTcs to complete
                         // A DELETE request could have set the status to Disposed. If that is the case we don't want to change the state ever.
-                        connection.ChangeState(from: HttpConnectionStatus.Active, to: HttpConnectionStatus.Inactive);
+                        connection.TryChangeState(from: HttpConnectionStatus.Active, to: HttpConnectionStatus.Inactive);
                     }
                 }
                 finally
@@ -373,7 +373,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 }
 
                 // Mark the connection as active
-                connection.ChangeState(HttpConnectionStatus.Inactive, HttpConnectionStatus.Active);
+                connection.TryChangeState(HttpConnectionStatus.Inactive, HttpConnectionStatus.Active);
 
                 // Call into the end point passing the connection
                 connection.ApplicationTask = ExecuteApplication(connectionDelegate, connection);
