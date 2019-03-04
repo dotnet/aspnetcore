@@ -15,6 +15,14 @@ powershell.exe -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePo
 
 set HELIX=true
 
+%DOTNET_ROOT%\dotnet vstest %target% -lt >discovered.txt
+find /c "Exception thrown" discovered.txt
+if %errorlevel% equ 0 (
+    echo Exception thrown during test discovery.
+    type discovered.txt
+    exit 1
+)
+
 %DOTNET_ROOT%\dotnet vstest %target% --logger:trx --logger:console;verbosity=normal
 
 
