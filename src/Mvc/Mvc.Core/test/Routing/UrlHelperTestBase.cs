@@ -964,6 +964,23 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             Assert.Equal("http://localhost/app/home/contact", url);
         }
 
+        [Fact]
+        public void NoRouter_ErrorsWithFriendlyErrorMessage()
+        {
+            // Arrange
+            var urlHelper = new UrlHelper(new ActionContext());
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(() => urlHelper.ActionLink("contact", "home"));
+
+            // Assert
+            var expectedMessage = "Could not find an IRouter associated with the ActionContext. "
+                        + "If your application is using endpoint routing then you can get a UrlHelper instance with "
+                        + "dependency injection or use Microsoft.AspNetCore.Routing.LinkGenerator.";
+
+            Assert.Equal(expectedMessage, ex.Message);
+        }
+
         protected abstract IServiceProvider CreateServices();
 
         protected abstract IUrlHelper CreateUrlHelper(ActionContext actionContext);
