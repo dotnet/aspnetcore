@@ -332,6 +332,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                         connection.LastSeenUtc = DateTime.UtcNow;
 
                         // This is done outside a lock because the next poll might be waiting in the lock already and waiting for currentRequestTcs to complete
+                        // A DELETE request could have set the status to Disposed. If that is the case we don't want to change the state ever.
                         Interlocked.CompareExchange(ref connection._status, (int)HttpConnectionStatus.Inactive, (int)HttpConnectionStatus.Active);
                     }
                 }
