@@ -17,7 +17,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Reference Include="Microsoft.Extensions.Logging.Testing" />
-   </ItemGroup>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Internal.AspNetCore.Analyzers" PrivateAssets="All" Version="$(InternalAspNetCoreAnalyzersPackageVersion)" AllowExplicitReference="true" />
