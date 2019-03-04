@@ -12,6 +12,11 @@
     <_ProjectExtensionsWereImported>true</_ProjectExtensionsWereImported>
     <WixTargetsPath>$(WixInstallPath)\wix2010.targets</WixTargetsPath>
   </PropertyGroup>
+  
+  <PropertyGroup>
+    <!-- Required because the Razor SDK will generate attributes -->
+    <GenerateRazorAssemblyInfo Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' AND '$(GenerateRazorAssemblyInfo)' == ''">false</GenerateRazorAssemblyInfo>
+  </PropertyGroup>
 
   <!-- Workaround https://developercommunity.visualstudio.com/content/problem/434385/vs2019-preview-2-targetframeworkversion-or-platfor.html -->
   <PropertyGroup>
