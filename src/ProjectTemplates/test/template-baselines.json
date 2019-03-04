@@ -979,6 +979,7 @@
         "ClientApp/src/App.tsx",
         "ClientApp/src/App.test.tsx",
         "ClientApp/src/index.tsx",
+        "ClientApp/src/react-app-env.d.ts",
         "ClientApp/src/registerServiceWorker.ts",
         "ClientApp/.eslintrc.json",
         "ClientApp/.gitignore",
