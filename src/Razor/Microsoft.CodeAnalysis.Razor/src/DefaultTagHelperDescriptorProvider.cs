@@ -9,12 +9,6 @@ namespace Microsoft.CodeAnalysis.Razor
 {
     public sealed class DefaultTagHelperDescriptorProvider : RazorEngineFeatureBase, ITagHelperDescriptorProvider
     {
-        [Obsolete(
-            "This property is obsolete will not be honored. Documentation will be included if " +
-            "TagHelperDescriptorProviderContext.IncludeDocumentation is set to true. Hidden tag helpers will" +
-            "be excluded from the results if TagHelperDescriptorProviderContext.ExcludeHidden is set to true.")]
-        public bool DesignTime { get; set; }
-
         public int Order { get; set; }
 
         public void Execute(TagHelperDescriptorProviderContext context)

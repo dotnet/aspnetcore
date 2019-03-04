@@ -24,23 +24,6 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             return new DefaultDocumentWriter(codeTarget, options);
         }
 
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        [Obsolete("This method was intended to be static, use CreateDefault instead.")]
-        public DocumentWriter Create(CodeTarget codeTarget, RazorCodeGenerationOptions options)
-        {
-            if (codeTarget == null)
-            {
-                throw new ArgumentNullException(nameof(codeTarget));
-            }
-
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
-
-            return new DefaultDocumentWriter(codeTarget, options);
-        }
-
         public abstract RazorCSharpDocument WriteDocument(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode);
     }
 }
