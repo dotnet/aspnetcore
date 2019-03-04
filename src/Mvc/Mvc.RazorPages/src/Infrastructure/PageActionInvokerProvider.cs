@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -19,9 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
     internal class PageActionInvokerProvider : IActionInvokerProvider
     {
-        private const string ViewStartFileName = "_ViewStart.cshtml";
-
-        private readonly IPageLoader _loader;
+        private readonly PageLoader _loader;
         private readonly IPageFactoryProvider _pageFactoryProvider;
         private readonly IPageModelFactoryProvider _modelFactoryProvider;
         private readonly IModelBinderFactory _modelBinderFactory;
@@ -43,7 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         private volatile InnerCache _currentCache;
 
         public PageActionInvokerProvider(
-            IPageLoader loader,
+            PageLoader loader,
             IPageFactoryProvider pageFactoryProvider,
             IPageModelFactoryProvider modelFactoryProvider,
             IRazorPageFactoryProvider razorPageFactoryProvider,
@@ -81,7 +80,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         }
 
         public PageActionInvokerProvider(
-            IPageLoader loader,
+            PageLoader loader,
             IPageFactoryProvider pageFactoryProvider,
             IPageModelFactoryProvider modelFactoryProvider,
             IRazorPageFactoryProvider razorPageFactoryProvider,
@@ -139,7 +138,20 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             IFilterMetadata[] filters;
             if (!cache.Entries.TryGetValue(actionDescriptor, out var cacheEntry))
             {
-                actionContext.ActionDescriptor = _loader.Load(actionDescriptor);
+                CompiledPageActionDescriptor compiledPageActionDescriptor;
+                if (_mvcOptions.EnableEndpointRouting)
+                {
+                    // With endpoint routing, PageLoaderMatcherPolicy should have already produced a CompiledPageActionDescriptor.
+                    compiledPageActionDescriptor = (CompiledPageActionDescriptor)actionDescriptor;
+                }
+                else
+                {
+                    // With legacy routing, we're forced to perform a blocking call. The exceptation is that
+                    // in the most common case - build time views or successsively cached runtime views - this should finish synchronously.
+                    compiledPageActionDescriptor = _loader.LoadAsync(actionDescriptor).GetAwaiter().GetResult();
+                }
+
+                actionContext.ActionDescriptor = compiledPageActionDescriptor;
 
                 var filterFactoryResult = FilterFactory.GetAllFilters(_filterProviders, actionContext);
                 filters = filterFactoryResult.Filters;
@@ -285,7 +297,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
         private PageHandlerBinderDelegate[] GetHandlerBinders(CompiledPageActionDescriptor actionDescriptor)
         {
-            if (actionDescriptor.HandlerMethods == null ||actionDescriptor.HandlerMethods.Count == 0)
+            if (actionDescriptor.HandlerMethods == null || actionDescriptor.HandlerMethods.Count == 0)
             {
                 return Array.Empty<PageHandlerBinderDelegate>();
             }
