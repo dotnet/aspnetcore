@@ -1203,7 +1203,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         }
 
         [Fact]
-        public async Task AttemptingToPollWhileAlreadyPollingReplacesTheCurrentPoll()
+        public async Task AttemptingToPollWhileAlreadyPollingResultsIn409Response()
         {
             using (StartVerifiableLog())
             {
@@ -1239,8 +1239,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 // Verify the results
                 Assert.Equal(StatusCodes.Status204NoContent, context1.Response.StatusCode);
                 Assert.Equal(string.Empty, GetContentAsString(context1.Response.Body));
-                Assert.Equal(StatusCodes.Status200OK, context2.Response.StatusCode);
-                Assert.Equal("Hello, World", GetContentAsString(context2.Response.Body));
+                Assert.Equal(StatusCodes.Status409Conflict, context2.Response.StatusCode);
+                Assert.Equal(string.Empty, GetContentAsString(context2.Response.Body));
             }
         }
 
