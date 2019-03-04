@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -24,6 +24,22 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
     {
         private Func<IServiceProvider, IHealthCheck> _factory;
         private string _name;
+        private TimeSpan _timeout;
+
+        /// <summary>
+        /// Creates a new <see cref="T:Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckRegistration" /> for an existing <see cref="T:Microsoft.Extensions.Diagnostics.HealthChecks.IHealthCheck" /> instance.
+        /// </summary>
+        /// <param name="name">The health check name.</param>
+        /// <param name="instance">The <see cref="T:Microsoft.Extensions.Diagnostics.HealthChecks.IHealthCheck" /> instance.</param>
+        /// <param name="failureStatus">
+        /// The <see cref="T:Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus" /> that should be reported upon failure of the health check. If the provided value
+        /// is <c>null</c>, then <see cref="F:Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus.Unhealthy" /> will be reported.
+        /// </param>
+        /// <param name="tags">A list of tags that can be used for filtering health checks.</param>
+        public HealthCheckRegistration(string name, IHealthCheck instance, HealthStatus? failureStatus, IEnumerable<string> tags)
+            : this(name, instance, failureStatus, tags, default)
+        {
+        }
 
         /// <summary>
         /// Creates a new <see cref="HealthCheckRegistration"/> for an existing <see cref="IHealthCheck"/> instance.
@@ -35,7 +51,8 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         /// is <c>null</c>, then <see cref="HealthStatus.Unhealthy"/> will be reported.
         /// </param>
         /// <param name="tags">A list of tags that can be used for filtering health checks.</param>
-        public HealthCheckRegistration(string name, IHealthCheck instance, HealthStatus? failureStatus, IEnumerable<string> tags)
+        /// <param name="timeout">An optional <see cref="TimeSpan"/> representing the timeout of the check.</param>
+        public HealthCheckRegistration(string name, IHealthCheck instance, HealthStatus? failureStatus, IEnumerable<string> tags, TimeSpan? timeout)
         {
             if (name == null)
             {
@@ -47,10 +64,16 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                 throw new ArgumentNullException(nameof(instance));
             }
 
+            if (timeout <= TimeSpan.Zero && timeout != System.Threading.Timeout.InfiniteTimeSpan)
+            {
+                throw new ArgumentOutOfRangeException(nameof(timeout));
+            }
+
             Name = name;
             FailureStatus = failureStatus ?? HealthStatus.Unhealthy;
             Tags = new HashSet<string>(tags ?? Array.Empty<string>(), StringComparer.OrdinalIgnoreCase);
             Factory = (_) => instance;
+            Timeout = timeout ?? System.Threading.Timeout.InfiniteTimeSpan;
         }
 
         /// <summary>
@@ -68,6 +91,27 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
             Func<IServiceProvider, IHealthCheck> factory,
             HealthStatus? failureStatus,
             IEnumerable<string> tags)
+            : this(name, factory, failureStatus, tags, default)
+        {
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="HealthCheckRegistration"/> for an existing <see cref="IHealthCheck"/> instance.
+        /// </summary>
+        /// <param name="name">The health check name.</param>
+        /// <param name="factory">A delegate used to create the <see cref="IHealthCheck"/> instance.</param>
+        /// <param name="failureStatus">
+        /// The <see cref="HealthStatus"/> that should be reported when the health check reports a failure. If the provided value
+        /// is <c>null</c>, then <see cref="HealthStatus.Unhealthy"/> will be reported.
+        /// </param>
+        /// <param name="tags">A list of tags that can be used for filtering health checks.</param>
+        /// <param name="timeout">An optional <see cref="TimeSpan"/> representing the timeout of the check.</param>
+        public HealthCheckRegistration(
+            string name,
+            Func<IServiceProvider, IHealthCheck> factory,
+            HealthStatus? failureStatus,
+            IEnumerable<string> tags,
+            TimeSpan? timeout)
         {
             if (name == null)
             {
@@ -79,10 +123,16 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                 throw new ArgumentNullException(nameof(factory));
             }
 
+            if (timeout <= TimeSpan.Zero && timeout != System.Threading.Timeout.InfiniteTimeSpan)
+            {
+                throw new ArgumentOutOfRangeException(nameof(timeout));
+            }
+
             Name = name;
             FailureStatus = failureStatus ?? HealthStatus.Unhealthy;
             Tags = new HashSet<string>(tags ?? Array.Empty<string>(), StringComparer.OrdinalIgnoreCase);
             Factory = factory;
+            Timeout = timeout ?? System.Threading.Timeout.InfiniteTimeSpan;
         }
 
         /// <summary>
@@ -106,6 +156,23 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         /// Gets or sets the <see cref="HealthStatus"/> that should be reported upon failure of the health check.
         /// </summary>
         public HealthStatus FailureStatus { get; set; }
+
+        /// <summary>
+        /// Gets or sets the timeout used for the test.
+        /// </summary>
+        public TimeSpan Timeout
+        {
+            get => _timeout;
+            set
+            {
+                if (value <= TimeSpan.Zero && value != System.Threading.Timeout.InfiniteTimeSpan)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value));
+                }
+
+                _timeout = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the health check name.
