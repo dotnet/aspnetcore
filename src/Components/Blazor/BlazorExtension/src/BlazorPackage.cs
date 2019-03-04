@@ -20,6 +20,10 @@ namespace Microsoft.VisualStudio.BlazorExtension
     {
         public const string PackageGuidString = "d9fe04bc-57a7-4107-915e-3a5c2f9e19fb";
 
+        /*
+        Disabling AutoRebuild features for 0.9.0 release due to
+        https://github.com/aspnet/AspNetCore/issues/8060
+
         protected async override Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
             await base.InitializeAsync(cancellationToken, progress);
@@ -40,5 +44,6 @@ namespace Microsoft.VisualStudio.BlazorExtension
                 new AutoRebuildService(buildWatcher).Listen();
             }
         }
+        */
     }
 }

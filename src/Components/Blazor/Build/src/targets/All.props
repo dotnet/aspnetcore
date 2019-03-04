@@ -5,7 +5,9 @@
     <DefaultWebContentItemExcludes>$(DefaultWebContentItemExcludes);wwwroot\**</DefaultWebContentItemExcludes>
 
     <!-- By default, enable auto rebuilds for debug builds. Note that the server will not enable it in production environments regardless. -->
+    <!-- Disabled by default for 0.9.0 due to https://github.com/aspnet/AspNetCore/issues/8060 (also, it wasn't working anyway)
     <BlazorRebuildOnFileChange Condition="'$(Configuration)' == 'Debug' AND '$(BlazorRebuildOnFileChange)' == ''">true</BlazorRebuildOnFileChange>
+    -->
 
     <!-- By default, enable debugging for debug builds. -->
     <BlazorEnableDebugging Condition="'$(Configuration)' == 'Debug' AND '$(BlazorEnableDebugging)' == ''">true</BlazorEnableDebugging>
