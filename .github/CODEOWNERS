@@ -14,3 +14,4 @@
 /src/Servers/ @tratcher @jkotalik
 /src/Middleware/Rewrite @jkotalik
 /src/Middleware/HttpsPolicy @jkotalik
+/src/SignalR/ @mikaelm12 @BrennanConroy @halter73 @anurse
