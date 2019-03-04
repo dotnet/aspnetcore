@@ -31,12 +31,13 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile
         /// </summary>
         public override void Load()
         {
-            Data = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            var data = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             if (Source.FileProvider == null)
             {
                 if (Source.Optional)
                 {
+                    Data = data;
                     return;
                 }
 
@@ -61,10 +62,12 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile
                 {
                     if (Source.IgnoreCondition == null || !Source.IgnoreCondition(file.Name))
                     {
-                        Data.Add(NormalizeKey(file.Name), TrimNewLine(streamReader.ReadToEnd()));
+                        data.Add(NormalizeKey(file.Name), TrimNewLine(streamReader.ReadToEnd()));
                     }
                 }
             }
+
+            Data = data;
         }
 
         private string GetDirectoryName()
