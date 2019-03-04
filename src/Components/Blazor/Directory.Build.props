@@ -2,9 +2,23 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
 
   <PropertyGroup>
-    <ComponentsPackageVersion>$(PackageVersion)</ComponentsPackageVersion>
+    <!-- Out-of-band release -->
+    <UseProjectReferences>false</UseProjectReferences>
+    <ComponentsPackageVersion>3.0.0-preview3-19153-02</ComponentsPackageVersion>
+    <SharedFxVersion>$(ComponentsPackageVersion)</SharedFxVersion>
+
     <VersionPrefix>$(BlazorComponentsVersionPrefix)</VersionPrefix>
     <PackageVersion>$(VersionPrefix)</PackageVersion>
     <PackageVersion Condition=" '$(IncludePreReleaseLabelInPackageVersion)' == 'true' ">$(VersionPrefix)-$(VersionSuffix)</PackageVersion>
   </PropertyGroup>
+
+  <ItemGroup>
+    <LatestPackageReference Include="Microsoft.AspNetCore.Components" Version="$(ComponentsPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.Components.Browser" Version="$(ComponentsPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.Components.Server" Version="$(ComponentsPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.AspNetCore" Version="$(ComponentsPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="$(ComponentsPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.ResponseCompression" Version="$(ComponentsPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.AspNetCore.WebSockets" Version="$(ComponentsPackageVersion)" />
+  </ItemGroup>
 </Project>

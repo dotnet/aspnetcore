@@ -7,9 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.WebSockets" />
-    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <Reference Include="Newtonsoft.Json" />
 
     <!-- Used by ws-proxy sources only. Remove this once we're able to consume ws-proxy as a NuGet package. -->
