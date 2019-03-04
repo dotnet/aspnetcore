@@ -89,9 +89,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         public Microsoft.AspNetCore.Http.HttpContext HttpContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public override System.Collections.Generic.IDictionary<object, object> Items { get { throw null; } set { } }
         public System.DateTime LastSeenUtc { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.DateTime? LastSeenUtcIfInactive { get { throw null; } }
         public System.Threading.Tasks.Task PreviousPollTask { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Threading.SemaphoreSlim StateLock { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Http.Connections.Internal.HttpConnectionStatus Status { get { throw null; } set { } }
+        public Microsoft.AspNetCore.Http.Connections.Internal.HttpConnectionStatus Status { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.Connections.TransferFormat SupportedFormats { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public override System.IO.Pipelines.IDuplexPipe Transport { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.Threading.Tasks.Task TransportTask { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
@@ -100,9 +100,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         public System.Threading.SemaphoreSlim WriteLock { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task DisposeAsync(bool closeGracefully = false) { throw null; }
+        public void MarkInactive() { }
         public void OnHeartbeat(System.Action<object> action, object state) { }
         public void TickHeartbeat() { }
-        public bool TryChangeState(Microsoft.AspNetCore.Http.Connections.Internal.HttpConnectionStatus from, Microsoft.AspNetCore.Http.Connections.Internal.HttpConnectionStatus to) { throw null; }
+        public Microsoft.AspNetCore.Http.Connections.Internal.HttpConnectionStatus TryChangeState(Microsoft.AspNetCore.Http.Connections.Internal.HttpConnectionStatus from, Microsoft.AspNetCore.Http.Connections.Internal.HttpConnectionStatus to) { throw null; }
     }
     public partial class HttpConnectionDispatcher
     {
@@ -122,7 +123,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task DisposeAndRemoveAsync(Microsoft.AspNetCore.Http.Connections.Internal.HttpConnectionContext connection, bool closeGracefully) { throw null; }
         public void RemoveConnection(string id) { }
-        [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task ScanAsync() { throw null; }
         public void Start() { }
         public bool TryGetConnection(string id, out Microsoft.AspNetCore.Http.Connections.Internal.HttpConnectionContext connection) { throw null; }

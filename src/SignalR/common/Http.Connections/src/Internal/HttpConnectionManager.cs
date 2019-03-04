@@ -137,32 +137,18 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             Log.HeartBeatEnded(_logger);
         }
 
-        public async Task ScanAsync()
+        public Task ScanAsync()
         {
             // Scan the registered connections looking for ones that have timed out
             foreach (var c in _connections)
             {
-                HttpConnectionStatus status;
-                DateTimeOffset lastSeenUtc;
                 var connection = c.Value.Connection;
-
-                await connection.StateLock.WaitAsync();
-
-                try
-                {
-                    // Capture the connection state
-                    status = connection.Status;
-
-                    lastSeenUtc = connection.LastSeenUtc;
-                }
-                finally
-                {
-                    connection.StateLock.Release();
-                }
+                // Capture the connection state
+                var lastSeenUtc = connection.LastSeenUtcIfInactive;
 
                 // Once the decision has been made to dispose we don't check the status again
                 // But don't clean up connections while the debugger is attached.
-                if (!Debugger.IsAttached && status == HttpConnectionStatus.Inactive && (DateTimeOffset.UtcNow - lastSeenUtc).TotalSeconds > _disconnectTimeout.TotalSeconds)
+                if (!Debugger.IsAttached && lastSeenUtc.HasValue && (DateTimeOffset.UtcNow - lastSeenUtc.Value).TotalSeconds > _disconnectTimeout.TotalSeconds)
                 {
                     Log.ConnectionTimedOut(_logger, connection.ConnectionId);
                     HttpConnectionsEventSource.Log.ConnectionTimedOut(connection.ConnectionId);
@@ -178,6 +164,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                     connection.TickHeartbeat();
                 }
             }
+
+            return Task.CompletedTask;
         }
 
         public void CloseConnections()

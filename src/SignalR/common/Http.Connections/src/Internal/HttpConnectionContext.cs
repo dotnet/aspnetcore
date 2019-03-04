@@ -28,6 +28,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                                          IHttpTransportFeature,
                                          IConnectionInherentKeepAliveFeature
     {
+        private readonly object _stateLock = new object();
         private readonly object _itemsLock = new object();
         private readonly object _heartbeatLock = new object();
         private List<(Action<object> handler, object state)> _heartbeatHandlers;
@@ -35,7 +36,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         private PipeWriterStream _applicationStream;
         private IDuplexPipe _application;
         private IDictionary<object, object> _items;
-        private int _status = (int)HttpConnectionStatus.Inactive;
 
         // This tcs exists so that multiple calls to DisposeAsync all wait asynchronously
         // on the same task
@@ -83,7 +83,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         public HttpTransportType TransportType { get; set; }
 
         public SemaphoreSlim WriteLock { get; } = new SemaphoreSlim(1, 1);
-        public SemaphoreSlim StateLock { get; } = new SemaphoreSlim(1, 1);
 
         // Used for testing only
         internal Task DisposeAndRemoveTask { get; set; }
@@ -96,7 +95,18 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
         public DateTime LastSeenUtc { get; set; }
 
-        public HttpConnectionStatus Status { get => (HttpConnectionStatus)_status; set => Interlocked.Exchange(ref _status, (int)value); }
+        public DateTime? LastSeenUtcIfInactive
+        {
+            get
+            {
+                lock (_stateLock)
+                {
+                    return Status == HttpConnectionStatus.Inactive ? (DateTime?)LastSeenUtc : null;
+                }
+            }
+        }
+
+        public HttpConnectionStatus Status { get; set; } = HttpConnectionStatus.Inactive;
 
         public override string ConnectionId { get; set; }
 
@@ -184,29 +194,29 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         {
             Task disposeTask;
 
-            await StateLock.WaitAsync();
             try
             {
-                if (Status == HttpConnectionStatus.Disposed)
+                lock (_stateLock)
                 {
-                    disposeTask = _disposeTcs.Task;
-                }
-                else
-                {
-                    Status = HttpConnectionStatus.Disposed;
+                    if (Status == HttpConnectionStatus.Disposed)
+                    {
+                        disposeTask = _disposeTcs.Task;
+                    }
+                    else
+                    {
+                        Status = HttpConnectionStatus.Disposed;
 
-                    Log.DisposingConnection(_logger, ConnectionId);
+                        Log.DisposingConnection(_logger, ConnectionId);
 
-                    var applicationTask = ApplicationTask ?? Task.CompletedTask;
-                    var transportTask = TransportTask ?? Task.CompletedTask;
+                        var applicationTask = ApplicationTask ?? Task.CompletedTask;
+                        var transportTask = TransportTask ?? Task.CompletedTask;
 
-                    disposeTask = WaitOnTasks(applicationTask, transportTask, closeGracefully);
+                        disposeTask = WaitOnTasks(applicationTask, transportTask, closeGracefully);
+                    }
                 }
             }
             finally
             {
-                StateLock.Release();
-
                 Cancellation?.Dispose();
 
                 Cancellation = null;
@@ -310,9 +320,31 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             }
         }
 
-        public bool TryChangeState(HttpConnectionStatus from, HttpConnectionStatus to)
+        public HttpConnectionStatus TryChangeState(HttpConnectionStatus from, HttpConnectionStatus to)
         {
-            return Interlocked.CompareExchange(ref _status, (int)to, (int)from) == (int)from;
+            lock (_stateLock)
+            {
+                if (Status == from)
+                {
+                    Status = to;
+                    return from;
+                }
+
+                return Status;
+            }
+        }
+
+        public void MarkInactive()
+        {
+            lock (_stateLock)
+            {
+                LastSeenUtc = DateTime.UtcNow;
+
+                if (Status == HttpConnectionStatus.Active)
+                {
+                    Status = HttpConnectionStatus.Inactive;
+                }
+            }
         }
 
         private static class Log
