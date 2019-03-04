@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+     <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" /> 
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="$(SignalRTestUtilsProject)" />
   </ItemGroup>
 
