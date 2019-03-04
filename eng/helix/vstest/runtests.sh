@@ -61,7 +61,7 @@ export DOTNET_CLI_HOME="$HELIX_CORRELATION_PAYLOAD/home"
 export helix="true"
 
 $DOTNET_ROOT/dotnet vstest $1 -lt >discovered.txt
-if grep -Fxq "Exception thrown" discovered.txt; then
+if grep -q "Exception thrown" discovered.txt; then
     echo -e "${RED}Exception thrown during test discovery${RESET}".
     cat discovered.txt
     exit 1
