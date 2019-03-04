@@ -2683,7 +2683,7 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public async Task ExceptionsThrownAsynchronouslyCanBeHandled()
+        public async Task ExceptionsThrownAsynchronouslyDuringFirstRenderCanBeHandled()
         {
             // Arrange
             var renderer = new TestRenderer { ShouldHandleExceptions = true };
@@ -2719,6 +2719,36 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.False(renderTask.IsCompleted);
             tcs.SetResult(0);
             await renderTask;
+            Assert.Same(exception, Assert.Single(renderer.HandledExceptions).GetBaseException());
+        }
+
+        [Fact]
+        public async Task ExceptionsThrownAsynchronouslyAfterFirstRenderCanBeHandled()
+        {
+            // This differs from the "during first render" case, because some aspects of the rendering
+            // code paths are special cased for the first render because of prerendering.
+
+            // Arrange
+            var renderer = new TestRenderer { ShouldHandleExceptions = true };
+            var taskToAwait = Task.CompletedTask;
+            var component = new TestComponent(builder =>
+            {
+                builder.OpenComponent<ComponentThatAwaitsTask>(0);
+                builder.AddAttribute(1, nameof(ComponentThatAwaitsTask.TaskToAwait), taskToAwait);
+                builder.CloseComponent();
+            });
+            var componentId = renderer.AssignRootComponentId(component);
+            await renderer.RenderRootComponentAsync(componentId); // Not throwing on first render
+
+            var asyncExceptionTcs = new TaskCompletionSource<object>();
+            taskToAwait = asyncExceptionTcs.Task;
+            await renderer.Invoke(component.TriggerRender);
+
+            // Act
+            var exception = new InvalidOperationException();
+            asyncExceptionTcs.SetException(exception);
+
+            // Assert
             Assert.Same(exception, Assert.Single(renderer.HandledExceptions).GetBaseException());
         }
 
@@ -3694,6 +3724,16 @@ namespace Microsoft.AspNetCore.Components.Test
                 OnParametersSetAsyncSync,
                 OnParametersSetAsyncAsync,
                 OnAfterRenderAsync,
+            }
+        }
+
+        private class ComponentThatAwaitsTask : ComponentBase
+        {
+            [Parameter] public Task TaskToAwait { get; set; }
+
+            protected override async Task OnParametersSetAsync()
+            {
+                await TaskToAwait;
             }
         }
     }

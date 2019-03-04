@@ -328,13 +328,14 @@ namespace Microsoft.AspNetCore.Components.Rendering
                     HandleException(task.Exception.GetBaseException());
                     break;
                 default:
-                    // We are not in rendering the root component.
-                    if (_pendingTasks == null)
-                    {
-                        return;
-                    }
+                    // It's important to evaluate the following even if we're not going to use
+                    // handledErrorTask below, because it has the side-effect of calling HandleException.
+                    var handledErrorTask = GetErrorHandledTask(task);
 
-                    _pendingTasks.Add(GetErrorHandledTask(task));
+                    // The pendingTasks collection is only used during prerendering to track quiescence,
+                    // so will be null at other times.
+                    _pendingTasks?.Add(handledErrorTask);
+                    
                     break;
             }
         }
