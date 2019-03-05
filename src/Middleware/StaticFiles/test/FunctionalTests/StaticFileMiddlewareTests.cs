@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Endpoints;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
 using Microsoft.AspNetCore.Testing;
@@ -41,6 +42,44 @@ namespace Microsoft.AspNetCore.StaticFiles
                     var response = await client.GetAsync("TestDocument.txt");
 
                     Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task Endpoint_PassesThrough()
+        {
+            var builder = new WebHostBuilder()
+                .ConfigureServices(services => services.AddSingleton(LoggerFactory))
+                .UseKestrel()
+                .UseWebRoot(AppContext.BaseDirectory)
+                .Configure(app =>
+                {
+                    // Routing first => static files noops
+                    app.Use(next => context =>
+                    {
+                        // Assign an endpoint, this will make the default files noop.
+                        context.SetEndpoint(new Endpoint((c) =>
+                        {
+                            return context.Response.WriteAsync("Hi from endpoint.");
+                        },
+                        new EndpointMetadataCollection(),
+                        "test"));
+
+                        return next(context);
+                    });
+
+                    app.UseStaticFiles();
+                });
+
+            using (var server = builder.Start(TestUrlHelper.GetTestUrl(ServerType.Kestrel)))
+            {
+                using (var client = new HttpClient { BaseAddress = new Uri(server.GetAddress()) })
+                {
+                    var response = await client.GetAsync("TestDocument.txt");
+
+                    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                    Assert.Equal("Hi from endpoint.", await response.Content.ReadAsStringAsync());
                 }
             }
         }
