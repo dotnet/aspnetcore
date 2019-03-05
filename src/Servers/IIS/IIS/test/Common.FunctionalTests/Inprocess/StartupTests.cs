@@ -108,7 +108,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.Equal(1, TestSink.Writes.Count(w => w.Message.Contains("Invoking where.exe to find dotnet.exe")));
         }
 
-
         [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/7972
         [ConditionalTheory]
         [InlineData(RuntimeArchitecture.x64)]
@@ -186,17 +185,27 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             await StartAsync(deploymentParameters);
         }
 
-        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/7972
         [ConditionalFact]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         public async Task StartsWithPortableAndBootstraperExe()
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite);
+            deploymentParameters.PublishApplicationBeforeDeployment = true;
+
             // We need the right dotnet on the path in IIS
-            deploymentParameters.EnvironmentVariables["PATH"] = Path.GetDirectoryName(DotNetCommands.GetDotNetExecutable(deploymentParameters.RuntimeArchitecture));
             // ReferenceTestTasks is workaround for https://github.com/dotnet/sdk/issues/2482
-            deploymentParameters.AdditionalPublishParameters = "AppHost";
             var deploymentResult = await DeployAsync(deploymentParameters);
+            deploymentResult.ModifyWebConfig(element => element
+                .Descendants("system.webServer")
+                .Single()
+                .GetOrAdd("aspNetCore")
+                .SetAttributeValue("processPath", Helpers.GetInProcessTestSitesName() + ".exe"));
+
+            deploymentResult.ModifyWebConfig(element => element
+                .Descendants("system.webServer")
+                .Single()
+                .GetOrAdd("aspNetCore")
+                .SetAttributeValue("arguments", ""));
 
             Assert.True(File.Exists(Path.Combine(deploymentResult.ContentRoot, "InProcessWebSite.exe")));
             Assert.False(File.Exists(Path.Combine(deploymentResult.ContentRoot, "hostfxr.dll")));
