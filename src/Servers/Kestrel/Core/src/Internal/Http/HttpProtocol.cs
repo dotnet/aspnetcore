@@ -45,6 +45,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         // Keep-alive is default for HTTP/1.1 and HTTP/2; parsing and errors will change its value
         // volatile, see: https://msdn.microsoft.com/en-us/library/x13ttww7.aspx
         protected volatile bool _keepAlive = true;
+        // _canWriteResponseBody is set in CreateResponseHeaders.
+        // If we are writing with GetMemory/Advance before calling StartAsync, assume we can write and throw away contents if we can't.
         private bool _canWriteResponseBody = true;
         private bool _hasAdvanced;
         private bool _requireGetMemoryNextCall;
@@ -1283,7 +1285,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             if (_requireGetMemoryNextCall)
             {
-                throw new InvalidOperationException("Invalid ordering of calling StartAsync and Advance. Call StartAsync before calling GetMemory/GetSpan and Advance.");
+                throw new InvalidOperationException("Invalid ordering of calling StartAsync and Advance. " +
+                    "Call StartAsync before calling GetMemory/GetSpan and Advance.");
             }
 
             if (_canWriteResponseBody)

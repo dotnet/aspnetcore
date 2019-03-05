@@ -56,12 +56,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private Memory<byte> _currentChunkMemory;
         private bool _currentChunkMemoryUpdated;
         private IMemoryOwner<byte> _fakeMemoryOwner;
-        private bool _startCalled;
 
+        // Fields needed to store writes before calling either startAsync or Write/FlushAsync
         private LinkedList<CompletedBuffer> _completedSegments;
         private Memory<byte> _currentSegment;
         private IMemoryOwner<byte> _currentSegmentOwner;
         private int _position;
+        private bool _startCalled;
 
         public Http1OutputProducer(
             PipeWriter pipeWriter,
