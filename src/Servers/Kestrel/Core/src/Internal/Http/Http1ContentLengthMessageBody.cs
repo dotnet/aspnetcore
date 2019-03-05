@@ -31,8 +31,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             if (_inputLength == 0)
             {
-                _readResult = new ReadResult(default, isCanceled: false, isCompleted: true);
-                return _readResult;
+                _readResult = new ReadResult(_readResult.Buffer, isCanceled: false, isCompleted: true);
             }
 
             TryStart();
@@ -170,7 +169,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 return;
             }
 
-            var dataLength = _readResult.Buffer.Slice(_readResult.Buffer.Start, consumed).Length;
+            // Need prevExamined....
+            var dataLength = _readResult.Buffer.Slice(_readResult.Buffer.Start, examined).Length;
 
             _inputLength -= dataLength;
 
