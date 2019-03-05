@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         {
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore-Internal/issues/1860")]
+        [Fact]
         [InitializeTestProject("SimpleMvc")]
         public async Task BuildMvcApp()
         {
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             }
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore-Internal/issues/1860")]
+        [Fact]
         [InitializeTestProject("MvcWithComponents")]
         public async Task BuildMvcAppWithComponents()
         {
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 }
 
                 var match = matcher.Match(lines[i]);
-                Assert.True(match.Success, $"Line {lines[i]} did not match.");
+                Assert.True(match.Success, $"Line {lines[i]} did not match. Full Output: {output}");
 
                 var entry = new PerformanceSummaryEntry
                 {
