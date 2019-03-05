@@ -794,6 +794,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Theory]
+#if LIBUV
+        [SkipOnHelix]
+#endif
         [MemberData(nameof(ConnectionAdapterData))]
         public async Task AppCanHandleClientAbortingConnectionMidRequest(ListenOptions listenOptions)
         {
