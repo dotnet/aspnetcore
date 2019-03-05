@@ -155,6 +155,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
                 {
                     process.Close();
                     logger.LogError("Closing process '{processName}' because it is running longer than the configured timeout.", fileName);
+                    output = string.Join(Environment.NewLine, lines.ToArray());
                     return -1;
                 }
                 else
