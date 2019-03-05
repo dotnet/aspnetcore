@@ -156,9 +156,11 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
                     process.Close();
                     logger.LogError("Closing process '{processName}' because it is running longer than the configured timeout.", fileName);
                 }
-
-                // Need to WaitForExit without a timeout to guarantee the output stream has written everything
-                process.WaitForExit();
+                else
+                {
+                    // Need to WaitForExit without a timeout to guarantee the output stream has written everything
+                    process.WaitForExit();
+                }
 
                 output = string.Join(Environment.NewLine, lines);
 
