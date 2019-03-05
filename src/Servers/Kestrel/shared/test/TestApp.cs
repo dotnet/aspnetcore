@@ -65,6 +65,7 @@ namespace Microsoft.AspNetCore.Testing
             var bytes = data.ToArray();
 
             response.Headers["Content-Length"] = bytes.Length.ToString();
+            await response.StartAsync();
 
             var memory = response.BodyWriter.GetMemory(bytes.Length);
             bytes.CopyTo(memory);

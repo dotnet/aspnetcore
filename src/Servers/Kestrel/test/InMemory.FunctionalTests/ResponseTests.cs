@@ -3626,6 +3626,76 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
+        [Fact]
+        public async Task ResponseGetMemoryAndStartAsyncMemoryReturnsNewMemory()
+        {
+            using (var server = new TestServer(async httpContext =>
+            {
+                var memory = httpContext.Response.BodyPipe.GetMemory();
+                Assert.Equal(4096, memory.Length);
+
+                await httpContext.Response.StartAsync();
+                // Original memory is disposed, don't compare against it.
+
+                memory = httpContext.Response.BodyPipe.GetMemory();
+                Assert.NotEqual(4096, memory.Length);
+
+            }, new TestServiceContext(LoggerFactory)))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "0",
+                        "",
+                        "");
+                }
+                await server.StopAsync();
+            }
+        }
+
+
+        [Fact]
+        public async Task ResponseGetMemoryAndStartAsyncAdvanceThrows()
+        {
+            using (var server = new TestServer(async httpContext =>
+            {
+                var memory = httpContext.Response.BodyPipe.GetMemory();
+
+                await httpContext.Response.StartAsync();
+
+                Assert.Throws<InvalidOperationException>(() => httpContext.Response.BodyPipe.Advance(1));
+
+            }, new TestServiceContext(LoggerFactory)))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "0",
+                        "",
+                        "");
+                }
+                await server.StopAsync();
+            }
+        }
+
         [Theory]
         [InlineData(false)]
         [InlineData(true)]

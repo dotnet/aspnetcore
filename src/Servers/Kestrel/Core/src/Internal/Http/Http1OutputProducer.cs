@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private IMemoryOwner<byte> _fakeMemoryOwner;
         private bool _startCalled;
 
-        private List<CompletedBuffer> _completedSegments;
+        private LinkedList<CompletedBuffer> _completedSegments;
         private Memory<byte> _currentSegment;
         private IMemoryOwner<byte> _currentSegmentOwner;
         private int _position;
@@ -79,7 +79,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _minResponseDataRateFeature = minResponseDataRateFeature;
             _flusher = new TimingPipeFlusher(pipeWriter, timeoutControl, log);
             _memoryPool = memoryPool;
-            _completedSegments = new List<CompletedBuffer>();
         }
 
         public Task WriteDataAsync(ReadOnlySpan<byte> buffer, CancellationToken cancellationToken = default)
@@ -168,7 +167,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
                 else if (!_startCalled)
                 {
-                    // TODO how does chunked play with this?
                     return LeasedMemory(sizeHint);
                 }
                 else if (_autoChunk)
@@ -313,27 +311,32 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             writer.Commit();
 
             _autoChunk = autoChunk;
-            // I think I should copy everything to the pipe here....
+            WriteDataWrittenBeforeHeaders(ref writer);
 
-            // try it for now?
-            var count = _completedSegments.Count;
-            for (var i = 0; i < count; i++)
+            _unflushedBytes += writer.BytesCommitted;
+            _startCalled = true;
+        }
+
+        private void WriteDataWrittenBeforeHeaders(ref BufferWriter<PipeWriter> writer)
+        {
+            if (_completedSegments != null)
             {
-                var segment = _completedSegments[i];
+                foreach (var segment in _completedSegments)
+                {
+                    if (_autoChunk)
+                    {
+                        CommitChunkInternal(ref writer, segment.Span);
+                    }
+                    else
+                    {
+                        writer.Write(segment.Span);
+                        writer.Commit();
+                    }
+                    segment.Return();
+                }
 
-                if (_autoChunk)
-                {
-                    CommitChunkInternal(ref writer, segment.Span);
-                }
-                else
-                {
-                    writer.Write(segment.Span);
-                    writer.Commit();
-                }
-                segment.Return();
+                _completedSegments.Clear();
             }
-
-            _completedSegments.Clear();
 
             if (!_currentSegment.IsEmpty)
             {
@@ -347,8 +350,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     writer.Write(segment.Span);
                     writer.Commit();
-                    _position = 0;
                 }
+
+                _position = 0;
 
                 if (_currentSegmentOwner != null)
                 {
@@ -356,9 +360,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     _currentSegmentOwner = null;
                 }
             }
-
-            _unflushedBytes += writer.BytesCommitted;
-            _startCalled = true;
         }
 
         public void Dispose()
@@ -371,6 +372,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     _fakeMemoryOwner = null;
                 }
 
+                // Call dispose on any memory that wasn't written.
                 if (_completedSegments != null)
                 {
                     foreach (var segment in _completedSegments)
@@ -378,6 +380,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         segment.Return();
                     }
                 }
+
                 if (_currentSegmentOwner != null)
                 {
                     _currentSegmentOwner.Dispose();
@@ -596,7 +599,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private void EnsureCapacity(int sizeHint)
         {
-            // This does the Right Thing. It only subtracts _position from the current segment length if it's non-null.
+            // Only subtracts _position from the current segment length if it's non-null.
             // If _currentSegment is null, it returns 0.
             var remainingSize = _currentSegment.Length - _position;
 
@@ -618,13 +621,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 // We're adding a segment to the list
                 if (_completedSegments == null)
                 {
-                    _completedSegments = new List<CompletedBuffer>();
+                    _completedSegments = new LinkedList<CompletedBuffer>();
                 }
 
                 // Position might be less than the segment length if there wasn't enough space to satisfy the sizeHint when
                 // GetMemory was called. In that case we'll take the current segment and call it "completed", but need to
                 // ignore any empty space in it.
-                _completedSegments.Add(new CompletedBuffer(_currentSegmentOwner, _currentSegment, _position));
+                _completedSegments.AddLast(new CompletedBuffer(_currentSegmentOwner, _currentSegment, _position));
             }
 
             if (sizeHint <= _memoryPool.MaxBufferSize)

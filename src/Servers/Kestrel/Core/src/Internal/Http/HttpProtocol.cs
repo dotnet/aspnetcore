@@ -46,7 +46,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         // volatile, see: https://msdn.microsoft.com/en-us/library/x13ttww7.aspx
         protected volatile bool _keepAlive = true;
         private bool _canWriteResponseBody = true;
-        private bool _hasWritten;
+        private bool _hasAdvanced;
+        private bool _requireGetMemoryNextCall;
         private bool _autoChunk;
         protected Exception _applicationException;
         private BadHttpRequestException _requestRejectedException;
@@ -922,6 +923,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 return;
             }
 
+            _requireGetMemoryNextCall = true;
+
             _requestProcessingStatus = RequestProcessingStatus.HeadersCommitted;
 
             var responseHeaders = CreateResponseHeaders(appCompleted);
@@ -1067,7 +1070,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     _keepAlive = false;
                 }
-                else if ((appCompleted || !_canWriteResponseBody) && !_hasWritten)
+                else if ((appCompleted || !_canWriteResponseBody) && !_hasAdvanced) // Avoid setting contentLength of 0 if we wrote data before calling CreateResponseHeaders
                 {
                     // Don't set the Content-Length header automatically for HEAD requests, 204 responses, or 304 responses.
                     if (CanAutoSetContentLengthZeroResponseHeader())
@@ -1269,14 +1272,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public void Advance(int bytes)
         {
-            // EW, fix this asap TODO
             if (bytes < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(bytes));
             }
             else if (bytes > 0)
             {
-                _hasWritten = true;
+                _hasAdvanced = true;
+            }
+
+            if (_requireGetMemoryNextCall)
+            {
+                throw new InvalidOperationException("Invalid ordering of calling StartAsync and Advance. Call StartAsync before calling GetMemory/GetSpan and Advance.");
             }
 
             if (_canWriteResponseBody)
@@ -1287,7 +1294,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             else
             {
                 HandleNonBodyResponseWrite();
-
                 // For HEAD requests, we still use the number of bytes written for logging
                 // how many bytes were written.
                 VerifyAndUpdateWrite(bytes);
@@ -1296,11 +1302,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public Memory<byte> GetMemory(int sizeHint = 0)
         {
+            _requireGetMemoryNextCall = false;
             return Output.GetMemory(sizeHint);
         }
 
         public Span<byte> GetSpan(int sizeHint = 0)
         {
+            _requireGetMemoryNextCall = false;
             return Output.GetSpan(sizeHint);
         }
 
@@ -1336,6 +1344,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     ApplicationAbort();
                 }
             }
+
             Output.Complete();
         }
 
