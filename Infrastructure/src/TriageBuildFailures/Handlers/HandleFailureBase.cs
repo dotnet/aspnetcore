@@ -22,6 +22,9 @@ namespace TriageBuildFailures.Handlers
         public EmailClient EmailClient { get; set; }
         public IReporter Reporter { get; set; }
 
+
+        protected const string _PRI0Label = "PRI: 0 - Critical";
+
         public abstract Task<bool> CanHandleFailure(ICIBuild build);
         public abstract Task HandleFailure(ICIBuild build);
 

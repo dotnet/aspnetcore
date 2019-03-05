@@ -73,6 +73,7 @@ namespace TriageBuildFailures.Handlers
 CC {GitHubUtils.GetAtMentions(_Notifiers)}";
                 var issueLabels = new[]
                 {
+                    _PRI0Label,
                     _BrokenBuildLabel,
                     GitHubUtils.GetBranchLabel(build.Branch)
                 };
