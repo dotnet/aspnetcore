@@ -2632,9 +2632,55 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 new KeyValuePair<string, string>(HeaderNames.Path, "/"),
                 new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
             };
+            await InitializeConnectionAsync(httpContext =>
+            {
+                var response = httpContext.Response;
+                var memory = response.BodyWriter.GetMemory();
+                var fisrtPartOfResponse = Encoding.ASCII.GetBytes("hello,");
+                fisrtPartOfResponse.CopyTo(memory);
+                response.BodyWriter.Advance(6);
+
+                memory = response.BodyWriter.GetMemory();
+                var secondPartOfResponse = Encoding.ASCII.GetBytes(" world");
+                secondPartOfResponse.CopyTo(memory);
+                response.BodyWriter.Advance(6);
+                return Task.CompletedTask;
+            });
+
+            await StartStreamAsync(1, headers, endStream: true);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 37,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+            var dataFrame = await ExpectAsync(Http2FrameType.DATA,
+                withLength: 12,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
+
+            Assert.Equal(2, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+
+            Assert.True(_helloWorldBytes.AsSpan().SequenceEqual(dataFrame.PayloadSequence.ToArray()));
+        }
+
+        [Fact]
+        public async Task GetMemoryAdvance_WithStartAsync_Works()
+        {
+            var headers = new[]
+             {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            };
             await InitializeConnectionAsync(async httpContext =>
             {
-                await Task.CompletedTask;
+                await httpContext.Response.StartAsync();
                 var response = httpContext.Response;
                 var memory = response.BodyWriter.GetMemory();
                 var fisrtPartOfResponse = Encoding.ASCII.GetBytes("hello,");
@@ -2971,10 +3017,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
                 var response = httpContext.Response;
 
-                var memory = response.BodyPipe.GetMemory(0);
+                var memory = response.BodyWriter.GetMemory(0);
                 Assert.Equal(4096, memory.Length);
 
-                memory = response.BodyPipe.GetMemory(4096);
+                memory = response.BodyWriter.GetMemory(4096);
                 Assert.Equal(4096, memory.Length);
 
                 await Task.CompletedTask;

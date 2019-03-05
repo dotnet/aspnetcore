@@ -355,11 +355,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 _position = 0;
 
-                if (_currentSegmentOwner != null)
-                {
-                    _currentSegmentOwner.Dispose();
-                    _currentSegmentOwner = null;
-                }
+                DisposeCurrentSegment();
             }
         }
 
@@ -382,13 +378,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                 }
 
-                if (_currentSegmentOwner != null)
-                {
-                    _currentSegmentOwner.Dispose();
-                }
+                DisposeCurrentSegment();
 
                 CompletePipe();
             }
+        }
+
+        private void DisposeCurrentSegment()
+        {
+            _currentSegmentOwner?.Dispose();
+            _currentSegmentOwner = null;
+            _currentSegment = default;
         }
 
         private void CompletePipe()
@@ -658,7 +658,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             public Memory<byte> Buffer { get; }
             public int Length { get; }
 
-            public ReadOnlySpan<byte> Span => Buffer.Span;
+            public ReadOnlySpan<byte> Span => Buffer.Span.Slice(0, Length);
 
             public CompletedBuffer(IMemoryOwner<byte> owner, Memory<byte> buffer, int length)
             {

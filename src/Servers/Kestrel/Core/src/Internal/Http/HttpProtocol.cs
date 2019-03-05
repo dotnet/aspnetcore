@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         // If we are writing with GetMemory/Advance before calling StartAsync, assume we can write and throw away contents if we can't.
         private bool _canWriteResponseBody = true;
         private bool _hasAdvanced;
-        private bool _requireGetMemoryNextCall;
+        private bool _isLeasedMemoryInvalid = true;
         private bool _autoChunk;
         protected Exception _applicationException;
         private BadHttpRequestException _requestRejectedException;
@@ -925,7 +925,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 return;
             }
 
-            _requireGetMemoryNextCall = true;
+            _isLeasedMemoryInvalid = true;
 
             _requestProcessingStatus = RequestProcessingStatus.HeadersCommitted;
 
@@ -1283,7 +1283,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 _hasAdvanced = true;
             }
 
-            if (_requireGetMemoryNextCall)
+            if (_isLeasedMemoryInvalid)
             {
                 throw new InvalidOperationException("Invalid ordering of calling StartAsync and Advance. " +
                     "Call StartAsync before calling GetMemory/GetSpan and Advance.");
@@ -1305,13 +1305,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public Memory<byte> GetMemory(int sizeHint = 0)
         {
-            _requireGetMemoryNextCall = false;
+            _isLeasedMemoryInvalid = false;
             return Output.GetMemory(sizeHint);
         }
 
         public Span<byte> GetSpan(int sizeHint = 0)
         {
-            _requireGetMemoryNextCall = false;
+            _isLeasedMemoryInvalid = false;
             return Output.GetSpan(sizeHint);
         }
 
