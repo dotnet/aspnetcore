@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Endpoints;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
@@ -78,8 +79,9 @@ namespace Microsoft.AspNetCore.StaticFiles
         /// <returns></returns>
         public Task Invoke(HttpContext context)
         {
-            // Check if the URL matches any expected paths
-            if (Helpers.IsGetOrHeadMethod(context.Request.Method)
+            // Check if the URL matches any expected paths, skip if an endpoint was selected
+            if (context.GetEndpoint() == null &&
+                Helpers.IsGetOrHeadMethod(context.Request.Method)
                 && Helpers.TryMatchPath(context, _matchUrl, forDirectory: true, subpath: out var subpath)
                 && TryGetDirectoryInfo(subpath, out var contents))
             {
