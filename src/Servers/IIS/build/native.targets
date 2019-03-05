@@ -1,4 +1,21 @@
 <Project>
+
+  <PropertyGroup>
+    <IncludePath>$(IncludePath);$(IntDir)</IncludePath>
+  </PropertyGroup>
+
+  <ItemGroup Condition="@(MessageFile->Count()) != 0">
+    <CustomBuild Include="@(MessageFile)">
+      <FileType>Document</FileType>
+      <Command>mc %(FullPath) -h $(IntDir) -r $(IntDir)</Command>
+      <Message>Compiling Event Messages ...</Message>
+      <Outputs>$(IntDir)\%(Filename).rc;$(IntDir)\%(Filename).h;$(IntDir)\MSG0409.bin</Outputs>
+      <CustomBuildAfterTargets>BuildGenerateSources</CustomBuildAfterTargets>
+    </CustomBuild>
+
+    <MessageFile Remove="@(MessageFile)" />
+  </ItemGroup>
+
   <Target Name="CreateVersionHeader" BeforeTargets="PrepareForBuild">
     <ItemGroup>
       <VersionHeaderContents Include="// Copyright (c) .NET Foundation. All rights reserved." />

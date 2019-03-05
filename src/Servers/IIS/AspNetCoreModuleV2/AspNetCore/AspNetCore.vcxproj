@@ -298,6 +298,9 @@
   <ItemGroup>
     <Xml Include="aspnetcore_schema_v2.xml" />
   </ItemGroup>
+  <ItemGroup>
+    <MessageFile Include="..\CommonLib\aspnetcore_msg.mc" />
+  </ItemGroup>
   <Import Project="..\..\build\native.targets" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
