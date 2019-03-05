@@ -386,9 +386,8 @@ public class HubConnection {
 
             if (response.getRedirectUrl() == null) {
                 Set<String> transports = response.getAvailableTransports();
-                if (this.transportEnum == TransportEnum.ALL)
-                {
-                    if(transports.contains("WebSockets")) {
+                if (this.transportEnum == TransportEnum.ALL) {
+                    if (transports.contains("WebSockets")) {
                         this.transportEnum = TransportEnum.WEBSOCKETS;
                     } else if (transports.contains("LongPolling")) {
                         this.transportEnum = TransportEnum.LONG_POLLING;

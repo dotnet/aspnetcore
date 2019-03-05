@@ -1248,7 +1248,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void ClientThatSelectsWebsocketsThrowsWhenWebsocketsArentAvailable() {
+    public void ClientThatSelectsWebsocketsThrowsWhenWebsocketsAreNotAvailable() {
         TestHttpClient client = new TestHttpClient().on("POST",
                 (req) -> Single.just(new HttpResponse(200, "",
                         "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
@@ -1271,7 +1271,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void ClientThatSelectsLongPollingThrowsWhenLongPollingIsntAvailable() {
+    public void ClientThatSelectsLongPollingThrowsWhenLongPollingIsNotAvailable() {
         TestHttpClient client = new TestHttpClient().on("POST",
                 (req) -> Single.just(new HttpResponse(200, "", "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
                         + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
