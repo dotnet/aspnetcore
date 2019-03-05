@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc.Routing;
 namespace Microsoft.AspNetCore.Mvc.Abstractions
 {
     /// <summary>
-    /// Describes a MVC action.
+    /// Describes an MVC action.
     /// </summary>
     public class ActionDescriptor
     {

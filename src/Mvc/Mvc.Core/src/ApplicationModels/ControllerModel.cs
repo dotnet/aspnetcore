@@ -68,6 +68,9 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             Selectors = new List<SelectorModel>(other.Selectors.Select(s => new SelectorModel(s)));
         }
 
+        /// <summary>
+        /// The actions on this controller.
+        /// </summary>
         public IList<ActionModel> Actions { get; }
 
         /// <summary>
@@ -90,8 +93,14 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
         string ICommonModel.Name => ControllerName;
 
+        /// <summary>
+        /// The name of this controller.
+        /// </summary>
         public string ControllerName { get; set; }
 
+        /// <summary>
+        /// The type of this controller.
+        /// </summary>
         public TypeInfo ControllerType { get; }
 
         public IList<PropertyModel> ControllerProperties { get; }
@@ -120,6 +129,9 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
         public IList<SelectorModel> Selectors { get; }
 
+        /// <summary>
+        /// The DisplayName of this controller.
+        /// </summary>
         public string DisplayName
         {
             get
