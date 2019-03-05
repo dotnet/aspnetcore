@@ -11,4 +11,8 @@
     <Reference Include="Microsoft.Extensions.Logging.Testing" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="..\..\Components\test\Rendering\HtmlRendererTestBase.cs" />
+  </ItemGroup>
+
 </Project>

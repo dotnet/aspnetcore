@@ -16,10 +16,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
     {
         private IJSRuntime _jsRuntime;
 
-        public RemoteUriHelper()
-        {
-        }
-
         /// <summary>
         /// Initializes the <see cref="RemoteUriHelper"/>.
         /// </summary>

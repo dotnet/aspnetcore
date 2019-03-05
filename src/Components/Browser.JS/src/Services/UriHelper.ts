@@ -1,3 +1,5 @@
+import '@dotnet/jsinterop';
+
 let hasRegisteredEventListeners = false;
 
 // Will be initialized once someone registers

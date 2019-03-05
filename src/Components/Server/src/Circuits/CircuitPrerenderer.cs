@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var context = prerenderingContext.Context;
             var circuitHost = _circuitFactory.CreateCircuitHost(
                 context,
-                client: null,
+                client: CircuitClientProxy.OfflineClient,
                 GetFullUri(context.Request),
                 GetFullBaseUri(context.Request));
 
