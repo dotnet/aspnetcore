@@ -1642,49 +1642,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public async Task BufferRequestBodyLargerThanPipeSize_Works()
-        {
-            _serviceContext.ServerOptions.Limits.MaxRequestBodySize = 100000;
-            var headers = new[]
-            {
-                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
-                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
-                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
-                new KeyValuePair<string, string>(HeaderNames.ContentLength, "90000"),
-            };
-            await InitializeConnectionAsync(async context =>
-            {
-                var readResult = await context.Request.BodyPipe.ReadAsync();
-                while (readResult.Buffer.Length != 90000)
-                {
-                    context.Request.BodyPipe.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
-                }
-
-            });
-
-            await StartStreamAsync(1, headers, endStream: false);
-            await SendDataAsync(1, new byte[90000], endStream: true);
-
-            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
-                withLength: 55,
-                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
-                withStreamId: 1);
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 0,
-                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
-                withStreamId: 1);
-
-            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
-
-            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
-
-            Assert.Equal(3, _decodedHeaders.Count);
-            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
-            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
-            Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
-        }
-
-        [Fact]
         public async Task MaxRequestBodySize_ContentLengthOver_413()
         {
             BadHttpRequestException exception = null;
@@ -2535,7 +2492,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await SendWindowUpdateAsync(1, 2);
             await SendWindowUpdateAsync(0, 2);
 
-            // Remaining 1 byte from the first write and then the second write
             await ExpectAsync(Http2FrameType.DATA,
                 withLength: 1,
                 withFlags: (byte)Http2DataFrameFlags.NONE,

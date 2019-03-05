@@ -683,6 +683,140 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public async Task DATA_BufferRequestBodyLargerThanPipeSizeSmallerThanConnectionPipe_Works()
+        {
+            var initialStreamWindowSize = 15000;
+
+            var tcs = new TaskCompletionSource<object>();
+            var tcs2 = new TaskCompletionSource<object>();
+
+            _serviceContext.ServerOptions.Limits.MaxRequestBodySize = 1000000;
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.ContentLength, (initialStreamWindowSize * 5).ToString()),
+            };
+            await InitializeConnectionAsync(async context =>
+            {
+                var readResult = await context.Request.BodyPipe.ReadAsync();
+                context.Request.BodyPipe.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
+                tcs.SetResult(null);
+                await tcs2.Task;
+                readResult = await context.Request.BodyPipe.ReadAsync();
+
+                Assert.Equal(initialStreamWindowSize * 5, readResult.Buffer.Length);
+                context.Request.BodyPipe.AdvanceTo(readResult.Buffer.End);
+            });
+
+            await StartStreamAsync(1, headers, endStream: false);
+            await SendDataAsync(1, new byte[initialStreamWindowSize], endStream: false);
+            await SendDataAsync(1, new byte[initialStreamWindowSize], endStream: false);
+            await SendDataAsync(1, new byte[initialStreamWindowSize], endStream: false);
+            await SendDataAsync(1, new byte[initialStreamWindowSize], endStream: false);
+
+            await tcs.Task;
+            await SendDataAsync(1, new byte[initialStreamWindowSize], endStream: true);
+            tcs2.SetResult(null);
+
+            // Remaining 1 byte from the first write and then the second write
+            await ExpectAsync(Http2FrameType.WINDOW_UPDATE,
+                withLength: 4,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.WINDOW_UPDATE,
+                withLength: 4,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 0);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 55,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
+
+            Assert.Equal(3, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+            Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
+        }
+
+        [Fact]
+        public async Task DATA_BufferRequestBodyLargerThanConnectionPipeSize_Works()
+        {
+            var initialWindowSize = _serviceContext.ServerOptions.Limits.Http2.InitialStreamWindowSize;
+
+            var tcs = new TaskCompletionSource<object>();
+            var tcs2 = new TaskCompletionSource<object>();
+
+            _serviceContext.ServerOptions.Limits.MaxRequestBodySize = 1000000;
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+                new KeyValuePair<string, string>(HeaderNames.ContentLength, (initialWindowSize * 5).ToString()),
+            };
+            await InitializeConnectionAsync(async context =>
+            {
+                var readResult = await context.Request.BodyPipe.ReadAsync();
+                context.Request.BodyPipe.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
+                tcs.SetResult(null);
+                await tcs2.Task;
+                readResult = await context.Request.BodyPipe.ReadAsync();
+
+                Assert.Equal(initialWindowSize * 5, readResult.Buffer.Length);
+                context.Request.BodyPipe.AdvanceTo(readResult.Buffer.End);
+            });
+
+            await StartStreamAsync(1, headers, endStream: false);
+            await SendDataAsync(1, new byte[initialWindowSize], endStream: false);
+            await SendDataAsync(1, new byte[initialWindowSize], endStream: false);
+            await SendDataAsync(1, new byte[initialWindowSize], endStream: false);
+            await SendDataAsync(1, new byte[initialWindowSize], endStream: false);
+
+            await tcs.Task;
+            await SendDataAsync(1, new byte[initialWindowSize], endStream: true);
+            tcs2.SetResult(null);
+
+            // Remaining 1 byte from the first write and then the second write
+            await ExpectAsync(Http2FrameType.WINDOW_UPDATE,
+                withLength: 4,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.WINDOW_UPDATE,
+                withLength: 4,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 0);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 55,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
+
+            Assert.Equal(3, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+            Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
+        }
+
+        [Fact]
         public async Task DATA_Received_StreamIdZero_ConnectionError()
         {
             await InitializeConnectionAsync(_noopApplication);

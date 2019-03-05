@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
         {
-            if (_prevExamined == null)
+            if (!_prevExamined.HasValue)
             {
                 _prevExamined = _readResult.Buffer.Start;
             }
