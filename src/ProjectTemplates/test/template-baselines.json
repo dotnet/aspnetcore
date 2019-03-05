@@ -975,6 +975,7 @@
         "ClientApp/src/components/NavMenu.tsx",
         "ClientApp/src/store/configureStore.ts",
         "ClientApp/src/store/Counter.ts",
+        "ClientApp/src/store/index.ts",
         "ClientApp/src/store/WeatherForecasts.ts",
         "ClientApp/src/App.tsx",
         "ClientApp/src/App.test.tsx",
