@@ -93,6 +93,14 @@ public class HubConnection {
         this.tickRate = tickRateInMilliseconds;
     }
 
+    TransportEnum getTransportEnum() {
+        return this.transportEnum;
+    }
+
+    Transport getTransport() {
+        return transport;
+    }
+
     HubConnection(String url, Transport transport, boolean skipNegotiate, HttpClient httpClient,
                   Single<String> accessTokenProvider, long handshakeResponseTimeout, Map<String, String> headers, TransportEnum transportEnum) {
         if (url == null || url.isEmpty()) {
@@ -235,7 +243,8 @@ public class HubConnection {
 
         return httpClient.post(Negotiate.resolveNegotiateUrl(url), request).map((response) -> {
             if (response.getStatusCode() != 200) {
-                throw new RuntimeException(String.format("Unexpected status code returned from negotiate: %d %s.", response.getStatusCode(), response.getStatusText()));
+                throw new RuntimeException(String.format("Unexpected status code returned from negotiate: %d %s.",
+                        response.getStatusCode(), response.getStatusText()));
             }
             NegotiateResponse negotiateResponse = new NegotiateResponse(response.getContent());
 
@@ -377,8 +386,15 @@ public class HubConnection {
 
             if (response.getRedirectUrl() == null) {
                 Set<String> transports = response.getAvailableTransports();
-                if ((this.transportEnum == TransportEnum.ALL && !(transports.contains("WebSockets") || transports.contains("LongPolling"))) ||
-                        (this.transportEnum == TransportEnum.WEBSOCKETS && !transports.contains("WebSockets")) ||
+                if (this.transportEnum == TransportEnum.ALL) {
+                    if (transports.contains("WebSockets")) {
+                        this.transportEnum = TransportEnum.WEBSOCKETS;
+                    } else if (transports.contains("LongPolling")) {
+                        this.transportEnum = TransportEnum.LONG_POLLING;
+                    } else {
+                        throw new RuntimeException("There were no compatible transports on the server.");
+                    }
+                } else if (this.transportEnum == TransportEnum.WEBSOCKETS && !transports.contains("WebSockets") ||
                         (this.transportEnum == TransportEnum.LONG_POLLING && !transports.contains("LongPolling"))) {
                     throw new RuntimeException("There were no compatible transports on the server.");
                 }
