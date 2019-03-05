@@ -23,10 +23,15 @@
       <_Parameter1>MicrosoftNETCoreAppPackageVersion</_Parameter1>
       <_Parameter2>$(RuntimeFrameworkVersion)</_Parameter2>
     </AssemblyAttribute>
+    <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
+      <_Parameter1>PreviousAspNetCoreReleaseVersion</_Parameter1>
+      <_Parameter2>$(PreviousAspNetCoreReleaseVersion)</_Parameter2>
+    </AssemblyAttribute>
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
+    <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="2.2.2" />
   </ItemGroup>
 
   <ItemGroup>
@@ -41,6 +46,10 @@
       <AssemblyAttribute Include="Microsoft.AspNetCore.TestData" Condition="'%(_ResolvedFrameworkReference.Identity)' != ''">
         <_Parameter1>SharedFxMetadataOutput:%(_ResolvedFrameworkReference.SharedFxName)</_Parameter1>
         <_Parameter2>%(_ResolvedFrameworkReference.MetadataOutputPath)</_Parameter2>
+      </AssemblyAttribute>
+      <AssemblyAttribute Include="Microsoft.AspNetCore.TestData" Condition="'%(_ResolvedFrameworkReference.Identity)' != ''">
+        <_Parameter1>RuntimeAssetsOutputPath:%(_ResolvedFrameworkReference.SharedFxName)</_Parameter1>
+        <_Parameter2>%(_ResolvedFrameworkReference.RuntimeAssetsOutputPath)</_Parameter2>
       </AssemblyAttribute>
     </ItemGroup>
   </Target>
