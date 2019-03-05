@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private IMemoryOwner<byte> _fakeMemoryOwner;
 
         // Fields needed to store writes before calling either startAsync or Write/FlushAsync
-        private LinkedList<CompletedBuffer> _completedSegments;
+        private List<CompletedBuffer> _completedSegments;
         private Memory<byte> _currentSegment;
         private IMemoryOwner<byte> _currentSegmentOwner;
         private int _position;
@@ -219,7 +219,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         if (_currentSegment.Length < _position + bytes)
                         {
-                            throw new InvalidOperationException("Can't advance past buffer size.");
+                            throw new ArgumentOutOfRangeException("Can't advance past buffer size.");
                         }
 
                         _position += bytes;
@@ -229,7 +229,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     if (bytes + _advancedBytesForChunk > _currentChunkMemory.Length - BeginChunkLengthMax - EndChunkLength)
                     {
-                        throw new InvalidOperationException("Can't advance past buffer size.");
+                        throw new ArgumentOutOfRangeException("Can't advance past buffer size.");
                     }
                     _advancedBytesForChunk += bytes;
                 }
@@ -622,13 +622,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 // We're adding a segment to the list
                 if (_completedSegments == null)
                 {
-                    _completedSegments = new LinkedList<CompletedBuffer>();
+                    _completedSegments = new List<CompletedBuffer>();
                 }
 
                 // Position might be less than the segment length if there wasn't enough space to satisfy the sizeHint when
                 // GetMemory was called. In that case we'll take the current segment and call it "completed", but need to
                 // ignore any empty space in it.
-                _completedSegments.AddLast(new CompletedBuffer(_currentSegmentOwner, _currentSegment, _position));
+                _completedSegments.Add(new CompletedBuffer(_currentSegmentOwner, _currentSegment, _position));
             }
 
             if (sizeHint <= _memoryPool.MaxBufferSize)
