@@ -7,7 +7,7 @@
   <ItemGroup>
     <FrameworkReference Remove="Microsoft.AspNetCore.App" />
     <!-- Required because the Razor SDK will generate attributes -->
-    <Reference Include="Microsoft.AspNetCore.Mvc" Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' AND '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(GenerateRazorAssemblyInfo)' == ''" />
+    <Reference Include="Microsoft.AspNetCore.Mvc" Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' AND '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(GenerateRazorAssemblyInfo)' == 'true'" />
   </ItemGroup>
 
   <!-- Workaround https://github.com/dotnet/cli/issues/10528 -->
