@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
     {
         private readonly Http2Stream _context;
         private ReadResult _readResult;
+        private SequencePosition? _prevExamined;
 
         private Http2MessageBody(Http2Stream context, MinDataRate minRequestBodyDataRate)
             : base(context, minRequestBodyDataRate)
@@ -63,9 +64,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
         {
-            var dataLength = _readResult.Buffer.Slice(_readResult.Buffer.Start, consumed).Length;
+            if (_prevExamined == null)
+            {
+                _prevExamined = _readResult.Buffer.Start;
+            }
+
+            var dataLength = _readResult.Buffer.Slice(_prevExamined.Value, examined).Length;
             _context.RequestBodyPipe.Reader.AdvanceTo(consumed, examined);
             OnDataRead(dataLength);
+
+            _prevExamined = examined;
         }
 
         public override bool TryRead(out ReadResult readResult)
