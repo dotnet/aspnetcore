@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
 
         public int RunCommand(string commandAndArguments, string prefix, ILogger logger, out string output)
         {
-            return RunProcessAndWait(_path, commandAndArguments, prefix, logger, TimeSpan.FromSeconds(5), out output);
+            return RunProcessAndWait(_path, commandAndArguments, prefix, logger, TimeSpan.FromSeconds(30), out output);
         }
 
         private static void RunProcessAndThrowIfFailed(string fileName, string arguments, string prefix, ILogger logger, TimeSpan timeout)
@@ -155,10 +155,14 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
                 {
                     process.Close();
                     logger.LogError("Closing process '{processName}' because it is running longer than the configured timeout.", fileName);
+                    output = string.Join(Environment.NewLine, lines.ToArray());
+                    return -1;
                 }
-
-                // Need to WaitForExit without a timeout to guarantee the output stream has written everything
-                process.WaitForExit();
+                else
+                {
+                    // Need to WaitForExit without a timeout to guarantee the output stream has written everything
+                    process.WaitForExit();
+                }
 
                 output = string.Join(Environment.NewLine, lines);
 
