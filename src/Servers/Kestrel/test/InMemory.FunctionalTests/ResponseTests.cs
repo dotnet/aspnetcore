@@ -3631,13 +3631,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         {
             using (var server = new TestServer(async httpContext =>
             {
-                var memory = httpContext.Response.BodyPipe.GetMemory();
+                var memory = httpContext.Response.BodyWriter.GetMemory();
                 Assert.Equal(4096, memory.Length);
 
                 await httpContext.Response.StartAsync();
                 // Original memory is disposed, don't compare against it.
 
-                memory = httpContext.Response.BodyPipe.GetMemory();
+                memory = httpContext.Response.BodyWriter.GetMemory();
                 Assert.NotEqual(4096, memory.Length);
 
             }, new TestServiceContext(LoggerFactory)))
@@ -3668,11 +3668,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         {
             using (var server = new TestServer(async httpContext =>
             {
-                var memory = httpContext.Response.BodyPipe.GetMemory();
+                var memory = httpContext.Response.BodyWriter.GetMemory();
 
                 await httpContext.Response.StartAsync();
 
-                Assert.Throws<InvalidOperationException>(() => httpContext.Response.BodyPipe.Advance(1));
+                Assert.Throws<InvalidOperationException>(() => httpContext.Response.BodyWriter.Advance(1));
 
             }, new TestServiceContext(LoggerFactory)))
             {
