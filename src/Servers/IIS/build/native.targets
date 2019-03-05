@@ -10,7 +10,6 @@
       <Command>mc %(FullPath) -h $(IntDir) -r $(IntDir)</Command>
       <Message>Compiling Event Messages ...</Message>
       <Outputs>$(IntDir)\%(Filename).rc;$(IntDir)\%(Filename).h;$(IntDir)\MSG0409.bin</Outputs>
-      <CustomBuildAfterTargets>BuildGenerateSources</CustomBuildAfterTargets>
     </CustomBuild>
 
     <MessageFile Remove="@(MessageFile)" />
