@@ -2,7 +2,7 @@
 param(
     [Parameter(Mandatory = $true)]
     $JdkVersion
-    )
+)
 
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue' # Workaround PowerShell/PowerShell#2138
