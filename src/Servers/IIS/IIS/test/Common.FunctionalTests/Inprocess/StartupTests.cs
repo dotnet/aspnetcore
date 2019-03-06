@@ -190,22 +190,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public async Task StartsWithPortableAndBootstraperExe()
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite);
-            deploymentParameters.PublishApplicationBeforeDeployment = true;
+            deploymentParameters.TransformPath((path, root) => Helpers.GetInProcessTestSitesName() + ".exe");
+            deploymentParameters.TransformArguments((arguments, root) => "");
+
+            deploymentParameters.EnvironmentVariables["PATH"] = Path.GetDirectoryName(DotNetCommands.GetDotNetExecutable(deploymentParameters.RuntimeArchitecture));
 
             // We need the right dotnet on the path in IIS
             // ReferenceTestTasks is workaround for https://github.com/dotnet/sdk/issues/2482
             var deploymentResult = await DeployAsync(deploymentParameters);
-            deploymentResult.ModifyWebConfig(element => element
-                .Descendants("system.webServer")
-                .Single()
-                .GetOrAdd("aspNetCore")
-                .SetAttributeValue("processPath", Helpers.GetInProcessTestSitesName() + ".exe"));
-
-            deploymentResult.ModifyWebConfig(element => element
-                .Descendants("system.webServer")
-                .Single()
-                .GetOrAdd("aspNetCore")
-                .SetAttributeValue("arguments", ""));
 
             Assert.True(File.Exists(Path.Combine(deploymentResult.ContentRoot, "InProcessWebSite.exe")));
             Assert.False(File.Exists(Path.Combine(deploymentResult.ContentRoot, "hostfxr.dll")));
