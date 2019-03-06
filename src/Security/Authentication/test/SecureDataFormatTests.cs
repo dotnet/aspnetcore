@@ -21,7 +21,8 @@ namespace Microsoft.AspNetCore.Authentication.DataHandler
 
         public IServiceProvider ServiceProvider { get; }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix(Queues = "Windows.10.Amd64.ClientRS4.VS2017.Open;OSX.1012.Amd64.Open")]
         public void ProtectDataRoundTrips()
         {
             var provider = ServiceProvider.GetRequiredService<IDataProtectionProvider>();
@@ -34,7 +35,8 @@ namespace Microsoft.AspNetCore.Authentication.DataHandler
             Assert.Equal(input, result);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix(Queues = "Windows.10.Amd64.ClientRS4.VS2017.Open")]
         public void ProtectWithPurposeRoundTrips()
         {
             var provider = ServiceProvider.GetRequiredService<IDataProtectionProvider>();
