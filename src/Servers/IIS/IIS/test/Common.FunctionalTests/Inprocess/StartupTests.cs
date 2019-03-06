@@ -190,7 +190,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public async Task StartsWithPortableAndBootstraperExe()
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite);
-            deploymentParameters.TransformPath((path, root) => Helpers.GetInProcessTestSitesName() + ".exe");
+            deploymentParameters.TransformPath((path, root) => "InProcessWebSite.exe");
             deploymentParameters.TransformArguments((arguments, root) => "");
 
             deploymentParameters.EnvironmentVariables["PATH"] = Path.GetDirectoryName(DotNetCommands.GetDotNetExecutable(deploymentParameters.RuntimeArchitecture));

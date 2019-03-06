@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -16,14 +16,15 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         // Compare to https://github.com/aspnet/BuildTools/blob/314c98e4533217a841ff9767bb38e144eb6c93e4/tools/KoreBuild.Console/Commands/CommandContext.cs#L76
         public static string GetDotNetHome()
         {
-            var dotnetHome = Environment.GetEnvironmentVariable("DOTNET_HOME");
+            var dotnetHome = Environment.GetEnvironmentVariable("DOTNET_ROOT");
             var userProfile = Environment.GetEnvironmentVariable("USERPROFILE");
             var home = Environment.GetEnvironmentVariable("HOME");
 
             var result = Path.Combine(Directory.GetCurrentDirectory(), _dotnetFolderName);
             if (!string.IsNullOrEmpty(dotnetHome))
             {
-                result = dotnetHome;
+                // DOTNET_ROOT has x64 appended to the path, which we append again in GetDotNetInstallDir
+                result = dotnetHome.Substring(0, dotnetHome.Length - 3);
             }
             else if (!string.IsNullOrEmpty(userProfile))
             {
