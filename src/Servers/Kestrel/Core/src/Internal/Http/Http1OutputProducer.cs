@@ -43,7 +43,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private long _unflushedBytes;
         private bool _autoChunk;
         private readonly PipeWriter _pipeWriter;
-        private const int MemorySizeThreshold = 1024;
         private const int BeginChunkLengthMax = 5;
         private const int EndChunkLength = 2;
 
@@ -606,7 +605,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             // If the sizeHint is 0, any capacity will do
             // Otherwise, the buffer must have enough space for the entire size hint, or we need to add a segment.
-            if ((sizeHint == 0 && remainingSize > 0) || (sizeHint > 0 && remainingSize >= Math.Min(MemorySizeThreshold, sizeHint)))
+            if ((sizeHint == 0 && remainingSize > 0) || (sizeHint > 0 && remainingSize >= sizeHint))
             {
                 // We have capacity in the current segment
                 return;

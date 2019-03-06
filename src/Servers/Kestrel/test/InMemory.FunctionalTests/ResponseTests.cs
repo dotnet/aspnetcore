@@ -3271,23 +3271,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public async Task AdvanceWithTooLargeOfAValueThrowInvalidOperationException(bool start)
+        [Fact]
+        public async Task AdvanceWithTooLargeOfAValueThrowInvalidOperationException()
         {
             var testContext = new TestServiceContext(LoggerFactory);
 
-            using (var server = new TestServer(async httpContext =>
+            using (var server = new TestServer(httpContext =>
             {
                 var response = httpContext.Response;
 
-                if (start)
-                {
-                    await response.StartAsync();
-                }
-
                 Assert.Throws<InvalidOperationException>(() => response.BodyWriter.Advance(1));
+                return Task.CompletedTask;
             }, testContext))
             {
                 using (var connection = server.CreateConnection())
@@ -3311,35 +3305,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public async Task ContentLengthWithGetSpanWorks(bool start)
+        [Fact]
+        public async Task ContentLengthWithoutStartAsyncWithGetSpanWorks()
         {
             var testContext = new TestServiceContext(LoggerFactory);
 
-            using (var server = new TestServer(async httpContext =>
+            using (var server = new TestServer(httpContext =>
             {
                 var response = httpContext.Response;
                 response.ContentLength = 12;
-                if (start)
-                {
-                    await response.StartAsync();
-                }
-                void NonAsyncMethod()
-                {
-                    var span = response.BodyWriter.GetSpan(4096);
-                    var fisrtPartOfResponse = Encoding.ASCII.GetBytes("Hello ");
-                    fisrtPartOfResponse.CopyTo(span);
-                    response.BodyWriter.Advance(6);
 
-                    var secondPartOfResponse = Encoding.ASCII.GetBytes("World!");
-                    secondPartOfResponse.CopyTo(span.Slice(6));
-                    response.BodyWriter.Advance(6);
-                }
+                var span = response.BodyWriter.GetSpan(4096);
+                var fisrtPartOfResponse = Encoding.ASCII.GetBytes("Hello ");
+                fisrtPartOfResponse.CopyTo(span);
+                response.BodyWriter.Advance(6);
 
-                NonAsyncMethod();
-
+                var secondPartOfResponse = Encoding.ASCII.GetBytes("World!");
+                secondPartOfResponse.CopyTo(span.Slice(6));
+                response.BodyWriter.Advance(6);
+                return Task.CompletedTask;
             }, testContext))
             {
                 using (var connection = server.CreateConnection())
@@ -3361,10 +3345,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public async Task ContentLengthWithGetMemoryWorks(bool start)
+        [Fact]
+        public async Task ContentLengthWithGetMemoryWorks()
         {
             var testContext = new TestServiceContext(LoggerFactory);
 
@@ -3373,12 +3355,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 var response = httpContext.Response;
                 response.ContentLength = 12;
 
-                if (start)
-                {
-                    await response.StartAsync();
-                }
-                var memory = response.BodyWriter.GetMemory(4096);
+                await response.StartAsync();
 
+                var memory = response.BodyWriter.GetMemory(4096);
                 var fisrtPartOfResponse = Encoding.ASCII.GetBytes("Hello ");
                 fisrtPartOfResponse.CopyTo(memory);
                 response.BodyWriter.Advance(6);
@@ -3478,7 +3457,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public async Task ResponseBodyPipeCompleteWithoutExceptionDoesNotThrow()
+        public async Task ResponseBodyWriterCompleteWithoutExceptionDoesNotThrow()
         {
             using (var server = new TestServer(async httpContext =>
             {
@@ -3505,7 +3484,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public async Task ResponseBodyPipeCompleteWithoutExceptionWritesDoNotThrow()
+        public async Task ResponseBodyWriterCompleteWithoutExceptionWritesDoNotThrow()
         {
             using (var server = new TestServer(async httpContext =>
             {
@@ -3696,17 +3675,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public async Task ResponseCompleteGetMemoryAdvanceInLoopDoesNotThrow(bool start)
+        [Fact]
+        public async Task ResponseCompleteGetMemoryAdvanceInLoopDoesNotThrow()
         {
             using (var server = new TestServer(async httpContext =>
             {
-                if (start)
-                {
-                    await httpContext.Response.StartAsync();
-                }
 
                 httpContext.Response.BodyWriter.Complete();
                 for (var i = 0; i < 5; i++)
@@ -3775,12 +3748,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             {
                 var memoryStream = new MemoryStream();
                 httpContext.Response.Body = memoryStream;
-                var bodyPipe1 = httpContext.Response.BodyWriter;
+                var BodyWriter1 = httpContext.Response.BodyWriter;
 
                 httpContext.Response.Body = memoryStream;
-                var bodyPipe2 = httpContext.Response.BodyWriter;
+                var BodyWriter2 = httpContext.Response.BodyWriter;
 
-                Assert.NotEqual(bodyPipe1, bodyPipe2);
+                Assert.NotEqual(BodyWriter1, BodyWriter2);
                 await Task.CompletedTask;
             }, new TestServiceContext(LoggerFactory)))
             {
@@ -3837,7 +3810,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public async Task ResponseSetPipeAndBodyPipeIsWrapped()
+        public async Task ResponseSetPipeAndBodyWriterIsWrapped()
         {
             using (var server = new TestServer(async httpContext =>
             {
@@ -3868,7 +3841,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public async Task ResponseWriteToBodyPipeAndStreamAllBlocksDisposed()
+        public async Task ResponseWriteToBodyWriterAndStreamAllBlocksDisposed()
         {
             using (var server = new TestServer(async httpContext =>
             {
