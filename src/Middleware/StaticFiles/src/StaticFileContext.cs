@@ -322,6 +322,7 @@ namespace Microsoft.AspNetCore.StaticFiles
 
         public async Task SendAsync()
         {
+            SetCompressionMode();
             ApplyResponseHeaders(Constants.Status200Ok);
             string physicalPath = _fileInfo.PhysicalPath;
             var sendFile = _context.Features.Get<IHttpSendFileFeature>();
@@ -366,6 +367,7 @@ namespace Microsoft.AspNetCore.StaticFiles
 
             _responseHeaders.ContentRange = ComputeContentRange(_range, out var start, out var length);
             _response.ContentLength = length;
+            SetCompressionMode();
             ApplyResponseHeaders(Constants.Status206PartialContent);
 
             string physicalPath = _fileInfo.PhysicalPath;
@@ -403,6 +405,16 @@ namespace Microsoft.AspNetCore.StaticFiles
             long end = range.To.Value;
             length = end - start + 1;
             return new ContentRangeHeaderValue(start, end, _length);
+        }
+
+        // Only called when we expect to serve the body.
+        private void SetCompressionMode()
+        {
+            var responseCompressionFeature = _context.Features.Get<IHttpsCompressionFeature>();
+            if (responseCompressionFeature != null)
+            {
+                responseCompressionFeature.Mode = _options.HttpsCompression;
+            }
         }
     }
 }
