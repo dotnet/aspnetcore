@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
     {
         private readonly Http2Stream _context;
         private ReadResult _readResult;
-        private SequencePosition? _prevExamined;
+        private long _totalExamined;
 
         private Http2MessageBody(Http2Stream context, MinDataRate minRequestBodyDataRate)
             : base(context, minRequestBodyDataRate)
@@ -64,21 +64,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
         {
-            if (!_prevExamined.HasValue)
-            {
-                _prevExamined = _readResult.Buffer.Start;
-            }
-
-            var dataLength = _readResult.Buffer.Slice(_prevExamined.Value, examined).Length;
+            var dataLength = _readResult.Buffer.Slice(_readResult.Buffer.Start, examined).Length;
+            var newlyExamined = dataLength - _totalExamined;
             _context.RequestBodyPipe.Reader.AdvanceTo(consumed, examined);
-            OnDataRead(dataLength);
 
-            _prevExamined = examined;
+            if (newlyExamined > 0)
+            {
+                OnDataRead(dataLength);
+                _totalExamined += newlyExamined;
+            }
         }
 
         public override bool TryRead(out ReadResult readResult)
         {
-            return _context.RequestBodyPipe.Reader.TryRead(out readResult);
+            var result = _context.RequestBodyPipe.Reader.TryRead(out readResult);
+            _readResult = readResult;
+
+            return result;
         }
 
         public override async ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
