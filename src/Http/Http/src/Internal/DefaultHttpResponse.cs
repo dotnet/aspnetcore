@@ -109,10 +109,10 @@ namespace Microsoft.AspNetCore.Http.Internal
             get { return HttpResponseFeature.HasStarted; }
         }
 
-        public override PipeWriter BodyPipe
+        public override PipeWriter BodyWriter
         {
-            get { return ResponseBodyPipeFeature.ResponseBodyPipe; }
-            set { ResponseBodyPipeFeature.ResponseBodyPipe = value; }
+            get { return ResponseBodyPipeFeature.ResponseBodyWriter; }
+            set { ResponseBodyPipeFeature.ResponseBodyWriter = value; }
         }
 
         public override void OnStarting(Func<object, Task> callback, object state)

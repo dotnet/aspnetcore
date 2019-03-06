@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Http.Features
             _context = context;
         }
 
-        public PipeWriter ResponseBodyPipe
+        public PipeWriter ResponseBodyWriter
         {
             get
             {

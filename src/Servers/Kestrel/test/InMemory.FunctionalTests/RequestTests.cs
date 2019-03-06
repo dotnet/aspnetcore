@@ -65,12 +65,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             PipeWriter bodyPipe = null;
             using (var server = new TestServer(async context =>
             {
-                if (context.Response.BodyPipe == bodyPipe)
+                if (context.Response.BodyWriter == bodyPipe)
                 {
                     responseBodyPersisted = true;
                 }
                 bodyPipe = new StreamPipeWriter(new MemoryStream());
-                context.Response.BodyPipe = bodyPipe;
+                context.Response.BodyWriter = bodyPipe;
 
                 await context.Response.WriteAsync("hello, world");
             }, new TestServiceContext(LoggerFactory)))
@@ -91,11 +91,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             PipeWriter bodyPipe = null;
             using (var server = new TestServer(async context =>
             {
-                if (context.Response.BodyPipe == bodyPipe)
+                if (context.Response.BodyWriter == bodyPipe)
                 {
                     responseBodyPersisted = true;
                 }
-                bodyPipe = context.Response.BodyPipe;
+                bodyPipe = context.Response.BodyWriter;
 
                 await context.Response.WriteAsync("hello, world");
             }, new TestServiceContext(LoggerFactory)))
@@ -652,7 +652,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
             using (var server = new TestServer(async httpContext =>
             {
-                var readResult = await httpContext.Request.BodyPipe.ReadAsync().AsTask().DefaultTimeout();
+                var readResult = await httpContext.Request.BodyReader.ReadAsync().AsTask().DefaultTimeout();
                 // This will hang if 0 content length is not assumed by the server
                 Assert.True(readResult.IsCompleted);
             }, testContext))
@@ -700,10 +700,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
             using (var server = new TestServer(async httpContext =>
             {
-                var readResult = await httpContext.Request.BodyPipe.ReadAsync();
+                var readResult = await httpContext.Request.BodyReader.ReadAsync();
                 // This will hang if 0 content length is not assumed by the server
                 Assert.Equal(5, readResult.Buffer.Length);
-                httpContext.Request.BodyPipe.AdvanceTo(readResult.Buffer.End);
+                httpContext.Request.BodyReader.AdvanceTo(readResult.Buffer.End);
             }, testContext))
             {
                 using (var connection = server.CreateConnection())
@@ -1351,12 +1351,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                 Assert.Equal("POST", request.Method);
 
-                var readResult = await request.BodyPipe.ReadAsync();
-                request.BodyPipe.AdvanceTo(readResult.Buffer.End);
+                var readResult = await request.BodyReader.ReadAsync();
+                request.BodyReader.AdvanceTo(readResult.Buffer.End);
 
-                var requestTask = httpContext.Request.BodyPipe.ReadAsync();
+                var requestTask = httpContext.Request.BodyReader.ReadAsync();
 
-                httpContext.Request.BodyPipe.CancelPendingRead();
+                httpContext.Request.BodyReader.CancelPendingRead();
 
                 Assert.True((await requestTask).IsCanceled);
 
@@ -1364,7 +1364,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                 response.Headers["Content-Length"] = new[] { "11" };
 
-                await response.BodyPipe.WriteAsync(new Memory<byte>(Encoding.ASCII.GetBytes("Hello World"), 0, 11));
+                await response.BodyWriter.WriteAsync(new Memory<byte>(Encoding.ASCII.GetBytes("Hello World"), 0, 11));
 
             }, testContext))
             {
@@ -1402,16 +1402,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                 Assert.Equal("POST", request.Method);
 
-                var readResult = await request.BodyPipe.ReadAsync();
-                request.BodyPipe.AdvanceTo(readResult.Buffer.End);
+                var readResult = await request.BodyReader.ReadAsync();
+                request.BodyReader.AdvanceTo(readResult.Buffer.End);
 
-                httpContext.Request.BodyPipe.Complete();
+                httpContext.Request.BodyReader.Complete();
 
-                await Assert.ThrowsAsync<InvalidOperationException>(async () => await request.BodyPipe.ReadAsync());
+                await Assert.ThrowsAsync<InvalidOperationException>(async () => await request.BodyReader.ReadAsync());
 
                 response.Headers["Content-Length"] = new[] { "11" };
 
-                await response.BodyPipe.WriteAsync(new Memory<byte>(Encoding.ASCII.GetBytes("Hello World"), 0, 11));
+                await response.BodyWriter.WriteAsync(new Memory<byte>(Encoding.ASCII.GetBytes("Hello World"), 0, 11));
 
             }, testContext))
             {
@@ -1448,14 +1448,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                 Assert.Equal("POST", request.Method);
 
-                var readResult = await request.BodyPipe.ReadAsync();
-                request.BodyPipe.AdvanceTo(readResult.Buffer.End);
+                var readResult = await request.BodyReader.ReadAsync();
+                request.BodyReader.AdvanceTo(readResult.Buffer.End);
 
-                httpContext.Request.BodyPipe.Complete(new Exception());
+                httpContext.Request.BodyReader.Complete(new Exception());
 
                 response.Headers["Content-Length"] = new[] { "11" };
 
-                await response.BodyPipe.WriteAsync(new Memory<byte>(Encoding.ASCII.GetBytes("Hello World"), 0, 11));
+                await response.BodyWriter.WriteAsync(new Memory<byte>(Encoding.ASCII.GetBytes("Hello World"), 0, 11));
 
             }, testContext))
             {

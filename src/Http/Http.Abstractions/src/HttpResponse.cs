@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Gets or sets the response body pipe <see cref="PipeWriter"/>
         /// </summary>
-        public abstract PipeWriter BodyPipe { get; set; }
+        public abstract PipeWriter BodyWriter { get; set; }
 
         /// <summary>
         /// Gets or sets the value for the <c>Content-Length</c> response header.
