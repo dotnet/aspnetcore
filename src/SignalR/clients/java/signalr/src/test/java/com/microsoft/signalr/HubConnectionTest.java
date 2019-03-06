@@ -388,7 +388,7 @@ class HubConnectionTest {
 
         stream.onComplete();
         messages = mockTransport.getSentMessages();
-        assertEquals("{\"type\":3,\"invocationId\":\"1\",\"result\":\"\"}\u001E", messages[3]);
+        assertEquals("{\"type\":3,\"invocationId\":\"1\"}\u001E", messages[3]);
     }
 
     @Test
@@ -414,8 +414,8 @@ class HubConnectionTest {
         secondStream.onComplete();
         messages = mockTransport.getSentMessages();
         assertEquals(6, messages.length);
-        assertEquals("{\"type\":3,\"invocationId\":\"1\",\"result\":\"\"}\u001E", messages[4]);
-        assertEquals("{\"type\":3,\"invocationId\":\"2\",\"result\":\"\"}\u001E", messages[5]);
+        assertEquals("{\"type\":3,\"invocationId\":\"1\"}\u001E", messages[4]);
+        assertEquals("{\"type\":3,\"invocationId\":\"2\"}\u001E", messages[5]);
     }
 
     @Test
@@ -435,7 +435,7 @@ class HubConnectionTest {
 
         stream.onComplete();
         messages = mockTransport.getSentMessages();
-        assertEquals("{\"type\":3,\"invocationId\":\"1\",\"result\":\"\"}\u001E", messages[3]);
+        assertEquals("{\"type\":3,\"invocationId\":\"1\"}\u001E", messages[3]);
     }
 
     @Test
@@ -458,8 +458,8 @@ class HubConnectionTest {
         stream.onComplete();
         messages = mockTransport.getSentMessages();
         assertEquals(6, messages.length);
-        assertEquals("{\"type\":3,\"invocationId\":\"1\",\"result\":\"\"}\u001E", messages[4]);
-        assertEquals("{\"type\":3,\"invocationId\":\"2\",\"result\":\"\"}\u001E", messages[5]);
+        assertEquals("{\"type\":3,\"invocationId\":\"1\"}\u001E", messages[4]);
+        assertEquals("{\"type\":3,\"invocationId\":\"2\"}\u001E", messages[5]);
     }
 
     @Test
@@ -480,7 +480,7 @@ class HubConnectionTest {
 
         stream.onComplete();
         messages = mockTransport.getSentMessages();
-        assertEquals("{\"type\":3,\"invocationId\":\"2\",\"result\":\"\"}\u001E", messages[3]);
+        assertEquals("{\"type\":3,\"invocationId\":\"2\"}\u001E", messages[3]);
     }
 
     @Test
@@ -502,7 +502,7 @@ class HubConnectionTest {
         stream.onComplete();
         messages = mockTransport.getSentMessages();
         assertEquals(4, messages.length);
-        assertEquals("{\"type\":3,\"invocationId\":\"2\",\"result\":\"\"}\u001E", messages[3]);
+        assertEquals("{\"type\":3,\"invocationId\":\"2\"}\u001E", messages[3]);
     }
 
     @Test
@@ -534,9 +534,9 @@ class HubConnectionTest {
         stream.onComplete();
         messages = mockTransport.getSentMessages();
         assertEquals(10, messages.length);
-        assertEquals("{\"type\":3,\"invocationId\":\"1\",\"result\":\"\"}\u001E", messages[7]);
-        assertEquals("{\"type\":3,\"invocationId\":\"3\",\"result\":\"\"}\u001E", messages[8]);
-        assertEquals("{\"type\":3,\"invocationId\":\"5\",\"result\":\"\"}\u001E", messages[9]);
+        assertEquals("{\"type\":3,\"invocationId\":\"1\"}\u001E", messages[7]);
+        assertEquals("{\"type\":3,\"invocationId\":\"3\"}\u001E", messages[8]);
+        assertEquals("{\"type\":3,\"invocationId\":\"5\"}\u001E", messages[9]);
     }
 
     @Test
@@ -585,7 +585,7 @@ class HubConnectionTest {
         stream.onComplete();
         messages = mockTransport.getSentMessages();
         assertEquals(6, messages.length);
-        assertEquals("{\"type\":3,\"invocationId\":\"1\",\"result\":\"\"}\u001E", messages[5]);
+        assertEquals("{\"type\":3,\"invocationId\":\"1\"}\u001E", messages[5]);
     }
 
     @Test
@@ -609,7 +609,7 @@ class HubConnectionTest {
         stream.onComplete();
         messages = mockTransport.getSentMessages();
         assertEquals(5, messages.length);
-        assertEquals("{\"type\":3,\"invocationId\":\"2\",\"result\":\"\"}\u001E", messages[4]);
+        assertEquals("{\"type\":3,\"invocationId\":\"2\"}\u001E", messages[4]);
     }
 
     @Test
@@ -640,8 +640,8 @@ class HubConnectionTest {
         assertEquals("{\"type\":2,\"invocationId\":\"2\",\"item\":\"Stream Two First Item\"}\u001E", messages[4]);
         assertEquals("{\"type\":2,\"invocationId\":\"1\",\"item\":\"Stream One Second Item\"}\u001E", messages[5]);
         assertEquals("{\"type\":2,\"invocationId\":\"2\",\"item\":\"Stream Two Second Item\"}\u001E", messages[6]);
-        assertEquals("{\"type\":3,\"invocationId\":\"1\",\"result\":\"\"}\u001E", messages[7]);
-        assertEquals("{\"type\":3,\"invocationId\":\"2\",\"result\":\"\"}\u001E", messages[8]);
+        assertEquals("{\"type\":3,\"invocationId\":\"1\"}\u001E", messages[7]);
+        assertEquals("{\"type\":3,\"invocationId\":\"2\"}\u001E", messages[8]);
     }
 
     @Test
