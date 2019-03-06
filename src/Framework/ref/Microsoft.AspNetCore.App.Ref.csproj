@@ -52,12 +52,14 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
     <!-- Reference implementation assemblies in addition to ref assemblies to get xml docs -->
     <ReferenceImplementationAssemblies>true</ReferenceImplementationAssemblies>
+
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
   </PropertyGroup>
 
   <ItemGroup>
     <!-- Note: do not add _TransitiveExternalAspNetCoreAppReference to this list. This is intentionally not listed as a direct package reference. -->
     <Reference Include="@(AspNetCoreAppReference);@(AspNetCoreAppReferenceAndPackage);@(ExternalAspNetCoreAppReference)" />
-
+    <PackageReference Include="Microsoft.Internal.Extensions.Refs" Version="$(MicrosoftInternalExtensionsRefsPackageVersion)" IncludeAssets="None" />
     <!-- Enforce build order. Targeting pack needs to bundle information about the runtime. -->
     <ProjectReference Include="..\src\Microsoft.AspNetCore.App.Runtime.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
@@ -94,13 +96,29 @@ This package is an internal implementation of the .NET Core SDK and is not meant
           BeforeTargets="_GetPackageFiles"
           DependsOnTargets="ResolveReferences;FindReferenceAssembliesForReferences">
     <ItemGroup>
+      <_AvailableExtensionsRefAssemblies Include="$(MicrosoftInternalExtensionsRefsPath)\*.dll">
+        <DocXml>%(RootDir)%(Directory)%(FileName).xml</DocXml>
+      </_AvailableExtensionsRefAssemblies>
+    </ItemGroup>
+
+    <JoinItems Left="@(ReferencePathWithRefAssemblies)" Right="@(_AvailableExtensionsRefAssemblies)" LeftKey="Filename" RightKey="Filename" ItemSpecToUse="Left">
+      <Output TaskParameter="JoinResult" ItemName="_SelectedExtensionsRefAssemblies" />
+    </JoinItems>
+
+    <ItemGroup>
       <AspNetCoreReferenceAssemblyPath
           Include="@(ReferencePathWithRefAssemblies)"
           Exclude="
+            @(_SelectedExtensionsRefAssemblies);
             @(ReferencePathWithRefAssemblies->WithMetadataValue('NuGetPackageId', 'Microsoft.NETCore.App'));
             @(ReferencePathWithRefAssemblies->WithMetadataValue('ReferenceGrouping', 'Microsoft.NETCore.App'));" />
 
+      <AspNetCoreReferenceAssemblyPath
+          Include="@(_SelectedExtensionsRefAssemblies->'$(MicrosoftInternalExtensionsRefsPath)%(FileName)%(Extension)')" />
+
       <AspNetCoreReferenceDocXml Include="@(_ResolvedProjectReferencePaths->WithMetadataValue('IsReferenceAssembly', 'false')->'%(RootDir)%(Directory)%(FileName).xml')" />
+      <AspNetCoreReferenceDocXml Include="@(_SelectedExtensionsRefAssemblies->'$(MicrosoftInternalExtensionsRefsPath)%(FileName).xml')" />
+
       <RefPackContent Include="@(AspNetCoreReferenceAssemblyPath)" PackagePath="$(RefAssemblyPackagePath)" />
       <RefPackContent Include="@(AspNetCoreReferenceDocXml)" PackagePath="$(RefAssemblyPackagePath)" />
       <RefPackContent Include="$(TargetDir)$(PackageConflictManifestFileName)" PackagePath="$(ManifestsPackagePath)" />
