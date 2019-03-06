@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,7 +29,8 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
             {
                 var logger = loggerFactory.CreateLogger(nameof(InjectedStartup_DefaultApplicationNameIsEntryAssembly));
 
-                var applicationPath = Path.Combine(TestPathUtilities.GetSolutionRootDirectory("Hosting"), "test", "testassets", "IStartupInjectionAssemblyName");
+                var baseDirectory = SkipOnHelixAttribute.OnHelix() ? AppContext.BaseDirectory : Path.Combine(TestPathUtilities.GetSolutionRootDirectory("Hosting"), "test", "testassets");
+                var applicationPath = Path.Combine(baseDirectory, "IStartupInjectionAssemblyName");
 
                 var deploymentParameters = new DeploymentParameters(variant)
                 {
