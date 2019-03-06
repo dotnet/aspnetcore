@@ -920,7 +920,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 Assert.Equal(4096, memory.Length);
 
                 memory = response.BodyWriter.GetMemory(1000000);
-                Assert.Equal(4096, memory.Length);
+                Assert.Equal(1000000, memory.Length);
                 await Task.CompletedTask;
             }, testContext))
             {
