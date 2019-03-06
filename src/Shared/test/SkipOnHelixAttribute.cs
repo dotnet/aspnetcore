@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 
 namespace Microsoft.AspNetCore.Testing.xunit
 {
@@ -16,7 +17,7 @@ namespace Microsoft.AspNetCore.Testing.xunit
             get
             {
                 // Skip 
-                var skip = OnHelix() && (Queues == null || Queues.Contains(GetTargetHelixQueue(), StringComparison.OrdinalIgnoreCase));
+                var skip = OnHelix() && (Queues == null || Queues.Split(";").Contains(GetTargetHelixQueue(), StringComparison.OrdinalIgnoreCase));
                 return !skip;
             }
         }
