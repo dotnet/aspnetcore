@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Testing.xunit
             get
             {
                 // Skip 
-                var skip = OnHelix() && (Queues == null || Queues.Split(";").Contains(GetTargetHelixQueue(), StringComparison.OrdinalIgnoreCase));
+                var skip = OnHelix() && (Queues == null || Queues.ToLowerInvariant().Split(";").Contains(GetTargetHelixQueue().ToLowerInvariant()));
                 return !skip;
             }
         }
