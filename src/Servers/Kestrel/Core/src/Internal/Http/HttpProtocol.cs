@@ -355,6 +355,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             RequestHeaders = HttpRequestHeaders;
             ResponseHeaders = HttpResponseHeaders;
 
+            _isLeasedMemoryInvalid = true;
+            _hasAdvanced = false;
+            _canWriteResponseBody = true;
+
             if (_scheme == null)
             {
                 var tlsFeature = ConnectionFeatures?[typeof(ITlsConnectionFeature)];
