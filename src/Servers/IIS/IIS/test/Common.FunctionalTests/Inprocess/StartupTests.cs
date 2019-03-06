@@ -193,9 +193,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             deploymentParameters.TransformPath((path, root) => "InProcessWebSite.exe");
             deploymentParameters.TransformArguments((arguments, root) => "");
 
+            // We need the right dotnet on the path in IIS
             deploymentParameters.EnvironmentVariables["PATH"] = Path.GetDirectoryName(DotNetCommands.GetDotNetExecutable(deploymentParameters.RuntimeArchitecture));
 
-            // We need the right dotnet on the path in IIS
             // ReferenceTestTasks is workaround for https://github.com/dotnet/sdk/issues/2482
             var deploymentResult = await DeployAsync(deploymentParameters);
 

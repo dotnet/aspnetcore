@@ -24,11 +24,11 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             var result = Path.Combine(Directory.GetCurrentDirectory(), _dotnetFolderName);
             if (!string.IsNullOrEmpty(dotnetHome))
             {
-                // DOTNET_ROOT has x64 appended to the path, which we append again in GetDotNetInstallDir
                 result = dotnetHome;
             }
             else if (!string.IsNullOrEmpty(dotnetRoot))
             {
+                // DOTNET_ROOT has x64 appended to the path, which we append again in GetDotNetInstallDir
                 result = dotnetRoot.Substring(0, dotnetRoot.Length - 3);
             }
             else if (!string.IsNullOrEmpty(userProfile))
