@@ -30,7 +30,7 @@
     <SystemComponentModelAnnotationsPackageVersion>4.6.0-preview4.19156.2</SystemComponentModelAnnotationsPackageVersion>
     <SystemDataSqlClientPackageVersion>4.7.0-preview4.19156.2</SystemDataSqlClientPackageVersion>
     <SystemDiagnosticsEventLogPackageVersion>4.6.0-preview4.19156.2</SystemDiagnosticsEventLogPackageVersion>
-    <SystemIOPipelinesPackageVersion>4.6.0-preview4.19156.2</SystemIOPipelinesPackageVersion>
+    <SystemIOPipelinesPackageVersion>4.6.0-preview4.19127.11</SystemIOPipelinesPackageVersion>
     <SystemNetHttpWinHttpHandlerPackageVersion>4.6.0-preview4.19156.2</SystemNetHttpWinHttpHandlerPackageVersion>
     <SystemNetWebSocketsWebSocketProtocolPackageVersion>4.6.0-preview4.19156.2</SystemNetWebSocketsWebSocketProtocolPackageVersion>
     <SystemReflectionMetadataPackageVersion>1.7.0-preview4.19156.2</SystemReflectionMetadataPackageVersion>
