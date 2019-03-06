@@ -103,7 +103,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         public void MarkInactive() { }
         public void OnHeartbeat(System.Action<object> action, object state) { }
         public void TickHeartbeat() { }
-        public Microsoft.AspNetCore.Http.Connections.Internal.HttpConnectionStatus TryChangeState(Microsoft.AspNetCore.Http.Connections.Internal.HttpConnectionStatus from, Microsoft.AspNetCore.Http.Connections.Internal.HttpConnectionStatus to) { throw null; }
+        public bool TryActivateLongPollingConnection(Microsoft.AspNetCore.Connections.ConnectionDelegate connectionDelegate, Microsoft.AspNetCore.Http.HttpContext nonClonedContext, System.TimeSpan pollTimeout, System.Threading.Tasks.Task currentRequestTask, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.Extensions.Logging.ILogger dispatcherLogger) { throw null; }
+        public bool TryActivatePersistentConnection(Microsoft.AspNetCore.Connections.ConnectionDelegate connectionDelegate, Microsoft.AspNetCore.Http.Connections.Internal.Transports.IHttpTransport transport, Microsoft.Extensions.Logging.ILogger dispatcherLogger) { throw null; }
     }
     public partial class HttpConnectionDispatcher
     {

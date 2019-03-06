@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Security.Claims;
 using System.Security.Principal;
@@ -12,7 +13,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections.Features;
+using Microsoft.AspNetCore.Http.Connections.Internal.Transports;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal
@@ -320,17 +323,119 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             }
         }
 
-        public HttpConnectionStatus TryChangeState(HttpConnectionStatus from, HttpConnectionStatus to)
+        public bool TryActivatePersistentConnection(
+            ConnectionDelegate connectionDelegate,
+            IHttpTransport transport,
+            ILogger dispatcherLogger)
         {
             lock (_stateLock)
             {
-                if (Status == from)
+                if (Status == HttpConnectionStatus.Inactive)
                 {
-                    Status = to;
-                    return from;
-                }
+                    Status = HttpConnectionStatus.Active;
 
-                return Status;
+                    // Call into the end point passing the connection
+                    ApplicationTask = ExecuteApplication(connectionDelegate);
+
+                    // Start the transport
+                    TransportTask = transport.ProcessRequestAsync(HttpContext, HttpContext.RequestAborted);
+
+                    return true;
+                }
+                else
+                {
+                    FailActivationUnsynchronized(HttpContext, dispatcherLogger);
+
+                    return false;
+                }
+            }
+        }
+
+        public bool TryActivateLongPollingConnection(
+            ConnectionDelegate connectionDelegate,
+            HttpContext nonClonedContext,
+            TimeSpan pollTimeout,
+            Task currentRequestTask,
+            ILoggerFactory loggerFactory,
+            ILogger dispatcherLogger)
+        {
+            lock (_stateLock)
+            {
+                if (Status == HttpConnectionStatus.Inactive)
+                {
+                    Status = HttpConnectionStatus.Active;
+
+                    PreviousPollTask = currentRequestTask;
+
+                    // Raise OnConnected for new connections only since polls happen all the time
+                    if (ApplicationTask == null)
+                    {
+                        HttpConnectionDispatcher.Log.EstablishedConnection(dispatcherLogger);
+
+                        ApplicationTask = ExecuteApplication(connectionDelegate);
+
+                        nonClonedContext.Response.ContentType = "application/octet-stream";
+
+                        // This request has no content
+                        nonClonedContext.Response.ContentLength = 0;
+
+                        // On the first poll, we flush the response immediately to mark the poll as "initialized" so future
+                        // requests can be made safely
+                        TransportTask = nonClonedContext.Response.Body.FlushAsync();
+                    }
+                    else
+                    {
+                        HttpConnectionDispatcher.Log.ResumingConnection(dispatcherLogger);
+
+                        // REVIEW: Performance of this isn't great as this does a bunch of per request allocations
+                        Cancellation = new CancellationTokenSource();
+
+                        var timeoutSource = new CancellationTokenSource();
+                        var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(Cancellation.Token, nonClonedContext.RequestAborted, timeoutSource.Token);
+
+                        // Dispose these tokens when the request is over
+                        nonClonedContext.Response.RegisterForDispose(timeoutSource);
+                        nonClonedContext.Response.RegisterForDispose(tokenSource);
+
+                        var longPolling = new LongPollingTransport(timeoutSource.Token, Application.Input, loggerFactory);
+
+                        // Start the transport
+                        TransportTask = longPolling.ProcessRequestAsync(nonClonedContext, tokenSource.Token);
+
+                        // Start the timeout after we return from creating the transport task
+                        timeoutSource.CancelAfter(pollTimeout);
+                    }
+
+                    return true;
+                }
+                else
+                {
+                    FailActivationUnsynchronized(nonClonedContext, dispatcherLogger);
+
+                    return false;
+                }
+            }
+        }
+
+        private void FailActivationUnsynchronized(HttpContext nonClonedContext, ILogger dispatcherLogger)
+        {
+            if (Status == HttpConnectionStatus.Active)
+            {
+                HttpConnectionDispatcher.Log.ConnectionAlreadyActive(dispatcherLogger, ConnectionId, HttpContext.TraceIdentifier);
+
+                // Reject the request with a 409 conflict
+                nonClonedContext.Response.StatusCode = StatusCodes.Status409Conflict;
+                nonClonedContext.Response.ContentType = "text/plain";
+            }
+            else
+            {
+                Debug.Assert(Status == HttpConnectionStatus.Disposed);
+
+                HttpConnectionDispatcher.Log.ConnectionDisposed(dispatcherLogger, ConnectionId);
+
+                // Connection was disposed
+                nonClonedContext.Response.StatusCode = StatusCodes.Status404NotFound;
+                nonClonedContext.Response.ContentType = "text/plain";
             }
         }
 
@@ -345,6 +450,19 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                     Status = HttpConnectionStatus.Inactive;
                 }
             }
+        }
+
+        private async Task ExecuteApplication(ConnectionDelegate connectionDelegate)
+        {
+            // Verify some initialization invariants
+            Debug.Assert(TransportType != HttpTransportType.None, "Transport has not been initialized yet");
+
+            // Jump onto the thread pool thread so blocking user code doesn't block the setup of the
+            // connection and transport
+            await AwaitableThreadPool.Yield();
+
+            // Running this in an async method turns sync exceptions into async ones
+            await connectionDelegate(this);
         }
 
         private static class Log
