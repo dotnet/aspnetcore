@@ -2492,6 +2492,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await SendWindowUpdateAsync(1, 2);
             await SendWindowUpdateAsync(0, 2);
 
+            // Remaining 1 byte from the first write and then the second write
             await ExpectAsync(Http2FrameType.DATA,
                 withLength: 1,
                 withFlags: (byte)Http2DataFrameFlags.NONE,
