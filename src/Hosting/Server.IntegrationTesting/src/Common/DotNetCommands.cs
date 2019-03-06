@@ -16,7 +16,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         // Compare to https://github.com/aspnet/BuildTools/blob/314c98e4533217a841ff9767bb38e144eb6c93e4/tools/KoreBuild.Console/Commands/CommandContext.cs#L76
         public static string GetDotNetHome()
         {
-            var dotnetHome = Environment.GetEnvironmentVariable("DOTNET_ROOT");
+            var dotnetHome = Environment.GetEnvironmentVariable("DOTNET_HOME");
+            var dotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT");
             var userProfile = Environment.GetEnvironmentVariable("USERPROFILE");
             var home = Environment.GetEnvironmentVariable("HOME");
 
@@ -24,7 +25,11 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             if (!string.IsNullOrEmpty(dotnetHome))
             {
                 // DOTNET_ROOT has x64 appended to the path, which we append again in GetDotNetInstallDir
-                result = dotnetHome.Substring(0, dotnetHome.Length - 3);
+                result = dotnetHome;
+            }
+            else if (!string.IsNullOrEmpty(dotnetRoot))
+            {
+                result = dotnetRoot.Substring(0, dotnetRoot.Length - 3);
             }
             else if (!string.IsNullOrEmpty(userProfile))
             {
