@@ -239,7 +239,7 @@ namespace Microsoft.AspNetCore.Http
     {
         protected HttpRequest() { }
         public abstract System.IO.Stream Body { get; set; }
-        public abstract System.IO.Pipelines.PipeReader BodyPipe { get; set; }
+        public abstract System.IO.Pipelines.PipeReader BodyReader { get; set; }
         public abstract long? ContentLength { get; set; }
         public abstract string ContentType { get; set; }
         public abstract Microsoft.AspNetCore.Http.IRequestCookieCollection Cookies { get; set; }
@@ -263,7 +263,7 @@ namespace Microsoft.AspNetCore.Http
     {
         protected HttpResponse() { }
         public abstract System.IO.Stream Body { get; set; }
-        public abstract System.IO.Pipelines.PipeWriter BodyPipe { get; set; }
+        public abstract System.IO.Pipelines.PipeWriter BodyWriter { get; set; }
         public abstract long? ContentLength { get; set; }
         public abstract string ContentType { get; set; }
         public abstract Microsoft.AspNetCore.Http.IResponseCookies Cookies { get; }
