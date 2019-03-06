@@ -734,11 +734,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
             using (var server = new TestServer(async httpContext =>
             {
-                var readResult = await httpContext.Request.BodyPipe.ReadAsync();
+                var readResult = await httpContext.Request.BodyReader.ReadAsync();
                 // This will hang if 0 content length is not assumed by the server
                 Assert.Equal(5, readResult.Buffer.Length);
-                httpContext.Request.BodyPipe.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
-                readResult = await httpContext.Request.BodyPipe.ReadAsync();
+                httpContext.Request.BodyReader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
+                readResult = await httpContext.Request.BodyReader.ReadAsync();
                 Assert.Equal(5, readResult.Buffer.Length);
 
             }, testContext))
