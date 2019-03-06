@@ -13,6 +13,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     {
         private readonly long _contentLength;
         private long _inputLength;
+        private bool _readCompleted;
         private ReadResult _readResult;
         private bool _completed;
         private int _userCanceled;
@@ -29,9 +30,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             ThrowIfCompleted();
 
-            if (_inputLength == 0)
+            if (_readCompleted)
             {
-                _readResult = new ReadResult(_readResult.Buffer, isCanceled: false, isCompleted: true);
+                return _readResult;
             }
 
             TryStart();
@@ -144,11 +145,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             if (_readResult.Buffer.Length > _inputLength)
             {
-                _readResult = new ReadResult(_readResult.Buffer.Slice(0, _inputLength), _readResult.IsCanceled, isCompleted: true);
+                _readCompleted = true;
+                _readResult = new ReadResult(_readResult.Buffer.Slice(0, _inputLength), _readResult.IsCanceled, _readCompleted);
             }
             else if (_readResult.Buffer.Length == _inputLength)
             {
-                _readResult = new ReadResult(_readResult.Buffer, _readResult.IsCanceled, isCompleted: true);
+                _readCompleted = true;
+                _readResult = new ReadResult(_readResult.Buffer, _readResult.IsCanceled, _readCompleted);
             }
 
             if (_readResult.IsCompleted)
@@ -169,7 +172,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 return;
             }
 
-            // Need prevExamined....
+            if (_readCompleted)
+            {
+                _readResult = new ReadResult(_readResult.Buffer.Slice(consumed, _readResult.Buffer.End), isCanceled: false, _readCompleted);
+            }
+
             var dataLength = _readResult.Buffer.Slice(_readResult.Buffer.Start, examined).Length;
 
             _inputLength -= dataLength;
