@@ -28,6 +28,6 @@ namespace Microsoft.AspNetCore.Testing.xunit
             }
         }
 
-        public static bool OnHelix() => string.Equals(Environment.GetEnvironmentVariable("helix"), "true", StringComparison.OrdinalIgnoreCase);
+        public static bool OnHelix() => !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("helix"));
     }
 }
