@@ -700,14 +700,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             };
             await InitializeConnectionAsync(async context =>
             {
-                var readResult = await context.Request.BodyPipe.ReadAsync();
-                context.Request.BodyPipe.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
+                var readResult = await context.Request.BodyReader.ReadAsync();
+                context.Request.BodyReader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
                 tcs.SetResult(null);
                 await tcs2.Task;
-                readResult = await context.Request.BodyPipe.ReadAsync();
+                readResult = await context.Request.BodyReader.ReadAsync();
 
                 Assert.Equal(initialStreamWindowSize * 5, readResult.Buffer.Length);
-                context.Request.BodyPipe.AdvanceTo(readResult.Buffer.End);
+                context.Request.BodyReader.AdvanceTo(readResult.Buffer.End);
             });
 
             await StartStreamAsync(1, headers, endStream: false);
