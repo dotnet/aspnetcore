@@ -500,7 +500,6 @@ public class HubConnection {
         List<String> streamIds = new ArrayList<>();
         args  = checkUploadStream(args, streamIds);
         InvocationMessage invocationMessage = new InvocationMessage(null, method, args, streamIds);
-
         sendHubMessage(invocationMessage);
         launchStreams(streamIds);
     }
@@ -515,7 +514,7 @@ public class HubConnection {
             observable.subscribe(
                 (item) -> sendHubMessage(new StreamItem(streamId, item)),
                 (error) -> sendHubMessage(new CompletionMessage(streamId, null, error.toString())),
-                () -> sendHubMessage(new CompletionMessage(streamId, "", null)));
+                () -> sendHubMessage(new CompletionMessage(streamId, null, null)));
         }
     }
 
@@ -591,7 +590,6 @@ public class HubConnection {
         String invocationId = connectionState.getNextInvocationId();
         List<String> streamIds = new ArrayList<>();
         args = checkUploadStream(args, streamIds);
-
         AtomicInteger subscriptionCount = new AtomicInteger();
         StreamInvocationMessage streamInvocationMessage = new StreamInvocationMessage(invocationId, method, args, streamIds);
         InvocationRequest irq = new InvocationRequest(returnType, invocationId);
