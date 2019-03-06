@@ -20,9 +20,9 @@ namespace Microsoft.AspNetCore.Http.Features
             var expectedStream = new MemoryStream();
             context.Request.Body = expectedStream;
 
-            var provider = new RequestBodyPipeFeature(context);
+            var feature = new RequestBodyPipeFeature(context);
 
-            var pipeBody = provider.RequestBodyPipe;
+            var pipeBody = feature.Reader;
 
             Assert.True(pipeBody is StreamPipeReader);
             Assert.Equal(expectedStream, (pipeBody as StreamPipeReader).InnerStream);
@@ -32,9 +32,9 @@ namespace Microsoft.AspNetCore.Http.Features
         public async Task RequestBodyReadCanWorkWithPipe()
         {
             var expectedString = "abcdef";
-            var provider = InitializeFeatureWithData(expectedString);
+            var feature = InitializeFeatureWithData(expectedString);
 
-            var data = await provider.RequestBodyPipe.ReadAsync();
+            var data = await feature.Reader.ReadAsync();
             Assert.Equal(expectedString, GetStringFromReadResult(data));
         }
 
@@ -43,12 +43,12 @@ namespace Microsoft.AspNetCore.Http.Features
         {
             var context = new DefaultHttpContext();
 
-            var provider = new RequestBodyPipeFeature(context);
+            var feature = new RequestBodyPipeFeature(context);
 
             var pipeReader = new Pipe().Reader;
-            provider.RequestBodyPipe = pipeReader;
+            feature.Reader = pipeReader;
 
-            Assert.Equal(pipeReader, provider.RequestBodyPipe);
+            Assert.Equal(pipeReader, feature.Reader);
         }
 
         [Fact]
@@ -56,25 +56,25 @@ namespace Microsoft.AspNetCore.Http.Features
         {
             var context = new DefaultHttpContext();
 
-            var provider = new RequestBodyPipeFeature(context);
+            var feature = new RequestBodyPipeFeature(context);
 
             var expectedPipeReader = new Pipe().Reader;
-            provider.RequestBodyPipe = expectedPipeReader;
+            feature.Reader = expectedPipeReader;
 
             // Because the user set the RequestBodyPipe, this will return the user set pipeReader
             context.Request.Body = new MemoryStream();
 
-            Assert.Equal(expectedPipeReader, provider.RequestBodyPipe);
+            Assert.Equal(expectedPipeReader, feature.Reader);
         }
 
         [Fact]
         public async Task RequestBodyDoesNotAffectUserSetPipe()
         {
             var expectedString = "abcdef";
-            var provider = InitializeFeatureWithData("hahaha");
-            provider.RequestBodyPipe = await GetPipeReaderWithData(expectedString);
+            var feature = InitializeFeatureWithData("hahaha");
+            feature.Reader = await GetPipeReaderWithData(expectedString);
 
-            var data = await provider.RequestBodyPipe.ReadAsync();
+            var data = await feature.Reader.ReadAsync();
             Assert.Equal(expectedString, GetStringFromReadResult(data));
         }
 
@@ -85,14 +85,14 @@ namespace Microsoft.AspNetCore.Http.Features
 
             context.Request.Body = new MemoryStream();
 
-            var provider = new RequestBodyPipeFeature(context);
+            var feature = new RequestBodyPipeFeature(context);
 
-            var pipeBody = provider.RequestBodyPipe;
+            var pipeBody = feature.Reader;
 
             // Requery the PipeReader after setting the body again.
             var expectedStream = new MemoryStream();
             context.Request.Body = expectedStream;
-            pipeBody = provider.RequestBodyPipe;
+            pipeBody = feature.Reader;
 
             Assert.True(pipeBody is StreamPipeReader);
             Assert.Equal(expectedStream, (pipeBody as StreamPipeReader).InnerStream);
@@ -103,12 +103,12 @@ namespace Microsoft.AspNetCore.Http.Features
         {
             var context = new DefaultHttpContext();
             context.Request.Body = new MemoryStream(Encoding.ASCII.GetBytes("hahaha"));
-            var provider = new RequestBodyPipeFeature(context);
-            var _ = provider.RequestBodyPipe;
+            var feature = new RequestBodyPipeFeature(context);
+            var _ = feature.Reader;
 
             var expectedString = "abcdef";
             context.Request.Body = new MemoryStream(Encoding.ASCII.GetBytes(expectedString));
-            var data = await provider.RequestBodyPipe.ReadAsync();
+            var data = await feature.Reader.ReadAsync();
             Assert.Equal(expectedString, GetStringFromReadResult(data));
         }
 

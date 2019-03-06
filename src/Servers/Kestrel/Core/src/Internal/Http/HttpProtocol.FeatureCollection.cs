@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        PipeReader IRequestBodyPipeFeature.RequestBodyReader
+        PipeReader IRequestBodyPipeFeature.Reader
         {
             get
             {
@@ -224,7 +224,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        PipeWriter IResponseBodyPipeFeature.ResponseBodyWriter
+        PipeWriter IResponseBodyPipeFeature.Writer
         {
             get
             {

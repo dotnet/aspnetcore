@@ -639,8 +639,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         string Microsoft.AspNetCore.Http.Features.IHttpResponseFeature.ReasonPhrase { get { throw null; } set { } }
         int Microsoft.AspNetCore.Http.Features.IHttpResponseFeature.StatusCode { get { throw null; } set { } }
         bool Microsoft.AspNetCore.Http.Features.IHttpUpgradeFeature.IsUpgradableRequest { get { throw null; } }
-        System.IO.Pipelines.PipeReader Microsoft.AspNetCore.Http.Features.IRequestBodyPipeFeature.RequestBodyReader { get { throw null; } set { } }
-        System.IO.Pipelines.PipeWriter Microsoft.AspNetCore.Http.Features.IResponseBodyPipeFeature.ResponseBodyWriter { get { throw null; } set { } }
+        System.IO.Pipelines.PipeReader Microsoft.AspNetCore.Http.Features.IRequestBodyPipeFeature.Reader { get { throw null; } set { } }
+        System.IO.Pipelines.PipeWriter Microsoft.AspNetCore.Http.Features.IResponseBodyPipeFeature.Writer { get { throw null; } set { } }
         Microsoft.AspNetCore.Http.DefaultHttpContext Microsoft.AspNetCore.Http.IDefaultHttpContextContainer.HttpContext { get { throw null; } }
         public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpOutputProducer Output { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]protected set { } }
         public string Path { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }

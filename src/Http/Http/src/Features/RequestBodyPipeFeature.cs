@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Http.Features
             _context = context;
         }
 
-        public PipeReader RequestBodyReader
+        public PipeReader Reader
         {
             get
             {

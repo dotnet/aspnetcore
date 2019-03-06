@@ -231,7 +231,7 @@ namespace Microsoft.AspNetCore.Http.Features
     }
     public partial interface IRequestBodyPipeFeature
     {
-        System.IO.Pipelines.PipeReader RequestBodyReader { get; set; }
+        System.IO.Pipelines.PipeReader Reader { get; set; }
     }
     public partial interface IRequestCookiesFeature
     {
@@ -239,7 +239,7 @@ namespace Microsoft.AspNetCore.Http.Features
     }
     public partial interface IResponseBodyPipeFeature
     {
-        System.IO.Pipelines.PipeWriter ResponseBodyWriter { get; set; }
+        System.IO.Pipelines.PipeWriter Writer { get; set; }
     }
     public partial interface IResponseCookiesFeature
     {

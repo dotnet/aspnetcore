@@ -111,8 +111,8 @@ namespace Microsoft.AspNetCore.Http.Internal
 
         public override PipeWriter BodyWriter
         {
-            get { return ResponseBodyPipeFeature.ResponseBodyWriter; }
-            set { ResponseBodyPipeFeature.ResponseBodyWriter = value; }
+            get { return ResponseBodyPipeFeature.Writer; }
+            set { ResponseBodyPipeFeature.Writer = value; }
         }
 
         public override void OnStarting(Func<object, Task> callback, object state)

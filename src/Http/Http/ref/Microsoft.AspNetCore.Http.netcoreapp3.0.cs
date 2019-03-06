@@ -236,7 +236,7 @@ namespace Microsoft.AspNetCore.Http.Features
     public partial class RequestBodyPipeFeature : Microsoft.AspNetCore.Http.Features.IRequestBodyPipeFeature
     {
         public RequestBodyPipeFeature(Microsoft.AspNetCore.Http.HttpContext context) { }
-        public System.IO.Pipelines.PipeReader RequestBodyReader { get { throw null; } set { } }
+        public System.IO.Pipelines.PipeReader Reader { get { throw null; } set { } }
     }
     public partial class RequestCookiesFeature : Microsoft.AspNetCore.Http.Features.IRequestCookiesFeature
     {
@@ -255,7 +255,7 @@ namespace Microsoft.AspNetCore.Http.Features
     public partial class ResponseBodyPipeFeature : Microsoft.AspNetCore.Http.Features.IResponseBodyPipeFeature
     {
         public ResponseBodyPipeFeature(Microsoft.AspNetCore.Http.HttpContext context) { }
-        public System.IO.Pipelines.PipeWriter ResponseBodyWriter { get { throw null; } set { } }
+        public System.IO.Pipelines.PipeWriter Writer { get { throw null; } set { } }
     }
     public partial class ResponseCookiesFeature : Microsoft.AspNetCore.Http.Features.IResponseCookiesFeature
     {
