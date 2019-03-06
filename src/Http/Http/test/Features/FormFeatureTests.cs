@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Http.Features
             await pipe.Writer.WriteAsync(formContent);
             pipe.Writer.Complete();
 
-            context.Request.BodyPipe = pipe.Reader;
+            context.Request.BodyReader = pipe.Reader;
 
             IFormFeature formFeature = new FormFeature(context.Request, new FormOptions() { BufferBody = bufferRequest });
             context.Features.Set<IFormFeature>(formFeature);

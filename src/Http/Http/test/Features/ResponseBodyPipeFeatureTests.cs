@@ -16,9 +16,9 @@ namespace Microsoft.AspNetCore.Http.Features
             var expectedStream = new MemoryStream();
             context.Response.Body = expectedStream;
 
-            var provider = new ResponseBodyPipeFeature(context);
+            var feature = new ResponseBodyPipeFeature(context);
 
-            var pipeBody = provider.ResponseBodyPipe;
+            var pipeBody = feature.Writer;
 
             Assert.True(pipeBody is StreamPipeWriter);
             Assert.Equal(expectedStream, (pipeBody as StreamPipeWriter).InnerStream);
@@ -28,12 +28,12 @@ namespace Microsoft.AspNetCore.Http.Features
         public void ResponseBodySetPipeReaderReturnsSameValue()
         {
             var context = new DefaultHttpContext();
-            var provider = new ResponseBodyPipeFeature(context);
+            var feature = new ResponseBodyPipeFeature(context);
 
             var pipeWriter = new Pipe().Writer;
-            provider.ResponseBodyPipe = pipeWriter;
+            feature.Writer = pipeWriter;
 
-            Assert.Equal(pipeWriter, provider.ResponseBodyPipe);
+            Assert.Equal(pipeWriter, feature.Writer);
         }
 
         [Fact]
@@ -43,11 +43,11 @@ namespace Microsoft.AspNetCore.Http.Features
             var expectedStream = new MemoryStream();
             context.Response.Body = new MemoryStream();
 
-            var provider = new ResponseBodyPipeFeature(context);
+            var feature = new ResponseBodyPipeFeature(context);
 
-            var pipeBody = provider.ResponseBodyPipe;
+            var pipeBody = feature.Writer;
             context.Response.Body = expectedStream;
-            pipeBody = provider.ResponseBodyPipe;
+            pipeBody = feature.Writer;
 
             Assert.True(pipeBody is StreamPipeWriter);
             Assert.Equal(expectedStream, (pipeBody as StreamPipeWriter).InnerStream);

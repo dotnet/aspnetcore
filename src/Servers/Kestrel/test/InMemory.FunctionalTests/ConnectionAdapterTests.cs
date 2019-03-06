@@ -269,9 +269,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
             using (var server = new TestServer(async context =>
             {
-                await context.Response.BodyPipe.WriteAsync(Encoding.ASCII.GetBytes("Hello "));
-                await context.Response.BodyPipe.FlushAsync();
-                await context.Response.BodyPipe.WriteAsync(Encoding.ASCII.GetBytes("World!"));
+                await context.Response.BodyWriter.WriteAsync(Encoding.ASCII.GetBytes("Hello "));
+                await context.Response.BodyWriter.FlushAsync();
+                await context.Response.BodyWriter.WriteAsync(Encoding.ASCII.GetBytes("World!"));
             }, serviceContext, listenOptions))
             {
                 using (var connection = server.CreateConnection())

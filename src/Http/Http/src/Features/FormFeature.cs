@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Http.Features
                 if (HasApplicationFormContentType(contentType))
                 {
                     var encoding = FilterEncoding(contentType.Encoding);
-                    var formReader = new FormPipeReader(_request.BodyPipe, encoding)
+                    var formReader = new FormPipeReader(_request.BodyReader, encoding)
                     {
                         ValueCountLimit = _options.ValueCountLimit,
                         KeyLengthLimit = _options.KeyLengthLimit,
