@@ -48,7 +48,8 @@ namespace Microsoft.AspNetCore.Builder
         public bool ServeUnknownFileTypes { get; set; }
 
         /// <summary>
-        /// Indicates if files should be compressed for HTTPS requests. The default value is <see cref="HttpsCompressionMode.Compress"/>.
+        /// Indicates if files should be compressed for HTTPS requests when the Response Compression middleware is available.
+        /// The default value is <see cref="HttpsCompressionMode.Compress"/>.
         /// </summary>
         /// <remarks>
         /// Enabling compression on HTTPS requests for remotely manipulable content may expose security problems.

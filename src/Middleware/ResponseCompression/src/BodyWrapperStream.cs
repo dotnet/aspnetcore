@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
             return _compressionStream?.DisposeAsync() ?? new ValueTask();
         }
 
-        HttpsCompressionMode IHttpsCompressionFeature.Mode { get; set; }
+        HttpsCompressionMode IHttpsCompressionFeature.Mode { get; set; } = HttpsCompressionMode.Default;
 
         public override bool CanRead => false;
 

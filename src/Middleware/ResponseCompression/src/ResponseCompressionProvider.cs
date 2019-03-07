@@ -173,6 +173,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
         {
             var httpsMode = context.Features.Get<IHttpsCompressionFeature>()?.Mode ?? HttpsCompressionMode.Default;
 
+            // Check if the app has opted into or out of compression over HTTPS
             if (context.Request.IsHttps
                 && (httpsMode == HttpsCompressionMode.DoNotCompress
                     || !(_enableForHttps || httpsMode == HttpsCompressionMode.Compress)))

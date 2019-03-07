@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Http.Features
         /// <summary>
         /// No value has been specified, use the configured defaults.
         /// </summary>
-        Default,
+        Default = 0,
 
         /// <summary>
         /// Opts out of compression over HTTPS. Enabling compression on HTTPS requests for remotely manipulable content

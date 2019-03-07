@@ -458,9 +458,10 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         }
 
         [Theory]
-        [InlineData(false, 100)]
-        [InlineData(true, 30)]
-        public async Task Request_Https_CompressedIfOverriden(bool overrideHttps, int expectedLength)
+        [InlineData(HttpsCompressionMode.Default, 100)]
+        [InlineData(HttpsCompressionMode.DoNotCompress, 100)]
+        [InlineData(HttpsCompressionMode.Compress, 30)]
+        public async Task Request_Https_CompressedIfOptIn(HttpsCompressionMode mode, int expectedLength)
         {
             var sink = new TestSink(
                 TestSink.EnableWithTypeName<ResponseCompressionProvider>,
@@ -482,11 +483,8 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                     app.UseResponseCompression();
                     app.Run(context =>
                     {
-                        if (overrideHttps)
-                        {
-                            var feature = context.Features.Get<IHttpsCompressionFeature>();
-                            feature.Mode = HttpsCompressionMode.Compress;
-                        }
+                        var feature = context.Features.Get<IHttpsCompressionFeature>();
+                        feature.Mode = mode;
                         context.Response.ContentType = TextPlain;
                         return context.Response.WriteAsync(new string('a', 100));
                     });
@@ -507,7 +505,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             Assert.Equal(expectedLength, response.Content.ReadAsByteArrayAsync().Result.Length);
 
             var logMessages = sink.Writes.ToList();
-            if (overrideHttps)
+            if (mode == HttpsCompressionMode.Compress)
             {
                 AssertCompressedWithLog(logMessages, "gzip");
             }
@@ -518,9 +516,10 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         }
 
         [Theory]
-        [InlineData(true, 100)]
-        [InlineData(false, 30)]
-        public async Task Request_Https_NotCompressedIfOverriden(bool overrideHttps, int expectedLength)
+        [InlineData(HttpsCompressionMode.Default, 30)]
+        [InlineData(HttpsCompressionMode.Compress, 30)]
+        [InlineData(HttpsCompressionMode.DoNotCompress, 100)]
+        public async Task Request_Https_NotCompressedIfOptOut(HttpsCompressionMode mode, int expectedLength)
         {
             var sink = new TestSink(
                 TestSink.EnableWithTypeName<ResponseCompressionProvider>,
@@ -542,11 +541,8 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
                     app.UseResponseCompression();
                     app.Run(context =>
                     {
-                        if (overrideHttps)
-                        {
-                            var feature = context.Features.Get<IHttpsCompressionFeature>();
-                            feature.Mode = HttpsCompressionMode.DoNotCompress;
-                        }
+                        var feature = context.Features.Get<IHttpsCompressionFeature>();
+                        feature.Mode = mode;
                         context.Response.ContentType = TextPlain;
                         return context.Response.WriteAsync(new string('a', 100));
                     });
@@ -567,7 +563,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
             Assert.Equal(expectedLength, response.Content.ReadAsByteArrayAsync().Result.Length);
 
             var logMessages = sink.Writes.ToList();
-            if (overrideHttps)
+            if (mode == HttpsCompressionMode.DoNotCompress)
             {
                 AssertLog(logMessages.Skip(1).Single(), LogLevel.Debug, "No response compression available for HTTPS requests. See ResponseCompressionOptions.EnableForHttps.");
             }
