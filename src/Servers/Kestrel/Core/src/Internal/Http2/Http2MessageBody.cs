@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
     {
         private readonly Http2Stream _context;
         private ReadResult _readResult;
-        private long _totalExaminedInPreviousReadResult;
+        private long _alreadyExaminedInNextReadResult;
 
         private Http2MessageBody(Http2Stream context, MinDataRate minRequestBodyDataRate)
             : base(context, minRequestBodyDataRate)
@@ -92,21 +92,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
             else 
             {
-                examinedLength = _readResult.Buffer.Slice(_readResult.Buffer.Start, examined).Length;
                 consumedLength = _readResult.Buffer.Slice(_readResult.Buffer.Start, consumed).Length;
+                examinedLength = consumedLength + _readResult.Buffer.Slice(consumed, examined).Length;
             }
 
             _context.RequestBodyPipe.Reader.AdvanceTo(consumed, examined);
             
-            var newlyExamined = examinedLength - _totalExaminedInPreviousReadResult;
+            var newlyExamined = examinedLength - _alreadyExaminedInNextReadResult;
 
             if (newlyExamined > 0)
             {
                 OnDataRead(newlyExamined);
-                _totalExaminedInPreviousReadResult += newlyExamined;
+                _alreadyExaminedInNextReadResult += newlyExamined;
             }
 
-            _totalExaminedInPreviousReadResult -= consumedLength;
+            _alreadyExaminedInNextReadResult -= consumedLength;
         }
 
         public override bool TryRead(out ReadResult readResult)
