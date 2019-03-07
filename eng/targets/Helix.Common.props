@@ -16,6 +16,9 @@
         <HelixAvailibleTargetQueue Include="Windows.10.Amd64.EnterpriseRS3.ASPNET.Open" Platform="Windows" EnableByDefault="false" EnableForPr="true" />
         <HelixAvailibleTargetQueue Include="OSX.1012.Amd64.Open" Platform="OSX" EnableForPr="true" />
         <HelixAvailibleTargetQueue Include="Ubuntu.1810.Amd64.Open" Platform="Linux" EnableForPr="true" />
+      
+      <!--
+      
         <HelixAvailibleTargetQueue Include="Ubuntu.1604.Amd64.Open" Platform="Linux" EnableByDefault="false" />
         <HelixAvailibleTargetQueue Include="Centos.7.Amd64.Open" Platform="Linux" EnableByDefault="false" />
         <HelixAvailibleTargetQueue Include="Debian.8.Amd64.Open" Platform="Linux" EnableByDefault="false" />
@@ -23,7 +26,7 @@
         <HelixAvailibleTargetQueue Include="Redhat.7.Amd64.Open" Platform="Linux" EnableByDefault="false" />
         <HelixAvailibleTargetQueue Include="Fedora.27.Amd64.Open" Platform="Linux" EnableByDefault="false" />
         <HelixAvailibleTargetQueue Include="Fedora.28.Amd64.Open" Platform="Linux" EnableByDefault="false" />
-
+     -->
         <!--  TODO: re-enable Debian.9.Arm64.Open and Ubuntu.1804.Arm64.Open    -->
     </ItemGroup>
 </Project>
