@@ -96,9 +96,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
           BeforeTargets="_GetPackageFiles"
           DependsOnTargets="ResolveReferences;FindReferenceAssembliesForReferences">
     <ItemGroup>
-      <_AvailableExtensionsRefAssemblies Include="$(MicrosoftInternalExtensionsRefsPath)\*.dll">
-        <DocXml>%(RootDir)%(Directory)%(FileName).xml</DocXml>
-      </_AvailableExtensionsRefAssemblies>
+      <_AvailableExtensionsRefAssemblies Include="$(MicrosoftInternalExtensionsRefsPath)\*.dll" />
     </ItemGroup>
 
     <JoinItems Left="@(ReferencePathWithRefAssemblies)" Right="@(_AvailableExtensionsRefAssemblies)" LeftKey="Filename" RightKey="Filename" ItemSpecToUse="Left">
