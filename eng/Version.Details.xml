@@ -305,7 +305,7 @@
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>00000</Sha>
     </Dependency>
-    <Dependency Name="System.IO.Pipelines" Version="4.6.0-preview4.19127.11">
+    <Dependency Name="System.IO.Pipelines" Version="4.6.0-preview4.19156.2">
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>00000</Sha>
     </Dependency>
