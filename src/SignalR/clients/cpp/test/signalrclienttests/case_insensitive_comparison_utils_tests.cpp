@@ -10,21 +10,21 @@ TEST(case_insensitive_equals_functor, basic_comparison_tests)
 {
     case_insensitive_equals case_insensitive_compare;
 
-    ASSERT_TRUE(case_insensitive_compare(_XPLATSTR(""), _XPLATSTR("")));
-    ASSERT_TRUE(case_insensitive_compare(_XPLATSTR("abc"), _XPLATSTR("ABC")));
-    ASSERT_TRUE(case_insensitive_compare(_XPLATSTR("abc123!@"), _XPLATSTR("ABC123!@")));
+    ASSERT_TRUE(case_insensitive_compare("", ""));
+    ASSERT_TRUE(case_insensitive_compare("abc", "ABC"));
+    ASSERT_TRUE(case_insensitive_compare("abc123!@", "ABC123!@"));
 
-    ASSERT_FALSE(case_insensitive_compare(_XPLATSTR("abc"), _XPLATSTR("ABCD")));
-    ASSERT_FALSE(case_insensitive_compare(_XPLATSTR("abce"), _XPLATSTR("ABCD")));
+    ASSERT_FALSE(case_insensitive_compare("abc", "ABCD"));
+    ASSERT_FALSE(case_insensitive_compare("abce", "ABCD"));
 }
 
 TEST(case_insensitive_hash_functor, basic_hash_tests)
 {
     case_insensitive_hash case_insensitive_hasher;
 
-    ASSERT_EQ(0U, case_insensitive_hasher(_XPLATSTR("")));
+    ASSERT_EQ(0U, case_insensitive_hasher(""));
 
-    ASSERT_EQ(case_insensitive_hasher(_XPLATSTR("abc")), case_insensitive_hasher(_XPLATSTR("ABC")));
-    ASSERT_EQ(case_insensitive_hasher(_XPLATSTR("abc123!@")), case_insensitive_hasher(_XPLATSTR("ABC123!@")));
-    ASSERT_NE(case_insensitive_hasher(_XPLATSTR("abcd")), case_insensitive_hasher(_XPLATSTR("ABC")));
+    ASSERT_EQ(case_insensitive_hasher("abc"), case_insensitive_hasher("ABC"));
+    ASSERT_EQ(case_insensitive_hasher("abc123!@"), case_insensitive_hasher("ABC123!@"));
+    ASSERT_NE(case_insensitive_hasher("abcd"), case_insensitive_hasher("ABC"));
 }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -12,11 +12,29 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account
     public class Register : DefaultUIPage
     {
         private IHtmlFormElement _registerForm;
+        private IHtmlFormElement _externalLoginForm;
+        private readonly IHtmlElement _contosoButton;
 
         public Register(HttpClient client, IHtmlDocument register, DefaultUIContext context)
             : base(client, register, context)
         {
-            _registerForm = HtmlAssert.HasForm(register);
+            _registerForm = HtmlAssert.HasForm("#registerForm", register);
+            if (context.ContosoLoginEnabled)
+            {
+                _externalLoginForm = HtmlAssert.HasForm("#external-account", register);
+                _contosoButton = HtmlAssert.HasElement("button[value=Contoso]", register);
+            }
+        }
+
+        public async Task<Contoso.Login> ClickLoginWithContosoLinkAsync()
+        {
+            var externalFormResponse = await Client.SendAsync(_externalLoginForm, _contosoButton);
+            var goToContosoLogin = ResponseAssert.IsRedirect(externalFormResponse);
+            var contosoLoginResponse = await Client.GetAsync(goToContosoLogin);
+
+            var contosoLogin = await ResponseAssert.IsHtmlDocumentAsync(contosoLoginResponse);
+
+            return new Contoso.Login(Client, contosoLogin, Context);
         }
 
         public async Task<Index> SubmitRegisterFormForValidUserAsync(string userName, string password)

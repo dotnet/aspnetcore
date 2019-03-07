@@ -22,7 +22,7 @@ namespace signalr
     public:
         typedef std::function<void __cdecl (const web::json::value&)> method_invoked_handler;
 
-        SIGNALRCLIENT_API explicit hub_connection(const utility::string_t& url, trace_level trace_level = trace_level::all,
+        SIGNALRCLIENT_API explicit hub_connection(const std::string& url, trace_level trace_level = trace_level::all,
             std::shared_ptr<log_writer> log_writer = nullptr);
 
         SIGNALRCLIENT_API ~hub_connection();
@@ -35,17 +35,17 @@ namespace signalr
         SIGNALRCLIENT_API pplx::task<void> __cdecl stop();
 
         SIGNALRCLIENT_API connection_state __cdecl get_connection_state() const;
-        SIGNALRCLIENT_API utility::string_t __cdecl get_connection_id() const;
+        SIGNALRCLIENT_API std::string __cdecl get_connection_id() const;
 
         SIGNALRCLIENT_API void __cdecl set_disconnected(const std::function<void __cdecl()>& disconnected_callback);
 
         SIGNALRCLIENT_API void __cdecl set_client_config(const signalr_client_config& config);
 
-        SIGNALRCLIENT_API void __cdecl on(const utility::string_t& event_name, const method_invoked_handler& handler);
+        SIGNALRCLIENT_API void __cdecl on(const std::string& event_name, const method_invoked_handler& handler);
 
-        SIGNALRCLIENT_API pplx::task<web::json::value> invoke(const utility::string_t& method_name, const web::json::value& arguments = web::json::value::array());
+        SIGNALRCLIENT_API pplx::task<web::json::value> invoke(const std::string& method_name, const web::json::value& arguments = web::json::value::array());
 
-        SIGNALRCLIENT_API pplx::task<void> send(const utility::string_t& method_name, const web::json::value& arguments = web::json::value::array());
+        SIGNALRCLIENT_API pplx::task<void> send(const std::string& method_name, const web::json::value& arguments = web::json::value::array());
 
     private:
         std::shared_ptr<hub_connection_impl> m_pImpl;

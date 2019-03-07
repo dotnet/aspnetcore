@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -55,6 +55,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             return await login.LockoutUserAsync(userName, password);
         }
 
+        // This is via login page
         internal static async Task<Index> RegisterNewUserWithSocialLoginAsync(HttpClient client, string userName, string email)
         {
             var index = await Index.CreateAsync(client, new DefaultUIContext().WithSocialLoginEnabled());
@@ -62,6 +63,19 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             var login = await index.ClickLoginLinkAsync();
 
             var contosoLogin = await login.ClickLoginWithContosoLinkAsync();
+
+            var externalLogin = await contosoLogin.SendNewUserNameAsync(userName);
+
+            return await externalLogin.SendEmailAsync(email);
+        }
+
+        internal static async Task<Index> RegisterNewUserWithSocialLoginAsyncViaRegisterPage(HttpClient client, string userName, string email)
+        {
+            var index = await Index.CreateAsync(client, new DefaultUIContext().WithSocialLoginEnabled());
+
+            var register = await index.ClickRegisterLinkAsync();
+
+            var contosoLogin = await register.ClickLoginWithContosoLinkAsync();
 
             var externalLogin = await contosoLogin.SendNewUserNameAsync(userName);
 

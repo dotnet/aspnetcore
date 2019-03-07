@@ -154,6 +154,7 @@
   <Target Name="Helix" DependsOnTargets="Restore">
     <MSBuild Projects="$(MSBuildThisFileDirectory)..\eng\helix\helix.proj"
              Targets="Test"
+             Properties="$(BuildProperties);$(SolutionProperties);"
              ContinueOnError="ErrorAndStop" />
   </Target>
 </Project>

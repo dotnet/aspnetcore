@@ -9,6 +9,8 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Endpoints;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
@@ -83,6 +85,42 @@ namespace Microsoft.AspNetCore.StaticFiles
                     services => services.AddDirectoryBrowser());
                 var response = await server.CreateRequest(requestUrl).GetAsync();
                 Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            }
+        }
+
+        [Fact]
+        public async Task Endpoint_PassesThrough()
+        {
+            using (var fileProvider = new PhysicalFileProvider(Path.Combine(AppContext.BaseDirectory, ".")))
+            {
+                var server = StaticFilesTestServer.Create(
+                    app =>
+                    {
+                        app.Use(next => context =>
+                        {
+                            // Assign an endpoint, this will make the directory browser noop
+                            context.SetEndpoint(new Endpoint((c) =>
+                            {
+                                c.Response.StatusCode = (int)HttpStatusCode.NotAcceptable;
+                                return c.Response.WriteAsync("Hi from endpoint.");
+                            },
+                            new EndpointMetadataCollection(),
+                            "test"));
+
+                            return next(context);
+                        });
+
+                        app.UseDirectoryBrowser(new DirectoryBrowserOptions
+                        {
+                            RequestPath = new PathString(""),
+                            FileProvider = fileProvider
+                        });
+                    },
+                    services => services.AddDirectoryBrowser());
+
+                var response = await server.CreateRequest("/").GetAsync();
+                Assert.Equal(HttpStatusCode.NotAcceptable, response.StatusCode);
+                Assert.Equal("Hi from endpoint.", await response.Content.ReadAsStringAsync());
             }
         }
 

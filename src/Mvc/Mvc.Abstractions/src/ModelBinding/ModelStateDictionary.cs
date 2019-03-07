@@ -1089,7 +1089,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 _nodes = null;
                 _visitedRoot = false;
             }
-            
+
             /// <inheritdoc />
             public KeyValuePair<string, ModelStateEntry> Current =>
                 new KeyValuePair<string, ModelStateEntry>(_modelStateNode.Key, _modelStateNode);

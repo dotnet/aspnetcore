@@ -3,12 +3,12 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
 using MessagePack;
 using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
@@ -23,14 +23,13 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
         private const int TimeoutMilliseconds = 60 * 1000;
 
         private readonly int _id;
-        private IClientProxy _client;
         private readonly IJSRuntime _jsRuntime;
+        private readonly CircuitClientProxy _client;
         private readonly RendererRegistry _rendererRegistry;
         private readonly ConcurrentDictionary<long, AutoCancelTaskCompletionSource<object>> _pendingRenders
             = new ConcurrentDictionary<long, AutoCancelTaskCompletionSource<object>>();
         private readonly ILogger _logger;
         private long _nextRenderId = 1;
-        private bool _prerenderMode;
 
         /// <summary>
         /// Notifies when a rendering exception occured.
@@ -40,16 +39,11 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
         /// <summary>
         /// Creates a new <see cref="RemoteRenderer"/>.
         /// </summary>
-        /// <param name="serviceProvider">The <see cref="IServiceProvider"/>.</param>
-        /// <param name="rendererRegistry">The <see cref="RendererRegistry"/>.</param>
-        /// <param name="jsRuntime">The <see cref="IJSRuntime"/>.</param>
-        /// <param name="client">The <see cref="IClientProxy"/>.</param>
-        /// <param name="syncContext">A <see cref="SynchronizationContext"/> that can be used to serialize renderer operations.</param>
         public RemoteRenderer(
             IServiceProvider serviceProvider,
             RendererRegistry rendererRegistry,
             IJSRuntime jsRuntime,
-            IClientProxy client,
+            CircuitClientProxy client,
             IDispatcher dispatcher,
             HtmlEncoder encoder,
             ILogger logger)
@@ -62,6 +56,8 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
             _id = _rendererRegistry.Add(this);
             _logger = logger;
         }
+
+        internal ConcurrentQueue<byte[]> OfflineRenderBatches = new ConcurrentQueue<byte[]>();
 
         /// <summary>
         /// Associates the <see cref="IComponent"/> with the <see cref="RemoteRenderer"/>,
@@ -91,18 +87,13 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
             {
                 foreach (var innerException in aggregateException.Flatten().InnerExceptions)
                 {
-                    _logger.UnhandledExceptionRenderingComponent(innerException);
+                    Log.UnhandledExceptionRenderingComponent(_logger, innerException);
                 }
             }
             else
             {
-                _logger.UnhandledExceptionRenderingComponent(exception);
+                Log.UnhandledExceptionRenderingComponent(_logger, exception);
             }
-        }
-
-        internal void StartPrerender()
-        {
-            _prerenderMode = true;
         }
 
         /// <inheritdoc />
@@ -115,14 +106,6 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
         /// <inheritdoc />
         protected override Task UpdateDisplayAsync(in RenderBatch batch)
         {
-            if (_prerenderMode)
-            {
-                // Nothing to do in prerender mode for right now.
-                // In the future we will capture all the serialized render batches and
-                // resend them to the client upon the initial reconnect.
-                return Task.CompletedTask;
-            }
-
             // Note that we have to capture the data as a byte[] synchronously here, because
             // SignalR's SendAsync can wait an arbitrary duration before serializing the params.
             // The RenderBatch buffer will get reused by subsequent renders, so we need to
@@ -131,8 +114,31 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
             //       buffer on every render.
             var batchBytes = MessagePackSerializer.Serialize(batch, RenderBatchFormatterResolver.Instance);
 
-            // Prepare to track the render process with a timeout
+            if (!_client.Connected)
+            {
+                // Buffer the rendered batches while the client is disconnected. We'll send it down once the client reconnects.
+                OfflineRenderBatches.Enqueue(batchBytes);
+                return Task.CompletedTask;
+            }
+
+            Log.BeginUpdateDisplayAsync(_logger, _client.ConnectionId);
+            return WriteBatchBytes(batchBytes);
+        }
+
+        public async Task ProcessBufferedRenderBatches()
+        {
+            // The server may discover that the client disconnected while we're attempting to write empty rendered batches.
+            // Discontinue writing in this event.
+            while (_client.Connected && OfflineRenderBatches.TryDequeue(out var renderBatch))
+            {
+                await WriteBatchBytes(renderBatch);
+            }
+        }
+
+        private Task WriteBatchBytes(byte[] batchBytes)
+        {
             var renderId = Interlocked.Increment(ref _nextRenderId);
+
             var pendingRenderInfo = new AutoCancelTaskCompletionSource<object>(TimeoutMilliseconds);
             _pendingRenders[renderId] = pendingRenderInfo;
 
@@ -190,6 +196,62 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
                     UnhandledException?.Invoke(this, t.Exception);
                 }
             });
+        }
+
+        private static class Log
+        {
+            private static readonly Action<ILogger, string, Exception> _unhandledExceptionRenderingComponent;
+            private static readonly Action<ILogger, string, Exception> _beginUpdateDisplayAsync;
+            private static readonly Action<ILogger, string, Exception> _bufferingRenderDisconnectedClient;
+
+            private static class EventIds
+            {
+                public static readonly EventId UnhandledExceptionRenderingComponent = new EventId(100, "ExceptionRenderingComponent");
+                public static readonly EventId BeginUpdateDisplayAsync = new EventId(101, "BeginUpdateDisplayAsync");
+                public static readonly EventId SkipUpdateDisplayAsync = new EventId(102, "SkipUpdateDisplayAsync");
+            }
+
+            static Log()
+            {
+                _unhandledExceptionRenderingComponent = LoggerMessage.Define<string>(
+                    LogLevel.Warning,
+                    EventIds.UnhandledExceptionRenderingComponent,
+                    "Unhandled exception rendering component: {Message}");
+
+                _beginUpdateDisplayAsync = LoggerMessage.Define<string>(
+                    LogLevel.Trace,
+                    EventIds.BeginUpdateDisplayAsync,
+                    "Begin remote rendering of components on client {ConnectionId}.");
+
+                _bufferingRenderDisconnectedClient = LoggerMessage.Define<string>(
+                    LogLevel.Trace,
+                    EventIds.SkipUpdateDisplayAsync,
+                    "Buffering remote render because the client on connection {ConnectionId} is disconnected.");
+            }
+
+            public static void UnhandledExceptionRenderingComponent(ILogger logger, Exception exception)
+            {
+                _unhandledExceptionRenderingComponent(
+                    logger,
+                    exception.Message,
+                    exception);
+            }
+
+            public static void BeginUpdateDisplayAsync(ILogger logger, string connectionId)
+            {
+                _beginUpdateDisplayAsync(
+                    logger,
+                    connectionId,
+                    null);
+            }
+
+            public static void BufferingRenderDisconnectedClient(ILogger logger, string connectionId)
+            {
+                _bufferingRenderDisconnectedClient(
+                    logger,
+                    connectionId,
+                    null);
+            }
         }
     }
 }

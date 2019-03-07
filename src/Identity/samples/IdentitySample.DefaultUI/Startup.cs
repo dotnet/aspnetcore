@@ -35,7 +35,7 @@ namespace IdentitySample.DefaultUI
                     .UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
                 x => x.MigrationsAssembly("IdentitySample.DefaultUI")));
 
-            services.AddMvc();
+            services.AddMvc().AddNewtonsoftJson();
 
             services.AddDefaultIdentity<ApplicationUser>()
                  .AddRoles<IdentityRole>()

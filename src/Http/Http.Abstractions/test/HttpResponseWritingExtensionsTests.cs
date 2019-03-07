@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Http
             var streamPipeWriter = new StreamPipeWriter(outputStream, minimumSegmentSize: 0, memoryPool);
 
             HttpContext context = new DefaultHttpContext();
-            context.Response.BodyPipe = streamPipeWriter;
+            context.Response.BodyWriter = streamPipeWriter;
 
             var inputString = "昨日すき焼きを食べました";
             var expected = encoding.GetBytes(inputString);

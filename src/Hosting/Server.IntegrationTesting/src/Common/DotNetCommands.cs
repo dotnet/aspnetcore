@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         public static string GetDotNetHome()
         {
             var dotnetHome = Environment.GetEnvironmentVariable("DOTNET_HOME");
+            var dotnetRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT");
             var userProfile = Environment.GetEnvironmentVariable("USERPROFILE");
             var home = Environment.GetEnvironmentVariable("HOME");
 
@@ -24,6 +25,11 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             if (!string.IsNullOrEmpty(dotnetHome))
             {
                 result = dotnetHome;
+            }
+            else if (!string.IsNullOrEmpty(dotnetRoot))
+            {
+                // DOTNET_ROOT has x64 appended to the path, which we append again in GetDotNetInstallDir
+                result = dotnetRoot.Substring(0, dotnetRoot.Length - 3);
             }
             else if (!string.IsNullOrEmpty(userProfile))
             {

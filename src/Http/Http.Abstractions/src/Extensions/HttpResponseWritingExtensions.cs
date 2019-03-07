@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Http
 
             Write(response, text, encoding);
 
-            var flushAsyncTask = response.BodyPipe.FlushAsync(cancellationToken);
+            var flushAsyncTask = response.BodyWriter.FlushAsync(cancellationToken);
             if (flushAsyncTask.IsCompletedSuccessfully)
             {
                 // Most implementations of ValueTask reset state in GetResult, so call it before returning a completed task.
@@ -88,12 +88,12 @@ namespace Microsoft.AspNetCore.Http
         {
             await startAsyncTask;
             Write(response, text, encoding);
-            await response.BodyPipe.FlushAsync(cancellationToken);
+            await response.BodyWriter.FlushAsync(cancellationToken);
         }
 
         private static void Write(this HttpResponse response, string text, Encoding encoding)
         {
-            var pipeWriter = response.BodyPipe;
+            var pipeWriter = response.BodyWriter;
             var encodedLength = encoding.GetByteCount(text);
             var destination = pipeWriter.GetSpan(encodedLength);
 

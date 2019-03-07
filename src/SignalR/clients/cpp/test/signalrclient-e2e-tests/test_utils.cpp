@@ -9,17 +9,17 @@
 #include "cpprest/asyncrt_utils.h"
 #include <chrono>
 
-utility::string_t url;
+std::string url;
 
-void get_url(int argc, utility::char_t* argv[])
+void get_url(int argc, char* argv[])
 {
-    url = U("http://localhost:42524/");
+    url = "http://localhost:42524/";
 
     for (int i = 0; i < argc; ++i)
     {
-        utility::string_t str = argv[i];
+        std::string str = argv[i];
 
-        auto pos = str.find(U("url="));
+        auto pos = str.find("url=");
         if (pos != std::string::npos)
         {
             url = str.substr(pos + 4);

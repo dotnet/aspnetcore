@@ -65,41 +65,41 @@ namespace Microsoft.AspNetCore.Http.Internal
         }
 
         [Fact]
-        public void BodyPipe_CanGet()
+        public void BodyWriter_CanGet()
         {
             var response = new DefaultHttpContext();
-            var bodyPipe = response.Response.BodyPipe;
+            var bodyPipe = response.Response.BodyWriter;
 
             Assert.NotNull(bodyPipe);
         }
 
         [Fact]
-        public void BodyPipe_CanSet()
+        public void BodyWriter_CanSet()
         {
             var response = new DefaultHttpContext();
             var pipeWriter = new Pipe().Writer;
-            response.Response.BodyPipe = pipeWriter;
+            response.Response.BodyWriter = pipeWriter;
 
-            Assert.Equal(pipeWriter, response.Response.BodyPipe);
+            Assert.Equal(pipeWriter, response.Response.BodyWriter);
         }
 
         [Fact]
-        public void BodyPipe_WrapsStream()
+        public void BodyWriter_WrapsStream()
         {
             var context = new DefaultHttpContext();
             var expectedStream = new MemoryStream();
             context.Response.Body = expectedStream;
 
-            var bodyPipe = context.Response.BodyPipe as StreamPipeWriter;
+            var bodyPipe = context.Response.BodyWriter as StreamPipeWriter;
 
             Assert.Equal(expectedStream, bodyPipe.InnerStream);
         }
 
         [Fact]
-        public void BodyPipe_ThrowsWhenSettingNull()
+        public void BodyWriter_ThrowsWhenSettingNull()
         {
             var context = new DefaultHttpContext();
-            Assert.Throws<ArgumentNullException>(() => context.Response.BodyPipe = null);
+            Assert.Throws<ArgumentNullException>(() => context.Response.BodyWriter = null);
         }
 
         [Fact]

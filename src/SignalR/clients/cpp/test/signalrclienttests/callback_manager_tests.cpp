@@ -20,18 +20,18 @@ TEST(callback_manager_invoke_callback, invoke_callback_invokes_and_removes_callb
 {
     callback_manager callback_mgr{ json::value::object() };
 
-    utility::string_t callback_argument{_XPLATSTR("")};
+    std::string callback_argument{ "" };
 
     auto callback_id = callback_mgr.register_callback(
         [&callback_argument](const json::value& argument)
         {
-            callback_argument = argument.serialize();
+            callback_argument = utility::conversions::to_utf8string(argument.serialize());
         });
 
     auto callback_found = callback_mgr.invoke_callback(callback_id, json::value::number(42), true);
 
     ASSERT_TRUE(callback_found);
-    ASSERT_EQ(_XPLATSTR("42"), callback_argument);
+    ASSERT_EQ("42", callback_argument);
     ASSERT_FALSE(callback_mgr.remove_callback(callback_id));
 }
 
@@ -39,25 +39,25 @@ TEST(callback_manager_invoke_callback, invoke_callback_invokes_and_does_not_remo
 {
     callback_manager callback_mgr{ json::value::object() };
 
-    utility::string_t callback_argument{ _XPLATSTR("") };
+    std::string callback_argument{ "" };
 
     auto callback_id = callback_mgr.register_callback(
         [&callback_argument](const json::value& argument)
     {
-        callback_argument = argument.serialize();
+        callback_argument = utility::conversions::to_utf8string(argument.serialize());
     });
 
     auto callback_found = callback_mgr.invoke_callback(callback_id, json::value::number(42), false);
 
     ASSERT_TRUE(callback_found);
-    ASSERT_EQ(_XPLATSTR("42"), callback_argument);
+    ASSERT_EQ("42", callback_argument);
     ASSERT_TRUE(callback_mgr.remove_callback(callback_id));
 }
 
 TEST(callback_manager_ivoke_callback, invoke_callback_returns_false_for_invalid_callback_id)
 {
     callback_manager callback_mgr{ json::value::object() };
-    auto callback_found = callback_mgr.invoke_callback(_XPLATSTR("42"), json::value::object(), true);
+    auto callback_found = callback_mgr.invoke_callback("42", json::value::object(), true);
 
     ASSERT_FALSE(callback_found);
 }
@@ -84,7 +84,7 @@ TEST(callback_manager_remove, remove_removes_callback_and_returns_true_for_valid
 TEST(callback_manager_remove, remove_returns_false_for_invalid_callback_id)
 {
     callback_manager callback_mgr{ json::value::object() };
-    ASSERT_FALSE(callback_mgr.remove_callback(_XPLATSTR("42")));
+    ASSERT_FALSE(callback_mgr.remove_callback("42"));
 }
 
 TEST(callback_manager_clear, clear_invokes_all_callbacks)

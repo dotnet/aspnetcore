@@ -18,7 +18,7 @@ namespace signalr
     }
 
     // note: callback must not throw except for the `on_progress` callback which will never be invoked from the dtor
-    utility::string_t callback_manager::register_callback(const std::function<void(const web::json::value&)>& callback)
+    std::string callback_manager::register_callback(const std::function<void(const web::json::value&)>& callback)
     {
         auto callback_id = get_callback_id();
 
@@ -33,7 +33,7 @@ namespace signalr
 
 
     // invokes a callback and stops tracking it if remove callback set to true
-    bool callback_manager::invoke_callback(const utility::string_t& callback_id, const web::json::value& arguments, bool remove_callback)
+    bool callback_manager::invoke_callback(const std::string& callback_id, const web::json::value& arguments, bool remove_callback)
     {
         std::function<void(const web::json::value& arguments)> callback;
 
@@ -58,7 +58,7 @@ namespace signalr
         return true;
     }
 
-    bool callback_manager::remove_callback(const utility::string_t& callback_id)
+    bool callback_manager::remove_callback(const std::string& callback_id)
     {
         {
             std::lock_guard<std::mutex> lock(m_map_lock);
@@ -81,10 +81,10 @@ namespace signalr
         }
     }
 
-    utility::string_t callback_manager::get_callback_id()
+    std::string callback_manager::get_callback_id()
     {
         const auto callback_id = m_id++;
-        utility::stringstream_t ss;
+        std::stringstream ss;
         ss << callback_id;
         return ss.str();
     }

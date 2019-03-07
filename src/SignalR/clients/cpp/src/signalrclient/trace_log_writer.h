@@ -10,6 +10,6 @@ namespace signalr
     class trace_log_writer : public log_writer
     {
     public:
-        void __cdecl write(const utility::string_t &entry) override;
+        void __cdecl write(const std::string &entry) override;
     };
 }

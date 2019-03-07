@@ -3,22 +3,20 @@
 
 #pragma once
 
-#include "cpprest/details/basic_types.h"
-
 namespace signalr
 {
     struct available_transport
     {
-        utility::string_t transport;
-        std::vector<utility::string_t> transfer_formats;
+        std::string transport;
+        std::vector<std::string> transfer_formats;
     };
 
     struct negotiation_response
     {
-        utility::string_t connectionId;
+        std::string connectionId;
         std::vector<available_transport> availableTransports;
-        utility::string_t url;
-        utility::string_t accessToken;
-        utility::string_t error;
+        std::string url;
+        std::string accessToken;
+        std::string error;
     };
 }

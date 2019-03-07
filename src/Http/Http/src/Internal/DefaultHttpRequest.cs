@@ -171,10 +171,10 @@ namespace Microsoft.AspNetCore.Http.Internal
             set { RouteValuesFeature.RouteValues = value; }
         }
 
-        public override PipeReader BodyPipe
+        public override PipeReader BodyReader
         {
-            get { return RequestBodyPipeFeature.RequestBodyPipe; }
-            set { RequestBodyPipeFeature.RequestBodyPipe = value; }
+            get { return RequestBodyPipeFeature.Reader; }
+            set { RequestBodyPipeFeature.Reader = value; }
         }
 
         struct FeatureInterfaces

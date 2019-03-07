@@ -4,7 +4,7 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Connections.Abstractions
+namespace Microsoft.AspNetCore.Internal
 {
     internal class UrlDecoder
     {
@@ -13,8 +13,9 @@ namespace Microsoft.AspNetCore.Connections.Abstractions
         /// </summary>
         /// <param name="source">The byte span represents a UTF8 encoding url path.</param>
         /// <param name="destination">The byte span where unescaped url path is copied to.</param>
+        /// <param name="isFormEncoding">Whether we are doing form encoding or not.</param>
         /// <returns>The length of the byte sequence of the unescaped url path.</returns>
-        public static int Decode(ReadOnlySpan<byte> source, Span<byte> destination)
+        public static int DecodeRequestLine(ReadOnlySpan<byte> source, Span<byte> destination, bool isFormEncoding)
         {
             if (destination.Length < source.Length)
             {
@@ -25,19 +26,20 @@ namespace Microsoft.AspNetCore.Connections.Abstractions
 
             // This requires the destination span to be larger or equal to source span
             source.CopyTo(destination);
-            return DecodeInPlace(destination);
+            return DecodeInPlace(destination, isFormEncoding);
         }
 
         /// <summary>
         /// Unescape a URL path in place.
         /// </summary>
         /// <param name="buffer">The byte span represents a UTF8 encoding url path.</param>
+        /// <param name="isFormEncoding">Whether we are doing form encoding or not.</param>
         /// <returns>The number of the bytes representing the result.</returns>
         /// <remarks>
         /// The unescape is done in place, which means after decoding the result is the subset of
         /// the input span.
         /// </remarks>
-        public static int DecodeInPlace(Span<byte> buffer)
+        public static int DecodeInPlace(Span<byte> buffer, bool isFormEncoding)
         {
             // the slot to read the input
             var sourceIndex = 0;
@@ -52,7 +54,12 @@ namespace Microsoft.AspNetCore.Connections.Abstractions
                     break;
                 }
 
-                if (buffer[sourceIndex] == '%')
+                if (buffer[sourceIndex] == '+' && isFormEncoding)
+                {
+                    // Set it to ' ' when we are doing form encoding.
+                    buffer[sourceIndex] = 0x20;
+                }
+                else if (buffer[sourceIndex] == '%')
                 {
                     var decodeIndex = sourceIndex;
 
@@ -63,7 +70,7 @@ namespace Microsoft.AspNetCore.Connections.Abstractions
                     // The decodeReader iterator is always moved to the first byte not yet
                     // be scanned after the process. A failed decoding means the chars
                     // between the reader and decodeReader can be copied to output untouched.
-                    if (!DecodeCore(ref decodeIndex, ref destinationIndex, buffer))
+                    if (!DecodeCore(ref decodeIndex, ref destinationIndex, buffer, isFormEncoding))
                     {
                         Copy(sourceIndex, decodeIndex, ref destinationIndex, buffer);
                     }
@@ -85,11 +92,12 @@ namespace Microsoft.AspNetCore.Connections.Abstractions
         /// <param name="sourceIndex">The iterator point to the first % char</param>
         /// <param name="destinationIndex">The place to write to</param>
         /// <param name="buffer">The byte array</param>
-        private static bool DecodeCore(ref int sourceIndex, ref int destinationIndex, Span<byte> buffer)
+        /// <param name="isFormEncoding">Whether we are doing form encodoing</param>
+        private static bool DecodeCore(ref int sourceIndex, ref int destinationIndex, Span<byte> buffer, bool isFormEncoding)
         {
             // preserves the original head. if the percent-encodings cannot be interpreted as sequence of UTF-8 octets,
             // bytes from this till the last scanned one will be copied to the memory pointed by writer.
-            var byte1 = UnescapePercentEncoding(ref sourceIndex, buffer);
+            var byte1 = UnescapePercentEncoding(ref sourceIndex, buffer, isFormEncoding);
             if (byte1 == -1)
             {
                 return false;
@@ -150,7 +158,7 @@ namespace Microsoft.AspNetCore.Connections.Abstractions
                 }
 
                 var nextSourceIndex = sourceIndex;
-                var nextByte = UnescapePercentEncoding(ref nextSourceIndex, buffer);
+                var nextByte = UnescapePercentEncoding(ref nextSourceIndex, buffer, isFormEncoding);
                 if (nextByte == -1)
                 {
                     return false;
@@ -249,8 +257,9 @@ namespace Microsoft.AspNetCore.Connections.Abstractions
         /// </summary>
         /// <param name="scan">The value to read</param>
         /// <param name="buffer">The byte array</param>
+        /// <param name="isFormEncoding">Whether we are decoding a form or not. Will escape '/' if we are doing form encoding</param>
         /// <returns>The unescaped byte if success. Otherwise return -1.</returns>
-        private static int UnescapePercentEncoding(ref int scan, Span<byte> buffer)
+        private static int UnescapePercentEncoding(ref int scan, Span<byte> buffer, bool isFormEncoding)
         {
             if (buffer[scan++] != '%')
             {
@@ -271,7 +280,7 @@ namespace Microsoft.AspNetCore.Connections.Abstractions
                 return -1;
             }
 
-            if (SkipUnescape(value1, value2))
+            if (SkipUnescape(value1, value2, isFormEncoding))
             {
                 return -1;
             }
@@ -321,8 +330,13 @@ namespace Microsoft.AspNetCore.Connections.Abstractions
             }
         }
 
-        private static bool SkipUnescape(int value1, int value2)
+        private static bool SkipUnescape(int value1, int value2, bool isFormEncoding)
         {
+            if (isFormEncoding)
+            {
+                return false;
+            }
+
             // skip %2F - '/'
             if (value1 == 2 && value2 == 15)
             {
@@ -331,6 +345,5 @@ namespace Microsoft.AspNetCore.Connections.Abstractions
 
             return false;
         }
-
     }
 }

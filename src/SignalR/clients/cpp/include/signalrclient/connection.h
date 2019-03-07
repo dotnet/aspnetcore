@@ -19,9 +19,9 @@ namespace signalr
     class connection
     {
     public:
-        typedef std::function<void __cdecl(const utility::string_t&)> message_received_handler;
+        typedef std::function<void __cdecl(const std::string&)> message_received_handler;
 
-        SIGNALRCLIENT_API explicit connection(const utility::string_t& url, trace_level trace_level = trace_level::all, std::shared_ptr<log_writer> log_writer = nullptr);
+        SIGNALRCLIENT_API explicit connection(const std::string& url, trace_level trace_level = trace_level::all, std::shared_ptr<log_writer> log_writer = nullptr);
 
         SIGNALRCLIENT_API ~connection();
 
@@ -31,7 +31,7 @@ namespace signalr
 
         SIGNALRCLIENT_API pplx::task<void> __cdecl start();
 
-        SIGNALRCLIENT_API pplx::task<void> __cdecl send(const utility::string_t& data);
+        SIGNALRCLIENT_API pplx::task<void> __cdecl send(const std::string& data);
 
         SIGNALRCLIENT_API void __cdecl set_message_received(const message_received_handler& message_received_callback);
         SIGNALRCLIENT_API void __cdecl set_disconnected(const std::function<void __cdecl()>& disconnected_callback);
@@ -41,7 +41,7 @@ namespace signalr
         SIGNALRCLIENT_API pplx::task<void> __cdecl stop();
 
         SIGNALRCLIENT_API connection_state __cdecl get_connection_state() const noexcept;
-        SIGNALRCLIENT_API utility::string_t __cdecl get_connection_id() const;
+        SIGNALRCLIENT_API std::string __cdecl get_connection_id() const;
 
     private:
         // The recommended smart pointer to use when doing pImpl is the `std::unique_ptr`. However

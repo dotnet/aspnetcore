@@ -58,6 +58,7 @@ namespace Templates.Test
             {
                 var relativePath = file.Replace(TemplateOutputDir, "").Replace("\\", "/").Trim('/');
                 if (relativePath.EndsWith(".csproj", StringComparison.Ordinal) ||
+                    relativePath.EndsWith(".fsproj", StringComparison.Ordinal) ||
                     relativePath.EndsWith(".props", StringComparison.Ordinal) ||
                     relativePath.EndsWith(".targets", StringComparison.Ordinal) ||
                     relativePath.StartsWith("bin/", StringComparison.Ordinal) ||

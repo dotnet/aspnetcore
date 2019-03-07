@@ -9,7 +9,6 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 
 namespace Microsoft.AspNetCore.StaticFiles
@@ -23,6 +22,10 @@ namespace Microsoft.AspNetCore.StaticFiles
 
         private HtmlEncoder _htmlEncoder;
 
+        /// <summary>
+        /// Constructs the <see cref="HtmlDirectoryFormatter"/>.
+        /// </summary>
+        /// <param name="encoder">The character encoding representation to use.</param>
         public HtmlDirectoryFormatter(HtmlEncoder encoder)
         {
             if (encoder == null)

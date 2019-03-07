@@ -69,7 +69,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         /// <returns><see cref="Task"/> that represents the asynchronous execution operation.</returns>
         public virtual Task OnConnectionDownAsync(Circuit circuit, CancellationToken cancellationToken) => Task.CompletedTask;
 
-
         /// <summary>
         /// Invoked when a new circuit is being discarded.
         /// </summary>

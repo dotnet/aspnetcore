@@ -72,7 +72,11 @@ namespace Microsoft.AspNetCore.StaticFiles
         {
             var fileContext = new StaticFileContext(context, _options, _matchUrl, _logger, _fileProvider, _contentTypeProvider);
 
-            if (!fileContext.ValidateMethod())
+            if (!fileContext.ValidateNoEndpoint())
+            {
+                _logger.EndpointMatched();
+            }
+            else if (!fileContext.ValidateMethod())
             {
                 _logger.RequestMethodNotSupported(context.Request.Method);
             }
