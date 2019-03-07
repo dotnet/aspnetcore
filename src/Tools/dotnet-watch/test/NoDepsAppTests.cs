@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         }
 
         [ConditionalFact]
-        [SkipOnHelix]
+        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/8267
         public async Task RestartProcessOnFileChange()
         {
             await _app.StartWatcherAsync(new[] { "--no-exit" });
@@ -44,7 +44,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         }
 
         [ConditionalFact]
-        [SkipOnHelix]
+        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/8267
         public async Task RestartProcessThatTerminatesAfterFileChange()
         {
             await _app.StartWatcherAsync();
