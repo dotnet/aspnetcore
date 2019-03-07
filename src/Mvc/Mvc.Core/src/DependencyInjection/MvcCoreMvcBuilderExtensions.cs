@@ -85,7 +85,14 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(assembly));
             }
 
-            builder.ConfigureApplicationPartManager(manager => manager.ApplicationParts.Add(new AssemblyPart(assembly)));
+            builder.ConfigureApplicationPartManager(manager =>
+            {
+                var partFactory = ApplicationPartFactory.GetApplicationPartFactory(assembly);
+                foreach (var applicationPart in partFactory.GetApplicationParts(assembly))
+                {
+                    manager.ApplicationParts.Add(applicationPart);
+                }
+            });
 
             return builder;
         }
