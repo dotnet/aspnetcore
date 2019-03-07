@@ -350,7 +350,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             var result = await manager.CreateAsync(user);
             Assert.NotNull(user);
             user.SecurityStamp = null;
-            IdentityResultAssert.IsSuccess(await manager.UpdateUserAsync(user));
+            IdentityResultAssert.IsSuccess(await manager.UpdateAsync(user));
             await Assert.ThrowsAsync<InvalidOperationException>(async () => await manager.GetSecurityStampAsync(user));
         }
 
