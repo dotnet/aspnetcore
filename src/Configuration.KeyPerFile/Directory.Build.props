@@ -4,5 +4,6 @@
   <PropertyGroup>
     <GenerateDocumentationFile Condition=" '$(IsUnitTestProject)' != 'true' AND '$(IsSampleProject)' != 'true' ">true</GenerateDocumentationFile>
     <PackageTags>configuration</PackageTags>
+    <NoWarn>$(NoWarn);PKG0001</NoWarn>
   </PropertyGroup>
 </Project>
