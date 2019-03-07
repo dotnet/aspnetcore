@@ -699,6 +699,26 @@ namespace Microsoft.AspNetCore.Identity.Test
         /// </summary>
         /// <returns>Task</returns>
         [Fact]
+        public async Task GetSecurityStampThrowsIfNull()
+        {
+            if (ShouldSkipDbTests())
+            {
+                return;
+            }
+            var manager = CreateManager();
+            var user = CreateTestUser();
+            var result = await manager.CreateAsync(user);
+            Assert.NotNull(user);
+            user.SecurityStamp = null;
+            IdentityResultAssert.IsSuccess(await manager.UpdateUserAsync(user));
+            await Assert.ThrowsAsync<InvalidOperationException>(async () => await manager.GetSecurityStampAsync(user));
+        }
+
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
+        [Fact]
         public async Task CanRemovePassword()
         {
             if (ShouldSkipDbTests())
