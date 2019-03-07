@@ -50,7 +50,7 @@ public class HubConnection {
     private long tickRate = 1000;
     private CompletableSubject handshakeResponseSubject;
     private long handshakeResponseTimeout = 15*1000;
-    private Map<String, Observable> streamMap = new HashMap<>();
+    private Map<String, Observable> streamMap = new ConcurrentHashMap<>();
     private TransportEnum transportEnum = TransportEnum.ALL;
     private final Logger logger = LoggerFactory.getLogger(HubConnection.class);
 
@@ -497,15 +497,29 @@ public class HubConnection {
             throw new RuntimeException("The 'send' method cannot be called if the connection is not active.");
         }
 
+        sendInvocationMessage(method, args);
+    }
+
+    private void sendInvocationMessage(String method, Object[] args) {
+        sendInvocationMessage(method, args, null, false);
+    }
+
+    private void sendInvocationMessage(String method, Object[] args, String id, Boolean isStreamInvocation) {
         List<String> streamIds = new ArrayList<>();
-        args  = checkUploadStream(args, streamIds);
-        InvocationMessage invocationMessage = new InvocationMessage(null, method, args, streamIds);
+        args = checkUploadStream(args, streamIds);
+        InvocationMessage invocationMessage;
+        if (isStreamInvocation) {
+            invocationMessage = new StreamInvocationMessage(id, method, args, streamIds);
+        } else {
+            invocationMessage = new InvocationMessage(id, method, args, streamIds);
+        }
+
         sendHubMessage(invocationMessage);
         launchStreams(streamIds);
     }
 
     void launchStreams(List<String> streamIds) {
-        if(streamMap.isEmpty()) {
+        if (streamMap.isEmpty()) {
             return;
         }
 
@@ -549,9 +563,6 @@ public class HubConnection {
         }
 
         String id = connectionState.getNextInvocationId();
-        List<String> streamIds = new ArrayList<>();
-        args = checkUploadStream(args, streamIds);
-        InvocationMessage invocationMessage = new InvocationMessage(id, method, args, streamIds);
 
         SingleSubject<T> subject = SingleSubject.create();
         InvocationRequest irq = new InvocationRequest(returnType, id);
@@ -571,8 +582,7 @@ public class HubConnection {
 
         // Make sure the actual send is after setting up the callbacks otherwise there is a race
         // where the map doesn't have the callbacks yet when the response is returned
-        sendHubMessage(invocationMessage);
-        launchStreams(streamIds);
+        sendInvocationMessage(method, args, id, false);
         return subject;
     }
 
@@ -588,10 +598,7 @@ public class HubConnection {
     @SuppressWarnings("unchecked")
     public <T> Observable<T> stream(Class<T> returnType, String method, Object ... args) {
         String invocationId = connectionState.getNextInvocationId();
-        List<String> streamIds = new ArrayList<>();
-        args = checkUploadStream(args, streamIds);
         AtomicInteger subscriptionCount = new AtomicInteger();
-        StreamInvocationMessage streamInvocationMessage = new StreamInvocationMessage(invocationId, method, args, streamIds);
         InvocationRequest irq = new InvocationRequest(returnType, invocationId);
         connectionState.addInvocation(irq);
         ReplaySubject<T> subject = ReplaySubject.create();
@@ -607,10 +614,8 @@ public class HubConnection {
         }, error -> subject.onError(error),
                 () -> subject.onComplete());
 
-        sendHubMessage(streamInvocationMessage);
         Observable<T> observable = subject.doOnSubscribe((subscriber) -> subscriptionCount.incrementAndGet());
-        launchStreams(streamIds);
-
+        sendInvocationMessage(method, args, invocationId, true);
         return observable.doOnDispose(() -> {
             if (subscriptionCount.decrementAndGet() == 0) {
                 CancelInvocationMessage cancelInvocationMessage = new CancelInvocationMessage(invocationId);
@@ -621,7 +626,7 @@ public class HubConnection {
         });
     }
 
-    private Completable sendHubMessage(HubMessage message) {
+    private void sendHubMessage(HubMessage message) {
         String serializedMessage = protocol.writeMessage(message);
         if (message.getMessageType() == HubMessageType.INVOCATION ) {
             logger.debug("Sending {} message '{}'.", message.getMessageType().name(), ((InvocationMessage)message).getInvocationId());
@@ -630,10 +635,9 @@ public class HubConnection {
         } else {
             logger.debug("Sending {} message.", message.getMessageType().name());
         }
-        Completable sendCompletable = transport.send(serializedMessage).subscribeWith(CompletableSubject.create());
 
+        transport.send(serializedMessage).subscribeWith(CompletableSubject.create());
         resetKeepAlive();
-        return sendCompletable;
     }
 
     private void resetServerTimeout() {

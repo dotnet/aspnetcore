@@ -6,7 +6,7 @@ package com.microsoft.signalr;
 import java.util.Collection;
 
 class InvocationMessage extends HubMessage {
-    private final int type = HubMessageType.INVOCATION.value;
+    int type = HubMessageType.INVOCATION.value;
     private final String invocationId;
     private final String target;
     private final Object[] arguments;

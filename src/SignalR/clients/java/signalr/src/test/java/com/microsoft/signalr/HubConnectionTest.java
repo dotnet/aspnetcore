@@ -497,6 +497,7 @@ class HubConnectionTest {
 
         String[] messages = mockTransport.getSentMessages();
         assertEquals(3, messages.length);
+        assertEquals("{\"type\":4,\"invocationId\":\"1\",\"target\":\"UploadStream\",\"arguments\":[],\"streamIds\":[\"2\"]}\u001E", messages[1]);
         assertEquals("{\"type\":2,\"invocationId\":\"2\",\"item\":\"FirstItem\"}\u001E", messages[2]);
 
         stream.onComplete();
