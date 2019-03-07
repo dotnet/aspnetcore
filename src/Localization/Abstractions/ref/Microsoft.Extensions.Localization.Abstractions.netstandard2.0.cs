@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.Localization
         Microsoft.Extensions.Localization.IStringLocalizer Create(string baseName, string location);
         Microsoft.Extensions.Localization.IStringLocalizer Create(System.Type resourceSource);
     }
-    public partial interface IStringLocalizer<T> : Microsoft.Extensions.Localization.IStringLocalizer
+    public partial interface IStringLocalizer<out T> : Microsoft.Extensions.Localization.IStringLocalizer
     {
     }
     public partial class LocalizedString
