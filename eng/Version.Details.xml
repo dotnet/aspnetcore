@@ -361,6 +361,7 @@
       <Uri>https://github.com/dotnet/core-setup</Uri>
       <Sha>ed6636c463f0ac5fe4183348b6b18e57c8345cb5</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.NETCore.App" Version="3.0.0-preview4-27506-4">
       <Uri>https://github.com/dotnet/core-setup</Uri>
       <Sha>ed6636c463f0ac5fe4183348b6b18e57c8345cb5</Sha>
     </Dependency>
