@@ -3513,6 +3513,217 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
+        public async Task ResponseAdvanceStateIsResetWithMultipleReqeusts()
+        {
+            var secondRequest = false;
+            using (var server = new TestServer(async httpContext =>
+            {
+                if (secondRequest)
+                {
+                    return;
+                }
+
+                var memory = httpContext.Response.BodyWriter.GetMemory();
+                Encoding.ASCII.GetBytes("a").CopyTo(memory);
+                httpContext.Response.BodyWriter.Advance(1);
+                await httpContext.Response.BodyWriter.FlushAsync();
+                secondRequest = true;
+
+            }, new TestServiceContext(LoggerFactory)))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "1",
+                        "a",
+                        "0",
+                        "",
+                        "");
+
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task ResponseStartCalledAndAutoChunkStateIsResetWithMultipleReqeusts()
+        {
+            using (var server = new TestServer(async httpContext =>
+            {
+                var memory = httpContext.Response.BodyWriter.GetMemory();
+                Encoding.ASCII.GetBytes("a").CopyTo(memory);
+                httpContext.Response.BodyWriter.Advance(1);
+                await httpContext.Response.BodyWriter.FlushAsync();
+
+            }, new TestServiceContext(LoggerFactory)))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "1",
+                        "a",
+                        "0",
+                        "",
+                        "");
+
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "1",
+                        "a",
+                        "0",
+                        "",
+                        "");
+                }
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task ResponseStartCalledStateIsResetWithMultipleReqeusts()
+        {
+            var flip = false;
+            using (var server = new TestServer(async httpContext =>
+            {
+                if (flip)
+                {
+                    httpContext.Response.ContentLength = 1;
+                    var memory = httpContext.Response.BodyWriter.GetMemory();
+                    Encoding.ASCII.GetBytes("a").CopyTo(memory);
+                    httpContext.Response.BodyWriter.Advance(1);
+                    await httpContext.Response.BodyWriter.FlushAsync();
+                }
+                else
+                {
+                    var memory = httpContext.Response.BodyWriter.GetMemory();
+                    Encoding.ASCII.GetBytes("a").CopyTo(memory);
+                    httpContext.Response.BodyWriter.Advance(1);
+                    await httpContext.Response.BodyWriter.FlushAsync();
+                }
+                flip = !flip;
+
+            }, new TestServiceContext(LoggerFactory)))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    for (var i = 0; i < 3; i++)
+                    {
+                        await connection.Send(
+                            "GET / HTTP/1.1",
+                            "Host:",
+                            "",
+                            "");
+                        await connection.Receive(
+                            "HTTP/1.1 200 OK",
+                            $"Date: {server.Context.DateHeaderValue}",
+                            "Transfer-Encoding: chunked",
+                            "",
+                            "1",
+                            "a",
+                            "0",
+                            "",
+                            "");
+
+                        await connection.Send(
+                            "GET / HTTP/1.1",
+                            "Host:",
+                            "",
+                            "");
+                        await connection.Receive(
+                            "HTTP/1.1 200 OK",
+                            $"Date: {server.Context.DateHeaderValue}",
+                            "Content-Length: 1",
+                            "",
+                            "a");
+                    }
+                }
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task ResponseIsLeasedMemoryInvalidStateIsResetWithMultipleReqeusts()
+        {
+            var secondRequest = false;
+            using (var server = new TestServer(httpContext =>
+            {
+                if (secondRequest)
+                {
+                    Assert.Throws<InvalidOperationException>(() => httpContext.Response.BodyWriter.Advance(1));
+                    return Task.CompletedTask;
+                }
+
+                var memory = httpContext.Response.BodyWriter.GetMemory();
+                return Task.CompletedTask;
+            }, new TestServiceContext(LoggerFactory)))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
         public async Task ResponsePipeWriterCompleteWithException()
         {
             var expectedException = new Exception();

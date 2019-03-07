@@ -2680,8 +2680,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             };
             await InitializeConnectionAsync(async httpContext =>
             {
-                await httpContext.Response.StartAsync();
                 var response = httpContext.Response;
+                await response.StartAsync();
                 var memory = response.BodyWriter.GetMemory();
                 var fisrtPartOfResponse = Encoding.ASCII.GetBytes("hello,");
                 fisrtPartOfResponse.CopyTo(memory);
@@ -2727,7 +2727,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await InitializeConnectionAsync(async httpContext =>
             {
                 var response = httpContext.Response;
-
+                await response.StartAsync();
                 var memory = response.BodyWriter.GetMemory();
                 Assert.Equal(4096, memory.Length);
                 var fisrtPartOfResponse = Encoding.ASCII.GetBytes(new string('a', memory.Length));
@@ -3059,6 +3059,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await InitializeConnectionAsync(async httpContext =>
             {
                 var response = httpContext.Response;
+                await response.StartAsync();
                 var memory = response.BodyWriter.GetMemory(4096);
                 var fisrtPartOfResponse = Encoding.ASCII.GetBytes("hello,");
                 fisrtPartOfResponse.CopyTo(memory);
@@ -3170,11 +3171,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 new KeyValuePair<string, string>(HeaderNames.Path, "/"),
                 new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
             };
-            await InitializeConnectionAsync(async httpContext =>
+            await InitializeConnectionAsync(httpContext =>
             {
                 var response = httpContext.Response;
                 response.ContentLength = 12;
-                await Task.CompletedTask;
 
                 var memory = response.BodyWriter.GetMemory(4096);
                 var fisrtPartOfResponse = Encoding.ASCII.GetBytes("Hello ");
@@ -3184,6 +3184,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var secondPartOfResponse = Encoding.ASCII.GetBytes("World!");
                 secondPartOfResponse.CopyTo(memory.Slice(6));
                 response.BodyWriter.Advance(6);
+                return Task.CompletedTask;
             });
 
             await StartStreamAsync(1, headers, endStream: true);

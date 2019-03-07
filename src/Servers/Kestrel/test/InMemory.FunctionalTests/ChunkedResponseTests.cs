@@ -579,8 +579,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             {
                 var response = httpContext.Response;
 
-                await response.StartAsync();
-
                 await response.BodyWriter.FlushAsync();
 
                 var memory = response.BodyWriter.GetMemory();
@@ -631,7 +629,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task ChunksWithGetMemoryBeforeFlushEdgeCase()
         {
-            var length = new IntAsRef();
+            var length = 0;
             var semaphore = new SemaphoreSlim(initialCount: 0);
             var testContext = new TestServiceContext(LoggerFactory);
 
@@ -642,12 +640,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 await response.StartAsync();
 
                 var memory = response.BodyWriter.GetMemory();
-                length.Value = memory.Length - 1;
+                length = memory.Length - 1;
                 semaphore.Release();
 
-                var fisrtPartOfResponse = Encoding.ASCII.GetBytes(new string('a', length.Value));
+                var fisrtPartOfResponse = Encoding.ASCII.GetBytes(new string('a', length));
                 fisrtPartOfResponse.CopyTo(memory);
-                response.BodyWriter.Advance(length.Value);
+                response.BodyWriter.Advance(length);
 
                 var secondMemory = response.BodyWriter.GetMemory(6);
 
@@ -674,8 +672,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         $"Date: {testContext.DateHeaderValue}",
                         "Transfer-Encoding: chunked",
                         "",
-                        length.Value.ToString("x"),
-                        new string('a', length.Value),
+                        length.ToString("x"),
+                        new string('a', length),
                         "6",
                         "World!",
                         "0",

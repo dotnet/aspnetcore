@@ -27,6 +27,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         // "0\r\n\r\n"
         private static ReadOnlySpan<byte> EndChunkedResponseBytes => new byte[] { (byte)'0', (byte)'\r', (byte)'\n', (byte)'\r', (byte)'\n' };
 
+        private const int BeginChunkLengthMax = 5;
+        private const int EndChunkLength = 2;
+
         private readonly string _connectionId;
         private readonly ConnectionContext _connectionContext;
         private readonly IKestrelTrace _log;
@@ -41,27 +44,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private bool _completed;
         private bool _aborted;
         private long _unflushedBytes;
-        private bool _autoChunk;
+
         private readonly PipeWriter _pipeWriter;
-        private const int BeginChunkLengthMax = 5;
-        private const int EndChunkLength = 2;
+        private IMemoryOwner<byte> _fakeMemoryOwner;
 
         // Chunked responses need to be treated uniquely when using GetMemory + Advance.
         // We need to know the size of the data written to the chunk before calling Advance on the
         // PipeWriter, meaning we internally track how far we have advanced through a current chunk (_advancedBytesForChunk).
         // Once write or flush is called, we modify the _currentChunkMemory to prepend the size of data written
         // and append the end terminator.
+
+        private bool _autoChunk; // FOR SURE
         private int _advancedBytesForChunk;
         private Memory<byte> _currentChunkMemory;
         private bool _currentChunkMemoryUpdated;
-        private IMemoryOwner<byte> _fakeMemoryOwner;
 
         // Fields needed to store writes before calling either startAsync or Write/FlushAsync
+        // These should be cleared by the end of the request
         private List<CompletedBuffer> _completedSegments;
         private Memory<byte> _currentSegment;
         private IMemoryOwner<byte> _currentSegmentOwner;
         private int _position;
-        private bool _startCalled;
+        private bool _startCalled; // FOR SURE
 
         public Http1OutputProducer(
             PipeWriter pipeWriter,
@@ -260,6 +264,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     var writer = new BufferWriter<PipeWriter>(_pipeWriter);
                     CommitChunkInternal(ref writer, buffer);
+                    _unflushedBytes += writer.BytesCommitted;
                 }
             }
 
@@ -282,7 +287,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             writer.Commit();
-            _unflushedBytes += writer.BytesCommitted;
         }
 
         public void WriteResponseHeaders(int statusCode, string reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk)
@@ -312,8 +316,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             _autoChunk = autoChunk;
             WriteDataWrittenBeforeHeaders(ref writer);
-
             _unflushedBytes += writer.BytesCommitted;
+
             _startCalled = true;
         }
 
@@ -465,6 +469,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 WriteResponseHeadersInternal(ref writer, statusCode, reasonPhrase, responseHeaders, autoChunk);
 
                 CommitChunkInternal(ref writer, buffer);
+
+                _unflushedBytes += writer.BytesCommitted;
 
                 return FlushAsync(cancellationToken);
             }
@@ -645,6 +651,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             _position = 0;
+        }
+
+        public void Reset()
+        {
+            _autoChunk = false;
+            _startCalled = false;
         }
 
         /// <summary>

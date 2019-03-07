@@ -388,6 +388,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
             }
 
+            Output?.Reset();
+
             _requestHeadersParsed = 0;
 
             _responseBytesWritten = 0;
