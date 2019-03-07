@@ -473,17 +473,14 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             MediaTypeHeaderValue contentType,
             MemoryStream responseStream = null)
         {
-            var request = new Mock<HttpRequest>();
-            var headers = new HeaderDictionary();
-            request.Setup(r => r.ContentType).Returns(contentType.ToString());
-            request.SetupGet(r => r.Headers).Returns(headers);
-            headers[HeaderNames.AcceptCharset] = contentType.Charset.ToString();
-            var response = new Mock<HttpResponse>();
-            response.SetupGet(f => f.Body).Returns(responseStream ?? new MemoryStream());
-            var httpContext = new Mock<HttpContext>();
-            httpContext.SetupGet(c => c.Request).Returns(request.Object);
-            httpContext.SetupGet(c => c.Response).Returns(response.Object);
-            return new ActionContext(httpContext.Object, new RouteData(), new ActionDescriptor());
+            var context = new DefaultHttpContext();
+            context.Request.ContentType = contentType.ToString();
+            context.Request.Headers[HeaderNames.AcceptCharset] = contentType.Charset.ToString();
+            if (responseStream != null)
+            {
+                context.Response.Body = responseStream;
+            }
+            return new ActionContext(context, new RouteData(), new ActionDescriptor());
         }
 
         private class TestableJsonOutputFormatter : NewtonsoftJsonOutputFormatter
