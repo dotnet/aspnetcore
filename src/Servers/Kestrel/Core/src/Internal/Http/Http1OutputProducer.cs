@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         // Once write or flush is called, we modify the _currentChunkMemory to prepend the size of data written
         // and append the end terminator.
 
-        private bool _autoChunk; // FOR SURE
+        private bool _autoChunk;
         private int _advancedBytesForChunk;
         private Memory<byte> _currentChunkMemory;
         private bool _currentChunkMemoryUpdated;
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private Memory<byte> _currentSegment;
         private IMemoryOwner<byte> _currentSegmentOwner;
         private int _position;
-        private bool _startCalled; // FOR SURE
+        private bool _startCalled;
 
         public Http1OutputProducer(
             PipeWriter pipeWriter,
@@ -476,6 +476,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
+        public void Reset()
+        {
+            Debug.Assert(_currentSegmentOwner == null);
+            Debug.Assert(_completedSegments == null || _completedSegments.Count == 0);
+            _autoChunk = false;
+            _startCalled = false;
+            _currentChunkMemoryUpdated = false;
+        }
+
         private ValueTask<FlushResult> WriteAsync(
             ReadOnlySpan<byte> buffer,
             CancellationToken cancellationToken = default)
@@ -653,11 +662,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _position = 0;
         }
 
-        public void Reset()
-        {
-            _autoChunk = false;
-            _startCalled = false;
-        }
 
         /// <summary>
         /// Holds a byte[] from the pool and a size value. Basically a Memory but guaranteed to be backed by an ArrayPool byte[], so that we know we can return it.
