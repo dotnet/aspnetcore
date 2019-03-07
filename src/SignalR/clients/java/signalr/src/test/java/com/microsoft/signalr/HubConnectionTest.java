@@ -16,6 +16,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.ReplaySubject;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import io.reactivex.Observable;
@@ -1494,7 +1495,8 @@ class HubConnectionTest {
         assertEquals("{\"protocol\":\"json\",\"version\":1}" + RECORD_SEPARATOR, sentMessages[0]);
     }
 
-    // Github issue:https://github.com/aspnet/AspNetCore/issues/8262
+    @Disabled("https://github.com/aspnet/AspNetCore/issues/8262")
+    @Test
     public void TransportAllUsesLongPollingWhenServerOnlySupportLongPolling() {
         AtomicInteger requestCount = new AtomicInteger(0);
         TestHttpClient client = new TestHttpClient().on("POST",
