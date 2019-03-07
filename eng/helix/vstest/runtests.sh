@@ -58,7 +58,7 @@ export DOTNET_MULTILEVEL_LOOKUP=0
 # Avoid contaminating userprofiles
 export DOTNET_CLI_HOME="$HELIX_CORRELATION_PAYLOAD/home"
 
-export helix="true"
+export helix="$4"
 
 $DOTNET_ROOT/dotnet vstest $1 -lt >discovered.txt
 if grep -q "Exception thrown" discovered.txt; then
