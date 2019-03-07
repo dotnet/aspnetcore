@@ -1494,7 +1494,7 @@ class HubConnectionTest {
         assertEquals("{\"protocol\":\"json\",\"version\":1}" + RECORD_SEPARATOR, sentMessages[0]);
     }
 
-    @Test
+    // Github issue:https://github.com/aspnet/AspNetCore/issues/8262
     public void TransportAllUsesLongPollingWhenServerOnlySupportLongPolling() {
         AtomicInteger requestCount = new AtomicInteger(0);
         TestHttpClient client = new TestHttpClient().on("POST",
