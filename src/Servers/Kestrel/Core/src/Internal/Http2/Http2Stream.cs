@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 this,
                 context.ServiceContext.Log);
 
-            RequestBodyPipe = CreateRequestBodyPipe(context.ServerPeerSettings.InitialWindowSize * 10000); // TODO Once corefx is updated remove this
+            RequestBodyPipe = CreateRequestBodyPipe(int.MaxValue); // TODO Once corefx is updated remove this
             Output = _http2Output;
         }
 

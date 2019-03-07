@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
     {
         private readonly Http2Stream _context;
         private ReadResult _readResult;
-        private long _totalExaminedInReadResult;
+        private long _totalExaminedInPreviousReadResult;
 
         private Http2MessageBody(Http2Stream context, MinDataRate minRequestBodyDataRate)
             : base(context, minRequestBodyDataRate)
@@ -67,36 +67,46 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             // This code path is fairly hard to understand so let's break it down with an example
             // ReadAsync returns a ReadResult of length 50.
             // Advance(25, 40). The examined length would be 40 and consumed length would be 25.
-            // _totalExaminedInReadResult starts at 0. newlyExamined is 40.
+            // _totalExaminedInPreviousReadResult starts at 0. newlyExamined is 40.
             // OnDataRead is called with length 40.
-            // _totalExaminedInReadResult is now 40 - 25 = 15.
+            // _totalExaminedInPreviousReadResult is now 40 - 25 = 15.
 
             // The next call to ReadAsync returns 50 again
             // Advance(5, 5) is called
             // newlyExamined is 5 - 15, or -10.
-            // Update _totalExaminedInReadResult to 10 as we consumed 5.
+            // Update _totalExaminedInPreviousReadResult to 10 as we consumed 5.
 
             // The next call to ReadAsync returns 50 again
-            // _totalExaminedInReadResult is 10
+            // _totalExaminedInPreviousReadResult is 10
             // Advance(50, 50) is called
             // newlyExamined = 50 - 10 = 40
-            // _totalExaminedInReadResult is now 50
-            // _totalExaminedInReadResult is finally 0 after subtracting consumedLength.
+            // _totalExaminedInPreviousReadResult is now 50
+            // _totalExaminedInPreviousReadResult is finally 0 after subtracting consumedLength.
 
-            var examinedLength = _readResult.Buffer.Slice(_readResult.Buffer.Start, examined).Length;
-            var consumedLength = _readResult.Buffer.Slice(_readResult.Buffer.Start, consumed).Length;
+            long examinedLength;
+            long consumedLength;
+            if (consumed.Equals(examined))
+            {
+                examinedLength = _readResult.Buffer.Slice(_readResult.Buffer.Start, examined).Length;
+                consumedLength = examinedLength;
+            }
+            else 
+            {
+                examinedLength = _readResult.Buffer.Slice(_readResult.Buffer.Start, examined).Length;
+                consumedLength = _readResult.Buffer.Slice(_readResult.Buffer.Start, consumed).Length;
+            }
 
             _context.RequestBodyPipe.Reader.AdvanceTo(consumed, examined);
             
-            var newlyExamined = examinedLength - _totalExaminedInReadResult;
+            var newlyExamined = examinedLength - _totalExaminedInPreviousReadResult;
 
             if (newlyExamined > 0)
             {
                 OnDataRead(newlyExamined);
-                _totalExaminedInReadResult += newlyExamined;
+                _totalExaminedInPreviousReadResult += newlyExamined;
             }
 
-            _totalExaminedInReadResult -= consumedLength;
+            _totalExaminedInPreviousReadResult -= consumedLength;
         }
 
         public override bool TryRead(out ReadResult readResult)
