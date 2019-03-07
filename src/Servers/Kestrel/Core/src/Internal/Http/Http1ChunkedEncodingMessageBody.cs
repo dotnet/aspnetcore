@@ -182,6 +182,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     finally
                     {
+                        var cObj = consumed.GetObject();
+                        var cIndex = consumed.GetInteger();
+
+                        var eObj = examined.GetObject();
+                        var eIndex = examined.GetInteger();
+
+                        _context.ServiceContext.Log.LogDebug($"AdvanceTo({cObj?.GetHashCode().ToString() ?? "null"}, {cIndex}, {eObj?.GetHashCode().ToString() ?? "null"}, {eIndex})");
                         _context.Input.AdvanceTo(consumed, examined);
                     }
 
