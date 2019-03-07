@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
@@ -47,6 +48,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
         {
+            var cObj = consumed.GetObject();
+            var cIndex = consumed.GetInteger();
+
+            var eObj = examined.GetObject();
+            var eIndex = examined.GetInteger();
+
+            _context.ServiceContext.Log.LogDebug($"AdvanceTo({cObj?.GetHashCode().ToString() ?? "null"}, {cIndex}, {eObj?.GetHashCode().ToString() ?? "null"}, {eIndex})");
+
             var dataLength = _readResult.Buffer.Slice(_readResult.Buffer.Start, consumed).Length;
             _requestBodyPipe.Reader.AdvanceTo(consumed, examined);
             OnDataRead(dataLength);
@@ -72,9 +81,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             TryStart();
 
+            _context.ServiceContext.Log.LogDebug("Http1ChunkedEncodingMessageBody.ReadAsync()");
+
             try
             {
                 var readAwaitable = _requestBodyPipe.Reader.ReadAsync(cancellationToken);
+
+                _context.ServiceContext.Log.LogDebug("readAwaitable.IsCompleted: " + readAwaitable.IsCompleted);
 
                 _readResult = await StartTimingReadAsync(readAwaitable, cancellationToken);
             }
@@ -82,6 +95,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 throw new TaskCanceledException("The request was aborted", ex);
             }
+            catch (Exception ex)
+            {
+                _context.ServiceContext.Log.LogDebug("Http1ChunkedEncodingMessageBody.ReadAsync threw an exception! " + ex);
+                throw;
+            }
+
+            _context.ServiceContext.Log.LogDebug(_readResult.Buffer.Length + " bytes read");
 
             StopTimingRead(_readResult.Buffer.Length);
 
@@ -212,6 +232,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected void Copy(ReadOnlySequence<byte> readableBuffer, PipeWriter writableBuffer)
         {
+
             if (readableBuffer.IsSingleSegment)
             {
                 writableBuffer.Write(readableBuffer.First.Span);
@@ -234,6 +255,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             consumed = default;
             examined = default;
+
+            _context.ServiceContext.Log.LogDebug($"Http1ChunkedEncodingMessageBody.Read({readableBuffer.Length}), Mode={_mode}");
 
             while (_mode < Mode.Trailer)
             {
