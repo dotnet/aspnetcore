@@ -697,9 +697,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await InitializeConnectionAsync(async context =>
             {
                 await context.Response.BodyWriter.FlushAsync();
-
                 var readResult = await context.Request.BodyReader.ReadAsync();
-                Assert.Equal(readResult.Buffer.Length, _maxData.Length * 4);
+                while (readResult.Buffer.Length != _maxData.Length * 4)
+                {
+                    context.Request.BodyReader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
+                    readResult = await context.Request.BodyReader.ReadAsync();
+                }
+
                 context.Request.BodyReader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
 
                 readResult = await context.Request.BodyReader.ReadAsync();
