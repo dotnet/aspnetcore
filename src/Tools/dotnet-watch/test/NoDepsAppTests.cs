@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -23,7 +24,8 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             _output = logger;
         }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix]
         public async Task RestartProcessOnFileChange()
         {
             await _app.StartWatcherAsync(new[] { "--no-exit" });
@@ -41,7 +43,8 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             Assert.NotEqual(processIdentifier, processIdentifier2);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix]
         public async Task RestartProcessThatTerminatesAfterFileChange()
         {
             await _app.StartWatcherAsync();
