@@ -59,33 +59,58 @@ namespace Microsoft.Extensions.DependencyInjection
 
         public void Configure(MvcOptions options)
         {
-            options.OutputFormatters.Add(new NewtonsoftJsonOutputFormatter(_jsonOptions.SerializerSettings, _charPool));
+            InsertBefore(
+                options.OutputFormatters,
+                "Microsoft.AspNetCore.Mvc.Formatters.JsonOutputFormatter",
+                new NewtonsoftJsonOutputFormatter(_jsonOptions.SerializerSettings, _charPool));
 
             // Register JsonPatchInputFormatter before JsonInputFormatter, otherwise
             // JsonInputFormatter would consume "application/json-patch+json" requests
             // before JsonPatchInputFormatter gets to see them.
             var jsonInputPatchLogger = _loggerFactory.CreateLogger<NewtonsoftJsonPatchInputFormatter>();
-            options.InputFormatters.Add(new NewtonsoftJsonPatchInputFormatter(
+            var jsonPatchInputFormatter = new NewtonsoftJsonPatchInputFormatter(
                 jsonInputPatchLogger,
                 _jsonOptions.SerializerSettings,
                 _charPool,
                 _objectPoolProvider,
                 options,
-                _jsonOptions));
+                _jsonOptions);
+
+            const string JsonInputFormatter = "Microsoft.AspNetCore.Mvc.Formatters.JsonInputFormatter";
+
+            InsertBefore(options.InputFormatters, JsonInputFormatter, jsonPatchInputFormatter);
 
             var jsonInputLogger = _loggerFactory.CreateLogger<NewtonsoftJsonInputFormatter>();
-            options.InputFormatters.Add(new NewtonsoftJsonInputFormatter(
+            var jsonInputFormatter = new NewtonsoftJsonInputFormatter(
                 jsonInputLogger,
                 _jsonOptions.SerializerSettings,
                 _charPool,
                 _objectPoolProvider,
                 options,
-                _jsonOptions));
+                _jsonOptions);
 
+            InsertBefore(options.InputFormatters, JsonInputFormatter, jsonInputFormatter);
             options.FormatterMappings.SetMediaTypeMappingForFormat("json", MediaTypeHeaderValues.ApplicationJson);
 
             options.ModelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider(typeof(IJsonPatchDocument)));
             options.ModelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider(typeof(JToken)));
+        }
+
+        private void InsertBefore<TFormatter>(
+            FormatterCollection<TFormatter> formatters,
+            string formatterName,
+            TFormatter formatter)
+        {
+            for (var i = 0; i < formatters.Count; i++)
+            {
+                if (formatters[i].GetType().FullName == formatterName)
+                {
+                    formatters.Insert(i, formatter);
+                    return;
+                }
+            }
+
+            formatters.Add(formatter);
         }
     }
 }
