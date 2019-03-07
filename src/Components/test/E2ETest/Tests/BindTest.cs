@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Threading.Tasks;
 using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
@@ -20,8 +21,12 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             ITestOutputHelper output)
             : base(browserFixture, serverFixture, output)
         {
+        }
+
+        protected override void InitializeAsyncCore()
+        {
             // On WebAssembly, page reloads are expensive so skip if possible
-            Navigate(ServerPathBase, noReload: !serverFixture.UsingAspNetHost);
+            Navigate(ServerPathBase, noReload: !_serverFixture.UsingAspNetHost);
             MountTestComponent<BindCasesComponent>();
         }
 
@@ -41,12 +46,12 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.Equal(string.Empty, boundValue.Text); // Doesn't update until change event
             Assert.Equal(string.Empty, mirrorValue.GetAttribute("value"));
             target.SendKeys("\t");
-            WaitAssert.Equal("Changed value", () => boundValue.Text);
+            Browser.Equal("Changed value", () => boundValue.Text);
             Assert.Equal("Changed value", mirrorValue.GetAttribute("value"));
 
             // Remove the value altogether
             setNullButton.Click();
-            WaitAssert.Equal(string.Empty, () => target.GetAttribute("value"));
+            Browser.Equal(string.Empty, () => target.GetAttribute("value"));
             Assert.Equal(string.Empty, boundValue.Text);
             Assert.Equal(string.Empty, mirrorValue.GetAttribute("value"));
         }
@@ -65,12 +70,12 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // Modify target; verify value is updated and that textboxes linked to the same data are updated
             target.Clear();
             target.SendKeys("Changed value\t");
-            WaitAssert.Equal("Changed value", () => boundValue.Text);
+            Browser.Equal("Changed value", () => boundValue.Text);
             Assert.Equal("Changed value", mirrorValue.GetAttribute("value"));
 
             // Remove the value altogether
             setNullButton.Click();
-            WaitAssert.Equal(string.Empty, () => target.GetAttribute("value"));
+            Browser.Equal(string.Empty, () => target.GetAttribute("value"));
             Assert.Equal(string.Empty, boundValue.Text);
             Assert.Equal(string.Empty, mirrorValue.GetAttribute("value"));
         }
@@ -87,7 +92,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             target.SendKeys("Changed value");
             Assert.Equal(string.Empty, boundValue.Text); // Don't update as there's no change event fired yet.
             target.SendKeys("\t");
-            WaitAssert.Equal("Changed value", () => boundValue.Text);
+            Browser.Equal("Changed value", () => boundValue.Text);
         }
 
         [Fact]
@@ -101,7 +106,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // Modify target; verify value is updated
             target.Clear();
             target.SendKeys("Changed value\t");
-            WaitAssert.Equal("Changed value", () => boundValue.Text);
+            Browser.Equal("Changed value", () => boundValue.Text);
         }
 
         [Fact]
@@ -115,13 +120,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             // Modify target; verify value is updated
             target.Click();
-            WaitAssert.True(() => target.Selected);
-            WaitAssert.Equal("True", () => boundValue.Text);
+            Browser.True(() => target.Selected);
+            Browser.Equal("True", () => boundValue.Text);
 
             // Modify data; verify checkbox is updated
             invertButton.Click();
-            WaitAssert.False(() => target.Selected);
-            WaitAssert.Equal("False", () => boundValue.Text);
+            Browser.False(() => target.Selected);
+            Browser.Equal("False", () => boundValue.Text);
         }
 
         [Fact]
@@ -135,13 +140,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             // Modify target; verify value is updated
             target.Click();
-            WaitAssert.True(() => target.Selected);
-            WaitAssert.Equal("True", () => boundValue.Text);
+            Browser.True(() => target.Selected);
+            Browser.Equal("True", () => boundValue.Text);
 
             // Modify data; verify checkbox is updated
             invertButton.Click();
-            WaitAssert.False(() => target.Selected);
-            WaitAssert.Equal("False", () => boundValue.Text);
+            Browser.False(() => target.Selected);
+            Browser.Equal("False", () => boundValue.Text);
         }
 
         [Fact]
@@ -155,13 +160,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             // Modify target; verify value is updated
             target.Click();
-            WaitAssert.False(() => target.Selected);
-            WaitAssert.Equal("False", () => boundValue.Text);
+            Browser.False(() => target.Selected);
+            Browser.Equal("False", () => boundValue.Text);
 
             // Modify data; verify checkbox is updated
             invertButton.Click();
-            WaitAssert.True(() => target.Selected);
-            WaitAssert.Equal("True", () => boundValue.Text);
+            Browser.True(() => target.Selected);
+            Browser.Equal("True", () => boundValue.Text);
         }
 
         [Fact]
@@ -174,13 +179,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             // Modify target; verify value is updated
             target.SelectByText("Third choice");
-            WaitAssert.Equal("Third", () => boundValue.Text);
+            Browser.Equal("Third", () => boundValue.Text);
 
             // Also verify we can add and select new options atomically
             // Don't move this into a separate test, because then the previous assertions
             // would be dependent on test execution order (or would require a full page reload)
             Browser.FindElement(By.Id("select-box-add-option")).Click();
-            WaitAssert.Equal("Fourth", () => boundValue.Text);
+            Browser.Equal("Fourth", () => boundValue.Text);
             Assert.Equal("Fourth choice", target.SelectedOption.Text);
         }
 
@@ -197,7 +202,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // Modify target; verify value is updated and that textboxes linked to the same data are updated
             target.Clear();
             target.SendKeys("42\t");
-            WaitAssert.Equal("42", () => boundValue.Text);
+            Browser.Equal("42", () => boundValue.Text);
             Assert.Equal("42", mirrorValue.GetAttribute("value"));
         }
 
@@ -214,19 +219,19 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // Modify target; verify value is updated and that textboxes linked to the same data are updated
             target.Clear();
             target.SendKeys("-42\t");
-            WaitAssert.Equal("-42", () => boundValue.Text);
+            Browser.Equal("-42", () => boundValue.Text);
             Assert.Equal("-42", mirrorValue.GetAttribute("value"));
 
             // Modify target; verify value is updated and that textboxes linked to the same data are updated
             target.Clear();
             target.SendKeys("42\t");
-            WaitAssert.Equal("42", () => boundValue.Text);
+            Browser.Equal("42", () => boundValue.Text);
             Assert.Equal("42", mirrorValue.GetAttribute("value"));
 
             // Modify target; verify value is updated and that textboxes linked to the same data are updated
             target.Clear();
             target.SendKeys("\t");
-            WaitAssert.Equal(string.Empty, () => boundValue.Text);
+            Browser.Equal(string.Empty, () => boundValue.Text);
             Assert.Equal(string.Empty, mirrorValue.GetAttribute("value"));
         }
 
@@ -243,7 +248,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // Modify target; verify value is updated and that textboxes linked to the same data are updated
             target.Clear();
             target.SendKeys("-3000000000\t");
-            WaitAssert.Equal("-3000000000", () => boundValue.Text);
+            Browser.Equal("-3000000000", () => boundValue.Text);
             Assert.Equal("-3000000000", mirrorValue.GetAttribute("value"));
         }
 
@@ -260,19 +265,19 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // Modify target; verify value is updated and that textboxes linked to the same data are updated
             target.Clear();
             target.SendKeys("3000000000\t");
-            WaitAssert.Equal("3000000000", () => boundValue.Text);
+            Browser.Equal("3000000000", () => boundValue.Text);
             Assert.Equal("3000000000", mirrorValue.GetAttribute("value"));
 
             // Modify target; verify value is updated and that textboxes linked to the same data are updated
             target.Clear();
             target.SendKeys("-3000000000\t");
-            WaitAssert.Equal("-3000000000", () => boundValue.Text);
+            Browser.Equal("-3000000000", () => boundValue.Text);
             Assert.Equal("-3000000000", mirrorValue.GetAttribute("value"));
 
             // Modify target; verify value is updated and that textboxes linked to the same data are updated
             target.Clear();
             target.SendKeys("\t");
-            WaitAssert.Equal(string.Empty, () => boundValue.Text);
+            Browser.Equal(string.Empty, () => boundValue.Text);
             Assert.Equal(string.Empty, mirrorValue.GetAttribute("value"));
         }
 
@@ -289,7 +294,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // Modify target; verify value is updated and that textboxes linked to the same data are updated
             target.Clear();
             target.SendKeys("-3.141\t");
-            WaitAssert.Equal("-3.141", () => boundValue.Text);
+            Browser.Equal("-3.141", () => boundValue.Text);
             Assert.Equal("-3.141", mirrorValue.GetAttribute("value"));
         }
 
@@ -306,19 +311,19 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // Modify target; verify value is updated and that textboxes linked to the same data are updated
             target.Clear();
             target.SendKeys("3.141\t");
-            WaitAssert.Equal("3.141", () => boundValue.Text);
+            Browser.Equal("3.141", () => boundValue.Text);
             Assert.Equal("3.141", mirrorValue.GetAttribute("value"));
 
             // Modify target; verify value is updated and that textboxes linked to the same data are updated
             target.Clear();
             target.SendKeys("-3.141\t");
-            WaitAssert.Equal("-3.141", () => boundValue.Text);
+            Browser.Equal("-3.141", () => boundValue.Text);
             Assert.Equal("-3.141", mirrorValue.GetAttribute("value"));
 
             // Modify target; verify value is updated and that textboxes linked to the same data are updated
             target.Clear();
             target.SendKeys("\t");
-            WaitAssert.Equal(string.Empty, () => boundValue.Text);
+            Browser.Equal(string.Empty, () => boundValue.Text);
             Assert.Equal(string.Empty, mirrorValue.GetAttribute("value"));
         }
 
@@ -335,14 +340,14 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // Modify target; verify value is updated and that textboxes linked to the same data are updated
             target.Clear();
             target.SendKeys("-3.14159265359\t");
-            WaitAssert.Equal("-3.14159265359", () => boundValue.Text);
+            Browser.Equal("-3.14159265359", () => boundValue.Text);
             Assert.Equal("-3.14159265359", mirrorValue.GetAttribute("value"));
 
             // Modify target; verify value is updated and that textboxes linked to the same data are updated
             // Double shouldn't preserve trailing zeros
             target.Clear();
             target.SendKeys("0.010\t");
-            WaitAssert.Equal("0.01", () => boundValue.Text);
+            Browser.Equal("0.01", () => boundValue.Text);
             Assert.Equal("0.01", mirrorValue.GetAttribute("value"));
         }
 
@@ -359,26 +364,26 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // Modify target; verify value is updated and that textboxes linked to the same data are updated
             target.Clear();
             target.SendKeys("3.14159265359\t");
-            WaitAssert.Equal("3.14159265359", () => boundValue.Text);
+            Browser.Equal("3.14159265359", () => boundValue.Text);
             Assert.Equal("3.14159265359", mirrorValue.GetAttribute("value"));
 
             // Modify target; verify value is updated and that textboxes linked to the same data are updated
             target.Clear();
             target.SendKeys("-3.14159265359\t");
-            WaitAssert.Equal("-3.14159265359", () => boundValue.Text);
+            Browser.Equal("-3.14159265359", () => boundValue.Text);
             Assert.Equal("-3.14159265359", mirrorValue.GetAttribute("value"));
 
             // Modify target; verify value is updated and that textboxes linked to the same data are updated
             // Double shouldn't preserve trailing zeros
             target.Clear();
             target.SendKeys("0.010\t");
-            WaitAssert.Equal("0.01", () => boundValue.Text);
+            Browser.Equal("0.01", () => boundValue.Text);
             Assert.Equal("0.01", mirrorValue.GetAttribute("value"));
 
             // Modify target; verify value is updated and that textboxes linked to the same data are updated
             target.Clear();
             target.SendKeys("\t");
-            WaitAssert.Equal(string.Empty, () => boundValue.Text);
+            Browser.Equal(string.Empty, () => boundValue.Text);
             Assert.Equal(string.Empty, mirrorValue.GetAttribute("value"));
         }
 
@@ -396,7 +401,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // Decimal should preserve trailing zeros
             target.Clear();
             target.SendKeys("0.010\t");
-            WaitAssert.Equal("0.010", () => boundValue.Text);
+            Browser.Equal("0.010", () => boundValue.Text);
             Assert.Equal("0.010", mirrorValue.GetAttribute("value"));
         }
 
@@ -413,20 +418,20 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // Modify target; verify value is updated and that textboxes linked to the same data are updated
             target.Clear();
             target.SendKeys("0.0000000000000000000000000001\t");
-            WaitAssert.Equal("0.0000000000000000000000000001", () => boundValue.Text);
+            Browser.Equal("0.0000000000000000000000000001", () => boundValue.Text);
             Assert.Equal("0.0000000000000000000000000001", mirrorValue.GetAttribute("value"));
 
             // Modify target; verify value is updated and that textboxes linked to the same data are updated
             // Decimal should preserve trailing zeros
             target.Clear();
             target.SendKeys("0.010\t");
-            WaitAssert.Equal("0.010", () => boundValue.Text);
+            Browser.Equal("0.010", () => boundValue.Text);
             Assert.Equal("0.010", mirrorValue.GetAttribute("value"));
 
             // Modify target; verify value is updated and that textboxes linked to the same data are updated
             target.Clear();
             target.SendKeys("\t");
-            WaitAssert.Equal(string.Empty, () => boundValue.Text);
+            Browser.Equal(string.Empty, () => boundValue.Text);
             Assert.Equal(string.Empty, mirrorValue.GetAttribute("value"));
         }
     }
