@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             var eObj = examined.GetObject();
             var eIndex = examined.GetInteger();
 
-            _context.ServiceContext.Log.LogDebug($"AdvanceTo({cObj?.GetHashCode().ToString() ?? "null"}, {cIndex}, {eObj?.GetHashCode().ToString() ?? "null"}, {eIndex})");
+            _context.ServiceContext.Log.LogDebug($"Http1ChunkedEncodingMessageBody.AdvanceTo({cObj?.GetHashCode().ToString() ?? "null"}, {cIndex}, {eObj?.GetHashCode().ToString() ?? "null"}, {eIndex})");
 
             var dataLength = _readResult.Buffer.Slice(_readResult.Buffer.Start, consumed).Length;
             _requestBodyPipe.Reader.AdvanceTo(consumed, examined);
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 var readAwaitable = _requestBodyPipe.Reader.ReadAsync(cancellationToken);
 
-                _context.ServiceContext.Log.LogDebug("readAwaitable.IsCompleted: " + readAwaitable.IsCompleted);
+                _context.ServiceContext.Log.LogDebug("Http1ChunkedEncodingMessageBody.ReadAsync: readAwaitable.IsCompleted: " + readAwaitable.IsCompleted);
 
                 _readResult = await StartTimingReadAsync(readAwaitable, cancellationToken);
             }
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 throw;
             }
 
-            _context.ServiceContext.Log.LogDebug(_readResult.Buffer.Length + " bytes read");
+            _context.ServiceContext.Log.LogDebug("Http1ChunkedEncodingMessageBody.ReadAsync: " + _readResult.Buffer.Length + " bytes read");
 
             StopTimingRead(_readResult.Buffer.Length);
 
@@ -188,8 +188,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         var eObj = examined.GetObject();
                         var eIndex = examined.GetInteger();
 
-                        _context.ServiceContext.Log.LogDebug($"AdvanceTo({cObj?.GetHashCode().ToString() ?? "null"}, {cIndex}, {eObj?.GetHashCode().ToString() ?? "null"}, {eIndex})");
-                        _context.Input.AdvanceTo(consumed, examined);
+                        _context.ServiceContext.Log.LogDebug($"Http1ChunkedEncodingMessageBody.PumpAsync: calling AdvanceTo({cObj?.GetHashCode().ToString() ?? "null"}, {cIndex}, {eObj?.GetHashCode().ToString() ?? "null"}, {eIndex})");
+
+                        if (result.Buffer.Slice(consumed, examined).Length == 0)
+                        {
+                            _context.ServiceContext.Log.LogDebug("Http1ChunkedEncodingMessageBody.PumpAsync: examined - consumed = 0!");
+                            _context.Input.AdvanceTo(consumed, consumed);
+                        }
+                        else
+                        {
+                            _context.Input.AdvanceTo(consumed, examined);
+                        }
                     }
 
                     awaitable = _context.Input.ReadAsync();
