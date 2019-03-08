@@ -476,10 +476,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var context = new DefaultHttpContext();
             context.Request.ContentType = contentType.ToString();
             context.Request.Headers[HeaderNames.AcceptCharset] = contentType.Charset.ToString();
-            if (responseStream != null)
-            {
-                context.Response.Body = responseStream;
-            }
+            context.Response.Body = responseStream ?? new MemoryStream();
+
             return new ActionContext(context, new RouteData(), new ActionDescriptor());
         }
 
