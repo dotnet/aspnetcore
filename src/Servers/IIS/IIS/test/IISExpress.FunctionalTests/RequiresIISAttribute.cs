@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 Environment.OSVersion.Version.Minor == 1)
             {
                 IsMet = false;
-                SkipReason = "Skipped on Windows 7"
+                SkipReason = "Skipped on Windows 7";
             }
         }
 
