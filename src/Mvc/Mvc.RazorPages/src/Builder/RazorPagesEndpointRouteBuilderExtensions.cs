@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <para>
         /// <see cref="MapFallbackToPage(IEndpointRouteBuilder, string)"/> does not re-execute routing, and will
         /// not generate route values based on routes defined elsewhere. When using this overload, the <c>path</c> route value
-        /// will be available. 
+        /// will be available.
         /// </para>
         /// </remarks>
         public static void MapFallbackToPage(this IEndpointRouteBuilder endpoints, string page)
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Builder
             GetOrCreateDataSource(endpoints);
 
             // Maps a fallback endpoint with an empty delegate. This is OK because
-            // we don't expect the delegate to run. 
+            // we don't expect the delegate to run.
             endpoints.MapFallback(context => Task.CompletedTask).Add(b =>
             {
                 // MVC registers a policy that looks for this metadata.
@@ -109,8 +109,8 @@ namespace Microsoft.AspNetCore.Builder
         /// </para>
         /// <para>
         /// <see cref="MapFallbackToPage(IEndpointRouteBuilder, string, string)"/> does not re-execute routing, and will
-        /// not generate route values based on routes defined elsewhere. When using this overload, the route values provided by matching 
-        /// <paramref name="pattern"/> will be available. 
+        /// not generate route values based on routes defined elsewhere. When using this overload, the route values provided by matching
+        /// <paramref name="pattern"/> will be available.
         /// </para>
         /// </remarks>
         public static void MapFallbackToPage(
@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Builder
             GetOrCreateDataSource(endpoints);
 
             // Maps a fallback endpoint with an empty delegate. This is OK because
-            // we don't expect the delegate to run. 
+            // we don't expect the delegate to run.
             endpoints.MapFallback(pattern, context => Task.CompletedTask).Add(b =>
             {
                 // MVC registers a policy that looks for this metadata.
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <para>
         /// <see cref="MapFallbackToAreaPage(IEndpointRouteBuilder, string, string)"/> does not re-execute routing, and will
         /// not generate route values based on routes defined elsewhere. When using this overload, the <c>path</c> route value
-        /// will be available. 
+        /// will be available.
         /// </para>
         /// </remarks>
         public static void MapFallbackToAreaPage(
@@ -197,7 +197,7 @@ namespace Microsoft.AspNetCore.Builder
             GetOrCreateDataSource(endpoints);
 
             // Maps a fallback endpoint with an empty delegate. This is OK because
-            // we don't expect the delegate to run. 
+            // we don't expect the delegate to run.
             endpoints.MapFallback(context => Task.CompletedTask).Add(b =>
             {
                 // MVC registers a policy that looks for this metadata.
@@ -230,7 +230,7 @@ namespace Microsoft.AspNetCore.Builder
         /// </para>
         /// <para>
         /// <see cref="MapFallbackToAreaPage(IEndpointRouteBuilder, string, string, string)"/> does not re-execute routing, and will
-        /// not generate route values based on routes defined elsewhere. When using this overload, the route values provided by matching 
+        /// not generate route values based on routes defined elsewhere. When using this overload, the route values provided by matching
         /// <paramref name="pattern"/> will be available.
         /// </para>
         /// </remarks>
@@ -263,7 +263,7 @@ namespace Microsoft.AspNetCore.Builder
             GetOrCreateDataSource(endpoints);
 
             // Maps a fallback endpoint with an empty delegate. This is OK because
-            // we don't expect the delegate to run. 
+            // we don't expect the delegate to run.
             endpoints.MapFallback(pattern, context => Task.CompletedTask).Add(b =>
             {
                 // MVC registers a policy that looks for this metadata.
@@ -287,7 +287,7 @@ namespace Microsoft.AspNetCore.Builder
             {
                 throw new InvalidOperationException(Mvc.Core.Resources.FormatUnableToFindServices(
                     nameof(IServiceCollection),
-                    "AddMvc",
+                    "AddRazorPages",
                     "ConfigureServices(...)"));
             }
         }

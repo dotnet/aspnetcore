@@ -14,7 +14,7 @@ namespace ApplicationModelWebSite
         // Set up application services
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc(options =>
+            services.AddControllers(options =>
             {
                 options.Conventions.Add(new ApplicationDescription("Common Application Description"));
                 options.Conventions.Add(new ControllerLicenseConvention());
@@ -23,6 +23,8 @@ namespace ApplicationModelWebSite
                 options.Conventions.Add(new CloneActionConvention());
             })
             .SetCompatibilityVersion(CompatibilityVersion.Latest);
+
+            services.AddRazorPages();
         }
 
         public void Configure(IApplicationBuilder app)

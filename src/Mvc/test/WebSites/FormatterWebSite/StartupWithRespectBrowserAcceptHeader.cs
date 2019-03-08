@@ -10,7 +10,7 @@ namespace FormatterWebSite
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc(options =>
+            services.AddControllers(options =>
             {
                 options.RespectBrowserAcceptHeader = true;
             })

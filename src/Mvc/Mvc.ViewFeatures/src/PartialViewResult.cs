@@ -65,7 +65,15 @@ namespace Microsoft.AspNetCore.Mvc
             }
 
             var services = context.HttpContext.RequestServices;
-            var executor = services.GetRequiredService<IActionResultExecutor<PartialViewResult>>();
+            var executor = services.GetService<IActionResultExecutor<PartialViewResult>>();
+            if (executor == null)
+            {
+                throw new InvalidOperationException(Mvc.Core.Resources.FormatUnableToFindServices(
+                    nameof(IServiceCollection),
+                    "AddControllersWithViews()",
+                    "ConfigureServices(...)"));
+            }
+
             return executor.ExecuteAsync(context, this);
         }
     }
