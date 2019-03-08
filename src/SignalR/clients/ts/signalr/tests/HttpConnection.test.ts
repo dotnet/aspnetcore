@@ -150,6 +150,48 @@ describe("HttpConnection", () => {
         });
     });
 
+    it("cannot send with an un-started connection", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                httpClient: new TestHttpClient()
+                    .on("POST", async () => {
+                        await connection.stop();
+                        return "{}";
+                    })
+                    .on("GET", async () => {
+                        await connection.stop();
+                        return "";
+                    }),
+                logger,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+
+            await expect(connection.send("LeBron James"))
+                .rejects
+                .toThrow("Cannot send data if the connection is not in the 'Connected' State.");
+        });
+    });
+
+    it("cannot be started if negotiate returns non 200 response", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                httpClient: new TestHttpClient()
+                    .on("POST", () => new HttpResponse(999))
+                    .on("GET", () => ""),
+                logger,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+            await expect(connection.start(TransferFormat.Text))
+                .rejects
+                .toThrow("Unexpected status code returned from negotiate 999");
+        },
+        "Failed to start the connection: Error: Unexpected status code returned from negotiate 999");
+    });
+
     it("can stop a non-started connection", async () => {
         await VerifyLogger.run(async (logger) => {
             const connection = new HttpConnection("http://tempuri.org", { ...commonOptions, logger });
