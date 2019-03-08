@@ -11,7 +11,8 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" />
-    <Reference Include="Microsoft.AspNetCore.Razor.Runtime" />
+    <ProjectReference Include="..\..\..\Razor\Razor\src\Microsoft.AspNetCore.Razor.csproj" />
+    <ProjectReference Include="..\..\..\Razor\Razor.Runtime\src\Microsoft.AspNetCore.Razor.Runtime.csproj" />
     <Reference Include="Microsoft.Extensions.Caching.Memory" />
     <Reference Include="Microsoft.Extensions.FileProviders.Composite" />
   </ItemGroup>

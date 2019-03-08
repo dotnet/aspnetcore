@@ -3,16 +3,19 @@
 
 using System;
 using System.IO;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Razor;
 
 namespace Microsoft.AspNetCore.Mvc.Rendering
 {
     /// <summary>
     /// Context for view execution.
     /// </summary>
-    public class ViewContext : ActionContext
+    public class ViewContext : ActionContext, IOutputContext
     {
         private FormContext _formContext;
         private DynamicViewData _viewBag;
@@ -228,6 +231,22 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         public FormContext GetFormContextForClientValidation()
         {
             return ClientValidationEnabled ? FormContext : null;
+        }
+
+        /// <summary>
+        /// Invokes <see cref="TextWriter.FlushAsync"/> on <see cref="Writer"/> and <see cref="m:Stream.FlushAsync"/>
+        /// on the response stream, writing out any buffered content to the <see cref="HttpResponse.Body"/>.
+        /// </summary>
+        /// <remarks>The value returned is a token value that allows FlushAsync to work directly in an HTML
+        /// section. However the value does not represent the rendered content.
+        /// This method also writes out headers, so any modifications to headers must be done before
+        /// <see cref="IOutputContext.FlushAsync"/> is called. For example, call SetAntiforgeryCookieAndHeader to send
+        /// antiforgery cookie token and X-Frame-Options header to client before this method flushes headers out.
+        /// </remarks>
+        async Task IOutputContext.FlushAsync()
+        {
+            await Writer.FlushAsync();
+            await HttpContext.Response.Body.FlushAsync();
         }
     }
 }

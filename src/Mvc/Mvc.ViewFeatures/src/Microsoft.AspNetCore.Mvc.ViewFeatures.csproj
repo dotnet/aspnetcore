@@ -18,6 +18,7 @@ Microsoft.AspNetCore.Mvc.ViewComponent</Description>
     <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
     <Reference Include="Microsoft.AspNetCore.Mvc.DataAnnotations" />
 
+    <ProjectReference Include="..\..\..\Razor\Razor.Runtime\src\Microsoft.AspNetCore.Razor.Runtime.csproj" />
     <Reference Include="Microsoft.AspNetCore.Antiforgery" />
     <Reference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Html.Abstractions" />

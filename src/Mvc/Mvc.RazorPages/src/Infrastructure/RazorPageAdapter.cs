@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Razor;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
@@ -74,5 +75,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         }
 
         Type IModelTypeProvider.GetModelType() => _modelType;
+
+        public void Href(string content) => _page.Href(content);
     }
 }
