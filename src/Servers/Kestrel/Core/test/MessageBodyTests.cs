@@ -199,6 +199,94 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public async Task BadChunkPrefixThrowsBadRequestException()
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Http1Connection);
+                var mockBodyControl = new Mock<IHttpBodyControlFeature>();
+                mockBodyControl.Setup(m => m.AllowSynchronousIO).Returns(true);
+                var reader = new HttpRequestPipeReader();
+                var stream = new HttpRequestStream(mockBodyControl.Object, reader);
+                reader.StartAcceptingReads(body);
+                var buffer = new byte[1024];
+                var task = stream.ReadAsync(buffer, 0, buffer.Length);
+
+                input.Add("g");
+                input.Add("g");
+
+                await Assert.ThrowsAsync<BadHttpRequestException>(() => task);
+
+                await body.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task WritingChunkOverMaxChunkSizeThrowsBadRequest()
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Http1Connection);
+                var mockBodyControl = new Mock<IHttpBodyControlFeature>();
+                mockBodyControl.Setup(m => m.AllowSynchronousIO).Returns(true);
+                var reader = new HttpRequestPipeReader();
+                var stream = new HttpRequestStream(mockBodyControl.Object, reader);
+                reader.StartAcceptingReads(body);
+                var buffer = new byte[1024];
+                var task = stream.ReadAsync(buffer, 0, buffer.Length);
+
+                // Max is 10 bytes
+                for (int i = 0; i < 11; i++)
+                {
+                    input.Add(i.ToString());
+                }
+
+                await Assert.ThrowsAsync<BadHttpRequestException>(() => task);
+
+                await body.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task InvalidChunkSuffixThrowsBadRequest()
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Http1Connection);
+                var mockBodyControl = new Mock<IHttpBodyControlFeature>();
+                mockBodyControl.Setup(m => m.AllowSynchronousIO).Returns(true);
+                var reader = new HttpRequestPipeReader();
+                var stream = new HttpRequestStream(mockBodyControl.Object, reader);
+                reader.StartAcceptingReads(body);
+                var buffer = new byte[1024];
+
+                async Task ReadAsync()
+                {
+                    while (true)
+                    {
+                        await stream.ReadAsync(buffer, 0, buffer.Length);
+                    }
+                }
+
+                var task = ReadAsync();
+
+                input.Add("1");
+                input.Add("\r");
+                input.Add("\n");
+                input.Add("h");
+                input.Add("0");
+                input.Add("\r");
+                input.Add("\n");
+                input.Add("\r");
+                input.Add("n");
+
+                await Assert.ThrowsAsync<BadHttpRequestException>(() => task);
+
+                await body.StopAsync();
+            }
+        }
+
+        [Fact]
         public async Task CanReadAsyncFromChunkedEncoding()
         {
             using (var input = new TestInput())

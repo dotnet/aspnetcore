@@ -323,6 +323,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 return;
             }
 
+            // Assigned this before calculating the chunk size since that can throw
+            examined = reader.Position;
+
             var chunkSize = CalculateChunkSize(ch1, 0);
             ch1 = ch2;
 
@@ -359,6 +362,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 chunkSize = CalculateChunkSize(ch1, chunkSize);
                 ch1 = ch2;
             }
+
+            // Set examined so that we capture the progress that way made
+            examined = reader.Position;
 
             // At this point, 10 bytes have been consumed which is enough to parse the max value "7FFFFFFF\r\n".
             BadHttpRequestException.Throw(RequestRejectionReason.BadChunkSizeData);
