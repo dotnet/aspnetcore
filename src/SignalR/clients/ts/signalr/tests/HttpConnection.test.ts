@@ -152,21 +152,7 @@ describe("HttpConnection", () => {
 
     it("cannot send with an un-started connection", async () => {
         await VerifyLogger.run(async (logger) => {
-            const options: IHttpConnectionOptions = {
-                ...commonOptions,
-                httpClient: new TestHttpClient()
-                    .on("POST", async () => {
-                        await connection.stop();
-                        return "{}";
-                    })
-                    .on("GET", async () => {
-                        await connection.stop();
-                        return "";
-                    }),
-                logger,
-            } as IHttpConnectionOptions;
-
-            const connection = new HttpConnection("http://tempuri.org", options);
+            const connection = new HttpConnection("http://tempuri.org");
 
             await expect(connection.send("LeBron James"))
                 .rejects
