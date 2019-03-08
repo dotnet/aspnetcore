@@ -484,6 +484,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> FlushAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
         public System.Memory<byte> GetMemory(int sizeHint = 0) { throw null; }
         public System.Span<byte> GetSpan(int sizeHint = 0) { throw null; }
+        public void Reset() { }
         public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> Write100ContinueAsync() { throw null; }
         public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> WriteChunkAsync(System.ReadOnlySpan<byte> buffer, System.Threading.CancellationToken cancellationToken) { throw null; }
         public System.Threading.Tasks.Task WriteDataAsync(System.ReadOnlySpan<byte> buffer, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
@@ -954,6 +955,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> FlushAsync(System.Threading.CancellationToken cancellationToken);
         System.Memory<byte> GetMemory(int sizeHint = 0);
         System.Span<byte> GetSpan(int sizeHint = 0);
+        void Reset();
         System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> Write100ContinueAsync();
         System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> WriteChunkAsync(System.ReadOnlySpan<byte> data, System.Threading.CancellationToken cancellationToken);
         System.Threading.Tasks.Task WriteDataAsync(System.ReadOnlySpan<byte> data, System.Threading.CancellationToken cancellationToken);
@@ -1297,6 +1299,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         public System.Span<byte> GetSpan(int sizeHint = 0) { throw null; }
         void Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpOutputAborter.Abort(Microsoft.AspNetCore.Connections.ConnectionAbortedException abortReason) { }
         System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpOutputProducer.WriteChunkAsync(System.ReadOnlySpan<byte> data, System.Threading.CancellationToken cancellationToken) { throw null; }
+        public void Reset() { }
         public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> Write100ContinueAsync() { throw null; }
         public System.Threading.Tasks.Task WriteChunkAsync(System.ReadOnlySpan<byte> span, System.Threading.CancellationToken cancellationToken) { throw null; }
         public System.Threading.Tasks.Task WriteDataAsync(System.ReadOnlySpan<byte> data, System.Threading.CancellationToken cancellationToken) { throw null; }

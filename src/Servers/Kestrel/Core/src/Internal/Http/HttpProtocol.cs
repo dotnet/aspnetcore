@@ -45,7 +45,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         // Keep-alive is default for HTTP/1.1 and HTTP/2; parsing and errors will change its value
         // volatile, see: https://msdn.microsoft.com/en-us/library/x13ttww7.aspx
         protected volatile bool _keepAlive = true;
-        private bool _canWriteResponseBody;
+        // _canWriteResponseBody is set in CreateResponseHeaders.
+        // If we are writing with GetMemory/Advance before calling StartAsync, assume we can write and throw away contents if we can't.
+        private bool _canWriteResponseBody = true;
+        private bool _hasAdvanced;
+        private bool _isLeasedMemoryInvalid = true;
         private bool _autoChunk;
         protected Exception _applicationException;
         private BadHttpRequestException _requestRejectedException;
@@ -351,6 +355,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             RequestHeaders = HttpRequestHeaders;
             ResponseHeaders = HttpResponseHeaders;
 
+            _isLeasedMemoryInvalid = true;
+            _hasAdvanced = false;
+            _canWriteResponseBody = true;
+
             if (_scheme == null)
             {
                 var tlsFeature = ConnectionFeatures?[typeof(ITlsConnectionFeature)];
@@ -379,6 +387,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     disposable.Dispose();
                 }
             }
+
+            Output?.Reset();
 
             _requestHeadersParsed = 0;
 
@@ -921,6 +931,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 return;
             }
 
+            _isLeasedMemoryInvalid = true;
+
             _requestProcessingStatus = RequestProcessingStatus.HeadersCommitted;
 
             var responseHeaders = CreateResponseHeaders(appCompleted);
@@ -1066,7 +1078,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     _keepAlive = false;
                 }
-                else if (appCompleted || !_canWriteResponseBody)
+                else if ((appCompleted || !_canWriteResponseBody) && !_hasAdvanced) // Avoid setting contentLength of 0 if we wrote data before calling CreateResponseHeaders
                 {
                     // Don't set the Content-Length header automatically for HEAD requests, 204 responses, or 304 responses.
                     if (CanAutoSetContentLengthZeroResponseHeader())
@@ -1268,6 +1280,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public void Advance(int bytes)
         {
+            if (bytes < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(bytes));
+            }
+            else if (bytes > 0)
+            {
+                _hasAdvanced = true;
+            }
+
+            if (_isLeasedMemoryInvalid)
+            {
+                throw new InvalidOperationException("Invalid ordering of calling StartAsync and Advance. " +
+                    "Call StartAsync before calling GetMemory/GetSpan and Advance.");
+            }
+
             if (_canWriteResponseBody)
             {
                 VerifyAndUpdateWrite(bytes);
@@ -1276,7 +1303,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             else
             {
                 HandleNonBodyResponseWrite();
-
                 // For HEAD requests, we still use the number of bytes written for logging
                 // how many bytes were written.
                 VerifyAndUpdateWrite(bytes);
@@ -1285,25 +1311,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public Memory<byte> GetMemory(int sizeHint = 0)
         {
-            ThrowIfResponseNotStarted();
-
+            _isLeasedMemoryInvalid = false;
             return Output.GetMemory(sizeHint);
         }
 
         public Span<byte> GetSpan(int sizeHint = 0)
         {
-            ThrowIfResponseNotStarted();
-
+            _isLeasedMemoryInvalid = false;
             return Output.GetSpan(sizeHint);
-        }
-
-        [StackTraceHidden]
-        private void ThrowIfResponseNotStarted()
-        {
-            if (!HasResponseStarted)
-            {
-                throw new InvalidOperationException(CoreStrings.StartAsyncBeforeGetMemory);
-            }
         }
 
         public ValueTask<FlushResult> FlushPipeAsync(CancellationToken cancellationToken)
@@ -1338,6 +1353,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     ApplicationAbort();
                 }
             }
+
             Output.Complete();
         }
 
