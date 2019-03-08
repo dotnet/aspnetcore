@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Testing.xunit;
@@ -15,7 +15,7 @@ namespace Templates.Test
 
         [Theory]
         [InlineData(null)]
-        [InlineData("F#", Skip = "https://github.com/aspnet/Templating/issues/673")]
+        [InlineData("F#")]
         private void MvcTemplate_NoAuthImpl(string languageOverride)
         {
             RunDotNetNew("mvc", language: languageOverride);
@@ -69,6 +69,7 @@ namespace Templates.Test
                 using (var aspNetProcess = StartAspNetProcess(publish))
                 {
                     aspNetProcess.AssertOk("/");
+                    aspNetProcess.AssertOk("/Account/Login");
                     aspNetProcess.AssertOk("/Home/Privacy");
                 }
             }
