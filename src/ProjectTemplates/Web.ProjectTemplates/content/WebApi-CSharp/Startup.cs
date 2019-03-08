@@ -44,7 +44,7 @@ namespace Company.WebApplication1
             services.AddAuthentication(AzureADB2CDefaults.BearerAuthenticationScheme)
                 .AddAzureADB2CBearer(options => Configuration.Bind("AzureAdB2C", options));
 #endif
-            services.AddMvc()
+            services.AddControllers()
                 .AddNewtonsoftJson();
         }
 

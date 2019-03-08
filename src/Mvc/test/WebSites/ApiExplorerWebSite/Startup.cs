@@ -22,7 +22,7 @@ namespace ApiExplorerWebSite
             services.AddTransient<ILoggerFactory, LoggerFactory>();
 
             var wellKnownChangeToken = new WellKnownChangeToken();
-            services.AddMvc(options =>
+            services.AddControllers(options =>
             {
                 options.Filters.AddService(typeof(ApiExplorerDataFilter));
 

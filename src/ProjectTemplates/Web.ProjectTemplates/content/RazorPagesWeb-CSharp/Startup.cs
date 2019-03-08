@@ -119,7 +119,7 @@ namespace Company.WebApplication1
 #endif
 
 #if (OrganizationalAuth)
-            services.AddMvc(options =>
+            services.AddRazorPages().AddMvcOptions(options =>
             {
                 var policy = new AuthorizationPolicyBuilder()
                     .RequireAuthenticatedUser()
@@ -128,7 +128,7 @@ namespace Company.WebApplication1
             })
             .AddNewtonsoftJson();
 #else
-            services.AddMvc()
+            services.AddRazorPages()
                 .AddNewtonsoftJson();
 #endif
         }

@@ -450,7 +450,7 @@ namespace Microsoft.AspNetCore.Builder
             {
                 throw new InvalidOperationException(Resources.FormatUnableToFindServices(
                     nameof(IServiceCollection),
-                    "AddMvc",
+                    "AddControllers",
                     "ConfigureServices(...)"));
             }
         }

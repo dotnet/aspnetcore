@@ -15,8 +15,7 @@ namespace RazorPagesWebSite
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie(options => options.LoginPath = "/Login");
 
-            services.AddMvc()
-                .AddRazorPagesOptions(options =>
+            services.AddRazorPages(options =>
                 {
                     options.Conventions.AuthorizeFolder("/Admin");
                 })

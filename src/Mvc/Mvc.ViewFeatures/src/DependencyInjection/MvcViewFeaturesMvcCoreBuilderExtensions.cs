@@ -63,7 +63,7 @@ namespace Microsoft.Extensions.DependencyInjection
             return builder;
         }
 
-        private static void AddViewComponentApplicationPartsProviders(ApplicationPartManager manager)
+        internal static void AddViewComponentApplicationPartsProviders(ApplicationPartManager manager)
         {
             if (!manager.FeatureProviders.OfType<ViewComponentFeatureProvider>().Any())
             {

@@ -15,8 +15,7 @@ namespace SecurityWebSite
         public void ConfigureServices(IServiceCollection services)
         {
             // Add framework services.
-            services.AddMvc()
-                .SetCompatibilityVersion(CompatibilityVersion.Latest);
+            services.AddControllersWithViews().SetCompatibilityVersion(CompatibilityVersion.Latest);
             services.AddAntiforgery();
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options =>
             {

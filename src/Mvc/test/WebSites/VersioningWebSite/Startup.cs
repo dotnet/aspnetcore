@@ -12,8 +12,7 @@ namespace VersioningWebSite
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            // Add MVC services to the services container
-            services.AddMvc(ConfigureMvcOptions)
+            services.AddControllers(ConfigureMvcOptions)
                 .AddNewtonsoftJson()
                 .SetCompatibilityVersion(CompatibilityVersion.Latest);
 

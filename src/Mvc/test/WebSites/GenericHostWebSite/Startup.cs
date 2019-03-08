@@ -19,7 +19,7 @@ namespace GenericHostWebSite
             services.AddSingleton(new TestGenericService { Message = "true" });
 
             services
-                .AddMvc(options =>
+                .AddControllers(options =>
                 {
                     // Remove when all URL generation tests are passing - https://github.com/aspnet/Routing/issues/590
                     options.EnableEndpointRouting = false;

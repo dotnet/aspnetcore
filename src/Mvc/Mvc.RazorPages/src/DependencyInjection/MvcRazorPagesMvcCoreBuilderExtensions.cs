@@ -26,7 +26,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             builder.AddRazorViewEngine();
 
-            AddServices(builder.Services);
+            AddRazorPagesServices(builder.Services);
 
             return builder;
         }
@@ -47,7 +47,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             builder.AddRazorViewEngine();
 
-            AddServices(builder.Services);
+            AddRazorPagesServices(builder.Services);
 
             builder.Services.Configure(setupAction);
 
@@ -77,7 +77,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         // Internal for testing.
-        internal static void AddServices(IServiceCollection services)
+        internal static void AddRazorPagesServices(IServiceCollection services)
         {
             // Options
             services.TryAddEnumerable(
