@@ -303,10 +303,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     await connection.StartAsync().OrTimeout();
 
                     var tcs = new TaskCompletionSource<string>();
-                    connection.On<string>("Echo", (message) =>
-                    {
-                        tcs.SetResult(message);
-                    });
+                    connection.On<string>("Echo", tcs.SetResult);
 
                     await connection.InvokeAsync("CallEcho", originalMessage).OrTimeout();
 

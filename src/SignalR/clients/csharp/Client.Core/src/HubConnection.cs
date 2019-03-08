@@ -703,7 +703,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                     break;
                 case InvocationMessage invocation:
                     Log.ReceivedInvocation(_logger, invocation.InvocationId, invocation.Target, invocation.Arguments);
-                    DispatchInvocationAsync(invocation);
+                    _ = DispatchInvocationAsync(invocation);
                     break;
                 case CompletionMessage completion:
                     if (!connectionState.TryRemoveInvocation(completion.InvocationId, out irq))
@@ -747,7 +747,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             return (close: false, exception: null);
         }
 
-        private void DispatchInvocationAsync(InvocationMessage invocation)
+        private async Task DispatchInvocationAsync(InvocationMessage invocation)
         {
             // Find the handler
             if (!_handlers.TryGetValue(invocation.Target, out var invocationHandlerList))
@@ -762,7 +762,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             {
                 try
                 {
-                    handler.InvokeAsync(invocation.Arguments);
+                    await handler.InvokeAsync(invocation.Arguments);
                 }
                 catch (Exception ex)
                 {
