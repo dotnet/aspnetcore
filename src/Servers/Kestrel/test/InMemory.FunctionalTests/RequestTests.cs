@@ -765,6 +765,58 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
+        public async Task ContentLengthReadAsyncSingleBytesAtATime()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+            var tcs = new TaskCompletionSource<object>();
+            var tcs2 = new TaskCompletionSource<object>();
+            using (var server = new TestServer(async httpContext =>
+            {
+                var readResult = await httpContext.Request.BodyReader.ReadAsync();
+                Assert.Equal(3, readResult.Buffer.Length);
+                tcs.SetResult(null);
+
+                httpContext.Request.BodyReader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
+
+                // Check AdvanceTo(Start, Start) doesn't cause negative issues.
+                readResult = await httpContext.Request.BodyReader.ReadAsync();
+                httpContext.Request.BodyReader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.Start);
+                tcs2.SetResult(null);
+
+                readResult = await httpContext.Request.BodyReader.ReadAsync();
+                Assert.Equal(5, readResult.Buffer.Length);
+
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "POST / HTTP/1.0",
+                        "Host:",
+                        "Content-Length: 5",
+                        "",
+                        "fun");
+                    await tcs.Task;
+                    await connection.Send(
+                        "n");
+                    await tcs2.Task;
+                    await connection.Send(
+                        "y");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 200 OK",
+                        "Connection: close",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+
+                await server.StopAsync();
+            }
+        }
+
+
+        [Fact]
         public async Task ConnectionClosesWhenFinReceivedBeforeRequestCompletes()
         {
             var testContext = new TestServiceContext(LoggerFactory)

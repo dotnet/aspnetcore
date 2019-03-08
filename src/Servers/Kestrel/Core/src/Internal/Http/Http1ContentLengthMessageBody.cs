@@ -11,12 +11,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     public class Http1ContentLengthMessageBody : Http1MessageBody
     {
+        private ReadResult _readResult;
         private readonly long _contentLength;
         private long _inputLength;
         private bool _readCompleted;
-        private bool _firstAdvance;
-        private ReadResult _readResult;
+        private bool _finalAdvanceAfterReadingEntireContentLength;
         private bool _completed;
+        private bool _isReading;
         private int _userCanceled;
         private long _totalExaminedInPreviousReadResult;
 
@@ -32,8 +33,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             ThrowIfCompleted();
 
+            if (_isReading)
+            {
+                throw new InvalidOperationException("Reading is already in progress.");
+            }
+
             if (_readCompleted)
             {
+                _isReading = true;
                 return _readResult;
             }
 
@@ -55,6 +62,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 try
                 {
                     var readAwaitable = _context.Input.ReadAsync(cancellationToken);
+
+                    _isReading = true;
                     _readResult = await StartTimingReadAsync(readAwaitable, cancellationToken);
                 }
                 catch (ConnectionAbortedException ex)
@@ -104,6 +113,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             ThrowIfCompleted();
 
+            if (_isReading)
+            {
+                throw new InvalidOperationException("Reading is already in progress.");
+            }
+
             if (_readCompleted)
             {
                 readResult = _readResult;
@@ -111,6 +125,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             TryStart();
+
 
             if (!_context.Input.TryRead(out _readResult))
             {
@@ -127,6 +142,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     return false;
                 }
             }
+
+            // Only set _isReading if we are returing a ReadResult.
+            _isReading = true;
 
             CreateReadResultFromConnectionReadResult();
 
@@ -145,10 +163,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private void CreateReadResultFromConnectionReadResult()
         {
-            if (_readResult.Buffer.Length >= _inputLength)
+            if (_readResult.Buffer.Length >= _inputLength + _totalExaminedInPreviousReadResult)
             {
                 _readCompleted = true;
-                _readResult = new ReadResult(_readResult.Buffer.Slice(0, _inputLength), _readResult.IsCanceled, _readCompleted);
+                _readResult = new ReadResult(_readResult.Buffer.Slice(0, _inputLength + _totalExaminedInPreviousReadResult), _readResult.IsCanceled, _readCompleted);
             }
 
             if (_readResult.IsCompleted)
@@ -164,19 +182,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public override void AdvanceTo(SequencePosition consumed, SequencePosition examined)
         {
-            var examinedLength = _readResult.Buffer.Slice(_readResult.Buffer.Start, examined).Length;
-            var consumedLength = _readResult.Buffer.Slice(_readResult.Buffer.Start, consumed).Length;
+            if (!_isReading)
+            {
+                throw new InvalidOperationException("No reading operation to complete.");
+            }
+
+            _isReading = false;
 
             if (_readCompleted)
             {
                 _readResult = new ReadResult(_readResult.Buffer.Slice(consumed, _readResult.Buffer.End), isCanceled: false, _readCompleted);
-                if (!_firstAdvance)
+
+                if (!_finalAdvanceAfterReadingEntireContentLength)
                 {
                     _context.Input.AdvanceTo(consumed, examined);
-                    _firstAdvance = true;
+                    _finalAdvanceAfterReadingEntireContentLength = true;
                 }
+
                 return;
             }
+
+            var consumedLength = _readResult.Buffer.Slice(_readResult.Buffer.Start, consumed).Length;
+            var examinedLength = consumedLength + _readResult.Buffer.Slice(consumed, examined).Length;
 
             _context.Input.AdvanceTo(consumed, examined);
 

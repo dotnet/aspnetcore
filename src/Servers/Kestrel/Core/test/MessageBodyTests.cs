@@ -778,8 +778,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 // Add some input and read it to start PumpAsync
                 input.Add("a");
-                Assert.Equal(1, (await body.ReadAsync()).Buffer.Length);
+                var readResult = await body.ReadAsync();
+                Assert.Equal(1, readResult.Buffer.Length);
 
+                body.AdvanceTo(readResult.Buffer.End);
                 // Time out on the next read
                 input.Http1Connection.SendTimeoutResponse();
 
