@@ -68,7 +68,7 @@ namespace BasicApi
                 case "MYSQL":
                     services
                         .AddEntityFrameworkMySql()
-                        .AddDbContextPool<BasicApiContext>(options => options.UseMySql(connectionString));
+                        .AddDbContextPool<BasicApiContext>(options => options.ConfigureWarnings(b => b.Throw(20500)).UseMySql(connectionString));
                     break;
 #endif
 
@@ -85,20 +85,20 @@ namespace BasicApi
 
                     services
                         .AddEntityFrameworkNpgsql()
-                        .AddDbContextPool<BasicApiContext>(options => options.UseNpgsql(connectionString));
+                        .AddDbContextPool<BasicApiContext>(options => options.ConfigureWarnings(b => b.Throw(20500)).UseNpgsql(connectionString));
                     break;
 
                 case "SQLITE":
                     _isSQLite = true;
                     services
                         .AddEntityFrameworkSqlite()
-                        .AddDbContextPool<BasicApiContext>(options => options.UseSqlite("Data Source=BasicApi.db"));
+                        .AddDbContextPool<BasicApiContext>(options => options.ConfigureWarnings(b => b.Throw(20500)).UseSqlite("Data Source=BasicApi.db"));
                     break;
 
                 case "SQLSERVER":
                     services
                         .AddEntityFrameworkSqlServer()
-                        .AddDbContextPool<BasicApiContext>(options => options.UseSqlServer(connectionString));
+                        .AddDbContextPool<BasicApiContext>(options => options.ConfigureWarnings(b => b.Throw(20500)).UseSqlServer(connectionString));
                     break;
 
                 default:

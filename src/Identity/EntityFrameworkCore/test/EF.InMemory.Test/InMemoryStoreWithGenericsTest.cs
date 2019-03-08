@@ -25,10 +25,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
         {
             var services = new ServiceCollection();
             services.AddHttpContextAccessor();
-            services.AddDbContext<InMemoryContextWithGenerics>(
-                options => options
-                    .UseInMemoryDatabase("Scratch")
-                    .ConfigureWarnings(b => b.Log(CoreEventId.ManyServiceProvidersCreatedWarning)));
+            services.AddDbContext<InMemoryContextWithGenerics>(options => options.UseInMemoryDatabase("Scratch"));
             _context = services.BuildServiceProvider().GetRequiredService<InMemoryContextWithGenerics>();
         }
 

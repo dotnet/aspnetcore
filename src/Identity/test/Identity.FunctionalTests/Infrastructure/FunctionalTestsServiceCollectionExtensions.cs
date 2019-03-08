@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
     {
         public static IServiceCollection SetupTestDatabase<TContext>(this IServiceCollection services, string databaseName) where TContext : DbContext =>
             services.AddDbContext<TContext>(options =>
-                options.ConfigureWarnings(b => b.Log(CoreEventId.ManyServiceProvidersCreatedWarning))
+                options.ConfigureWarnings(b => b.Throw(20500))
                     .UseInMemoryDatabase(databaseName, memoryOptions => { }));
 
         public static IServiceCollection SetupTestThirdPartyLogin(this IServiceCollection services) =>

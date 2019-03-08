@@ -31,7 +31,7 @@ namespace IdentitySample.DefaultUI
         {
             // Add framework services.
             services.AddDbContext<ApplicationDbContext>(
-                options => options.ConfigureWarnings(b => b.Log(CoreEventId.ManyServiceProvidersCreatedWarning))
+                options => options.ConfigureWarnings(b => b.Throw(20500))
                     .UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
                 x => x.MigrationsAssembly("IdentitySample.DefaultUI")));
 

@@ -34,7 +34,9 @@ namespace HealthChecksSample
             // and so will reuse the configuration provided here.
             services.AddDbContext<MyContext>(options =>
             {
-                options.UseSqlServer(Configuration["ConnectionStrings:DefaultConnection"]);
+                options
+                    .ConfigureWarnings(b => b.Throw(20500))
+                    .UseSqlServer(Configuration["ConnectionStrings:DefaultConnection"]);
             });
         }
 

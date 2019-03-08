@@ -94,7 +94,9 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                     {
                         services.AddDbContext<BloggingContextWithMigrations>(options =>
                         {
-                            options.UseSqlServer(database.ConnectionString);
+                            options
+                                .ConfigureWarnings(b => b.Throw(20500))
+                                .UseSqlServer(database.ConnectionString);
                         });
                     });
                 var server = new TestServer(builder);
@@ -203,7 +205,9 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                     {
                         services.AddDbContext<BloggingContextWithSnapshotThatThrows>(optionsBuilder =>
                         {
-                            optionsBuilder.UseSqlServer(database.ConnectionString);
+                            optionsBuilder
+                                .ConfigureWarnings(b => b.Throw(20500))
+                                .UseSqlServer(database.ConnectionString);
                         });
                     });
                 var server = new TestServer(builder);

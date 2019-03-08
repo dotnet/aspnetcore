@@ -58,7 +58,9 @@ namespace MusicStore
             else
             {
                 services.AddDbContext<MusicStoreContext>(options =>
-                            options.UseSqlServer(Configuration["Data:DefaultConnection:ConnectionString"]));
+                            options
+                                .ConfigureWarnings(b => b.Throw(20500))
+                                .UseSqlServer(Configuration["Data:DefaultConnection:ConnectionString"]));
             }
 
             // Add Identity services to the services container

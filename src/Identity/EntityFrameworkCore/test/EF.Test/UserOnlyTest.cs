@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
                 .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build())
                 .AddDbContext<TestUserDbContext>(
                     o => o.UseSqlServer(fixture.ConnectionString)
-                        .ConfigureWarnings(b => b.Log(CoreEventId.ManyServiceProvidersCreatedWarning)))
+                        .ConfigureWarnings(b => b.Throw(20500)))
                 .AddIdentityCore<IdentityUser>(o => { })
                 .AddEntityFrameworkStores<TestUserDbContext>();
 

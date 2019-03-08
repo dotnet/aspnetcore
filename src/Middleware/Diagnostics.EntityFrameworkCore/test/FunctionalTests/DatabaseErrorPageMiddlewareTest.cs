@@ -319,7 +319,9 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                     {
                         services.AddDbContext<BloggingContextWithMigrations>(optionsBuilder =>
                         {
-                            optionsBuilder.UseSqlServer(database.ConnectionString);
+                            optionsBuilder
+                                .ConfigureWarnings(b => b.Throw(20500))
+                                .UseSqlServer(database.ConnectionString);
                         });
                     });
                 var server = new TestServer(builder);
@@ -498,9 +500,11 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                     {
                         if (!PlatformHelper.IsMono)
                         {
-                            optionsBuilder.UseSqlServer(
-                                database.ConnectionString, 
-                                b => b.CommandTimeout(600).EnableRetryOnFailure());
+                            optionsBuilder
+                                .ConfigureWarnings(b => b.Throw(20500))
+                                .UseSqlServer(
+                                    database.ConnectionString, 
+                                    b => b.CommandTimeout(600).EnableRetryOnFailure());
                         }
                         else
                         {

@@ -48,7 +48,9 @@ namespace MusicStore
             else
             {
                 services.AddDbContext<MusicStoreContext>(options =>
-                    options.UseSqlServer(Configuration[StoreConfig.ConnectionStringKey.Replace("__", ":")]));
+                    options
+                        .ConfigureWarnings(b => b.Throw(20500))
+                        .UseSqlServer(Configuration[StoreConfig.ConnectionStringKey.Replace("__", ":")]));
             }
 
             // Add Identity services to the services container

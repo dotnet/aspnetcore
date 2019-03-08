@@ -26,7 +26,7 @@ namespace ApiAuthSample
         {
             services.AddDbContext<ApplicationDbContext>(options =>
                 options
-                    .ConfigureWarnings(b => b.Log(CoreEventId.ManyServiceProvidersCreatedWarning))
+                    .ConfigureWarnings(b => b.Throw(20500))
                     .UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
 
             services.AddDefaultIdentity<ApplicationUser>()

@@ -12,7 +12,9 @@ namespace DatabaseErrorPageSample
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<MyContext>(
-                options => options.UseSqlServer(@"Server=(localdb)\mssqllocaldb;Database=DatabaseErrorPageSample;Trusted_Connection=True;"));
+                options => options
+                    .ConfigureWarnings(b => b.Throw(20500))
+                    .UseSqlServer(@"Server=(localdb)\mssqllocaldb;Database=DatabaseErrorPageSample;Trusted_Connection=True;"));
         }
 
         public void Configure(IApplicationBuilder app)

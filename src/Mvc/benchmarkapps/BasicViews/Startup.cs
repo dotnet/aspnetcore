@@ -49,7 +49,7 @@ namespace BasicViews
                 case "MYSQL":
                     services
                         .AddEntityFrameworkMySql()
-                        .AddDbContextPool<BasicViewsContext>(options => options.UseMySql(connectionString));
+                        .AddDbContextPool<BasicViewsContext>(options => options.ConfigureWarnings(b => b.Throw(20500)).UseMySql(connectionString));
                     break;
 #endif
 
@@ -66,20 +66,20 @@ namespace BasicViews
 
                     services
                         .AddEntityFrameworkNpgsql()
-                        .AddDbContextPool<BasicViewsContext>(options => options.UseNpgsql(connectionString));
+                        .AddDbContextPool<BasicViewsContext>(options => options.ConfigureWarnings(b => b.Throw(20500)).UseNpgsql(connectionString));
                     break;
 
                 case "SQLITE":
                     _isSQLite = true;
                     services
                         .AddEntityFrameworkSqlite()
-                        .AddDbContextPool<BasicViewsContext>(options => options.UseSqlite("Data Source=BasicViews.db"));
+                        .AddDbContextPool<BasicViewsContext>(options => options.ConfigureWarnings(b => b.Throw(20500)).UseSqlite("Data Source=BasicViews.db"));
                     break;
 
                 case "SQLSERVER":
                     services
                         .AddEntityFrameworkSqlServer()
-                        .AddDbContextPool<BasicViewsContext>(options => options.UseSqlServer(connectionString));
+                        .AddDbContextPool<BasicViewsContext>(options => options.ConfigureWarnings(b => b.Throw(20500)).UseSqlServer(connectionString));
                     break;
 
                 default:

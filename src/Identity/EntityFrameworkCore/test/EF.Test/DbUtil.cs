@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             services.AddDbContext<TContext>(options =>
             {
                 options
-                    .ConfigureWarnings(b => b.Log(CoreEventId.ManyServiceProvidersCreatedWarning))
+                    .ConfigureWarnings(b => b.Throw(20500))
                     .UseSqlServer(connectionString);
             });
             return services;
