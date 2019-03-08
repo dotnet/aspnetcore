@@ -172,11 +172,12 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
                         keyUsage.Value == "1.3.6.1.5.5.7.3.1");
 
                 // Subject alternative name
+                // Windows uses "DNS Name=" whereas Ubuntu + macOS use "DNS:"
                 Assert.Contains(
                     httpsCertificate.Extensions.OfType<X509Extension>(),
                     e => e.Critical == true &&
                         e.Oid.Value == "2.5.29.17" &&
-                        e.Format(false) == "DNS Name=localhost, DNS Name=host.docker.internal");
+                        e.Format(false).Replace("DNS:", "DNS Name=") == "DNS Name=localhost, DNS Name=host.docker.internal");
 
                 // ASP.NET HTTPS Development certificate extension
                 Assert.Contains(
