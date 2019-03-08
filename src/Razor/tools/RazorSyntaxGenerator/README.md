@@ -4,8 +4,4 @@ Syntax generator tool for the Razor syntax tree. This is a modified version of R
 
 ## Usage
 
-dotnet run `path/to/Syntax.xml` `path/to/generated/output`
-
-E.g,
-
-`dotnet run ../Microsoft.AspNetCore.Razor.Language/Syntax/Syntax.xml ../Microsoft.AspNetCore.Razor.Language/Syntax/Generated/`
+dotnet run `full/path/to/Syntax.xml` `full/path/to/generated/output`
