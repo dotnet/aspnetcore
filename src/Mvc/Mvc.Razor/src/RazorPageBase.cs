@@ -644,9 +644,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         public virtual HtmlString SetAntiforgeryCookieAndHeader()
         {
             var viewContext = ViewContext;
-            var antiforgery = viewContext?.HttpContext.RequestServices.GetRequiredService<IAntiforgery>();
-            antiforgery.SetCookieTokenAndHeader(viewContext?.HttpContext);
-
+            if (viewContext != null)
+            {
+                var antiforgery = viewContext.HttpContext.RequestServices.GetRequiredService<IAntiforgery>();
+                antiforgery.SetCookieTokenAndHeader(viewContext.HttpContext);
+            }
             return HtmlString.Empty;
         }
 
