@@ -175,7 +175,8 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
                 Assert.Contains(
                     httpsCertificate.Extensions.OfType<X509Extension>(),
                     e => e.Critical == true &&
-                        e.Oid.Value == "2.5.29.17");
+                        e.Oid.Value == "2.5.29.17" &&
+                        e.Format(false) == "DNS Name=localhost");
 
                 // ASP.NET HTTPS Development certificate extension
                 Assert.Contains(
