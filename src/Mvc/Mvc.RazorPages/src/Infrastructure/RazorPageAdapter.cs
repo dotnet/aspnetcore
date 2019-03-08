@@ -76,6 +76,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
         Type IModelTypeProvider.GetModelType() => _modelType;
 
-        public void Href(string content) => _page.Href(content);
+        public string Href(string content) => _page.Href(content);
     }
 }

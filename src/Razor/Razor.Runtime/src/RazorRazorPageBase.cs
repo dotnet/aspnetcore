@@ -372,11 +372,11 @@ namespace Microsoft.AspNetCore.Razor
         /// Invokes <see cref="IOutputContext.FlushAsync"/>.
         /// </summary>
         /// <returns>A <see cref="Task{HtmlString}"/> that represents the asynchronous flush operation and on
-        /// completion returns an empty <see cref="IHtmlContent"/>.</returns>
+        /// completion returns an empty <see cref="HtmlString"/>.</returns>
         /// <remarks>The value returned is a token value that allows FlushAsync to work directly in an HTML
         /// section. However the value does not represent the rendered content.
         /// </remarks>
-        public virtual async Task<IHtmlContent> FlushAsync()
+        public virtual async Task<HtmlString> FlushAsync()
         {
             // Calls to Flush are allowed if the page does not specify a Layout or if it is executing a section in the
             // Layout.

@@ -286,7 +286,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             Write(value.ToString());
         }
 
-        public override Task<IHtmlContent> FlushAsync()
+        public override Task<HtmlString> FlushAsync()
         {
             // If there are active scopes, then we should throw. Cannot flush content that has the potential to change.
             if (TagHelperScopes.Count > 0)
