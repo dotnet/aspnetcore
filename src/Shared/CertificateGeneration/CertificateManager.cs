@@ -23,6 +23,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
         private const string ServerAuthenticationEnhancedKeyUsageOidFriendlyName = "Server Authentication";
 
         private const string LocalhostHttpsDnsName = "localhost";
+        private const string DockerLocalhostHttpsDnsName = "host.docker.internal";
         private const string LocalhostHttpsDistinguishedName = "CN=" + LocalhostHttpsDnsName;
 
         public const int RSAMinimumKeySizeInBits = 2048;
@@ -155,6 +156,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             var extensions = new List<X509Extension>();
             var sanBuilder = new SubjectAlternativeNameBuilder();
             sanBuilder.AddDnsName(LocalhostHttpsDnsName);
+            sanBuilder.AddDnsName(DockerLocalhostHttpsDnsName);
 
             var keyUsage = new X509KeyUsageExtension(X509KeyUsageFlags.KeyEncipherment, critical: true);
             var enhancedKeyUsage = new X509EnhancedKeyUsageExtension(

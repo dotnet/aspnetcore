@@ -176,7 +176,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
                     httpsCertificate.Extensions.OfType<X509Extension>(),
                     e => e.Critical == true &&
                         e.Oid.Value == "2.5.29.17" &&
-                        e.Format(false) == "DNS Name=localhost");
+                        e.Format(false) == "DNS Name=localhost, DNS Name=host.docker.internal");
 
                 // ASP.NET HTTPS Development certificate extension
                 Assert.Contains(
