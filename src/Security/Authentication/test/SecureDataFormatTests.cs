@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Authentication.DataHandler
             Assert.Equal(input, result);
         }
 
-        [Fact]
+        [ConditionalFact]
         [SkipOnHelix]
         public void UnprotectWithDifferentPurposeFails()
         {
