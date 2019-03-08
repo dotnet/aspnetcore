@@ -357,17 +357,17 @@
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>40d09ad77ba0c022e256b37985465a6f9a95776c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.DependencyModel" Version="3.0.0-preview3-27507-12">
+    <Dependency Name="Microsoft.Extensions.DependencyModel" Version="3.0.0-preview3-27508-06">
       <Uri>https://github.com/dotnet/core-setup</Uri>
-      <Sha>588ebc85987fccd7c0076bc6a7c13878d04a208c</Sha>
+      <Sha>d09057a5bacd5f5ce80c9bb2b2bb397a27f0108c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App" Version="3.0.0-preview3-27507-12">
+    <Dependency Name="Microsoft.NETCore.App" Version="3.0.0-preview3-27508-06">
       <Uri>https://github.com/dotnet/core-setup</Uri>
-      <Sha>588ebc85987fccd7c0076bc6a7c13878d04a208c</Sha>
+      <Sha>d09057a5bacd5f5ce80c9bb2b2bb397a27f0108c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.PlatformAbstractions" Version="3.0.0-preview3-27507-12">
+    <Dependency Name="Microsoft.DotNet.PlatformAbstractions" Version="3.0.0-preview3-27508-06">
       <Uri>https://github.com/dotnet/core-setup</Uri>
-      <Sha>588ebc85987fccd7c0076bc6a7c13878d04a208c</Sha>
+      <Sha>d09057a5bacd5f5ce80c9bb2b2bb397a27f0108c</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
