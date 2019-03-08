@@ -120,12 +120,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             if (_readCompleted)
             {
+                _isReading = true;
                 readResult = _readResult;
                 return true;
             }
 
             TryStart();
-
 
             if (!_context.Input.TryRead(out _readResult))
             {
@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
             }
 
-            // Only set _isReading if we are returing a ReadResult.
+            // Only set _isReading if we are returing true.
             _isReading = true;
 
             CreateReadResultFromConnectionReadResult();
