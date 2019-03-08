@@ -703,6 +703,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                     break;
                 case InvocationMessage invocation:
                     Log.ReceivedInvocation(_logger, invocation.InvocationId, invocation.Target, invocation.Arguments);
+                    // No need to wait on the On handlers logic. Would prevent us from awaiting other invocations.
                     _ = DispatchInvocationAsync(invocation);
                     break;
                 case CompletionMessage completion:
