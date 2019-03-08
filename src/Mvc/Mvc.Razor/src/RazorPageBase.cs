@@ -313,50 +313,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             return HtmlString.Empty;
         }
 
-        private void WriteUnprefixedAttributeValue(object value, bool isLiteral)
-        {
-            var stringValue = value as string;
-
-            // The extra branching here is to ensure that we call the Write*To(string) overload where possible.
-            if (isLiteral && stringValue != null)
-            {
-                WriteLiteral(stringValue);
-            }
-            else if (isLiteral)
-            {
-                WriteLiteral(value);
-            }
-            else if (stringValue != null)
-            {
-                Write(stringValue);
-            }
-            else
-            {
-                Write(value);
-            }
-        }
-
-        private void WritePositionTaggedLiteral(string value, int position)
-        {
-            BeginContext(position, value.Length, isLiteral: true);
-            WriteLiteral(value);
-            EndContext();
-        }
-
-        private bool IsBoolFalseOrNullValue(string prefix, object value)
-        {
-            return string.IsNullOrEmpty(prefix) &&
-                (value == null ||
-                (value is bool && !(bool)value));
-        }
-
-        private bool IsBoolTrueWithEmptyPrefixValue(string prefix, object value)
-        {
-            // If the value is just the bool 'true', use the attribute name as the value.
-            return string.IsNullOrEmpty(prefix) &&
-                (value is bool && (bool)value);
-        }
-
         private readonly struct TagHelperScopeInfo
         {
             public TagHelperScopeInfo(ViewBuffer buffer, HtmlEncoder encoder, TextWriter writer)

@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
@@ -390,8 +389,6 @@ namespace Microsoft.AspNetCore.Razor
             await ViewContext.FlushAsync();
             return HtmlString.Empty;
         }
-
-        protected abstract Task OnFlushAsync();
 
         private void WriteUnprefixedAttributeValue(object value, bool isLiteral)
         {
