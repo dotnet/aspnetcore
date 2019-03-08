@@ -69,7 +69,7 @@ namespace Templates.Test
                 using (var aspNetProcess = StartAspNetProcess(publish))
                 {
                     aspNetProcess.AssertOk("/");
-                    aspNetProcess.AssertOk("/Account/Login");
+                    aspNetProcess.AssertOk("/Identity/Account/Login");
                     aspNetProcess.AssertOk("/Home/Privacy");
                 }
             }
