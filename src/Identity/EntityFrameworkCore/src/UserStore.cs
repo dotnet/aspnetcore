@@ -635,7 +635,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            return Users.FirstOrDefaultAsync(u => u.NormalizedEmail == normalizedEmail, cancellationToken);
+            return Users.SingleOrDefaultAsync(u => u.NormalizedEmail == normalizedEmail, cancellationToken);
         }
 
         /// <summary>
