@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.SpaServices.Util
             }
         }
 
-        public static boolean PortAvailable(int portNumber)
+        public static bool PortAvailable(int portNumber)
         {
             var listener = new TcpListener(IPAddress.Loopback, portNumber);
             try
