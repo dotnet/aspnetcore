@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.SpaServices.Util
                 listener.Start();
                 return true;
             }
-            catch (SocketException exception)
+            catch (SocketException)
             {
                 return false;
             }
