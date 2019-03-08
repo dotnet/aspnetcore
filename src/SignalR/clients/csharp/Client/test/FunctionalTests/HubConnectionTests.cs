@@ -250,6 +250,46 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         [Theory]
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         [LogLevel(LogLevel.Trace)]
+        public async Task CanInvokeFromOnHandler(string protocolName, HttpTransportType transportType, string path)
+        {
+            var protocol = HubProtocols[protocolName];
+            using (StartServer<Startup>(out var server))
+            {
+                const string originalMessage = "SignalR";
+
+                var connection = CreateHubConnection(server.Url, path, transportType, protocol, LoggerFactory);
+                try
+                {
+                    await connection.StartAsync().OrTimeout();
+
+                    var helloWorldTcs = new TaskCompletionSource<string>();
+                    var echoTcs = new TaskCompletionSource<string>();
+                    connection.On<string>("Echo", async (message) =>
+                    {
+                        echoTcs.SetResult(message);
+                        helloWorldTcs.SetResult(await connection.InvokeAsync<string>(nameof(TestHub.HelloWorld)).OrTimeout());
+                    });
+
+                    await connection.InvokeAsync("CallEcho", originalMessage).OrTimeout();
+
+                    Assert.Equal(originalMessage, await echoTcs.Task.OrTimeout());
+                    Assert.Equal("Hello World!", await helloWorldTcs.Task.OrTimeout());
+                }
+                catch (Exception ex)
+                {
+                    LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                    throw;
+                }
+                finally
+                {
+                    await connection.DisposeAsync().OrTimeout();
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
+        [LogLevel(LogLevel.Trace)]
         public async Task CanInvokeClientMethodFromServer(string protocolName, HttpTransportType transportType, string path)
         {
             var protocol = HubProtocols[protocolName];
@@ -263,7 +303,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     await connection.StartAsync().OrTimeout();
 
                     var tcs = new TaskCompletionSource<string>();
-                    connection.On<string>("Echo", tcs.SetResult);
+                    connection.On<string>("Echo", (message) =>
+                    {
+                        tcs.SetResult(message);
+                    });
 
                     await connection.InvokeAsync("CallEcho", originalMessage).OrTimeout();
 
