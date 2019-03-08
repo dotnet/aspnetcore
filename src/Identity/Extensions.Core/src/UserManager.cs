@@ -864,7 +864,7 @@ namespace Microsoft.AspNetCore.Identity
             if (stamp == null) 
             {
                 Logger.LogWarning(15, "GetSecurityStampAsync for user {userId} failed because stamp was null.", await GetUserIdAsync(user));
-                throw new InvalidOperationException("User has a null security stamp which is invalid.");
+                throw new InvalidOperationException(Resources.NullSecurityStamp)
             }
             return stamp;
         }
