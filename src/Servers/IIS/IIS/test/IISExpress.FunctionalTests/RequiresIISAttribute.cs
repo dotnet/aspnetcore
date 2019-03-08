@@ -14,9 +14,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         public string SkipReason { get; } = IISExpressAncmSchema.SkipReason;
 
-        public RequiresIISAttribute() { }
-
-        public RequiresIISAttribute(IISCapability capabilities)
+        public RequiresIISAttribute()
         {
             // https://github.com/aspnet/AspNetCore/issues/8329
             if (Environment.OSVersion.Version.Major == 6 &&
@@ -25,7 +23,10 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 IsMet = false;
                 SkipReason = "Skipped on Windows 7"
             }
+        }
 
+        public RequiresIISAttribute(IISCapability capabilities) : this()
+        {
             // IISCapabilities aren't pertinent to IISExpress
         }
     }
