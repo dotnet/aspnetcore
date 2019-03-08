@@ -70,6 +70,12 @@ namespace Microsoft.AspNetCore.SpaServices
         public string SourcePath { get; set; }
 
         /// <summary>
+        /// Gets or sets the port number used to serve the SPA application.
+        /// An available port will be found in case it is not set.
+        /// </summary>
+        public int PortNumber { get; set; }
+
+        /// <summary>
         /// Gets or sets the maximum duration that a request will wait for the SPA
         /// to become ready to serve to the client.
         /// </summary>
