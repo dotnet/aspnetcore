@@ -325,7 +325,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             // Arrange
             var originalRequestHeaders = _http1Connection.RequestHeaders;
-            _http1Connection.RequestHeaders = new HttpRequestHeaders();
+            _http1Connection.RequestHeaders = new HttpRequestHeaders(new KestrelServerOptions());
 
             // Act
             _http1Connection.Reset();

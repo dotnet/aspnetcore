@@ -483,6 +483,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 Headers[name.GetAsciiStringNonNullCharacters()] = value.GetAsciiStringNonNullCharacters();
             }
 
+            void IHttpHeadersHandler.OnHeadersComplete() { }
+
             public void OnStartLine(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, bool pathEncoded)
             {
                 Method = method != HttpMethod.Custom ? HttpUtilities.MethodToString(method) : customMethod.GetAsciiStringNonNullCharacters();

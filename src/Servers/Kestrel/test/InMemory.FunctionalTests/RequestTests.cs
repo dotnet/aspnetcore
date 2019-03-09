@@ -774,7 +774,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 if (firstRequest)
                 {
                     originalRequestHeaders = requestFeature.Headers;
-                    requestFeature.Headers = new HttpRequestHeaders();
+                    requestFeature.Headers = new HttpRequestHeaders(new KestrelServerOptions());
                     firstRequest = false;
                 }
                 else

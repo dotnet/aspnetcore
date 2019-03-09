@@ -217,7 +217,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void ValidContentLengthsAccepted()
         {
-            ValidContentLengthsAcceptedImpl(new HttpRequestHeaders());
+            ValidContentLengthsAcceptedImpl(new HttpRequestHeaders(new KestrelServerOptions()));
             ValidContentLengthsAcceptedImpl(new HttpResponseHeaders());
         }
 
@@ -250,7 +250,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void InvalidContentLengthsRejected()
         {
-            InvalidContentLengthsRejectedImpl(new HttpRequestHeaders());
+            InvalidContentLengthsRejectedImpl(new HttpRequestHeaders(new KestrelServerOptions()));
             InvalidContentLengthsRejectedImpl(new HttpResponseHeaders());
         }
 

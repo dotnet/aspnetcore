@@ -406,6 +406,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _decodedHeaders[name.GetAsciiStringNonNullCharacters()] = value.GetAsciiOrUTF8StringNonNullCharacters();
         }
 
+        void IHttpHeadersHandler.OnHeadersComplete() { }
+
         protected void CreateConnection()
         {
             var limits = _serviceContext.ServerOptions.Limits;

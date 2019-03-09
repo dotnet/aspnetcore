@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void InitialDictionaryIsEmpty()
         {
-            IDictionary<string, StringValues> headers = new HttpRequestHeaders();
+            IDictionary<string, StringValues> headers = new HttpRequestHeaders(new KestrelServerOptions());
 
             Assert.Equal(0, headers.Count);
             Assert.False(headers.IsReadOnly);
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void SettingUnknownHeadersWorks()
         {
-            IDictionary<string, StringValues> headers = new HttpRequestHeaders();
+            IDictionary<string, StringValues> headers = new HttpRequestHeaders(new KestrelServerOptions());
 
             headers["custom"] = new[] { "value" };
 
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void SettingKnownHeadersWorks()
         {
-            IDictionary<string, StringValues> headers = new HttpRequestHeaders();
+            IDictionary<string, StringValues> headers = new HttpRequestHeaders(new KestrelServerOptions());
 
             headers["host"] = new[] { "value" };
             headers["content-length"] = new[] { "0" };
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void KnownAndCustomHeaderCountAddedTogether()
         {
-            IDictionary<string, StringValues> headers = new HttpRequestHeaders();
+            IDictionary<string, StringValues> headers = new HttpRequestHeaders(new KestrelServerOptions());
 
             headers["host"] = new[] { "value" };
             headers["custom"] = new[] { "value" };
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void TryGetValueWorksForKnownAndUnknownHeaders()
         {
-            IDictionary<string, StringValues> headers = new HttpRequestHeaders();
+            IDictionary<string, StringValues> headers = new HttpRequestHeaders(new KestrelServerOptions());
 
             StringValues value;
             Assert.False(headers.TryGetValue("host", out value));
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void SameExceptionThrownForMissingKey()
         {
-            IDictionary<string, StringValues> headers = new HttpRequestHeaders();
+            IDictionary<string, StringValues> headers = new HttpRequestHeaders(new KestrelServerOptions());
 
             Assert.Throws<KeyNotFoundException>(() => headers["custom"]);
             Assert.Throws<KeyNotFoundException>(() => headers["host"]);
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void EntriesCanBeEnumerated()
         {
-            IDictionary<string, StringValues> headers = new HttpRequestHeaders();
+            IDictionary<string, StringValues> headers = new HttpRequestHeaders(new KestrelServerOptions());
             var v1 = new[] { "localhost" };
             var v2 = new[] { "0" };
             var v3 = new[] { "value" };
@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void KeysAndValuesCanBeEnumerated()
         {
-            IDictionary<string, StringValues> headers = new HttpRequestHeaders();
+            IDictionary<string, StringValues> headers = new HttpRequestHeaders(new KestrelServerOptions());
             StringValues v1 = new[] { "localhost" };
             StringValues v2 = new[] { "0" };
             StringValues v3 = new[] { "value" };
@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void ContainsAndContainsKeyWork()
         {
-            IDictionary<string, StringValues> headers = new HttpRequestHeaders();
+            IDictionary<string, StringValues> headers = new HttpRequestHeaders(new KestrelServerOptions());
             var kv1 = new KeyValuePair<string, StringValues>("host", new[] { "localhost" });
             var kv2 = new KeyValuePair<string, StringValues>("custom", new[] { "value" });
             var kv3 = new KeyValuePair<string, StringValues>("Content-Length", new[] { "0" });
@@ -190,7 +190,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void AddWorksLikeSetAndThrowsIfKeyExists()
         {
-            IDictionary<string, StringValues> headers = new HttpRequestHeaders();
+            IDictionary<string, StringValues> headers = new HttpRequestHeaders(new KestrelServerOptions());
 
             StringValues value;
             Assert.False(headers.TryGetValue("host", out value));
@@ -215,7 +215,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void ClearRemovesAllHeaders()
         {
-            IDictionary<string, StringValues> headers = new HttpRequestHeaders();
+            IDictionary<string, StringValues> headers = new HttpRequestHeaders(new KestrelServerOptions());
             headers.Add("host", new[] { "localhost" });
             headers.Add("custom", new[] { "value" });
             headers.Add("Content-Length", new[] { "0" });
@@ -237,7 +237,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void RemoveTakesHeadersOutOfDictionary()
         {
-            IDictionary<string, StringValues> headers = new HttpRequestHeaders();
+            IDictionary<string, StringValues> headers = new HttpRequestHeaders(new KestrelServerOptions());
             headers.Add("host", new[] { "localhost" });
             headers.Add("custom", new[] { "value" });
             headers.Add("Content-Length", new[] { "0" });
@@ -275,7 +275,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void CopyToMovesDataIntoArray()
         {
-            IDictionary<string, StringValues> headers = new HttpRequestHeaders();
+            IDictionary<string, StringValues> headers = new HttpRequestHeaders(new KestrelServerOptions());
             headers.Add("host", new[] { "localhost" });
             headers.Add("Content-Length", new[] { "0" });
             headers.Add("custom", new[] { "value" });
@@ -302,12 +302,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void AppendThrowsWhenHeaderNameContainsNonASCIICharacters()
         {
-            var headers = new HttpRequestHeaders();
+            var headers = new HttpRequestHeaders(new KestrelServerOptions());
             const string key = "\u00141\u00F3d\017c";
 
             var encoding = Encoding.GetEncoding("iso-8859-1");
             var exception = Assert.Throws<BadHttpRequestException>(
-                () => headers.Append(encoding.GetBytes(key), "value"));
+                () => headers.Append(encoding.GetBytes(key), Encoding.ASCII.GetBytes("value")));
             Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
         }
     }
