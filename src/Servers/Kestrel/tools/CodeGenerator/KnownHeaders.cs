@@ -17,40 +17,19 @@ namespace CodeGenerator
         }
 
         static string AppendSwitch(IEnumerable<IGrouping<int, KnownHeader>> values, string className) =>
-             $@"var pUL = (ulong*)pUB;
-                var pUI = (uint*)pUB;
-                var pUS = (ushort*)pUB;
-                var stringValue = new StringValues(value);
-                switch (keyLength)
-                {{{Each(values, byLength => $@"
-                    case {byLength.Key}:
-                        {{{Each(byLength, header => $@"
-                            if ({header.EqualIgnoreCaseBytes()})
-                            {{{(header.Identifier == "ContentLength" ? $@"
-                                if (_contentLength.HasValue)
-                                {{
-                                    BadHttpRequestException.Throw(RequestRejectionReason.MultipleContentLengths);
-                                }}
-                                else
-                                {{
-                                    _contentLength = ParseContentLength(value);
-                                }}
-                                return;" : $@"
-                                if ({header.TestBit()})
-                                {{
-                                    _headers._{header.Identifier} = AppendValue(_headers._{header.Identifier}, value);
-                                }}
-                                else
-                                {{
-                                    {header.SetBit()};
-                                    _headers._{header.Identifier} = stringValue;{(header.EnhancedSetter == false ? "" : $@"
-                                    _headers._raw{header.Identifier} = null;")}
-                                }}
-                                return;")}
-                            }}
-                        ")}}}
-                        break;
-                ")}}}";
+             $@"switch (name.Length)
+            {{{Each(values, byLength => $@"
+                case {byLength.Key}:{Each(byLength, header => $@"
+                    if ({header.EqualIgnoreCaseBytes()})
+                    {{{(header.Identifier == "ContentLength" ? $@"
+                        AppendContentLength(value);
+                        return;" : $@"
+                        flag = {header.FlagBit()};
+                        values = ref _headers._{header.Identifier};
+                        break;")}
+                    }}")}
+                    break;
+            ")}}}";
 
         class KnownHeader
         {
@@ -65,6 +44,7 @@ namespace CodeGenerator
             public bool FastCount { get; set; }
             public bool EnhancedSetter { get; set; }
             public bool PrimaryHeader { get; set; }
+            public string FlagBit() => $"{"0x" + (1L << Index).ToString("x")}L";
             public string TestBit() => $"(_bits & {"0x" + (1L << Index).ToString("x")}L) != 0";
             public string TestTempBit() => $"(tempBits & {"0x" + (1L << Index).ToString("x")}L) != 0";
             public string TestNotTempBit() => $"(tempBits & ~{"0x" + (1L << Index).ToString("x")}L) == 0";
@@ -72,38 +52,7 @@ namespace CodeGenerator
             public string SetBit() => $"_bits |= {"0x" + (1L << Index).ToString("x")}L";
             public string ClearBit() => $"_bits &= ~{"0x" + (1L << Index).ToString("x")}L";
 
-            public string EqualIgnoreCaseBytes()
-            {
-                var result = "";
-                var delim = "";
-                var index = 0;
-                while (index != Name.Length)
-                {
-                    if (Name.Length - index >= 8)
-                    {
-                        result += delim + Term(Name, index, 8, "pUL", "uL");
-                        index += 8;
-                    }
-                    else if (Name.Length - index >= 4)
-                    {
-                        result += delim + Term(Name, index, 4, "pUI", "u");
-                        index += 4;
-                    }
-                    else if (Name.Length - index >= 2)
-                    {
-                        result += delim + Term(Name, index, 2, "pUS", "u");
-                        index += 2;
-                    }
-                    else
-                    {
-                        result += delim + Term(Name, index, 1, "pUB", "u");
-                        index += 1;
-                    }
-                    delim = " && ";
-                }
-                return $"({result})";
-            }
-            protected string Term(string name, int offset, int count, string array, string suffix)
+            protected string Term(string name, int offset, int count, string type, string suffix)
             {
                 ulong mask = 0;
                 ulong comp = 0;
@@ -114,7 +63,47 @@ namespace CodeGenerator
                     comp = (comp << 8) + (ch & (isAlpha ? 0xdfu : 0xffu));
                     mask = (mask << 8) + (isAlpha ? 0xdfu : 0xffu);
                 }
-                return $"(({array}[{offset / count}] & {mask}{suffix}) == {comp}{suffix})";
+
+                if (type == "byte")
+                {
+                    return $"((Unsafe.Add(ref nameStart, {offset / count}) & {mask}{suffix}) == {comp}{suffix})";
+                }
+                else
+                {
+                    return $"((Unsafe.Add(ref Unsafe.As<byte, {type}>(ref nameStart), {offset / count}) & {mask}{suffix}) == {comp}{suffix})";
+                }
+            }
+
+            public string EqualIgnoreCaseBytes()
+            {
+                var result = "";
+                var delim = "";
+                var index = 0;
+                while (index != Name.Length)
+                {
+                    if (Name.Length - index >= 8)
+                    {
+                        result += delim + Term(Name, index, 8, "ulong", "uL");
+                        index += 8;
+                    }
+                    else if (Name.Length - index >= 4)
+                    {
+                        result += delim + Term(Name, index, 4, "uint", "u");
+                        index += 4;
+                    }
+                    else if (Name.Length - index >= 2)
+                    {
+                        result += delim + Term(Name, index, 2, "ushort", "u");
+                        index += 2;
+                    }
+                    else
+                    {
+                        result += delim + Term(Name, index, 1, "byte", "u");
+                        index += 1;
+                    }
+                    delim = " && ";
+                }
+                return $"({result})";
             }
         }
 
@@ -331,8 +320,10 @@ using System.Collections.Generic;
 using System.Buffers;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {{
@@ -345,8 +336,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {Each(loop.Bytes, b => $"{b},")}
         }};"
         : "")}
-
-        private long _bits = 0;
         private HeaderReferences _headers;
 {Each(loop.Headers.Where(header => header.ExistenceCheck), header => $@"
         public bool Has{header.Identifier} => {header.TestBit()};")}
@@ -510,8 +499,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             return MaybeUnknown?.Remove(key) ?? false;
         }}
-
-        protected override void ClearFast()
+{(loop.ClassName != "HttpRequestHeaders" ?
+ $@"        protected override void ClearFast()
         {{
             MaybeUnknown?.Clear();
             _contentLength = null;
@@ -534,7 +523,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }}
             ")}
         }}
-
+" :
+$@"        private void Clear(long bitsToClear)
+        {{
+            var tempBits = bitsToClear;
+            {Each(loop.Headers.Where(header => header.Identifier != "ContentLength").OrderBy(h => !h.PrimaryHeader), header => $@"
+            if ({header.TestTempBit()})
+            {{
+                _headers._{header.Identifier} = default(StringValues);
+                if({header.TestNotTempBit()})
+                {{
+                    return;
+                }}
+                tempBits &= ~{"0x" + (1L << header.Index).ToString("x")}L;
+            }}
+            ")}
+        }}
+")}
         protected override bool CopyToFast(KeyValuePair<string, StringValues>[] array, int arrayIndex)
         {{
             if (arrayIndex < 0)
@@ -627,20 +632,59 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }} while (tempBits != 0);
         }}" : "")}
         {(loop.ClassName == "HttpRequestHeaders" ? $@"
-        public unsafe void Append(byte* pKeyBytes, int keyLength, string value)
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        public unsafe void Append(Span<byte> name, Span<byte> value)
         {{
-            var pUB = pKeyBytes;
-            {AppendSwitch(loop.Headers.Where(h => h.PrimaryHeader).GroupBy(x => x.Name.Length), loop.ClassName)}
+            ref byte nameStart = ref MemoryMarshal.GetReference(name);
+            ref StringValues values = ref Unsafe.AsRef<StringValues>(null);
+            var flag = 0L;
 
-            AppendNonPrimaryHeaders(pKeyBytes, keyLength, value);
-        }}
+            // Does the name matched any ""known"" headers
+            {AppendSwitch(loop.Headers.GroupBy(x => x.Name.Length).OrderBy(x => x.Key), loop.ClassName)}
 
-        private unsafe void AppendNonPrimaryHeaders(byte* pKeyBytes, int keyLength, string value)
-        {{
-                var pUB = pKeyBytes;
-                {AppendSwitch(loop.Headers.Where(h => !h.PrimaryHeader).GroupBy(x => x.Name.Length), loop.ClassName)}
+            if (flag != 0)
+            {{
+                // Matched a known header
+                if ((_previousBits & flag) != 0)
+                {{
+                    // Had a previous string for this header, mark it as used so we don't clear it OnHeadersComplete or consider it if we get a second header
+                    _previousBits ^= flag;
 
-                AppendUnknownHeaders(pKeyBytes, keyLength, value);
+                    // We will only reuse this header if there was only one previous header
+                    if (values.Count == 1)
+                    {{
+                        var previousValue = values.ToString();
+                        // Check lengths are the same, then if the bytes were converted to an ascii string if they would be the same.
+                        // We do not consider Utf8 headers for reuse.
+                        if (previousValue.Length == value.Length &&
+                            StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, value))
+                        {{
+                            // The previous string matches what the bytes would convert to, so we will just use that one.
+                            _bits |= flag;
+                            return;
+                        }}
+                    }}
+                }}
+
+                // We didn't have a previous matching header value, or have already added a header, so get the string for this value.
+                var valueStr = value.GetAsciiOrUTF8StringNonNullCharacters();
+                if ((_bits & flag) == 0)
+                {{
+                    // We didn't already have a header set, so add a new one.
+                    _bits |= flag;
+                    values = new StringValues(valueStr);
+                }}
+                else
+                {{
+                    // We already had a header set, so concatenate the new one.
+                    values = AppendValue(values, valueStr);
+                }}
+            }}
+            else
+            {{
+                // The header was not one of the ""known"" headers.
+                AppendUnknownHeaders(name, value);
+            }}
         }}" : "")}
 
         private struct HeaderReferences

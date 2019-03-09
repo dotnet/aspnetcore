@@ -6,16 +6,16 @@ using System.Collections.Generic;
 using System.Buffers;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
 
     public partial class HttpRequestHeaders
     {
-
-        private long _bits = 0;
         private HeaderReferences _headers;
 
         public bool HasConnection => (_bits & 0x2L) != 0;
@@ -2655,18 +2655,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             return MaybeUnknown?.Remove(key) ?? false;
         }
-
-        protected override void ClearFast()
+        private void Clear(long bitsToClear)
         {
-            MaybeUnknown?.Clear();
-            _contentLength = null;
-            var tempBits = _bits;
-            _bits = 0;
-            if(HttpHeaders.BitCount(tempBits) > 12)
-            {
-                _headers = default(HeaderReferences);
-                return;
-            }
+            var tempBits = bitsToClear;
             
             if ((tempBits & 0x2L) != 0)
             {
@@ -3509,733 +3500,380 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
         
         
-        public unsafe void Append(byte* pKeyBytes, int keyLength, string value)
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        public unsafe void Append(Span<byte> name, Span<byte> value)
         {
-            var pUB = pKeyBytes;
-            var pUL = (ulong*)pUB;
-                var pUI = (uint*)pUB;
-                var pUS = (ushort*)pUB;
-                var stringValue = new StringValues(value);
-                switch (keyLength)
+            ref byte nameStart = ref MemoryMarshal.GetReference(name);
+            ref StringValues values = ref Unsafe.AsRef<StringValues>(null);
+            var flag = 0L;
+
+            // Does the name matched any "known" headers
+            switch (name.Length)
+            {
+                case 2:
+                    if ((((Unsafe.Add(ref Unsafe.As<byte, ushort>(ref nameStart), 0) & 57311u) == 17748u)))
+                    {
+                        flag = 0x2000000000L;
+                        values = ref _headers._TE;
+                        break;
+                    }
+                    break;
+            
+                case 3:
+                    if ((((Unsafe.Add(ref Unsafe.As<byte, ushort>(ref nameStart), 0) & 57311u) == 18774u) && ((Unsafe.Add(ref nameStart, 2) & 223u) == 65u)))
+                    {
+                        flag = 0x100L;
+                        values = ref _headers._Via;
+                        break;
+                    }
+                    break;
+            
+                case 4:
+                    if ((((Unsafe.Add(ref Unsafe.As<byte, uint>(ref nameStart), 0) & 3755991007u) == 1163149636u)))
+                    {
+                        flag = 0x4L;
+                        values = ref _headers._Date;
+                        break;
+                    }
+                    if ((((Unsafe.Add(ref Unsafe.As<byte, uint>(ref nameStart), 0) & 3755991007u) == 1297044038u)))
+                    {
+                        flag = 0x4000000L;
+                        values = ref _headers._From;
+                        break;
+                    }
+                    if ((((Unsafe.Add(ref Unsafe.As<byte, uint>(ref nameStart), 0) & 3755991007u) == 1414745928u)))
+                    {
+                        flag = 0x8000000L;
+                        values = ref _headers._Host;
+                        break;
+                    }
+                    break;
+            
+                case 5:
+                    if ((((Unsafe.Add(ref Unsafe.As<byte, uint>(ref nameStart), 0) & 3755991007u) == 1330400321u) && ((Unsafe.Add(ref nameStart, 4) & 223u) == 87u)))
+                    {
+                        flag = 0x400L;
+                        values = ref _headers._Allow;
+                        break;
+                    }
+                    if ((((Unsafe.Add(ref Unsafe.As<byte, uint>(ref nameStart), 0) & 3755991007u) == 1196310866u) && ((Unsafe.Add(ref nameStart, 4) & 223u) == 69u)))
+                    {
+                        flag = 0x1000000000L;
+                        values = ref _headers._Range;
+                        break;
+                    }
+                    break;
+            
+                case 6:
+                    if ((((Unsafe.Add(ref Unsafe.As<byte, uint>(ref nameStart), 0) & 3755991007u) == 1195463248u) && ((Unsafe.Add(ref Unsafe.As<byte, ushort>(ref nameStart), 2) & 57311u) == 16717u)))
+                    {
+                        flag = 0x10L;
+                        values = ref _headers._Pragma;
+                        break;
+                    }
+                    if ((((Unsafe.Add(ref Unsafe.As<byte, uint>(ref nameStart), 0) & 3755991007u) == 1162036033u) && ((Unsafe.Add(ref Unsafe.As<byte, ushort>(ref nameStart), 2) & 57311u) == 21584u)))
+                    {
+                        flag = 0x80000L;
+                        values = ref _headers._Accept;
+                        break;
+                    }
+                    if ((((Unsafe.Add(ref Unsafe.As<byte, uint>(ref nameStart), 0) & 3755991007u) == 1263488835u) && ((Unsafe.Add(ref Unsafe.As<byte, ushort>(ref nameStart), 2) & 57311u) == 17737u)))
+                    {
+                        flag = 0x1000000L;
+                        values = ref _headers._Cookie;
+                        break;
+                    }
+                    if ((((Unsafe.Add(ref Unsafe.As<byte, uint>(ref nameStart), 0) & 3755991007u) == 1162893381u) && ((Unsafe.Add(ref Unsafe.As<byte, ushort>(ref nameStart), 2) & 57311u) == 21571u)))
+                    {
+                        flag = 0x2000000L;
+                        values = ref _headers._Expect;
+                        break;
+                    }
+                    if ((((Unsafe.Add(ref Unsafe.As<byte, uint>(ref nameStart), 0) & 3755991007u) == 1195987535u) && ((Unsafe.Add(ref Unsafe.As<byte, ushort>(ref nameStart), 2) & 57311u) == 20041u)))
+                    {
+                        flag = 0x10000000000L;
+                        values = ref _headers._Origin;
+                        break;
+                    }
+                    break;
+            
+                case 7:
+                    if ((((Unsafe.Add(ref Unsafe.As<byte, uint>(ref nameStart), 0) & 3755991007u) == 1229017684u) && ((Unsafe.Add(ref Unsafe.As<byte, ushort>(ref nameStart), 2) & 57311u) == 17740u) && ((Unsafe.Add(ref nameStart, 6) & 223u) == 82u)))
+                    {
+                        flag = 0x20L;
+                        values = ref _headers._Trailer;
+                        break;
+                    }
+                    if ((((Unsafe.Add(ref Unsafe.As<byte, uint>(ref nameStart), 0) & 3755991007u) == 1380405333u) && ((Unsafe.Add(ref Unsafe.As<byte, ushort>(ref nameStart), 2) & 57311u) == 17473u) && ((Unsafe.Add(ref nameStart, 6) & 223u) == 69u)))
+                    {
+                        flag = 0x80L;
+                        values = ref _headers._Upgrade;
+                        break;
+                    }
+                    if ((((Unsafe.Add(ref Unsafe.As<byte, uint>(ref nameStart), 0) & 3755991007u) == 1314013527u) && ((Unsafe.Add(ref Unsafe.As<byte, ushort>(ref nameStart), 2) & 57311u) == 20041u) && ((Unsafe.Add(ref nameStart, 6) & 223u) == 71u)))
+                    {
+                        flag = 0x200L;
+                        values = ref _headers._Warning;
+                        break;
+                    }
+                    if ((((Unsafe.Add(ref Unsafe.As<byte, uint>(ref nameStart), 0) & 3755991007u) == 1230002245u) && ((Unsafe.Add(ref Unsafe.As<byte, ushort>(ref nameStart), 2) & 57311u) == 17746u) && ((Unsafe.Add(ref nameStart, 6) & 223u) == 83u)))
+                    {
+                        flag = 0x20000L;
+                        values = ref _headers._Expires;
+                        break;
+                    }
+                    if ((((Unsafe.Add(ref Unsafe.As<byte, uint>(ref nameStart), 0) & 3755991007u) == 1162233170u) && ((Unsafe.Add(ref Unsafe.As<byte, ushort>(ref nameStart), 2) & 57311u) == 17746u) && ((Unsafe.Add(ref nameStart, 6) & 223u) == 82u)))
+                    {
+                        flag = 0x800000000L;
+                        values = ref _headers._Referer;
+                        break;
+                    }
+                    break;
+            
+                case 8:
+                    if ((((Unsafe.Add(ref Unsafe.As<byte, ulong>(ref nameStart), 0) & 16131858542893195231uL) == 5207098233614845513uL)))
+                    {
+                        flag = 0x10000000L;
+                        values = ref _headers._IfMatch;
+                        break;
+                    }
+                    if ((((Unsafe.Add(ref Unsafe.As<byte, ulong>(ref nameStart), 0) & 16131858542893195231uL) == 4992044754422023753uL)))
+                    {
+                        flag = 0x80000000L;
+                        values = ref _headers._IfRange;
+                        break;
+                    }
+                    break;
+            
+                case 9:
+                    if ((((Unsafe.Add(ref Unsafe.As<byte, ulong>(ref nameStart), 0) & 16131858542891098079uL) == 6071217693351039572uL) && ((Unsafe.Add(ref nameStart, 8) & 223u) == 69u)))
+                    {
+                        flag = 0x4000000000L;
+                        values = ref _headers._Translate;
+                        break;
+                    }
+                    break;
+            
+                case 10:
+                    if ((((Unsafe.Add(ref Unsafe.As<byte, ulong>(ref nameStart), 0) & 16131858542891098079uL) == 5283922227757993795uL) && ((Unsafe.Add(ref Unsafe.As<byte, ushort>(ref nameStart), 4) & 57311u) == 20047u)))
+                    {
+                        flag = 0x2L;
+                        values = ref _headers._Connection;
+                        break;
+                    }
+                    if ((((Unsafe.Add(ref Unsafe.As<byte, ulong>(ref nameStart), 0) & 16131858680330051551uL) == 5281668125874799947uL) && ((Unsafe.Add(ref Unsafe.As<byte, ushort>(ref nameStart), 4) & 57311u) == 17750u)))
+                    {
+                        flag = 0x8L;
+                        values = ref _headers._KeepAlive;
+                        break;
+                    }
+                    if ((((Unsafe.Add(ref Unsafe.As<byte, ulong>(ref nameStart), 0) & 16131858680330051551uL) == 4992030374873092949uL) && ((Unsafe.Add(ref Unsafe.As<byte, ushort>(ref nameStart), 4) & 57311u) == 21582u)))
+                    {
+                        flag = 0x8000000000L;
+                        values = ref _headers._UserAgent;
+                        break;
+                    }
+                    break;
+            
+                case 11:
+                    if ((((Unsafe.Add(ref Unsafe.As<byte, ulong>(ref nameStart), 0) & 18437701552104792031uL) == 3266321689424580419uL) && ((Unsafe.Add(ref Unsafe.As<byte, ushort>(ref nameStart), 4) & 57311u) == 17485u) && ((Unsafe.Add(ref nameStart, 10) & 255u) == 53u)))
+                    {
+                        flag = 0x8000L;
+                        values = ref _headers._ContentMD5;
+                        break;
+                    }
+                    break;
+            
+                case 12:
+                    if ((((Unsafe.Add(ref Unsafe.As<byte, ulong>(ref nameStart), 0) & 18437701552104792031uL) == 3266321689424580419uL) && ((Unsafe.Add(ref Unsafe.As<byte, uint>(ref nameStart), 2) & 3755991007u) == 1162893652u)))
+                    {
+                        flag = 0x800L;
+                        values = ref _headers._ContentType;
+                        break;
+                    }
+                    if ((((Unsafe.Add(ref Unsafe.As<byte, ulong>(ref nameStart), 0) & 16131858543427968991uL) == 6292178792217067853uL) && ((Unsafe.Add(ref Unsafe.As<byte, uint>(ref nameStart), 2) & 3755991007u) == 1396986433u)))
+                    {
+                        flag = 0x200000000L;
+                        values = ref _headers._MaxForwards;
+                        break;
+                    }
+                    break;
+            
+                case 13:
+                    if ((((Unsafe.Add(ref Unsafe.As<byte, ulong>(ref nameStart), 0) & 16131893727263186911uL) == 5711458528024281411uL) && ((Unsafe.Add(ref Unsafe.As<byte, uint>(ref nameStart), 2) & 3755991007u) == 1330795598u) && ((Unsafe.Add(ref nameStart, 12) & 223u) == 76u)))
+                    {
+                        flag = 0x1L;
+                        values = ref _headers._CacheControl;
+                        break;
+                    }
+                    if ((((Unsafe.Add(ref Unsafe.As<byte, ulong>(ref nameStart), 0) & 18437701552104792031uL) == 3266321689424580419uL) && ((Unsafe.Add(ref Unsafe.As<byte, uint>(ref nameStart), 2) & 3755991007u) == 1196310866u) && ((Unsafe.Add(ref nameStart, 12) & 223u) == 69u)))
+                    {
+                        flag = 0x10000L;
+                        values = ref _headers._ContentRange;
+                        break;
+                    }
+                    if ((((Unsafe.Add(ref Unsafe.As<byte, ulong>(ref nameStart), 0) & 16131858680330051551uL) == 4922237774822850892uL) && ((Unsafe.Add(ref Unsafe.As<byte, uint>(ref nameStart), 2) & 3755991007u) == 1162430025u) && ((Unsafe.Add(ref nameStart, 12) & 223u) == 68u)))
+                    {
+                        flag = 0x40000L;
+                        values = ref _headers._LastModified;
+                        break;
+                    }
+                    if ((((Unsafe.Add(ref Unsafe.As<byte, ulong>(ref nameStart), 0) & 16131858542891098079uL) == 6505821637182772545uL) && ((Unsafe.Add(ref Unsafe.As<byte, uint>(ref nameStart), 2) & 3755991007u) == 1330205761u) && ((Unsafe.Add(ref nameStart, 12) & 223u) == 78u)))
+                    {
+                        flag = 0x800000L;
+                        values = ref _headers._Authorization;
+                        break;
+                    }
+                    if ((((Unsafe.Add(ref Unsafe.As<byte, ulong>(ref nameStart), 0) & 18437701552106889183uL) == 3262099607620765257uL) && ((Unsafe.Add(ref Unsafe.As<byte, uint>(ref nameStart), 2) & 3755991007u) == 1129595213u) && ((Unsafe.Add(ref nameStart, 12) & 223u) == 72u)))
+                    {
+                        flag = 0x40000000L;
+                        values = ref _headers._IfNoneMatch;
+                        break;
+                    }
+                    break;
+            
+                case 14:
+                    if ((((Unsafe.Add(ref Unsafe.As<byte, ulong>(ref nameStart), 0) & 16140865742145839071uL) == 4840617878229304129uL) && ((Unsafe.Add(ref Unsafe.As<byte, uint>(ref nameStart), 2) & 3755991007u) == 1397899592u) && ((Unsafe.Add(ref Unsafe.As<byte, ushort>(ref nameStart), 6) & 57311u) == 21573u)))
+                    {
+                        flag = 0x100000L;
+                        values = ref _headers._AcceptCharset;
+                        break;
+                    }
+                    if ((((Unsafe.Add(ref Unsafe.As<byte, ulong>(ref nameStart), 0) & 18437701552104792031uL) == 3266321689424580419uL) && ((Unsafe.Add(ref Unsafe.As<byte, uint>(ref nameStart), 2) & 3755991007u) == 1196311884u) && ((Unsafe.Add(ref Unsafe.As<byte, ushort>(ref nameStart), 6) & 57311u) == 18516u)))
+                    {
+                        AppendContentLength(value);
+                        return;
+                    }
+                    break;
+            
+                case 15:
+                    if ((((Unsafe.Add(ref Unsafe.As<byte, ulong>(ref nameStart), 0) & 16140865742145839071uL) == 4984733066305160001uL) && ((Unsafe.Add(ref Unsafe.As<byte, uint>(ref nameStart), 2) & 3755991007u) == 1146045262u) && ((Unsafe.Add(ref Unsafe.As<byte, ushort>(ref nameStart), 6) & 57311u) == 20041u) && ((Unsafe.Add(ref nameStart, 14) & 223u) == 71u)))
+                    {
+                        flag = 0x200000L;
+                        values = ref _headers._AcceptEncoding;
+                        break;
+                    }
+                    if ((((Unsafe.Add(ref Unsafe.As<byte, ulong>(ref nameStart), 0) & 16140865742145839071uL) == 5489136224570655553uL) && ((Unsafe.Add(ref Unsafe.As<byte, uint>(ref nameStart), 2) & 3755991007u) == 1430736449u) && ((Unsafe.Add(ref Unsafe.As<byte, ushort>(ref nameStart), 6) & 57311u) == 18241u) && ((Unsafe.Add(ref nameStart, 14) & 223u) == 69u)))
+                    {
+                        flag = 0x400000L;
+                        values = ref _headers._AcceptLanguage;
+                        break;
+                    }
+                    break;
+            
+                case 16:
+                    if ((((Unsafe.Add(ref Unsafe.As<byte, ulong>(ref nameStart), 0) & 18437701552104792031uL) == 3266321689424580419uL) && ((Unsafe.Add(ref Unsafe.As<byte, ulong>(ref nameStart), 1) & 16131858542891098079uL) == 5138124782612729413uL)))
+                    {
+                        flag = 0x1000L;
+                        values = ref _headers._ContentEncoding;
+                        break;
+                    }
+                    if ((((Unsafe.Add(ref Unsafe.As<byte, ulong>(ref nameStart), 0) & 18437701552104792031uL) == 3266321689424580419uL) && ((Unsafe.Add(ref Unsafe.As<byte, ulong>(ref nameStart), 1) & 16131858542891098079uL) == 4992030546487820620uL)))
+                    {
+                        flag = 0x2000L;
+                        values = ref _headers._ContentLanguage;
+                        break;
+                    }
+                    if ((((Unsafe.Add(ref Unsafe.As<byte, ulong>(ref nameStart), 0) & 18437701552104792031uL) == 3266321689424580419uL) && ((Unsafe.Add(ref Unsafe.As<byte, ulong>(ref nameStart), 1) & 16131858542891098079uL) == 5642809484339531596uL)))
+                    {
+                        flag = 0x4000L;
+                        values = ref _headers._ContentLocation;
+                        break;
+                    }
+                    break;
+            
+                case 17:
+                    if ((((Unsafe.Add(ref Unsafe.As<byte, ulong>(ref nameStart), 0) & 16131858542891098079uL) == 5928221808112259668uL) && ((Unsafe.Add(ref Unsafe.As<byte, ulong>(ref nameStart), 1) & 16131858542891098111uL) == 5641115115480565037uL) && ((Unsafe.Add(ref nameStart, 16) & 223u) == 71u)))
+                    {
+                        flag = 0x40L;
+                        values = ref _headers._TransferEncoding;
+                        break;
+                    }
+                    if ((((Unsafe.Add(ref Unsafe.As<byte, ulong>(ref nameStart), 0) & 16131858542893195231uL) == 5064654363342751305uL) && ((Unsafe.Add(ref Unsafe.As<byte, ulong>(ref nameStart), 1) & 16131858543427968991uL) == 4849894470315165001uL) && ((Unsafe.Add(ref nameStart, 16) & 223u) == 69u)))
+                    {
+                        flag = 0x20000000L;
+                        values = ref _headers._IfModifiedSince;
+                        break;
+                    }
+                    break;
+            
+                case 19:
+                    if ((((Unsafe.Add(ref Unsafe.As<byte, ulong>(ref nameStart), 0) & 16131858542893195231uL) == 4922237916571059785uL) && ((Unsafe.Add(ref Unsafe.As<byte, ulong>(ref nameStart), 1) & 16131893727263186911uL) == 5283616559079179849uL) && ((Unsafe.Add(ref Unsafe.As<byte, ushort>(ref nameStart), 8) & 57311u) == 17230u) && ((Unsafe.Add(ref nameStart, 18) & 223u) == 69u)))
+                    {
+                        flag = 0x100000000L;
+                        values = ref _headers._IfUnmodifiedSince;
+                        break;
+                    }
+                    if ((((Unsafe.Add(ref Unsafe.As<byte, ulong>(ref nameStart), 0) & 16131893727263186911uL) == 6143241228466999888uL) && ((Unsafe.Add(ref Unsafe.As<byte, ulong>(ref nameStart), 1) & 16131858542891098079uL) == 6071233043632179284uL) && ((Unsafe.Add(ref Unsafe.As<byte, ushort>(ref nameStart), 8) & 57311u) == 20297u) && ((Unsafe.Add(ref nameStart, 18) & 223u) == 78u)))
+                    {
+                        flag = 0x400000000L;
+                        values = ref _headers._ProxyAuthorization;
+                        break;
+                    }
+                    break;
+            
+                case 29:
+                    if ((((Unsafe.Add(ref Unsafe.As<byte, ulong>(ref nameStart), 0) & 16140865742145839071uL) == 4840616791602578241uL) && ((Unsafe.Add(ref Unsafe.As<byte, ulong>(ref nameStart), 1) & 16140865742145839071uL) == 5921472988629454415uL) && ((Unsafe.Add(ref Unsafe.As<byte, ulong>(ref nameStart), 2) & 16140865742145839071uL) == 5561193831494668613uL) && ((Unsafe.Add(ref Unsafe.As<byte, uint>(ref nameStart), 6) & 3755991007u) == 1330140229u) && ((Unsafe.Add(ref nameStart, 28) & 223u) == 68u)))
+                    {
+                        flag = 0x20000000000L;
+                        values = ref _headers._AccessControlRequestMethod;
+                        break;
+                    }
+                    break;
+            
+                case 30:
+                    if ((((Unsafe.Add(ref Unsafe.As<byte, ulong>(ref nameStart), 0) & 16140865742145839071uL) == 4840616791602578241uL) && ((Unsafe.Add(ref Unsafe.As<byte, ulong>(ref nameStart), 1) & 16140865742145839071uL) == 5921472988629454415uL) && ((Unsafe.Add(ref Unsafe.As<byte, ulong>(ref nameStart), 2) & 16140865742145839071uL) == 5200905861305028933uL) && ((Unsafe.Add(ref Unsafe.As<byte, uint>(ref nameStart), 6) & 3755991007u) == 1162101061u) && ((Unsafe.Add(ref Unsafe.As<byte, ushort>(ref nameStart), 14) & 57311u) == 21330u)))
+                    {
+                        flag = 0x40000000000L;
+                        values = ref _headers._AccessControlRequestHeaders;
+                        break;
+                    }
+                    break;
+            }
+
+            if (flag != 0)
+            {
+                // Matched a known header
+                if ((_previousBits & flag) != 0)
                 {
-                    case 10:
+                    // Had a previous string for this header, mark it as used so we don't clear it OnHeadersComplete or consider it if we get a second header
+                    _previousBits ^= flag;
+
+                    // We will only reuse this header if there was only one previous header
+                    if (values.Count == 1)
+                    {
+                        var previousValue = values.ToString();
+                        // Check lengths are the same, then if the bytes were converted to an ascii string if they would be the same.
+                        // We do not consider Utf8 headers for reuse.
+                        if (previousValue.Length == value.Length &&
+                            StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, value))
                         {
-                            if ((((pUL[0] & 16131858542891098079uL) == 5283922227757993795uL) && ((pUS[4] & 57311u) == 20047u)))
-                            {
-                                if ((_bits & 0x2L) != 0)
-                                {
-                                    _headers._Connection = AppendValue(_headers._Connection, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x2L;
-                                    _headers._Connection = stringValue;
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUL[0] & 16131858680330051551uL) == 4992030374873092949uL) && ((pUS[4] & 57311u) == 21582u)))
-                            {
-                                if ((_bits & 0x8000000000L) != 0)
-                                {
-                                    _headers._UserAgent = AppendValue(_headers._UserAgent, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x8000000000L;
-                                    _headers._UserAgent = stringValue;
-                                }
-                                return;
-                            }
+                            // The previous string matches what the bytes would convert to, so we will just use that one.
+                            _bits |= flag;
+                            return;
                         }
-                        break;
-                
-                    case 6:
-                        {
-                            if ((((pUI[0] & 3755991007u) == 1162036033u) && ((pUS[2] & 57311u) == 21584u)))
-                            {
-                                if ((_bits & 0x80000L) != 0)
-                                {
-                                    _headers._Accept = AppendValue(_headers._Accept, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x80000L;
-                                    _headers._Accept = stringValue;
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 4:
-                        {
-                            if ((((pUI[0] & 3755991007u) == 1414745928u)))
-                            {
-                                if ((_bits & 0x8000000L) != 0)
-                                {
-                                    _headers._Host = AppendValue(_headers._Host, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x8000000L;
-                                    _headers._Host = stringValue;
-                                }
-                                return;
-                            }
-                        }
-                        break;
+                    }
                 }
 
-            AppendNonPrimaryHeaders(pKeyBytes, keyLength, value);
-        }
-
-        private unsafe void AppendNonPrimaryHeaders(byte* pKeyBytes, int keyLength, string value)
-        {
-                var pUB = pKeyBytes;
-                var pUL = (ulong*)pUB;
-                var pUI = (uint*)pUB;
-                var pUS = (ushort*)pUB;
-                var stringValue = new StringValues(value);
-                switch (keyLength)
+                // We didn't have a previous matching header value, or have already added a header, so get the string for this value.
+                var valueStr = value.GetAsciiOrUTF8StringNonNullCharacters();
+                if ((_bits & flag) == 0)
                 {
-                    case 13:
-                        {
-                            if ((((pUL[0] & 16131893727263186911uL) == 5711458528024281411uL) && ((pUI[2] & 3755991007u) == 1330795598u) && ((pUB[12] & 223u) == 76u)))
-                            {
-                                if ((_bits & 0x1L) != 0)
-                                {
-                                    _headers._CacheControl = AppendValue(_headers._CacheControl, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x1L;
-                                    _headers._CacheControl = stringValue;
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUL[0] & 18437701552104792031uL) == 3266321689424580419uL) && ((pUI[2] & 3755991007u) == 1196310866u) && ((pUB[12] & 223u) == 69u)))
-                            {
-                                if ((_bits & 0x10000L) != 0)
-                                {
-                                    _headers._ContentRange = AppendValue(_headers._ContentRange, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x10000L;
-                                    _headers._ContentRange = stringValue;
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUL[0] & 16131858680330051551uL) == 4922237774822850892uL) && ((pUI[2] & 3755991007u) == 1162430025u) && ((pUB[12] & 223u) == 68u)))
-                            {
-                                if ((_bits & 0x40000L) != 0)
-                                {
-                                    _headers._LastModified = AppendValue(_headers._LastModified, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x40000L;
-                                    _headers._LastModified = stringValue;
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUL[0] & 16131858542891098079uL) == 6505821637182772545uL) && ((pUI[2] & 3755991007u) == 1330205761u) && ((pUB[12] & 223u) == 78u)))
-                            {
-                                if ((_bits & 0x800000L) != 0)
-                                {
-                                    _headers._Authorization = AppendValue(_headers._Authorization, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x800000L;
-                                    _headers._Authorization = stringValue;
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUL[0] & 18437701552106889183uL) == 3262099607620765257uL) && ((pUI[2] & 3755991007u) == 1129595213u) && ((pUB[12] & 223u) == 72u)))
-                            {
-                                if ((_bits & 0x40000000L) != 0)
-                                {
-                                    _headers._IfNoneMatch = AppendValue(_headers._IfNoneMatch, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x40000000L;
-                                    _headers._IfNoneMatch = stringValue;
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 4:
-                        {
-                            if ((((pUI[0] & 3755991007u) == 1163149636u)))
-                            {
-                                if ((_bits & 0x4L) != 0)
-                                {
-                                    _headers._Date = AppendValue(_headers._Date, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x4L;
-                                    _headers._Date = stringValue;
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUI[0] & 3755991007u) == 1297044038u)))
-                            {
-                                if ((_bits & 0x4000000L) != 0)
-                                {
-                                    _headers._From = AppendValue(_headers._From, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x4000000L;
-                                    _headers._From = stringValue;
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 10:
-                        {
-                            if ((((pUL[0] & 16131858680330051551uL) == 5281668125874799947uL) && ((pUS[4] & 57311u) == 17750u)))
-                            {
-                                if ((_bits & 0x8L) != 0)
-                                {
-                                    _headers._KeepAlive = AppendValue(_headers._KeepAlive, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x8L;
-                                    _headers._KeepAlive = stringValue;
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 6:
-                        {
-                            if ((((pUI[0] & 3755991007u) == 1195463248u) && ((pUS[2] & 57311u) == 16717u)))
-                            {
-                                if ((_bits & 0x10L) != 0)
-                                {
-                                    _headers._Pragma = AppendValue(_headers._Pragma, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x10L;
-                                    _headers._Pragma = stringValue;
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUI[0] & 3755991007u) == 1263488835u) && ((pUS[2] & 57311u) == 17737u)))
-                            {
-                                if ((_bits & 0x1000000L) != 0)
-                                {
-                                    _headers._Cookie = AppendValue(_headers._Cookie, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x1000000L;
-                                    _headers._Cookie = stringValue;
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUI[0] & 3755991007u) == 1162893381u) && ((pUS[2] & 57311u) == 21571u)))
-                            {
-                                if ((_bits & 0x2000000L) != 0)
-                                {
-                                    _headers._Expect = AppendValue(_headers._Expect, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x2000000L;
-                                    _headers._Expect = stringValue;
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUI[0] & 3755991007u) == 1195987535u) && ((pUS[2] & 57311u) == 20041u)))
-                            {
-                                if ((_bits & 0x10000000000L) != 0)
-                                {
-                                    _headers._Origin = AppendValue(_headers._Origin, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x10000000000L;
-                                    _headers._Origin = stringValue;
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 7:
-                        {
-                            if ((((pUI[0] & 3755991007u) == 1229017684u) && ((pUS[2] & 57311u) == 17740u) && ((pUB[6] & 223u) == 82u)))
-                            {
-                                if ((_bits & 0x20L) != 0)
-                                {
-                                    _headers._Trailer = AppendValue(_headers._Trailer, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x20L;
-                                    _headers._Trailer = stringValue;
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUI[0] & 3755991007u) == 1380405333u) && ((pUS[2] & 57311u) == 17473u) && ((pUB[6] & 223u) == 69u)))
-                            {
-                                if ((_bits & 0x80L) != 0)
-                                {
-                                    _headers._Upgrade = AppendValue(_headers._Upgrade, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x80L;
-                                    _headers._Upgrade = stringValue;
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUI[0] & 3755991007u) == 1314013527u) && ((pUS[2] & 57311u) == 20041u) && ((pUB[6] & 223u) == 71u)))
-                            {
-                                if ((_bits & 0x200L) != 0)
-                                {
-                                    _headers._Warning = AppendValue(_headers._Warning, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x200L;
-                                    _headers._Warning = stringValue;
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUI[0] & 3755991007u) == 1230002245u) && ((pUS[2] & 57311u) == 17746u) && ((pUB[6] & 223u) == 83u)))
-                            {
-                                if ((_bits & 0x20000L) != 0)
-                                {
-                                    _headers._Expires = AppendValue(_headers._Expires, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x20000L;
-                                    _headers._Expires = stringValue;
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUI[0] & 3755991007u) == 1162233170u) && ((pUS[2] & 57311u) == 17746u) && ((pUB[6] & 223u) == 82u)))
-                            {
-                                if ((_bits & 0x800000000L) != 0)
-                                {
-                                    _headers._Referer = AppendValue(_headers._Referer, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x800000000L;
-                                    _headers._Referer = stringValue;
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 17:
-                        {
-                            if ((((pUL[0] & 16131858542891098079uL) == 5928221808112259668uL) && ((pUL[1] & 16131858542891098111uL) == 5641115115480565037uL) && ((pUB[16] & 223u) == 71u)))
-                            {
-                                if ((_bits & 0x40L) != 0)
-                                {
-                                    _headers._TransferEncoding = AppendValue(_headers._TransferEncoding, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x40L;
-                                    _headers._TransferEncoding = stringValue;
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUL[0] & 16131858542893195231uL) == 5064654363342751305uL) && ((pUL[1] & 16131858543427968991uL) == 4849894470315165001uL) && ((pUB[16] & 223u) == 69u)))
-                            {
-                                if ((_bits & 0x20000000L) != 0)
-                                {
-                                    _headers._IfModifiedSince = AppendValue(_headers._IfModifiedSince, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x20000000L;
-                                    _headers._IfModifiedSince = stringValue;
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 3:
-                        {
-                            if ((((pUS[0] & 57311u) == 18774u) && ((pUB[2] & 223u) == 65u)))
-                            {
-                                if ((_bits & 0x100L) != 0)
-                                {
-                                    _headers._Via = AppendValue(_headers._Via, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x100L;
-                                    _headers._Via = stringValue;
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 5:
-                        {
-                            if ((((pUI[0] & 3755991007u) == 1330400321u) && ((pUB[4] & 223u) == 87u)))
-                            {
-                                if ((_bits & 0x400L) != 0)
-                                {
-                                    _headers._Allow = AppendValue(_headers._Allow, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x400L;
-                                    _headers._Allow = stringValue;
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUI[0] & 3755991007u) == 1196310866u) && ((pUB[4] & 223u) == 69u)))
-                            {
-                                if ((_bits & 0x1000000000L) != 0)
-                                {
-                                    _headers._Range = AppendValue(_headers._Range, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x1000000000L;
-                                    _headers._Range = stringValue;
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 12:
-                        {
-                            if ((((pUL[0] & 18437701552104792031uL) == 3266321689424580419uL) && ((pUI[2] & 3755991007u) == 1162893652u)))
-                            {
-                                if ((_bits & 0x800L) != 0)
-                                {
-                                    _headers._ContentType = AppendValue(_headers._ContentType, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x800L;
-                                    _headers._ContentType = stringValue;
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUL[0] & 16131858543427968991uL) == 6292178792217067853uL) && ((pUI[2] & 3755991007u) == 1396986433u)))
-                            {
-                                if ((_bits & 0x200000000L) != 0)
-                                {
-                                    _headers._MaxForwards = AppendValue(_headers._MaxForwards, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x200000000L;
-                                    _headers._MaxForwards = stringValue;
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 16:
-                        {
-                            if ((((pUL[0] & 18437701552104792031uL) == 3266321689424580419uL) && ((pUL[1] & 16131858542891098079uL) == 5138124782612729413uL)))
-                            {
-                                if ((_bits & 0x1000L) != 0)
-                                {
-                                    _headers._ContentEncoding = AppendValue(_headers._ContentEncoding, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x1000L;
-                                    _headers._ContentEncoding = stringValue;
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUL[0] & 18437701552104792031uL) == 3266321689424580419uL) && ((pUL[1] & 16131858542891098079uL) == 4992030546487820620uL)))
-                            {
-                                if ((_bits & 0x2000L) != 0)
-                                {
-                                    _headers._ContentLanguage = AppendValue(_headers._ContentLanguage, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x2000L;
-                                    _headers._ContentLanguage = stringValue;
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUL[0] & 18437701552104792031uL) == 3266321689424580419uL) && ((pUL[1] & 16131858542891098079uL) == 5642809484339531596uL)))
-                            {
-                                if ((_bits & 0x4000L) != 0)
-                                {
-                                    _headers._ContentLocation = AppendValue(_headers._ContentLocation, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x4000L;
-                                    _headers._ContentLocation = stringValue;
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 11:
-                        {
-                            if ((((pUL[0] & 18437701552104792031uL) == 3266321689424580419uL) && ((pUS[4] & 57311u) == 17485u) && ((pUB[10] & 255u) == 53u)))
-                            {
-                                if ((_bits & 0x8000L) != 0)
-                                {
-                                    _headers._ContentMD5 = AppendValue(_headers._ContentMD5, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x8000L;
-                                    _headers._ContentMD5 = stringValue;
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 14:
-                        {
-                            if ((((pUL[0] & 16140865742145839071uL) == 4840617878229304129uL) && ((pUI[2] & 3755991007u) == 1397899592u) && ((pUS[6] & 57311u) == 21573u)))
-                            {
-                                if ((_bits & 0x100000L) != 0)
-                                {
-                                    _headers._AcceptCharset = AppendValue(_headers._AcceptCharset, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x100000L;
-                                    _headers._AcceptCharset = stringValue;
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUL[0] & 18437701552104792031uL) == 3266321689424580419uL) && ((pUI[2] & 3755991007u) == 1196311884u) && ((pUS[6] & 57311u) == 18516u)))
-                            {
-                                if (_contentLength.HasValue)
-                                {
-                                    BadHttpRequestException.Throw(RequestRejectionReason.MultipleContentLengths);
-                                }
-                                else
-                                {
-                                    _contentLength = ParseContentLength(value);
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 15:
-                        {
-                            if ((((pUL[0] & 16140865742145839071uL) == 4984733066305160001uL) && ((pUI[2] & 3755991007u) == 1146045262u) && ((pUS[6] & 57311u) == 20041u) && ((pUB[14] & 223u) == 71u)))
-                            {
-                                if ((_bits & 0x200000L) != 0)
-                                {
-                                    _headers._AcceptEncoding = AppendValue(_headers._AcceptEncoding, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x200000L;
-                                    _headers._AcceptEncoding = stringValue;
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUL[0] & 16140865742145839071uL) == 5489136224570655553uL) && ((pUI[2] & 3755991007u) == 1430736449u) && ((pUS[6] & 57311u) == 18241u) && ((pUB[14] & 223u) == 69u)))
-                            {
-                                if ((_bits & 0x400000L) != 0)
-                                {
-                                    _headers._AcceptLanguage = AppendValue(_headers._AcceptLanguage, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x400000L;
-                                    _headers._AcceptLanguage = stringValue;
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 8:
-                        {
-                            if ((((pUL[0] & 16131858542893195231uL) == 5207098233614845513uL)))
-                            {
-                                if ((_bits & 0x10000000L) != 0)
-                                {
-                                    _headers._IfMatch = AppendValue(_headers._IfMatch, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x10000000L;
-                                    _headers._IfMatch = stringValue;
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUL[0] & 16131858542893195231uL) == 4992044754422023753uL)))
-                            {
-                                if ((_bits & 0x80000000L) != 0)
-                                {
-                                    _headers._IfRange = AppendValue(_headers._IfRange, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x80000000L;
-                                    _headers._IfRange = stringValue;
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 19:
-                        {
-                            if ((((pUL[0] & 16131858542893195231uL) == 4922237916571059785uL) && ((pUL[1] & 16131893727263186911uL) == 5283616559079179849uL) && ((pUS[8] & 57311u) == 17230u) && ((pUB[18] & 223u) == 69u)))
-                            {
-                                if ((_bits & 0x100000000L) != 0)
-                                {
-                                    _headers._IfUnmodifiedSince = AppendValue(_headers._IfUnmodifiedSince, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x100000000L;
-                                    _headers._IfUnmodifiedSince = stringValue;
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUL[0] & 16131893727263186911uL) == 6143241228466999888uL) && ((pUL[1] & 16131858542891098079uL) == 6071233043632179284uL) && ((pUS[8] & 57311u) == 20297u) && ((pUB[18] & 223u) == 78u)))
-                            {
-                                if ((_bits & 0x400000000L) != 0)
-                                {
-                                    _headers._ProxyAuthorization = AppendValue(_headers._ProxyAuthorization, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x400000000L;
-                                    _headers._ProxyAuthorization = stringValue;
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 2:
-                        {
-                            if ((((pUS[0] & 57311u) == 17748u)))
-                            {
-                                if ((_bits & 0x2000000000L) != 0)
-                                {
-                                    _headers._TE = AppendValue(_headers._TE, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x2000000000L;
-                                    _headers._TE = stringValue;
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 9:
-                        {
-                            if ((((pUL[0] & 16131858542891098079uL) == 6071217693351039572uL) && ((pUB[8] & 223u) == 69u)))
-                            {
-                                if ((_bits & 0x4000000000L) != 0)
-                                {
-                                    _headers._Translate = AppendValue(_headers._Translate, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x4000000000L;
-                                    _headers._Translate = stringValue;
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 29:
-                        {
-                            if ((((pUL[0] & 16140865742145839071uL) == 4840616791602578241uL) && ((pUL[1] & 16140865742145839071uL) == 5921472988629454415uL) && ((pUL[2] & 16140865742145839071uL) == 5561193831494668613uL) && ((pUI[6] & 3755991007u) == 1330140229u) && ((pUB[28] & 223u) == 68u)))
-                            {
-                                if ((_bits & 0x20000000000L) != 0)
-                                {
-                                    _headers._AccessControlRequestMethod = AppendValue(_headers._AccessControlRequestMethod, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x20000000000L;
-                                    _headers._AccessControlRequestMethod = stringValue;
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 30:
-                        {
-                            if ((((pUL[0] & 16140865742145839071uL) == 4840616791602578241uL) && ((pUL[1] & 16140865742145839071uL) == 5921472988629454415uL) && ((pUL[2] & 16140865742145839071uL) == 5200905861305028933uL) && ((pUI[6] & 3755991007u) == 1162101061u) && ((pUS[14] & 57311u) == 21330u)))
-                            {
-                                if ((_bits & 0x40000000000L) != 0)
-                                {
-                                    _headers._AccessControlRequestHeaders = AppendValue(_headers._AccessControlRequestHeaders, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x40000000000L;
-                                    _headers._AccessControlRequestHeaders = stringValue;
-                                }
-                                return;
-                            }
-                        }
-                        break;
+                    // We didn't already have a header set, so add a new one.
+                    _bits |= flag;
+                    values = new StringValues(valueStr);
                 }
-
-                AppendUnknownHeaders(pKeyBytes, keyLength, value);
+                else
+                {
+                    // We already had a header set, so concatenate the new one.
+                    values = AppendValue(values, valueStr);
+                }
+            }
+            else
+            {
+                // The header was not one of the "known" headers.
+                AppendUnknownHeaders(name, value);
+            }
         }
 
         private struct HeaderReferences
@@ -4711,8 +4349,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             13,10,67,97,99,104,101,45,67,111,110,116,114,111,108,58,32,13,10,67,111,110,110,101,99,116,105,111,110,58,32,13,10,68,97,116,101,58,32,13,10,75,101,101,112,45,65,108,105,118,101,58,32,13,10,80,114,97,103,109,97,58,32,13,10,84,114,97,105,108,101,114,58,32,13,10,84,114,97,110,115,102,101,114,45,69,110,99,111,100,105,110,103,58,32,13,10,85,112,103,114,97,100,101,58,32,13,10,86,105,97,58,32,13,10,87,97,114,110,105,110,103,58,32,13,10,65,108,108,111,119,58,32,13,10,67,111,110,116,101,110,116,45,84,121,112,101,58,32,13,10,67,111,110,116,101,110,116,45,69,110,99,111,100,105,110,103,58,32,13,10,67,111,110,116,101,110,116,45,76,97,110,103,117,97,103,101,58,32,13,10,67,111,110,116,101,110,116,45,76,111,99,97,116,105,111,110,58,32,13,10,67,111,110,116,101,110,116,45,77,68,53,58,32,13,10,67,111,110,116,101,110,116,45,82,97,110,103,101,58,32,13,10,69,120,112,105,114,101,115,58,32,13,10,76,97,115,116,45,77,111,100,105,102,105,101,100,58,32,13,10,65,99,99,101,112,116,45,82,97,110,103,101,115,58,32,13,10,65,103,101,58,32,13,10,69,84,97,103,58,32,13,10,76,111,99,97,116,105,111,110,58,32,13,10,80,114,111,120,121,45,65,117,116,104,101,110,116,105,99,97,116,101,58,32,13,10,82,101,116,114,121,45,65,102,116,101,114,58,32,13,10,83,101,114,118,101,114,58,32,13,10,83,101,116,45,67,111,111,107,105,101,58,32,13,10,86,97,114,121,58,32,13,10,87,87,87,45,65,117,116,104,101,110,116,105,99,97,116,101,58,32,13,10,65,99,99,101,115,115,45,67,111,110,116,114,111,108,45,65,108,108,111,119,45,67,114,101,100,101,110,116,105,97,108,115,58,32,13,10,65,99,99,101,115,115,45,67,111,110,116,114,111,108,45,65,108,108,111,119,45,72,101,97,100,101,114,115,58,32,13,10,65,99,99,101,115,115,45,67,111,110,116,114,111,108,45,65,108,108,111,119,45,77,101,116,104,111,100,115,58,32,13,10,65,99,99,101,115,115,45,67,111,110,116,114,111,108,45,65,108,108,111,119,45,79,114,105,103,105,110,58,32,13,10,65,99,99,101,115,115,45,67,111,110,116,114,111,108,45,69,120,112,111,115,101,45,72,101,97,100,101,114,115,58,32,13,10,65,99,99,101,115,115,45,67,111,110,116,114,111,108,45,77,97,120,45,65,103,101,58,32,13,10,67,111,110,116,101,110,116,45,76,101,110,103,116,104,58,32,
         };
-
-        private long _bits = 0;
         private HeaderReferences _headers;
 
         public bool HasConnection => (_bits & 0x2L) != 0;
@@ -6980,7 +6616,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             return MaybeUnknown?.Remove(key) ?? false;
         }
-
         protected override void ClearFast()
         {
             MaybeUnknown?.Clear();
@@ -8537,8 +8172,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             13,10,69,84,97,103,58,32,
         };
-
-        private long _bits = 0;
         private HeaderReferences _headers;
 
 
@@ -8657,7 +8290,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             return MaybeUnknown?.Remove(key) ?? false;
         }
-
         protected override void ClearFast()
         {
             MaybeUnknown?.Clear();
