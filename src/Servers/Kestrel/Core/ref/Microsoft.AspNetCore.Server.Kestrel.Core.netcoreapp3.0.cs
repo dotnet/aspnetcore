@@ -123,6 +123,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         public System.IServiceProvider ApplicationServices { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader ConfigurationLoader { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerLimits Limits { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public bool ReuseRequestHeaders { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader Configure() { throw null; }
         public Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader Configure(Microsoft.Extensions.Configuration.IConfiguration config) { throw null; }
         public void ConfigureEndpointDefaults(System.Action<Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions> configureOptions) { }
@@ -498,6 +499,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public readonly Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.Http1Connection Connection;
         public Http1ParsingHandler(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.Http1Connection connection) { throw null; }
         public void OnHeader(System.Span<byte> name, System.Span<byte> value) { }
+        public void OnHeadersComplete() { }
         public void OnStartLine(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod method, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersion version, System.Span<byte> target, System.Span<byte> path, System.Span<byte> query, System.Span<byte> customMethod, bool pathEncoded) { }
     }
     public partial class Http1UpgradeMessageBody : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.Http1MessageBody
@@ -518,6 +520,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     public abstract partial class HttpHeaders : Microsoft.AspNetCore.Http.IHeaderDictionary, System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues>>, System.Collections.Generic.IDictionary<string, Microsoft.Extensions.Primitives.StringValues>, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues>>, System.Collections.IEnumerable
     {
         protected System.Collections.Generic.Dictionary<string, Microsoft.Extensions.Primitives.StringValues> MaybeUnknown;
+        protected long _bits;
         protected long? _contentLength;
         protected bool _isReadOnly;
         protected HttpHeaders() { }
@@ -695,6 +698,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public void OnCompleted(System.Func<object, System.Threading.Tasks.Task> callback, object state) { }
         protected virtual void OnErrorAfterResponseStarted() { }
         public void OnHeader(System.Span<byte> name, System.Span<byte> value) { }
+        public void OnHeadersComplete() { }
         protected virtual void OnRequestProcessingEnded() { }
         protected virtual void OnRequestProcessingEnding() { }
         protected abstract void OnReset();
@@ -723,7 +727,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     }
     public sealed partial class HttpRequestHeaders : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpHeaders
     {
-        public HttpRequestHeaders() { }
+        public HttpRequestHeaders(Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions serverOptions) { }
         public bool HasConnection { get { throw null; } }
         public bool HasTransferEncoding { get { throw null; } }
         public Microsoft.Extensions.Primitives.StringValues HeaderAccept { get { throw null; } set { } }
@@ -772,13 +776,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public Microsoft.Extensions.Primitives.StringValues HeaderWarning { get { throw null; } set { } }
         public int HostCount { get { throw null; } }
         protected override bool AddValueFast(string key, in Microsoft.Extensions.Primitives.StringValues value) { throw null; }
-        public unsafe void Append(byte* pKeyBytes, int keyLength, string value) { }
-        public void Append(System.Span<byte> name, string value) { }
+        public void Append(System.Span<byte> name, System.Span<byte> value) { }
         protected override void ClearFast() { }
         protected override bool CopyToFast(System.Collections.Generic.KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues>[] array, int arrayIndex) { throw null; }
         protected override int GetCountFast() { throw null; }
         public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpRequestHeaders.Enumerator GetEnumerator() { throw null; }
         protected override System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues>> GetEnumeratorFast() { throw null; }
+        public void OnHeadersComplete() { }
         protected override bool RemoveFast(string key) { throw null; }
         protected override void SetValueFast(string key, in Microsoft.Extensions.Primitives.StringValues value) { }
         protected override bool TryGetValueFast(string key, out Microsoft.Extensions.Primitives.StringValues value) { throw null; }
@@ -940,6 +944,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     public partial interface IHttpHeadersHandler
     {
         void OnHeader(System.Span<byte> name, System.Span<byte> value);
+        void OnHeadersComplete();
     }
     public partial interface IHttpOutputAborter
     {
@@ -1131,6 +1136,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         void Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.IHttp2StreamLifetimeHandler.OnStreamCompleted(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2Stream stream) { }
         void Microsoft.AspNetCore.Server.Kestrel.Core.Internal.IRequestProcessor.Tick(System.DateTimeOffset now) { }
         public void OnHeader(System.Span<byte> name, System.Span<byte> value) { }
+        public void OnHeadersComplete() { }
         public void OnInputOrOutputCompleted() { }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task ProcessRequestsAsync<TContext>(Microsoft.AspNetCore.Hosting.Server.IHttpApplication<TContext> application) { throw null; }
