@@ -24,6 +24,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         public Http1Connection Connection { get; set; }
 
+        [Params(true, false)]
+        public bool ReuseHeaders { get; set; }
+
         [GlobalSetup]
         public void Setup()
         {
@@ -33,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
             var serviceContext = new ServiceContext
             {
-                ServerOptions = new KestrelServerOptions(),
+                ServerOptions = new KestrelServerOptions() { ReuseRequestHeaders = ReuseHeaders },
                 HttpParser = NullParser<Http1ParsingHandler>.Instance
             };
 
