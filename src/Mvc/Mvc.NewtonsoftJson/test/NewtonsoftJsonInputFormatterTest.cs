@@ -474,7 +474,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var formatter = new TestableJsonInputFormatter(settings);
 
             // Act
-            var actual = formatter.CreateJsonSerializer();
+            var actual = formatter.CreateJsonSerializer(null);
 
             // Assert
             Assert.Same(settings.ContractResolver, actual.ContractResolver);
@@ -578,7 +578,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             public new JsonSerializerSettings SerializerSettings => base.SerializerSettings;
 
-            public new JsonSerializer CreateJsonSerializer() => base.CreateJsonSerializer();
+            public new JsonSerializer CreateJsonSerializer(InputFormatterContext _) => base.CreateJsonSerializer(null);
         }
 
         private static ILogger GetLogger()
