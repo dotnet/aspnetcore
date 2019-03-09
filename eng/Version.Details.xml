@@ -357,13 +357,13 @@
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>232796d75d9492f273f61df9bb8afc05d33d6dc6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.DependencyModel" Version="3.0.0-preview4-27506-4">
+    <Dependency Name="Microsoft.Extensions.DependencyModel" Version="3.0.0-preview4-27508-16">
       <Uri>https://github.com/dotnet/core-setup</Uri>
-      <Sha>ed6636c463f0ac5fe4183348b6b18e57c8345cb5</Sha>
+      <Sha>ac7856f5c717a730b0f09b1ab30f419cb726ab22</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App" Version="3.0.0-preview4-27506-4">
+    <Dependency Name="Microsoft.NETCore.App" Version="3.0.0-preview4-27508-16">
       <Uri>https://github.com/dotnet/core-setup</Uri>
-      <Sha>ed6636c463f0ac5fe4183348b6b18e57c8345cb5</Sha>
+      <Sha>ac7856f5c717a730b0f09b1ab30f419cb726ab22</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
