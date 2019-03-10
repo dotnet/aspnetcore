@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
     public class Http2FrameWriter
     {
         // Literal Header Field without Indexing - Indexed Name (Index 8 - :status)
-        private static readonly byte[] _continueBytes = new byte[] { 0x08, 0x03, (byte)'1', (byte)'0', (byte)'0' };
+        private static ReadOnlySpan<byte> _continueBytes => new byte[] { 0x08, 0x03, (byte)'1', (byte)'0', (byte)'0' };
 
         private readonly object _writeLock = new object();
         private readonly Http2Frame _outgoingFrame;
