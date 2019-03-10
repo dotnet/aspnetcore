@@ -45,6 +45,21 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
             Assert.Equal(new[] { "test" }, handler.Headers.GetValues("out"));
         }
 
+        [Fact]
+        public void Builder_UseHeaderPropagation_Without_AddHeaderPropagation_Throws()
+        {
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseHeaderPropagation();
+                });
+
+            var exception = Assert.Throws<InvalidOperationException>(() => new TestServer(builder));
+            Assert.Equal(
+                "Unable to find the required services. Please add all the required services by calling 'IServiceCollection.AddHeaderPropagation' inside the call to 'ConfigureServices(...)' in the application startup code.",
+                exception.Message);
+        }
+
         private IWebHostBuilder CreateBuilder(Action<HeaderPropagationOptions> configure, HttpMessageHandler primaryHandler)
         {
             return new WebHostBuilder()
