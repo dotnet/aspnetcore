@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation
         public HeaderPropagationMiddleware(RequestDelegate next, IOptions<HeaderPropagationOptions> options, HeaderPropagationState state)
         {
             _next = next ?? throw new ArgumentNullException(nameof(next));
-            
+
             if (options == null)
             {
                 throw new ArgumentNullException(nameof(options));
@@ -36,8 +36,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation
 
                 if (!StringValues.IsNullOrEmpty(values))
                 {
-                    var outputName = !string.IsNullOrEmpty(header.OutputName) ? header.OutputName : header.InputName;
-                    _state.Headers.TryAdd(outputName, values);
+                    _state.Headers.TryAdd(header.InputName, values);
                 }
             }
 
