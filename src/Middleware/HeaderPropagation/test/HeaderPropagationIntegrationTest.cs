@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
                 .Configure(app =>
                 {
                     app.UseHeaderPropagation();
-                    app.Map("", x => x.UseMiddleware<SimpleMiddleware>());
+                    app.UseMiddleware<SimpleMiddleware>();
                 })
                 .ConfigureServices(services =>
                 {
@@ -75,12 +75,10 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
 
         private class SimpleMiddleware
         {
-            private readonly RequestDelegate _next;
             private readonly IHttpClientFactory _httpClientFactory;
 
             public SimpleMiddleware(RequestDelegate next, IHttpClientFactory httpClientFactory)
             {
-                _next = next;
                 _httpClientFactory = httpClientFactory;
             }
 
