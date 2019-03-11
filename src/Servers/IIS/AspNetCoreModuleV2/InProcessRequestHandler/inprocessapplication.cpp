@@ -536,7 +536,7 @@ IN_PROCESS_APPLICATION::CreateHandler(
         DBG_ASSERT(!m_fStopCalled);
         m_requestCount++;
 
-        LOG_INFOF(L"Adding request. Total Request Count %d", m_requestCount.load());
+        LOG_TRACEF(L"Adding request. Total Request Count %d", m_requestCount.load());
 
         *pRequestHandler = new IN_PROCESS_HANDLER(::ReferenceApplication(this), pHttpContext, m_RequestHandler, m_RequestHandlerContext, m_DisconnectHandler, m_AsyncCompletionHandler);
     }
@@ -550,7 +550,7 @@ IN_PROCESS_APPLICATION::HandleRequestCompletion()
 {
     SRWSharedLock lock(m_stateLock);
     m_requestCount--;
-    LOG_INFOF(L"Removing Request %d", m_requestCount.load());
+    LOG_TRACEF(L"Removing Request %d", m_requestCount.load());
 
     if (m_fStopCalled && m_requestCount.load() == 0 && !m_blockManagedCallbacks)
     {
