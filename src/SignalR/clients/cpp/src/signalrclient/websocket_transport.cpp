@@ -58,9 +58,9 @@ namespace signalr
         auto websocket_client = this_transport->safe_get_websocket_client();
 
         // There are two cases when we exit the loop. The first case is implicit - we pass the cancellation_token
-            // to `then` (note this is after the lambda body) and if the token is cancelled the continuation will not
-            // run at all. The second - explicit - case happens if the token gets cancelled after the continuation has
-            // been started in which case we just stop the loop by not scheduling another receive task.
+        // to `then` (note this is after the lambda body) and if the token is cancelled the continuation will not
+        // run at all. The second - explicit - case happens if the token gets cancelled after the continuation has
+        // been started in which case we just stop the loop by not scheduling another receive task.
         websocket_client->receive([weak_transport, cts, logger, websocket_client](std::string message, std::exception_ptr exception)
             {
                 if (exception != nullptr)
@@ -133,7 +133,7 @@ namespace signalr
         }
     }
 
-    void websocket_transport::start(const std::string& url, /*format,*/ std::function<void(std::exception_ptr)> callback)
+    void websocket_transport::start(const std::string& url, transfer_format format, std::function<void(std::exception_ptr)> callback)
     {
         web::uri uri(utility::conversions::to_string_t(url));
         _ASSERTE(uri.scheme() == _XPLATSTR("ws") || uri.scheme() == _XPLATSTR("wss"));
@@ -161,7 +161,7 @@ namespace signalr
 
             auto transport = shared_from_this();
 
-            websocket_client->start(url, [transport, receive_loop_cts, callback](std::exception_ptr exception)
+            websocket_client->start(url, format, [transport, receive_loop_cts, callback](std::exception_ptr exception)
                 {
                     try
                     {

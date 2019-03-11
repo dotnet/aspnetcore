@@ -5,6 +5,7 @@
 
 #include "pplx/pplxtasks.h"
 #include "signalrclient/transport_type.h"
+#include "transfer_format.h"
 #include "logger.h"
 
 namespace signalr
@@ -16,7 +17,7 @@ namespace signalr
 
         virtual ~transport();
 
-        virtual void start(const std::string& url, /*format,*/ std::function<void(std::exception_ptr)> callback) = 0;
+        virtual void start(const std::string& url, transfer_format format, std::function<void(std::exception_ptr)> callback) = 0;
         virtual void stop(std::function<void(std::exception_ptr)> callback) = 0;
         virtual void on_close(std::function<void(std::exception_ptr)> callback) = 0;
 

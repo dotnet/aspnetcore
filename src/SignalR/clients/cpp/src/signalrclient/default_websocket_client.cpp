@@ -21,7 +21,7 @@ namespace signalr
         : m_underlying_client(create_client_config(signalr_client_config))
     { }
 
-    void default_websocket_client::start(std::string url, std::function<void(std::exception_ptr)> callback)
+    void default_websocket_client::start(std::string url, transfer_format, std::function<void(std::exception_ptr)> callback)
     {
         m_underlying_client.connect(utility::conversions::to_string_t(url))
             .then([callback](pplx::task<void> task)

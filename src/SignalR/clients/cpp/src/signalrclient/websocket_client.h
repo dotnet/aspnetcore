@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "pplx/pplxtasks.h"
+#include "transfer_format.h"
 
 namespace signalr
 {
@@ -12,7 +12,7 @@ namespace signalr
     public:
         virtual ~websocket_client() {};
 
-        virtual void start(std::string url, /*transfer_format format,*/ std::function<void(std::exception_ptr)> callback) = 0;
+        virtual void start(std::string url, transfer_format format, std::function<void(std::exception_ptr)> callback) = 0;
 
         virtual void stop(std::function<void(std::exception_ptr)> callback) = 0;
 

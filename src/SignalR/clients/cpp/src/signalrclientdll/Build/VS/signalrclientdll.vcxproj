@@ -65,6 +65,7 @@
     <ClInclude Include="..\..\..\signalrclient\negotiation_response.h" />
     <ClInclude Include="..\..\..\signalrclient\stdafx.h" />
     <ClInclude Include="..\..\..\signalrclient\trace_log_writer.h" />
+    <ClInclude Include="..\..\..\signalrclient\transfer_format.h" />
     <ClInclude Include="..\..\..\signalrclient\transport.h" />
     <ClInclude Include="..\..\..\signalrclient\transport_factory.h" />
     <ClInclude Include="..\..\..\signalrclient\url_builder.h" />

@@ -14,7 +14,7 @@ namespace signalr
     public:
         explicit default_websocket_client(const signalr_client_config& signalr_client_config = {}) noexcept;
 
-        void start(std::string url, std::function<void(std::exception_ptr)> callback) override;
+        void start(std::string url, transfer_format format, std::function<void(std::exception_ptr)> callback) override;
         void stop(std::function<void(std::exception_ptr)> callback) override;
         void send(std::string payload, std::function<void(std::exception_ptr)> callback) override;
         void receive(std::function<void(std::string, std::exception_ptr)> callback) override;

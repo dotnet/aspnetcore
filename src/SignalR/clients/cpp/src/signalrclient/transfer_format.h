@@ -5,9 +5,9 @@
 
 namespace signalr
 {
-    enum class transport_type
+    enum class transfer_format
     {
-        long_polling,
-        websockets
+        text,
+        binary
     };
 }

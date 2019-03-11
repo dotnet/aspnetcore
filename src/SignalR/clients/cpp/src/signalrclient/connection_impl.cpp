@@ -306,7 +306,7 @@ namespace signalr
         auto query_string = "id=" + m_connection_id;
         auto connect_url = url_builder::build_connect(url, transport->get_transport_type(), query_string);
 
-        transport->start(connect_url, [transport, connect_request_tce, logger](std::exception_ptr exception)
+        transport->start(connect_url, transfer_format::text, [transport, connect_request_tce, logger](std::exception_ptr exception)
             mutable {
                 try
                 {
