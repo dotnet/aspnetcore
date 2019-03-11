@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         { }
 
         /// <summary>
-        /// The handler calls methods on the events which give the application control at certain points where processing is occurring. 
+        /// The handler calls methods on the events which give the application control at certain points where processing is occurring.
         /// If it is not provided a default instance is supplied which does nothing when the methods are called.
         /// </summary>
         protected new JwtBearerEvents Events
@@ -231,35 +231,23 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                     // Only add a comma after the first param, if any
                     builder.Append(',');
                 }
+
+                var errorItems = new List<string>(3);
+
                 if (!string.IsNullOrEmpty(eventContext.Error))
                 {
-                    builder.Append(" error=\"");
-                    builder.Append(eventContext.Error);
-                    builder.Append("\"");
+                    errorItems.Add($"error=\"{eventContext.Error}\"");
                 }
                 if (!string.IsNullOrEmpty(eventContext.ErrorDescription))
                 {
-                    if (!string.IsNullOrEmpty(eventContext.Error))
-                    {
-                        builder.Append(",");
-                    }
-
-                    builder.Append(" error_description=\"");
-                    builder.Append(eventContext.ErrorDescription);
-                    builder.Append('\"');
+                    errorItems.Add($"error_description=\"{eventContext.ErrorDescription}\"");
                 }
                 if (!string.IsNullOrEmpty(eventContext.ErrorUri))
                 {
-                    if (!string.IsNullOrEmpty(eventContext.Error) ||
-                        !string.IsNullOrEmpty(eventContext.ErrorDescription))
-                    {
-                        builder.Append(",");
-                    }
-
-                    builder.Append(" error_uri=\"");
-                    builder.Append(eventContext.ErrorUri);
-                    builder.Append('\"');
+                    errorItems.Add($"error_uri=\"{eventContext.ErrorUri}\"");
                 }
+
+                builder.AppendJoin(", ", errorItems);
 
                 Response.Headers.Append(HeaderNames.WWWAuthenticate, builder.ToString());
             }
