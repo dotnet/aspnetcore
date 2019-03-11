@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
@@ -27,26 +28,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
 
         protected abstract string StartAndGetRootUri();
 
-        protected static string FindSolutionDir()
-        {
-            return FindClosestDirectoryContaining(
-                "Components.sln",
-                Path.GetDirectoryName(typeof(ServerFixture).Assembly.Location));
-        }
-
         private static Dictionary<string, string> FindProjects()
         {
-            var solutionDir = FindSolutionDir();
-
-            var testAssetsDirectories = new[]
-            {
-                Path.Combine(solutionDir, "test", "testassets"),
-                Path.Combine(solutionDir, "blazor", "testassets"),
-            };
-
-            return testAssetsDirectories
-                .SelectMany(d => new DirectoryInfo(d).EnumerateDirectories())
-                .ToDictionary(d => d.Name, d => d.FullName);
+            return typeof(ServerFixture).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+                .Where(m => m.Key.StartsWith("TestAssemblyApplication["))
+                .ToDictionary(m =>
+                    m.Key.Replace("TestAssemblyApplication", "").TrimStart('[').TrimEnd(']'),
+                    m => m.Value);
         }
 
         protected static string FindSampleOrTestSitePath(string projectName)
@@ -58,28 +46,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
             }
 
             throw new ArgumentException($"Cannot find a sample or test site with name '{projectName}'.");
-        }
-
-        private static string FindClosestDirectoryContaining(
-            string filename,
-            string startDirectory)
-        {
-            var dir = startDirectory;
-            while (true)
-            {
-                if (File.Exists(Path.Combine(dir, filename)))
-                {
-                    return dir;
-                }
-
-                dir = Directory.GetParent(dir)?.FullName;
-                if (string.IsNullOrEmpty(dir))
-                {
-                    throw new FileNotFoundException(
-                        $"Could not locate a file called '{filename}' in " +
-                        $"directory '{startDirectory}' or any parent directory.");
-                }
-            }
         }
 
         protected static void RunInBackgroundThread(Action action)

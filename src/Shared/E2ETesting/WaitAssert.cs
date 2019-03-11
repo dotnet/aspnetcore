@@ -9,7 +9,7 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
+namespace Microsoft.AspNetCore.E2ETesting
 {
     // XUnit assertions, but hooked into Selenium's polling mechanism
 
