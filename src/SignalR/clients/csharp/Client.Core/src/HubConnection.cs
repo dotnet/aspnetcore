@@ -63,13 +63,40 @@ namespace Microsoft.AspNetCore.SignalR.Client
         private ConnectionState _connectionState;
         private int _serverProtocolMinorVersion;
 
+        /// <summary>
+        /// Occurs when the connection is closed. The connection could be closed due to an error or due to either the server or client intentionally
+        /// closing the connection without error.
+        /// </summary>
+        /// <remarks>
+        /// If this event was triggered from a connection error, the <see cref="Exception"/> that occurred will be passed in as the
+        /// sole argument to this handler. If this event was triggered intentionally by either the client or server, then
+        /// the argument will be <see langword="null"/>.
+        /// </remarks>
+        /// <example>
+        /// The following example attaches a handler to the <see cref="Closed"/> event, and checks the provided argument to determine
+        /// if there was an error:
+        ///
+        /// <code>
+        /// connection.Closed += (exception) =>
+        /// {
+        ///     if (exception == null)
+        ///     {
+        ///         Console.WriteLine("Connection closed without error.");
+        ///     }
+        ///     else
+        ///     {
+        ///         Console.WriteLine($"Connection closed due to an error: {exception.Message}");
+        ///     }
+        /// };
+        /// </code>
+        /// </example>
         public event Func<Exception, Task> Closed;
 
         // internal for testing purposes
         internal TimeSpan TickRate { get; set; } = TimeSpan.FromSeconds(1);
 
         /// <summary>
-        /// Gets or sets the server timeout interval for the connection. 
+        /// Gets or sets the server timeout interval for the connection.
         /// </summary>
         /// <remarks>
         /// The client times out if it hasn't heard from the server for `this` long.
@@ -510,7 +537,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             }
         }
 
-        // this is called via reflection using the `_sendStreamItems` field 
+        // this is called via reflection using the `_sendStreamItems` field
         private async Task SendStreamItems<T>(string streamId, ChannelReader<T> reader, CancellationToken token)
         {
             Log.StartingStream(_logger, streamId);
@@ -849,7 +876,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                     }
                 }
             }
-            
+
             // shutdown if we're unable to read handshake
             // Ignore HubException because we throw it when we receive a handshake response with an error
             // And because we already have the error, we don't need to log that the handshake failed
@@ -1139,7 +1166,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         private class InvocationHandlerList
         {
             private readonly List<InvocationHandler> _invocationHandlers;
-            // A lazy cached copy of the handlers that doesn't change for thread safety. 
+            // A lazy cached copy of the handlers that doesn't change for thread safety.
             // Adding or removing a handler sets this to null.
             private InvocationHandler[] _copiedHandlers;
 
