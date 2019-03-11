@@ -173,7 +173,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <summary>
         /// The <see cref="IEmailLookupNormalizer"/> used to normalize emails.
         /// </summary>
-        public IEmailLookupNormalizer KeyNormalizer { get; set; }
+        public IEmailLookupNormalizer EmailNormalizer { get; set; }
         
         /// <summary>
         /// The <see cref="IdentityErrorDescriber"/> used to generate error messages.
