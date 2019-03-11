@@ -1364,6 +1364,9 @@ namespace RazorSyntaxGenerator
                     Write(CamelCase(field.Name));
                 }
                 WriteLine(");");
+                WriteLine("            var diagnostics = GetDiagnostics();");
+                WriteLine("            if (diagnostics != null && diagnostics.Length > 0)");
+                WriteLine("               newNode = newNode.WithDiagnostics(diagnostics);");
                 WriteLine("            var annotations = GetAnnotations();");
                 WriteLine("            if (annotations != null && annotations.Length > 0)");
                 WriteLine("               return newNode.WithAnnotations(annotations);");
