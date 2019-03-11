@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.Signalr.Client.Internal;
 using Microsoft.AspNetCore.SignalR.Client.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.Logging;
@@ -49,6 +50,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         private readonly IServiceProvider _serviceProvider;
         private readonly IConnectionFactory _connectionFactory;
         private readonly ConcurrentDictionary<string, InvocationHandlerList> _handlers = new ConcurrentDictionary<string, InvocationHandlerList>(StringComparer.Ordinal);
+        private readonly TaskQueue taskQueue = new TaskQueue();
 
         private long _nextActivationServerTimeout;
         private long _nextActivationSendPing;
@@ -392,6 +394,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
                 CheckDisposed();
                 connectionState = _connectionState;
+                await taskQueue.Drain();
 
                 // Set the stopping flag so that any invocations after this get a useful error message instead of
                 // silently failing or throwing an error about the pipe being completed.
@@ -704,7 +707,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 case InvocationMessage invocation:
                     Log.ReceivedInvocation(_logger, invocation.InvocationId, invocation.Target, invocation.Arguments);
                     // No need to wait on the On handlers logic. Would prevent us from awaiting other invocations.
-                    _ = DispatchInvocationAsync(invocation);
+                    _ = taskQueue.Enqueue((state) => DispatchInvocationAsync((InvocationMessage)state), invocation);
                     break;
                 case CompletionMessage completion:
                     if (!connectionState.TryRemoveInvocation(completion.InvocationId, out irq))
