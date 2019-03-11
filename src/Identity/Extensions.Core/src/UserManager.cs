@@ -113,6 +113,9 @@ namespace Microsoft.AspNetCore.Identity
                         RegisterTokenProvider(providerName, provider);
                     }
                 }
+                
+                NameNormalizer = services.GetService<INameLookupNormalizer>() ?? KeyNormalizer;
+                EmailNormalizer = services.GetService<IEmailLookupNormalizer>() ?? KeyNormalizer;
             }
 
             if (Options.Stores.ProtectPersonalData)
@@ -162,6 +165,16 @@ namespace Microsoft.AspNetCore.Identity
         /// </summary>
         public ILookupNormalizer KeyNormalizer { get; set; }
 
+        /// <summary>
+        /// The <see cref="INameLookupNormalizer"/> used to normalize user and role names.
+        /// </summary>
+        public INameLookupNormalizer NameNormalizer { get; set; }
+
+        /// <summary>
+        /// The <see cref="IEmailLookupNormalizer"/> used to normalize emails.
+        /// </summary>
+        public IEmailLookupNormalizer KeyNormalizer { get; set; }
+        
         /// <summary>
         /// The <see cref="IdentityErrorDescriber"/> used to generate error messages.
         /// </summary>
@@ -547,7 +560,7 @@ namespace Microsoft.AspNetCore.Identity
             {
                 throw new ArgumentNullException(nameof(userName));
             }
-            userName = NormalizeKey(userName);
+            userName = NormalizeName(userName);
 
             var user = await Store.FindByNameAsync(userName, CancellationToken);
 
@@ -603,15 +616,21 @@ namespace Microsoft.AspNetCore.Identity
         }
 
         /// <summary>
-        /// Normalize a key (user name, email) for consistent comparisons.
+        /// Normalize a user or role name for consistent comparisons.
         /// </summary>
-        /// <param name="key">The key to normalize.</param>
-        /// <returns>A normalized value representing the specified <paramref name="key"/>.</returns>
-        public virtual string NormalizeKey(string key)
-        {
-            return (KeyNormalizer == null) ? key : KeyNormalizer.Normalize(key);
-        }
+        /// <param name="key">The name to normalize.</param>
+        /// <returns>A normalized value representing the specified <paramref name="name"/>.</returns>
+        public virtual string NormalizeName(string name)
+            =>  (NameNormalizer == null) ? name : NameNormalizer.Normalize(name);
 
+        /// <summary>
+        /// Normalize a user or role name for consistent comparisons.
+        /// </summary>
+        /// <param name="key">The name to normalize.</param>
+        /// <returns>A normalized value representing the specified <paramref name="name"/>.</returns>
+        public virtual string NormalizeEmail(string email)
+            =>  (EmailNormalizer == null) ? email : NameNormalizer.Normalize(email);
+        
         private string ProtectPersonalData(string data)
         {
             if (Options.Stores.ProtectPersonalData)
@@ -630,7 +649,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
         public virtual async Task UpdateNormalizedUserNameAsync(TUser user)
         {
-            var normalizedName = NormalizeKey(await GetUserNameAsync(user));
+            var normalizedName = NormalizeName(await GetUserNameAsync(user));
             normalizedName = ProtectPersonalData(normalizedName);
             await Store.SetNormalizedUserNameAsync(user, normalizedName, CancellationToken);
         }
@@ -1199,7 +1218,7 @@ namespace Microsoft.AspNetCore.Identity
                 throw new ArgumentNullException(nameof(user));
             }
 
-            var normalizedRole = NormalizeKey(role);
+            var normalizedRole = NormalizeName(role);
             if (await userRoleStore.IsInRoleAsync(user, normalizedRole, CancellationToken))
             {
                 return await UserAlreadyInRoleError(user, role);
@@ -1232,7 +1251,7 @@ namespace Microsoft.AspNetCore.Identity
 
             foreach (var role in roles.Distinct())
             {
-                var normalizedRole = NormalizeKey(role);
+                var normalizedRole = NormalizeName(role);
                 if (await userRoleStore.IsInRoleAsync(user, normalizedRole, CancellationToken))
                 {
                     return await UserAlreadyInRoleError(user, role);
@@ -1260,7 +1279,7 @@ namespace Microsoft.AspNetCore.Identity
                 throw new ArgumentNullException(nameof(user));
             }
 
-            var normalizedRole = NormalizeKey(role);
+            var normalizedRole = NormalizeName(role);
             if (!await userRoleStore.IsInRoleAsync(user, normalizedRole, CancellationToken))
             {
                 return await UserNotInRoleError(user, role);
@@ -1305,7 +1324,7 @@ namespace Microsoft.AspNetCore.Identity
 
             foreach (var role in roles)
             {
-                var normalizedRole = NormalizeKey(role);
+                var normalizedRole = NormalizeName(role);
                 if (!await userRoleStore.IsInRoleAsync(user, normalizedRole, CancellationToken))
                 {
                     return await UserNotInRoleError(user, role);
@@ -1348,7 +1367,7 @@ namespace Microsoft.AspNetCore.Identity
             {
                 throw new ArgumentNullException(nameof(user));
             }
-            return await userRoleStore.IsInRoleAsync(user, NormalizeKey(role), CancellationToken);
+            return await userRoleStore.IsInRoleAsync(user, NormalizeName(role), CancellationToken);
         }
 
         /// <summary>
@@ -1409,7 +1428,7 @@ namespace Microsoft.AspNetCore.Identity
                 throw new ArgumentNullException(nameof(email));
             }
 
-            email = NormalizeKey(email);
+            email = NormalizeEmail(email);
             var user = await store.FindByEmailAsync(email, CancellationToken);
 
             // Need to potentially check all keys
@@ -1444,7 +1463,7 @@ namespace Microsoft.AspNetCore.Identity
             if (store != null)
             {
                 var email = await GetEmailAsync(user);
-                await store.SetNormalizedEmailAsync(user, ProtectPersonalData(NormalizeKey(email)), CancellationToken);
+                await store.SetNormalizedEmailAsync(user, ProtectPersonalData(NormalizeEmail(email)), CancellationToken);
             }
         }
 
@@ -2097,7 +2116,7 @@ namespace Microsoft.AspNetCore.Identity
                 throw new ArgumentNullException(nameof(roleName));
             }
 
-            return store.GetUsersInRoleAsync(NormalizeKey(roleName), CancellationToken);
+            return store.GetUsersInRoleAsync(NormalizeName(roleName), CancellationToken);
         }
 
         /// <summary>
