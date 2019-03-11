@@ -123,7 +123,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       <IncludeAssets>Runtime;Native</IncludeAssets>
     </Reference>
 
-    <ProjectReference Condition="'$(BuildIisNativeProjects)' == 'true' AND '$(BuildNative)' != 'false'" Include="$(RepositoryRoot)src\Servers\IIS\AspNetCoreModuleV2\InProcessRequestHandler\InProcessRequestHandler.vcxproj">
+    <ProjectReference Condition="'$(BuildIisNativeProjects)' == 'true' AND '$(BuildNative)' != 'false' AND '$(VCTargetsPath)' != ''" Include="$(RepositoryRoot)src\Servers\IIS\AspNetCoreModuleV2\InProcessRequestHandler\InProcessRequestHandler.vcxproj">
       <SetPlatform>Platform=$(TargetArchitecture)</SetPlatform>
       <SetPlatform Condition="'$(TargetArchitecture)' == 'x86'">Platform=Win32</SetPlatform>
       <!-- Custom attribute used to distinguish managed from native references. -->

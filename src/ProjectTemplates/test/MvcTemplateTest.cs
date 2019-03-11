@@ -18,7 +18,7 @@ namespace Templates.Test
 
         [Theory]
         [InlineData(null)]
-        [InlineData("F#", Skip = "https://github.com/aspnet/Templating/issues/673")]
+        [InlineData("F#")]
         private void MvcTemplate_NoAuthImpl(string languageOverride)
         {
             Project.RunDotNetNew("mvc", language: languageOverride);
@@ -72,6 +72,7 @@ namespace Templates.Test
                 using (var aspNetProcess = Project.StartAspNetProcess(publish))
                 {
                     aspNetProcess.AssertOk("/");
+                    aspNetProcess.AssertOk("/Identity/Account/Login");
                     aspNetProcess.AssertOk("/Home/Privacy");
                 }
             }
