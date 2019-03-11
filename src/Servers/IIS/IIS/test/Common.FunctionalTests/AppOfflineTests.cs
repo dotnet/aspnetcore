@@ -134,6 +134,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                     }
                     catch
                     {
+                        Assert.Contains(TestSink.Writes, context => context.Message.Contains("Drained all requests, notifying managed."));
                         deploymentResult.AssertWorkerProcessStop();
                         return;
                     }
