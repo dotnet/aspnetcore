@@ -616,7 +616,7 @@ namespace Microsoft.AspNetCore.Identity
         }
 
         /// <summary>
-        /// Normalize a user or role name for consistent comparisons.
+        /// Normalize user or role name for consistent comparisons.
         /// </summary>
         /// <param name="name">The name to normalize.</param>
         /// <returns>A normalized value representing the specified <paramref name="name"/>.</returns>
@@ -624,10 +624,10 @@ namespace Microsoft.AspNetCore.Identity
             =>  (NameNormalizer == null) ? name : NameNormalizer.Normalize(name);
 
         /// <summary>
-        /// Normalize a user or role name for consistent comparisons.
+        /// Normalize email for consistent comparisons.
         /// </summary>
         /// <param name="email">The email to normalize.</param>
-        /// <returns>A normalized value representing the specified <paramref name="name"/>.</returns>
+        /// <returns>A normalized value representing the specified <paramref name="email"/>.</returns>
         public virtual string NormalizeEmail(string email)
             =>  (EmailNormalizer == null) ? email : EmailNormalizer.Normalize(email);
         
