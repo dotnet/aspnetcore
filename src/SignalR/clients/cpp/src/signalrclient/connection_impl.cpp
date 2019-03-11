@@ -6,11 +6,12 @@
 #include <algorithm>
 #include "constants.h"
 #include "connection_impl.h"
-#include "request_sender.h"
+#include "negotiate.h"
 #include "url_builder.h"
 #include "trace_log_writer.h"
 #include "make_unique.h"
 #include "signalrclient/signalr_exception.h"
+#include "default_http_client.h"
 
 namespace signalr
 {
@@ -37,7 +38,7 @@ namespace signalr
         std::unique_ptr<web_request_factory> web_request_factory, std::unique_ptr<transport_factory> transport_factory)
         : m_base_url(url), m_connection_state(connection_state::disconnected), m_logger(log_writer, trace_level),
         m_transport(nullptr), m_web_request_factory(std::move(web_request_factory)), m_transport_factory(std::move(transport_factory)),
-        m_message_received([](const std::string&) noexcept {}), m_disconnected([]() noexcept {})
+        m_message_received([](const std::string&) noexcept {}), m_disconnected([]() noexcept {}), m_http_client(new default_http_client())
     { }
 
     connection_impl::~connection_impl()
@@ -105,7 +106,7 @@ namespace signalr
             {
                 return pplx::task_from_exception<negotiation_response>("connection no longer exists");
             }
-            return request_sender::negotiate(*connection->m_web_request_factory, url, connection->m_signalr_client_config);
+            return negotiate::negotiate(*connection->m_http_client, url, connection->m_signalr_client_config);
         }, m_disconnect_cts.get_token())
             .then([weak_connection, start_tce, redirect_count, url](negotiation_response negotiation_response)
         {

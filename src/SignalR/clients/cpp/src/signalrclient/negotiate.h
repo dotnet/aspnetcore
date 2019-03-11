@@ -7,13 +7,13 @@
 #include "signalrclient/transport_type.h"
 #include "web_request_factory.h"
 #include "negotiation_response.h"
-
+#include "http_client.h"
 
 namespace signalr
 {
-    namespace request_sender
+    namespace negotiate
     {
-        pplx::task<negotiation_response> negotiate(web_request_factory& request_factory, const std::string& base_url,
+        pplx::task<negotiation_response> negotiate(http_client& client, const std::string& base_url,
             const signalr_client_config& signalr_client_config = signalr::signalr_client_config{});
     }
 }

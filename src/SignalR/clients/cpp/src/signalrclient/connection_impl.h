@@ -6,6 +6,7 @@
 #include <atomic>
 #include <mutex>
 #include "cpprest/http_client.h"
+#include "http_client.h"
 #include "signalrclient/trace_level.h"
 #include "signalrclient/connection_state.h"
 #include "signalrclient/signalr_client_config.h"
@@ -63,6 +64,7 @@ namespace signalr
         std::mutex m_stop_lock;
         event m_start_completed_event;
         std::string m_connection_id;
+        http_client* m_http_client;
 
         connection_impl(const std::string& url, trace_level trace_level, const std::shared_ptr<log_writer>& log_writer,
             std::unique_ptr<web_request_factory> web_request_factory, std::unique_ptr<transport_factory> transport_factory);

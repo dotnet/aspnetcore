@@ -54,13 +54,15 @@
     <ClInclude Include="..\..\..\signalrclient\case_insensitive_comparison_utils.h" />
     <ClInclude Include="..\..\..\signalrclient\connection_impl.h" />
     <ClInclude Include="..\..\..\signalrclient\constants.h" />
+    <ClInclude Include="..\..\..\signalrclient\default_http_client.h" />
     <ClInclude Include="..\..\..\signalrclient\default_websocket_client.h" />
+    <ClInclude Include="..\..\..\signalrclient\http_client.h" />
     <ClInclude Include="..\..\..\signalrclient\http_sender.h" />
     <ClInclude Include="..\..\..\signalrclient\hub_connection_impl.h" />
     <ClInclude Include="..\..\..\signalrclient\callback_manager.h" />
     <ClInclude Include="..\..\..\signalrclient\logger.h" />
+    <ClInclude Include="..\..\..\signalrclient\negotiate.h" />
     <ClInclude Include="..\..\..\signalrclient\negotiation_response.h" />
-    <ClInclude Include="..\..\..\signalrclient\request_sender.h" />
     <ClInclude Include="..\..\..\signalrclient\stdafx.h" />
     <ClInclude Include="..\..\..\signalrclient\trace_log_writer.h" />
     <ClInclude Include="..\..\..\signalrclient\transport.h" />
@@ -76,13 +78,14 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\signalrclient\connection.cpp" />
     <ClCompile Include="..\..\..\signalrclient\connection_impl.cpp" />
+    <ClCompile Include="..\..\..\signalrclient\default_http_client.cpp" />
     <ClCompile Include="..\..\..\signalrclient\default_websocket_client.cpp" />
     <ClCompile Include="..\..\..\signalrclient\http_sender.cpp" />
     <ClCompile Include="..\..\..\signalrclient\hub_connection.cpp" />
     <ClCompile Include="..\..\..\signalrclient\hub_connection_impl.cpp" />
     <ClCompile Include="..\..\..\signalrclient\callback_manager.cpp" />
     <ClCompile Include="..\..\..\signalrclient\logger.cpp" />
-    <ClCompile Include="..\..\..\signalrclient\request_sender.cpp" />
+    <ClCompile Include="..\..\..\signalrclient\negotiate.cpp" />
     <ClCompile Include="..\..\..\signalrclient\signalr_client_config.cpp" />
     <ClCompile Include="..\..\..\signalrclient\stdafx.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>

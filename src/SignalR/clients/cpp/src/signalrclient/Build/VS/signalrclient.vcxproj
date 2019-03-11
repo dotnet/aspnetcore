@@ -53,14 +53,16 @@
     <ClInclude Include="..\..\case_insensitive_comparison_utils.h" />
     <ClInclude Include="..\..\connection_impl.h" />
     <ClInclude Include="..\..\constants.h" />
+    <ClInclude Include="..\..\default_http_client.h" />
     <ClInclude Include="..\..\default_websocket_client.h" />
     <ClInclude Include="..\..\event.h" />
+    <ClInclude Include="..\..\http_client.h" />
     <ClInclude Include="..\..\http_sender.h" />
     <ClInclude Include="..\..\hub_connection_impl.h" />
     <ClInclude Include="..\..\callback_manager.h" />
     <ClInclude Include="..\..\logger.h" />
     <ClInclude Include="..\..\negotiation_response.h" />
-    <ClInclude Include="..\..\request_sender.h" />
+    <ClInclude Include="..\..\negotiate.h" />
     <ClInclude Include="..\..\stdafx.h" />
     <ClInclude Include="..\..\trace_log_writer.h" />
     <ClInclude Include="..\..\transport.h" />
@@ -75,12 +77,13 @@
   <ItemGroup>
     <ClCompile Include="..\..\connection.cpp" />
     <ClCompile Include="..\..\connection_impl.cpp" />
+    <ClCompile Include="..\..\default_http_client.cpp" />
     <ClCompile Include="..\..\http_sender.cpp" />
     <ClCompile Include="..\..\hub_connection.cpp" />
     <ClCompile Include="..\..\hub_connection_impl.cpp" />
     <ClCompile Include="..\..\callback_manager.cpp" />
     <ClCompile Include="..\..\logger.cpp" />
-    <ClCompile Include="..\..\request_sender.cpp" />
+    <ClCompile Include="..\..\negotiate.cpp" />
     <ClCompile Include="..\..\signalr_client_config.cpp" />
     <ClCompile Include="..\..\stdafx.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
