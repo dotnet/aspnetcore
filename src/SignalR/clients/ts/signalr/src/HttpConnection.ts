@@ -115,7 +115,7 @@ export class HttpConnection implements IConnection {
 
     public send(data: string | ArrayBuffer): Promise<void> {
         if (this.connectionState !== ConnectionState.Connected) {
-            throw new Error("Cannot send data if the connection is not in the 'Connected' State.");
+            return Promise.reject(new Error("Cannot send data if the connection is not in the 'Connected' State."));
         }
 
         // Transport will not be null if state is connected
@@ -157,7 +157,7 @@ export class HttpConnection implements IConnection {
                     // No fallback or negotiate in this case.
                     await this.transport!.connect(url, transferFormat);
                 } else {
-                    throw Error("Negotiation can only be skipped when using the WebSocket transport directly.");
+                    return Promise.reject(new Error("Negotiation can only be skipped when using the WebSocket transport directly."));
                 }
             } else {
                 let negotiateResponse: INegotiateResponse | null = null;
@@ -171,11 +171,11 @@ export class HttpConnection implements IConnection {
                     }
 
                     if (negotiateResponse.error) {
-                        throw Error(negotiateResponse.error);
+                        return Promise.reject(new Error(negotiateResponse.error));
                     }
 
                     if ((negotiateResponse as any).ProtocolVersion) {
-                        throw Error("Detected a connection attempt to an ASP.NET SignalR Server. This client only supports connecting to an ASP.NET Core SignalR Server. See https://aka.ms/signalr-core-differences for details.");
+                        return Promise.reject(new Error("Detected a connection attempt to an ASP.NET SignalR Server. This client only supports connecting to an ASP.NET Core SignalR Server. See https://aka.ms/signalr-core-differences for details."));
                     }
 
                     if (negotiateResponse.url) {
@@ -194,7 +194,7 @@ export class HttpConnection implements IConnection {
                 while (negotiateResponse.url && redirects < MAX_REDIRECTS);
 
                 if (redirects === MAX_REDIRECTS && negotiateResponse.url) {
-                    throw Error("Negotiate redirection limit exceeded.");
+                    return Promise.reject(new Error("Negotiate redirection limit exceeded."));
                 }
 
                 await this.createTransport(url, this.options.transport, negotiateResponse, transferFormat);
@@ -214,7 +214,7 @@ export class HttpConnection implements IConnection {
             this.logger.log(LogLevel.Error, "Failed to start the connection: " + e);
             this.connectionState = ConnectionState.Disconnected;
             this.transport = undefined;
-            throw e;
+            return Promise.reject(e);
         }
     }
 
@@ -238,13 +238,13 @@ export class HttpConnection implements IConnection {
             });
 
             if (response.statusCode !== 200) {
-                throw Error(`Unexpected status code returned from negotiate ${response.statusCode}`);
+                return Promise.reject(new Error(`Unexpected status code returned from negotiate ${response.statusCode}`));
             }
 
             return JSON.parse(response.content as string) as INegotiateResponse;
         } catch (e) {
             this.logger.log(LogLevel.Error, "Failed to complete negotiation with the server: " + e);
-            throw e;
+            return Promise.reject(e);
         }
     }
 
@@ -293,9 +293,9 @@ export class HttpConnection implements IConnection {
         }
 
         if (transportExceptions.length > 0) {
-            throw new Error(`Unable to connect to the server with any of the available transports. ${transportExceptions.join(" ")}`);
+            return Promise.reject(new Error(`Unable to connect to the server with any of the available transports. ${transportExceptions.join(" ")}`));
         }
-        throw new Error("None of the transports supported by the client are supported by the server.");
+        return Promise.reject(new Error("None of the transports supported by the client are supported by the server."));
     }
 
     private constructTransport(transport: HttpTransportType) {
