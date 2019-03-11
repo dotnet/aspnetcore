@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             await deploymentResult.AssertRecycledAsync(() => AssertAppOffline(deploymentResult));
         }
 
-        [ConditionalFact(Skip = "https://github.com/aspnet/AspNetCore/issues/6555")]
+        [ConditionalFact]
         [RequiresIIS(IISCapability.ShutdownToken)]
         public async Task AppOfflineDroppedWhileSiteStarting_SiteShutsDown_InProcess()
         {
@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             {
                 var deploymentResult = await DeployApp(HostingModel.InProcess);
 
-                for (int i = 0; i < 10; i++)
+                for (int i = 0; i < 100; i++)
                 {
                     // send first request and add app_offline while app is starting
                     var runningTask = AssertAppOffline(deploymentResult);
@@ -140,7 +140,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                 }
 
                 Assert.True(false);
-
             }
         }
 
