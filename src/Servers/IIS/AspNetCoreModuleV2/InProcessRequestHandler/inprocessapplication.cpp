@@ -553,7 +553,6 @@ IN_PROCESS_APPLICATION::CreateHandler(
 void
 IN_PROCESS_APPLICATION::HandleRequestCompletion()
 {
-    LOG_INFOF(L"acquiring lock");
     SRWSharedLock lock(m_stateLock);
     m_requestCount--;
     LOG_INFOF(L"Removing Request %d", m_requestCount.load());
