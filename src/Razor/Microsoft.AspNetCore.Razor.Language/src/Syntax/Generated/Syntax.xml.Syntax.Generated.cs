@@ -73,6 +73,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         if (document != Document)
         {
             var newNode = SyntaxFactory.RazorDocument(document);
+            var diagnostics = GetDiagnostics();
+            if (diagnostics != null && diagnostics.Length > 0)
+               newNode = newNode.WithDiagnostics(diagnostics);
             var annotations = GetAnnotations();
             if (annotations != null && annotations.Length > 0)
                return newNode.WithAnnotations(annotations);
@@ -181,6 +184,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         if (startCommentTransition != StartCommentTransition || startCommentStar != StartCommentStar || comment != Comment || endCommentStar != EndCommentStar || endCommentTransition != EndCommentTransition)
         {
             var newNode = SyntaxFactory.RazorCommentBlock(startCommentTransition, startCommentStar, comment, endCommentStar, endCommentTransition);
+            var diagnostics = GetDiagnostics();
+            if (diagnostics != null && diagnostics.Length > 0)
+               newNode = newNode.WithDiagnostics(diagnostics);
             var annotations = GetAnnotations();
             if (annotations != null && annotations.Length > 0)
                return newNode.WithAnnotations(annotations);
@@ -265,6 +271,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         if (metaCode != MetaCode)
         {
             var newNode = SyntaxFactory.RazorMetaCode(metaCode);
+            var diagnostics = GetDiagnostics();
+            if (diagnostics != null && diagnostics.Length > 0)
+               newNode = newNode.WithDiagnostics(diagnostics);
             var annotations = GetAnnotations();
             if (annotations != null && annotations.Length > 0)
                return newNode.WithAnnotations(annotations);
@@ -334,6 +343,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         if (children != Children)
         {
             var newNode = SyntaxFactory.GenericBlock(children);
+            var diagnostics = GetDiagnostics();
+            if (diagnostics != null && diagnostics.Length > 0)
+               newNode = newNode.WithDiagnostics(diagnostics);
             var annotations = GetAnnotations();
             if (annotations != null && annotations.Length > 0)
                return newNode.WithAnnotations(annotations);
@@ -405,6 +417,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         if (literalTokens != LiteralTokens)
         {
             var newNode = SyntaxFactory.UnclassifiedTextLiteral(literalTokens);
+            var diagnostics = GetDiagnostics();
+            if (diagnostics != null && diagnostics.Length > 0)
+               newNode = newNode.WithDiagnostics(diagnostics);
             var annotations = GetAnnotations();
             if (annotations != null && annotations.Length > 0)
                return newNode.WithAnnotations(annotations);
@@ -482,6 +497,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         if (children != Children)
         {
             var newNode = SyntaxFactory.MarkupBlock(children);
+            var diagnostics = GetDiagnostics();
+            if (diagnostics != null && diagnostics.Length > 0)
+               newNode = newNode.WithDiagnostics(diagnostics);
             var annotations = GetAnnotations();
             if (annotations != null && annotations.Length > 0)
                return newNode.WithAnnotations(annotations);
@@ -553,6 +571,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         if (transitionTokens != TransitionTokens)
         {
             var newNode = SyntaxFactory.MarkupTransition(transitionTokens);
+            var diagnostics = GetDiagnostics();
+            if (diagnostics != null && diagnostics.Length > 0)
+               newNode = newNode.WithDiagnostics(diagnostics);
             var annotations = GetAnnotations();
             if (annotations != null && annotations.Length > 0)
                return newNode.WithAnnotations(annotations);
@@ -622,6 +643,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         if (literalTokens != LiteralTokens)
         {
             var newNode = SyntaxFactory.MarkupTextLiteral(literalTokens);
+            var diagnostics = GetDiagnostics();
+            if (diagnostics != null && diagnostics.Length > 0)
+               newNode = newNode.WithDiagnostics(diagnostics);
             var annotations = GetAnnotations();
             if (annotations != null && annotations.Length > 0)
                return newNode.WithAnnotations(annotations);
@@ -691,6 +715,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         if (literalTokens != LiteralTokens)
         {
             var newNode = SyntaxFactory.MarkupEphemeralTextLiteral(literalTokens);
+            var diagnostics = GetDiagnostics();
+            if (diagnostics != null && diagnostics.Length > 0)
+               newNode = newNode.WithDiagnostics(diagnostics);
             var annotations = GetAnnotations();
             if (annotations != null && annotations.Length > 0)
                return newNode.WithAnnotations(annotations);
@@ -760,6 +787,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         if (children != Children)
         {
             var newNode = SyntaxFactory.MarkupCommentBlock(children);
+            var diagnostics = GetDiagnostics();
+            if (diagnostics != null && diagnostics.Length > 0)
+               newNode = newNode.WithDiagnostics(diagnostics);
             var annotations = GetAnnotations();
             if (annotations != null && annotations.Length > 0)
                return newNode.WithAnnotations(annotations);
@@ -842,6 +872,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         if (namePrefix != NamePrefix || name != Name)
         {
             var newNode = SyntaxFactory.MarkupMinimizedAttributeBlock(namePrefix, name);
+            var diagnostics = GetDiagnostics();
+            if (diagnostics != null && diagnostics.Length > 0)
+               newNode = newNode.WithDiagnostics(diagnostics);
             var annotations = GetAnnotations();
             if (annotations != null && annotations.Length > 0)
                return newNode.WithAnnotations(annotations);
@@ -988,6 +1021,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         if (namePrefix != NamePrefix || name != Name || nameSuffix != NameSuffix || equalsToken != EqualsToken || valuePrefix != ValuePrefix || value != Value || valueSuffix != ValueSuffix)
         {
             var newNode = SyntaxFactory.MarkupAttributeBlock(namePrefix, name, nameSuffix, equalsToken, valuePrefix, value, valueSuffix);
+            var diagnostics = GetDiagnostics();
+            if (diagnostics != null && diagnostics.Length > 0)
+               newNode = newNode.WithDiagnostics(diagnostics);
             var annotations = GetAnnotations();
             if (annotations != null && annotations.Length > 0)
                return newNode.WithAnnotations(annotations);
@@ -1111,6 +1147,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         if (children != Children)
         {
             var newNode = SyntaxFactory.MarkupMiscAttributeContent(children);
+            var diagnostics = GetDiagnostics();
+            if (diagnostics != null && diagnostics.Length > 0)
+               newNode = newNode.WithDiagnostics(diagnostics);
             var annotations = GetAnnotations();
             if (annotations != null && annotations.Length > 0)
                return newNode.WithAnnotations(annotations);
@@ -1191,6 +1230,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         if (prefix != Prefix || value != Value)
         {
             var newNode = SyntaxFactory.MarkupLiteralAttributeValue(prefix, value);
+            var diagnostics = GetDiagnostics();
+            if (diagnostics != null && diagnostics.Length > 0)
+               newNode = newNode.WithDiagnostics(diagnostics);
             var annotations = GetAnnotations();
             if (annotations != null && annotations.Length > 0)
                return newNode.WithAnnotations(annotations);
@@ -1283,6 +1325,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         if (prefix != Prefix || value != Value)
         {
             var newNode = SyntaxFactory.MarkupDynamicAttributeValue(prefix, value);
+            var diagnostics = GetDiagnostics();
+            if (diagnostics != null && diagnostics.Length > 0)
+               newNode = newNode.WithDiagnostics(diagnostics);
             var annotations = GetAnnotations();
             if (annotations != null && annotations.Length > 0)
                return newNode.WithAnnotations(annotations);
@@ -1380,6 +1425,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         if (startTag != StartTag || body != Body || endTag != EndTag)
         {
             var newNode = SyntaxFactory.MarkupElement(startTag, body, endTag);
+            var diagnostics = GetDiagnostics();
+            if (diagnostics != null && diagnostics.Length > 0)
+               newNode = newNode.WithDiagnostics(diagnostics);
             var annotations = GetAnnotations();
             if (annotations != null && annotations.Length > 0)
                return newNode.WithAnnotations(annotations);
@@ -1520,6 +1568,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         if (openAngle != OpenAngle || bang != Bang || name != Name || attributes != Attributes || forwardSlash != ForwardSlash || closeAngle != CloseAngle)
         {
             var newNode = SyntaxFactory.MarkupStartTag(openAngle, bang, name, attributes, forwardSlash, closeAngle);
+            var diagnostics = GetDiagnostics();
+            if (diagnostics != null && diagnostics.Length > 0)
+               newNode = newNode.WithDiagnostics(diagnostics);
             var annotations = GetAnnotations();
             if (annotations != null && annotations.Length > 0)
                return newNode.WithAnnotations(annotations);
@@ -1669,6 +1720,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         if (openAngle != OpenAngle || forwardSlash != ForwardSlash || bang != Bang || name != Name || miscAttributeContent != MiscAttributeContent || closeAngle != CloseAngle)
         {
             var newNode = SyntaxFactory.MarkupEndTag(openAngle, forwardSlash, bang, name, miscAttributeContent, closeAngle);
+            var diagnostics = GetDiagnostics();
+            if (diagnostics != null && diagnostics.Length > 0)
+               newNode = newNode.WithDiagnostics(diagnostics);
             var annotations = GetAnnotations();
             if (annotations != null && annotations.Length > 0)
                return newNode.WithAnnotations(annotations);
@@ -1786,6 +1840,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         if (startTag != StartTag || body != Body || endTag != EndTag)
         {
             var newNode = SyntaxFactory.MarkupTagHelperElement(startTag, body, endTag);
+            var diagnostics = GetDiagnostics();
+            if (diagnostics != null && diagnostics.Length > 0)
+               newNode = newNode.WithDiagnostics(diagnostics);
             var annotations = GetAnnotations();
             if (annotations != null && annotations.Length > 0)
                return newNode.WithAnnotations(annotations);
@@ -1925,6 +1982,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         if (openAngle != OpenAngle || bang != Bang || name != Name || attributes != Attributes || forwardSlash != ForwardSlash || closeAngle != CloseAngle)
         {
             var newNode = SyntaxFactory.MarkupTagHelperStartTag(openAngle, bang, name, attributes, forwardSlash, closeAngle);
+            var diagnostics = GetDiagnostics();
+            if (diagnostics != null && diagnostics.Length > 0)
+               newNode = newNode.WithDiagnostics(diagnostics);
             var annotations = GetAnnotations();
             if (annotations != null && annotations.Length > 0)
                return newNode.WithAnnotations(annotations);
@@ -2074,6 +2134,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         if (openAngle != OpenAngle || forwardSlash != ForwardSlash || bang != Bang || name != Name || miscAttributeContent != MiscAttributeContent || closeAngle != CloseAngle)
         {
             var newNode = SyntaxFactory.MarkupTagHelperEndTag(openAngle, forwardSlash, bang, name, miscAttributeContent, closeAngle);
+            var diagnostics = GetDiagnostics();
+            if (diagnostics != null && diagnostics.Length > 0)
+               newNode = newNode.WithDiagnostics(diagnostics);
             var annotations = GetAnnotations();
             if (annotations != null && annotations.Length > 0)
                return newNode.WithAnnotations(annotations);
@@ -2235,6 +2298,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         if (namePrefix != NamePrefix || name != Name || nameSuffix != NameSuffix || equalsToken != EqualsToken || valuePrefix != ValuePrefix || value != Value || valueSuffix != ValueSuffix)
         {
             var newNode = SyntaxFactory.MarkupTagHelperAttribute(namePrefix, name, nameSuffix, equalsToken, valuePrefix, value, valueSuffix);
+            var diagnostics = GetDiagnostics();
+            if (diagnostics != null && diagnostics.Length > 0)
+               newNode = newNode.WithDiagnostics(diagnostics);
             var annotations = GetAnnotations();
             if (annotations != null && annotations.Length > 0)
                return newNode.WithAnnotations(annotations);
@@ -2374,6 +2440,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         if (namePrefix != NamePrefix || name != Name)
         {
             var newNode = SyntaxFactory.MarkupMinimizedTagHelperAttribute(namePrefix, name);
+            var diagnostics = GetDiagnostics();
+            if (diagnostics != null && diagnostics.Length > 0)
+               newNode = newNode.WithDiagnostics(diagnostics);
             var annotations = GetAnnotations();
             if (annotations != null && annotations.Length > 0)
                return newNode.WithAnnotations(annotations);
@@ -2454,6 +2523,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         if (children != Children)
         {
             var newNode = SyntaxFactory.MarkupTagHelperAttributeValue(children);
+            var diagnostics = GetDiagnostics();
+            if (diagnostics != null && diagnostics.Length > 0)
+               newNode = newNode.WithDiagnostics(diagnostics);
             var annotations = GetAnnotations();
             if (annotations != null && annotations.Length > 0)
                return newNode.WithAnnotations(annotations);
@@ -2533,6 +2605,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         if (children != Children)
         {
             var newNode = SyntaxFactory.CSharpCodeBlock(children);
+            var diagnostics = GetDiagnostics();
+            if (diagnostics != null && diagnostics.Length > 0)
+               newNode = newNode.WithDiagnostics(diagnostics);
             var annotations = GetAnnotations();
             if (annotations != null && annotations.Length > 0)
                return newNode.WithAnnotations(annotations);
@@ -2604,6 +2679,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         if (transition != Transition)
         {
             var newNode = SyntaxFactory.CSharpTransition(transition);
+            var diagnostics = GetDiagnostics();
+            if (diagnostics != null && diagnostics.Length > 0)
+               newNode = newNode.WithDiagnostics(diagnostics);
             var annotations = GetAnnotations();
             if (annotations != null && annotations.Length > 0)
                return newNode.WithAnnotations(annotations);
@@ -2668,6 +2746,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         if (literalTokens != LiteralTokens)
         {
             var newNode = SyntaxFactory.CSharpStatementLiteral(literalTokens);
+            var diagnostics = GetDiagnostics();
+            if (diagnostics != null && diagnostics.Length > 0)
+               newNode = newNode.WithDiagnostics(diagnostics);
             var annotations = GetAnnotations();
             if (annotations != null && annotations.Length > 0)
                return newNode.WithAnnotations(annotations);
@@ -2737,6 +2818,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         if (literalTokens != LiteralTokens)
         {
             var newNode = SyntaxFactory.CSharpExpressionLiteral(literalTokens);
+            var diagnostics = GetDiagnostics();
+            if (diagnostics != null && diagnostics.Length > 0)
+               newNode = newNode.WithDiagnostics(diagnostics);
             var annotations = GetAnnotations();
             if (annotations != null && annotations.Length > 0)
                return newNode.WithAnnotations(annotations);
@@ -2806,6 +2890,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         if (literalTokens != LiteralTokens)
         {
             var newNode = SyntaxFactory.CSharpEphemeralTextLiteral(literalTokens);
+            var diagnostics = GetDiagnostics();
+            if (diagnostics != null && diagnostics.Length > 0)
+               newNode = newNode.WithDiagnostics(diagnostics);
             var annotations = GetAnnotations();
             if (annotations != null && annotations.Length > 0)
                return newNode.WithAnnotations(annotations);
@@ -2875,6 +2962,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         if (children != Children)
         {
             var newNode = SyntaxFactory.CSharpTemplateBlock(children);
+            var diagnostics = GetDiagnostics();
+            if (diagnostics != null && diagnostics.Length > 0)
+               newNode = newNode.WithDiagnostics(diagnostics);
             var annotations = GetAnnotations();
             if (annotations != null && annotations.Length > 0)
                return newNode.WithAnnotations(annotations);
@@ -2973,6 +3063,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         if (transition != Transition || body != Body)
         {
             var newNode = SyntaxFactory.CSharpStatement(transition, body);
+            var diagnostics = GetDiagnostics();
+            if (diagnostics != null && diagnostics.Length > 0)
+               newNode = newNode.WithDiagnostics(diagnostics);
             var annotations = GetAnnotations();
             if (annotations != null && annotations.Length > 0)
                return newNode.WithAnnotations(annotations);
@@ -3066,6 +3159,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         if (openBrace != OpenBrace || cSharpCode != CSharpCode || closeBrace != CloseBrace)
         {
             var newNode = SyntaxFactory.CSharpStatementBody(openBrace, cSharpCode, closeBrace);
+            var diagnostics = GetDiagnostics();
+            if (diagnostics != null && diagnostics.Length > 0)
+               newNode = newNode.WithDiagnostics(diagnostics);
             var annotations = GetAnnotations();
             if (annotations != null && annotations.Length > 0)
                return newNode.WithAnnotations(annotations);
@@ -3166,6 +3262,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         if (transition != Transition || body != Body)
         {
             var newNode = SyntaxFactory.CSharpExplicitExpression(transition, body);
+            var diagnostics = GetDiagnostics();
+            if (diagnostics != null && diagnostics.Length > 0)
+               newNode = newNode.WithDiagnostics(diagnostics);
             var annotations = GetAnnotations();
             if (annotations != null && annotations.Length > 0)
                return newNode.WithAnnotations(annotations);
@@ -3259,6 +3358,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         if (openParen != OpenParen || cSharpCode != CSharpCode || closeParen != CloseParen)
         {
             var newNode = SyntaxFactory.CSharpExplicitExpressionBody(openParen, cSharpCode, closeParen);
+            var diagnostics = GetDiagnostics();
+            if (diagnostics != null && diagnostics.Length > 0)
+               newNode = newNode.WithDiagnostics(diagnostics);
             var annotations = GetAnnotations();
             if (annotations != null && annotations.Length > 0)
                return newNode.WithAnnotations(annotations);
@@ -3359,6 +3461,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         if (transition != Transition || body != Body)
         {
             var newNode = SyntaxFactory.CSharpImplicitExpression(transition, body);
+            var diagnostics = GetDiagnostics();
+            if (diagnostics != null && diagnostics.Length > 0)
+               newNode = newNode.WithDiagnostics(diagnostics);
             var annotations = GetAnnotations();
             if (annotations != null && annotations.Length > 0)
                return newNode.WithAnnotations(annotations);
@@ -3430,6 +3535,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         if (cSharpCode != CSharpCode)
         {
             var newNode = SyntaxFactory.CSharpImplicitExpressionBody(cSharpCode);
+            var diagnostics = GetDiagnostics();
+            if (diagnostics != null && diagnostics.Length > 0)
+               newNode = newNode.WithDiagnostics(diagnostics);
             var annotations = GetAnnotations();
             if (annotations != null && annotations.Length > 0)
                return newNode.WithAnnotations(annotations);
@@ -3510,6 +3618,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         if (transition != Transition || body != Body)
         {
             var newNode = SyntaxFactory.RazorDirective(transition, body);
+            var diagnostics = GetDiagnostics();
+            if (diagnostics != null && diagnostics.Length > 0)
+               newNode = newNode.WithDiagnostics(diagnostics);
             var annotations = GetAnnotations();
             if (annotations != null && annotations.Length > 0)
                return newNode.WithAnnotations(annotations);
@@ -3592,6 +3703,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
         if (keyword != Keyword || cSharpCode != CSharpCode)
         {
             var newNode = SyntaxFactory.RazorDirectiveBody(keyword, cSharpCode);
+            var diagnostics = GetDiagnostics();
+            if (diagnostics != null && diagnostics.Length > 0)
+               newNode = newNode.WithDiagnostics(diagnostics);
             var annotations = GetAnnotations();
             if (annotations != null && annotations.Length > 0)
                return newNode.WithAnnotations(annotations);
