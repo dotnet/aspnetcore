@@ -299,7 +299,7 @@ export class HttpConnection implements IConnection {
     }
 
     private constructTransport(transport: HttpTransportType) {
-    switch (transport) {
+        switch (transport) {
             case HttpTransportType.WebSockets:
                 if (!this.options.WebSocket) {
                     throw new Error("'WebSocket' is not supported in your environment.");
