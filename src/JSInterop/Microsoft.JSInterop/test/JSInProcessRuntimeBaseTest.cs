@@ -10,7 +10,7 @@ namespace Microsoft.JSInterop.Tests
 {
     public class JSInProcessRuntimeBaseTest
     {
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore-Internal/issues/1807#issuecomment-470756811")]
         public void DispatchesSyncCallsAndDeserializesResults()
         {
             // Arrange
