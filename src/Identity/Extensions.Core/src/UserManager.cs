@@ -166,14 +166,14 @@ namespace Microsoft.AspNetCore.Identity
         public ILookupNormalizer KeyNormalizer { get; set; }
 
         /// <summary>
-        /// The <see cref="INameLookupNormalizer"/> used to normalize user and role names.
+        /// The <see cref="ILookupNormalizer"/> used to normalize user and role names.
         /// </summary>
-        public INameLookupNormalizer NameNormalizer { get; set; }
+        public ILookupNormalizer NameNormalizer { get; set; }
 
         /// <summary>
-        /// The <see cref="IEmailLookupNormalizer"/> used to normalize emails.
+        /// The <see cref="ILookupNormalizer"/> used to normalize emails.
         /// </summary>
-        public IEmailLookupNormalizer EmailNormalizer { get; set; }
+        public ILookupNormalizer EmailNormalizer { get; set; }
         
         /// <summary>
         /// The <see cref="IdentityErrorDescriber"/> used to generate error messages.
