@@ -285,7 +285,6 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
         // At this point CLR thread either finished or timed out, abandon it.
         m_clrThread.detach();
 
-        SRWSharedLock lock(m_stateLock);
         if (m_fStopCalled)
         {
             if (clrThreadExited)
@@ -343,13 +342,9 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
 
 void IN_PROCESS_APPLICATION::QueueStop()
 {
+    if (m_fStopCalled)
     {
-        SRWSharedLock lock(m_stateLock);
-
-        if (m_fStopCalled)
-        {
-            return;
-        }
+        return;
     }
 
     LOG_INFO(L"Queueing in-process stop thread");
