@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
         [ConditionalFact]
-        [RequiresIIS(IISCapability.ShutdownToken)]
+        [RequiresNewHandler]
         public async Task AppOfflineDroppedWhileSiteStarting_SiteShutsDown_InProcess()
         {
             // This test often hits a race between debug logging and stdout redirection closing the handle
@@ -131,9 +131,17 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                         // if AssertAppOffline succeeded ANCM have picked up app_offline before starting the app
                         // try again
                         RemoveAppOffline(deploymentResult.ContentRoot);
+
+                        if (deploymentResult.DeploymentParameters.ServerType == ServerType.IIS)
+                        {
+                            deploymentResult.AssertWorkerProcessStop();
+                            return;
+                        }
                     }
                     catch
                     {
+                        // For IISExpress, we need to catch the exception because IISExpress will not restart a process if it crashed.
+                        // RemoveAppOffline will fail due to a bad request exception as the server is down.
                         Assert.Contains(TestSink.Writes, context => context.Message.Contains("Drained all requests, notifying managed."));
                         deploymentResult.AssertWorkerProcessStop();
                         return;
