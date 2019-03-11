@@ -7,9 +7,8 @@
 
 namespace signalr
 {
-    transport::transport(const logger& logger, const std::function<void(const std::string&)>& process_response_callback,
-        std::function<void(const std::exception&)> error_callback)
-        : m_logger(logger), m_process_response_callback(process_response_callback), m_error_callback(error_callback)
+    transport::transport(const logger& logger)
+        : m_logger(logger)
     {}
 
     // Do NOT remove this destructor. Letting the compiler generate and inline the default dtor may lead to
@@ -17,13 +16,18 @@ namespace signalr
     transport::~transport()
     { }
 
-    void transport::process_response(const std::string &message)
+    void transport::on_receive(std::function<void(std::string, std::exception_ptr)> callback)
     {
-        m_process_response_callback(message);
+        m_process_response_callback = callback;;
     }
 
-    void transport::error(const std::exception& e)
+    void transport::process_response(std::string message)
     {
-        m_error_callback(e);
+        m_process_response_callback(message, nullptr);
+    }
+
+    void transport::process_response(std::exception_ptr exception)
+    {
+        m_process_response_callback("", exception);
     }
 }

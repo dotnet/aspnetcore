@@ -5,21 +5,20 @@
 #include "websocket_transport.h"
 #include "logger.h"
 #include "signalrclient/signalr_exception.h"
+#include <future>
 
 namespace signalr
 {
     std::shared_ptr<transport> websocket_transport::create(const std::function<std::shared_ptr<websocket_client>()>& websocket_client_factory,
-        const logger& logger, const std::function<void(const std::string &)>& process_response_callback,
-        std::function<void(const std::exception&)> error_callback)
+        const logger& logger)
     {
         return std::shared_ptr<transport>(
-            new websocket_transport(websocket_client_factory, logger, process_response_callback, error_callback));
+            new websocket_transport(websocket_client_factory, logger));
     }
 
     websocket_transport::websocket_transport(const std::function<std::shared_ptr<websocket_client>()>& websocket_client_factory,
-        const logger& logger, const std::function<void(const std::string &)>& process_response_callback,
-        std::function<void(const std::exception&)> error_callback)
-        : transport(logger, process_response_callback, error_callback), m_websocket_client_factory(websocket_client_factory)
+        const logger& logger)
+        : transport(logger), m_websocket_client_factory(websocket_client_factory)
     {
         // we use this cts to check if the receive loop is running so it should be
         // initially cancelled to indicate that the receive loop is not running
@@ -30,7 +29,8 @@ namespace signalr
     {
         try
         {
-            disconnect().get();
+            // TODO: wait
+            stop([](std::exception_ptr) { });
         }
         catch (...) // must not throw from the destructor
         {}
@@ -41,7 +41,99 @@ namespace signalr
         return transport_type::websockets;
     }
 
-    pplx::task<void> websocket_transport::connect(const std::string& url)
+    // Note that the connection assumes that the error callback won't be fired when the result is being processed. This
+    // may no longer be true when we replace the `receive_loop` with "on_message_received" and "on_close" events if they
+    // can be fired on different threads in which case we will have to lock before setting groups token and message id.
+    void websocket_transport::receive_loop(pplx::cancellation_token_source cts)
+    {
+        auto this_transport = shared_from_this();
+        auto logger = this_transport->m_logger;
+
+        // Passing the `std::weak_ptr<websocket_transport>` prevents from a memory leak where we would capture the shared_ptr to
+        // the transport in the continuation lambda and as a result as long as the loop runs the ref count would never get to
+        // zero. Now we capture the weak pointer and get the shared pointer only when the continuation runs so the ref count is
+        // incremented when the shared pointer is acquired and then decremented when it goes out of scope of the continuation.
+        auto weak_transport = std::weak_ptr<websocket_transport>(this_transport);
+
+        auto websocket_client = this_transport->safe_get_websocket_client();
+
+        // There are two cases when we exit the loop. The first case is implicit - we pass the cancellation_token
+            // to `then` (note this is after the lambda body) and if the token is cancelled the continuation will not
+            // run at all. The second - explicit - case happens if the token gets cancelled after the continuation has
+            // been started in which case we just stop the loop by not scheduling another receive task.
+        websocket_client->receive([weak_transport, cts, logger, websocket_client](std::string message, std::exception_ptr exception)
+            {
+                if (exception != nullptr)
+                {
+                    try
+                    {
+                        std::rethrow_exception(exception);
+                    }
+                    catch (const std::exception & e)
+                    {
+                        cts.cancel();
+
+                        logger.log(
+                            trace_level::errors,
+                            std::string("[websocket transport] error receiving response from websocket: ")
+                            .append(e.what()));
+
+                        websocket_client->stop([](std::exception_ptr exception)
+                            {
+                            });
+
+                        auto transport = weak_transport.lock();
+                        if (transport)
+                        {
+                            transport->process_response(exception);
+                        }
+                    }
+                    catch (...)
+                    {
+                        cts.cancel();
+
+                        logger.log(
+                            trace_level::errors,
+                            std::string("[websocket transport] unknown error occurred when receiving response from websocket"));
+
+                        websocket_client->stop([](std::exception_ptr)
+                            {
+                            });
+
+                        auto transport = weak_transport.lock();
+                        if (transport)
+                        {
+                            transport->process_response(std::make_exception_ptr(signalr_exception("unknown error")));
+                        }
+                    }
+
+                    return;
+                }
+
+                auto transport = weak_transport.lock();
+                if (transport)
+                {
+                    transport->process_response(message);
+
+                    if (!cts.get_token().is_canceled())
+                    {
+                        transport->receive_loop(cts);
+                    }
+                }
+            });
+    }
+
+    std::shared_ptr<websocket_client> websocket_transport::safe_get_websocket_client()
+    {
+        {
+            const std::lock_guard<std::mutex> lock(m_websocket_client_lock);
+            auto websocket_client = m_websocket_client;
+
+            return websocket_client;
+        }
+    }
+
+    void websocket_transport::start(const std::string& url, /*format,*/ std::function<void(std::exception_ptr)> callback)
     {
         web::uri uri(utility::conversions::to_string_t(url));
         _ASSERTE(uri.scheme() == _XPLATSTR("ws") || uri.scheme() == _XPLATSTR("wss"));
@@ -66,20 +158,21 @@ namespace signalr
             }
 
             pplx::cancellation_token_source receive_loop_cts;
-            pplx::task_completion_event<void> connect_tce;
 
             auto transport = shared_from_this();
 
-            websocket_client->connect(url)
-                .then([transport, connect_tce, receive_loop_cts](pplx::task<void> connect_task)
+            websocket_client->start(url, [transport, receive_loop_cts, callback](std::exception_ptr exception)
                 {
                     try
                     {
-                        connect_task.get();
+                        if (exception != nullptr)
+                        {
+                            std::rethrow_exception(exception);
+                        }
                         transport->receive_loop(receive_loop_cts);
-                        connect_tce.set();
+                        callback(nullptr);
                     }
-                    catch (const std::exception &e)
+                    catch (const std::exception & e)
                     {
                         transport->m_logger.log(
                             trace_level::errors,
@@ -87,23 +180,15 @@ namespace signalr
                             .append(e.what()));
 
                         receive_loop_cts.cancel();
-                        connect_tce.set_exception(std::current_exception());
+                        callback(std::current_exception());
                     }
                 });
 
             m_receive_loop_cts = receive_loop_cts;
-
-            return pplx::create_task(connect_tce);
         }
     }
 
-    pplx::task<void> websocket_transport::send(const std::string &data)
-    {
-        // send will return a faulted task if client has disconnected
-        return safe_get_websocket_client()->send(data);
-    }
-
-    pplx::task<void> websocket_transport::disconnect()
+    void websocket_transport::stop(/*format,*/ std::function<void(std::exception_ptr)> callback)
     {
         std::shared_ptr<websocket_client> websocket_client = nullptr;
 
@@ -112,7 +197,8 @@ namespace signalr
 
             if (m_receive_loop_cts.get_token().is_canceled())
             {
-                return pplx::task_from_result();
+                callback(nullptr);
+                return;
             }
 
             m_receive_loop_cts.cancel();
@@ -122,125 +208,45 @@ namespace signalr
 
         auto logger = m_logger;
 
-        return websocket_client->close()
-            .then([logger](pplx::task<void> close_task)
-            mutable {
+        websocket_client->stop([logger, callback](std::exception_ptr exception)
+            {
                 try
                 {
-                    close_task.get();
+                    if (exception != nullptr)
+                    {
+                        std::rethrow_exception(exception);
+                    }
+                    callback(nullptr);
                 }
-                catch (const std::exception &e)
+                catch (const std::exception & e)
                 {
                     logger.log(
                         trace_level::errors,
                         std::string("[websocket transport] exception when closing websocket: ")
                         .append(e.what()));
+
+                    callback(exception);
                 }
             });
     }
 
-    // Note that the connection assumes that the error callback won't be fired when the result is being processed. This
-    // may no longer be true when we replace the `receive_loop` with "on_message_received" and "on_close" events if they
-    // can be fired on different threads in which case we will have to lock before setting groups token and message id.
-    void websocket_transport::receive_loop(pplx::cancellation_token_source cts)
+    void websocket_transport::on_close(std::function<void(std::exception_ptr)> callback)
     {
-        auto this_transport = shared_from_this();
-        auto logger = this_transport->m_logger;
 
-        // Passing the `std::weak_ptr<websocket_transport>` prevents from a memory leak where we would capture the shared_ptr to
-        // the transport in the continuation lambda and as a result as long as the loop runs the ref count would never get to
-        // zero. Now we capture the weak pointer and get the shared pointer only when the continuation runs so the ref count is
-        // incremented when the shared pointer is acquired and then decremented when it goes out of scope of the continuation.
-        auto weak_transport = std::weak_ptr<websocket_transport>(this_transport);
+    }
 
-        auto websocket_client = this_transport->safe_get_websocket_client();
-
-        websocket_client->receive()
-            // There are two cases when we exit the loop. The first case is implicit - we pass the cancellation_token
-            // to `then` (note this is after the lambda body) and if the token is cancelled the continuation will not
-            // run at all. The second - explicit - case happens if the token gets cancelled after the continuation has
-            // been started in which case we just stop the loop by not scheduling another receive task.
-            .then([weak_transport, cts](std::string message)
+    void websocket_transport::send(std::string payload, std::function<void(std::exception_ptr)> callback)
+    {
+        safe_get_websocket_client()->send(payload, [callback](std::exception_ptr exception)
             {
-                auto transport = weak_transport.lock();
-                if (transport)
+                if (exception != nullptr)
                 {
-                    transport->process_response(message);
-
-                    if (!cts.get_token().is_canceled())
-                    {
-                        transport->receive_loop(cts);
-                    }
+                    callback(exception);
                 }
-            }, cts.get_token())
-            // this continuation is used to observe exceptions from the previous tasks. It will run always - even if one of
-            // the previous continuations throws or was not scheduled due to the cancellation token being set to cancelled
-            .then([weak_transport, logger, websocket_client, cts](pplx::task<void> task)
-            mutable {
-                try
+                else
                 {
-                    task.get();
-                }
-                catch (const pplx::task_canceled&)
-                {
-                    cts.cancel();
-
-                    logger.log(trace_level::info,
-                        std::string("[websocket transport] receive task canceled."));
-                }
-                catch (const std::exception& e)
-                {
-                    cts.cancel();
-
-                    logger.log(
-                        trace_level::errors,
-                        std::string("[websocket transport] error receiving response from websocket: ")
-                        .append(e.what()));
-
-                    websocket_client->close()
-                        .then([](pplx::task<void> task)
-                    {
-                        try { task.get(); }
-                        catch (...) {}
-                    });
-
-                    auto transport = weak_transport.lock();
-                    if (transport)
-                    {
-                        transport->error(e);
-                    }
-                }
-                catch (...)
-                {
-                    cts.cancel();
-
-                    logger.log(
-                        trace_level::errors,
-                        std::string("[websocket transport] unknown error occurred when receiving response from websocket"));
-
-                    websocket_client->close()
-                        .then([](pplx::task<void> task)
-                    {
-                        try { task.get(); }
-                        catch (...) {}
-                    });
-
-                    auto transport = weak_transport.lock();
-                    if (transport)
-                    {
-                        transport->error(signalr_exception("unknown error"));
-                    }
+                    callback(nullptr);
                 }
             });
-    }
-
-    std::shared_ptr<websocket_client> websocket_transport::safe_get_websocket_client()
-    {
-        {
-            const std::lock_guard<std::mutex> lock(m_websocket_client_lock);
-            auto websocket_client = m_websocket_client;
-
-            return websocket_client;
-        }
     }
 }
