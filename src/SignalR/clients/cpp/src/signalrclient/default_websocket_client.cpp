@@ -54,10 +54,6 @@ namespace signalr
             });
     }
 
-    void default_websocket_client::on_close(std::function<void(std::exception_ptr)>)
-    {
-    }
-
     void default_websocket_client::send(std::string payload, std::function<void(std::exception_ptr)> callback)
     {
         web::websockets::client::websocket_outgoing_message msg;

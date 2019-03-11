@@ -17,14 +17,13 @@ class logger : public signalr::log_writer
     }
 };
 
-void send_message(signalr::hub_connection& connection, const std::string& name, const std::string& message)
+void send_message(signalr::hub_connection& connection, const std::string& message)
 {
     web::json::value args{};
-    args[0] = web::json::value::string(utility::conversions::to_string_t(name));
-    args[1] = web::json::value(utility::conversions::to_string_t(message));
+    args[0] = web::json::value(utility::conversions::to_string_t(message));
 
     // if you get an internal compiler error uncomment the lambda below or install VS Update 4
-    connection.invoke("Invoke", args/*, [](const web::json::value&){}*/)
+    connection.invoke("Send", args/*, [](const web::json::value&){}*/)
         .then([](pplx::task<web::json::value> invoke_task)  // fire and forget but we need to observe exceptions
     {
         try
@@ -39,7 +38,7 @@ void send_message(signalr::hub_connection& connection, const std::string& name, 
     });
 }
 
-void chat(const std::string& name)
+void chat()
 {
     signalr::hub_connection connection("http://localhost:5000/default", signalr::trace_level::all, std::make_shared<logger>());
     connection.on("Send", [](const web::json::value& m)
@@ -48,7 +47,7 @@ void chat(const std::string& name)
     });
 
     connection.start()
-        .then([&connection, name]()
+        .then([&connection]()
         {
             ucout << U("Enter your message:");
             for (;;)
@@ -61,7 +60,7 @@ void chat(const std::string& name)
                     break;
                 }
 
-                send_message(connection, name, message);
+                send_message(connection, message);
             }
         })
         .then([&connection]() // fine to capture by reference - we are blocking so it is guaranteed to be valid
@@ -84,11 +83,7 @@ void chat(const std::string& name)
 
 int main()
 {
-    ucout << U("Enter your name: ");
-    std::string name;
-    std::getline(std::cin, name);
-
-    chat(name);
+    chat();
 
     return 0;
 }

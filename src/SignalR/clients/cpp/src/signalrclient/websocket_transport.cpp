@@ -18,7 +18,7 @@ namespace signalr
 
     websocket_transport::websocket_transport(const std::function<std::shared_ptr<websocket_client>()>& websocket_client_factory,
         const logger& logger)
-        : transport(logger), m_websocket_client_factory(websocket_client_factory)
+        : transport(logger), m_websocket_client_factory(websocket_client_factory), m_close_callback([](std::exception_ptr) {})
     {
         // we use this cts to check if the receive loop is running so it should be
         // initially cancelled to indicate that the receive loop is not running
@@ -85,7 +85,7 @@ namespace signalr
                         auto transport = weak_transport.lock();
                         if (transport)
                         {
-                            transport->process_response(exception);
+                            transport->m_close_callback(exception);
                         }
                     }
                     catch (...)
@@ -103,7 +103,7 @@ namespace signalr
                         auto transport = weak_transport.lock();
                         if (transport)
                         {
-                            transport->process_response(std::make_exception_ptr(signalr_exception("unknown error")));
+                            transport->m_close_callback(std::make_exception_ptr(signalr_exception("unknown error")));
                         }
                     }
 
@@ -113,7 +113,7 @@ namespace signalr
                 auto transport = weak_transport.lock();
                 if (transport)
                 {
-                    transport->process_response(message);
+                    transport->m_process_response_callback(message, nullptr);
 
                     if (!cts.get_token().is_canceled())
                     {
@@ -207,8 +207,9 @@ namespace signalr
         }
 
         auto logger = m_logger;
+        auto close_callback = m_close_callback;
 
-        websocket_client->stop([logger, callback](std::exception_ptr exception)
+        websocket_client->stop([logger, callback, close_callback](std::exception_ptr exception)
             {
                 try
                 {
@@ -227,12 +228,19 @@ namespace signalr
 
                     callback(exception);
                 }
+
+                close_callback(exception);
             });
     }
 
     void websocket_transport::on_close(std::function<void(std::exception_ptr)> callback)
     {
+        m_close_callback = callback;
+    }
 
+    void websocket_transport::on_receive(std::function<void(std::string, std::exception_ptr)> callback)
+    {
+        m_process_response_callback = callback;
     }
 
     void websocket_transport::send(std::string payload, std::function<void(std::exception_ptr)> callback)

@@ -32,6 +32,8 @@ namespace signalr
 
         void send(std::string payload, std::function<void(std::exception_ptr)> callback) override;
 
+        void on_receive(std::function<void(std::string, std::exception_ptr)>) override;
+
     private:
         websocket_transport(const std::function<std::shared_ptr<websocket_client>()>& websocket_client_factory,
             const logger& logger);
@@ -40,6 +42,8 @@ namespace signalr
         std::shared_ptr<websocket_client> m_websocket_client;
         std::mutex m_websocket_client_lock;
         std::mutex m_start_stop_lock;
+        std::function<void(std::string, std::exception_ptr)> m_process_response_callback;
+        std::function<void(std::exception_ptr)> m_close_callback;
 
         pplx::cancellation_token_source m_receive_loop_cts;
 

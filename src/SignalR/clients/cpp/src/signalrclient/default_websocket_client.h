@@ -16,7 +16,6 @@ namespace signalr
 
         void start(std::string url, std::function<void(std::exception_ptr)> callback) override;
         void stop(std::function<void(std::exception_ptr)> callback) override;
-        void on_close(std::function<void(std::exception_ptr)>) override;
         void send(std::string payload, std::function<void(std::exception_ptr)> callback) override;
         void receive(std::function<void(std::string, std::exception_ptr)> callback) override;
     private:

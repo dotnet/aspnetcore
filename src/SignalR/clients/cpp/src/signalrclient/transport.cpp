@@ -15,19 +15,4 @@ namespace signalr
     // undefinded behavior since we are using an incomplete type. More details here:  http://herbsutter.com/gotw/_100/
     transport::~transport()
     { }
-
-    void transport::on_receive(std::function<void(std::string, std::exception_ptr)> callback)
-    {
-        m_process_response_callback = callback;;
-    }
-
-    void transport::process_response(std::string message)
-    {
-        m_process_response_callback(message, nullptr);
-    }
-
-    void transport::process_response(std::exception_ptr exception)
-    {
-        m_process_response_callback("", exception);
-    }
 }
