@@ -57,14 +57,16 @@ public:
     VOID
     Stop(bool fServerInitiated) override
     {
-        SRWExclusiveLock stopLock(m_stateLock);
-
-        if (m_fStopCalled)
         {
-            return;
-        }
+            SRWExclusiveLock stopLock(m_stateLock);
 
-        m_fStopCalled = true;
+            if (m_fStopCalled)
+            {
+                return;
+            }
+
+            m_fStopCalled = true;
+        }
 
         StopInternal(fServerInitiated);
     }

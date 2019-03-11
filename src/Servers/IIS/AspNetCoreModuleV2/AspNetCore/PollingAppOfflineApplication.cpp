@@ -17,6 +17,8 @@ HRESULT PollingAppOfflineApplication::TryCreateHandler(_In_ IHttpContext* pHttpC
 void
 PollingAppOfflineApplication::CheckAppOffline()
 {
+    SRWSharedLock stopLock(m_stateLock);
+
     if (m_fStopCalled)
     {
         return;

@@ -70,6 +70,7 @@ IN_PROCESS_APPLICATION::StopClr()
         }
 
         auto requestCount = m_requestCount.load();
+
         if (requestCount == 0)
         {
             LOG_INFO(L"Drained all requests, notifying managed.");
@@ -284,6 +285,7 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
         // At this point CLR thread either finished or timed out, abandon it.
         m_clrThread.detach();
 
+        SRWSharedLock lock(m_stateLock);
         if (m_fStopCalled)
         {
             if (clrThreadExited)
@@ -341,9 +343,13 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
 
 void IN_PROCESS_APPLICATION::QueueStop()
 {
-    if (m_fStopCalled)
     {
-        return;
+        SRWSharedLock lock(m_stateLock);
+
+        if (m_fStopCalled)
+        {
+            return;
+        }
     }
 
     LOG_INFO(L"Queueing in-process stop thread");
@@ -534,6 +540,9 @@ IN_PROCESS_APPLICATION::CreateHandler(
     {
         DBG_ASSERT(!m_fStopCalled);
         m_requestCount++;
+
+        LOG_INFOF(L"Adding request. Total Request Count %d", m_requestCount.load());
+
         *pRequestHandler = new IN_PROCESS_HANDLER(::ReferenceApplication(this), pHttpContext, m_RequestHandler, m_RequestHandlerContext, m_DisconnectHandler, m_AsyncCompletionHandler);
     }
     CATCH_RETURN();
@@ -544,9 +553,12 @@ IN_PROCESS_APPLICATION::CreateHandler(
 void
 IN_PROCESS_APPLICATION::HandleRequestCompletion()
 {
+    LOG_INFOF(L"acquiring lock");
     SRWSharedLock lock(m_stateLock);
-    auto requestCount = m_requestCount--;
-    if (m_fStopCalled && requestCount == 0)
+    m_requestCount--;
+    LOG_INFOF(L"Removing Request %d", m_requestCount.load());
+
+    if (m_fStopCalled && m_requestCount.load() == 0 && !m_blockManagedCallbacks)
     {
         LOG_INFO(L"Drained all requests, notifying managed.");
         m_RequestsDrainedHandler(m_ShutdownHandlerContext);

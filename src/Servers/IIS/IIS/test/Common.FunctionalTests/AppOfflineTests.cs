@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             {
                 var deploymentResult = await DeployApp(HostingModel.InProcess);
 
-                for (int i = 0; i < 100; i++)
+                for (int i = 0; i < 10; i++)
                 {
                     // send first request and add app_offline while app is starting
                     var runningTask = AssertAppOffline(deploymentResult);
