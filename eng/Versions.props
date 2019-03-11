@@ -22,7 +22,6 @@
     <!-- Packages from dotnet/core-setup -->
     <MicrosoftExtensionsDependencyModelPackageVersion>3.0.0-preview4-27507-10</MicrosoftExtensionsDependencyModelPackageVersion>
     <MicrosoftNETCoreAppPackageVersion>3.0.0-preview4-27507-10</MicrosoftNETCoreAppPackageVersion>
-    <MicrosoftDotNetPlatformAbstractionsPackageVersion>3.0.0-preview4-27507-10</MicrosoftDotNetPlatformAbstractionsPackageVersion>
     <!-- Packages from dotnet/corefx -->
     <MicrosoftBclJsonSourcesPackageVersion>4.6.0-preview4.19157.3</MicrosoftBclJsonSourcesPackageVersion>
     <MicrosoftCSharpPackageVersion>4.6.0-preview4.19157.3</MicrosoftCSharpPackageVersion>
