@@ -273,6 +273,10 @@
       <Uri>https://github.com/aspnet/Extensions</Uri>
       <Sha>00000</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.Internal.Extensions.Refs" Version="3.0.0-preview4.19161.2">
+      <Uri>https://github.com/aspnet/Extensions</Uri>
+      <Sha>00000</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.JSInterop" Version="3.0.0-preview4.19161.2">
       <Uri>https://github.com/aspnet/Extensions</Uri>
       <Sha>00000</Sha>
