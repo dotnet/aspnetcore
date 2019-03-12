@@ -193,34 +193,43 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         [InlineData(HostingModel.InProcess)]
         public async Task AppOfflineAddedAndRemovedStress(HostingModel hostingModel)
         {
-            var deploymentResult = await AssertStarts(hostingModel);
-
-            var load = Helpers.StressLoad(deploymentResult.HttpClient, "/HelloWorld", response => {
-                var statusCode = (int)response.StatusCode;
-                Assert.True(statusCode == 200 || statusCode == 503, "Status code was " + statusCode);
-            });
-
-            for (int i = 0; i < 100; i++)
+            for (var j = 0; j < 100; j++)
             {
-                // AddAppOffline might fail if app_offline is being read by ANCM and deleted at the same time
-                RetryHelper.RetryOperation(
-                    () => AddAppOffline(deploymentResult.ContentRoot),
-                    e => Logger.LogError($"Failed to create app_offline : {e.Message}"),
-                    retryCount: 3,
-                    retryDelayMilliseconds: RetryDelay.Milliseconds);
-                RemoveAppOffline(deploymentResult.ContentRoot);
-            }
+                var deploymentResult = await AssertStarts(hostingModel);
 
-            try
-            {
-                await load;
-            }
-            catch (HttpRequestException ex) when (ex.InnerException is IOException | ex.InnerException is SocketException)
-            {
-                // IOException in InProcess is fine, just means process stopped
-                if (hostingModel != HostingModel.InProcess)
+                var load = Helpers.StressLoadAsync(deploymentResult.HttpClient, "/HelloWorld", async response => {
+                    var statusCode = (int)response.StatusCode;
+                    if (statusCode == 400)
+                    {
+                        Logger.LogError("Status code was 400");
+                        Logger.LogError(response.ReasonPhrase);
+                        throw new HttpRequestException(await response.Content.ReadAsStringAsync());
+                    }
+                    Assert.True(statusCode == 200 || statusCode == 503, "Status code was " + statusCode);
+                });
+
+                for (int i = 0; i < 1000; i++)
                 {
-                    throw;
+                    // AddAppOffline might fail if app_offline is being read by ANCM and deleted at the same time
+                    RetryHelper.RetryOperation(
+                        () => AddAppOffline(deploymentResult.ContentRoot),
+                        e => Logger.LogError($"Failed to create app_offline : {e.Message}"),
+                        retryCount: 3,
+                        retryDelayMilliseconds: RetryDelay.Milliseconds);
+                    RemoveAppOffline(deploymentResult.ContentRoot);
+                }
+
+                try
+                {
+                    await load;
+                }
+                catch (HttpRequestException ex) when (ex.InnerException is IOException | ex.InnerException is SocketException)
+                {
+                    // IOException in InProcess is fine, just means process stopped
+                    if (hostingModel != HostingModel.InProcess)
+                    {
+                        throw;
+                    }
                 }
             }
         }

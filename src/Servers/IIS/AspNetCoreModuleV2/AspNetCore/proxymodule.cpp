@@ -94,7 +94,11 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
     {
         if (g_fInShutdown)
         {
-            FINISHED(HRESULT_FROM_WIN32(ERROR_SERVER_SHUTDOWN_IN_PROGRESS));
+            hr = HRESULT_FROM_WIN32(ERROR_SERVER_SHUTDOWN_IN_PROGRESS);
+            retVal = RQ_NOTIFICATION_FINISH_REQUEST;
+
+            pHttpContext->GetResponse()->SetStatus(503, "Service Unavailable", 0, hr);
+            return HandleNotificationStatus(retVal);
         }
 
         FINISHED_IF_FAILED(m_pApplicationManager->GetOrCreateApplicationInfo(

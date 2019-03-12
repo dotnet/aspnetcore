@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.Equal("Hello World", responseText);
         }
 
-        public static async Task StressLoad(HttpClient httpClient, string path, Action<HttpResponseMessage> action)
+        public static async Task StressLoadAsync(HttpClient httpClient, string path, Func<HttpResponseMessage, Task> func)
         {
             async Task RunRequests()
             {
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 for (int j = 0; j < 10; j++)
                 {
                     var response = await connection.GetAsync(path);
-                    action(response);
+                    await func(response);
                 }
             }
 
@@ -213,6 +213,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 Path.Combine(deploymentResult.DeploymentParameters.PublishedApplicationRootPath, "aspnetcore-debug.log"),
                 "Running test allowed log file to be empty." + Environment.NewLine);
         }
+
 
         public static string ReadAllTextFromFile(string filename, ILogger logger)
         {

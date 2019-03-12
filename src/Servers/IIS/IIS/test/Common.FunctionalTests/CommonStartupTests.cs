@@ -34,9 +34,10 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
-            await Helpers.StressLoad(deploymentResult.HttpClient, "/HelloWorld", response => {
+            await Helpers.StressLoadAsync(deploymentResult.HttpClient, "/HelloWorld", response => {
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                 Assert.Equal("Hello World", response.Content.ReadAsStringAsync().GetAwaiter().GetResult());
+                return Task.CompletedTask;
             });
         }
     }

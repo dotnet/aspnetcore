@@ -48,9 +48,10 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var parameters = _fixture.GetBaseDeploymentParameters();
             var deploymentResult = await StartAsync(parameters);
 
-            var load = Helpers.StressLoad(deploymentResult.HttpClient, "/HelloWorld", response => {
+            var load = Helpers.StressLoadAsync(deploymentResult.HttpClient, "/HelloWorld", response => {
                 var statusCode = (int)response.StatusCode;
                 Assert.True(statusCode == 200 || statusCode == 503, "Status code was " + statusCode);
+                return Task.CompletedTask;
             });
 
             try

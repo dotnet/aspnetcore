@@ -49,11 +49,12 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task GetServerVariableDoesNotCrash()
         {
-            await Helpers.StressLoad(_fixture.Client, "/GetServerVariableStress", response => {
+            await Helpers.StressLoadAsync(_fixture.Client, "/GetServerVariableStress", response => {
                     var text = response.Content.ReadAsStringAsync().Result;
                     Assert.StartsWith("Response Begin", text);
                     Assert.EndsWith("Response End", text);
-                });
+                    return Task.CompletedTask;
+            });
         }
     }
 }
