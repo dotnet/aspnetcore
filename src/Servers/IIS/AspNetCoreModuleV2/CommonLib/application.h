@@ -25,10 +25,10 @@ public:
     {
         *pRequestHandler = nullptr;
 
-        SRWSharedLock stateLock(m_stateLock);
+        SRWSharedLock stopLock(m_stopLock);
 
         {
-            SRWSharedLock stopLock(m_stopLock);
+            SRWSharedLock dataLock(m_dataLock);
 
             if (m_fStopCalled)
             {
@@ -54,18 +54,18 @@ public:
           m_applicationConfigPath(pHttpApplication.GetAppConfigPath()),
           m_applicationId(pHttpApplication.GetApplicationId())
     {
-        InitializeSRWLock(&m_stateLock);
         InitializeSRWLock(&m_stopLock);
+        InitializeSRWLock(&m_dataLock);
         m_applicationVirtualPath = ToVirtualPath(m_applicationConfigPath);
     }
 
     VOID
     Stop(bool fServerInitiated) override
     {
-        SRWExclusiveLock stateLock(m_stateLock);
+        SRWExclusiveLock stopLock(m_stopLock);
 
         {
-            SRWSharedLock stopLock(m_stopLock);
+            SRWExclusiveLock dataLock(m_dataLock);
             if (m_fStopCalled)
             {
                 return;
@@ -133,8 +133,8 @@ public:
     }
 
 protected:
-    SRWLOCK m_stateLock{};
-    SRWLOCK m_stopLock {};
+    SRWLOCK m_stopLock{};
+    SRWLOCK m_dataLock {};
     bool m_fStopCalled;
 
 private:
