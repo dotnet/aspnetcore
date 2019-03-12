@@ -24,12 +24,13 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
         private const string DetailedErrorsEnvironmentVariable = "ASPNETCORE_DETAILEDERRORS";
 
         private static readonly TimeSpan _timeout = TimeSpan.FromSeconds(60);
-        private static readonly TimeSpan _retryDelay = TimeSpan.FromMilliseconds(200);
+        private static readonly TimeSpan _retryDelay = TimeSpan.FromMilliseconds(500);
 
         private CancellationTokenSource _hostShutdownToken = new CancellationTokenSource();
 
         private string _configPath;
         private string _debugLogFile;
+        private bool _disposed;
 
         public Process HostProcess { get; set; }
 
@@ -45,6 +46,11 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
         public override void Dispose()
         {
+            if (_disposed)
+            {
+                return;
+            }
+            _disposed = true;
             Dispose(gracefulShutdown: false);
         }
 

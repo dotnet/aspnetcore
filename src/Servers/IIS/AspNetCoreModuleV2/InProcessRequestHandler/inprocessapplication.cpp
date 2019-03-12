@@ -549,10 +549,11 @@ void
 IN_PROCESS_APPLICATION::HandleRequestCompletion()
 {
     SRWSharedLock lock(m_stateLock);
-    m_requestCount--;
-    LOG_TRACEF(L"Removing Request %d", m_requestCount.load());
+    auto requestCount = --m_requestCount;
 
-    if (m_fStopCalled && m_requestCount.load() == 0 && !m_blockManagedCallbacks)
+    LOG_TRACEF(L"Removing Request %d", requestCount);
+
+    if (m_fStopCalled && requestCount == 0 && !m_blockManagedCallbacks)
     {
         LOG_INFO(L"Drained all requests, notifying managed.");
         m_RequestsDrainedHandler(m_ShutdownHandlerContext);

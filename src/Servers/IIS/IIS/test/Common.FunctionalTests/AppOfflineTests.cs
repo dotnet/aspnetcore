@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Xunit;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
+using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
@@ -150,6 +151,45 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
                 Assert.True(false);
             }
+        }
+
+        [ConditionalFact]
+        public async Task GracefulShutdownWorksWithMultipleRequestsInFlight_InProcess()
+        {
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite);
+            deploymentParameters.TransformArguments((a, _) => $"{a} RemoveShutdownLimit");
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            var result = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
+
+            var connectionList = new List<TestConnection>();
+
+            for (var i = 0; i < 5; i++)
+            {
+                var connection = new TestConnection(deploymentResult.HttpClient.BaseAddress.Port);
+                await connection.Send(
+                    "POST /HelloWorldDelayed HTTP/1.1",
+                    "Content-Length: 1",
+                    "Host: localhost",
+                    "Connection: close",
+                    "",
+                    "");
+
+                connectionList.Add(connection);
+            }
+
+            // Shouldn't stop the server here. Instead should drop app offline 
+            AddAppOffline(deploymentResult.ContentRoot);
+
+            for (var i = 0; i < 5; i++)
+            {
+                await connectionList[i].Send("a", "");
+                await connectionList[i].Receive(
+                    "HTTP/1.1 200 OK");
+            }
+
+            deploymentResult.AssertWorkerProcessStop();
         }
 
         [ConditionalFact]

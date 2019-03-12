@@ -221,6 +221,12 @@ namespace TestSite
             await ctx.Response.WriteAsync("Hello World");
         }
 
+        private async Task HelloWorldDelayed(HttpContext ctx)
+        {
+            await ctx.Request.Body.ReadAsync(new byte[1]);
+            await ctx.Response.WriteAsync("Hello World");
+        }
+
         private async Task LargeResponseBody(HttpContext ctx)
         {
             if (int.TryParse(ctx.Request.Query["length"], out var length))
