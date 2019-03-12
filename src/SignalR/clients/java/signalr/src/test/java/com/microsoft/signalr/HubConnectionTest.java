@@ -14,6 +14,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import io.reactivex.subjects.CompletableSubject;
 import io.reactivex.subjects.PublishSubject;
 import io.reactivex.subjects.ReplaySubject;
 import org.junit.jupiter.api.Disabled;
@@ -1495,19 +1496,21 @@ class HubConnectionTest {
         assertEquals("{\"protocol\":\"json\",\"version\":1}" + RECORD_SEPARATOR, sentMessages[0]);
     }
 
-    @Disabled("https://github.com/aspnet/AspNetCore/issues/8262")
     @Test
     public void TransportAllUsesLongPollingWhenServerOnlySupportLongPolling() {
         AtomicInteger requestCount = new AtomicInteger(0);
-        TestHttpClient client = new TestHttpClient().on("POST",
-                (req) -> Single.just(new HttpResponse(200, "",
-                        "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
-                                + "availableTransports\":[{\"transport\":\"LongPolling\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")))
+        CompletableSubject close = CompletableSubject.create();
+        TestHttpClient client = new TestHttpClient()
+                .on("POST",
+                        (req) -> Single.just(new HttpResponse(200, "",
+                                "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                        + "availableTransports\":[{\"transport\":\"LongPolling\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")))
                 .on("GET", (req) -> {
-                    if (requestCount.get() == 0) {
+                    if (requestCount.get() < 2) {
                         requestCount.incrementAndGet();
-                        return Single.just(new HttpResponse(200, "", ""));
+                        return Single.just(new HttpResponse(200, "", "{}" + RECORD_SEPARATOR));
                     }
+                    assertTrue(close.blockingAwait(5, TimeUnit.SECONDS));
                     return Single.just(new HttpResponse(204, "", ""));
                 });
 
@@ -1519,6 +1522,7 @@ class HubConnectionTest {
 
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
         assertTrue(hubConnection.getTransport() instanceof LongPollingTransport);
+        close.onComplete();
         hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
     }
 
