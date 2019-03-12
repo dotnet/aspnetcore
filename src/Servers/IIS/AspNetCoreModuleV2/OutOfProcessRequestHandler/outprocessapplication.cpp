@@ -51,8 +51,6 @@ __override
 VOID
 OUT_OF_PROCESS_APPLICATION::StopInternal(bool fServerInitiated)
 {
-    SRWExclusiveLock stopLock(m_stateLock);
-
     AppOfflineTrackingApplication::StopInternal(fServerInitiated);
 
     if (m_pProcessManager != NULL)

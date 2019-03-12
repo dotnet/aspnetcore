@@ -20,14 +20,15 @@ IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(
     IHttpServer& pHttpServer,
     IHttpApplication& pApplication,
     std::unique_ptr<InProcessOptions> pConfig,
-    APPLICATION_PARAMETER *pParameters,
+    APPLICATION_PARAMETER* pParameters,
     DWORD                  nParameters) :
     InProcessApplicationBase(pHttpServer, pApplication),
     m_Initialized(false),
     m_blockManagedCallbacks(true),
     m_waitForShutdown(true),
     m_pConfig(std::move(pConfig)),
-    m_requestCount(0)
+    m_requestCount(0),
+    m_alreadyDrained(false)
 {
     DBG_ASSERT(m_pConfig);
 
@@ -55,6 +56,7 @@ IN_PROCESS_APPLICATION::StopInternal(bool fServerInitiated)
 VOID
 IN_PROCESS_APPLICATION::StopClr()
 {
+    // This has the state lock around it. 
     LOG_INFO(L"Stopping CLR");
 
     if (!m_blockManagedCallbacks)
@@ -73,8 +75,7 @@ IN_PROCESS_APPLICATION::StopClr()
 
         if (requestCount == 0)
         {
-            LOG_INFO(L"Drained all requests, notifying managed.");
-            m_RequestsDrainedHandler(m_ShutdownHandlerContext);
+            CallRequestsDrained();
         }
     }
 
@@ -137,12 +138,6 @@ IN_PROCESS_APPLICATION::LoadManagedApplication()
         nullptr)); // name
 
     THROW_LAST_ERROR_IF_NULL(m_pShutdownEvent = CreateEvent(
-        nullptr,  // default security attributes
-        TRUE,     // manual reset event
-        FALSE,    // not set
-        nullptr)); // name
-
-    THROW_LAST_ERROR_IF_NULL(m_pRequestDrainEvent = CreateEvent(
         nullptr,  // default security attributes
         TRUE,     // manual reset event
         FALSE,    // not set
@@ -548,12 +543,23 @@ IN_PROCESS_APPLICATION::CreateHandler(
 void
 IN_PROCESS_APPLICATION::HandleRequestCompletion()
 {
-    SRWSharedLock lock(m_stateLock);
+    //SRWSharedLock stopLock(m_stateLock);
+
     auto requestCount = --m_requestCount;
 
     LOG_TRACEF(L"Removing Request %d", requestCount);
 
     if (m_fStopCalled && requestCount == 0 && !m_blockManagedCallbacks)
+    {
+        CallRequestsDrained();
+    }
+}
+
+
+void IN_PROCESS_APPLICATION::CallRequestsDrained()
+{
+    auto expected = false;
+    if (m_alreadyDrained.compare_exchange_strong(expected, true))
     {
         LOG_INFO(L"Drained all requests, notifying managed.");
         m_RequestsDrainedHandler(m_ShutdownHandlerContext);

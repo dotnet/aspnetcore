@@ -9,6 +9,7 @@
 #include "SRWExclusiveLock.h"
 #include "SRWSharedLock.h"
 #include "exceptions.h"
+#include "HandleWrapper.h"
 
 class APPLICATION : public IAPPLICATION
 {
@@ -22,12 +23,21 @@ public:
         _In_  IHttpContext       *pHttpContext,
         _Outptr_result_maybenull_ IREQUEST_HANDLER  **pRequestHandler) override
     {
+        auto waitForShutdown = false;
         *pRequestHandler = nullptr;
 
-        SRWSharedLock stopLock(m_stateLock);
-
-        if (m_fStopCalled)
         {
+            SRWSharedLock stopLock(m_stateLock);
+
+            if (m_fStopCalled)
+            {
+                waitForShutdown = true;
+            }
+        }
+
+        if (waitForShutdown)
+        {
+            THROW_LAST_ERROR_IF(WaitForSingleObject(m_pFinishShutdownEvent, INFINITE) == WAIT_FAILED);
             return S_FALSE;
         }
 
@@ -51,24 +61,41 @@ public:
     {
         InitializeSRWLock(&m_stateLock);
         m_applicationVirtualPath = ToVirtualPath(m_applicationConfigPath);
+        THROW_LAST_ERROR_IF_NULL(m_pFinishShutdownEvent = CreateEvent(
+            nullptr,  // default security attributes
+            TRUE,     // manual reset event
+            FALSE,    // not set
+            nullptr)); // name
     }
-
 
     VOID
     Stop(bool fServerInitiated) override
     {
+        auto waitForShutdown = false;
+
         {
             SRWExclusiveLock stopLock(m_stateLock);
 
             if (m_fStopCalled)
             {
-                return;
+                waitForShutdown = true;
             }
 
             m_fStopCalled = true;
         }
 
+        if (waitForShutdown)
+        {
+            THROW_LAST_ERROR_IF(WaitForSingleObject(m_pFinishShutdownEvent, INFINITE) == WAIT_FAILED);
+            return;
+        }
+
         StopInternal(fServerInitiated);
+
+        if (m_pFinishShutdownEvent != nullptr)
+        {
+            LOG_IF_FAILED(SetEvent(m_pFinishShutdownEvent));
+        }
     }
 
     virtual
@@ -132,6 +159,8 @@ private:
     std::wstring m_applicationVirtualPath;
     std::wstring m_applicationConfigPath;
     std::wstring m_applicationId;
+
+    HandleWrapper<NullHandleTraits> m_pFinishShutdownEvent;
 
     static std::wstring ToVirtualPath(const std::wstring& configurationPath)
     {
