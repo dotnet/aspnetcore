@@ -32,7 +32,7 @@
     <GenerateGuid NamespaceGuid="$(NamespaceGuid)" Values="$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion);$(Platform)">
       <Output TaskParameter="Guid" PropertyName="BundleProviderKey" />
     </GenerateGuid>
-    <GenerateGuid NamespaceGuid="$(NamespaceGuid)" Values="$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion);$(AspNetCorePatchVersion);Platform)">
+    <GenerateGuid NamespaceGuid="$(NamespaceGuid)" Values="$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion);Platform)">
       <Output TaskParameter="Guid" PropertyName="BundleUpgradeCode" />
     </GenerateGuid>
 
