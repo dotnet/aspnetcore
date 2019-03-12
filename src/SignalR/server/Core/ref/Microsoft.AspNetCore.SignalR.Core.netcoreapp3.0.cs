@@ -183,6 +183,11 @@ namespace Microsoft.AspNetCore.SignalR
         public abstract System.Threading.Tasks.Task SendUserAsync(string userId, string methodName, object[] args, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
         public abstract System.Threading.Tasks.Task SendUsersAsync(System.Collections.Generic.IReadOnlyList<string> userIds, string methodName, object[] args, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
     }
+    public partial class HubMetadata
+    {
+        public HubMetadata(System.Type hubType) { }
+        public System.Type HubType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+    }
     [System.AttributeUsageAttribute(System.AttributeTargets.Method, AllowMultiple=false, Inherited=true)]
     public partial class HubMethodNameAttribute : System.Attribute
     {
