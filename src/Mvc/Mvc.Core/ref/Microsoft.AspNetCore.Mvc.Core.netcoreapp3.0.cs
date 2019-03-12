@@ -5,8 +5,8 @@ namespace Microsoft.AspNetCore.Builder
 {
     public static partial class ControllerEndpointRouteBuilderExtensions
     {
-        public static void MapAreaControllerRoute(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes, string name, string areaName, string template, object defaults = null, object constraints = null, object dataTokens = null) { }
-        public static void MapControllerRoute(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes, string name, string template, object defaults = null, object constraints = null, object dataTokens = null) { }
+        public static void MapAreaControllerRoute(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes, string name, string areaName, string pattern, object defaults = null, object constraints = null, object dataTokens = null) { }
+        public static void MapControllerRoute(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes, string name, string pattern, object defaults = null, object constraints = null, object dataTokens = null) { }
         public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapControllers(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes) { throw null; }
         public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapDefaultControllerRoute(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes) { throw null; }
         public static void MapFallbackToAreaController(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes, string action, string controller, string area) { }
