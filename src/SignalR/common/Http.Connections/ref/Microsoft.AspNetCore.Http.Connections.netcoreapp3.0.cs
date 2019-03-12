@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         public System.DateTime LastSeenUtc { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.Threading.Tasks.Task PreviousPollTask { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.Threading.SemaphoreSlim StateLock { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Http.Connections.Internal.HttpConnectionStatus Status { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Http.Connections.Internal.HttpConnectionStatus Status { get { throw null; } set { } }
         public Microsoft.AspNetCore.Connections.TransferFormat SupportedFormats { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public override System.IO.Pipelines.IDuplexPipe Transport { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.Threading.Tasks.Task TransportTask { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
@@ -102,6 +102,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         public System.Threading.Tasks.Task DisposeAsync(bool closeGracefully = false) { throw null; }
         public void OnHeartbeat(System.Action<object> action, object state) { }
         public void TickHeartbeat() { }
+        public bool TryChangeState(Microsoft.AspNetCore.Http.Connections.Internal.HttpConnectionStatus from, Microsoft.AspNetCore.Http.Connections.Internal.HttpConnectionStatus to) { throw null; }
     }
     public partial class HttpConnectionDispatcher
     {

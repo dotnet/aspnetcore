@@ -258,7 +258,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var clientClosedConnection = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             var writeTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            TestSink.MessageLogged += context => {
+            TestSink.MessageLogged += context =>
+            {
                 if (context.LoggerName != "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" &&
                     context.LoggerName != "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets")
                 {
@@ -340,7 +341,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             Assert.True(requestAborted.Task.IsCompleted);
         }
 
-        [Theory]
+        [Theory(Skip = "https://github.com/aspnet/AspNetCore/issues/7342")]
         [MemberData(nameof(ConnectionAdapterData))]
         public async Task AppCanHandleClientAbortingConnectionMidResponse(ListenOptions listenOptions)
         {

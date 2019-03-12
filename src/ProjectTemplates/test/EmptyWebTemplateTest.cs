@@ -1,26 +1,30 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.E2ETesting;
+using ProjectTemplates.Tests.Helpers;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Templates.Test
 {
-    public class EmptyWebTemplateTest : TemplateTestBase
+    public class EmptyWebTemplateTest
     {
-        public EmptyWebTemplateTest(ITestOutputHelper output) : base(output)
+        public EmptyWebTemplateTest(ProjectFactoryFixture projectFactory, ITestOutputHelper output)
         {
+            Project = projectFactory.CreateProject(output);
         }
+
+        public Project Project { get; }
 
         [Fact]
         public void EmptyWebTemplate()
         {
-            RunDotNetNew("web");
+            Project.RunDotNetNew("web");
 
             foreach (var publish in new[] { false, true })
             {
-                using (var aspNetProcess = StartAspNetProcess(publish))
+                using (var aspNetProcess = Project.StartAspNetProcess(publish))
                 {
                     aspNetProcess.AssertOk("/");
                 }

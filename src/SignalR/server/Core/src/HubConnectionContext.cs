@@ -19,6 +19,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.SignalR
 {
+    /// <summary>
+    /// Encapsulates all information about an individual connection to a SignalR Hub.
+    /// </summary>
     public class HubConnectionContext
     {
         private static readonly Action<object> _cancelReader = state => ((PipeReader)state).CancelPendingRead();

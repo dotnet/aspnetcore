@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder.Internal;
 using Microsoft.AspNetCore.Identity.Test;
@@ -64,6 +65,28 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             var user = new IdentityUser { UserName = userName };
             IdentityResultAssert.IsSuccess(await userManager.CreateAsync(user, password));
             IdentityResultAssert.IsSuccess(await userManager.DeleteAsync(user));
+        }
+
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
+        public async Task FindByEmailThrowsWithTwoUsersWithSameEmail()
+        {
+            var userStore = _builder.ApplicationServices.GetRequiredService<IUserStore<IdentityUser>>();
+            var manager = _builder.ApplicationServices.GetRequiredService<UserManager<IdentityUser>>();
+
+            Assert.NotNull(userStore);
+            Assert.NotNull(manager);
+
+            var userA = new IdentityUser(Guid.NewGuid().ToString());
+            userA.Email = "dupe@dupe.com";
+            const string password = "1qaz@WSX";
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(userA, password));
+            var userB = new IdentityUser(Guid.NewGuid().ToString());
+            userB.Email = "dupe@dupe.com";
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(userB, password));
+            await Assert.ThrowsAsync<InvalidOperationException>(async () => await manager.FindByEmailAsync("dupe@dupe.com"));
         }
     }
 }

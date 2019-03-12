@@ -111,6 +111,13 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 throw new ArgumentNullException(nameof(selectedEncoding));
             }
 
+            // Opt into sync IO support until we can work out an alternative https://github.com/aspnet/AspNetCore/issues/6397
+            var syncIOFeature = context.HttpContext.Features.Get<Http.Features.IHttpBodyControlFeature>();
+            if (syncIOFeature != null)
+            {
+                syncIOFeature.AllowSynchronousIO = true;
+            }
+
             var response = context.HttpContext.Response;
             using (var writer = context.WriterFactory(response.Body, selectedEncoding))
             {

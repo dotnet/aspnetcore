@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Internal;
 
-namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
+namespace Microsoft.AspNetCore.E2ETesting
 {
     class SeleniumStandaloneServer
     {

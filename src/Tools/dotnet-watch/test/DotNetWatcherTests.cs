@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Globalization;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -22,7 +23,8 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             _app = new KitchenSinkApp(logger);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/8267
         public async Task RunsWithDotnetWatchEnvVariable()
         {
             Assert.True(string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_WATCH")), "DOTNET_WATCH cannot be set already when this test is running");

@@ -1,15 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <!-- Shared testing infrastructure for running E2E tests using selenium -->
+  <Import Project="$(SharedSourceRoot)E2ETesting\E2ETesting.props" />
+
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
-    <DefaultItemExcludes>$(DefaultItemExcludes);node_modules\**</DefaultItemExcludes>
-    <!-- WebDriver is not strong-named signed -->
-    <SignAssembly>false</SignAssembly>
+    <TestGroupName>Components.E2ETests</TestGroupName>
 
     <!--
       Temporarily disabled until this runs on macOS
     -->
-    <SkipTests Condition="'$(BlazorAllTests)' != 'true'">true</SkipTests>
+    <SkipTests Condition="'$(SeleniumE2ETestsSupported)' != 'true'">true</SkipTests>
     <!-- https://github.com/aspnet/AspNetCore/issues/6857 -->
     <BuildHelixPayload>false</BuildHelixPayload>
   </PropertyGroup>
@@ -18,20 +19,10 @@
     <Compile Include="$(SharedSourceRoot)Process\**\*.cs" LinkBase="Shared" />
   </ItemGroup>
 
-  <!-- Version of this SDK is set in global.json -->
-  <Sdk Name="Yarn.MSBuild" />
-
-  <Target Name="EnsureNodeJSRestored" BeforeTargets="Build" Condition="'$(BlazorAllTests)'=='true'">
-    <Message Text="Running yarn install on $(MSBuildProjectFile)" Importance="High" />
-    <Yarn Command="install" />
-  </Target>
-
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
-    <Reference Include="Selenium.Support" />
-    <Reference Include="Selenium.WebDriver" />
   </ItemGroup>
 
   <ItemGroup>
@@ -47,5 +38,8 @@
     <ProjectReference Include="..\testassets\BasicTestApp\BasicTestApp.csproj" />
     <ProjectReference Include="..\testassets\TestServer\TestServer.csproj" />
   </ItemGroup>
+
+  <!-- Shared testing infrastructure for running E2E tests using selenium -->
+  <Import Project="$(SharedSourceRoot)E2ETesting\E2ETesting.targets" />
 
 </Project>

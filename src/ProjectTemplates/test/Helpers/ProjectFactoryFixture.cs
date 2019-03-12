@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -11,33 +13,32 @@ using Templates.Test.Helpers;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Templates.Test
+namespace ProjectTemplates.Tests.Helpers
 {
-    public class TemplateTestBase : IDisposable
+    public class ProjectFactoryFixture : IDisposable
     {
-        private static readonly AsyncLocal<ITestOutputHelper> _output = new AsyncLocal<ITestOutputHelper>();
-
         private static object DotNetNewLock = new object();
 
-        protected string ProjectName { get; set; }
-        protected string ProjectGuid { get; set; }
-        protected string TemplateOutputDir { get; set; }
+        private ConcurrentBag<Project> _projects = new ConcurrentBag<Project>();
 
-        public static ITestOutputHelper Output => _output.Value;
-
-        public TemplateTestBase(ITestOutputHelper output)
+        public Project CreateProject(ITestOutputHelper output)
         {
-            _output.Value = output;
             TemplatePackageInstaller.EnsureTemplatingEngineInitialized(output);
+            var project = new Project
+            {
+                DotNetNewLock = DotNetNewLock,
+                Output = output,
+                ProjectGuid = Guid.NewGuid().ToString("N").Substring(0, 6)
+            };
+            project.ProjectName = $"AspNet.Template.{project.ProjectGuid}";
 
-            ProjectGuid = Guid.NewGuid().ToString("N").Substring(0, 6);
-            ProjectName = $"AspNet.Template.{ProjectGuid}";
+            _projects.Add(project);
 
             var assemblyPath = GetType().GetTypeInfo().Assembly.CodeBase;
             var assemblyUri = new Uri(assemblyPath, UriKind.Absolute);
             var basePath = Path.GetDirectoryName(assemblyUri.LocalPath);
-            TemplateOutputDir = Path.Combine(basePath, "TestTemplates", ProjectName);
-            Directory.CreateDirectory(TemplateOutputDir);
+            project.TemplateOutputDir = Path.Combine(basePath, "TestTemplates", project.ProjectName);
+            Directory.CreateDirectory(project.TemplateOutputDir);
 
             // We don't want any of the host repo's build config interfering with
             // how the test project is built, so disconnect it from the
@@ -48,7 +49,7 @@ namespace Templates.Test
 $@"<Project>
     <Import Project=""Directory.Build.After.props"" Condition=""Exists('Directory.Build.After.props')"" />
 </Project>";
-            File.WriteAllText(Path.Combine(TemplateOutputDir, "Directory.Build.props"), directoryBuildPropsContent);
+            File.WriteAllText(Path.Combine(project.TemplateOutputDir, "Directory.Build.props"), directoryBuildPropsContent);
 
             // TODO: remove this once we get a newer version of the SDK which supports an implicit FrameworkReference
             // cref https://github.com/aspnet/websdk/issues/424
@@ -57,10 +58,42 @@ $@"<Project>
     <Import Project=""{templatesTestsPropsFilePath}"" />
 </Project>";
 
-            File.WriteAllText(Path.Combine(TemplateOutputDir, "Directory.Build.targets"), directoryBuildTargetsContent);
+            File.WriteAllText(Path.Combine(project.TemplateOutputDir, "Directory.Build.targets"), directoryBuildTargetsContent);
+
+            return project;
         }
 
-        protected void RunDotNetNew(string templateName, string auth = null, string language = null, bool useLocalDB = false, bool noHttps = false)
+        public void Dispose()
+        {
+            var list = new List<Exception>();
+            foreach (var project in _projects)
+            {
+                try
+                {
+                    project.Dispose();
+                }
+                catch(Exception e)
+                {
+                    list.Add(e);
+                }
+            }
+
+            if (list.Count > 0)
+            {
+                throw new AggregateException(list);
+            }
+        }
+    }
+
+    public class Project
+    {
+        public string ProjectName { get; set; }
+        public string ProjectGuid { get; set; }
+        public string TemplateOutputDir { get; set; }
+        public ITestOutputHelper Output { get; set; }
+        public object DotNetNewLock { get; set; }
+
+        public void RunDotNetNew(string templateName, string auth = null, string language = null, bool useLocalDB = false, bool noHttps = false)
         {
             var args = $"new {templateName} --debug:custom-hive \"{TemplatePackageInstaller.CustomHivePath}\"";
 
@@ -92,7 +125,7 @@ $@"<Project>
             }
         }
 
-        protected void RunDotNet(string arguments)
+        public void RunDotNet(string arguments)
         {
             lock (DotNetNewLock)
             {
@@ -100,9 +133,9 @@ $@"<Project>
             }
         }
 
-        protected void RunDotNetEfCreateMigration(string migrationName)
+        public void RunDotNetEfCreateMigration(string migrationName)
         {
-            var assembly = typeof(TemplateTestBase).Assembly;
+            var assembly = typeof(ProjectFactoryFixture).Assembly;
 
             var dotNetEfFullPath = assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
                 .First(attribute => attribute.Key == "DotNetEfFullPath")
@@ -118,7 +151,7 @@ $@"<Project>
             }
         }
 
-        protected void AssertDirectoryExists(string path, bool shouldExist)
+        public void AssertDirectoryExists(string path, bool shouldExist)
         {
             var fullPath = Path.Combine(TemplateOutputDir, path);
             var doesExist = Directory.Exists(fullPath);
@@ -134,7 +167,7 @@ $@"<Project>
         }
 
         // If this fails, you should generate new migrations via migrations/updateMigrations.cmd
-        protected void AssertEmptyMigration(string migration)
+        public void AssertEmptyMigration(string migration)
         {
             var fullPath = Path.Combine(TemplateOutputDir, "Data/Migrations");
             var file = Directory.EnumerateFiles(fullPath).Where(f => f.EndsWith($"{migration}.cs")).FirstOrDefault();
@@ -161,7 +194,7 @@ $@"<Project>
             return str.Replace("\n", string.Empty).Replace("\r", string.Empty);
         }
 
-        protected void AssertFileExists(string path, bool shouldExist)
+        public void AssertFileExists(string path, bool shouldExist)
         {
             var fullPath = Path.Combine(TemplateOutputDir, path);
             var doesExist = File.Exists(fullPath);
@@ -176,13 +209,13 @@ $@"<Project>
             }
         }
 
-        protected string ReadFile(string path)
+        public string ReadFile(string path)
         {
             AssertFileExists(path, shouldExist: true);
             return File.ReadAllText(Path.Combine(TemplateOutputDir, path));
         }
 
-        protected AspNetProcess StartAspNetProcess(bool publish = false)
+        public AspNetProcess StartAspNetProcess(bool publish = false)
         {
             return new AspNetProcess(Output, TemplateOutputDir, ProjectName, publish);
         }
@@ -192,7 +225,7 @@ $@"<Project>
             DeleteOutputDirectory();
         }
 
-        private void DeleteOutputDirectory()
+        public void DeleteOutputDirectory()
         {
             const int NumAttempts = 10;
 

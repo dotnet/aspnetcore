@@ -422,6 +422,52 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
+        public async Task ChunksWithGetMemoryAfterStartAsyncBeforeFirstFlushStillFlushes()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                var response = httpContext.Response;
+
+                await response.StartAsync();
+                var memory = response.BodyWriter.GetMemory();
+                var fisrtPartOfResponse = Encoding.ASCII.GetBytes("Hello ");
+                fisrtPartOfResponse.CopyTo(memory);
+                response.BodyWriter.Advance(6);
+
+                memory = response.BodyWriter.GetMemory();
+                var secondPartOfResponse = Encoding.ASCII.GetBytes("World!");
+                secondPartOfResponse.CopyTo(memory);
+                response.BodyWriter.Advance(6);
+
+                await response.BodyWriter.FlushAsync();
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host: ",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "c",
+                        "Hello World!",
+                        "0",
+                        "",
+                        "");
+                }
+
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
         public async Task ChunksWithGetMemoryBeforeFirstFlushStillFlushes()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -429,7 +475,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             using (var server = new TestServer(async httpContext =>
             {
                 var response = httpContext.Response;
-                await response.StartAsync();
+
                 var memory = response.BodyWriter.GetMemory();
                 var fisrtPartOfResponse = Encoding.ASCII.GetBytes("Hello ");
                 fisrtPartOfResponse.CopyTo(memory);
@@ -476,7 +522,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             using (var server = new TestServer(async httpContext =>
             {
                 var response = httpContext.Response;
-                await response.StartAsync();
 
                 var memory = response.BodyWriter.GetMemory();
                 length.Value = memory.Length;
@@ -524,7 +569,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        public async Task ChunksWithGetMemoryWithInitialFlushWorks()
+        public async Task ChunksWithGetMemoryAndStartAsyncWithInitialFlushWorks()
         {
             var length = new IntAsRef();
             var semaphore = new SemaphoreSlim(initialCount: 0);
@@ -570,6 +615,65 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         length.Value.ToString("x"),
                         new string('a', length.Value),
+                        "6",
+                        "World!",
+                        "0",
+                        "",
+                        "");
+                }
+
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task ChunksWithGetMemoryBeforeFlushEdgeCase()
+        {
+            var length = 0;
+            var semaphore = new SemaphoreSlim(initialCount: 0);
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                var response = httpContext.Response;
+
+                await response.StartAsync();
+
+                var memory = response.BodyWriter.GetMemory();
+                length = memory.Length - 1;
+                semaphore.Release();
+
+                var fisrtPartOfResponse = Encoding.ASCII.GetBytes(new string('a', length));
+                fisrtPartOfResponse.CopyTo(memory);
+                response.BodyWriter.Advance(length);
+
+                var secondMemory = response.BodyWriter.GetMemory(6);
+
+                var secondPartOfResponse = Encoding.ASCII.GetBytes("World!");
+                secondPartOfResponse.CopyTo(secondMemory);
+                response.BodyWriter.Advance(6);
+
+                await response.BodyWriter.FlushAsync();
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host: ",
+                        "",
+                        "");
+
+                    // Wait for length to be set
+                    await semaphore.WaitAsync();
+
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        length.ToString("x"),
+                        new string('a', length),
                         "6",
                         "World!",
                         "0",
@@ -633,6 +737,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             using (var server = new TestServer(async httpContext =>
             {
                 var response = httpContext.Response;
+                await response.StartAsync();
 
                 // To avoid using span in an async method
                 void NonAsyncMethod()
@@ -646,8 +751,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     secondPartOfResponse.CopyTo(span.Slice(6));
                     response.BodyWriter.Advance(6);
                 }
-
-                await response.StartAsync();
 
                 NonAsyncMethod();
             }, testContext))
@@ -687,6 +790,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 await response.StartAsync();
 
                 var memory = response.BodyWriter.GetMemory(4096);
+
                 var fisrtPartOfResponse = Encoding.ASCII.GetBytes("Hello ");
                 fisrtPartOfResponse.CopyTo(memory);
                 response.BodyWriter.Advance(6);
@@ -708,6 +812,48 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "c",
                         "Hello World!",
+                        "0",
+                        "",
+                        "");
+                }
+
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task ChunkGetMemoryAndWriteWithoutStart()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                var response = httpContext.Response;
+
+                var memory = response.BodyWriter.GetMemory(4096);
+                var fisrtPartOfResponse = Encoding.ASCII.GetBytes("Hello ");
+                fisrtPartOfResponse.CopyTo(memory);
+                response.BodyWriter.Advance(6);
+
+                await response.WriteAsync("World!");
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host: ",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "6",
+                        "Hello ",
+                        "6",
+                        "World!",
                         "0",
                         "",
                         "");
@@ -758,10 +904,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Theory]
-        [InlineData(15)]
-        [InlineData(255)]
-        public async Task ChunkGetMemoryWithSmallerSizesWork(int writeSize)
+        [Fact]
+        public async Task GetMemoryWithSizeHintWithoutStartAsync()
         {
             var testContext = new TestServiceContext(LoggerFactory);
 
@@ -769,12 +913,92 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             {
                 var response = httpContext.Response;
 
-                await response.StartAsync();
+                var memory = response.BodyWriter.GetMemory(0);
+
+                Assert.Equal(4096, memory.Length);
+
+                memory = response.BodyWriter.GetMemory(1000000);
+                Assert.Equal(1000000, memory.Length);
+                await Task.CompletedTask;
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host: ",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+
+                await server.StopAsync();
+            }
+        }
+
+        [Theory]
+        [InlineData(15)]
+        [InlineData(255)]
+        public async Task ChunkGetMemoryWithoutStartWithSmallerSizesWork(int writeSize)
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                var response = httpContext.Response;
+
 
                 var memory = response.BodyWriter.GetMemory(4096);
                 var fisrtPartOfResponse = Encoding.ASCII.GetBytes(new string('a', writeSize));
                 fisrtPartOfResponse.CopyTo(memory);
                 response.BodyWriter.Advance(writeSize);
+                await response.BodyWriter.FlushAsync();
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host: ",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        writeSize.ToString("X").ToLower(),
+                        new string('a', writeSize),
+                        "0",
+                        "",
+                        "");
+                }
+
+                await server.StopAsync();
+            }
+        }
+
+        [Theory]
+        [InlineData(15)]
+        [InlineData(255)]
+        public async Task ChunkGetMemoryWithStartWithSmallerSizesWork(int writeSize)
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+
+            using (var server = new TestServer(async httpContext =>
+            {
+                var response = httpContext.Response;
+
+                var memory = response.BodyWriter.GetMemory(4096);
+                var fisrtPartOfResponse = Encoding.ASCII.GetBytes(new string('a', writeSize));
+                fisrtPartOfResponse.CopyTo(memory);
+                response.BodyWriter.Advance(writeSize);
+                await response.BodyWriter.FlushAsync();
             }, testContext))
             {
                 using (var connection = server.CreateConnection())
@@ -806,7 +1030,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             using (var server = new TestServer(async httpContext =>
             {
                 var response = httpContext.Response;
-                await response.StartAsync();
+
                 var memory = response.BodyWriter.GetMemory(4096);
                 var fisrtPartOfResponse = Encoding.ASCII.GetBytes("hello,");
                 fisrtPartOfResponse.CopyTo(memory);

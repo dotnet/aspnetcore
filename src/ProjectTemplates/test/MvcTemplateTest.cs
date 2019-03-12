@@ -1,32 +1,35 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Testing.xunit;
+using ProjectTemplates.Tests.Helpers;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Templates.Test
 {
-    public class MvcTemplateTest : TemplateTestBase
+    public class MvcTemplateTest
     {
-        public MvcTemplateTest(ITestOutputHelper output) : base(output)
+        public MvcTemplateTest(ProjectFactoryFixture projectFactory, ITestOutputHelper output)
         {
+            Project = projectFactory.CreateProject(output);
         }
+
+        public Project Project { get; }
 
         [Theory]
         [InlineData(null)]
-        [InlineData("F#", Skip = "https://github.com/aspnet/Templating/issues/673")]
+        [InlineData("F#")]
         private void MvcTemplate_NoAuthImpl(string languageOverride)
         {
-            RunDotNetNew("mvc", language: languageOverride);
+            Project.RunDotNetNew("mvc", language: languageOverride);
 
-            AssertDirectoryExists("Areas", false);
-            AssertDirectoryExists("Extensions", false);
-            AssertFileExists("urlRewrite.config", false);
-            AssertFileExists("Controllers/AccountController.cs", false);
+            Project.AssertDirectoryExists("Areas", false);
+            Project.AssertDirectoryExists("Extensions", false);
+            Project.AssertFileExists("urlRewrite.config", false);
+            Project.AssertFileExists("Controllers/AccountController.cs", false);
 
             var projectExtension = languageOverride == "F#" ? "fsproj" : "csproj";
-            var projectFileContents = ReadFile($"{ProjectName}.{projectExtension}");
+            var projectFileContents = Project.ReadFile($"{Project.ProjectName}.{projectExtension}");
             Assert.DoesNotContain(".db", projectFileContents);
             Assert.DoesNotContain("Microsoft.EntityFrameworkCore.Tools", projectFileContents);
             Assert.DoesNotContain("Microsoft.VisualStudio.Web.CodeGeneration.Design", projectFileContents);
@@ -35,7 +38,7 @@ namespace Templates.Test
 
             foreach (var publish in new[] { false, true })
             {
-                using (var aspNetProcess = StartAspNetProcess(publish))
+                using (var aspNetProcess = Project.StartAspNetProcess(publish))
                 {
                     aspNetProcess.AssertOk("/");
                     aspNetProcess.AssertOk("/Home/Privacy");
@@ -48,27 +51,28 @@ namespace Templates.Test
         [InlineData(false)]
         public void MvcTemplate_IndividualAuthImpl(bool useLocalDB)
         {
-            RunDotNetNew("mvc", auth: "Individual", useLocalDB: useLocalDB);
+            Project.RunDotNetNew("mvc", auth: "Individual", useLocalDB: useLocalDB);
 
-            AssertDirectoryExists("Extensions", false);
-            AssertFileExists("urlRewrite.config", false);
-            AssertFileExists("Controllers/AccountController.cs", false);
+            Project.AssertDirectoryExists("Extensions", false);
+            Project.AssertFileExists("urlRewrite.config", false);
+            Project.AssertFileExists("Controllers/AccountController.cs", false);
 
-            var projectFileContents = ReadFile($"{ProjectName}.csproj");
+            var projectFileContents = Project.ReadFile($"{Project.ProjectName}.csproj");
             if (!useLocalDB)
             {
                 Assert.Contains(".db", projectFileContents);
             }
 
-            RunDotNetEfCreateMigration("mvc");
+            Project.RunDotNetEfCreateMigration("mvc");
 
-            AssertEmptyMigration("mvc");
+            Project.AssertEmptyMigration("mvc");
 
             foreach (var publish in new[] { false, true })
             {
-                using (var aspNetProcess = StartAspNetProcess(publish))
+                using (var aspNetProcess = Project.StartAspNetProcess(publish))
                 {
                     aspNetProcess.AssertOk("/");
+                    aspNetProcess.AssertOk("/Identity/Account/Login");
                     aspNetProcess.AssertOk("/Home/Privacy");
                 }
             }
