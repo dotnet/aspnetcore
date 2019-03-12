@@ -38,8 +38,7 @@ namespace MvcSandbox
             {
                 builder.MapGet(
                     requestDelegate: WriteEndpoints,
-                    pattern: "/endpoints",
-                    displayName: "Home");
+                    pattern: "/endpoints").WithDisplayName("Home");
 
                 builder.MapControllerRoute(
                     name: "default",
@@ -53,7 +52,6 @@ namespace MvcSandbox
 
                 builder.MapGet(
                     "/graph",
-                    "DFA Graph",
                     (httpContext) =>
                     {
                         using (var writer = new StreamWriter(httpContext.Response.Body, Encoding.UTF8, 1024, leaveOpen: true))
@@ -64,7 +62,7 @@ namespace MvcSandbox
                         }
 
                         return Task.CompletedTask;
-                    });
+                    }).WithDisplayName("DFA Graph");
 
                 builder.MapControllers();
                 builder.MapRazorPages();

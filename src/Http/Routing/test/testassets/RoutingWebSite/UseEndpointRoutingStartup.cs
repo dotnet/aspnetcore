@@ -108,8 +108,7 @@ namespace RoutingWebSite
                         response.ContentType = "text/plain";
                         return response.WriteAsync(
                             "Link: " + linkGenerator.GetPathByRouteValues(httpContext, "WithSingleAsteriskCatchAll", new { }));
-                    },
-                    new RouteNameMetadata(routeName: "WithSingleAsteriskCatchAll"));
+                    }).WithMetadata(new RouteNameMetadata(routeName: "WithSingleAsteriskCatchAll"));
                 routes.MapGet(
                     "/WithDoubleAsteriskCatchAll/{**path}",
                     (httpContext) =>
@@ -121,8 +120,7 @@ namespace RoutingWebSite
                         response.ContentType = "text/plain";
                         return response.WriteAsync(
                             "Link: " + linkGenerator.GetPathByRouteValues(httpContext, "WithDoubleAsteriskCatchAll", new { }));
-                    },
-                    new RouteNameMetadata(routeName: "WithDoubleAsteriskCatchAll"));
+                    }).WithMetadata(new RouteNameMetadata(routeName: "WithDoubleAsteriskCatchAll"));
 
                 MapHostEndpoint(routes);
                 MapHostEndpoint(routes, "*.0.0.1");

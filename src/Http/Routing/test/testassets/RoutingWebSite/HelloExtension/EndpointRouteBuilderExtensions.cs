@@ -24,10 +24,7 @@ namespace Microsoft.AspNetCore.Builder
                .UseHello(greeter)
                .Build();
 
-            return routes.Map(
-                template,
-                "Hello " + greeter,
-                pipeline);
+            return routes.Map(template, pipeline).WithDisplayName("Hello " + greeter);
         }
     }
 }
