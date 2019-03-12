@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Builder
         /// requests for non-filenames with the lowest possible priority. The request will be routed to a
         /// <see cref="StaticFileMiddleware"/> that attempts to serve the file specified by <paramref name="filePath"/>.
         /// </summary>
-        /// <param name="builder">The <see cref="IEndpointRouteBuilder"/>.</param>
+        /// <param name="routes">The <see cref="IEndpointRouteBuilder"/>.</param>
         /// <param name="filePath">The file path of the file to serve.</param>
         /// <returns>The <see cref="IEndpointRouteBuilder"/></returns>
         /// <remarks>
@@ -38,12 +38,12 @@ namespace Microsoft.AspNetCore.Builder
         /// </para>
         /// </remarks>
         public static IEndpointConventionBuilder MapFallbackToFile(
-            this IEndpointRouteBuilder builder,
+            this IEndpointRouteBuilder routes,
             string filePath)
         {
-            if (builder == null)
+            if (routes == null)
             {
-                throw new ArgumentNullException(nameof(builder));
+                throw new ArgumentNullException(nameof(routes));
             }
 
             if (filePath == null)
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(filePath));
             }
 
-            return builder.MapFallback(CreateRequestDelegate(builder, filePath));
+            return routes.MapFallback(CreateRequestDelegate(routes, filePath));
         }
 
         /// <summary>
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Builder
         /// requests for non-filenames with the lowest possible priority. The request will be routed to a
         /// <see cref="StaticFileMiddleware"/> that attempts to serve the file specified by <paramref name="filePath"/>.
         /// </summary>
-        /// <param name="builder">The <see cref="IEndpointRouteBuilder"/>.</param>
+        /// <param name="routes">The <see cref="IEndpointRouteBuilder"/>.</param>
         /// <param name="filePath">The file path of the file to serve.</param>
         /// <param name="options"><see cref="StaticFileOptions"/> for the <see cref="StaticFileMiddleware"/>.</param>
         /// <returns>The <see cref="IEndpointRouteBuilder"/></returns>
@@ -76,13 +76,13 @@ namespace Microsoft.AspNetCore.Builder
         /// </para>
         /// </remarks>
         public static IEndpointConventionBuilder MapFallbackToFile(
-            this IEndpointRouteBuilder builder,
+            this IEndpointRouteBuilder routes,
             string filePath,
             StaticFileOptions options)
         {
-            if (builder == null)
+            if (routes == null)
             {
-                throw new ArgumentNullException(nameof(builder));
+                throw new ArgumentNullException(nameof(routes));
             }
 
             if (filePath == null)
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(filePath));
             }
 
-            return builder.MapFallback(CreateRequestDelegate(builder, filePath, options));
+            return routes.MapFallback(CreateRequestDelegate(routes, filePath, options));
         }
 
         /// <summary>
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Builder
         /// requests for non-filenames with the lowest possible priority. The request will be routed to a
         /// <see cref="StaticFileMiddleware"/> that attempts to serve the file specified by <paramref name="filePath"/>.
         /// </summary>
-        /// <param name="builder">The <see cref="IEndpointRouteBuilder"/>.</param>
+        /// <param name="routes">The <see cref="IEndpointRouteBuilder"/>.</param>
         /// <param name="pattern">The route pattern.</param>
         /// <param name="filePath">The file path of the file to serve.</param>
         /// <returns>The <see cref="IEndpointRouteBuilder"/></returns>
@@ -121,13 +121,13 @@ namespace Microsoft.AspNetCore.Builder
         /// </para>
         /// </remarks>
         public static IEndpointConventionBuilder MapFallbackToFile(
-            this IEndpointRouteBuilder builder,
+            this IEndpointRouteBuilder routes,
             string pattern,
             string filePath)
         {
-            if (builder == null)
+            if (routes == null)
             {
-                throw new ArgumentNullException(nameof(builder));
+                throw new ArgumentNullException(nameof(routes));
             }
 
             if (pattern == null)
@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(filePath));
             }
 
-            return builder.MapFallback(pattern, CreateRequestDelegate(builder, filePath));
+            return routes.MapFallback(pattern, CreateRequestDelegate(routes, filePath));
         }
 
         /// <summary>
@@ -148,7 +148,7 @@ namespace Microsoft.AspNetCore.Builder
         /// requests for non-filenames with the lowest possible priority. The request will be routed to a
         /// <see cref="StaticFileMiddleware"/> that attempts to serve the file specified by <paramref name="filePath"/>.
         /// </summary>
-        /// <param name="builder">The <see cref="IEndpointRouteBuilder"/>.</param>\
+        /// <param name="routes">The <see cref="IEndpointRouteBuilder"/>.</param>\
         /// <param name="pattern">The route pattern.</param>
         /// <param name="filePath">The file path of the file to serve.</param>
         /// <param name="options"><see cref="StaticFileOptions"/> for the <see cref="StaticFileMiddleware"/>.</param>
@@ -169,14 +169,14 @@ namespace Microsoft.AspNetCore.Builder
         /// </para>
         /// </remarks>
         public static IEndpointConventionBuilder MapFallbackToFile(
-            this IEndpointRouteBuilder builder,
+            this IEndpointRouteBuilder routes,
             string pattern,
             string filePath,
             StaticFileOptions options)
         {
-            if (builder == null)
+            if (routes == null)
             {
-                throw new ArgumentNullException(nameof(builder));
+                throw new ArgumentNullException(nameof(routes));
             }
 
             if (pattern == null)
@@ -189,15 +189,15 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(filePath));
             }
 
-            return builder.MapFallback(pattern, CreateRequestDelegate(builder, filePath, options));
+            return routes.MapFallback(pattern, CreateRequestDelegate(routes, filePath, options));
         }
 
         private static RequestDelegate CreateRequestDelegate(
-            IEndpointRouteBuilder builder,
+            IEndpointRouteBuilder routes,
             string filePath,
             StaticFileOptions options = null)
         {
-            var app = builder.CreateApplicationBuilder();
+            var app = routes.CreateApplicationBuilder();
             app.Use(next => context =>
             {
                 context.Request.Path = "/" + filePath;
