@@ -72,6 +72,8 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IConfigureOptions<MvcOptions>, NewtonsoftJsonMvcOptionsSetup>());
             services.TryAddEnumerable(
+                ServiceDescriptor.Transient<IConfigureOptions<MvcNewtonsoftJsonOptions>, MvcJsonOptionsSetup>());
+            services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IApiDescriptionProvider, JsonPatchOperationsArrayProvider>());
             services.TryAddSingleton<IActionResultExecutor<JsonResult>, JsonResultExecutor>();
 
