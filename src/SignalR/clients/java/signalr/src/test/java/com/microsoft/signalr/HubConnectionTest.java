@@ -1520,7 +1520,6 @@ class HubConnectionTest {
                 .withHttpClient(client)
                 .build();
 
-
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
         assertTrue(hubConnection.getTransport() instanceof LongPollingTransport);
         close.onComplete();
