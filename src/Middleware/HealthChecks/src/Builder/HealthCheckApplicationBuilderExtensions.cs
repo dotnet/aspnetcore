@@ -4,6 +4,8 @@
 using System;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Builder
@@ -225,6 +227,14 @@ namespace Microsoft.AspNetCore.Builder
 
         private static void UseHealthChecksCore(IApplicationBuilder app, PathString path, int? port, object[] args)
         {
+            if (app.ApplicationServices.GetService(typeof(HealthCheckService)) == null)
+            {
+                throw new InvalidOperationException(Resources.FormatUnableToFindServices(
+                    nameof(IServiceCollection),
+                    nameof(HealthCheckServiceCollectionExtensions.AddHealthChecks),
+                    "ConfigureServices(...)"));
+            }
+
             // NOTE: we explicitly don't use Map here because it's really common for multiple health
             // check middleware to overlap in paths. Ex: `/health`, `/health/detailed` - this is order
             // sensititive with Map, and it's really surprising to people.

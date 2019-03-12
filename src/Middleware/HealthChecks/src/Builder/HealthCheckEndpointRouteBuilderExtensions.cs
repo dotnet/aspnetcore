@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -93,6 +95,14 @@ namespace Microsoft.AspNetCore.Builder
 
         private static IEndpointConventionBuilder MapHealthChecksCore(IEndpointRouteBuilder builder, string pattern, HealthCheckOptions options, string displayName)
         {
+            if (builder.ServiceProvider.GetService(typeof(HealthCheckService)) == null)
+            {
+                throw new InvalidOperationException(Resources.FormatUnableToFindServices(
+                    nameof(IServiceCollection),
+                    nameof(HealthCheckServiceCollectionExtensions.AddHealthChecks),
+                    "ConfigureServices(...)"));
+            }
+
             var args = options != null ? new[] { Options.Create(options) } : Array.Empty<object>();
 
             var pipeline = builder.CreateApplicationBuilder()
