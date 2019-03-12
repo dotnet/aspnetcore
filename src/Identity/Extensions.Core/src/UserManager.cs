@@ -105,18 +105,15 @@ namespace Microsoft.AspNetCore.Identity
                 foreach (var providerName in Options.Tokens.ProviderMap.Keys)
                 {
                     var description = Options.Tokens.ProviderMap[providerName];
-                    
-                    var provider = (description.ProviderInstance ?? services.GetRequiredService(description.ProviderType)) 
+
+                    var provider = (description.ProviderInstance ?? services.GetRequiredService(description.ProviderType))
                         as IUserTwoFactorTokenProvider<TUser>;
                     if (provider != null)
                     {
                         RegisterTokenProvider(providerName, provider);
                     }
                 }
-                
-                NameNormalizer = services.GetService<INameLookupNormalizer>();
-                EmailNormalizer = services.GetService<IEmailLookupNormalizer>();
-            }
+            }                
 
             if (Options.Stores.ProtectPersonalData)
             {
@@ -164,16 +161,6 @@ namespace Microsoft.AspNetCore.Identity
         /// The <see cref="ILookupNormalizer"/> used to normalize things like user and role names.
         /// </summary>
         public ILookupNormalizer KeyNormalizer { get; set; }
-
-        /// <summary>
-        /// The <see cref="ILookupNormalizer"/> used to normalize user and role names.
-        /// </summary>
-        public INameLookupNormalizer NameNormalizer { get; set; }
-
-        /// <summary>
-        /// The <see cref="ILookupNormalizer"/> used to normalize emails.
-        /// </summary>
-        public IEmailLookupNormalizer EmailNormalizer { get; set; }
         
         /// <summary>
         /// The <see cref="IdentityErrorDescriber"/> used to generate error messages.
@@ -616,22 +603,12 @@ namespace Microsoft.AspNetCore.Identity
         }
 
         /// <summary>
-        /// Normalize a key (user name, email) for consistent comparisons.
-        /// </summary>
-        /// <param name="key">The key to normalize.</param>
-        /// <returns>A normalized value representing the specified <paramref name="key"/>.</returns>
-        public virtual string NormalizeKey(string key)
-        {
-            return (KeyNormalizer == null) ? key : KeyNormalizer.Normalize(key);
-        }
-
-        /// <summary>
         /// Normalize user or role name for consistent comparisons.
         /// </summary>
         /// <param name="name">The name to normalize.</param>
         /// <returns>A normalized value representing the specified <paramref name="name"/>.</returns>
         public virtual string NormalizeName(string name)
-            =>  (NameNormalizer == null) ? NormalizeKey(name) : NameNormalizer.Normalize(name);
+            =>  (KeyNormalizer == null) ? name : KeyNormalizer.NormalizeName(name);
 
         /// <summary>
         /// Normalize email for consistent comparisons.
@@ -639,7 +616,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <param name="email">The email to normalize.</param>
         /// <returns>A normalized value representing the specified <paramref name="email"/>.</returns>
         public virtual string NormalizeEmail(string email)
-            =>  (EmailNormalizer == null) ? NormalizeKey(email) : EmailNormalizer.Normalize(email);
+            =>  (KeyNormalizer == null) ? email : KeyNormalizer.NormalizeEmail(email);
         
         private string ProtectPersonalData(string data)
         {

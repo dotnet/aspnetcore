@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         }
 
         [Fact]
-        public async Task RoleExistsCallsStoreWithNormalizedName()
+        public async Task FindByNameCallsStoreWithCustomNormalizedName()
         {
             // Setup
             var store = new Mock<IRoleStore<PocoRole>>();
@@ -104,13 +104,12 @@ namespace Microsoft.AspNetCore.Identity.Test
             var manager = MockHelpers.TestRoleManager(store.Object);
 
             // Act
-            var result = await manager.RoleExistsAsync(role.Name);
+            var result = await manager.FindByNameAsync(role.Name);
 
             // Assert
-            Assert.True(result);
+            Assert.Equal(role, result);
             store.VerifyAll();
         }
-
 
         [Fact]
         public void DisposeAfterDisposeDoesNotThrow()
