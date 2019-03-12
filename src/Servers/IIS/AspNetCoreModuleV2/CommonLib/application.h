@@ -23,22 +23,17 @@ public:
         _In_  IHttpContext       *pHttpContext,
         _Outptr_result_maybenull_ IREQUEST_HANDLER  **pRequestHandler) override
     {
-        auto waitForShutdown = false;
         *pRequestHandler = nullptr;
 
+        SRWSharedLock stateLock(m_stateLock);
+
         {
-            SRWSharedLock stopLock(m_stateLock);
+            SRWSharedLock stopLock(m_stopLock);
 
             if (m_fStopCalled)
             {
-                waitForShutdown = true;
+                return S_FALSE;
             }
-        }
-
-        if (waitForShutdown)
-        {
-            THROW_LAST_ERROR_IF(WaitForSingleObject(m_pFinishShutdownEvent, INFINITE) == WAIT_FAILED);
-            return S_FALSE;
         }
 
         TraceContextScope traceScope(pHttpContext->GetTraceContext());
@@ -60,34 +55,23 @@ public:
           m_applicationId(pHttpApplication.GetApplicationId())
     {
         InitializeSRWLock(&m_stateLock);
+        InitializeSRWLock(&m_stopLock);
         m_applicationVirtualPath = ToVirtualPath(m_applicationConfigPath);
-        THROW_LAST_ERROR_IF_NULL(m_pFinishShutdownEvent = CreateEvent(
-            nullptr,  // default security attributes
-            TRUE,     // manual reset event
-            FALSE,    // not set
-            nullptr)); // name
     }
 
     VOID
     Stop(bool fServerInitiated) override
     {
-        auto waitForShutdown = false;
+        SRWExclusiveLock stateLock(m_stateLock);
 
         {
-            SRWExclusiveLock stopLock(m_stateLock);
-
+            SRWSharedLock stopLock(m_stopLock);
             if (m_fStopCalled)
             {
-                waitForShutdown = true;
+                return;
             }
 
             m_fStopCalled = true;
-        }
-
-        if (waitForShutdown)
-        {
-            THROW_LAST_ERROR_IF(WaitForSingleObject(m_pFinishShutdownEvent, INFINITE) == WAIT_FAILED);
-            return;
         }
 
         StopInternal(fServerInitiated);
@@ -149,7 +133,8 @@ public:
     }
 
 protected:
-    SRWLOCK m_stateLock {};
+    SRWLOCK m_stateLock{};
+    SRWLOCK m_stopLock {};
     bool m_fStopCalled;
 
 private:

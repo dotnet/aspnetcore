@@ -71,6 +71,8 @@ IN_PROCESS_APPLICATION::StopClr()
             shutdownHandler(m_ShutdownHandlerContext);
         }
 
+        SRWSharedLock stopLock(m_stopLock);
+
         auto requestCount = m_requestCount.load();
 
         if (requestCount == 0)
@@ -528,6 +530,8 @@ IN_PROCESS_APPLICATION::CreateHandler(
 {
     try
     {
+        SRWSharedLock stopLock(m_stopLock);
+
         DBG_ASSERT(!m_fStopCalled);
         m_requestCount++;
 
@@ -543,7 +547,7 @@ IN_PROCESS_APPLICATION::CreateHandler(
 void
 IN_PROCESS_APPLICATION::HandleRequestCompletion()
 {
-    SRWSharedLock stopLock(m_stateLock);
+    SRWSharedLock stopLock(m_stopLock);
 
     auto requestCount = --m_requestCount;
 
