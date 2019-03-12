@@ -1227,9 +1227,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 yield return new object[] { HttpTransportType.WebSockets };
             }
             yield return new object[] { HttpTransportType.ServerSentEvents };
-
-            // Disabled due to: https://github.com/aspnet/AspNetCore/issues/6597
-            //yield return new object[] { HttpTransportType.LongPolling };
+            yield return new object[] { HttpTransportType.LongPolling };
         }
     }
 }
