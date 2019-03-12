@@ -43,11 +43,11 @@ namespace MvcSandbox
 
                 builder.MapControllerRoute(
                     name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                    pattern: "{controller=Home}/{action=Index}/{id?}");
 
                 builder.MapControllerRoute(
                     name: "transform",
-                    template: "Transform/{controller:slugify=Home}/{action:slugify=Index}/{id?}",
+                    pattern: "Transform/{controller:slugify=Home}/{action:slugify=Index}/{id?}",
                     defaults: null,
                     constraints: new { controller = "Home" });
 

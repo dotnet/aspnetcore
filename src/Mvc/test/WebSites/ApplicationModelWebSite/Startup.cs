@@ -29,8 +29,8 @@ namespace ApplicationModelWebSite
         {
             app.UseRouting(routes =>
             {
-                routes.MapControllerRoute(name: "areaRoute", template: "{area:exists}/{controller=Home}/{action=Index}");
-                routes.MapControllerRoute(name: "default", template: "{controller}/{action}/{id?}");
+                routes.MapControllerRoute(name: "areaRoute", pattern: "{area:exists}/{controller=Home}/{action=Index}");
+                routes.MapControllerRoute(name: "default", pattern: "{controller}/{action}/{id?}");
 
                 routes.MapRazorPages();
             });
