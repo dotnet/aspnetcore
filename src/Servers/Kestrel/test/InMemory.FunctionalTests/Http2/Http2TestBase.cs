@@ -25,6 +25,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
@@ -177,7 +178,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _mockConnectionContext.Setup(c => c.Abort(It.IsAny<ConnectionAbortedException>())).Callback<ConnectionAbortedException>(ex =>
             {
                 // Emulate transport abort so the _connectionTask completes.
-                _pair.Application.Output.Complete(ex);
+                Task.Run(() =>
+                {
+                    TestApplicationErrorLogger.LogInformation(0, ex, "ConnectionContext.Abort() was called. Completing _pair.Application.Output.");
+                    _pair.Application.Output.Complete(ex);
+                });
             });
 
             _noopApplication = context => Task.CompletedTask;
@@ -380,7 +385,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _serviceContext = new TestServiceContext(LoggerFactory, _mockKestrelTrace.Object)
             {
-                Scheduler = PipeScheduler.Inline
+                Scheduler = PipeScheduler.Inline,
             };
         }
 
@@ -1055,7 +1060,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             frame.PrepareWindowUpdate(streamId, sizeIncrement);
             Http2FrameWriter.WriteHeader(frame, outputWriter);
             var buffer = outputWriter.GetSpan(4);
-            Bitshifter.WriteUInt31BigEndian(buffer, (uint)sizeIncrement);
+            BinaryPrimitives.WriteUInt32BigEndian(buffer, (uint)sizeIncrement);
             outputWriter.Advance(4);
             return FlushAsync(outputWriter);
         }

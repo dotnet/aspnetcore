@@ -1,0 +1,75 @@
+<Project DefaultTargets="Build" InitialTargets="_CheckForInvalidConfiguration">
+
+  <!-- Version of this SDK is set in global.json -->
+  <Sdk Name="Yarn.MSBuild" />
+
+  <PropertyGroup>
+    <NormalizedPackageId>$(PackageId.Replace('@','').Replace('/','-'))</NormalizedPackageId>
+    <PackageFileName>$(NormalizedPackageId)-$(PackageVersion).tgz</PackageFileName>
+    <PackageJson>$(MSBuildProjectDirectory)\package.json</PackageJson>
+    <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)' == ''">$(MSBuildProjectDirectory)\obj\</BaseIntermediateOutputPath>
+    <IntermediateOutputPath>$([MSBuild]::NormalizeDirectory('$(BaseIntermediateOutputPath)'))$(Configuration)\</IntermediateOutputPath>
+    <InstallArgs Condition="'$(RestoreLockedMode)' == 'true'">--frozen-lockfile</InstallArgs>
+  </PropertyGroup>
+
+  <Target Name="_CheckForInvalidConfiguration">
+    <Error Text="Missing expected property: PackageId" Condition="'$(IsPackable)' != 'false' and '$(PackageId)' == ''" />
+  </Target>
+
+  <Target Name="Restore">
+    <Message Importance="High" Text="Running yarn install on $(MSBuildProjectFullPath)" />
+    <Yarn Command="install $(InstallArgs)" />
+  </Target>
+
+  <Target Name="PrepareForBuild">
+    <MakeDir Directories="$(IntermediateOutputPath);$(PackageOutputPath)"  />
+  </Target>
+
+  <Target Name="ResolveProjectReferences">
+    <MSBuild Projects="@(ProjectReference)"
+             BuildInParallel="true" />
+  </Target>
+
+  <Target Name="Build" DependsOnTargets="PrepareForBuild;ResolveProjectReferences">
+    <Yarn Command="run build" Condition="'$(IsBuildable)' != 'false'" StandardOutputImportance="High" StandardErrorImportance="High" />
+  </Target>
+
+  <PropertyGroup>
+    <PackDependsOn>
+      $(PackDependsOn);
+      PrepareForBuild
+    </PackDependsOn>
+    <PackDependsOn Condition="'$(NoBuild)' != 'true'">
+      $(PackDependsOn);
+      Build
+    </PackDependsOn>
+  </PropertyGroup>
+
+  <Target Name="Pack" Condition="'$(IsPackable)' == 'true'" DependsOnTargets="$(PackDependsOn)">
+    <PropertyGroup>
+      <_BackupPackageJson>$(IntermediateOutputPath)$(MSBuildProjectName).package.json.bak</_BackupPackageJson>
+      <_PackageTargetPath>$(MSBuildProjectDirectory)\$(PackageFileName)</_PackageTargetPath>
+    </PropertyGroup>
+
+    <Copy SourceFiles="$(PackageJson)" DestinationFiles="$(_BackupPackageJson)" />
+
+    <Yarn Command="version --no-git-tag-version --new-version $(PackageVersion)" />
+    <Yarn Command="pack --filename $(PackageFileName)" />
+
+    <Move SourceFiles="$(_PackageTargetPath)" DestinationFolder="$(PackageOutputPath)" />
+    <Message Importance="High" Text="$(MSBuildProjectName) -> $(_PackageTargetPath)" />
+
+    <CallTarget Targets="_RestoreBackupPackageJsonFile" />
+    <OnError ExecuteTargets="_RestoreBackupPackageJsonFile" />
+  </Target>
+
+  <Target Name="_RestoreBackupPackageJsonFile">
+    <Move SourceFiles="$(_BackupPackageJson)" DestinationFiles="$(PackageJson)" />
+  </Target>
+
+  <Target Name="Test" Condition="'$(IsTestProject)' == 'true'">
+    <Message Importance="High" Text="Running npm tests for $(MSBuildProjectName)" />
+    <Yarn Command="$(NpmTestArgs)" StandardOutputImportance="High" StandardErrorImportance="High" />
+  </Target>
+
+</Project>

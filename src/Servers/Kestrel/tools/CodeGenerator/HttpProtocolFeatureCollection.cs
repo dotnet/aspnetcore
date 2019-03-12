@@ -13,6 +13,8 @@ namespace CodeGenerator
             {
                 "IHttpRequestFeature",
                 "IHttpResponseFeature",
+                "IResponseBodyPipeFeature",
+                "IRequestBodyPipeFeature",
                 "IHttpRequestIdentifierFeature",
                 "IServiceProvidersFeature",
                 "IHttpRequestLifetimeFeature",
@@ -40,6 +42,7 @@ namespace CodeGenerator
                 "IHttpMinRequestBodyDataRateFeature",
                 "IHttpMinResponseDataRateFeature",
                 "IHttpBodyControlFeature",
+                "IHttpResponseStartFeature"
             };
 
             var rareFeatures = new[]
@@ -59,14 +62,17 @@ namespace CodeGenerator
             {
                 "IHttpRequestFeature",
                 "IHttpResponseFeature",
+                "IResponseBodyPipeFeature",
+                "IRequestBodyPipeFeature",
                 "IHttpUpgradeFeature",
                 "IHttpRequestIdentifierFeature",
                 "IHttpRequestLifetimeFeature",
                 "IHttpConnectionFeature",
                 "IHttpMaxRequestBodySizeFeature",
                 "IHttpBodyControlFeature",
+                "IHttpResponseStartFeature"
             };
-
+            
             var usings = $@"
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;

@@ -6,7 +6,7 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;identity;membership;razorpages</PackageTags>
-    <IsProductPackage>true</IsProductPackage>
+    <IsShippingPackage>true</IsShippingPackage>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
     <ProvideApplicationPartFactoryAttributeTypeName>Microsoft.AspNetCore.Mvc.ApplicationParts.NullApplicationPartFactory, Microsoft.AspNetCore.Mvc.Core</ProvideApplicationPartFactoryAttributeTypeName>
     <RazorCompileOnBuild>false</RazorCompileOnBuild>
@@ -29,30 +29,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json" />
     <Reference Include="Microsoft.AspNetCore.Identity" />
     <Reference Include="Microsoft.AspNetCore.Mvc" />
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
     <Reference Include="Microsoft.Extensions.FileProviders.Embedded" />
     <Reference Include="Microsoft.Extensions.Identity.Stores" />
-    <Reference Include="Microsoft.NET.Sdk.Razor" PrivateAssets="All" />
-  </ItemGroup>
-
-  <ItemGroup>
-
-    <RazorAssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(BuildNumber)' != ''">
-      <_Parameter1>BuildNumber</_Parameter1>
-      <_Parameter2>$(BuildNumber)</_Parameter2>
-    </RazorAssemblyAttribute>
-
-    <RazorTargetAssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(BuildNumber)' != ''">
-      <_Parameter1>BuildNumber</_Parameter1>
-      <_Parameter2>$(BuildNumber)</_Parameter2>
-    </RazorTargetAssemblyAttribute>
-  </ItemGroup>
-
-  <ItemGroup>
-    <RazorCompile Include="$(GeneratedCommitHashAttributeFile)" />
-    <RazorCompile Include="$(GeneratedInternalAspNetCoreAttributeFile)" />
   </ItemGroup>
 
   <ItemGroup>

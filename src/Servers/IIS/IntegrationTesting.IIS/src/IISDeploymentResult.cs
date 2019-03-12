@@ -38,6 +38,16 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             };
         }
 
+        private HttpClient CreateRetryClient(HttpMessageHandler messageHandler)
+        {
+            var loggingHandler = new LoggingHandler(messageHandler, Logger);
+            var retryHandler = new RetryHandler(loggingHandler, Logger);
+            return new HttpClient(retryHandler)
+            {
+                BaseAddress = base.HttpClient.BaseAddress
+            };
+        }
+
         public new HttpClient HttpClient { get; set; }
     }
 }

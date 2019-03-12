@@ -13,13 +13,21 @@ namespace RazorBuildWebSite
     {
         public void ConfigureServices(IServiceCollection services)
         {
+            var fileProvider = new UpdateableFileProvider();
+            services.AddSingleton(fileProvider);
+
             services.AddMvc()
+                .AddRazorRuntimeCompilation(options => options.FileProviders.Add(fileProvider))
                 .SetCompatibilityVersion(CompatibilityVersion.Latest);
         }
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseMvcWithDefaultRoute();
+            app.UseRouting(routes =>
+            {
+                routes.MapDefaultControllerRoute();
+                routes.MapRazorPages();
+            });
         }
 
         public static void Main(string[] args)

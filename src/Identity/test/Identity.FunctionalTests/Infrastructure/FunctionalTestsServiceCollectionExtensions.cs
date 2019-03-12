@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Identity.FunctionalTests
@@ -19,7 +20,8 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
     {
         public static IServiceCollection SetupTestDatabase<TContext>(this IServiceCollection services, string databaseName) where TContext : DbContext =>
             services.AddDbContext<TContext>(options =>
-                options.UseInMemoryDatabase(databaseName, memoryOptions => { }));
+                options.ConfigureWarnings(b => b.Log(CoreEventId.ManyServiceProvidersCreatedWarning))
+                    .UseInMemoryDatabase(databaseName, memoryOptions => { }));
 
         public static IServiceCollection SetupTestThirdPartyLogin(this IServiceCollection services) =>
             services.AddAuthentication()

@@ -50,13 +50,12 @@ namespace SampleDestination
                 options.AddPolicy("AllowAll", policy => policy
                     .AllowAnyOrigin()
                     .AllowAnyMethod()
-                    .AllowAnyHeader()
-                    .AllowCredentials());
+                    .AllowAnyHeader());
             });
             services.AddRouting();
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app)
         {
             app.UseRouting(routing =>
             {
@@ -86,9 +85,7 @@ namespace SampleDestination
 
             context.Response.ContentType = "text/plain; charset=utf-8";
             context.Response.ContentLength = content.Length;
-            context.Response.Body.Write(content, 0, content.Length);
-
-            return Task.CompletedTask;
+            return context.Response.Body.WriteAsync(content, 0, content.Length);
         }
     }
 }

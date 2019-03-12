@@ -76,6 +76,10 @@ namespace Microsoft.AspNetCore.Routing
                 { "regex", typeof(RegexInlineRouteConstraint) },
 
                 {"required", typeof(RequiredRouteConstraint) },
+
+                // Files
+                { "file", typeof(FileNameRouteConstraint) },
+                { "nonfile", typeof(NonFileNameRouteConstraint) },
             };
         }
     }

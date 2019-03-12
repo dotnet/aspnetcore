@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task ConfigurationChangeStopsInProcess()
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(HostingModel.InProcess, publish: true);
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(HostingModel.InProcess);
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
@@ -43,13 +43,10 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             await deploymentResult.AssertRecycledAsync();
         }
 
-        [ConditionalTheory]
-        [InlineData(AncmVersion.AspNetCoreModule)]
-        [InlineData(AncmVersion.AspNetCoreModuleV2)]
-        public async Task ConfigurationChangeForcesChildProcessRestart(AncmVersion version)
+        [ConditionalFact]
+        public async Task ConfigurationChangeForcesChildProcessRestart()
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess, publish: true);
-            deploymentParameters.AncmVersion = version;
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
@@ -66,7 +63,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task OutOfProcessToInProcessHostingModelSwitchWorks()
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess, publish: true);
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
@@ -83,15 +80,15 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             await deploymentResult.HttpClient.RetryRequestAsync("/HelloWorld", r => r.StatusCode == HttpStatusCode.InternalServerError);
 
             StopServer();
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult, "Could not find the assembly 'aspnetcorev2_inprocess.dll'", Logger);
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.CouldNotFindHandler(), Logger);
         }
 
-        [ConditionalTheory]
+        [ConditionalTheory(Skip = "https://github.com/aspnet/AspNetCore-Internal/issues/1794")]
         [InlineData(HostingModel.InProcess)]
         [InlineData(HostingModel.OutOfProcess)]
         public async Task ConfigurationTouchedStress(HostingModel hostingModel)
         {
-            var deploymentResult = await DeployAsync(_fixture.GetBaseDeploymentParameters(hostingModel, publish: true));
+            var deploymentResult = await DeployAsync(_fixture.GetBaseDeploymentParameters(hostingModel));
 
             await deploymentResult.AssertStarts();
             var load = Helpers.StressLoad(deploymentResult.HttpClient, "/HelloWorld", response => {

@@ -19,29 +19,33 @@ namespace HtmlGenerationWebSite
             // null which is interpreted as true unless element includes an action attribute.
             services.AddMvc(ConfigureMvcOptions)
                 .InitializeTagHelper<FormTagHelper>((helper, _) => helper.Antiforgery = false)
+                .AddNewtonsoftJson()
                 .SetCompatibilityVersion(CompatibilityVersion.Latest);
 
             services.AddSingleton(typeof(ISignalTokenProviderService<>), typeof(SignalTokenProviderService<>));
             services.AddSingleton<ProductsService>();
         }
 
-        public void Configure(IApplicationBuilder app)
+        public virtual void Configure(IApplicationBuilder app)
         {
             app.UseStaticFiles();
-            app.UseMvc(routes =>
+
+            app.UseRouting(routes =>
             {
-                routes.MapRoute(
+                routes.MapControllerRoute(
                     name: "areaRoute",
                     template: "{area:exists}/{controller}/{action}/{id?}",
                     defaults: new { action = "Index" });
-                routes.MapRoute(
+                routes.MapControllerRoute(
                     name: "productRoute",
                     template: "Product/{action}",
                     defaults: new { controller = "Product" });
-                routes.MapRoute(
+                routes.MapControllerRoute(
                     name: "default",
                     template: "{controller}/{action}/{id?}",
                     defaults: new { controller = "HtmlGeneration_Home", action = "Index" });
+
+                routes.MapRazorPages();
             });
         }
 

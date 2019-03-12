@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <Description>Runtime server features for ASP.NET Core Components.</Description>
+    <IsShippingPackage>true</IsShippingPackage>
+    <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
+    <HasReferenceAssembly>false</HasReferenceAssembly>
+  </PropertyGroup>
+
+  <!-- Producing this package requires building with NodeJS enabled. -->
+  <PropertyGroup Condition="'$(BuildNodeJS)' == 'false'">
+    <IsPackable>false</IsPackable>
+    <GenerateEmbeddedFilesManifest>false</GenerateEmbeddedFilesManifest>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <Compile Include="$(ComponentsSharedSourceRoot)\src\CacheHeaderSettings.cs" Link="Shared\CacheHeaderSettings.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Components.Browser" />
+    <Reference Include="Microsoft.AspNetCore.SignalR" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" />  
+    <Reference Include="Microsoft.AspNetCore.StaticFiles" />
+    <Reference Include="Microsoft.Extensions.Caching.Memory" />
+    <Reference Include="Microsoft.Extensions.FileProviders.Composite" />
+    <Reference Include="Microsoft.Extensions.FileProviders.Embedded" />
+
+    <!--
+      Temporary until we move the prerendering APIs into this assembly.
+    -->
+    <Reference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(BuildNodeJS)' != 'false'">
+    <!-- We need .Browser.JS to build first so we can embed its .js output -->
+    <ProjectReference Include="..\..\Browser.JS\Microsoft.AspNetCore.Components.Browser.JS.npmproj" ReferenceOutputAssembly="false" />
+    <EmbeddedResource Include="..\..\Browser.JS\src\dist\components.server.js" LogicalName="_framework\%(Filename)%(Extension)" />
+  </ItemGroup>
+
+</Project>

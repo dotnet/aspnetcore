@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -589,5 +589,14 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   </data>
   <data name="Http2ErrorStreamAborted" xml:space="preserve">
     <value>A frame of type {frameType} was received after stream {streamId} was reset or aborted.</value>
+  </data>
+  <data name="ProtocolSelectionFailed" xml:space="preserve">
+    <value>HTTP protocol selection failed.</value>
+  </data>
+  <data name="ServerShutdownDuringConnectionInitialization" xml:space="preserve">
+    <value>Server shutdown started during connection initialization.</value>
+  </data>
+  <data name="StartAsyncBeforeGetMemory" xml:space="preserve">
+    <value>Cannot call GetMemory() until response has started. Call HttpResponse.StartAsync() before calling GetMemory().</value>
   </data>
 </root>

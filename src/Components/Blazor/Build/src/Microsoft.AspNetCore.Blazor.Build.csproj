@@ -1,0 +1,49 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <Description>Build mechanism for ASP.NET Core Blazor applications.</Description>
+    <OutputType>Exe</OutputType>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <IsShippingPackage>true</IsShippingPackage>
+    <HasReferenceAssembly>false</HasReferenceAssembly>
+  </PropertyGroup>
+
+  <!-- Pack settings -->
+  <PropertyGroup>
+    <!-- Producing this package requires building with NodeJS enabled. -->
+    <IsPackable Condition="'$(BuildNodeJS)' == 'false'">false</IsPackable>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <NuspecFile>Microsoft.AspNetCore.Blazor.Build.nuspec</NuspecFile>
+    <IntermediatePackDir>obj\publish\</IntermediatePackDir>
+    <PublishDir>$(IntermediatePackDir)$(TargetFramework)/</PublishDir>
+  </PropertyGroup>
+
+  <!-- Executes /t:Publish for all target frameworks before packing-->
+  <Target Name="PublishAll" BeforeTargets="_IntermediatePack">
+    <PropertyGroup>
+      <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+      <NuspecProperties>
+      version=$(PackageVersion);
+      publishDir=$([MSBuild]::NormalizeDirectory($(IntermediatePackDir)));
+      componentsversion=$(ComponentsPackageVersion);
+      razorversion=$(MicrosoftAspNetCoreRazorDesignPackageVersion);
+      blazormonoversion=$(MicrosoftAspNetCoreBlazorMonoPackageVersion);
+      repositorycommit=$(SourceRevisionId);</NuspecProperties>
+    </PropertyGroup>
+    <ItemGroup>
+      <_TargetFramework Include="$(TargetFramework)" />
+    </ItemGroup>
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" Properties="TargetFramework=%(_TargetFramework.Identity)" />
+  </Target>
+
+  <ItemGroup>
+    <ProjectReference Condition="'$(BuildNodeJS)' != 'false'" Include="$(RepositoryRoot)src\Components\Browser.JS\Microsoft.AspNetCore.Components.Browser.JS.npmproj" ReferenceOutputAssembly="false" />
+    <Reference Include="Microsoft.AspNetCore.Components" />
+    <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" />
+    <Reference Include="Microsoft.Extensions.FileProviders.Composite" />
+    <Reference Include="Microsoft.Extensions.FileProviders.Physical" />
+    <Reference Include="Mono.Cecil" />
+    <Reference Include="System.CodeDom" />
+  </ItemGroup>
+</Project>

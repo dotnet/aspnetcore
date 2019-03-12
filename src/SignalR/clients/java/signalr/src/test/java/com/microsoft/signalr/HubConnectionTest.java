@@ -8,12 +8,15 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import io.reactivex.subjects.PublishSubject;
+import io.reactivex.subjects.ReplaySubject;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import io.reactivex.Observable;
@@ -66,7 +69,7 @@ class HubConnectionTest {
     public void checkHubConnectionStateNoHandShakeResponse() {
         MockTransport mockTransport = new MockTransport(false);
         HubConnection hubConnection = HubConnectionBuilder.create("http://example.com")
-                .withTransport(mockTransport)
+                .withTransportImplementation(mockTransport)
                 .withHttpClient(new TestHttpClient())
                 .shouldSkipNegotiate(true)
                 .withHandshakeResponseTimeout(100)
@@ -371,6 +374,279 @@ class HubConnectionTest {
     }
 
     @Test
+    public void checkStreamUploadSingleItemThroughSend() {
+        MockTransport mockTransport = new MockTransport();
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
+
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+
+        ReplaySubject<String> stream = ReplaySubject.create();
+        hubConnection.send("UploadStream", stream);
+
+        stream.onNext("FirstItem");
+        String[] messages = mockTransport.getSentMessages();
+        assertEquals("{\"type\":2,\"invocationId\":\"1\",\"item\":\"FirstItem\"}\u001E", messages[2]);
+
+        stream.onComplete();
+        messages = mockTransport.getSentMessages();
+        assertEquals("{\"type\":3,\"invocationId\":\"1\"}\u001E", messages[3]);
+    }
+
+    @Test
+    public void checkStreamUploadMultipleStreamsThroughSend() {
+        MockTransport mockTransport = new MockTransport();
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
+
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+
+        ReplaySubject<String> firstStream = ReplaySubject.create();
+        ReplaySubject<String> secondStream = ReplaySubject.create();
+
+        hubConnection.send("UploadStream", firstStream, secondStream);
+
+        firstStream.onNext("First Stream 1");
+        secondStream.onNext("Second Stream 1");
+        String[] messages = mockTransport.getSentMessages();
+        assertEquals(4, messages.length);
+        assertEquals("{\"type\":2,\"invocationId\":\"1\",\"item\":\"First Stream 1\"}\u001E", messages[2]);
+        assertEquals("{\"type\":2,\"invocationId\":\"2\",\"item\":\"Second Stream 1\"}\u001E", messages[3]);
+
+        firstStream.onComplete();
+        secondStream.onComplete();
+        messages = mockTransport.getSentMessages();
+        assertEquals(6, messages.length);
+        assertEquals("{\"type\":3,\"invocationId\":\"1\"}\u001E", messages[4]);
+        assertEquals("{\"type\":3,\"invocationId\":\"2\"}\u001E", messages[5]);
+    }
+
+    @Test
+    public void checkStreamUploadThroughSendWithArgs() {
+        MockTransport mockTransport = new MockTransport();
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
+
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+
+        ReplaySubject<String> stream = ReplaySubject.create();
+        hubConnection.send("UploadStream", stream, 12);
+
+        stream.onNext("FirstItem");
+        String[] messages = mockTransport.getSentMessages();
+        assertEquals("{\"type\":1,\"target\":\"UploadStream\",\"arguments\":[12],\"streamIds\":[\"1\"]}\u001E", messages[1]);
+        assertEquals("{\"type\":2,\"invocationId\":\"1\",\"item\":\"FirstItem\"}\u001E", messages[2]);
+
+        stream.onComplete();
+        messages = mockTransport.getSentMessages();
+        assertEquals("{\"type\":3,\"invocationId\":\"1\"}\u001E", messages[3]);
+    }
+
+    @Test
+    public void useSameSubjectMultipleTimes() {
+        MockTransport mockTransport = new MockTransport();
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
+
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+
+        ReplaySubject<String> stream = ReplaySubject.create();
+        hubConnection.send("UploadStream", stream, stream);
+
+        stream.onNext("FirstItem");
+        String[] messages = mockTransport.getSentMessages();
+        assertEquals(4, messages.length);
+        assertEquals("{\"type\":1,\"target\":\"UploadStream\",\"arguments\":[],\"streamIds\":[\"1\",\"2\"]}\u001E", messages[1]);
+        assertEquals("{\"type\":2,\"invocationId\":\"1\",\"item\":\"FirstItem\"}\u001E", messages[2]);
+        assertEquals("{\"type\":2,\"invocationId\":\"2\",\"item\":\"FirstItem\"}\u001E", messages[3]);
+
+        stream.onComplete();
+        messages = mockTransport.getSentMessages();
+        assertEquals(6, messages.length);
+        assertEquals("{\"type\":3,\"invocationId\":\"1\"}\u001E", messages[4]);
+        assertEquals("{\"type\":3,\"invocationId\":\"2\"}\u001E", messages[5]);
+    }
+
+    @Test
+    public void checkStreamUploadSingleItemThroughInvoke() {
+        MockTransport mockTransport = new MockTransport();
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
+
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+
+        ReplaySubject<String> stream = ReplaySubject.create();
+        hubConnection.invoke(String.class, "UploadStream", stream);
+
+        stream.onNext("FirstItem");
+        String[] messages = mockTransport.getSentMessages();
+        assertEquals(3, messages.length);
+        assertEquals("{\"type\":1,\"invocationId\":\"1\",\"target\":\"UploadStream\",\"arguments\":[],\"streamIds\":[\"2\"]}\u001E", messages[1]);
+        assertEquals("{\"type\":2,\"invocationId\":\"2\",\"item\":\"FirstItem\"}\u001E", messages[2]);
+
+        stream.onComplete();
+        messages = mockTransport.getSentMessages();
+        assertEquals("{\"type\":3,\"invocationId\":\"2\"}\u001E", messages[3]);
+    }
+
+    @Test
+    public void checkStreamUploadSingleItemThroughStream() {
+        MockTransport mockTransport = new MockTransport();
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
+
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+
+        ReplaySubject<String> stream = ReplaySubject.create();
+        hubConnection.stream(String.class, "UploadStream", stream);
+
+        stream.onNext("FirstItem");
+
+        String[] messages = mockTransport.getSentMessages();
+        assertEquals(3, messages.length);
+        assertEquals("{\"type\":4,\"invocationId\":\"1\",\"target\":\"UploadStream\",\"arguments\":[],\"streamIds\":[\"2\"]}\u001E", messages[1]);
+        assertEquals("{\"type\":2,\"invocationId\":\"2\",\"item\":\"FirstItem\"}\u001E", messages[2]);
+
+        stream.onComplete();
+        messages = mockTransport.getSentMessages();
+        assertEquals(4, messages.length);
+        assertEquals("{\"type\":3,\"invocationId\":\"2\"}\u001E", messages[3]);
+    }
+
+    @Test
+    public void useSameSubjectInMutlipleStreamsFromDifferentMethods() {
+        MockTransport mockTransport = new MockTransport();
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
+
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+
+        ReplaySubject<String> stream = ReplaySubject.create();
+        hubConnection.send("UploadStream", stream);
+        hubConnection.invoke(String.class, "UploadStream", stream);
+        hubConnection.stream(String.class, "UploadStream", stream);
+
+        String[] messages = mockTransport.getSentMessages();
+        assertEquals(4, messages.length);
+        assertEquals("{\"type\":1,\"target\":\"UploadStream\",\"arguments\":[],\"streamIds\":[\"1\"]}\u001E", messages[1]);
+        assertEquals("{\"type\":1,\"invocationId\":\"2\",\"target\":\"UploadStream\",\"arguments\":[],\"streamIds\":[\"3\"]}\u001E", messages[2]);
+        assertEquals("{\"type\":4,\"invocationId\":\"4\",\"target\":\"UploadStream\",\"arguments\":[],\"streamIds\":[\"5\"]}\u001E", messages[3]);
+
+        stream.onNext("FirstItem");
+
+        messages = mockTransport.getSentMessages();
+        assertEquals(7, messages.length);
+        assertEquals("{\"type\":2,\"invocationId\":\"1\",\"item\":\"FirstItem\"}\u001E", messages[4]);
+        assertEquals("{\"type\":2,\"invocationId\":\"3\",\"item\":\"FirstItem\"}\u001E", messages[5]);
+        assertEquals("{\"type\":2,\"invocationId\":\"5\",\"item\":\"FirstItem\"}\u001E", messages[6]);
+
+        stream.onComplete();
+        messages = mockTransport.getSentMessages();
+        assertEquals(10, messages.length);
+        assertEquals("{\"type\":3,\"invocationId\":\"1\"}\u001E", messages[7]);
+        assertEquals("{\"type\":3,\"invocationId\":\"3\"}\u001E", messages[8]);
+        assertEquals("{\"type\":3,\"invocationId\":\"5\"}\u001E", messages[9]);
+    }
+
+    @Test
+    public void streamUploadCallOnError() {
+        MockTransport mockTransport = new MockTransport();
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
+
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+
+        ReplaySubject<String> stream = ReplaySubject.create();
+        hubConnection.send("UploadStream", stream);
+
+        stream.onNext("FirstItem");
+        stream.onError(new RuntimeException("onError called"));
+        String[] messages = mockTransport.getSentMessages();
+        assertEquals(4, messages.length);
+        assertEquals("{\"type\":2,\"invocationId\":\"1\",\"item\":\"FirstItem\"}\u001E", messages[2]);
+        assertEquals("{\"type\":3,\"invocationId\":\"1\",\"error\":\"java.lang.RuntimeException: onError called\"}\u001E", messages[3]);
+
+        // onComplete doesn't send a completion message after onError.
+        stream.onComplete();
+        messages = mockTransport.getSentMessages();
+        assertEquals(4, messages.length);
+    }
+
+    @Test
+    public void checkStreamUploadMultipleItemsThroughSend() {
+        MockTransport mockTransport = new MockTransport();
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
+
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+
+        ReplaySubject<String> stream = ReplaySubject.create();
+        hubConnection.send("UploadStream", stream);
+
+        stream.onNext("FirstItem");
+        stream.onNext("SecondItem");
+        stream.onNext("ThirdItem");
+
+        String[] messages = mockTransport.getSentMessages();
+        assertEquals(5, messages.length);
+        assertEquals("{\"type\":2,\"invocationId\":\"1\",\"item\":\"FirstItem\"}\u001E", messages[2]);
+        assertEquals("{\"type\":2,\"invocationId\":\"1\",\"item\":\"SecondItem\"}\u001E", messages[3]);
+        assertEquals("{\"type\":2,\"invocationId\":\"1\",\"item\":\"ThirdItem\"}\u001E", messages[4]);
+
+        stream.onComplete();
+        messages = mockTransport.getSentMessages();
+        assertEquals(6, messages.length);
+        assertEquals("{\"type\":3,\"invocationId\":\"1\"}\u001E", messages[5]);
+    }
+
+    @Test
+    public void checkStreamUploadMultipleItemsThroughInvoke() {
+        MockTransport mockTransport = new MockTransport();
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
+
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+
+        ReplaySubject<String> stream = ReplaySubject.create();
+        hubConnection.invoke(String.class, "UploadStream", stream);
+
+        stream.onNext("FirstItem");
+        stream.onNext("SecondItem");
+
+        String[] messages = mockTransport.getSentMessages();
+        assertEquals(4, messages.length);
+        assertEquals("{\"type\":2,\"invocationId\":\"2\",\"item\":\"FirstItem\"}\u001E", messages[2]);
+        assertEquals("{\"type\":2,\"invocationId\":\"2\",\"item\":\"SecondItem\"}\u001E", messages[3]);
+
+        stream.onComplete();
+        messages = mockTransport.getSentMessages();
+        assertEquals(5, messages.length);
+        assertEquals("{\"type\":3,\"invocationId\":\"2\"}\u001E", messages[4]);
+    }
+
+    @Test
+    public void canStartAndStopMultipleStreams() {
+        MockTransport mockTransport = new MockTransport();
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
+
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+
+        PublishSubject<String> streamOne = PublishSubject.create();
+        PublishSubject<String> streamTwo = PublishSubject.create();
+
+        hubConnection.send("UploadStream", streamOne);
+        hubConnection.send("UploadStream", streamTwo);
+
+        streamOne.onNext("Stream One First Item");
+        streamTwo.onNext("Stream Two First Item");
+        streamOne.onNext("Stream One Second Item");
+        streamTwo.onNext("Stream Two Second Item");
+
+        streamOne.onComplete();
+        streamTwo.onComplete();
+        String[] messages = mockTransport.getSentMessages();
+
+        // Handshake message + 2 calls to send + 4 calls to onNext + 2 calls to onComplete = 9
+        assertEquals(9, messages.length);
+        assertEquals("{\"type\":2,\"invocationId\":\"1\",\"item\":\"Stream One First Item\"}\u001E", messages[3]);
+        assertEquals("{\"type\":2,\"invocationId\":\"2\",\"item\":\"Stream Two First Item\"}\u001E", messages[4]);
+        assertEquals("{\"type\":2,\"invocationId\":\"1\",\"item\":\"Stream One Second Item\"}\u001E", messages[5]);
+        assertEquals("{\"type\":2,\"invocationId\":\"2\",\"item\":\"Stream Two Second Item\"}\u001E", messages[6]);
+        assertEquals("{\"type\":3,\"invocationId\":\"1\"}\u001E", messages[7]);
+        assertEquals("{\"type\":3,\"invocationId\":\"2\"}\u001E", messages[8]);
+    }
+
+    @Test
     public void checkStreamSingleItem() {
         MockTransport mockTransport = new MockTransport();
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com", mockTransport);
@@ -425,7 +701,6 @@ class HubConnectionTest {
 
         assertEquals("First", result.timeout(1000, TimeUnit.MILLISECONDS).blockingFirst());
         assertEquals("COMPLETED", result.timeout(1000, TimeUnit.MILLISECONDS).blockingLast());
-
     }
 
     @Test
@@ -1119,7 +1394,16 @@ class HubConnectionTest {
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
 
         Throwable exception = assertThrows(RuntimeException.class, () -> hubConnection.send("inc"));
-        assertEquals("The 'send' method cannot be called if the connection is not active", exception.getMessage());
+        assertEquals("The 'send' method cannot be called if the connection is not active.", exception.getMessage());
+    }
+
+    @Test
+    public void cannotInvokeBeforeStart()  {
+        HubConnection hubConnection = TestUtils.createHubConnection("http://example.com");
+        assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+
+        Throwable exception = assertThrows(RuntimeException.class, () -> hubConnection.invoke(String.class, "inc", "arg1"));
+        assertEquals("The 'invoke' method cannot be called if the connection is not active.", exception.getMessage());
     }
 
     @Test
@@ -1170,7 +1454,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void afterSuccessfulNegotiateConnectsWithTransport() {
+    public void afterSuccessfulNegotiateConnectsWithWebsocketsTransport() {
         TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate",
                 (req) -> Single.just(new HttpResponse(200, "",
                         "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
@@ -1179,7 +1463,7 @@ class HubConnectionTest {
         MockTransport transport = new MockTransport(true);
         HubConnection hubConnection = HubConnectionBuilder
                 .create("http://example.com")
-                .withTransport(transport)
+                .withTransportImplementation(transport)
                 .withHttpClient(client)
                 .build();
 
@@ -1191,6 +1475,116 @@ class HubConnectionTest {
     }
 
     @Test
+    public void afterSuccessfulNegotiateConnectsWithLongPollingTransport() {
+        TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate",
+                (req) -> Single.just(new HttpResponse(200, "",
+                        "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                + "availableTransports\":[{\"transport\":\"LongPolling\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
+
+        MockTransport transport = new MockTransport(true);
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example.com")
+                .withTransportImplementation(transport)
+                .withHttpClient(client)
+                .build();
+
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+
+        String[] sentMessages = transport.getSentMessages();
+        assertEquals(1, sentMessages.length);
+        assertEquals("{\"protocol\":\"json\",\"version\":1}" + RECORD_SEPARATOR, sentMessages[0]);
+    }
+
+    @Disabled("https://github.com/aspnet/AspNetCore/issues/8262")
+    @Test
+    public void TransportAllUsesLongPollingWhenServerOnlySupportLongPolling() {
+        AtomicInteger requestCount = new AtomicInteger(0);
+        TestHttpClient client = new TestHttpClient().on("POST",
+                (req) -> Single.just(new HttpResponse(200, "",
+                        "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                + "availableTransports\":[{\"transport\":\"LongPolling\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")))
+                .on("GET", (req) -> {
+                    if (requestCount.get() == 0) {
+                        requestCount.incrementAndGet();
+                        return Single.just(new HttpResponse(200, "", ""));
+                    }
+                    return Single.just(new HttpResponse(204, "", ""));
+                });
+
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example.com")
+                .withTransport(TransportEnum.ALL)
+                .withHttpClient(client)
+                .build();
+
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        assertTrue(hubConnection.getTransport() instanceof LongPollingTransport);
+        hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
+    }
+
+    @Test
+    public void ClientThatSelectsWebsocketsThrowsWhenWebsocketsAreNotAvailable() {
+        TestHttpClient client = new TestHttpClient().on("POST",
+                (req) -> Single.just(new HttpResponse(200, "",
+                        "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                + "availableTransports\":[{\"transport\":\"LongPolling\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")))
+                .on("GET", (req) -> {
+                    return Single.just(new HttpResponse(204, "", ""));
+                });
+
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example.com")
+                .withTransport(TransportEnum.WEBSOCKETS)
+                .withHttpClient(client)
+                .build();
+
+        assertEquals(TransportEnum.WEBSOCKETS, hubConnection.getTransportEnum());
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait());
+
+        assertEquals(exception.getMessage(), "There were no compatible transports on the server.");
+    }
+
+    @Test
+    public void ClientThatSelectsLongPollingThrowsWhenLongPollingIsNotAvailable() {
+        TestHttpClient client = new TestHttpClient().on("POST",
+                (req) -> Single.just(new HttpResponse(200, "", "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                        + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}")));
+
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example.com")
+                .withTransport(TransportEnum.LONG_POLLING)
+                .withHttpClient(client)
+                .build();
+
+        assertEquals(TransportEnum.LONG_POLLING, hubConnection.getTransportEnum());
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait());
+
+        assertEquals(exception.getMessage(), "There were no compatible transports on the server.");
+    }
+
+    @Test
+    public void receivingServerSentEventsTransportFromNegotiateFails() {
+        TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate",
+                (req) -> Single.just(new HttpResponse(200, "",
+                        "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                + "availableTransports\":[{\"transport\":\"ServerSentEvents\",\"transferFormats\":[\"Text\"]}]}")));
+
+        MockTransport transport = new MockTransport(true);
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example.com")
+                .withTransportImplementation(transport)
+                .withHttpClient(client)
+                .build();
+
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait());
+
+        assertEquals(exception.getMessage(), "There were no compatible transports on the server.");
+    }
+
+    @Test
     public void negotiateThatReturnsErrorThrowsFromStart() {
         TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate",
                 (req) -> Single.just(new HttpResponse(200, "", "{\"error\":\"Test error.\"}")));
@@ -1199,12 +1593,38 @@ class HubConnectionTest {
         HubConnection hubConnection = HubConnectionBuilder
                 .create("http://example.com")
                 .withHttpClient(client)
-                .withTransport(transport)
+                .withTransportImplementation(transport)
                 .build();
 
         RuntimeException exception = assertThrows(RuntimeException.class,
             () -> hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait());
         assertEquals("Test error.", exception.getMessage());
+    }
+
+    @Test
+    public void DetectWhenTryingToConnectToClassicSignalRServer() {
+        TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate",
+                (req) -> Single.just(new HttpResponse(200, "", "{\"Url\":\"/signalr\"," +
+                        "\"ConnectionToken\":\"X97dw3uxW4NPPggQsYVcNcyQcuz4w2\"," +
+                        "\"ConnectionId\":\"05265228-1e2c-46c5-82a1-6a5bcc3f0143\"," +
+                        "\"KeepAliveTimeout\":10.0," +
+                        "\"DisconnectTimeout\":5.0," +
+                        "\"TryWebSockets\":true," +
+                        "\"ProtocolVersion\":\"1.5\"," +
+                        "\"TransportConnectTimeout\":30.0," +
+                        "\"LongPollDelay\":0.0}")));
+
+        MockTransport transport = new MockTransport(true);
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example.com")
+                .withHttpClient(client)
+                .withTransportImplementation(transport)
+                .build();
+
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait());
+        assertEquals("Detected an ASP.NET SignalR Server. This client only supports connecting to an ASP.NET Core SignalR Server. See https://aka.ms/signalr-core-differences for details.",
+                exception.getMessage());
     }
 
     @Test
@@ -1218,7 +1638,7 @@ class HubConnectionTest {
         MockTransport transport = new MockTransport(true);
         HubConnection hubConnection = HubConnectionBuilder
                 .create("http://example.com")
-                .withTransport(transport)
+                .withTransportImplementation(transport)
                 .withHttpClient(client)
                 .build();
 
@@ -1241,7 +1661,7 @@ class HubConnectionTest {
         MockTransport transport = new MockTransport(true);
         HubConnection hubConnection = HubConnectionBuilder
                 .create("http://example.com")
-                .withTransport(transport)
+                .withTransportImplementation(transport)
                 .withHttpClient(client)
                 .withAccessTokenProvider(Single.just("secretToken"))
                 .build();
@@ -1266,7 +1686,7 @@ class HubConnectionTest {
         MockTransport transport = new MockTransport(true);
         HubConnection hubConnection = HubConnectionBuilder
                 .create("http://example.com")
-                .withTransport(transport)
+                .withTransportImplementation(transport)
                 .withHttpClient(client)
                 .withAccessTokenProvider(Single.just("secretToken"))
                 .build();
@@ -1279,7 +1699,7 @@ class HubConnectionTest {
     }
 
     @Test
-    public void connectionTimesOutIfServerDoesNotSendMessage() throws InterruptedException, ExecutionException, TimeoutException {
+    public void connectionTimesOutIfServerDoesNotSendMessage() {
         HubConnection hubConnection = TestUtils.createHubConnection("http://example.com");
         hubConnection.setServerTimeout(1);
         hubConnection.setTickRate(1);
@@ -1303,7 +1723,7 @@ class HubConnectionTest {
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
 
         TimeUnit.MILLISECONDS.sleep(100);
-        hubConnection.stop();
+        hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
 
         String[] sentMessages = mockTransport.getSentMessages();
         assertTrue(sentMessages.length > 1);
@@ -1326,7 +1746,7 @@ class HubConnectionTest {
 
         MockTransport transport = new MockTransport();
         HubConnection hubConnection = HubConnectionBuilder.create("http://example.com")
-                .withTransport(transport)
+                .withTransportImplementation(transport)
                 .withHttpClient(client)
                 .withHeader("ExampleHeader", "ExampleValue")
                 .build();
@@ -1351,7 +1771,7 @@ class HubConnectionTest {
 
         MockTransport transport = new MockTransport();
         HubConnection hubConnection = HubConnectionBuilder.create("http://example.com")
-                .withTransport(transport)
+                .withTransportImplementation(transport)
                 .withHttpClient(client)
                 .withHeader("ExampleHeader", "ExampleValue")
                 .withHeader("ExampleHeader", "New Value")
@@ -1364,11 +1784,11 @@ class HubConnectionTest {
     }
 
     @Test
-    public void hubConnectionCanBeStartedAfterBeingStopped() throws Exception {
+    public void hubConnectionCanBeStartedAfterBeingStopped() {
         MockTransport transport = new MockTransport();
         HubConnection hubConnection = HubConnectionBuilder
                 .create("http://example.com")
-                .withTransport(transport)
+                .withTransportImplementation(transport)
                 .shouldSkipNegotiate(true)
                 .build();
 
@@ -1392,7 +1812,7 @@ class HubConnectionTest {
 
         HubConnection hubConnection = HubConnectionBuilder
                 .create("http://example.com")
-                .withTransport(mockTransport)
+                .withTransportImplementation(mockTransport)
                 .withHttpClient(client)
                 .build();
 
@@ -1415,7 +1835,7 @@ class HubConnectionTest {
         MockTransport transport = new MockTransport();
         HubConnection hubConnection = HubConnectionBuilder
                 .create("http://example.com")
-                .withTransport(transport)
+                .withTransportImplementation(transport)
                 .withHttpClient(client)
                 .build();
 

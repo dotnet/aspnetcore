@@ -3,6 +3,7 @@
   <PropertyGroup>
     <Description>ASP.NET Core hosting infrastructure and startup logic for web applications.</Description>
     <TargetFramework>netcoreapp3.0</TargetFramework>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;hosting</PackageTags>
@@ -25,9 +26,7 @@
     <Reference Include="Microsoft.Extensions.Hosting.Abstractions" />
     <Reference Include="Microsoft.Extensions.Logging" />
     <Reference Include="Microsoft.Extensions.Options" />
-    <Reference Include="Microsoft.Extensions.TypeNameHelper.Sources" PrivateAssets="All" />
-    <Reference Include="System.Diagnostics.DiagnosticSource" />
-    <Reference Include="System.Reflection.Metadata" />
+    <Reference Include="Microsoft.Extensions.TypeNameHelper.Sources" />
   </ItemGroup>
 
 </Project>

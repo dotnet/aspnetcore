@@ -1,8 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26124.0
-MinimumVisualStudioVersion = 15.0.26124.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.0.0
+MinimumVisualStudioVersion = 16.0.0.0
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Abstractions", "Abstractions", "{ABD364B3-09A1-4CFE-8D26-FF6417DDEC84}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.DataProtection.Abstractions", "Abstractions\src\Microsoft.AspNetCore.DataProtection.Abstractions.csproj", "{18BE6FD1-1EB1-44AD-A3AE-398C990060F5}"
@@ -64,8 +64,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NonDISample", "samples\NonDISample\NonDISample.csproj", "{C5C425C8-5626-409B-9A81-4DC496CE41F4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Redis", "samples\Redis\Redis.csproj", "{E578D5C2-76AD-4A9B-A4F0-3A74D7ACD98E}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.DataProtection.SystemWeb", "SystemWeb\src\Microsoft.AspNetCore.DataProtection.SystemWeb.csproj", "{A65DAFB6-E03F-4140-892F-D7CA3B8D81D7}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "EntityFrameworkCore", "EntityFrameworkCore", "{64FD02D7-B6F4-4C77-A3F8-E6BD6404168E}"
 EndProject

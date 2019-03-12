@@ -118,10 +118,9 @@ namespace Microsoft.AspNetCore.Routing.Template
             var slots = new KeyValuePair<string, object>[_slots.Length];
             Array.Copy(_slots, 0, slots, 0, slots.Length);
 
-            // Keeping track of the number of 'values' and 'ambient values' we've processed can be used to avoid doing
+            // Keeping track of the number of 'values' we've processed can be used to avoid doing
             // some expensive 'merge' operations later.
             var valueProcessedCount = 0;
-            var ambientValueProcessedCount = 0;
 
             // Start by copying all of the values out of the 'values' and into the slots. There's no success
             // case where we *don't* use all of the 'values' so there's no reason not to do this up front
@@ -167,11 +166,6 @@ namespace Microsoft.AspNetCore.Routing.Template
                     if (ambientValues == null || !ambientValues.TryGetValue(key, out var ambientValue))
                     {
                         ambientValue = null;
-                    }
-                    else
-                    {
-                        // Track the count of processed ambient values - this allows a fast path later.
-                        ambientValueProcessedCount++;
                     }
 
                     // For now, only check ambient values with required values that don't have a parameter
@@ -226,15 +220,10 @@ namespace Microsoft.AspNetCore.Routing.Template
 
                 var parameter = parameters[i];
 
+                // We are copying **all** ambient values
                 if (copyAmbientValues)
                 {
                     hasAmbientValue = ambientValues != null && ambientValues.TryGetValue(key, out ambientValue);
-                    if (hasAmbientValue)
-                    {
-                        // Track the count of processed ambient values - this allows a fast path later.
-                        ambientValueProcessedCount++;
-                    }
-
                     if (hasExplicitValue && hasAmbientValue && !RoutePartsEqual(ambientValue, value))
                     {
                         // Stop copying current values when we find one that doesn't match
@@ -259,6 +248,29 @@ namespace Microsoft.AspNetCore.Routing.Template
                         // In the example above we should fall into this block for 'b'.
                         copyAmbientValues = false;
                     }
+                }
+
+                // This might be an ambient value that matches a required value. We want to use these even if we're
+                // not bulk-copying ambient values.
+                //
+                // This comes up in a case like the following:
+                //  ambient-values: { page = "/DeleteUser", area = "Admin", }
+                //  values: { controller = "Home", action = "Index", }
+                //  pattern: {area}/{controller}/{action}/{id?}
+                //  required-values: { area = "Admin", controller = "Home", action = "Index", page = (string)null, }
+                //
+                // OR in plain English... when linking from a page in an area to an action in the same area, it should
+                // be possible to use the area as an ambient value.
+                if (!copyAmbientValues && _pattern.RequiredValues.TryGetValue(key, out var requiredValue))
+                {
+                    hasAmbientValue = ambientValues != null && ambientValues.TryGetValue(key, out ambientValue);
+                    if (hasAmbientValue && RoutePartsEqual(requiredValue, ambientValue))
+                    {
+                        // Treat this an an explicit value to *force it*. 
+                        slots[i] = new KeyValuePair<string, object>(key, ambientValue);
+                        hasExplicitValue = true;
+                        value = ambientValue;
+                    }   
                 }
 
                 // If the parameter is a match, add it to the list of values we will use for URI generation
@@ -345,15 +357,13 @@ namespace Microsoft.AspNetCore.Routing.Template
 
             // Currently this copy is required because BindValues will mutate the accepted values :(
             var combinedValues = new RouteValueDictionary(acceptedValues);
-            if (ambientValueProcessedCount < (ambientValues?.Count ?? 0))
-            {
-                // Add any ambient values that don't match parameters - they need to be visible to constraints
-                // but they will ignored by link generation.
-                CopyNonParameterAmbientValues(
-                   ambientValues: ambientValues,
-                   acceptedValues: acceptedValues,
-                   combinedValues: combinedValues);
-            }
+
+            // Add any ambient values that don't match parameters - they need to be visible to constraints
+            // but they will ignored by link generation.
+            CopyNonParameterAmbientValues(
+                ambientValues: ambientValues,
+                acceptedValues: acceptedValues,
+                combinedValues: combinedValues);
 
             return new TemplateValuesResult()
             {

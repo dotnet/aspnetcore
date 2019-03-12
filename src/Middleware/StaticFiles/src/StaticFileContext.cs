@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Endpoints;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Headers;
@@ -106,6 +107,12 @@ namespace Microsoft.AspNetCore.StaticFiles
         public string PhysicalPath
         {
             get { return _fileInfo?.PhysicalPath; }
+        }
+
+        public bool ValidateNoEndpoint()
+        {
+            // Return true because we only want to run if there is no endpoint.
+            return _context.GetEndpoint() == null;
         }
 
         public bool ValidateMethod()
@@ -233,7 +240,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 // the Range header field.
                 if (ifRangeHeader.LastModified.HasValue)
                 {
-                    if (_lastModified !=null && _lastModified > ifRangeHeader.LastModified)
+                    if (_lastModified > ifRangeHeader.LastModified)
                     {
                         _isRangeRequest = false;
                     }
@@ -309,12 +316,13 @@ namespace Microsoft.AspNetCore.StaticFiles
         {
             ApplyResponseHeaders(statusCode);
 
-            _logger.LogHandled(statusCode, SubPath);
+            _logger.Handled(statusCode, SubPath);
             return Task.CompletedTask;
         }
 
         public async Task SendAsync()
         {
+            SetCompressionMode();
             ApplyResponseHeaders(Constants.Status200Ok);
             string physicalPath = _fileInfo.PhysicalPath;
             var sendFile = _context.Features.Get<IHttpSendFileFeature>();
@@ -335,7 +343,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             }
             catch (OperationCanceledException ex)
             {
-                _logger.LogWriteCancelled(ex);
+                _logger.WriteCancelled(ex);
                 // Don't throw this exception, it's most likely caused by the client disconnecting.
                 // However, if it was cancelled for any other reason we need to prevent empty responses.
                 _context.Abort();
@@ -353,19 +361,20 @@ namespace Microsoft.AspNetCore.StaticFiles
                 _responseHeaders.ContentRange = new ContentRangeHeaderValue(_length);
                 ApplyResponseHeaders(Constants.Status416RangeNotSatisfiable);
 
-                _logger.LogRangeNotSatisfiable(SubPath);
+                _logger.RangeNotSatisfiable(SubPath);
                 return;
             }
 
             _responseHeaders.ContentRange = ComputeContentRange(_range, out var start, out var length);
             _response.ContentLength = length;
+            SetCompressionMode();
             ApplyResponseHeaders(Constants.Status206PartialContent);
 
             string physicalPath = _fileInfo.PhysicalPath;
             var sendFile = _context.Features.Get<IHttpSendFileFeature>();
             if (sendFile != null && !string.IsNullOrEmpty(physicalPath))
             {
-                _logger.LogSendingFileRange(_response.Headers[HeaderNames.ContentRange], physicalPath);
+                _logger.SendingFileRange(_response.Headers[HeaderNames.ContentRange], physicalPath);
                 // We don't need to directly cancel this, if the client disconnects it will fail silently.
                 await sendFile.SendFileAsync(physicalPath, start, length, CancellationToken.None);
                 return;
@@ -376,13 +385,13 @@ namespace Microsoft.AspNetCore.StaticFiles
                 using (var readStream = _fileInfo.CreateReadStream())
                 {
                     readStream.Seek(start, SeekOrigin.Begin); // TODO: What if !CanSeek?
-                    _logger.LogCopyingFileRange(_response.Headers[HeaderNames.ContentRange], SubPath);
+                    _logger.CopyingFileRange(_response.Headers[HeaderNames.ContentRange], SubPath);
                     await StreamCopyOperation.CopyToAsync(readStream, _response.Body, length, _context.RequestAborted);
                 }
             }
             catch (OperationCanceledException ex)
             {
-                _logger.LogWriteCancelled(ex);
+                _logger.WriteCancelled(ex);
                 // Don't throw this exception, it's most likely caused by the client disconnecting.
                 // However, if it was cancelled for any other reason we need to prevent empty responses.
                 _context.Abort();
@@ -396,6 +405,16 @@ namespace Microsoft.AspNetCore.StaticFiles
             long end = range.To.Value;
             length = end - start + 1;
             return new ContentRangeHeaderValue(start, end, _length);
+        }
+
+        // Only called when we expect to serve the body.
+        private void SetCompressionMode()
+        {
+            var responseCompressionFeature = _context.Features.Get<IHttpsCompressionFeature>();
+            if (responseCompressionFeature != null)
+            {
+                responseCompressionFeature.Mode = _options.HttpsCompression;
+            }
         }
     }
 }

@@ -195,8 +195,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             set => User = value;
         }
 
-        public IAuthenticationHandler Handler { get; set; }
-
         string IServerVariablesFeature.this[string variableName]
         {
             get
@@ -322,7 +320,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         IEnumerator IEnumerable.GetEnumerator() => FastEnumerable().GetEnumerator();
 
-        bool IHttpBodyControlFeature.AllowSynchronousIO { get; set; } = true;
+        bool IHttpBodyControlFeature.AllowSynchronousIO { get; set; }
 
         void IHttpBufferingFeature.DisableRequestBuffering()
         {

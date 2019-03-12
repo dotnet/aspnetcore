@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <RootNamespace>Microsoft.AspNetCore.Mvc.Api.Analyzers</RootNamespace>
+    <!-- https://github.com/aspnet/AspNetCore/issues/6549 -->	
+    <BuildHelixPayload>false</BuildHelixPayload>
+   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\Mvc.Analyzers\test\Infrastructure\MvcDiagnosticAnalyzerRunner.cs" Link="Infrastructure\MvcDiagnosticAnalyzerRunner.cs" />
+    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
+    <Content Include="TestFiles\**\*.*" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Mvc.Api.Analyzers\src\Microsoft.AspNetCore.Mvc.Api.Analyzers.csproj" />
+    <Reference Include="Microsoft.AspNetCore.Mvc" />
+    <Reference Include="Microsoft.AspNetCore.Analyzer.Testing" />
+    <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
+  </ItemGroup>
+
+</Project>

@@ -8,7 +8,6 @@ using System.Linq;
 using Microsoft.AspNetCore.Cors.Internal;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
@@ -21,16 +20,6 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
     {
         private readonly CorsOptions _options;
         private readonly ILogger _logger;
-
-        /// <summary>
-        /// Creates a new instance of the <see cref="CorsService"/>.
-        /// </summary>
-        /// <param name="options">The option model representing <see cref="CorsOptions"/>.</param>
-        [Obsolete("This constructor is obsolete and will be removed in a future version.")]
-        public CorsService(IOptions<CorsOptions> options)
-            : this(options, loggerFactory: NullLoggerFactory.Instance)
-        {
-        }
 
         /// <summary>
         /// Creates a new instance of the <see cref="CorsService"/>.
@@ -87,7 +76,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
 
             if (policy.AllowAnyOrigin && policy.SupportsCredentials)
             {
-                _logger.InsecureConfiguration();
+                throw new ArgumentException(Resources.InsecureConfiguration, nameof(policy));
             }
 
             var origin = context.Request.Headers[CorsConstants.Origin];

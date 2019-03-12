@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [RequiresIIS(IISCapability.FailedRequestTracingModule)]
         public async Task FrebIncludesHResultFailures()
         {
-            var parameters = _fixture.GetBaseDeploymentParameters(publish: true);
+            var parameters = _fixture.GetBaseDeploymentParameters();
             parameters.TransformArguments((args, _) => string.Empty);
             var result = await SetupFrebApp(parameters);
 
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         private async Task<IISDeploymentResult> SetupFrebApp(IISDeploymentParameters parameters = null)
         {
-            parameters = parameters ?? _fixture.GetBaseDeploymentParameters(publish: true);
+            parameters = parameters ?? _fixture.GetBaseDeploymentParameters();
             parameters.EnableFreb("Verbose", _logFolderPath);
 
             Directory.CreateDirectory(_logFolderPath);

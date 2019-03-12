@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Linq;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Configuration
@@ -31,7 +32,7 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Configuration
                     .Build());
 
             // Act
-            configureClientScopes.PostConfigure(Extensions.Options.Options.DefaultName, options);
+            configureClientScopes.PostConfigure(Options.DefaultName, options);
 
             // Assert
             foreach (var client in options.Clients)
@@ -63,14 +64,14 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer.Configuration
                     .Build());
 
             // Act
-            configureClientScopes.PostConfigure(Extensions.Options.Options.DefaultName, options);
+            configureClientScopes.PostConfigure(Options.DefaultName, options);
 
             // Assert
             var spaClient = Assert.Single(options.Clients, c => c.ClientId == "TestSPA");
-            Assert.Equal(new[] { "openid", "profile", "ResourceAPI" }, spaClient.AllowedScopes.OrderBy(id => id).ToArray());
+            Assert.Equal(new[] { "openid", "profile", "ResourceAPI" }.OrderBy(id => id).ToArray(), spaClient.AllowedScopes.OrderBy(id => id).ToArray());
 
             var nativeApp = Assert.Single(options.Clients, c => c.ClientId == "NativeApp");
-            Assert.Equal(new[] { "offline_access", "openid", "profile", "ResourceAPI" }, nativeApp.AllowedScopes.OrderBy(id => id).ToArray());
+            Assert.Equal(new[] { "offline_access", "openid", "profile", "ResourceAPI" }.OrderBy(id => id).ToArray(), nativeApp.AllowedScopes.OrderBy(id => id).ToArray());
         }
     }
 }

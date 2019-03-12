@@ -27,10 +27,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public static TestMatrix TestVariants
             => TestMatrix.ForServers(DeployerSelector.ServerType)
                 .WithTfms(Tfm.NetCoreApp30)
-                .WithAllApplicationTypes()
-                .WithAllAncmVersions();
+                .WithAllApplicationTypes();
 
-        [ConditionalTheory]
+        [ConditionalTheory(Skip = "https://github.com/aspnet/AspNetCore/issues/8329")]
         [MemberData(nameof(TestVariants))]
         public async Task HelloWorld(TestVariant variant)
         {
@@ -71,7 +70,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             Assert.Equal(deploymentResult.ContentRoot, await deploymentResult.HttpClient.GetStringAsync("/ContentRootPath"));
             Assert.Equal(deploymentResult.ContentRoot + "\\wwwroot", await deploymentResult.HttpClient.GetStringAsync("/WebRootPath"));
-            var expectedDll = variant.AncmVersion == AncmVersion.AspNetCoreModule ? "aspnetcore.dll" : "aspnetcorev2.dll";
+            var expectedDll = "aspnetcorev2.dll";
             Assert.Contains(deploymentResult.HostProcess.Modules.OfType<ProcessModule>(), m=> m.FileName.Contains(expectedDll));
 
             if (DeployerSelector.HasNewHandler && variant.HostingModel == HostingModel.InProcess)

@@ -30,10 +30,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         public static TestMatrix TestVariants
             => TestMatrix.ForServers(DeployerSelector.ServerType)
-                .WithTfms(Tfm.NetCoreApp30)
-                .WithAllAncmVersions();
+                .WithTfms(Tfm.NetCoreApp30);
 
-        [ConditionalTheory]
+        [ConditionalTheory(Skip = "https://github.com/aspnet/AspNetCore/issues/8329")]
         [RequiresIIS(IISCapability.WindowsAuthentication)]
         [MemberData(nameof(TestVariants))]
         public async Task NtlmAuthentication(TestVariant variant)
@@ -81,7 +80,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             response = await httpClient.GetAsync("/Restricted");
             responseText = await response.Content.ReadAsStringAsync();
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.NotEmpty(responseText);
+            Assert.Equal("Windows", responseText);
         }
     }
 }

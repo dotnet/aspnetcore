@@ -10,6 +10,7 @@ using System.Runtime.Intrinsics.X86;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
@@ -111,6 +112,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _isReadOnly = true;
         }
 
+        // Inline to allow ClearFast to devirtualize in caller
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Reset()
         {
             _isReadOnly = false;

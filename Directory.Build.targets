@@ -6,22 +6,33 @@
       By default, all projects which produce packages are not intended to ship to NuGet.org as a product package.
       Packages which are intended to ship to NuGet.org must opt-in by setting this to true in the project file.
     -->
-    <IsProductPackage Condition=" '$(IsProductPackage)' == '' ">false</IsProductPackage>
+    <IsShippingPackage Condition=" '$(IsShippingPackage)' == '' ">false</IsShippingPackage>
 
-    <PackageOutputPath Condition=" '$(IsProductPackage)' == 'true' ">$(ProductPackageOutputPath)</PackageOutputPath>
-    <PackageOutputPath Condition=" '$(IsProductPackage)' != 'true' ">$(InternalPackageOutputPath)</PackageOutputPath>
+    <!--
+      By default, assemblies which are only in the Microsoft.AspNetCore.App shared framework are not available as NuGet packages.
+    -->
+    <IsPackable Condition="'$(IsAspNetCoreApp)' == 'true' AND '$(IsShippingPackage)' != 'true'">false</IsPackable>
+
+    <PackageOutputPath Condition=" '$(IsShippingPackage)' == 'true' ">$(ArtifactsShippingPackagesDir)</PackageOutputPath>
+    <PackageOutputPath Condition=" '$(IsShippingPackage)' != 'true' ">$(ArtifactsNonShippingPackagesDir)</PackageOutputPath>
+
+    <!-- Analyzers package are special. In general, they should not have dependencies in the nuspec. Analyzer assemblies are not meant to be used for compilation or runtime. -->
+    <SuppressDependenciesWhenPacking Condition="'$(SuppressDependenciesWhenPacking)' == '' AND '$(IsAnalyzersProject)' == 'true'">true</SuppressDependenciesWhenPacking>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(PackAsTool)' == 'true' AND '$(IsShippingPackage)' == 'true'">
+    <!-- This is a requirement for Microsoft tool packages only. -->
+    <PackAsToolShimRuntimeIdentifiers>win-x64;win-x86</PackAsToolShimRuntimeIdentifiers>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(MSBuildProjectExtension)' == '.csproj' ">
     <PackageId Condition=" '$(PackageId)' == '' ">$(AssemblyName)</PackageId>
-    <IsPackable Condition="'$(IsPackable)' == '' AND ( '$(IsTestProject)' == 'true' OR '$(IsTestAssetProject)' == 'true' OR '$(IsBenchmarkProject)' == 'true' OR '$(IsSampleProject)' == 'true' ) ">false</IsPackable>
+    <IsPackable Condition="'$(IsPackable)' == '' AND ( '$(IsTestProject)' == 'true' OR '$(IsTestAssetProject)' == 'true' OR '$(IsBenchmarkProject)' == 'true' OR '$(IsSampleProject)' == 'true' OR '$(IsReferenceAssemblyProject)' == 'true' ) ">false</IsPackable>
   </PropertyGroup>
 
   <Import Project="eng\Baseline.Designer.props" />
 
   <PropertyGroup Condition=" '$(IsPackable)' != 'false' AND '$(AspNetCorePatchVersion)' != '0' ">
-    <!-- Always include framework metapackages in patch updates. -->
-    <IsPackageInThisPatch Condition="'$(IsFrameworkMetapackage)' == 'true' OR '$(IsSharedSourcePackage)' == 'true' ">true</IsPackageInThisPatch>
     <IsPackageInThisPatch Condition="'$(IsPackageInThisPatch)' == ''">$(PackagesInPatch.Contains(' $(PackageId);'))</IsPackageInThisPatch>
   </PropertyGroup>
 
@@ -49,25 +60,47 @@
 
   <PropertyGroup>
     <!-- Implementation projects are the projects which produce nuget packages or shipping assemblies. -->
-    <IsImplementationProject Condition=" '$(IsImplementationProject)' == '' AND '$(IsTestAssetProject)' != 'true' AND '$(IsTestProject)' != 'true' AND '$(IsBenchmarkProject)' != 'true' AND '$(IsSampleProject)' != 'true' ">true</IsImplementationProject>
+    <IsImplementationProject Condition=" '$(IsImplementationProject)' == '' AND '$(IsAnalyzersProject)' != 'true' AND '$(IsTestAssetProject)' != 'true' AND '$(IsTestProject)' != 'true' AND '$(IsBenchmarkProject)' != 'true' AND '$(IsSampleProject)' != 'true' AND '$(IsReferenceAssemblyProject)' != 'true' ">true</IsImplementationProject>
 
     <!-- This determines whether a project is available as a <Reference> to other projects in this repo. -->
     <IsProjectReferenceProvider Condition=" '$(IsProjectReferenceProvider)' == '' AND '$(IsImplementationProject)' == 'true' AND '$(PackAsTool)' != 'true' ">true</IsProjectReferenceProvider>
+
+    <HasReferenceAssembly Condition="'$(HasReferenceAssembly)' == '' AND '$(IsProjectReferenceProvider)' == 'true'">true</HasReferenceAssembly>
+    <HasReferenceAssembly Condition="'$(HasReferenceAssembly)' == ''">false</HasReferenceAssembly>
 
     <!-- Suppress KoreBuild warnings about the mismatch of repo version and local project version. The versioning in this mega repo is sufficiently complicated that KoreBuild's validation isn't helpful. -->
     <VerifyVersion>false</VerifyVersion>
 
     <EnableApiCheck Condition=" '$(EnableApiCheck)' != '' ">$(IsImplementationProject)</EnableApiCheck>
-    <IsPackable Condition="'$(IsPackable)' == '' AND '$(IsImplementationProject)' == 'true' ">true</IsPackable>
+    <IsPackable Condition="'$(IsPackable)' == '' AND ('$(IsImplementationProject)' == 'true' OR '$(IsAnalyzersProject)' == 'true') ">true</IsPackable>
     <IsPackable Condition="'$(IsPackable)' == '' ">false</IsPackable>
 
-    <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == 'netcoreapp3.0' ">$(MicrosoftNETCoreApp30PackageVersion)</RuntimeFrameworkVersion>
-    <NETStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard2.0' ">$(NETStandardLibrary20PackageVersion)</NETStandardImplicitPackageVersion>
+    <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == 'netcoreapp3.0' ">$(MicrosoftNETCoreAppPackageVersion)</RuntimeFrameworkVersion>
+
+    <BuildHelixPayload Condition="'$(BuildHelixPayload)' == '' AND '$(IsTestProject)' == 'true'">true</BuildHelixPayload>
   </PropertyGroup>
 
+  <ItemGroup>
+    <KnownFrameworkReference Update="Microsoft.NETCore.App">
+      <LatestRuntimeFrameworkVersion>$(MicrosoftNETCoreAppPackageVersion)</LatestRuntimeFrameworkVersion>
+      <DefaultRuntimeFrameworkVersion Condition="'$(IsServicingBuild)' != 'true'">$(MicrosoftNETCoreAppPackageVersion)</DefaultRuntimeFrameworkVersion>
+      <TargetingPackVersion Condition="'$(IsServicingBuild)' != 'true'">$(MicrosoftNETCoreAppPackageVersion)</TargetingPackVersion>
+    </KnownFrameworkReference>
+
+    <KnownFrameworkReference Update="Microsoft.AspNetCore.App">
+      <LatestRuntimeFrameworkVersion>$(SharedFxVersion)</LatestRuntimeFrameworkVersion>
+      <DefaultRuntimeFrameworkVersion Condition="'$(IsServicingBuild)' != 'true'">$(SharedFxVersion)</DefaultRuntimeFrameworkVersion>
+      <TargetingPackVersion Condition="'$(IsServicingBuild)' != 'true'">$(SharedFxVersion)</TargetingPackVersion>
+    </KnownFrameworkReference>
+  </ItemGroup>
+
+  <Import Project="eng\Workarounds.targets" />
   <Import Project="eng\targets\ResolveIisReferences.targets" Condition=" '$(MSBuildProjectExtension)' != '.vcxproj' " />
   <Import Project="eng\targets\Cpp.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.vcxproj'" />
   <Import Project="eng\targets\CSharp.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.csproj'" />
   <Import Project="eng\targets\FSharp.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.fsproj'" />
   <Import Project="eng\targets\Wix.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.wixproj'" />
+  <Import Project="eng\targets\Npm.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.npmproj'" />
+  <Import Project="eng\targets\ReferenceAssembly.targets" Condition=" '$(HasReferenceAssembly)' == 'true' " />
+
 </Project>

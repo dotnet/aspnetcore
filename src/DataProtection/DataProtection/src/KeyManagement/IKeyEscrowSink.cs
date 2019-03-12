@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         /// Stores the given key material to the escrow service.
         /// </summary>
         /// <param name="keyId">The id of the key being persisted to escrow.</param>
-        /// <param name="element">The unencrypted XML element that comprises the key material.</param>
+        /// <param name="element">The unencrypted key material in XML form.</param>
         void Store(Guid keyId, XElement element);
     }
 }

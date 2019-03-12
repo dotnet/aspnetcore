@@ -1,0 +1,45 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Shared testing infrastructure for running E2E tests using selenium -->
+  <Import Project="$(SharedSourceRoot)E2ETesting\E2ETesting.props" />
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TestGroupName>Components.E2ETests</TestGroupName>
+
+    <!--
+      Temporarily disabled until this runs on macOS
+    -->
+    <SkipTests Condition="'$(SeleniumE2ETestsSupported)' != 'true'">true</SkipTests>
+    <!-- https://github.com/aspnet/AspNetCore/issues/6857 -->
+    <BuildHelixPayload>false</BuildHelixPayload>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)Process\**\*.cs" LinkBase="Shared" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Hosting" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <Reference Include="Microsoft.AspNetCore.StaticFiles" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Blazor\testassets\Microsoft.AspNetCore.Blazor.E2EPerformance\Microsoft.AspNetCore.Blazor.E2EPerformance.csproj" />
+    <ProjectReference Include="..\..\Blazor\testassets\HostedInAspNet.Client\HostedInAspNet.Client.csproj" />
+    <ProjectReference Include="..\..\Blazor\testassets\HostedInAspNet.Server\HostedInAspNet.Server.csproj" />
+    <ProjectReference Include="..\..\Blazor\testassets\MonoSanityClient\MonoSanityClient.csproj" />
+    <ProjectReference Include="..\..\Blazor\testassets\MonoSanity\MonoSanity.csproj" />
+    <ProjectReference Include="..\..\Blazor\testassets\StandaloneApp\StandaloneApp.csproj" />
+    <ProjectReference Include="..\..\Blazor\Cli\src\Microsoft.AspNetCore.Blazor.Cli.csproj" />
+    <ProjectReference Include="..\testassets\ComponentsApp.App\ComponentsApp.App.csproj" />
+    <ProjectReference Include="..\testassets\ComponentsApp.Server\ComponentsApp.Server.csproj" />
+    <ProjectReference Include="..\testassets\BasicTestApp\BasicTestApp.csproj" />
+    <ProjectReference Include="..\testassets\TestServer\TestServer.csproj" />
+  </ItemGroup>
+
+  <!-- Shared testing infrastructure for running E2E tests using selenium -->
+  <Import Project="$(SharedSourceRoot)E2ETesting\E2ETesting.targets" />
+
+</Project>

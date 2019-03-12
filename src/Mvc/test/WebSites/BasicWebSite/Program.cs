@@ -16,8 +16,7 @@ namespace BasicWebSite
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             new WebHostBuilder()
                 .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseStartup<Startup>()
-                .ConfigureServices(s => s.AddSingleton(new TestService { Message = "true" }))
+                .UseStartup<StartupWithoutEndpointRouting>()
                 .UseKestrel()
                 .UseIISIntegration();
     }

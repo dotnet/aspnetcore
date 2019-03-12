@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.0</TargetFrameworks>
@@ -27,6 +27,10 @@
   <ItemGroup>
     <EmbeddedResource Include="OpenIdConnect\wellknownconfig.json" />
     <EmbeddedResource Include="OpenIdConnect\wellknownkeys.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
   </ItemGroup>
 
   <ItemGroup>

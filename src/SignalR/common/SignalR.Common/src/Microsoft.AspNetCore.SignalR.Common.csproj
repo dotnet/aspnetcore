@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Common serialiation primitives for SignalR Clients Servers</Description>
+    <TargetFrameworks>netstandard2.0;netcoreapp3.0</TargetFrameworks>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
+    <RootNamespace>Microsoft.AspNetCore.SignalR</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <IsShippingPackage>true</IsShippingPackage>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SignalRSharedSourceRoot)SystemTextJsonExtensions.cs" Link="Internal\SystemTextJsonExtensions.cs" />
+    <Compile Include="$(SignalRSharedSourceRoot)MemoryBufferWriter.cs" Link="Internal\MemoryBufferWriter.cs" />
+    <Compile Include="$(SignalRSharedSourceRoot)TextMessageFormatter.cs" Link="Internal\TextMessageFormatter.cs" />
+    <Compile Include="$(SignalRSharedSourceRoot)TextMessageParser.cs" Link="Internal\TextMessageParser.cs" />
+    <Compile Include="$(SignalRSharedSourceRoot)Utf8BufferTextReader.cs" Link="Internal\Utf8BufferTextReader.cs" />
+    <Compile Include="$(SignalRSharedSourceRoot)Utf8BufferTextWriter.cs" Link="Internal\Utf8BufferTextWriter.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
+    <Reference Include="Microsoft.Extensions.Options" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <Reference Include="Microsoft.Bcl.Json.Sources" />
+    <Reference Include="System.Buffers" />
+    <Reference Include="System.Runtime.CompilerServices.Unsafe" />
+  </ItemGroup>
+
+</Project>

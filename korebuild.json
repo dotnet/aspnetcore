@@ -12,11 +12,12 @@
         "Windows"
       ],
       "includePrerelease": true,
-      "versionRange": "[15.8, 16.0)",
+      "versionRange": "[16.0.28608.199, 17.0)",
       "requiredWorkloads": [
-        "Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81",
-        "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
         "Microsoft.VisualStudio.Component.VC.ATL",
+        "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
+        "Microsoft.VisualStudio.Component.VC.v141.ATL",
+        "Microsoft.VisualStudio.Component.VC.v141.x86.x64",
         "Microsoft.VisualStudio.Component.Windows10SDK.17134"
       ]
     }

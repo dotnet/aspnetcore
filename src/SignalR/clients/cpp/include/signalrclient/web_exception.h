@@ -4,19 +4,17 @@
 #pragma once
 
 #include <stdexcept>
-#include "cpprest/details/basic_types.h"
-#include "cpprest/asyncrt_utils.h"
 
 namespace signalr
 {
     class web_exception : public std::runtime_error
     {
     public:
-        web_exception(const utility::string_t &what, unsigned short status_code)
-            : runtime_error(utility::conversions::to_utf8string(what)), m_status_code(status_code)
+        web_exception(const std::string &what, unsigned short status_code)
+            : runtime_error(what), m_status_code(status_code)
         {}
 
-        unsigned short status_code() const
+        unsigned short status_code() const noexcept
         {
             return m_status_code;
         }

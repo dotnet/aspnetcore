@@ -20,5 +20,7 @@ public:
     std::wstring GetCurrentDirectoryValue();
     static
     std::wstring GetDllDirectoryValue();
+    static
+    bool IsRunning64BitProcess();
 };
 

@@ -184,6 +184,39 @@ describe("hubConnection", () => {
                 });
             });
 
+            it("can stream server method and cancel stream", (done) => {
+                const hubConnection = getConnectionBuilder(transportType)
+                    .withHubProtocol(protocol)
+                    .build();
+
+                hubConnection.onclose((error) => {
+                    expect(error).toBe(undefined);
+                    done();
+                });
+
+                hubConnection.on("StreamCanceled", () => {
+                    hubConnection.stop();
+                });
+
+                hubConnection.start().then(() => {
+                    const subscription = hubConnection.stream<string>("InfiniteStream").subscribe({
+                        complete() {
+                        },
+                        error(err) {
+                            fail(err);
+                            hubConnection.stop();
+                        },
+                        next() {
+                        },
+                    });
+
+                    subscription.dispose();
+                }).catch((e) => {
+                    fail(e);
+                    done();
+                });
+            });
+
             it("rethrows an exception from the server when invoking", (done) => {
                 const errorMessage = "An unexpected error occurred invoking 'ThrowException' on the server. InvalidOperationException: An error occurred.";
                 const hubConnection = getConnectionBuilder(transportType)

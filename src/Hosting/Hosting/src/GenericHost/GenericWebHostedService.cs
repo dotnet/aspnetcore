@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -27,17 +27,18 @@ namespace Microsoft.AspNetCore.Hosting.Internal
     {
         public GenericWebHostService(IOptions<GenericWebHostServiceOptions> options,
                                      IServer server,
-                                     ILogger<GenericWebHostService> logger,
+                                     ILoggerFactory loggerFactory,
                                      DiagnosticListener diagnosticListener,
                                      IHttpContextFactory httpContextFactory,
                                      IApplicationBuilderFactory applicationBuilderFactory,
                                      IEnumerable<IStartupFilter> startupFilters,
                                      IConfiguration configuration,
-                                     IHostingEnvironment hostingEnvironment)
+                                     IWebHostEnvironment hostingEnvironment)
         {
             Options = options.Value;
             Server = server;
-            Logger = logger;
+            Logger = loggerFactory.CreateLogger<GenericWebHostService>();
+            LifetimeLogger = loggerFactory.CreateLogger("Microsoft.Hosting.Lifetime");
             DiagnosticListener = diagnosticListener;
             HttpContextFactory = httpContextFactory;
             ApplicationBuilderFactory = applicationBuilderFactory;
@@ -49,12 +50,14 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         public GenericWebHostServiceOptions Options { get; }
         public IServer Server { get; }
         public ILogger<GenericWebHostService> Logger { get; }
+        // Only for high level lifetime events
+        public ILogger LifetimeLogger { get; }
         public DiagnosticListener DiagnosticListener { get; }
         public IHttpContextFactory HttpContextFactory { get; }
         public IApplicationBuilderFactory ApplicationBuilderFactory { get; }
         public IEnumerable<IStartupFilter> StartupFilters { get; }
         public IConfiguration Configuration { get; }
-        public IHostingEnvironment HostingEnvironment { get; }
+        public IWebHostEnvironment HostingEnvironment { get; }
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
@@ -119,7 +122,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             {
                 foreach (var address in addresses)
                 {
-                    Logger.LogInformation("Now listening on: {address}", address);
+                    LifetimeLogger.LogInformation("Now listening on: {address}", address);
                 }
             }
 

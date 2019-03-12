@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [InlineData("ConsoleWrite")]
         public async Task CheckStdoutLoggingToPipe_DoesNotCrashProcess(string path)
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters();
             var deploymentResult = await DeployAsync(deploymentParameters);
 
             await Helpers.AssertStarts(deploymentResult, path);
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [InlineData("ConsoleWriteStartServer")]
         public async Task CheckStdoutLoggingToPipeWithFirstWrite(string path)
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(publish: true);
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters();
 
             var firstWriteString = "TEST MESSAGE";
 
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public async Task CheckUnicodePipe()
         {
             var path = "CheckConsoleFunctions";
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite, publish: true);
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite);
             deploymentParameters.TransformArguments((a, _) => $"{a} {path}");
 
             var deploymentResult = await DeployAsync(deploymentParameters);

@@ -307,7 +307,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
                 httpContext.Response.Headers["x-request-count"] = (requestCount++).ToString();
                 httpContext.Response.Headers["Cache-Control"] = "public, max-age=10";
                 httpContext.Response.ContentLength = 10;
-                httpContext.Response.Body.Flush();
+                httpContext.Response.Body.FlushAsync();
                 return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
             }))
             {
@@ -375,6 +375,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
         }
 
         [ConditionalFact]
+        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/8091
         public async Task Caching_VariousStatusCodes_Cached()
         {
             var requestCount = 1;

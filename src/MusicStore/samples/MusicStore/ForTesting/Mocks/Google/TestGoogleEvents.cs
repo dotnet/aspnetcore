@@ -23,7 +23,6 @@ namespace MusicStore.Mocks.Google
                 Helpers.ThrowIfConditionFailed(() => context.Identity.FindFirst(ClaimTypes.Surname)?.Value == "AspnetvnextTest", "FamilyName is not valid");
                 Helpers.ThrowIfConditionFailed(() => context.Identity.FindFirst(ClaimTypes.Name)?.Value == "AspnetvnextTest AspnetvnextTest", "Name is not valid");
                 Helpers.ThrowIfConditionFailed(() => context.ExpiresIn.Value == TimeSpan.FromSeconds(1200), "ExpiresIn is not valid");
-                Helpers.ThrowIfConditionFailed(() => context.User != null, "User object is not valid");
                 context.Principal.Identities.First().AddClaim(new Claim("ManageStore", "false"));
             }
 

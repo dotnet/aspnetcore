@@ -4,9 +4,6 @@
 #pragma once
 
 #include <stdexcept>
-#include "cpprest/details/basic_types.h"
-#include "cpprest/json.h"
-#include "cpprest/asyncrt_utils.h"
 #include "signalr_exception.h"
 
 namespace signalr
@@ -14,16 +11,8 @@ namespace signalr
     class hub_exception : public signalr_exception
     {
     public:
-        hub_exception(const utility::string_t &what, const web::json::value& error_data)
-            : signalr_exception(what), m_error_data(error_data)
+        hub_exception(const std::string &what)
+            : signalr_exception(what)
         {}
-
-        web::json::value error_data() const
-        {
-            return m_error_data;
-        }
-
-    private:
-        web::json::value m_error_data;
     };
 }

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Net;
 using System.Threading;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 
@@ -91,7 +92,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
             set => ConnectionClosedRequested = value;
         }
 
-        void IConnectionLifetimeFeature.Abort() => Abort(abortReason: null);
+        void IConnectionLifetimeFeature.Abort() => Abort(new ConnectionAbortedException("The connection was aborted by the application via IConnectionLifetimeFeature.Abort()."));
 
         void IConnectionLifetimeNotificationFeature.RequestClose() => RequestClose();
 

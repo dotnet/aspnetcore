@@ -12,9 +12,9 @@ namespace RazorPagesWebSite
 {
     public class StartupWithBasePath
     {
-        private readonly IHostingEnvironment _hostingEnvironment;
+        private readonly IWebHostEnvironment _hostingEnvironment;
 
-        public StartupWithBasePath(IHostingEnvironment hostingEnvironment)
+        public StartupWithBasePath(IWebHostEnvironment hostingEnvironment)
         {
             _hostingEnvironment = hostingEnvironment;
         }
@@ -42,9 +42,10 @@ namespace RazorPagesWebSite
 
             app.UseStaticFiles();
 
-            app.UseMvc(routes =>
+            app.UseRouting(routes =>
             {
-                routes.MapRoute("areaRoute", "{area:exists}/{controller=Home}/{action=Index}");
+                routes.MapControllerRoute("areaRoute", "{area:exists}/{controller=Home}/{action=Index}");
+                routes.MapRazorPages();
             });
         }
     }

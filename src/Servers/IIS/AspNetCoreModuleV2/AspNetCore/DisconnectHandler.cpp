@@ -53,5 +53,6 @@ void DisconnectHandler::SetHandler(std::unique_ptr<IREQUEST_HANDLER, IREQUEST_HA
 
 void DisconnectHandler::RemoveHandler() noexcept
 {
+    SRWExclusiveLock lock(m_handlerLock);
     m_pHandler = nullptr;
 }

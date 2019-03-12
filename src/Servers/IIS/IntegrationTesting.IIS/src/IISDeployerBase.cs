@@ -14,6 +14,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 {
     public abstract class IISDeployerBase : ApplicationDeployer
     {
+        protected const string AspNetCoreModuleV2ModuleName = "AspNetCoreModuleV2";
+
         public IISDeploymentParameters IISDeploymentParameters { get; }
 
         public IISDeployerBase(IISDeploymentParameters deploymentParameters, ILoggerFactory loggerFactory)
@@ -80,9 +82,9 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             }
         }
 
-        protected string GetAncmLocation(AncmVersion version)
+        protected string GetAncmLocation()
         {
-            var ancmDllName = version == AncmVersion.AspNetCoreModuleV2 ? "aspnetcorev2.dll" : "aspnetcore.dll";
+            var ancmDllName = "aspnetcorev2.dll";
             var arch = DeploymentParameters.RuntimeArchitecture == RuntimeArchitecture.x64 ? $@"x64\{ancmDllName}" : $@"x86\{ancmDllName}";
             var ancmFile = Path.Combine(AppContext.BaseDirectory, arch);
             if (!File.Exists(Environment.ExpandEnvironmentVariables(ancmFile)))
@@ -90,7 +92,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 ancmFile = Path.Combine(AppContext.BaseDirectory, ancmDllName);
                 if (!File.Exists(Environment.ExpandEnvironmentVariables(ancmFile)))
                 {
-                    throw new FileNotFoundException("AspNetCoreModule could not be found.", ancmFile);
+                    throw new FileNotFoundException("AspNetCoreModuleV2 could not be found.", ancmFile);
                 }
             }
 
@@ -144,12 +146,11 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 .RequiredElement("binding")
                 .SetAttributeValue("bindingInformation", $":{port}:localhost");
 
-            var ancmVersion = DeploymentParameters.AncmVersion.ToString();
             config
                 .RequiredElement("system.webServer")
                 .RequiredElement("globalModules")
-                .GetOrAdd("add", "name", ancmVersion)
-                .SetAttributeValue("image", GetAncmLocation(DeploymentParameters.AncmVersion));
+                .GetOrAdd("add", "name", AspNetCoreModuleV2ModuleName)
+                .SetAttributeValue("image", GetAncmLocation());
         }
 
         public abstract void Dispose(bool gracefulShutdown);

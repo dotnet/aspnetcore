@@ -11,6 +11,7 @@ using System.Net.Http;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -41,16 +42,27 @@ namespace Microsoft.AspNetCore.Identity.Test
         [MemberData(nameof(ScriptWithIntegrityData))]
         public async Task IdentityUI_ScriptTags_SubresourceIntegrityCheck(ScriptTag scriptTag)
         {
-            var sha256Integrity = await GetShaIntegrity(scriptTag, SHA256.Create(), "sha256");
-            Assert.Equal(scriptTag.Integrity, sha256Integrity);
+            var integrity = await GetShaIntegrity(scriptTag);
+            Assert.Equal(scriptTag.Integrity, integrity);
         }
 
-        private async Task<string> GetShaIntegrity(ScriptTag scriptTag, HashAlgorithm algorithm, string prefix)
+        private async Task<string> GetShaIntegrity(ScriptTag scriptTag)
         {
+            var isSha256 = scriptTag.Integrity.StartsWith("sha256");
+            var prefix = isSha256 ? "sha256" : "sha384";
             using (var respStream = await _httpClient.GetStreamAsync(scriptTag.Src))
-            using (var alg = SHA256.Create())
+            using (var alg256 = SHA256.Create())
+            using (var alg384 = SHA384.Create())
             {
-                var hash = alg.ComputeHash(respStream);
+                byte[] hash;
+                if(isSha256)
+                {
+                    hash = alg256.ComputeHash(respStream);
+                }
+                else
+                {
+                    hash = alg384.ComputeHash(respStream);
+                }
                 return $"{prefix}-" + Convert.ToBase64String(hash);
             }
         }
@@ -144,13 +156,17 @@ namespace Microsoft.AspNetCore.Identity.Test
         private static string GetSolutionDir()
         {
             var dir = new DirectoryInfo(AppContext.BaseDirectory);
-            while (dir != null)
+            // On helix we use the published copy
+            if (!SkipOnHelixAttribute.OnHelix())
             {
-                if (File.Exists(Path.Combine(dir.FullName, "Identity.sln")))
+                while (dir != null)
                 {
-                    break;
+                    if (File.Exists(Path.Combine(dir.FullName, "Identity.sln")))
+                    {
+                        break;
+                    }
+                    dir = dir.Parent;
                 }
-                dir = dir.Parent;
             }
             return dir.FullName;
         }

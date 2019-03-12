@@ -1,5 +1,5 @@
 # Dockerfile that creates a container suitable to build dotnet-cli
-FROM microsoft/dotnet-buildtools-prereqs:rhel-7-rpmpkg-e1b4a89-20175311035359
+FROM mcr.microsoft.com/dotnet-buildtools/prereqs:rhel-7-rpmpkg-e1b4a89-20175311035359
 
 # Setup User to match Host User, and give superuser permissions
 ARG USER

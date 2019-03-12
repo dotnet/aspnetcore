@@ -82,6 +82,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             _options = options;
             _server = server;
             _logger = logger;
+
+            ((IHttpBodyControlFeature)this).AllowSynchronousIO = _options.AllowSynchronousIO;
         }
 
         public Version HttpVersion { get; set; }
@@ -180,9 +182,16 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         private string GetOriginalPath()
         {
-            // applicationInitialization request might have trailing \0 character included in the length
-            // check and skip it
             var rawUrlInBytes = GetRawUrlInBytes();
+
+            // Pre Windows 10 RS2 applicationInitialization request might not have pRawUrl set, fallback to cocked url
+            if (rawUrlInBytes == null)
+            {
+                return GetCookedUrl().GetAbsPath();
+            }
+
+            // ApplicationInitialization request might have trailing \0 character included in the length
+            // check and skip it
             if (rawUrlInBytes.Length > 0 && rawUrlInBytes[rawUrlInBytes.Length - 1] == 0)
             {
                 var newRawUrlInBytes = new byte[rawUrlInBytes.Length - 1];
@@ -254,7 +263,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 // don't leak the exception
                 catch (ConnectionResetException)
                 {
-                    ConnectionReset();
+                    AbortIO(clientDisconnect: true);
                 }
             }
 
@@ -554,7 +563,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 // Post completion after completing the request to resume the state machine
                 PostCompletion(ConvertRequestCompletionResults(successfulRequest));
 
-                Server.DecrementRequests();
 
                 // Dispose the context
                 Dispose();

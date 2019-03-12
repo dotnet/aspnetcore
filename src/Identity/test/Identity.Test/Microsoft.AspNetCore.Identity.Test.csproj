@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
@@ -6,6 +6,9 @@
 
   <ItemGroup>
     <Compile Include="$(IdentityTestSharedSourceRoot)**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
+    <HelixContent Include="..\..\UI\src\Areas\Identity\Pages\**\*.*" LinkBase="UI\src\Areas\Identity\Pages" />
+    <HelixContent Include="..\..\UI\src\wwwroot\**\*.*" LinkBase="UI\src\wwwroot" />
   </ItemGroup>
 
   <ItemGroup>

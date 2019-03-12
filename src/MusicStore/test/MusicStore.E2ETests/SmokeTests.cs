@@ -16,10 +16,9 @@ namespace E2ETests
     public class SmokeTests : LoggedTest
     {
         public static TestMatrix TestVariants
-            => TestMatrix.ForServers(/* ServerType.IISExpress, https://github.com/aspnet/AspNetCore/issues/6170*/ ServerType.Kestrel, ServerType.HttpSys)
+            => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Kestrel, ServerType.HttpSys)
                 .WithTfms(Tfm.NetCoreApp30)
                 .WithAllApplicationTypes()
-                .WithAllAncmVersions()
                 .WithAllHostingModels();
 
         [ConditionalTheory]

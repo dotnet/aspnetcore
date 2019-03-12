@@ -56,11 +56,23 @@
     __pragma(warning(pop))
 
 
+#define _GOTO_FAILURE()                                        __pragma(warning(push)) \
+    __pragma(warning(disable:26438)) /*disable avoid goto warning*/ \
+    goto Failure \
+    __pragma(warning(pop))
+
+
 #define FINISHED(hrr)                                           do { _HR_RET(hrr); if (_CHECK_FAILED(__hrRet)) { LogHResultFailed(LOCATION_INFO, __hrRet); } hr = __hrRet; _GOTO_FINISHED(); } while (0, 0)
 #define FINISHED_IF_FAILED(hrr)                                 do { _HR_RET(hrr); if (FAILED(__hrRet)) { LogHResultFailed(LOCATION_INFO, __hrRet); hr = __hrRet; _GOTO_FINISHED(); }} while (0, 0)
 #define FINISHED_IF_NULL_ALLOC(ptr)                             do { if ((ptr) == nullptr) { hr = LogHResultFailed(LOCATION_INFO, E_OUTOFMEMORY); _GOTO_FINISHED(); }} while (0, 0)
 #define FINISHED_LAST_ERROR_IF(condition)                       do { if (condition) { hr = LogLastError(LOCATION_INFO); _GOTO_FINISHED(); }} while (0, 0)
 #define FINISHED_LAST_ERROR_IF_NULL(ptr)                        do { if ((ptr) == nullptr) { hr = LogLastError(LOCATION_INFO); _GOTO_FINISHED(); }} while (0, 0)
+
+#define FAILURE(hrr)                                            do { _HR_RET(hrr); if (_CHECK_FAILED(__hrRet)) { LogHResultFailed(LOCATION_INFO, __hrRet); } hr = __hrRet; _GOTO_FAILURE(); } while (0, 0)
+#define FAILURE_IF_FAILED(hrr)                                  do { _HR_RET(hrr); if (FAILED(__hrRet)) { LogHResultFailed(LOCATION_INFO, __hrRet); hr = __hrRet; _GOTO_FAILURE(); }} while (0, 0)
+#define FAILURE_IF_NULL_ALLOC(ptr)                              do { if ((ptr) == nullptr) { hr = LogHResultFailed(LOCATION_INFO, E_OUTOFMEMORY); _GOTO_FAILURE(); }} while (0, 0)
+#define FAILURE_LAST_ERROR_IF(condition)                        do { if (condition) { hr = LogLastError(LOCATION_INFO); _GOTO_FAILURE(); }} while (0, 0)
+#define FAILURE_LAST_ERROR_IF_NULL(ptr)                         do { if ((ptr) == nullptr) { hr = LogLastError(LOCATION_INFO); _GOTO_FAILURE(); }} while (0, 0)
 
 #define THROW_HR(hr)                                            do { _HR_RET(hr); ThrowResultException(LOCATION_INFO, LogHResultFailed(LOCATION_INFO, __hrRet)); } while (0, 0)
 #define THROW_LAST_ERROR()                                      do { ThrowResultException(LOCATION_INFO, LogLastError(LOCATION_INFO)); } while (0, 0)
@@ -156,6 +168,17 @@ private:
     return hr;
 }
 
+ __declspec(noinline) inline HRESULT LogHResultFailed(LOCATION_ARGUMENTS const std::error_code& error_code)
+{
+    if (error_code)
+    {
+        TraceHRESULT(LOCATION_CALL error_code.value());
+        DebugPrintf(ASPNETCORE_DEBUG_FLAG_ERROR,  "Failed error_code returned: 0x%x 0xs at " LOCATION_FORMAT, error_code.value(), error_code.message().c_str(), LOCATION_CALL_ONLY);
+        return E_FAIL;
+    }
+    return ERROR_SUCCESS;
+}
+
 __declspec(noinline) inline HRESULT CaughtExceptionHResult(LOCATION_ARGUMENTS_ONLY)
 {
     try
@@ -185,6 +208,30 @@ __declspec(noinline) inline HRESULT CaughtExceptionHResult(LOCATION_ARGUMENTS_ON
     {
         ReportUntypedException(LOCATION_CALL_ONLY);
         return HRESULT_FROM_WIN32(ERROR_UNHANDLED_EXCEPTION);
+    }
+}
+
+__declspec(noinline) inline std::wstring CaughtExceptionToString()
+{
+    try
+    {
+        throw;
+    }
+    catch (const InvalidOperationException& exception)
+    {
+        return exception.as_wstring();
+    }
+    catch (const std::system_error& exception)
+    {
+        return to_wide_string(exception.what(), CP_ACP);
+    }
+    catch (const std::exception& exception)
+    {
+        return to_wide_string(exception.what(), CP_ACP);
+    }
+    catch (...)
+    {
+        return L"Unknown exception type";
     }
 }
 

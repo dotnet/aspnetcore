@@ -25,6 +25,7 @@ namespace Interop.FunctionalTests
     {
         [ConditionalTheory]
         [MemberData(nameof(H2SpecTestCases))]
+        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/7299
         public async Task RunIndividualTestCase(H2SpecTestCase testCase)
         {
             var hostBuilder = new WebHostBuilder()

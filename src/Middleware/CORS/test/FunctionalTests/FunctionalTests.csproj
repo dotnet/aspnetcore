@@ -1,23 +1,21 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TestGroupName>Cors.FunctionalTests</TestGroupName>
+    <DefaultItemExcludes>$(DefaultItemExcludes);node_modules\**\*</DefaultItemExcludes>
+    <!-- https://github.com/aspnet/AspNetCore/issues/6549 -->
+    <BuildHelixPayload>false</BuildHelixPayload>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Remove="node_modules\**" />
-    <EmbeddedResource Remove="node_modules\**" />
-    <None Remove="node_modules\**" />
-  </ItemGroup>
 
   <ItemGroup>
     <!-- We don't need anything in this assembly, we just want to make sure it's built -->
     <ProjectReference Include="..\..\samples\SampleOrigin\SampleOrigin.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\..\samples\SampleDestination\SampleDestination.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="$(RepositoryRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Server.IntegrationTesting" />
     <Reference Include="Microsoft.Extensions.Logging.Testing" />
   </ItemGroup>
 

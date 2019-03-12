@@ -8,8 +8,8 @@
 
 namespace signalr
 {
-    connection::connection(const utility::string_t& url, const utility::string_t& query_string, trace_level trace_level, std::shared_ptr<log_writer> log_writer)
-        : m_pImpl(connection_impl::create(url, query_string, trace_level, std::move(log_writer)))
+    connection::connection(const std::string& url, trace_level trace_level, std::shared_ptr<log_writer> log_writer)
+        : m_pImpl(connection_impl::create(url, trace_level, std::move(log_writer)))
     {}
 
     // Do NOT remove this destructor. Letting the compiler generate and inline the default dtor may lead to
@@ -21,24 +21,14 @@ namespace signalr
         return m_pImpl->start();
     }
 
-    pplx::task<void> connection::send(const utility::string_t& data)
+    pplx::task<void> connection::send(const std::string& data)
     {
         return m_pImpl->send(data);
     }
 
     void connection::set_message_received(const message_received_handler& message_received_callback)
     {
-        m_pImpl->set_message_received_string(message_received_callback);
-    }
-
-    void connection::set_reconnecting(const std::function<void()>& reconnecting_callback)
-    {
-        m_pImpl->set_reconnecting(reconnecting_callback);
-    }
-
-    void connection::set_reconnected(const std::function<void()>& reconnected_callback)
-    {
-        m_pImpl->set_reconnected(reconnected_callback);
+        m_pImpl->set_message_received(message_received_callback);
     }
 
     void connection::set_disconnected(const std::function<void()>& disconnected_callback)
@@ -56,12 +46,12 @@ namespace signalr
         return m_pImpl->stop();
     }
 
-    connection_state connection::get_connection_state() const
+    connection_state connection::get_connection_state() const noexcept
     {
         return m_pImpl->get_connection_state();
     }
 
-    utility::string_t connection::get_connection_id() const
+    std::string connection::get_connection_id() const
     {
         return m_pImpl->get_connection_id();
     }

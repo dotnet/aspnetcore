@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -49,12 +49,12 @@ namespace Microsoft.AspNetCore.Http
         public virtual bool HttpOnly { get; set; }
 
         /// <summary>
-        /// The SameSite attribute of the cookie. The default value is <see cref="SameSiteMode.Lax"/>
+        /// The SameSite attribute of the cookie. The default value is <see cref="SameSiteMode.None"/>
         /// </summary>
         /// <remarks>
         /// Determines the value that will set on <seealso cref="CookieOptions.SameSite"/>.
         /// </remarks>
-        public virtual SameSiteMode SameSite { get; set; } = SameSiteMode.Lax;
+        public virtual SameSiteMode SameSite { get; set; } = SameSiteMode.None;
 
         /// <summary>
         /// The policy that will be used to determine <seealso cref="CookieOptions.Secure"/>.

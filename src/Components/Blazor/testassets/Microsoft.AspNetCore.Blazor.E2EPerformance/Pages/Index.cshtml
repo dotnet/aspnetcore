@@ -1,0 +1,11 @@
+@page "/"
+@inject IJSRuntime JSRuntime
+
+Hello, world!
+
+@functions {
+    protected override void OnAfterRender()
+    {
+        BenchmarkEvent.Send(JSRuntime, "Rendered index.cshtml");
+    }
+}

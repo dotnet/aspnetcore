@@ -1,0 +1,35 @@
+<Project DefaultTargets="Test">
+
+  <!-- Version included until we get global.json generation to support this SDK. -->
+  <Sdk Name="Microsoft.DotNet.Helix.Sdk" Version="2.0.0-beta.19105.2" />
+
+  <Import Project="$(RepositoryRoot)\eng\targets\Helix.Common.props" />
+  <Import Project="$(RepositoryRoot)\build\repo.props" />
+
+  <ItemGroup>
+    <HelixTargetQueue Include="@(HelixAvailibleTargetQueue)" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <HelixSource>pr/aspnet/aspnetcore</HelixSource>
+    <HelixType>ci</HelixType>
+    <HelixBuild>private-$(USERNAME)</HelixBuild>
+    <HelixBuild Condition=" '$(USERNAME)' == '' ">private-$(USER)</HelixBuild>
+    <HelixBuild Condition=" '$(CI)' == 'true' ">$(BUILD_BUILDNUMBER)</HelixBuild>
+    <WaitForWorkItemCompletion Condition=" '$(CI)' == 'true' ">true</WaitForWorkItemCompletion>
+    <FailOnMissionControlTestFailure>true</FailOnMissionControlTestFailure>
+    <EnableAzurePipelinesReporter>false</EnableAzurePipelinesReporter>
+    <IsExternal>true</IsExternal>
+    <Creator>aspnetcore</Creator>
+    <SkipInvalidConfigurations>true</SkipInvalidConfigurations>
+  </PropertyGroup>
+
+  <Target Name="Gather" BeforeTargets="Build">
+    <MSBuild Projects="@(ProjectToBuild)"
+              Targets="CreateHelixPayload"
+              SkipNonexistentTargets="true">
+      <Output TaskParameter="TargetOutputs" ItemName="HelixWorkItem" />
+    </MSBuild>
+  </Target>
+
+</Project>

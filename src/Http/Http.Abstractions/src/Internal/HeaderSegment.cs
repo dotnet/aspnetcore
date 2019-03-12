@@ -6,7 +6,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Http.Internal
 {
-    public struct HeaderSegment : IEquatable<HeaderSegment>
+    public readonly struct HeaderSegment : IEquatable<HeaderSegment>
     {
         private readonly StringSegment _formatting;
         private readonly StringSegment _data;

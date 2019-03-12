@@ -33,20 +33,19 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public static TestMatrix TestVariants
             => TestMatrix.ForServers(DeployerSelector.ServerType)
                 .WithTfms(Tfm.NetCoreApp30)
-                .WithApplicationTypes(ApplicationType.Portable)
-                .WithAllAncmVersions();
+                .WithApplicationTypes(ApplicationType.Portable);
 
         public static IEnumerable<object[]> InvalidTestVariants
             => from v in TestVariants.Select(v => v.Single())
                from s in new string[] { (_minPort - 1).ToString(), (_maxPort + 1).ToString(), "noninteger" }
                select new object[] { v, s };
 
-        [ConditionalTheory]
+        [ConditionalTheory(Skip = "https://github.com/aspnet/AspNetCore/issues/8329")]
         [MemberData(nameof(TestVariants))]
         public async Task EnvVarInWebConfig_Valid(TestVariant variant)
         {
             // Must publish to set env vars in web.config
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant, publish: true);
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant);
             var port = GetUnusedRandomPort();
             deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_PORT"] = port.ToString();
 
@@ -57,12 +56,12 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.Equal(port, new Uri(responseText).Port);
         }
 
-        [ConditionalTheory]
+        [ConditionalTheory(Skip = "https://github.com/aspnet/AspNetCore/issues/8329")]
         [MemberData(nameof(TestVariants))]
         public async Task EnvVarInWebConfig_Empty(TestVariant variant)
         {
             // Must publish to set env vars in web.config
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant, publish: true);
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant);
             deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_PORT"] = string.Empty;
 
             var deploymentResult = await DeployAsync(deploymentParameters);
@@ -73,12 +72,12 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.InRange(new Uri(responseText).Port, _minPort, _maxPort);
         }
 
-        [ConditionalTheory]
+        [ConditionalTheory(Skip = "https://github.com/aspnet/AspNetCore/issues/8329")]
         [MemberData(nameof(InvalidTestVariants))]
         public async Task EnvVarInWebConfig_Invalid(TestVariant variant, string port)
         {
             // Must publish to set env vars in web.config
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant, publish: true);
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant);
             deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_PORT"] = port;
 
             var deploymentResult = await DeployAsync(deploymentParameters);

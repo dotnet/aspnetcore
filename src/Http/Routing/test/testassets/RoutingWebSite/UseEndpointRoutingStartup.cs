@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Endpoints;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Routing;
@@ -69,6 +70,16 @@ namespace RoutingWebSite
                         return response.Body.WriteAsync(_plainTextPayload, 0, payloadLength);
                     });
                 routes.MapGet(
+                    "/convention",
+                    (httpContext) =>
+                    {
+                        var endpoint = httpContext.GetEndpoint();
+                        return httpContext.Response.WriteAsync((endpoint.Metadata.GetMetadata<CustomMetadata>() != null) ? "Has metadata" : "No metadata");
+                    }).Add(b =>
+                    {
+                        b.Metadata.Add(new CustomMetadata());
+                    });
+                routes.MapGet(
                     "/withconstraints/{id:endsWith(_001)}",
                     (httpContext) =>
                     {
@@ -112,6 +123,12 @@ namespace RoutingWebSite
                             "Link: " + linkGenerator.GetPathByRouteValues(httpContext, "WithDoubleAsteriskCatchAll", new { }));
                     },
                     new RouteNameMetadata(routeName: "WithDoubleAsteriskCatchAll"));
+
+                MapHostEndpoint(routes);
+                MapHostEndpoint(routes, "*.0.0.1");
+                MapHostEndpoint(routes, "127.0.0.1");
+                MapHostEndpoint(routes, "*.0.0.1:5000", "*.0.0.1:5001");
+                MapHostEndpoint(routes, "contoso.com:*", "*.contoso.com:*");
             });
 
             app.Map("/Branch1", branch => SetupBranch(branch, "Branch1"));
@@ -122,6 +139,35 @@ namespace RoutingWebSite
             // Imagine some more stuff here...
 
             app.UseEndpoint();
+        }
+
+        private class CustomMetadata
+        {
+        }
+
+        private IEndpointConventionBuilder MapHostEndpoint(IEndpointRouteBuilder routes, params string[] hosts)
+        {
+            var hostsDisplay = (hosts == null || hosts.Length == 0)
+                ? "*:*"
+                : string.Join(",", hosts.Select(h => h.Contains(':') ? h : h + ":*"));
+
+            var conventionBuilder = routes.MapGet(
+                "api/DomainWildcard",
+                httpContext =>
+                {
+                    var response = httpContext.Response;
+                    response.StatusCode = 200;
+                    response.ContentType = "text/plain";
+                    return response.WriteAsync(hostsDisplay);
+                });
+
+            conventionBuilder.Add(endpointBuilder =>
+            {
+                endpointBuilder.Metadata.Add(new HostAttribute(hosts));
+                endpointBuilder.DisplayName += " HOST: " + hostsDisplay;
+            });
+
+            return conventionBuilder;
         }
 
         private void SetupBranch(IApplicationBuilder app, string name)

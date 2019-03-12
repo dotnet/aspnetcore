@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Pipelines;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
@@ -27,6 +28,24 @@ namespace Microsoft.AspNetCore.Http.Features
             var formCollection = await context.Request.ReadFormAsync();
 
             Assert.Same(FormCollection.Empty, formCollection);
+        }
+
+        [Fact]
+        public async Task FormFeatureReadsOptionsFromDefaultHttpContext()
+        {
+            var context = new DefaultHttpContext();
+            context.Request.ContentType = "application/x-www-form-urlencoded; charset=utf-8";
+            context.FormOptions = new FormOptions
+            {
+                ValueCountLimit = 1
+            };
+
+            var formContent = Encoding.UTF8.GetBytes("foo=bar&baz=2");
+            context.Request.Body = new NonSeekableReadStream(formContent);
+
+            var exception = await Assert.ThrowsAsync<InvalidDataException>(() => context.Request.ReadFormAsync());
+
+            Assert.Equal("Form value count limit 1 exceeded.", exception.Message);
         }
 
         [Theory]
@@ -53,6 +72,41 @@ namespace Microsoft.AspNetCore.Http.Features
             {
                 Assert.Equal(0, context.Request.Body.Position);
             }
+
+            // Cached
+            formFeature = context.Features.Get<IFormFeature>();
+            Assert.NotNull(formFeature);
+            Assert.NotNull(formFeature.Form);
+            Assert.Same(formFeature.Form, formCollection);
+
+            // Cleanup
+            await responseFeature.CompleteAsync();
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task ReadFormAsync_SimpleData_ReplacePipeReader_ReturnsParsedFormCollection(bool bufferRequest)
+        {
+            var formContent = Encoding.UTF8.GetBytes("foo=bar&baz=2");
+            var context = new DefaultHttpContext();
+            var responseFeature = new FakeResponseFeature();
+            context.Features.Set<IHttpResponseFeature>(responseFeature);
+            context.Request.ContentType = "application/x-www-form-urlencoded; charset=utf-8";
+
+            var pipe = new Pipe();
+            await pipe.Writer.WriteAsync(formContent);
+            pipe.Writer.Complete();
+
+            context.Request.BodyReader = pipe.Reader;
+
+            IFormFeature formFeature = new FormFeature(context.Request, new FormOptions() { BufferBody = bufferRequest });
+            context.Features.Set<IFormFeature>(formFeature);
+
+            var formCollection = await context.Request.ReadFormAsync();
+
+            Assert.Equal("bar", formCollection["foo"]);
+            Assert.Equal("2", formCollection["baz"]);
 
             // Cached
             formFeature = context.Features.Get<IFormFeature>();
@@ -97,6 +151,14 @@ namespace Microsoft.AspNetCore.Http.Features
 "\r\n" +
 "Foo\r\n";
 
+        private const string InvalidContentDispositionValue = "form-data; name=\"description\" - filename=\"temp.html\"";
+
+        private const string MultipartFormFileInvalidContentDispositionValue = "--WebKitFormBoundary5pDRpGheQXaM8k3T\r\n" +
+"Content-Disposition: " +
+InvalidContentDispositionValue +
+"\r\n" +
+"\r\n" +
+"Foo\r\n";
 
         private const string MultipartFormWithField =
             MultipartFormField +
@@ -118,6 +180,10 @@ namespace Microsoft.AspNetCore.Http.Features
         private const string MultipartFormWithSpecialCharacters =
             MultipartFormFileSpecialCharacters +
             MultipartFormEndWithSpecialCharacters;
+
+        private const string MultipartFormWithInvalidContentDispositionValue =
+            MultipartFormFileInvalidContentDispositionValue +
+            MultipartFormEnd;
 
         [Theory]
         [InlineData(true)]
@@ -391,7 +457,7 @@ namespace Microsoft.AspNetCore.Http.Features
             IFormFeature formFeature = new FormFeature(context.Request, new FormOptions() { BufferBody = bufferRequest, ValueCountLimit = 2 });
             context.Features.Set<IFormFeature>(formFeature);
 
-            var exception = await Assert.ThrowsAsync<InvalidDataException> (() => context.Request.ReadFormAsync());
+            var exception = await Assert.ThrowsAsync<InvalidDataException>(() => context.Request.ReadFormAsync());
             Assert.Equal("Form value count limit 2 exceeded.", exception.Message);
         }
 
@@ -416,7 +482,7 @@ namespace Microsoft.AspNetCore.Http.Features
             IFormFeature formFeature = new FormFeature(context.Request, new FormOptions() { BufferBody = bufferRequest, ValueCountLimit = 2 });
             context.Features.Set<IFormFeature>(formFeature);
 
-            var exception = await Assert.ThrowsAsync<InvalidDataException> (() => context.Request.ReadFormAsync());
+            var exception = await Assert.ThrowsAsync<InvalidDataException>(() => context.Request.ReadFormAsync());
             Assert.Equal("Form value count limit 2 exceeded.", exception.Message);
         }
 
@@ -469,6 +535,24 @@ namespace Microsoft.AspNetCore.Http.Features
             }
 
             await responseFeature.CompleteAsync();
+        }
+
+        [Fact]
+        public async Task ReadFormAsync_MultipartWithInvalidContentDisposition_Throw()
+        {
+            var formContent = Encoding.UTF8.GetBytes(MultipartFormWithInvalidContentDispositionValue);
+            var context = new DefaultHttpContext();
+            var responseFeature = new FakeResponseFeature();
+            context.Features.Set<IHttpResponseFeature>(responseFeature);
+            context.Request.ContentType = MultipartContentType;
+            context.Request.Body = new NonSeekableReadStream(formContent);
+
+            IFormFeature formFeature = new FormFeature(context.Request, new FormOptions());
+            context.Features.Set<IFormFeature>(formFeature);
+
+            var exception = await Assert.ThrowsAsync<InvalidDataException>(() => context.Request.ReadFormAsync());
+
+            Assert.Equal("Form section has invalid Content-Disposition value: " + InvalidContentDispositionValue, exception.Message);
         }
 
         private Stream CreateFile(int size)

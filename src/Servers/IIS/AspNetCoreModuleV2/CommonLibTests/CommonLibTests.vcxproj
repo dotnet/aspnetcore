@@ -20,9 +20,9 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{1eac8125-1765-4e2d-8cbe-56dc98a1c8c1}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
     <ConfigurationType>Application</ConfigurationType>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -50,13 +50,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ConfigUtilityTests.cpp" />
-    <ClCompile Include="FileOutputManagerTests.cpp" />
     <ClCompile Include="GlobalVersionTests.cpp" />
     <ClCompile Include="Helpers.cpp" />
     <ClCompile Include="hostfxr_utility_tests.cpp" />
     <ClCompile Include="inprocess_application_tests.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="PipeOutputManagerTests.cpp" />
+    <ClCompile Include="StandardOutputRedirectionTest.cpp" />
     <ClCompile Include="BindingInformationTest.cpp" />
     <ClCompile Include="utility_tests.cpp" />
   </ItemGroup>
@@ -100,7 +99,7 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <AdditionalLibraryDirectories>..\InProcessRequestHandler\$(Configuration)\;</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\InProcessRequestHandler\Win32\$(Configuration)\;</AdditionalLibraryDirectories>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;inprocessapplication.obj;inprocesshandler.obj;ahadmin.lib;Rpcrt4.lib;inprocessapplicationbase.obj;stdafx.obj;version.lib;inprocessoptions.obj;%(AdditionalDependencies)</AdditionalDependencies>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
@@ -156,7 +155,7 @@
       <AdditionalOptions>/NODEFAULTLIB:libucrt.lib /DEFAULTLIB:ucrt.lib %(AdditionalOptions)</AdditionalOptions>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <AdditionalLibraryDirectories>..\InProcessRequestHandler\$(Configuration)\;</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\InProcessRequestHandler\Win32\$(Configuration)\;</AdditionalLibraryDirectories>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;inprocessapplication.obj;inprocesshandler.obj;ahadmin.lib;Rpcrt4.lib;inprocessapplicationbase.obj;stdafx.obj;version.lib;inprocessoptions.obj;%(AdditionalDependencies)</AdditionalDependencies>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
@@ -194,5 +193,7 @@
       </AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
-  <Import Project=".\NativeTests.targets" />
+  <PropertyGroup>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
 </Project>

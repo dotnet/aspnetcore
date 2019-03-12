@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
-    public struct Http2PeerSetting
+    public readonly struct Http2PeerSetting
     {
         public Http2PeerSetting(Http2SettingsParameter parameter, uint value)
         {

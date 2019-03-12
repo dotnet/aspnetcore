@@ -30,7 +30,7 @@ namespace signalr
         m_http_client_config = http_client_config;
     }
 
-    web::websockets::client::websocket_client_config signalr_client_config::get_websocket_client_config() const
+    web::websockets::client::websocket_client_config signalr_client_config::get_websocket_client_config() const noexcept
     {
         return m_websocket_client_config;
     }
@@ -40,7 +40,7 @@ namespace signalr
         m_websocket_client_config = websocket_client_config;
     }
 
-    web::http::http_headers signalr_client_config::get_http_headers() const
+    web::http::http_headers signalr_client_config::get_http_headers() const noexcept
     {
         return m_http_headers;
     }

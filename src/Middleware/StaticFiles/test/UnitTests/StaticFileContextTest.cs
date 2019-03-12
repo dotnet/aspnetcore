@@ -4,8 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Primitives;
@@ -52,6 +54,54 @@ namespace Microsoft.AspNetCore.StaticFiles
 
             // Assert
             Assert.True(result);
+        }
+
+        [Fact]
+        public async Task EnablesHttpsCompression_IfMatched()
+        {
+            var options = new StaticFileOptions();
+            var fileProvider = new TestFileProvider();
+            fileProvider.AddFile("/foo.txt", new TestFileInfo
+            {
+                LastModified = new DateTimeOffset(2014, 1, 2, 3, 4, 5, TimeSpan.Zero)
+            });
+            var pathString = new PathString("/test");
+            var httpContext = new DefaultHttpContext();
+            var httpsCompressionFeature = new TestHttpsCompressionFeature();
+            httpContext.Features.Set<IHttpsCompressionFeature>(httpsCompressionFeature);
+            httpContext.Request.Path = new PathString("/test/foo.txt");
+            var context = new StaticFileContext(httpContext, options, pathString, NullLogger.Instance, fileProvider, new FileExtensionContentTypeProvider());
+
+            context.ValidatePath();
+            var result = context.LookupFileInfo();
+            Assert.True(result);
+
+            await context.SendAsync();
+
+            Assert.Equal(HttpsCompressionMode.Compress, httpsCompressionFeature.Mode);
+        }
+
+        [Fact]
+        public void SkipsHttpsCompression_IfNotMatched()
+        {
+            var options = new StaticFileOptions();
+            var fileProvider = new TestFileProvider();
+            fileProvider.AddFile("/foo.txt", new TestFileInfo
+            {
+                LastModified = new DateTimeOffset(2014, 1, 2, 3, 4, 5, TimeSpan.Zero)
+            });
+            var pathString = new PathString("/test");
+            var httpContext = new DefaultHttpContext();
+            var httpsCompressionFeature = new TestHttpsCompressionFeature();
+            httpContext.Features.Set<IHttpsCompressionFeature>(httpsCompressionFeature);
+            httpContext.Request.Path = new PathString("/test/bar.txt");
+            var context = new StaticFileContext(httpContext, options, pathString, NullLogger.Instance, fileProvider, new FileExtensionContentTypeProvider());
+
+            context.ValidatePath();
+            var result = context.LookupFileInfo();
+            Assert.False(result);
+
+            Assert.Equal(HttpsCompressionMode.Default, httpsCompressionFeature.Mode);
         }
 
         private sealed class TestFileProvider : IFileProvider
@@ -162,8 +212,13 @@ namespace Microsoft.AspNetCore.StaticFiles
 
             public Stream CreateReadStream()
             {
-                throw new NotImplementedException();
+                return new MemoryStream();
             }
+        }
+
+        private class TestHttpsCompressionFeature : IHttpsCompressionFeature
+        {
+            public HttpsCompressionMode Mode { get; set; }
         }
     }
 }

@@ -3,13 +3,11 @@
     <AzureIntegrationProjectRoot>$(MSBuildThisFileDirectory)..\src\AzureIntegration\</AzureIntegrationProjectRoot>
   </PropertyGroup>
 
-  <Target Name="BuildAzureIntegration" DependsOnTargets="PrepareOutputPaths;GeneratePropsFiles">
+  <Target Name="BuildAzureIntegration">
     <PropertyGroup>
       <AzureIntegrationProjProperties>
         AspNetUniverseBuildOffline=true;
         RepositoryRoot=$(AzureIntegrationProjectRoot);
-        DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath);
-        DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath);
         VersionSuffix=$(VersionSuffix);
         BuildNumberSuffix=$(BuildNumberSuffix);
         Configuration=$(Configuration);
@@ -25,7 +23,7 @@
       <AzureIntegrationArtifacts Include="$(AzureIntegrationProjectRoot)artifacts\build\*" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(AzureIntegrationArtifacts)" DestinationFolder="$(ProductPackageOutputPath)" />
+    <Copy SourceFiles="@(AzureIntegrationArtifacts)" DestinationFolder="$(ArtifactsShippingPackagesDir)" />
   </Target>
 
 </Project>

@@ -17,7 +17,7 @@ namespace E2ETests
     public class NtlmAuthenticationTests : LoggedTest
     {
         public static TestMatrix TestVariants
-            => TestMatrix.ForServers(/*ServerType.IISExpress https://github.com/aspnet/AspNetCore/issues/6170*/ ServerType.HttpSys)
+            => TestMatrix.ForServers(ServerType.IISExpress, ServerType.HttpSys)
                 .WithTfms(Tfm.NetCoreApp30)
                 .WithAllApplicationTypes()
                 .WithAllArchitectures();

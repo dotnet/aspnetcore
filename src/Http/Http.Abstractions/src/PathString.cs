@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Http
     /// Provides correct escaping for Path and PathBase values when needed to reconstruct a request or redirect URI string
     /// </summary>
     [TypeConverter(typeof(PathStringConverter))]
-    public struct PathString : IEquatable<PathString>
+    public readonly struct PathString : IEquatable<PathString>
     {
         private static readonly char[] splitChar = { '/' };
 

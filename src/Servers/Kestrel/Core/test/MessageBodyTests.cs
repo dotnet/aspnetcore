@@ -2,19 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.IO;
-using System.IO.Pipelines;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
-using Microsoft.AspNetCore.Testing;
 using Moq;
 using Xunit;
 using Xunit.Sdk;
@@ -33,8 +29,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var body = Http1MessageBody.For(httpVersion, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
                 var mockBodyControl = new Mock<IHttpBodyControlFeature>();
                 mockBodyControl.Setup(m => m.AllowSynchronousIO).Returns(true);
-                var stream = new HttpRequestStream(mockBodyControl.Object);
-                stream.StartAcceptingReads(body);
+                var reader = new HttpRequestPipeReader();
+                var stream = new HttpRequestStream(mockBodyControl.Object, reader);
+                reader.StartAcceptingReads(body);
 
                 input.Add("Hello");
 
@@ -47,7 +44,99 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 count = stream.Read(buffer, 0, buffer.Length);
                 Assert.Equal(0, count);
 
-                input.Http1Connection.RequestBodyPipe.Reader.Complete();
+                await body.StopAsync();
+            }
+        }
+
+        [Theory]
+        [InlineData(HttpVersion.Http10)]
+        [InlineData(HttpVersion.Http11)]
+        public async Task CanReadFromContentLengthPipeApis(HttpVersion httpVersion)
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(httpVersion, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
+                var reader = new HttpRequestPipeReader();
+                reader.StartAcceptingReads(body);
+
+                input.Add("Hello");
+
+                var readResult = await reader.ReadAsync();
+
+                Assert.Equal(5, readResult.Buffer.Length);
+                AssertASCII("Hello", readResult.Buffer);
+                reader.AdvanceTo(readResult.Buffer.End);
+
+                readResult = await reader.ReadAsync();
+                Assert.True(readResult.IsCompleted);
+                reader.AdvanceTo(readResult.Buffer.End);
+
+                await body.StopAsync();
+            }
+        }
+
+        [Theory]
+        [InlineData(HttpVersion.Http10)]
+        [InlineData(HttpVersion.Http11)]
+        public async Task CanTryReadFromContentLengthPipeApis(HttpVersion httpVersion)
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(httpVersion, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
+                var reader = new HttpRequestPipeReader();
+                reader.StartAcceptingReads(body);
+
+                input.Add("Hello");
+                Assert.True(reader.TryRead(out var readResult));
+
+                Assert.Equal(5, readResult.Buffer.Length);
+                AssertASCII("Hello", readResult.Buffer);
+                reader.AdvanceTo(readResult.Buffer.End);
+
+                reader.TryRead(out readResult);
+                Assert.True(readResult.IsCompleted);
+                reader.AdvanceTo(readResult.Buffer.End);
+
+                await body.StopAsync();
+            }
+        }
+
+        [Theory]
+        [InlineData(HttpVersion.Http10)]
+        [InlineData(HttpVersion.Http11)]
+        public async Task ReadAsyncWithoutAdvanceFromContentLengthThrows(HttpVersion httpVersion)
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(httpVersion, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
+                var reader = new HttpRequestPipeReader();
+                reader.StartAcceptingReads(body);
+
+                input.Add("Hello");
+                var readResult = await reader.ReadAsync();
+
+                await Assert.ThrowsAsync<InvalidOperationException>(async () => await reader.ReadAsync());
+
+                await body.StopAsync();
+            }
+        }
+
+        [Theory]
+        [InlineData(HttpVersion.Http10)]
+        [InlineData(HttpVersion.Http11)]
+        public async Task TryReadWithoutAdvanceFromContentLengthThrows(HttpVersion httpVersion)
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(httpVersion, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
+                var reader = new HttpRequestPipeReader();
+                reader.StartAcceptingReads(body);
+
+                input.Add("Hello");
+                Assert.True(reader.TryRead(out var readResult));
+
+                Assert.Throws<InvalidOperationException>(() => reader.TryRead(out readResult));
+
                 await body.StopAsync();
             }
         }
@@ -60,8 +149,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             using (var input = new TestInput())
             {
                 var body = Http1MessageBody.For(httpVersion, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
-                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
-                stream.StartAcceptingReads(body);
+
+                var reader = new HttpRequestPipeReader();
+                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), reader);
+                reader.StartAcceptingReads(body);
 
                 input.Add("Hello");
 
@@ -74,7 +165,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 count = await stream.ReadAsync(buffer, 0, buffer.Length);
                 Assert.Equal(0, count);
 
-                input.Http1Connection.RequestBodyPipe.Reader.Complete();
                 await body.StopAsync();
             }
         }
@@ -87,8 +177,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Http1Connection);
                 var mockBodyControl = new Mock<IHttpBodyControlFeature>();
                 mockBodyControl.Setup(m => m.AllowSynchronousIO).Returns(true);
-                var stream = new HttpRequestStream(mockBodyControl.Object);
-                stream.StartAcceptingReads(body);
+                var reader = new HttpRequestPipeReader();
+                var stream = new HttpRequestStream(mockBodyControl.Object, reader);
+                reader.StartAcceptingReads(body);
 
                 input.Add("5\r\nHello\r\n");
 
@@ -103,7 +194,94 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 count = stream.Read(buffer, 0, buffer.Length);
                 Assert.Equal(0, count);
 
-                input.Http1Connection.RequestBodyPipe.Reader.Complete();
+                await body.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task BadChunkPrefixThrowsBadRequestException()
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Http1Connection);
+                var mockBodyControl = new Mock<IHttpBodyControlFeature>();
+                mockBodyControl.Setup(m => m.AllowSynchronousIO).Returns(true);
+                var reader = new HttpRequestPipeReader();
+                var stream = new HttpRequestStream(mockBodyControl.Object, reader);
+                reader.StartAcceptingReads(body);
+                var buffer = new byte[1024];
+                var task = stream.ReadAsync(buffer, 0, buffer.Length);
+
+                input.Add("g");
+                input.Add("g");
+
+                await Assert.ThrowsAsync<BadHttpRequestException>(() => task);
+
+                await body.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task WritingChunkOverMaxChunkSizeThrowsBadRequest()
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Http1Connection);
+                var mockBodyControl = new Mock<IHttpBodyControlFeature>();
+                mockBodyControl.Setup(m => m.AllowSynchronousIO).Returns(true);
+                var reader = new HttpRequestPipeReader();
+                var stream = new HttpRequestStream(mockBodyControl.Object, reader);
+                reader.StartAcceptingReads(body);
+                var buffer = new byte[1024];
+                var task = stream.ReadAsync(buffer, 0, buffer.Length);
+
+                // Max is 10 bytes
+                for (int i = 0; i < 11; i++)
+                {
+                    input.Add(i.ToString());
+                }
+
+                await Assert.ThrowsAsync<BadHttpRequestException>(() => task);
+
+                await body.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task InvalidChunkSuffixThrowsBadRequest()
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Http1Connection);
+                var mockBodyControl = new Mock<IHttpBodyControlFeature>();
+                mockBodyControl.Setup(m => m.AllowSynchronousIO).Returns(true);
+                var reader = new HttpRequestPipeReader();
+                var stream = new HttpRequestStream(mockBodyControl.Object, reader);
+                reader.StartAcceptingReads(body);
+                var buffer = new byte[1024];
+
+                async Task ReadAsync()
+                {
+                    while (true)
+                    {
+                        await stream.ReadAsync(buffer, 0, buffer.Length);
+                    }
+                }
+
+                var task = ReadAsync();
+
+                input.Add("1");
+                input.Add("\r");
+                input.Add("\n");
+                input.Add("h");
+                input.Add("0");
+                input.Add("\r");
+                input.Add("\n");
+                input.Add("\r");
+                input.Add("n");
+
+                await Assert.ThrowsAsync<BadHttpRequestException>(() => task);
+
                 await body.StopAsync();
             }
         }
@@ -114,8 +292,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             using (var input = new TestInput())
             {
                 var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Http1Connection);
-                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
-                stream.StartAcceptingReads(body);
+                var reader = new HttpRequestPipeReader();
+                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), reader);
+                reader.StartAcceptingReads(body);
 
                 input.Add("5\r\nHello\r\n");
 
@@ -130,7 +309,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 count = await stream.ReadAsync(buffer, 0, buffer.Length);
                 Assert.Equal(0, count);
 
-                input.Http1Connection.RequestBodyPipe.Reader.Complete();
                 await body.StopAsync();
             }
         }
@@ -141,8 +319,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             using (var input = new TestInput())
             {
                 var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Http1Connection);
-                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
-                stream.StartAcceptingReads(body);
+                var reader = new HttpRequestPipeReader();
+                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), reader);
+                reader.StartAcceptingReads(body);
 
                 input.Add("5;\r\0");
 
@@ -154,9 +333,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 input.Add("\r\r\r\nHello\r\n0\r\n\r\n");
 
                 Assert.Equal(5, await readTask.DefaultTimeout());
-                Assert.Equal(0, await stream.ReadAsync(buffer, 0, buffer.Length));
+                try
+                {
+                    var res = await stream.ReadAsync(buffer, 0, buffer.Length);
+                    Assert.Equal(0, res);
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
 
-                input.Http1Connection.RequestBodyPipe.Reader.Complete();
                 await body.StopAsync();
             }
         }
@@ -167,8 +353,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             using (var input = new TestInput())
             {
                 var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Http1Connection);
-                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
-                stream.StartAcceptingReads(body);
+                var reader = new HttpRequestPipeReader();
+                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), reader);
+                reader.StartAcceptingReads(body);
 
                 input.Add("80000000\r\n");
 
@@ -178,7 +365,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 Assert.IsType<OverflowException>(ex.InnerException);
                 Assert.Equal(CoreStrings.BadRequest_BadChunkSizeData, ex.Message);
 
-                input.Http1Connection.RequestBodyPipe.Reader.Complete();
                 await body.StopAsync();
             }
         }
@@ -189,8 +375,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             using (var input = new TestInput())
             {
                 var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Http1Connection);
-                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
-                stream.StartAcceptingReads(body);
+                var reader = new HttpRequestPipeReader();
+                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), reader);
+                reader.StartAcceptingReads(body);
 
                 input.Add("012345678\r");
 
@@ -200,7 +387,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 Assert.Equal(CoreStrings.BadRequest_BadChunkSizeData, ex.Message);
 
-                input.Http1Connection.RequestBodyPipe.Reader.Complete();
                 await body.StopAsync();
             }
         }
@@ -215,8 +401,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var body = Http1MessageBody.For(httpVersion, new HttpRequestHeaders { HeaderConnection = "upgrade" }, input.Http1Connection);
                 var mockBodyControl = new Mock<IHttpBodyControlFeature>();
                 mockBodyControl.Setup(m => m.AllowSynchronousIO).Returns(true);
-                var stream = new HttpRequestStream(mockBodyControl.Object);
-                stream.StartAcceptingReads(body);
+                var reader = new HttpRequestPipeReader();
+                var stream = new HttpRequestStream(mockBodyControl.Object, reader);
+                reader.StartAcceptingReads(body);
 
                 input.Add("Hello");
 
@@ -228,7 +415,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 input.Fin();
 
-                input.Http1Connection.RequestBodyPipe.Reader.Complete();
                 await body.StopAsync();
             }
         }
@@ -241,8 +427,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             using (var input = new TestInput())
             {
                 var body = Http1MessageBody.For(httpVersion, new HttpRequestHeaders { HeaderConnection = "upgrade" }, input.Http1Connection);
-                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
-                stream.StartAcceptingReads(body);
+                var reader = new HttpRequestPipeReader();
+                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), reader);
+                reader.StartAcceptingReads(body);
 
                 input.Add("Hello");
 
@@ -254,7 +441,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 input.Fin();
 
-                input.Http1Connection.RequestBodyPipe.Reader.Complete();
                 await body.StopAsync();
             }
         }
@@ -269,13 +455,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var body = Http1MessageBody.For(httpVersion, new HttpRequestHeaders(), input.Http1Connection);
                 var mockBodyControl = new Mock<IHttpBodyControlFeature>();
                 mockBodyControl.Setup(m => m.AllowSynchronousIO).Returns(true);
-                var stream = new HttpRequestStream(mockBodyControl.Object);
-                stream.StartAcceptingReads(body);
+                var reader = new HttpRequestPipeReader();
+                var stream = new HttpRequestStream(mockBodyControl.Object, reader);
+                reader.StartAcceptingReads(body);
 
                 input.Add("Hello");
 
                 var buffer = new byte[1024];
                 Assert.Equal(0, stream.Read(buffer, 0, buffer.Length));
+
 
                 await body.StopAsync();
             }
@@ -289,13 +477,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             using (var input = new TestInput())
             {
                 var body = Http1MessageBody.For(httpVersion, new HttpRequestHeaders(), input.Http1Connection);
-                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
-                stream.StartAcceptingReads(body);
+                var reader = new HttpRequestPipeReader();
+                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), reader);
+                reader.StartAcceptingReads(body);
 
                 input.Add("Hello");
 
                 var buffer = new byte[1024];
                 Assert.Equal(0, await stream.ReadAsync(buffer, 0, buffer.Length));
+
 
                 await body.StopAsync();
             }
@@ -307,8 +497,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             using (var input = new TestInput())
             {
                 var body = Http1MessageBody.For(HttpVersion.Http10, new HttpRequestHeaders { HeaderContentLength = "8197" }, input.Http1Connection);
-                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
-                stream.StartAcceptingReads(body);
+                var reader = new HttpRequestPipeReader();
+                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), reader);
+                reader.StartAcceptingReads(body);
 
                 // Input needs to be greater than 4032 bytes to allocate a block not backed by a slab.
                 var largeInput = new string('a', 8192);
@@ -325,7 +516,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 Assert.Equal(8197, requestArray.Length);
                 AssertASCII(largeInput + "Hello", new ArraySegment<byte>(requestArray, 0, requestArray.Length));
 
-                input.Http1Connection.RequestBodyPipe.Reader.Complete();
+
                 await body.StopAsync();
             }
         }
@@ -381,17 +572,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             using (var input = new TestInput())
             {
                 var body = Http1MessageBody.For(HttpVersion.Http10, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
+                var reader = new HttpRequestPipeReader();
+                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), reader);
+                reader.StartAcceptingReads(body);
 
                 input.Add("Hello");
 
                 using (var ms = new MemoryStream())
                 {
-                    await body.CopyToAsync(ms);
+                    await stream.CopyToAsync(ms);
                 }
 
-                Assert.Equal(0, await body.ReadAsync(new ArraySegment<byte>(new byte[1])));
+                Assert.Equal(0, await stream.ReadAsync(new ArraySegment<byte>(new byte[1])));
 
-                input.Http1Connection.RequestBodyPipe.Reader.Complete();
                 await body.StopAsync();
             }
         }
@@ -407,81 +600,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 await body.ConsumeAsync();
 
-                Assert.Equal(0, await body.ReadAsync(new ArraySegment<byte>(new byte[1])));
+                Assert.True((await body.ReadAsync()).IsCompleted);
 
-                input.Http1Connection.RequestBodyPipe.Reader.Complete();
                 await body.StopAsync();
             }
         }
 
         [Fact]
-        public async Task CopyToAsyncDoesNotCopyBlocks()
+        public async Task ConsumeAsyncAbortsConnectionInputAfterStartingTryReadWithoutAdvance()
         {
-            var writeCount = 0;
-            var writeTcs = new TaskCompletionSource<(byte[], int, int)>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var mockDestination = new Mock<Stream> { CallBase = true };
-
-            mockDestination
-                .Setup(m => m.WriteAsync(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>(), CancellationToken.None))
-                .Callback((byte[] buffer, int offset, int count, CancellationToken cancellationToken) =>
-                {
-                    writeTcs.SetResult((buffer, offset, count));
-                    writeCount++;
-                })
-                .Returns(Task.CompletedTask);
-
-            using (var memoryPool = KestrelMemoryPool.Create())
+            using (var input = new TestInput())
             {
-                var options = new PipeOptions(pool: memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
-                var pair = DuplexPipe.CreateConnectionPair(options, options);
-                var transport = pair.Transport;
-                var http1ConnectionContext = new HttpConnectionContext
-                {
-                    ServiceContext = new TestServiceContext(),
-                    ConnectionFeatures = new FeatureCollection(),
-                    Transport = transport,
-                    MemoryPool = memoryPool,
-                    TimeoutControl = Mock.Of<ITimeoutControl>()
-                };
-                var http1Connection = new Http1Connection(http1ConnectionContext)
-                {
-                    HasStartedConsumingRequestBody = true
-                };
+                var body = Http1MessageBody.For(HttpVersion.Http10, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
 
-                var headers = new HttpRequestHeaders { HeaderContentLength = "12" };
-                var body = Http1MessageBody.For(HttpVersion.Http11, headers, http1Connection);
+                input.Add("Hello");
 
-                var copyToAsyncTask = body.CopyToAsync(mockDestination.Object);
+                body.TryRead(out var readResult);
 
-                var bytes = Encoding.ASCII.GetBytes("Hello ");
-                var buffer = http1Connection.RequestBodyPipe.Writer.GetMemory(2048);
-                Assert.True(MemoryMarshal.TryGetArray(buffer, out ArraySegment<byte> segment));
-                Buffer.BlockCopy(bytes, 0, segment.Array, segment.Offset, bytes.Length);
-                http1Connection.RequestBodyPipe.Writer.Advance(bytes.Length);
-                await http1Connection.RequestBodyPipe.Writer.FlushAsync();
+                await body.ConsumeAsync();
 
-                // Verify the block passed to Stream.WriteAsync() is the same one incoming data was written into.
-                Assert.Equal((segment.Array, segment.Offset, bytes.Length), await writeTcs.Task);
-
-                // Verify the again when GetMemory returns the tail space of the same block.
-                writeTcs = new TaskCompletionSource<(byte[], int, int)>(TaskCreationOptions.RunContinuationsAsynchronously);
-                bytes = Encoding.ASCII.GetBytes("World!");
-                buffer = http1Connection.RequestBodyPipe.Writer.GetMemory(2048);
-                Assert.True(MemoryMarshal.TryGetArray(buffer, out segment));
-                Buffer.BlockCopy(bytes, 0, segment.Array, segment.Offset, bytes.Length);
-                http1Connection.RequestBodyPipe.Writer.Advance(bytes.Length);
-                await http1Connection.RequestBodyPipe.Writer.FlushAsync();
-
-                Assert.Equal((segment.Array, segment.Offset, bytes.Length), await writeTcs.Task);
-
-                http1Connection.RequestBodyPipe.Writer.Complete();
-
-                await copyToAsyncTask;
-
-                Assert.Equal(2, writeCount);
-
-                // Don't call body.StopAsync() because PumpAsync() was never called.
-                http1Connection.RequestBodyPipe.Reader.Complete();
+                await body.StopAsync();
             }
         }
 
@@ -494,9 +632,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             using (var input = new TestInput())
             {
+                // note the http1connection request body pipe reader should be the same.
                 var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderConnection = headerConnection }, input.Http1Connection);
-                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
-                stream.StartAcceptingReads(body);
+                var reader = new HttpRequestPipeReader();
+                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), reader);
+                reader.StartAcceptingReads(body);
 
                 input.Add("Hello");
 
@@ -506,7 +646,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 input.Fin();
 
-                input.Http1Connection.RequestBodyPipe.Reader.Complete();
                 await body.StopAsync();
             }
         }
@@ -522,8 +661,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             using (var input = new TestInput())
             {
                 var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderConnection = headerConnection, ContentLength = 0 }, input.Http1Connection);
-                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
-                stream.StartAcceptingReads(body);
+                var reader = new HttpRequestPipeReader();
+                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), reader);
+                reader.StartAcceptingReads(body);
 
                 input.Add("Hello");
 
@@ -533,7 +673,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 input.Fin();
 
-                input.Http1Connection.RequestBodyPipe.Reader.Complete();
                 await body.StopAsync();
             }
         }
@@ -544,8 +683,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             using (var input = new TestInput())
             {
                 var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderContentLength = "2" }, input.Http1Connection);
-                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
-                stream.StartAcceptingReads(body);
+                var reader = new HttpRequestPipeReader();
+                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), reader);
+                reader.StartAcceptingReads(body);
 
                 // Add some input and consume it to ensure PumpAsync is running
                 input.Add("a");
@@ -557,7 +697,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 input.Add("b");
                 Assert.Equal(1, await stream.ReadAsync(new byte[1], 0, 1));
 
-                input.Http1Connection.RequestBodyPipe.Reader.Complete();
                 await body.StopAsync();
             }
         }
@@ -575,15 +714,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 // Add some input and read it to start PumpAsync
                 input.Add("a");
-                Assert.Equal(1, await body.ReadAsync(new ArraySegment<byte>(new byte[1])));
+                var readResult = await body.ReadAsync();
+                Assert.Equal(1, readResult.Buffer.Length);
+                body.AdvanceTo(readResult.Buffer.End);
 
                 // Time out on the next read
                 input.Http1Connection.SendTimeoutResponse();
 
-                var exception = await Assert.ThrowsAsync<BadHttpRequestException>(async () => await body.ReadAsync(new Memory<byte>(new byte[1])));
+                var exception = await Assert.ThrowsAsync<BadHttpRequestException>(async () => await body.ReadAsync());
                 Assert.Equal(StatusCodes.Status408RequestTimeout, exception.StatusCode);
 
-                input.Http1Connection.RequestBodyPipe.Reader.Complete();
                 await body.StopAsync();
             }
         }
@@ -603,7 +743,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 // Add some input and read it to start PumpAsync
                 input.Add("a");
-                Assert.Equal(1, await body.ReadAsync(new ArraySegment<byte>(new byte[1])));
+                var readResult = await body.ReadAsync();
+                Assert.Equal(1, readResult.Buffer.Length);
+
+                // need to advance to make PipeReader in ReadCompleted state
+                body.AdvanceTo(readResult.Buffer.End);
 
                 // Time out on the next read
                 input.Http1Connection.SendTimeoutResponse();
@@ -614,7 +758,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     It.IsAny<string>(),
                     It.Is<BadHttpRequestException>(ex => ex.Reason == RequestRejectionReason.RequestBodyTimeout)));
 
-                input.Http1Connection.RequestBodyPipe.Reader.Complete();
                 await body.StopAsync();
             }
         }
@@ -629,21 +772,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 input.Http1ConnectionContext.TimeoutControl = mockTimeoutControl.Object;
 
                 var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
+                var reader = new HttpRequestPipeReader();
+                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), reader);
+                reader.StartAcceptingReads(body);
 
                 // Add some input and read it to start PumpAsync
                 input.Add("a");
-                Assert.Equal(1, await body.ReadAsync(new ArraySegment<byte>(new byte[1])));
+                Assert.Equal(1, (await body.ReadAsync()).Buffer.Length);
 
                 // Time out on the next read
                 input.Http1Connection.SendTimeoutResponse();
 
                 using (var ms = new MemoryStream())
                 {
-                    var exception = await Assert.ThrowsAsync<BadHttpRequestException>(() => body.CopyToAsync(ms));
+                    var exception = await Assert.ThrowsAsync<BadHttpRequestException>(() => stream.CopyToAsync(ms));
                     Assert.Equal(StatusCodes.Status408RequestTimeout, exception.StatusCode);
                 }
 
-                input.Http1Connection.RequestBodyPipe.Reader.Complete();
                 await body.StopAsync();
             }
         }
@@ -659,8 +804,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 input.Http1Connection.TraceIdentifier = "RequestId";
 
                 var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderContentLength = "2" }, input.Http1Connection);
-                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
-                stream.StartAcceptingReads(body);
+                var reader = new HttpRequestPipeReader();
+                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), reader);
+                reader.StartAcceptingReads(body);
 
                 // Add some input and consume it to ensure PumpAsync is running
                 input.Add("a");
@@ -670,7 +816,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 input.Fin();
 
-                input.Http1Connection.RequestBodyPipe.Reader.Complete();
                 await body.StopAsync();
             }
         }
@@ -690,8 +835,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 input.Http1Connection.TraceIdentifier = "RequestId";
 
                 var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderContentLength = "2" }, input.Http1Connection);
-                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
-                stream.StartAcceptingReads(body);
+                var reader = new HttpRequestPipeReader();
+                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>(), reader);
+                reader.StartAcceptingReads(body);
 
                 // Add some input and consume it to ensure PumpAsync is running
                 input.Add("a");
@@ -699,7 +845,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 input.Fin();
 
-                input.Http1Connection.RequestBodyPipe.Reader.Complete();
                 await body.StopAsync();
 
                 await logEvent.Task.DefaultTimeout();
@@ -717,13 +862,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderContentLength = "12" }, input.Http1Connection);
 
                 // Add some input and read it to start PumpAsync
-                var readTask1 = body.ReadAsync(new ArraySegment<byte>(new byte[6]));
+                var readTask1 = body.ReadAsync();
                 input.Add("hello,");
-                Assert.Equal(6, await readTask1);
+                var readResult = await readTask1;
+                Assert.Equal(6, readResult.Buffer.Length);
+                body.AdvanceTo(readResult.Buffer.End);
 
-                var readTask2 = body.ReadAsync(new ArraySegment<byte>(new byte[6]));
+                var readTask2 = body.ReadAsync();
                 input.Add(" world");
-                Assert.Equal(6, await readTask2);
+                readResult = await readTask2;
+                Assert.Equal(6, readResult.Buffer.Length);
+                body.AdvanceTo(readResult.Buffer.End);
 
                 // Due to the limits set on HttpProtocol.RequestBodyPipe, backpressure should be triggered on every write to that pipe.
                 mockTimeoutControl.Verify(timeoutControl => timeoutControl.StopTimingRead(), Times.Exactly(2));
@@ -751,14 +900,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 Assert.False(startRequestBodyCalled);
 
                 // Add some input and read it to start PumpAsync
-                var readTask = body.ReadAsync(new ArraySegment<byte>(new byte[1]));
+                var readTask = body.ReadAsync();
 
                 Assert.True(startRequestBodyCalled);
 
                 input.Add("a");
                 await readTask;
 
-                input.Http1Connection.RequestBodyPipe.Reader.Complete();
                 await body.StopAsync();
             }
         }
@@ -776,11 +924,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 // Add some input and read it to start PumpAsync
                 input.Add("a");
-                Assert.Equal(1, await body.ReadAsync(new ArraySegment<byte>(new byte[1])));
+                var readResult = await body.ReadAsync();
+                Assert.Equal(1, readResult.Buffer.Length);
+
+                // need to advance to make PipeReader in ReadCompleted state
+                body.AdvanceTo(readResult.Buffer.End);
 
                 input.Fin();
 
-                Assert.Equal(0, await body.ReadAsync(new ArraySegment<byte>(new byte[1])));
+                Assert.True((await body.ReadAsync()).IsCompleted);
 
                 mockTimeoutControl.Verify(timeoutControl => timeoutControl.StartRequestBody(minReadRate), Times.Never);
                 mockTimeoutControl.Verify(timeoutControl => timeoutControl.StopRequestBody(), Times.Never);
@@ -791,7 +943,390 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 mockTimeoutControl.Verify(timeoutControl => timeoutControl.StopTimingRead(), Times.Never);
                 mockTimeoutControl.Verify(timeoutControl => timeoutControl.StartTimingRead(), Times.Never);
 
-                input.Http1Connection.RequestBodyPipe.Reader.Complete();
+                await body.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task CancelPendingReadContentLengthWorks()
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
+                var reader = new HttpRequestPipeReader();
+                reader.StartAcceptingReads(body);
+
+                var readResultTask = reader.ReadAsync();
+
+                reader.CancelPendingRead();
+
+                var readResult = await readResultTask;
+
+                Assert.True(readResult.IsCanceled);
+
+                await body.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task CancelPendingReadChunkedWorks()
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Http1Connection);
+                var reader = new HttpRequestPipeReader();
+                reader.StartAcceptingReads(body);
+
+                var readResultTask = reader.ReadAsync();
+
+                reader.CancelPendingRead();
+
+                var readResult = await readResultTask;
+
+                Assert.True(readResult.IsCanceled);
+
+                await body.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task CancelPendingReadUpgradeWorks()
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderConnection = "upgrade" }, input.Http1Connection);
+                var reader = new HttpRequestPipeReader();
+                reader.StartAcceptingReads(body);
+
+                var readResultTask = reader.ReadAsync();
+
+                reader.CancelPendingRead();
+
+                var readResult = await readResultTask;
+
+                Assert.True(readResult.IsCanceled);
+
+                await body.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task CancelPendingReadForZeroContentLengthCannotBeCanceled()
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders(), input.Http1Connection);
+                var reader = new HttpRequestPipeReader();
+                reader.StartAcceptingReads(body);
+
+                var readResultTask = reader.ReadAsync();
+
+                Assert.True(readResultTask.IsCompleted);
+
+                reader.CancelPendingRead();
+
+                var readResult = await readResultTask;
+
+                Assert.False(readResult.IsCanceled);
+
+                await body.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task TryReadReturnsCompletedResultAfterReadingEntireContentLength()
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
+                var reader = new HttpRequestPipeReader();
+                reader.StartAcceptingReads(body);
+
+                input.Add("Hello");
+
+                Assert.True(reader.TryRead(out var readResult));
+
+                Assert.True(readResult.IsCompleted);
+
+                await body.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task TryReadReturnsCompletedResultAfterReadingEntireChunk()
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Http1Connection);
+                var reader = new HttpRequestPipeReader();
+                reader.StartAcceptingReads(body);
+
+                input.Add("5\r\nHello\r\n");
+
+                Assert.True(reader.TryRead(out var readResult));
+                Assert.False(readResult.IsCompleted);
+                AssertASCII("Hello", readResult.Buffer);
+
+                reader.AdvanceTo(readResult.Buffer.End);
+
+                input.Add("0\r\n\r\n");
+                Assert.True(reader.TryRead(out readResult));
+
+                Assert.True(readResult.IsCompleted);
+                reader.AdvanceTo(readResult.Buffer.End);
+
+                await body.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task TryReadDoesNotReturnCompletedReadResultFromUpgradeStreamUntilCompleted()
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderConnection = "upgrade" }, input.Http1Connection);
+                var reader = new HttpRequestPipeReader();
+                reader.StartAcceptingReads(body);
+
+                input.Add("Hello");
+
+                Assert.True(reader.TryRead(out var readResult));
+                Assert.False(readResult.IsCompleted);
+                AssertASCII("Hello", readResult.Buffer);
+
+                reader.AdvanceTo(readResult.Buffer.End);
+
+                input.Fin();
+
+                reader.TryRead(out readResult);
+                Assert.True(readResult.IsCompleted);
+
+                await body.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task TryReadDoesReturnsCompletedReadResultForZeroContentLength()
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders(), input.Http1Connection);
+                var reader = new HttpRequestPipeReader();
+                reader.StartAcceptingReads(body);
+
+                input.Add("Hello");
+
+                Assert.True(reader.TryRead(out var readResult));
+                Assert.True(readResult.IsCompleted);
+
+                reader.AdvanceTo(readResult.Buffer.End);
+
+                reader.TryRead(out readResult);
+                Assert.True(readResult.IsCompleted);
+
+                await body.StopAsync();
+            }
+        }
+
+        [Fact] // TODO
+        public async Task OnWriterCompletedForContentLengthDoesNotWork()
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
+                var reader = new HttpRequestPipeReader();
+                reader.StartAcceptingReads(body);
+
+                input.Add("Hello");
+                var retVal = false;
+
+                // Callback isn't fired at the moment.
+                reader.OnWriterCompleted((a, b) => retVal = true, null);
+                Assert.True(reader.TryRead(out var readResult));
+
+                Assert.True(readResult.IsCompleted);
+                Assert.False(retVal);
+
+                await body.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task OnWriterCompletedForChunkedWorks()
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Http1Connection);
+                var reader = new HttpRequestPipeReader();
+                reader.StartAcceptingReads(body);
+
+                var tcs = new TaskCompletionSource<object>();
+                reader.OnWriterCompleted((a, b) => tcs.SetResult(null), null);
+
+                input.Add("0\r\n\r\n");
+
+                Assert.True(reader.TryRead(out var readResult));
+
+                Assert.True(readResult.IsCompleted);
+                Assert.Null(await tcs.Task.DefaultTimeout());
+
+                await body.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task OnWriterCompletedForUpgradeWorks()
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderConnection = "upgrade" }, input.Http1Connection);
+                var reader = new HttpRequestPipeReader();
+                reader.StartAcceptingReads(body);
+
+                var retVal = false;
+                reader.OnWriterCompleted((a, b) => retVal = true, null);
+
+                input.Add("hi");
+
+                Assert.True(reader.TryRead(out var readResult));
+                reader.AdvanceTo(readResult.Buffer.End);
+
+                input.Fin();
+
+                Assert.True(retVal);
+
+                await body.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task OnWriterCompletedForNoContentLengthNoop()
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders(), input.Http1Connection);
+                var reader = new HttpRequestPipeReader();
+                reader.StartAcceptingReads(body);
+
+                var retVal = false;
+                reader.OnWriterCompleted((a, b) => retVal = true, null);
+
+                input.Add("hi");
+
+                Assert.True(reader.TryRead(out var readResult));
+                reader.AdvanceTo(readResult.Buffer.End);
+
+                input.Fin();
+
+                Assert.False(retVal);
+
+                await body.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task CompleteForContentLengthDoesNotCompleteConnectionPipeMakesReadReturnThrow()
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
+                var reader = new HttpRequestPipeReader();
+                reader.StartAcceptingReads(body);
+
+                input.Add("a");
+
+                Assert.True(reader.TryRead(out var readResult));
+
+                Assert.False(readResult.IsCompleted);
+
+                input.Add("asdf");
+
+                reader.Complete();
+                reader.AdvanceTo(readResult.Buffer.End);
+
+                Assert.Throws<InvalidOperationException>(() => reader.TryRead(out readResult));
+
+                await body.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task CompleteForChunkedDoesNotCompleteConnectionPipeMakesReadThrow()
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Http1Connection);
+                var reader = new HttpRequestPipeReader();
+                reader.StartAcceptingReads(body);
+
+                input.Add("5\r\nHello\r\n");
+
+                Assert.True(reader.TryRead(out var readResult));
+
+                Assert.False(readResult.IsCompleted);
+                reader.AdvanceTo(readResult.Buffer.End);
+
+                input.Add("1\r\nH\r\n");
+
+                reader.Complete();
+
+                Assert.Throws<InvalidOperationException>(() => reader.TryRead(out readResult));
+
+                await body.StopAsync();
+            }
+        }
+
+        [Fact]
+        public async Task CompleteForUpgradeDoesNotCompleteConnectionPipeMakesReadThrow()
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderConnection = "upgrade" }, input.Http1Connection);
+                var reader = new HttpRequestPipeReader();
+                reader.StartAcceptingReads(body);
+
+                input.Add("asdf");
+
+                Assert.True(reader.TryRead(out var readResult));
+
+                Assert.False(readResult.IsCompleted);
+                reader.AdvanceTo(readResult.Buffer.End);
+
+                input.Add("asdf");
+
+                reader.Complete();
+
+                Assert.Throws<InvalidOperationException>(() => reader.TryRead(out readResult));
+
+                await body.StopAsync();
+            }
+        }
+
+
+        [Fact]
+        public async Task CompleteForZeroByteBodyDoesNotCompleteConnectionPipeNoopsReads()
+        {
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders(), input.Http1Connection);
+                var reader = new HttpRequestPipeReader();
+                reader.StartAcceptingReads(body);
+
+                input.Add("asdf");
+
+                Assert.True(reader.TryRead(out var readResult));
+
+                Assert.True(readResult.IsCompleted);
+                reader.AdvanceTo(readResult.Buffer.End);
+
+                input.Add("asdf");
+
+                reader.Complete();
+
+                // TODO should this noop or throw? I think we should keep parity with normal pipe behavior.
+                // So maybe this should throw
+                reader.TryRead(out readResult);
+
                 await body.StopAsync();
             }
         }
@@ -804,6 +1339,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             for (var index = 0; index < bytes.Length; index++)
             {
                 Assert.Equal(bytes[index], actual.Array[actual.Offset + index]);
+            }
+        }
+
+        private void AssertASCII(string expected, ReadOnlySequence<byte> actual)
+        {
+            var arr = actual.ToArray();
+            var encoding = Encoding.ASCII;
+            var bytes = encoding.GetBytes(expected);
+            Assert.Equal(bytes.Length, actual.Length);
+            for (var index = 0; index < bytes.Length; index++)
+            {
+                Assert.Equal(bytes[index], arr[index]);
             }
         }
 

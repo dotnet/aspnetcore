@@ -71,7 +71,10 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
                 // Add the IHostingEnvironment and IApplicationLifetime from Microsoft.AspNetCore.Hosting
                 services.AddSingleton(webhostContext.HostingEnvironment);
+#pragma warning disable CS0618 // Type or member is obsolete
+                services.AddSingleton((AspNetCore.Hosting.IHostingEnvironment)webhostContext.HostingEnvironment);
                 services.AddSingleton<IApplicationLifetime, GenericWebHostApplicationLifetime>();
+#pragma warning restore CS0618 // Type or member is obsolete
 
                 services.Configure<GenericWebHostServiceOptions>(options =>
                 {
@@ -89,15 +92,9 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 services.TryAddSingleton<DiagnosticListener>(listener);
                 services.TryAddSingleton<DiagnosticSource>(listener);
 
-                services.TryAddSingleton<IHttpContextFactory, HttpContextFactory>();
+                services.TryAddSingleton<IHttpContextFactory, DefaultHttpContextFactory>();
                 services.TryAddScoped<IMiddlewareFactory, MiddlewareFactory>();
                 services.TryAddSingleton<IApplicationBuilderFactory, ApplicationBuilderFactory>();
-
-                // Conjure up a RequestServices
-                services.TryAddTransient<IStartupFilter, AutoRequestServicesStartupFilter>();
-
-                // Ensure object pooling is available everywhere.
-                services.TryAddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
 
                 // Support UseStartup(assemblyName)
                 if (!string.IsNullOrEmpty(webHostOptions.StartupAssembly))
@@ -209,9 +206,14 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
         public IWebHostBuilder UseStartup(Type startupType)
         {
+            // UseStartup can be called multiple times. Only run the last one.
+            _builder.Properties["UseStartup.StartupType"] = startupType;
             _builder.ConfigureServices((context, services) =>
             {
-                UseStartup(startupType, context, services);
+                if (_builder.Properties.TryGetValue("UseStartup.StartupType", out var cachedType) && (Type)cachedType == startupType)
+                {
+                    UseStartup(startupType, context, services);
+                }
             });
 
             return this;
@@ -232,6 +234,10 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 if (typeof(IStartup).IsAssignableFrom(startupType))
                 {
                     throw new NotSupportedException($"{typeof(IStartup)} isn't supported");
+                }
+                if (StartupLoader.HasConfigureServicesIServiceProviderDelegate(startupType, context.HostingEnvironment.EnvironmentName))
+                {
+                    throw new NotSupportedException($"ConfigureServices returning an {typeof(IServiceProvider)} isn't supported.");
                 }
 
                 instance = ActivatorUtilities.CreateInstance(new HostServiceProvider(webHostBuilderContext), startupType);
@@ -315,20 +321,21 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             if (!context.Properties.TryGetValue(typeof(WebHostBuilderContext), out var contextVal))
             {
                 var options = new WebHostOptions(context.Configuration, Assembly.GetEntryAssembly()?.GetName().Name);
-                var hostingEnvironment = new HostingEnvironment();
-                hostingEnvironment.Initialize(context.HostingEnvironment.ContentRootPath, options);
-
                 var webHostBuilderContext = new WebHostBuilderContext
                 {
                     Configuration = context.Configuration,
-                    HostingEnvironment = hostingEnvironment
+                    HostingEnvironment = new HostingEnvironment(),
                 };
+                webHostBuilderContext.HostingEnvironment.Initialize(context.HostingEnvironment.ContentRootPath, options);
                 context.Properties[typeof(WebHostBuilderContext)] = webHostBuilderContext;
                 context.Properties[typeof(WebHostOptions)] = options;
                 return webHostBuilderContext;
             }
 
-            return (WebHostBuilderContext)contextVal;
+            // Refresh config, it's periodically updated/replaced
+            var webHostContext = (WebHostBuilderContext)contextVal;
+            webHostContext.Configuration = context.Configuration;
+            return webHostContext;
         }
 
         public string GetSetting(string key)
@@ -355,7 +362,13 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             public object GetService(Type serviceType)
             {
                 // The implementation of the HostingEnvironment supports both interfaces
-                if (serviceType == typeof(Microsoft.AspNetCore.Hosting.IHostingEnvironment) || serviceType == typeof(IHostingEnvironment))
+#pragma warning disable CS0618 // Type or member is obsolete
+                if (serviceType == typeof(Microsoft.Extensions.Hosting.IHostingEnvironment)
+                    || serviceType == typeof(Microsoft.AspNetCore.Hosting.IHostingEnvironment)
+#pragma warning restore CS0618 // Type or member is obsolete
+                    || serviceType == typeof(IWebHostEnvironment)
+                    || serviceType == typeof(IHostEnvironment)
+                    )
                 {
                     return _context.HostingEnvironment;
                 }

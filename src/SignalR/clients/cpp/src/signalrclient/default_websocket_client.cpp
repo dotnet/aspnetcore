@@ -8,7 +8,7 @@ namespace signalr
 {
     namespace
     {
-        static web::websockets::client::websocket_client_config create_client_config(const signalr_client_config& signalr_client_config)
+        static web::websockets::client::websocket_client_config create_client_config(const signalr_client_config& signalr_client_config) noexcept
         {
             auto websocket_client_config = signalr_client_config.get_websocket_client_config();
             websocket_client_config.headers() = signalr_client_config.get_http_headers();
@@ -17,19 +17,19 @@ namespace signalr
         }
     }
 
-    default_websocket_client::default_websocket_client(const signalr_client_config& signalr_client_config)
+    default_websocket_client::default_websocket_client(const signalr_client_config& signalr_client_config) noexcept
         : m_underlying_client(create_client_config(signalr_client_config))
     { }
 
-    pplx::task<void> default_websocket_client::connect(const web::uri &url)
+    pplx::task<void> default_websocket_client::connect(const std::string& url)
     {
-        return m_underlying_client.connect(url);
+        return m_underlying_client.connect(utility::conversions::to_string_t(url));
     }
 
-    pplx::task<void> default_websocket_client::send(const utility::string_t &message)
+    pplx::task<void> default_websocket_client::send(const std::string &message)
     {
         web::websockets::client::websocket_outgoing_message msg;
-        msg.set_utf8_message(utility::conversions::to_utf8string(message));
+        msg.set_utf8_message(message);
         return m_underlying_client.send(msg);
     }
 

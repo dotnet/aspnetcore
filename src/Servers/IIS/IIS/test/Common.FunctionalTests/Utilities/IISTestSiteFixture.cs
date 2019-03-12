@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         private static void Configure(IISDeploymentParameters deploymentParameters)
         {
-            deploymentParameters.ApplicationPath = Helpers.GetOutOfProcessTestSitesPath();
+            deploymentParameters.ApplicationPublisher = new PublishedApplicationPublisher(Helpers.GetOutOfProcessTestSitesName());;
             deploymentParameters.HostingModel = HostingModel.OutOfProcess;
         }
     }
@@ -32,9 +32,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         private static void Configure(IISDeploymentParameters deploymentParameters)
         {
-            deploymentParameters.ApplicationPath = Helpers.GetOutOfProcessTestSitesPath();
+            deploymentParameters.ApplicationPublisher = new PublishedApplicationPublisher(Helpers.GetOutOfProcessTestSitesName());;
+            deploymentParameters.ApplicationPath = Helpers.GetOutOfProcessTestSitesName();
             deploymentParameters.HostingModel = HostingModel.OutOfProcess;
-            deploymentParameters.AncmVersion = AncmVersion.AspNetCoreModule;
         }
     }
 
@@ -108,15 +108,15 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 return;
             }
 
-            var deploymentParameters = new IISDeploymentParameters(Helpers.GetInProcessTestSitesPath(),
-                DeployerSelector.ServerType,
-                RuntimeFlavor.CoreClr,
-                RuntimeArchitecture.x64)
+            var deploymentParameters = new IISDeploymentParameters()
             {
+                RuntimeArchitecture = RuntimeArchitecture.x64,
+                RuntimeFlavor =  RuntimeFlavor.CoreClr,
                 TargetFramework = Tfm.NetCoreApp30,
-                AncmVersion = AncmVersion.AspNetCoreModuleV2,
                 HostingModel = HostingModel.InProcess,
                 PublishApplicationBeforeDeployment = true,
+                ApplicationPublisher = new PublishedApplicationPublisher(Helpers.GetInProcessTestSitesName()),
+                ServerType =  DeployerSelector.ServerType
             };
 
             _configure(deploymentParameters);

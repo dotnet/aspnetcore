@@ -19,10 +19,10 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
         }
 
         public IISDeploymentParameters(
-           string applicationPath,
-           ServerType serverType,
-           RuntimeFlavor runtimeFlavor,
-           RuntimeArchitecture runtimeArchitecture)
+            string applicationPath,
+            ServerType serverType,
+            RuntimeFlavor runtimeFlavor,
+            RuntimeArchitecture runtimeArchitecture)
             : base(applicationPath, serverType, runtimeFlavor, runtimeArchitecture)
         {
         }

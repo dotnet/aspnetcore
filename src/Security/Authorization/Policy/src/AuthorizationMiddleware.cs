@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,13 +8,16 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Endpoints;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Authorization
 {
     public class AuthorizationMiddleware
     {
+        // Property key is used by other systems, e.g. MVC, to check if authorization middleware has run
+        private const string AuthorizationMiddlewareInvokedKey = "__AuthorizationMiddlewareInvoked";
+        private static readonly object AuthorizationMiddlewareInvokedValue = new object();
+
         private readonly RequestDelegate _next;
         private readonly IAuthorizationPolicyProvider _policyProvider;
 
@@ -42,6 +45,11 @@ namespace Microsoft.AspNetCore.Authorization
             }
 
             var endpoint = context.GetEndpoint();
+
+            // Flag to indicate to other systems, e.g. MVC, that authorization middleware was run for this request
+            context.Items[AuthorizationMiddlewareInvokedKey] = AuthorizationMiddlewareInvokedValue;
+
+            // IMPORTANT: Changes to authorization logic should be mirrored in MVC's AuthorizeFilter
             var authorizeData = endpoint?.Metadata.GetOrderedMetadata<IAuthorizeData>() ?? Array.Empty<IAuthorizeData>();
             var policy = await AuthorizationPolicy.CombineAsync(_policyProvider, authorizeData);
             if (policy == null)

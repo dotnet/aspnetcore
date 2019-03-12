@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <Description>Single Page Application templates for ASP.NET Core
+
+    To install the templates in this package, run 'dotnet new --install $(PackageId)::$(PackageVersion)'.</Description>
+    <PackageTags>$(PackageTags);spa</PackageTags>
+    <IsShippingPackage>true</IsShippingPackage>
+  </PropertyGroup>
+
+    <PropertyGroup>
+    <!-- Lists the versions of dependencies not built in this repo. Packages produced from this repo should be listed as a PackageVersionVariableReference.  -->
+    <GeneratedContentProperties>
+      MicrosoftEntityFrameworkCoreSqlitePackageVersion=$(MicrosoftEntityFrameworkCoreSqlitePackageVersion);
+      MicrosoftEntityFrameworkCoreSqlServerPackageVersion=$(MicrosoftEntityFrameworkCoreSqlServerPackageVersion);
+      MicrosoftEntityFrameworkCoreToolsPackageVersion=$(MicrosoftEntityFrameworkCoreToolsPackageVersion);
+      MicrosoftExtensionsHostingPackageVersion=$(MicrosoftExtensionsHostingPackageVersion);
+      MicrosoftNETCoreAppPackageVersion=$(MicrosoftNETCoreAppPackageVersion);
+    </GeneratedContentProperties>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- These projects product packages that the templates depend on. See GenerateContent.targets -->
+    <PackageVersionVariableReference Include="$(RepositoryRoot)src\Mvc\Mvc.NewtonsoftJson\src\Microsoft.AspNetCore.Mvc.NewtonsoftJson.csproj" />
+    <PackageVersionVariableReference Include="$(RepositoryRoot)src\Middleware\SpaServices.Extensions\src\Microsoft.AspNetCore.SpaServices.Extensions.csproj" />
+    <PackageVersionVariableReference Include="$(RepositoryRoot)src\Identity\ApiAuthorization.IdentityServer\src\Microsoft.AspNetCore.ApiAuthorization.IdentityServer.csproj" />
+    <PackageVersionVariableReference Include="$(RepositoryRoot)src\Identity\EntityFrameworkCore\src\Microsoft.AspNetCore.Identity.EntityFrameworkCore.csproj" />
+    <PackageVersionVariableReference Include="$(RepositoryRoot)src\Identity\UI\src\Microsoft.AspNetCore.Identity.UI.csproj" />
+    <PackageVersionVariableReference Include="$(RepositoryRoot)src\Middleware\Diagnostics.EntityFrameworkCore\src\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.csproj" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <GeneratedContent Include="Angular-CSharp.csproj.in" OutputPath="content/Angular-CSharp/Company.WebApplication1.csproj" />
+    <GeneratedContent Include="React-CSharp.csproj.in" OutputPath="content/React-CSharp/Company.WebApplication1.csproj" />
+    <GeneratedContent Include="ReactRedux-CSharp.csproj.in" OutputPath="content/ReactRedux-CSharp/Company.WebApplication1.csproj" />
+  </ItemGroup>
+
+</Project>

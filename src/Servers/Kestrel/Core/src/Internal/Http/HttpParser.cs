@@ -73,62 +73,51 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private unsafe void ParseRequestLine(TRequestHandler handler, byte* data, int length)
         {
             // Get Method and set the offset
-            var method = HttpUtilities.GetKnownMethod(data, length, out var offset);
+            var method = HttpUtilities.GetKnownMethod(data, length, out var pathStartOffset);
 
-            Span<byte> customMethod = method == HttpMethod.Custom ?
-                GetUnknownMethod(data, length, out offset) :
-                default;
+            Span<byte> customMethod = default;
+            if (method == HttpMethod.Custom)
+            {
+                customMethod = GetUnknownMethod(data, length, out pathStartOffset);
+            }
 
+            // Use a new offset var as pathStartOffset needs to be on stack
+            // as its passed by reference above so can't be in register.
             // Skip space
-            offset++;
+            var offset = pathStartOffset + 1;
+            if (offset >= length)
+            {
+                // Start of path not found
+                RejectRequestLine(data, length);
+            }
 
-            byte ch = 0;
+            byte ch = data[offset];
+            if (ch == ByteSpace || ch == ByteQuestionMark || ch == BytePercentage)
+            {
+                // Empty path is illegal, or path starting with percentage
+                RejectRequestLine(data, length);
+            }
+
             // Target = Path and Query
             var pathEncoded = false;
-            var pathStart = -1;
+            var pathStart = offset;
+
+            // Skip first char (just checked)
+            offset++;
+
+            // Find end of path and if path is encoded
             for (; offset < length; offset++)
             {
                 ch = data[offset];
-                if (ch == ByteSpace)
+                if (ch == ByteSpace || ch == ByteQuestionMark)
                 {
-                    if (pathStart == -1)
-                    {
-                        // Empty path is illegal
-                        RejectRequestLine(data, length);
-                    }
-
-                    break;
-                }
-                else if (ch == ByteQuestionMark)
-                {
-                    if (pathStart == -1)
-                    {
-                        // Empty path is illegal
-                        RejectRequestLine(data, length);
-                    }
-
+                    // End of path
                     break;
                 }
                 else if (ch == BytePercentage)
                 {
-                    if (pathStart == -1)
-                    {
-                        // Path starting with % is illegal
-                        RejectRequestLine(data, length);
-                    }
-
                     pathEncoded = true;
                 }
-                else if (pathStart == -1)
-                {
-                    pathStart = offset;
-                }
-            }
-
-            if (pathStart == -1)
-            {
-                // Start of path not found
-                RejectRequestLine(data, length);
             }
 
             var pathBuffer = new Span<byte>(data + pathStart, offset - pathStart);
@@ -193,25 +182,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             var bufferEnd = buffer.End;
 
-            var reader = new BufferReader(buffer);
-            var start = default(BufferReader);
+            var reader = new SequenceReader<byte>(buffer);
+            var start = default(SequenceReader<byte>);
             var done = false;
 
             try
             {
                 while (!reader.End)
                 {
-                    var span = reader.CurrentSegment;
-                    var remaining = span.Length - reader.CurrentSegmentIndex;
+                    var span = reader.CurrentSpan;
+                    var remaining = span.Length - reader.CurrentSpanIndex;
 
                     fixed (byte* pBuffer = span)
                     {
                         while (remaining > 0)
                         {
-                            var index = reader.CurrentSegmentIndex;
-                            int ch1;
-                            int ch2;
+                            var index = reader.CurrentSpanIndex;
+                            byte ch1;
+                            byte ch2;
                             var readAhead = false;
+                            var readSecond = true;
 
                             // Fast path, we're still looking at the same span
                             if (remaining >= 2)
@@ -226,8 +216,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                                 start = reader;
 
                                 // Possibly split across spans
-                                ch1 = reader.Read();
-                                ch2 = reader.Read();
+                                reader.TryRead(out ch1);
+                                readSecond = reader.TryRead(out ch2);
 
                                 readAhead = true;
                             }
@@ -235,7 +225,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             if (ch1 == ByteCR)
                             {
                                 // Check for final CRLF.
-                                if (ch2 == -1)
+                                if (!readSecond)
                                 {
                                     // Reset the reader so we don't consume anything
                                     reader = start;
@@ -263,7 +253,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             if (readAhead)
                             {
                                 reader = start;
-                                index = reader.CurrentSegmentIndex;
+                                index = reader.CurrentSpanIndex;
                             }
 
                             var endIndex = new Span<byte>(pBuffer + index, remaining).IndexOf(ByteLF);
@@ -319,7 +309,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             finally
             {
                 consumed = reader.Position;
-                consumedBytes = reader.ConsumedBytes;
+                consumedBytes = (int)reader.Consumed;
 
                 if (done)
                 {

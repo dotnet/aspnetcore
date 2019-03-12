@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
         }
 
         [Fact]
-        public async Task CanRegisterWithASocialLoginProvider()
+        public async Task CanRegisterWithASocialLoginProviderFromLogin()
         {
             // Arrange
             void ConfigureTestServices(IServiceCollection services) =>
@@ -73,6 +73,26 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
 
             // Act & Assert
             await UserStories.RegisterNewUserWithSocialLoginAsync(client, userName, email);
+        }
+
+        [Fact]
+        public async Task CanRegisterWithASocialLoginProviderFromRegister()
+        {
+            // Arrange
+            void ConfigureTestServices(IServiceCollection services) =>
+                services
+                    .SetupTestThirdPartyLogin();
+
+            var client = ServerFactory
+                .WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices))
+                .CreateClient();
+
+            var guid = Guid.NewGuid();
+            var userName = $"{guid}";
+            var email = $"{guid}@example.com";
+
+            // Act & Assert
+            await UserStories.RegisterNewUserWithSocialLoginAsyncViaRegisterPage(client, userName, email);
         }
 
         [Fact]

@@ -6,15 +6,18 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.IISIntegration.FunctionalTests;
 using Microsoft.AspNetCore.Server.IIS;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
@@ -283,6 +286,13 @@ namespace TestSite
             }
         }
 
+        private async Task ReadFullBody(HttpContext ctx)
+        {
+            await ReadRequestBody(ctx);
+            ctx.Response.ContentLength = 9;
+            await ctx.Response.WriteAsync("Completed");
+        }
+
         private async Task WriteManyTimesToResponseBody(HttpContext ctx)
         {
             for (var i = 0; i < 10000; i++)
@@ -324,10 +334,10 @@ namespace TestSite
             await ctx.Response.Body.FlushAsync();
 
             var reader = new StreamReader(ctx.Request.Body);
-            while (!reader.EndOfStream)
+            while (true)
             {
                 var line = await reader.ReadLineAsync();
-                if (line == "")
+                if (line == null)
                 {
                     return;
                 }
@@ -350,10 +360,10 @@ namespace TestSite
             await ctx.Response.Body.FlushAsync();
 
             var reader = new StreamReader(ctx.Request.Body);
-            while (!reader.EndOfStream)
+            while (true)
             {
                 var line = await reader.ReadLineAsync();
-                if (line == "")
+                if (line == null)
                 {
                     return;
                 }
@@ -431,8 +441,8 @@ namespace TestSite
         private async Task TestReadOffsetWorks(HttpContext ctx)
         {
             var buffer = new byte[11];
-            ctx.Request.Body.Read(buffer, 0, 6);
-            ctx.Request.Body.Read(buffer, 6, 5);
+            await ctx.Request.Body.ReadAsync(buffer, 0, 6);
+            await ctx.Request.Body.ReadAsync(buffer, 6, 5);
 
             await ctx.Response.WriteAsync(Encoding.UTF8.GetString(buffer));
         }
@@ -646,7 +656,23 @@ namespace TestSite
         private async Task Shutdown(HttpContext ctx)
         {
             await ctx.Response.WriteAsync("Shutting down");
-            ctx.RequestServices.GetService<IApplicationLifetime>().StopApplication();
+            ctx.RequestServices.GetService<IHostApplicationLifetime>().StopApplication();
+        }
+
+        private async Task ShutdownStopAsync(HttpContext ctx)
+        {
+            await ctx.Response.WriteAsync("Shutting down");
+            var server = ctx.RequestServices.GetService<IServer>();
+            await server.StopAsync(default);
+        }
+
+        private async Task ShutdownStopAsyncWithCancelledToken(HttpContext ctx)
+        {
+            await ctx.Response.WriteAsync("Shutting down");
+            var server = ctx.RequestServices.GetService<IServer>();
+            var cts = new CancellationTokenSource();
+            cts.Cancel();
+            await server.StopAsync(cts.Token);
         }
 
         private async Task GetServerVariableStress(HttpContext ctx)

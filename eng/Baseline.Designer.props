@@ -2,7 +2,7 @@
 <Project>
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-    <AspNetCoreBaselineVersion>2.2.0</AspNetCoreBaselineVersion>
+    <AspNetCoreBaselineVersion>2.2.2</AspNetCoreBaselineVersion>
   </PropertyGroup>
   <!-- Package: dotnet-dev-certs-->
   <PropertyGroup Condition=" '$(PackageId)' == 'dotnet-dev-certs' ">
@@ -77,12 +77,13 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.AspNetCoreModule-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AspNetCoreModule' ">
-    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.1</BaselinePackageVersion>
   </PropertyGroup>
   <!-- Package: Microsoft.AspNetCore.AspNetCoreModuleV2-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AspNetCoreModuleV2' ">
-    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.2</BaselinePackageVersion>
   </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AspNetCoreModuleV2' AND '$(TargetFramework)' == 'netcoreapp2.2' " />
   <!-- Package: Microsoft.AspNetCore.Authentication.Abstractions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Abstractions' ">
     <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
@@ -137,7 +138,7 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Authentication.Google-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Google' ">
-    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Authentication.Google' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.OAuth" Version="[2.2.0, )" />
@@ -220,7 +221,7 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.AzureAppServices.HostingStartup-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AzureAppServices.HostingStartup' ">
-    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AzureAppServices.HostingStartup' AND '$(TargetFramework)' == 'net461' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.AzureAppServicesIntegration" Version="[2.2.0, )" />
@@ -236,7 +237,7 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.AzureAppServicesIntegration-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AzureAppServicesIntegration' ">
-    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.AzureAppServicesIntegration' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting" Version="[2.2.0, )" />
@@ -361,7 +362,7 @@
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Diagnostics.Abstractions' AND '$(TargetFramework)' == 'netstandard2.0' " />
   <!-- Package: Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore' ">
-    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.1</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="[2.2.0, )" />
@@ -464,6 +465,51 @@
     <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Features" Version="[2.2.0, )" />
     <BaselinePackageReference Include="System.Text.Encodings.Web" Version="[4.5.0, )" />
   </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.Http.Connections.Client-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections.Client' ">
+    <BaselinePackageVersion>1.1.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections.Client' AND '$(TargetFramework)' == 'netcoreapp2.2' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections.Common" Version="[1.1.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.2.0, )" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections.Client' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections.Common" Version="[1.1.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.2.0, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.Http.Connections.Common-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections.Common' ">
+    <BaselinePackageVersion>1.1.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections.Common' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Newtonsoft.Json" Version="[11.0.2, )" />
+    <BaselinePackageReference Include="System.Buffers" Version="[4.5.0, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.Http.Connections-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections' ">
+    <BaselinePackageVersion>1.1.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections' AND '$(TargetFramework)' == 'netcoreapp2.2' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections.Common" Version="[1.1.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Authorization.Policy" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Routing" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.WebSockets" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Newtonsoft.Json" Version="[11.0.2, )" />
+    <BaselinePackageReference Include="System.Security.Principal.Windows" Version="[4.5.0, )" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Connections' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections.Common" Version="[1.1.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Authorization.Policy" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Routing" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.WebSockets" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Newtonsoft.Json" Version="[11.0.2, )" />
+    <BaselinePackageReference Include="System.Security.Principal.Windows" Version="[4.5.0, )" />
+  </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Http.Extensions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http.Extensions' ">
     <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
@@ -483,14 +529,14 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Http-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http' ">
-    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Http' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="[2.2.0, )" />
-    <BaselinePackageReference Include="Microsoft.Net.Http.Headers" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.ObjectPool" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Net.Http.Headers" Version="[2.2.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.HttpOverrides-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.HttpOverrides' ">
@@ -611,15 +657,15 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Mvc.Core-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Core' ">
-    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Mvc.Core' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Mvc.Abstractions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.Core" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authorization.Policy" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Http" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Mvc.Abstractions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Routing" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Routing.Abstractions" Version="[2.2.0, )" />
@@ -867,18 +913,18 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Routing-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Routing' ">
-    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Routing' AND '$(TargetFramework)' == 'netcoreapp2.2' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Routing.Abstractions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Routing.Abstractions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.ObjectPool" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.2.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Routing' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Routing.Abstractions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Routing.Abstractions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.ObjectPool" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.2.0, )" />
@@ -896,7 +942,7 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Server.IIS-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.IIS' ">
-    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.IIS' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.Core" Version="[2.2.0, )" />
@@ -907,7 +953,7 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Server.IISIntegration-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.IISIntegration' ">
-    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.1</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.IISIntegration' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Authentication.Core" Version="[2.2.0, )" />
@@ -990,16 +1036,16 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets' ">
-    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.1</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets' AND '$(TargetFramework)' == 'netcoreapp2.1' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.2.0, )" />
   </ItemGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets' AND '$(TargetFramework)' == 'netstandard2.0' ">
-    <BaselinePackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.2.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Server.Kestrel-->
@@ -1022,6 +1068,116 @@
     <BaselinePackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.2.0, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.SignalR.Client.Core-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Client.Core' ">
+    <BaselinePackageVersion>1.1.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Client.Core' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[1.1.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" Version="[1.1.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="System.Threading.Channels" Version="[4.5.0, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.SignalR.Client-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Client' ">
+    <BaselinePackageVersion>1.1.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Client' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections.Client" Version="[1.1.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Client.Core" Version="[1.1.0, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.SignalR.Common-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Common' ">
+    <BaselinePackageVersion>1.1.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Common' AND '$(TargetFramework)' == 'netcoreapp2.2' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Newtonsoft.Json" Version="[11.0.2, )" />
+    <BaselinePackageReference Include="System.Buffers" Version="[4.5.0, )" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Common' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Newtonsoft.Json" Version="[11.0.2, )" />
+    <BaselinePackageReference Include="System.Buffers" Version="[4.5.0, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.SignalR.Core-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Core' ">
+    <BaselinePackageVersion>1.1.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Core' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[1.1.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" Version="[1.1.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Authorization" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="System.Reflection.Emit" Version="[4.3.0, )" />
+    <BaselinePackageReference Include="System.Threading.Channels" Version="[4.5.0, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.SignalR.Protocols.Json-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Protocols.Json' ">
+    <BaselinePackageVersion>1.1.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Protocols.Json' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[1.1.0, )" />
+    <BaselinePackageReference Include="Newtonsoft.Json" Version="[11.0.2, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.SignalR.Protocols.MessagePack-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Protocols.MessagePack' ">
+    <BaselinePackageVersion>1.1.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Protocols.MessagePack' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[1.1.0, )" />
+    <BaselinePackageReference Include="MessagePack" Version="[1.7.3.4, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.SignalR.Redis-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Redis' ">
+    <BaselinePackageVersion>1.1.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Redis' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Core" Version="[1.1.0, )" />
+    <BaselinePackageReference Include="MessagePack" Version="[1.7.3.4, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="StackExchange.Redis.StrongName" Version="[1.2.6, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.SignalR.Specification.Tests-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Specification.Tests' ">
+    <BaselinePackageVersion>1.1.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Specification.Tests' AND '$(TargetFramework)' == 'net461' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[1.1.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Core" Version="[1.1.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="[1.1.0, )" />
+    <BaselinePackageReference Include="xunit.assert" Version="[2.3.1, )" />
+    <BaselinePackageReference Include="xunit.extensibility.core" Version="[2.3.1, )" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.Specification.Tests' AND '$(TargetFramework)' == 'netcoreapp2.2' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="[1.1.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Core" Version="[1.1.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="[1.1.0, )" />
+    <BaselinePackageReference Include="xunit.assert" Version="[2.3.1, )" />
+    <BaselinePackageReference Include="xunit.extensibility.core" Version="[2.3.1, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.SignalR.StackExchangeRedis-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.StackExchangeRedis' ">
+    <BaselinePackageVersion>1.1.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR.StackExchangeRedis' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Core" Version="[1.1.0, )" />
+    <BaselinePackageReference Include="MessagePack" Version="[1.7.3.4, )" />
+    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.2.0, )" />
+    <BaselinePackageReference Include="StackExchange.Redis" Version="[2.0.513, )" />
+  </ItemGroup>
+  <!-- Package: Microsoft.AspNetCore.SignalR-->
+  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR' ">
+    <BaselinePackageVersion>1.1.0</BaselinePackageVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SignalR' AND '$(TargetFramework)' == 'netstandard2.0' ">
+    <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Connections" Version="[1.1.0, )" />
+    <BaselinePackageReference Include="Microsoft.AspNetCore.SignalR.Core" Version="[1.1.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.SpaServices.Extensions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.SpaServices.Extensions' ">
@@ -1063,13 +1219,13 @@
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.WebSockets-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.WebSockets' ">
-    <BaselinePackageVersion>2.2.0</BaselinePackageVersion>
+    <BaselinePackageVersion>2.2.1</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.WebSockets' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[2.2.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[2.2.0, )" />
-    <BaselinePackageReference Include="System.Net.WebSockets.WebSocketProtocol" Version="[4.5.1, )" />
+    <BaselinePackageReference Include="System.Net.WebSockets.WebSocketProtocol" Version="[4.5.3, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.WebUtilities-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.WebUtilities' ">

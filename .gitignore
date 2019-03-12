@@ -17,6 +17,7 @@ StyleCop.Cache
 node_modules/
 *.snk
 .nuget
+.packages/
 .r
 .w
 .deps
@@ -30,3 +31,8 @@ launchSettings.json
 BenchmarkDotNet.Artifacts/
 korebuild-lock.txt
 .gradle/
+src/SignalR/clients/**/dist/
+modules/
+
+# Template config files for blazor templates is generated on-build
+src/Components/**/.template.config/

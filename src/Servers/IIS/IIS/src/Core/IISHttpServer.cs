@@ -1,3 +1,5 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Buffers;
@@ -10,6 +12,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -23,21 +26,20 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private static readonly NativeMethods.PFN_SHUTDOWN_HANDLER _shutdownHandler = HandleShutdown;
         private static readonly NativeMethods.PFN_DISCONNECT_HANDLER _onDisconnect = OnDisconnect;
         private static readonly NativeMethods.PFN_ASYNC_COMPLETION _onAsyncCompletion = OnAsyncCompletion;
+        private static readonly NativeMethods.PFN_REQUESTS_DRAINED_HANDLER _requestsDrainedHandler = OnRequestsDrained;
 
         private IISContextFactory _iisContextFactory;
         private readonly MemoryPool<byte> _memoryPool = new SlabMemoryPool();
         private GCHandle _httpServerHandle;
-        private readonly IApplicationLifetime _applicationLifetime;
+        private readonly IHostApplicationLifetime _applicationLifetime;
         private readonly ILogger<IISHttpServer> _logger;
         private readonly IISServerOptions _options;
         private readonly IISNativeApplication _nativeApplication;
         private readonly ServerAddressesFeature _serverAddressesFeature;
 
-        private volatile int _stopping;
-        private bool Stopping => _stopping == 1;
-        private int _outstandingRequests;
         private readonly TaskCompletionSource<object> _shutdownSignal = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
         private bool? _websocketAvailable;
+        private CancellationTokenRegistration _cancellationTokenRegistration;
 
         public IFeatureCollection Features { get; } = new FeatureCollection();
 
@@ -61,7 +63,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         public IISHttpServer(
             IISNativeApplication nativeApplication,
-            IApplicationLifetime applicationLifetime,
+            IHostApplicationLifetime applicationLifetime,
             IAuthenticationSchemeProvider authentication,
             IOptions<IISServerOptions> options,
             ILogger<IISHttpServer> logger
@@ -86,7 +88,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             _httpServerHandle = GCHandle.Alloc(this);
 
             _iisContextFactory = new IISContextFactory<TContext>(_memoryPool, application, _options, this, _logger);
-            _nativeApplication.RegisterCallbacks(_requestHandler, _shutdownHandler, _onDisconnect, _onAsyncCompletion, (IntPtr)_httpServerHandle, (IntPtr)_httpServerHandle);
+            _nativeApplication.RegisterCallbacks(_requestHandler, _shutdownHandler, _onDisconnect, _onAsyncCompletion, _requestsDrainedHandler, (IntPtr)_httpServerHandle, (IntPtr)_httpServerHandle);
 
             _serverAddressesFeature.Addresses = _options.ServerAddresses;
 
@@ -95,50 +97,18 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            void RegisterCancelation()
-            {
-                cancellationToken.Register(() =>
-                {
-                    _nativeApplication.StopCallsIntoManaged();
-                    _shutdownSignal.TrySetResult(null);
-                });
-            }
-            if (Interlocked.Exchange(ref _stopping, 1) == 1)
-            {
-                RegisterCancelation();
-
-                return _shutdownSignal.Task;
-            }
-
-            // First call back into native saying "DON'T SEND ME ANY MORE REQUESTS"
             _nativeApplication.StopIncomingRequests();
-
-            try
+            _cancellationTokenRegistration = cancellationToken.Register((shutdownSignal) =>
             {
-                // Wait for active requests to drain
-                if (_outstandingRequests > 0)
-                {
-                    RegisterCancelation();
-                }
-                else
-                {
-                    // We have drained all requests. Block any callbacks into managed at this point.
-                    _nativeApplication.StopCallsIntoManaged();
-                    _shutdownSignal.TrySetResult(null);
-                }
-            }
-            catch (Exception ex)
-            {
-                _shutdownSignal.TrySetException(ex);
-            }
+                ((TaskCompletionSource<object>)shutdownSignal).TrySetResult(null);
+            },
+            _shutdownSignal);
 
             return _shutdownSignal.Task;
         }
 
         public void Dispose()
         {
-            _stopping = 1;
-
             // Block any more calls into managed from native as we are unloading.
             _nativeApplication.StopCallsIntoManaged();
             _shutdownSignal.TrySetResult(null);
@@ -152,21 +122,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             _nativeApplication.Dispose();
         }
 
-        private void IncrementRequests()
-        {
-            Interlocked.Increment(ref _outstandingRequests);
-        }
-
-        internal void DecrementRequests()
-        {
-            if (Interlocked.Decrement(ref _outstandingRequests) == 0 && Stopping)
-            {
-                // All requests have been drained.
-                _nativeApplication.StopCallsIntoManaged();
-                _shutdownSignal.TrySetResult(null);
-            }
-        }
-
         private static NativeMethods.REQUEST_NOTIFICATION_STATUS HandleRequest(IntPtr pInProcessHandler, IntPtr pvRequestContext)
         {
             IISHttpServer server = null;
@@ -174,7 +129,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             {
                 // Unwrap the server so we can create an http context and process the request
                 server = (IISHttpServer)GCHandle.FromIntPtr(pvRequestContext).Target;
-                server.IncrementRequests();
 
                 var context = server._iisContextFactory.CreateHttpContext(pInProcessHandler);
 
@@ -205,14 +159,13 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             return true;
         }
 
-
         private static void OnDisconnect(IntPtr pvManagedHttpContext)
         {
             IISHttpContext context = null;
             try
             {
                 context = (IISHttpContext)GCHandle.FromIntPtr(pvManagedHttpContext).Target;
-                context.ConnectionReset();
+                context.AbortIO(clientDisconnect: true);
             }
             catch (Exception ex)
             {
@@ -234,6 +187,23 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 context?.Server._logger.LogError(0, ex, $"Unexpected exception in {nameof(IISHttpServer)}.{nameof(OnAsyncCompletion)}.");
 
                 return NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_FINISH_REQUEST;
+            }
+        }
+
+        private static void OnRequestsDrained(IntPtr serverContext)
+        {
+            IISHttpServer server = null;
+            try
+            {
+                server = (IISHttpServer)GCHandle.FromIntPtr(serverContext).Target;
+
+                server._nativeApplication.StopCallsIntoManaged();
+                server._shutdownSignal.TrySetResult(null);
+                server._cancellationTokenRegistration.Dispose();
+            }
+            catch (Exception ex)
+            {
+                server?._logger.LogError(0, ex, $"Unexpected exception in {nameof(IISHttpServer)}.{nameof(OnRequestsDrained)}.");
             }
         }
 

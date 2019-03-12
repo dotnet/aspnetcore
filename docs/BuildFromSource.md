@@ -3,8 +3,6 @@ Build ASP.NET Core from Source
 
 Building ASP.NET Core from source allows you tweak and customize ASP.NET Core, and to contribute your improvements back to the project.
 
-:warning: We are currently in the middle of restructing our source code. These instructions will likely change rapidly during November and December 2018.
-
 See https://github.com/aspnet/AspNetCore/labels/area-infrastructure for known issues and to track ongoing work.
 
 ## Install pre-requistes
@@ -13,12 +11,12 @@ See https://github.com/aspnet/AspNetCore/labels/area-infrastructure for known is
 
 Building ASP.NET Core on Windows requires:
 
-* Windows 7 or higher
+* Windows 10
 * At least 10 GB of disk space and a good internet connection (our build scripts download a lot of tools and dependencies)
-* Visual Studio 2017. <https://visualstudio.com>
-    * To install the exact required components, run [eng/scripts/InstallVisualStudio.ps1](/eng/scripts/InstallVisualStudio.ps1). This will use VS2017.
+* Visual Studio **2019 Preview**. <https://visualstudio.com>
+    * To install the exact required components, run [eng/scripts/InstallVisualStudio.ps1](/eng/scripts/InstallVisualStudio.ps1).
         ```ps1
-        PS> ./eng/scripts/InstallVisualStudio.ps1 -Edition Community
+        PS> ./eng/scripts/InstallVisualStudio.ps1
         ```
 * Git. <https://git-scm.org>
 * (Optional) some optional components, like the SignalR Java client, may require
@@ -55,7 +53,7 @@ To update an existing copy, run:
 git submodule update --init --recursive
 ```
 
-## Building in Visual Studio / Code
+## Building in Visual Studio
 
 Before opening our .sln files in Visual Studio or VS Code, you need to perform the following actions.
 
@@ -89,35 +87,32 @@ Opening solution files may produce an error code NU1105 with a message such
 
 This is a known issue in NuGet (<https://github.com/NuGet/Home/issues/5820>) and we are working with them for a solution. See also <https://github.com/aspnet/AspNetCore/issues/4183> to track progress on this.
 
-**The workaround** for now is to add all projects to the solution.
+**The workaround** for now is to add all projects to the solution. You can either do this one by one using `dotnet sln`
 
     dotnet sln add C:\src\AspNetCore\src\Hosting\Abstractions\src\Microsoft.AspNetCore.Hosting.Abstractions.csproj
 
+Or you can use this script to automatically traverse the project reference graph, which then invokes `dotnet sln` for you: [eng/scripts/AddAllProjectRefsToSolution.ps1](/eng/scripts/AddAllProjectRefsToSolution.ps1).
 
-#### PATH
+    ./eng/scripts/AddAllProjectRefsToSolution.ps1 -WorkingDir src/Mvc/
 
-For VS Code and Visual Studio and `dotnet` commands to work correctly, you must place the following location in your PATH.
-Use the following commands to update the PATH variable in a command line window.
+## Building with Visual Studio Code
 
-Windows (Command Prompt)
+Using Visual Studio Code with this repo requires setting environment variables on command line first.
+Use these command to launch VS Code with the right settings.
 
-```batch
-set PATH=%USERPROFILE%\.dotnet\x64;%PATH%
-```
-
-Windows (Powershell)
-
+On Windows (requires PowerShell):
 ```ps1
-$env:PATH="$env:USERPROFILE\.dotnet\x64;$env:PATH"
+# The extra dot at the beginning is required to 'dot source' this file into the right scope.
+
+. .\activate.ps1
+code .
 ```
 
-Linux/macOS:
-
-```sh
-export PATH="$HOME/.dotnet:$PATH"
+On macOS/Linux:
 ```
-
-On Windows, we recommend using the `startvs.cmd` command to launch Visual Studio.
+source activate.sh
+code .
+```
 
 ## Building on command-line
 
@@ -131,6 +126,24 @@ On Windows:
 On macOS/Linux:
 ```
 ./build.sh
+```
+
+### Using `dotnet` on command line in this repo
+
+Because we are using pre-release versions of .NET Core, you have to set a handful of environment variables
+to make the .NET Core command line tool work well. You can set these environment variables like this
+
+On Windows (requires PowerShell):
+
+```ps1
+# The extra dot at the beginning is required to 'dot source' this file into the right scope.
+
+. .\activate.ps1
+```
+
+On macOS/Linux:
+```bash
+source ./activate.sh
 ```
 
 ## Running tests on command-line
@@ -166,14 +179,15 @@ Property                 | Description
 -------------------------|-------------------------------------------------------------------------------------------------------------
 BuildNumberSuffix        | (string). A specific build number, typically from a CI counter, which is appended to the pre-release label.
 Configuration            | `Debug` or `Release`. Default = `Debug`.
-SharedFxRID              | The runtime identifier of the shared framework.
+TargetArchitecture       | The CPU architecture to build for (x64, x86, arm, arm64).
+TargetOsName             | The base runtime identifier to build for (win, linux, osx, linux-musl).
 
 ## Use the result of your build
 
 After building ASP.NET Core from source, you will need to install and use your local version of ASP.NET Core.
 See ["Artifacts"](./Artifacts.md) for more explanation of the different folders produced by a build.
 
-- Run the installers produced in `artifacts/{Debug, Release}/installers/` for your platform.
+- Run the installers produced in `artifacts/installers/{Debug, Release}/` for your platform.
 - Add a NuGet.Config to your project directory with the following content:
 
   ```xml
@@ -181,7 +195,7 @@ See ["Artifacts"](./Artifacts.md) for more explanation of the different folders 
   <configuration>
       <packageSources>
           <clear />
-          <add key="MyBuildOfAspNetCore" value="C:\src\aspnet\AspNetCore\artifacts\Debug\packages\product\" />
+          <add key="MyBuildOfAspNetCore" value="C:\src\aspnet\AspNetCore\artifacts\packages\Debug\Shipping\" />
           <add key="NuGet.org" value="https://api.nuget.org/v3/index.json" />
       </packageSources>
   </configuration>

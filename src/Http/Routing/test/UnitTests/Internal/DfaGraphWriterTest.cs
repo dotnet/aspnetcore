@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Patterns;
@@ -33,10 +34,9 @@ namespace Microsoft.AspNetCore.Routing.Internal
             graphWriter.Write(endpointsDataSource, writer);
 
             // Assert
-            Assert.Equal(@"digraph DFA {
-0 [label=""/""]
-}
-", writer.ToString());
+            Assert.Equal(String.Join(Environment.NewLine, @"digraph DFA {",
+@"0 [label=""/""]",
+"}") + Environment.NewLine, writer.ToString());
         }
 
         [Fact]
@@ -57,10 +57,9 @@ namespace Microsoft.AspNetCore.Routing.Internal
             graphWriter.Write(endpointsDataSource, writer);
 
             // Assert
-            Assert.Equal(@"digraph DFA {
-0 [label=""/""]
-}
-", writer.ToString());
+            Assert.Equal(String.Join(Environment.NewLine, @"digraph DFA {",
+@"0 [label=""/""]",
+@"}") + Environment.NewLine, writer.ToString());
         }
 
         [Fact]
@@ -82,14 +81,13 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             // Assert
             var sdf = writer.ToString();
-            Assert.Equal(@"digraph DFA {
-0 [label=""/ HTTP: GET""]
-1 [label=""/ HTTP: *""]
-2 -> 0 [label=""HTTP: GET""]
-2 -> 1 [label=""HTTP: *""]
-2 [label=""/""]
-}
-", sdf);
+            Assert.Equal(String.Join(Environment.NewLine, @"digraph DFA {",
+@"0 [label=""/ HTTP: GET""]",
+@"1 [label=""/ HTTP: *""]",
+@"2 -> 0 [label=""HTTP: GET""]",
+@"2 -> 1 [label=""HTTP: *""]",
+@"2 [label=""/""]",
+@"}") + Environment.NewLine, sdf);
         }
     }
 }

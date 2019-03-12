@@ -1393,6 +1393,8 @@ namespace Microsoft.AspNetCore.Identity
 
         /// <summary>
         /// Gets the user, if any, associated with the normalized value of the specified email address.
+        /// Note: Its recommended that identityOptions.User.RequireUniqueEmail be set to true when using this method, otherwise
+        /// the store may throw if there are users with duplicate emails.
         /// </summary>
         /// <param name="email">The email address to return the user for.</param>
         /// <returns>

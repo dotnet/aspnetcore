@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                                 "AReallyLongValueThatIsGreaterThan300CharactersToForceResizeInNative";
 
 
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel, publish: true);
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel);
             deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_INPROCESS_TESTING_LONG_VALUE"] = expectedValue;
 
             Assert.Equal(
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         private async Task AuthHeaderEnvironmentVariableRemoved(HostingModel hostingModel)
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel, publish: true);
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel);
             deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_IIS_HTTPAUTH"] = "shouldberemoved";
 
             Assert.DoesNotContain("shouldberemoved", await GetStringAsync(deploymentParameters,"/GetEnvironmentVariable?name=ASPNETCORE_IIS_HTTPAUTH"));
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         private async Task WebConfigOverridesGlobalEnvironmentVariables(HostingModel hostingModel)
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel, publish: true);
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel);
             deploymentParameters.EnvironmentVariables["ASPNETCORE_ENVIRONMENT"] = "Development";
             deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_ENVIRONMENT"] = "Production";
             Assert.Equal("Production", await GetStringAsync(deploymentParameters, "/GetEnvironmentVariable?name=ASPNETCORE_ENVIRONMENT"));
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         private async Task WebConfigAppendsHostingStartup(HostingModel hostingModel)
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel, publish: true);
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel);
             deploymentParameters.EnvironmentVariables["ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"] = "Asm1";
             if (hostingModel == HostingModel.InProcess)
             {
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         private async Task WebConfigOverridesHostingStartup(HostingModel hostingModel)
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel, publish: true);
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel);
             deploymentParameters.EnvironmentVariables["ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"] = "Asm1";
             deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"] = "Asm2";
             Assert.Equal("Asm2", await GetStringAsync(deploymentParameters, "/GetEnvironmentVariable?name=ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"));
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         private async Task WebConfigExpandsVariables(HostingModel hostingModel)
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel, publish: true);
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel);
             deploymentParameters.EnvironmentVariables["TestVariable"] = "World";
             deploymentParameters.WebConfigBasedEnvironmentVariables["OtherVariable"] = "%TestVariable%;Hello";
             Assert.Equal("World;Hello", await GetStringAsync(deploymentParameters, "/GetEnvironmentVariable?name=OtherVariable"));

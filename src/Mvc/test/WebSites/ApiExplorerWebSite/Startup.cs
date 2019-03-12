@@ -33,12 +33,10 @@ namespace ApiExplorerWebSite
                     typeof(ApiExplorerInboundOutBoundController)));
                 options.Conventions.Add(new ApiExplorerRouteChangeConvention(wellKnownChangeToken));
 
-                var jsonOutputFormatter = options.OutputFormatters.OfType<JsonOutputFormatter>().First();
-
                 options.OutputFormatters.Clear();
-                options.OutputFormatters.Add(jsonOutputFormatter);
                 options.OutputFormatters.Add(new XmlDataContractSerializerOutputFormatter());
             })
+            .AddNewtonsoftJson()
             .SetCompatibilityVersion(CompatibilityVersion.Latest);
 
             services.AddSingleton<ApiExplorerDataFilter>();
@@ -48,9 +46,9 @@ namespace ApiExplorerWebSite
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseMvc(routes =>
+            app.UseRouting(routes =>
             {
-                routes.MapRoute("default", "{controller}/{action}");
+                routes.MapDefaultControllerRoute();
             });
         }
 

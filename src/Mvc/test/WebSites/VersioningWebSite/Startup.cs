@@ -14,15 +14,19 @@ namespace VersioningWebSite
         {
             // Add MVC services to the services container
             services.AddMvc(ConfigureMvcOptions)
+                .AddNewtonsoftJson()
                 .SetCompatibilityVersion(CompatibilityVersion.Latest);
 
             services.AddScoped<TestResponseGenerator>();
             services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
         }
 
-        public void Configure(IApplicationBuilder app)
+        public virtual void Configure(IApplicationBuilder app)
         {
-            app.UseMvcWithDefaultRoute();
+            app.UseRouting(routes =>
+            {
+                routes.MapDefaultControllerRoute();
+            });
         }
 
         protected virtual void ConfigureMvcOptions(MvcOptions options)

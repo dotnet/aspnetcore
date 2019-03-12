@@ -18,6 +18,7 @@ register_callbacks(
     _In_ PFN_SHUTDOWN_HANDLER shutdown_handler,
     _In_ PFN_DISCONNECT_HANDLER disconnect_handler,
     _In_ PFN_ASYNC_COMPLETION_HANDLER async_completion_handler,
+    _In_ PFN_REQUESTS_DRAINED_HANDLER requestsDrainedHandler,
     _In_ VOID* pvRequstHandlerContext,
     _In_ VOID* pvShutdownHandlerContext
 )
@@ -32,6 +33,7 @@ register_callbacks(
         shutdown_handler,
         disconnect_handler,
         async_completion_handler,
+        requestsDrainedHandler,
         pvRequstHandlerContext,
         pvShutdownHandlerContext
     );
@@ -246,12 +248,6 @@ http_read_request_bytes(
             fAsync,
             pdwBytesReceived,
             pfCompletionPending);
-
-        if (hr == HRESULT_FROM_WIN32(ERROR_HANDLE_EOF))
-        {
-            // We reached the end of the data
-            hr = S_OK;
-        }
     }
     else
     {
@@ -332,12 +328,6 @@ http_websockets_read_bytes(
         pvCompletionContext,
         pDwBytesReceived,
         pfCompletionPending);
-
-    if (hr == HRESULT_FROM_WIN32(ERROR_HANDLE_EOF))
-    {
-        // We reached the end of the data
-        hr = S_OK;
-    }
 
     return hr;
 }

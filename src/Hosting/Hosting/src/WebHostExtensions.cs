@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Hosting.Internal;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Hosting
 {
@@ -43,15 +44,16 @@ namespace Microsoft.AspNetCore.Hosting
             var done = new ManualResetEventSlim(false);
             using (var cts = CancellationTokenSource.CreateLinkedTokenSource(token))
             {
-                AttachCtrlcSigtermShutdown(cts, done, shutdownMessage: string.Empty);
-
-                try
+                using (var lifetime = new WebHostLifetime(cts, done, shutdownMessage: string.Empty))
                 {
-                    await host.WaitForTokenShutdownAsync(cts.Token);
-                }
-                finally
-                {
-                    done.Set();
+                    try
+                    {
+                        await host.WaitForTokenShutdownAsync(cts.Token);
+                    }
+                    finally
+                    {
+                        done.Set();
+                    }
                 }
             }
         }
@@ -84,26 +86,27 @@ namespace Microsoft.AspNetCore.Hosting
             using (var cts = new CancellationTokenSource())
             {
                 var shutdownMessage = host.Services.GetRequiredService<WebHostOptions>().SuppressStatusMessages ? string.Empty : "Application is shutting down...";
-                AttachCtrlcSigtermShutdown(cts, done, shutdownMessage: shutdownMessage);
-
-                try
+                using (var lifetime = new WebHostLifetime(cts, done, shutdownMessage: shutdownMessage))
                 {
-                    await host.RunAsync(cts.Token, "Application started. Press Ctrl+C to shut down.");
-                }
-                finally
-                {
-                    done.Set();
+                    try
+                    {
+                        await host.RunAsync(cts.Token, "Application started. Press Ctrl+C to shut down.");
+                    }
+                    finally
+                    {
+                        done.Set();
+                    }
                 }
             }
         }
 
         private static async Task RunAsync(this IWebHost host, CancellationToken token, string shutdownMessage)
         {
-            using (host)
+            try
             {
                 await host.StartAsync(token);
 
-                var hostingEnvironment = host.Services.GetService<IHostingEnvironment>();
+                var hostingEnvironment = host.Services.GetService<IHostEnvironment>();
                 var options = host.Services.GetRequiredService<WebHostOptions>();
 
                 if (!options.SuppressStatusMessages)
@@ -129,45 +132,26 @@ namespace Microsoft.AspNetCore.Hosting
 
                 await host.WaitForTokenShutdownAsync(token);
             }
-        }
-
-        private static void AttachCtrlcSigtermShutdown(CancellationTokenSource cts, ManualResetEventSlim resetEvent, string shutdownMessage)
-        {
-            void Shutdown()
+            finally
             {
-                if (!cts.IsCancellationRequested)
+                if (host is IAsyncDisposable asyncDisposable)
                 {
-                    if (!string.IsNullOrEmpty(shutdownMessage))
-                    {
-                        Console.WriteLine(shutdownMessage);
-                    }
-                    try
-                    {
-                        cts.Cancel();
-                    }
-                    catch (ObjectDisposedException) { }
+                    await asyncDisposable.DisposeAsync().ConfigureAwait(false);
                 }
-
-                // Wait on the given reset event
-                resetEvent.Wait();
-            };
-
-            AppDomain.CurrentDomain.ProcessExit += (sender, eventArgs) => Shutdown();
-            Console.CancelKeyPress += (sender, eventArgs) =>
-            {
-                Shutdown();
-                // Don't terminate the process immediately, wait for the Main thread to exit gracefully.
-                eventArgs.Cancel = true;
-            };
+                else
+                {
+                    host.Dispose();
+                }
+            }
         }
 
         private static async Task WaitForTokenShutdownAsync(this IWebHost host, CancellationToken token)
         {
-            var applicationLifetime = host.Services.GetService<IApplicationLifetime>();
+            var applicationLifetime = host.Services.GetService<IHostApplicationLifetime>();
 
             token.Register(state =>
             {
-                ((IApplicationLifetime)state).StopApplication();
+                ((IHostApplicationLifetime)state).StopApplication();
             },
             applicationLifetime);
 

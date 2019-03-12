@@ -3,17 +3,19 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.WebSockets;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace System.IO.Pipelines.Tests
+namespace Microsoft.AspNetCore.Http
 {
     public class DefaultHttpContextTests
     {
@@ -157,15 +159,16 @@ namespace System.IO.Pipelines.Tests
             features.Set<IHttpRequestFeature>(new HttpRequestFeature());
             features.Set<IHttpResponseFeature>(new HttpResponseFeature());
             features.Set<IHttpWebSocketFeature>(new TestHttpWebSocketFeature());
+            features.Set<IHttpResponseStartFeature>(new MockHttpResponseStartFeature());
 
             // FeatureCollection is set. all cached interfaces are null.
             var context = new DefaultHttpContext(features);
             TestAllCachedFeaturesAreNull(context, features);
-            Assert.Equal(3, features.Count());
+            Assert.Equal(4, features.Count());
 
             // getting feature properties populates feature collection with defaults
             TestAllCachedFeaturesAreSet(context, features);
-            Assert.NotEqual(3, features.Count());
+            Assert.NotEqual(4, features.Count());
 
             // FeatureCollection is null. and all cached interfaces are null.
             // only top level is tested because child objects are inaccessible.
@@ -177,15 +180,88 @@ namespace System.IO.Pipelines.Tests
             newFeatures.Set<IHttpRequestFeature>(new HttpRequestFeature());
             newFeatures.Set<IHttpResponseFeature>(new HttpResponseFeature());
             newFeatures.Set<IHttpWebSocketFeature>(new TestHttpWebSocketFeature());
+            newFeatures.Set<IHttpResponseStartFeature>(new MockHttpResponseStartFeature());
 
             // FeatureCollection is set to newFeatures. all cached interfaces are null.
             context.Initialize(newFeatures);
             TestAllCachedFeaturesAreNull(context, newFeatures);
-            Assert.Equal(3, newFeatures.Count());
+            Assert.Equal(4, newFeatures.Count());
 
             // getting feature properties populates new feature collection with defaults
             TestAllCachedFeaturesAreSet(context, newFeatures);
-            Assert.NotEqual(3, newFeatures.Count());
+            Assert.NotEqual(4, newFeatures.Count());
+        }
+
+        [Fact]
+        public void RequestServicesAreNotOverwrittenIfAlreadySet()
+        {
+            var serviceProvider = new ServiceCollection()
+                        .BuildServiceProvider();
+
+            var scopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
+
+            var context = new DefaultHttpContext();
+            context.ServiceScopeFactory = scopeFactory;
+            context.RequestServices = serviceProvider;
+
+            Assert.Same(serviceProvider, context.RequestServices);
+        }
+
+        [Fact]
+        public async Task RequestServicesAreDisposedOnCompleted()
+        {
+            var serviceProvider = new ServiceCollection()
+                .AddTransient<DisposableThing>()
+                .BuildServiceProvider();
+
+            var scopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
+            DisposableThing instance = null;
+
+            var context = new DefaultHttpContext();
+            context.ServiceScopeFactory = scopeFactory;
+            var responseFeature = new TestHttpResponseFeature();
+            context.Features.Set<IHttpResponseFeature>(responseFeature);
+
+            Assert.NotNull(context.RequestServices);
+            Assert.Single(responseFeature.CompletedCallbacks);
+
+            instance = context.RequestServices.GetRequiredService<DisposableThing>();
+
+            var callback = responseFeature.CompletedCallbacks[0];
+            await callback.callback(callback.state);
+
+            Assert.Null(context.RequestServices);
+            Assert.True(instance.Disposed);
+        }
+
+        [Fact]
+        public async Task RequestServicesAreDisposedAsynOnCompleted()
+        {
+            var serviceProvider = new AsyncDisposableServiceProvider(new ServiceCollection()
+                .AddTransient<DisposableThing>()
+                .BuildServiceProvider());
+
+            var scopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
+            DisposableThing instance = null;
+
+            var context = new DefaultHttpContext();
+            context.ServiceScopeFactory = scopeFactory;
+            var responseFeature = new TestHttpResponseFeature();
+            context.Features.Set<IHttpResponseFeature>(responseFeature);
+
+            Assert.NotNull(context.RequestServices);
+            Assert.Single(responseFeature.CompletedCallbacks);
+
+            instance = context.RequestServices.GetRequiredService<DisposableThing>();
+
+            var callback = responseFeature.CompletedCallbacks[0];
+            await callback.callback(callback.state);
+
+            Assert.Null(context.RequestServices);
+            Assert.True(instance.Disposed);
+            var scope = Assert.Single(serviceProvider.Scopes);
+            Assert.True(scope.DisposeAsyncCalled);
+            Assert.False(scope.DisposeCalled);
         }
 
         void TestAllCachedFeaturesAreNull(HttpContext context, IFeatureCollection features)
@@ -193,9 +269,6 @@ namespace System.IO.Pipelines.Tests
             TestCachedFeaturesAreNull(context, features);
             TestCachedFeaturesAreNull(context.Request, features);
             TestCachedFeaturesAreNull(context.Response, features);
-#pragma warning disable CS0618 // Type or member is obsolete
-            TestCachedFeaturesAreNull(context.Authentication, features);
-#pragma warning restore CS0618 // Type or member is obsolete
             TestCachedFeaturesAreNull(context.Connection, features);
             TestCachedFeaturesAreNull(context.WebSockets, features);
         }
@@ -224,9 +297,6 @@ namespace System.IO.Pipelines.Tests
             TestCachedFeaturesAreSet(context, features);
             TestCachedFeaturesAreSet(context.Request, features);
             TestCachedFeaturesAreSet(context.Response, features);
-#pragma warning disable CS0618 // Type or member is obsolete
-            TestCachedFeaturesAreSet(context.Authentication, features);
-#pragma warning restore CS0618 // Type or member is obsolete
             TestCachedFeaturesAreSet(context.Connection, features);
             TestCachedFeaturesAreSet(context.WebSockets, features);
         }
@@ -243,7 +313,7 @@ namespace System.IO.Pipelines.Tests
 
             var fields = type
                 .GetFields(BindingFlags.NonPublic | BindingFlags.Instance)
-                .Where(f => f.FieldType.GetTypeInfo().IsInterface);
+                .Where(f => f.FieldType.GetTypeInfo().IsInterface && f.GetCustomAttribute<CompilerGeneratedAttribute>() == null);
 
             foreach (var field in fields)
             {
@@ -285,6 +355,36 @@ namespace System.IO.Pipelines.Tests
         {
             var context = new DefaultHttpContext();
             return context;
+        }
+
+        private class DisposableThing : IDisposable
+        {
+            public bool Disposed { get; set; }
+            public void Dispose()
+            {
+                Disposed = true;
+            }
+        }
+
+        private class TestHttpResponseFeature : IHttpResponseFeature
+        {
+            public List<(Func<object, Task> callback, object state)> CompletedCallbacks = new List<(Func<object, Task> callback, object state)>();
+
+            public int StatusCode { get; set; }
+            public string ReasonPhrase { get; set; }
+            public IHeaderDictionary Headers { get; set; } = new HeaderDictionary();
+            public Stream Body { get; set; }
+
+            public bool HasStarted => false;
+
+            public void OnCompleted(Func<object, Task> callback, object state)
+            {
+                CompletedCallbacks.Add((callback, state));
+            }
+
+            public void OnStarting(Func<object, Task> callback, object state)
+            {
+            }
         }
 
         private class TestSession : ISession
@@ -347,6 +447,77 @@ namespace System.IO.Pipelines.Tests
             public Task<WebSocket> AcceptAsync(WebSocketAcceptContext context)
             {
                 throw new NotImplementedException();
+            }
+        }
+
+        private class MockHttpResponseStartFeature : IHttpResponseStartFeature
+        {
+            public Task StartAsync(CancellationToken cancellationToken)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        private class AsyncDisposableServiceProvider : IServiceProvider, IDisposable, IServiceScopeFactory
+        {
+            private readonly ServiceProvider _serviceProvider;
+
+            public AsyncDisposableServiceProvider(ServiceProvider serviceProvider)
+            {
+                _serviceProvider = serviceProvider;
+            }
+
+            public List<AsyncServiceScope> Scopes { get; } = new List<AsyncServiceScope>();
+
+            public object GetService(Type serviceType)
+            {
+                if (serviceType == typeof(IServiceScopeFactory))
+                {
+                    return this;
+                }
+
+                return _serviceProvider.GetService(serviceType);
+            }
+
+            public void Dispose()
+            {
+                _serviceProvider.Dispose();
+            }
+
+            public IServiceScope CreateScope()
+            {
+                var scope = new AsyncServiceScope(_serviceProvider.GetService<IServiceScopeFactory>().CreateScope());
+                Scopes.Add(scope);
+                return scope;
+            }
+
+            internal class AsyncServiceScope : IServiceScope, IAsyncDisposable
+            {
+                private readonly IServiceScope _scope;
+
+                public AsyncServiceScope(IServiceScope scope)
+                {
+                    _scope = scope;
+                }
+
+                public bool DisposeCalled { get; set; }
+
+                public bool DisposeAsyncCalled { get; set; }
+
+                public void Dispose()
+                {
+                    DisposeCalled = true;
+                    _scope.Dispose();
+                }
+
+                public ValueTask DisposeAsync()
+                {
+                    DisposeAsyncCalled = true;
+                    _scope.Dispose();
+                    return default;
+                }
+
+                public IServiceProvider ServiceProvider => _scope.ServiceProvider;
             }
         }
     }

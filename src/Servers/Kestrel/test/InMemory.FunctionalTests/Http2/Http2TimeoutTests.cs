@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
@@ -192,11 +193,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _mockConnectionContext.VerifyNoOtherCalls();
         }
 
-        [Theory]
+        [Theory(Skip = "https://github.com/aspnet/AspNetCore-Internal/issues/1879")]
         [InlineData(Http2FrameType.DATA)]
         [InlineData(Http2FrameType.CONTINUATION)]
         public async Task AbortedStream_ResetsAndDrainsRequest_RefusesFramesAfterCooldownExpires(Http2FrameType finalFrameType)
         {
+            // Remove callback that completes _pair.Application.Output on abort.
+            _mockConnectionContext.Reset();
+
             var mockSystemClock = _serviceContext.MockSystemClock;
 
             var headers = new[]
@@ -262,7 +266,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await sendTask.DefaultTimeout();
         }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/7000  
         public async Task DATA_Sent_TooSlowlyDueToSocketBackPressureOnSmallWrite_AbortsConnectionAfterGracePeriod()
         {
             var mockSystemClock = _serviceContext.MockSystemClock;

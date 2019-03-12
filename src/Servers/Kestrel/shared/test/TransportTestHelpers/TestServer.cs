@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Xunit;
@@ -90,6 +91,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     configureServices(services);
                 })
                 .UseSetting(WebHostDefaults.ApplicationKey, typeof(TestServer).GetTypeInfo().Assembly.FullName)
+                .UseSetting(WebHostDefaults.ShutdownTimeoutKey, TestConstants.DefaultTimeout.TotalSeconds.ToString())
                 .Build();
 
             _host.Start();
@@ -110,7 +112,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         IServiceProvider IStartup.ConfigureServices(IServiceCollection services)
         {
             // Unfortunately, this needs to be replaced in IStartup.ConfigureServices
-            services.AddSingleton<IApplicationLifetime, LifetimeNotImplemented>();
+            services.AddSingleton<IHostApplicationLifetime, LifetimeNotImplemented>();
             return services.BuildServiceProvider();
         }
 

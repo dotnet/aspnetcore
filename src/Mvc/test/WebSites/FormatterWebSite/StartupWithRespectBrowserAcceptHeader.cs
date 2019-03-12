@@ -13,15 +13,15 @@ namespace FormatterWebSite
             services.AddMvc(options =>
             {
                 options.RespectBrowserAcceptHeader = true;
-            });
+            })
+            .AddNewtonsoftJson();
         }
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseMvc(routes =>
+            app.UseRouting(routes =>
             {
-                routes.MapRoute("ActionAsMethod", "{controller}/{action}",
-                    defaults: new { controller = "Home", action = "Index" });
+                routes.MapDefaultControllerRoute();
             });
         }
     }

@@ -23,17 +23,12 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         private static readonly TimeSpan RetryRequestDelay = TimeSpan.FromMilliseconds(100);
         private static readonly int RetryRequestCount = 10;
 
-        public static string GetTestWebSitePath(string name)
+        public static string GetInProcessTestSitesName()
         {
-            return Path.Combine(TestPathUtilities.GetSolutionRootDirectory("IISIntegration"),"IIS", "test", "testassets", name);
+            return DeployerSelector.IsForwardsCompatibilityTest ? "InProcessForwardsCompatWebSite" : "InProcessWebSite";
         }
 
-        public static string GetInProcessTestSitesPath()
-        {
-            return DeployerSelector.IsForwardsCompatibilityTest ? GetTestWebSitePath("InProcessForwardsCompatWebSite") : GetTestWebSitePath("InProcessWebSite");
-        }
-
-        public static string GetOutOfProcessTestSitesPath() => GetTestWebSitePath("OutOfProcessWebSite");
+        public static string GetOutOfProcessTestSitesName() => "OutOfProcessWebSite";
 
         public static async Task AssertStarts(this IISDeploymentResult deploymentResult, string path = "/HelloWorld")
         {
@@ -126,6 +121,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             }
 
             return response;
+        }
+
+        public static Task Retry(Func<Task> func, TimeSpan maxTime)
+        {
+            return Retry(func, (int)(maxTime.TotalMilliseconds / 200), 200);
         }
 
         public static async Task Retry(Func<Task> func, int attempts, int msDelay)

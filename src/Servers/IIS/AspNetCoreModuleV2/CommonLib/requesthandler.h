@@ -24,6 +24,8 @@ public:
     VOID
     ReferenceRequestHandler() noexcept override
     {
+        DBG_ASSERT(m_cRefs != 0);
+
         InterlockedIncrement(&m_cRefs);
     }
 

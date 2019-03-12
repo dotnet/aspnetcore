@@ -1,0 +1,34 @@
+<Project>
+  <PropertyGroup>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <RestoreSources>${RestoreSources}</RestoreSources>
+    <!-- Workaround https://github.com/dotnet/cli/issues/10528 -->
+    <BundledNETCorePlatformsPackageVersion>${MicrosoftNETCorePlatformsPackageVersion}</BundledNETCorePlatformsPackageVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <KnownFrameworkReference
+      Update="Microsoft.NETCore.App"
+      DefaultRuntimeFrameworkVersion="${MicrosoftNETCoreAppPackageVersion}"
+      LatestRuntimeFrameworkVersion="${MicrosoftNETCoreAppPackageVersion}"
+      TargetingPackVersion="${MicrosoftNETCoreAppPackageVersion}" />
+
+    <KnownFrameworkReference
+      Update="Microsoft.AspNetCore.App"
+      DefaultRuntimeFrameworkVersion="${MicrosoftAspNetCoreAppPackageVersion}"
+      LatestRuntimeFrameworkVersion="${MicrosoftAspNetCoreAppPackageVersion}"
+      TargetingPackName="Microsoft.AspNetCore.App.Ref"
+      TargetingPackVersion="${MicrosoftAspNetCoreAppPackageVersion}"
+      RuntimePackNamePatterns="Microsoft.NETCore.App.Runtime.**RID**"
+      RuntimePackRuntimeIdentifiers="${SupportedRuntimeIdentifiers}" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' OR '$(RazorSdkCurrentVersionProps)' != ''">
+    <!--
+      Use the Razor SDK as a package reference. The version of the .NET Core SDK we build with often contains a version of the Razor SDK
+      several versions older than latest. To avoid a cyclical dependency, this package reference is added to override the bundled version.
+    -->
+    <PackageReference Include="Microsoft.NET.Sdk.Razor" PrivateAssets="All" Version="${MicrosoftNETSdkRazorPackageVersion}" />
+  </ItemGroup>
+
+</Project>

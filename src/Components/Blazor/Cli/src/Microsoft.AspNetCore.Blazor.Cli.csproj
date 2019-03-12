@@ -1,0 +1,47 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>dotnet-blazor</AssemblyName>
+    <PackageId>Microsoft.AspNetCore.Blazor.Cli</PackageId>
+    <IsShippingPackage>true</IsShippingPackage>
+    <StartupObject>Microsoft.AspNetCore.Blazor.Cli.Program</StartupObject>
+    <Description>Development server for use when building Blazor applications.</Description>
+    <!-- Set this to false because assemblies should not reference this assembly directly, (except for tests, of course). -->
+    <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Blazor.Server" />
+    <Reference Include="Microsoft.AspNetCore.Components.Server" />
+    <Reference Include="Microsoft.AspNetCore.ResponseCompression" />
+    <Reference Include="Microsoft.AspNetCore" />
+    <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" />
+  </ItemGroup>
+
+  <!--
+    Temporarily use hand-authored .nuspec file until we can use <FrameworkReference>
+    The hand-authored .nuspec file is to ensure it *doesn't* reference the shared
+    framework packages that aren't actually shipping as packages. We can remove this
+    once the nuspec generation accounts for <FrameworkReference>.
+  -->
+  <Target Name="PrepareNuSpecProperties" BeforeTargets="_IntermediatePack">
+    <PropertyGroup>
+      <NuspecFile>Microsoft.AspNetCore.Blazor.Cli.nuspec</NuspecFile>
+      <NuspecProperties>
+        outdir=$(OutDir);
+        componentsrootdir=..\..\..\;
+        blazorversion=$(PackageVersion);
+        aspnetcoreversion=$(ComponentsPackageVersion);
+        sharedfxversion=$(SharedFxVersion);
+        repositorycommit=$(SourceRevisionId);</NuspecProperties>
+    </PropertyGroup>
+    <!-- Also temporarily generate the runtimeconfig.json manually until we can use <FrameworkReference> -->
+    <Sdk_GenerateFileFromTemplate
+      TemplateFile="temporaryruntimeconfig.json"
+      Properties="$(NuspecProperties)"
+      OutputPath="$(OutDir)temporaryruntimeconfig.out.json">
+    </Sdk_GenerateFileFromTemplate>
+  </Target>
+</Project>

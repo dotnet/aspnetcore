@@ -7,18 +7,11 @@ using System.Runtime.CompilerServices;
 
 namespace System.IO.Pipelines
 {
-    public sealed class BufferSegment : ReadOnlySequenceSegment<byte>
+    internal sealed class BufferSegment : ReadOnlySequenceSegment<byte>
     {
-        private IMemoryOwner<byte> _memoryOwner;
+        private object _memoryOwner;
         private BufferSegment _next;
         private int _end;
-
-        /// <summary>
-        /// The Start represents the offset into AvailableMemory where the range of "active" bytes begins. At the point when the block is leased
-        /// the Start is guaranteed to be equal to 0. The value of Start may be assigned anywhere between 0 and
-        /// AvailableMemory.Length, and must be equal to or less than End.
-        /// </summary>
-        public int Start { get; private set; }
 
         /// <summary>
         /// The End represents the offset into AvailableMemory where the range of "active" bytes ends. At the point when the block is leased
@@ -30,10 +23,10 @@ namespace System.IO.Pipelines
             get => _end;
             set
             {
-                Debug.Assert(value - Start <= AvailableMemory.Length);
+                Debug.Assert(value <= AvailableMemory.Length);
 
                 _end = value;
-                Memory = AvailableMemory.Slice(Start, _end - Start);
+                Memory = AvailableMemory.Slice(0, _end);
             }
         }
 
@@ -53,35 +46,66 @@ namespace System.IO.Pipelines
             }
         }
 
-        public void SetMemory(IMemoryOwner<byte> memoryOwner)
+        public void SetMemory(object memoryOwner)
         {
-            SetMemory(memoryOwner, 0, 0);
+            if (memoryOwner is IMemoryOwner<byte> owner)
+            {
+                SetMemory(owner);
+            }
+            else if (memoryOwner is byte[] array)
+            {
+                SetMemory(array);
+            }
+            else
+            {
+                Debug.Fail("Unexpected memoryOwner");
+            }
         }
 
-        public void SetMemory(IMemoryOwner<byte> memoryOwner, int start, int end)
+        public void SetMemory(IMemoryOwner<byte> memoryOwner)
         {
             _memoryOwner = memoryOwner;
 
-            AvailableMemory = _memoryOwner.Memory;
+            SetUnownedMemory(memoryOwner.Memory);
+        }
 
+        public void SetMemory(byte[] arrayPoolBuffer)
+        {
+            _memoryOwner = arrayPoolBuffer;
+
+            SetUnownedMemory(arrayPoolBuffer);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void SetUnownedMemory(Memory<byte> memory)
+        {
+            AvailableMemory = memory;
             RunningIndex = 0;
-            Start = start;
-            End = end;
+            End = 0;
             NextSegment = null;
         }
 
         public void ResetMemory()
         {
-            _memoryOwner.Dispose();
+            if (_memoryOwner is IMemoryOwner<byte> owner)
+            {
+                owner.Dispose();
+            }
+            else if (_memoryOwner is byte[] array)
+            {
+                ArrayPool<byte>.Shared.Return(array);
+            }
+
             _memoryOwner = null;
             AvailableMemory = default;
         }
 
-        internal IMemoryOwner<byte> MemoryOwner => _memoryOwner;
+        // Exposed for testing
+        internal object MemoryOwner => _memoryOwner;
 
         public Memory<byte> AvailableMemory { get; private set; }
 
-        public int Length => End - Start;
+        public int Length => End;
 
         /// <summary>
         /// The amount of writable bytes in this segment. It is the amount of bytes between Length and End
