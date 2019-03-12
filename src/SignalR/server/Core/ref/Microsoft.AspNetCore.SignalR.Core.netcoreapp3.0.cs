@@ -185,8 +185,8 @@ namespace Microsoft.AspNetCore.SignalR
     }
     public partial class HubMetadata
     {
-        public HubMetadata() { }
-        public System.Type HubType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public HubMetadata(System.Type hubType) { }
+        public System.Type HubType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Method, AllowMultiple=false, Inherited=true)]
     public partial class HubMethodNameAttribute : System.Attribute
