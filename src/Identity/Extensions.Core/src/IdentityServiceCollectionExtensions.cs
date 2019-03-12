@@ -41,6 +41,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddScoped<IPasswordValidator<TUser>, PasswordValidator<TUser>>();
             services.TryAddScoped<IPasswordHasher<TUser>, PasswordHasher<TUser>>();
             services.TryAddScoped<ILookupNormalizer, UpperInvariantLookupNormalizer>();
+            services.TryAddScoped<IUserConfirmation<TUser>, DefaultUserConfirmation<TUser>>();
             // No interface for the error describer so we can add errors without rev'ing the interface
             services.TryAddScoped<IdentityErrorDescriber>();
             services.TryAddScoped<IUserClaimsPrincipalFactory<TUser>, UserClaimsPrincipalFactory<TUser>>();

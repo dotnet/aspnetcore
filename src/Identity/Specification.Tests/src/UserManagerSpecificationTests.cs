@@ -1715,6 +1715,34 @@ namespace Microsoft.AspNetCore.Identity.Test
         /// </summary>
         /// <returns>Task</returns>
         [Fact]
+        public async Task CanChangeEmailOnlyIfEmailSame()
+        {
+            if (ShouldSkipDbTests())
+            {
+                return;
+            }
+            var manager = CreateManager();
+            var user = CreateTestUser("foouser");
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
+            var email = await manager.GetUserNameAsync(user) + "@diddly.bop";
+            IdentityResultAssert.IsSuccess(await manager.SetEmailAsync(user, email));
+            Assert.False(await manager.IsEmailConfirmedAsync(user));
+            var stamp = await manager.GetSecurityStampAsync(user);
+            var newEmail = await manager.GetUserNameAsync(user) + "@en.vec";
+            var token1 = await manager.GenerateChangeEmailTokenAsync(user, newEmail);
+            var token2 = await manager.GenerateChangeEmailTokenAsync(user, "should@fail.com");
+            IdentityResultAssert.IsSuccess(await manager.ChangeEmailAsync(user, newEmail, token1));
+            Assert.True(await manager.IsEmailConfirmedAsync(user));
+            Assert.Equal(await manager.GetEmailAsync(user), newEmail);
+            Assert.NotEqual(stamp, await manager.GetSecurityStampAsync(user));
+            IdentityResultAssert.IsFailure(await manager.ChangeEmailAsync(user, "should@fail.com", token2));
+        }
+
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
+        [Fact]
         public async Task CanChangeEmailWithDifferentTokenProvider()
         {
             if (ShouldSkipDbTests())

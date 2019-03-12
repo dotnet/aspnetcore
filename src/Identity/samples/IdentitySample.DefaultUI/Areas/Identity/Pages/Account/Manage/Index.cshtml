@@ -15,28 +15,28 @@
                 <input asp-for="Username" class="form-control" disabled />
             </div>
             <div class="form-group">
+                <label asp-for="Input.Email"></label>
+                @if (Model.IsEmailConfirmed)
+                {
+                    <div class="input-group">
+                        <input asp-for="Input.Email" class="form-control" disabled />
+                        <span class="input-group-addon" aria-hidden="true"><span class="glyphicon glyphicon-ok text-success"></span></span>
+                    </div>
+                }
+                else
+                {
+                    <input asp-for="Input.Email" class="form-control" disabled />
+                    <button asp-page-handler="SendVerificationEmail" class="btn btn-link">Send verification email</button>
+                }
+                <span asp-validation-for="Input.Email" class="text-danger"></span>
+            </div>
+            <div class="form-group">
                 <label asp-for="Input.Name"></label>
                 <input asp-for="Input.Name" class="form-control" />
             </div>
             <div class="form-group">
                 <label asp-for="Input.Age"></label>
                 <input asp-for="Input.Age" class="form-control" />
-            </div>
-            <div class="form-group">
-                <label asp-for="Input.Email"></label>
-                @if (Model.IsEmailConfirmed)
-        {
-            <div class="input-group">
-                <input asp-for="Input.Email" class="form-control" />
-                <span class="input-group-addon" aria-hidden="true"><span class="glyphicon glyphicon-ok text-success"></span></span>
-            </div>
-}
-else
-{
-        <input asp-for="Input.Email" class="form-control" />
-        <button asp-page-handler="SendVerificationEmail" class="btn btn-link">Send verification email</button>
-}
-                <span asp-validation-for="Input.Email" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Input.PhoneNumber"></label>
