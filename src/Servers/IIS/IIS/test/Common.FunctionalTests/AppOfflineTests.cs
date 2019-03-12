@@ -218,7 +218,13 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
             AddAppOffline(deploymentResult.ContentRoot);
             await AssertAppOffline(deploymentResult);
-            DeletePublishOutput(deploymentResult);
+
+            // Files should eventually be unlocked, however when AppOffline returns, it doesn't necessarily mean 
+            RetryHelper.RetryOperation(
+                () => DeletePublishOutput(deploymentResult),
+                e => Logger.LogError($"Failed to delete published output: {e.Message}"),
+                retryCount: 3,
+                retryDelayMilliseconds: RetryDelay.Milliseconds);
         }
 
         [ConditionalTheory]
