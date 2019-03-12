@@ -191,8 +191,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             void ConfigureRoutes(IEndpointRouteBuilder routes)
             {
                 // This "Foo" policy should override the default auth attribute
-                routes.MapHub<AuthHub>("/path")
-                      .RequireAuthorization(new AuthorizeAttribute("Foo"));
+                routes.MapHub<AuthHub>("/path");
             }
 
             using (var host = BuildWebHostWithEndPointRouting(ConfigureRoutes))
