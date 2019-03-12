@@ -114,8 +114,8 @@ namespace Microsoft.AspNetCore.Identity
                     }
                 }
                 
-                NameNormalizer = services.GetService<INameLookupNormalizer>() ?? KeyNormalizer;
-                EmailNormalizer = services.GetService<IEmailLookupNormalizer>() ?? KeyNormalizer;
+                NameNormalizer = services.GetService<INameLookupNormalizer>();
+                EmailNormalizer = services.GetService<IEmailLookupNormalizer>();
             }
 
             if (Options.Stores.ProtectPersonalData)
@@ -168,12 +168,12 @@ namespace Microsoft.AspNetCore.Identity
         /// <summary>
         /// The <see cref="ILookupNormalizer"/> used to normalize user and role names.
         /// </summary>
-        public ILookupNormalizer NameNormalizer { get; set; }
+        public INameLookupNormalizer NameNormalizer { get; set; }
 
         /// <summary>
         /// The <see cref="ILookupNormalizer"/> used to normalize emails.
         /// </summary>
-        public ILookupNormalizer EmailNormalizer { get; set; }
+        public IEmailLookupNormalizer EmailNormalizer { get; set; }
         
         /// <summary>
         /// The <see cref="IdentityErrorDescriber"/> used to generate error messages.
@@ -616,12 +616,22 @@ namespace Microsoft.AspNetCore.Identity
         }
 
         /// <summary>
+        /// Normalize a key (user name, email) for consistent comparisons.
+        /// </summary>
+        /// <param name="key">The key to normalize.</param>
+        /// <returns>A normalized value representing the specified <paramref name="key"/>.</returns>
+        public virtual string NormalizeKey(string key)
+        {
+            return (KeyNormalizer == null) ? key : KeyNormalizer.Normalize(key);
+        }
+
+        /// <summary>
         /// Normalize user or role name for consistent comparisons.
         /// </summary>
         /// <param name="name">The name to normalize.</param>
         /// <returns>A normalized value representing the specified <paramref name="name"/>.</returns>
         public virtual string NormalizeName(string name)
-            =>  (NameNormalizer == null) ? name : NameNormalizer.Normalize(name);
+            =>  (NameNormalizer == null) ? NormalizeKey(name) : NameNormalizer.Normalize(name);
 
         /// <summary>
         /// Normalize email for consistent comparisons.
@@ -629,7 +639,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <param name="email">The email to normalize.</param>
         /// <returns>A normalized value representing the specified <paramref name="email"/>.</returns>
         public virtual string NormalizeEmail(string email)
-            =>  (EmailNormalizer == null) ? email : EmailNormalizer.Normalize(email);
+            =>  (EmailNormalizer == null) ? NormalizeKey(email) : EmailNormalizer.Normalize(email);
         
         private string ProtectPersonalData(string data)
         {
