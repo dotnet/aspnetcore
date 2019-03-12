@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.IO;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -10,28 +13,25 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json
 {
     public class TranscodingWriteStreamTest
     {
-        public static TheoryData WriteAsyncInputLatin =>
-            new TheoryData<string>
-            {
-                "Hello world",
-                new string('A', count: 4096),
-                new string('A', count: 18000),
-                new string('Æ', count: 2854),
-               "pingüino",
-            };
+        public static TheoryData WriteAsyncInputLatin => 
+            TranscodingReadStreamTest.GetLatinTextInput(TranscodingWriteStream.MaxCharBufferSize, TranscodingWriteStream.MaxByteBufferSize);
 
-        public static TheoryData WriteAsyncInputUnicode =>
-            new TheoryData<string>
-            {
-                "AbĀāĂăĄąĆŊŋŌōŎŏŐőŒœŔŕŖŗŘřŚşŠšŢţŤťŦŧŨũŪūŬŭŮůŰűŲųŴŵŶŷŸŹźŻżŽžſAbc",
-               "Abcஐஒஓஔகஙசஜஞடணதநனபமயரறலளழவஷஸஹ",
-               "☀☁☂☃☄★☆☇☈☉☊☋☌☍☎☏☐☑☒☓☚☛☜☝☞☟☠☡☢☣☤☥☦☧☨☩☪☫☬☭☮☯☰☱☲☳☴☵☶☷☸",
-               new string('ஐ', 3600),
-            };
+        public static TheoryData WriteAsyncInputUnicode => 
+            TranscodingReadStreamTest.GetUnicodeText(TranscodingWriteStream.MaxCharBufferSize);
 
         [Theory]
         [MemberData(nameof(WriteAsyncInputLatin))]
-        public Task WriteAsync_WorksForReadStream_WhenInputIs_Unicode(string message)
+        [MemberData(nameof(WriteAsyncInputUnicode))]
+        public Task WriteAsync_Works_WhenOutputIs_UTF32(string message)
+        {
+            var targetEncoding = Encoding.UTF32;
+            return WriteAsyncTest(targetEncoding, message);
+        }
+
+        [Theory]
+        [MemberData(nameof(WriteAsyncInputLatin))]
+        [MemberData(nameof(WriteAsyncInputUnicode))]
+        public Task WriteAsync_Works_WhenOutputIs_Unicode(string message)
         {
             var targetEncoding = Encoding.Unicode;
             return WriteAsyncTest(targetEncoding, message);
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json
 
         [Theory]
         [MemberData(nameof(WriteAsyncInputLatin))]
-        public Task WriteAsync_WorksForReadStream_WhenInputIs_UTF7(string message)
+        public Task WriteAsync_Works_WhenOutputIs_UTF7(string message)
         {
             var targetEncoding = Encoding.UTF7;
             return WriteAsyncTest(targetEncoding, message);
@@ -47,10 +47,19 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json
 
         [Theory]
         [MemberData(nameof(WriteAsyncInputLatin))]
-        public Task WriteAsync_WorksForReadStream_WhenInputIs_WesternEuropeanEncoding(string message)
+        public Task WriteAsync_Works_WhenOutputIs_WesternEuropeanEncoding(string message)
         {
             // Arrange
             var targetEncoding = Encoding.GetEncoding(28591);
+            return WriteAsyncTest(targetEncoding, message);
+        }
+
+        [Theory]
+        [MemberData(nameof(WriteAsyncInputLatin))]
+        public Task WriteAsync_Works_WhenOutputIs_ASCII(string message)
+        {
+            // Arrange
+            var targetEncoding = Encoding.ASCII;
             return WriteAsyncTest(targetEncoding, message);
         }
 
@@ -72,7 +81,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json
         private class TestModel
         {
             public string Message { get; set; }
-
         }
     }
 }

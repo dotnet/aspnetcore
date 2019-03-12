@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Mvc
                 formatter => Assert.IsType<HttpNoContentOutputFormatter>(formatter),
                 formatter => Assert.IsType<StringOutputFormatter>(formatter),
                 formatter => Assert.IsType<StreamOutputFormatter>(formatter),
-                formatter => Assert.IsType<JsonOutputFormatter>(formatter));
+                formatter => Assert.IsType<SystemTextJsonOutputFormatter>(formatter));
         }
 
         [Fact]
@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Mvc
             // Assert
             Assert.Collection(
                 options.InputFormatters,
-                formatter => Assert.IsType<JsonInputFormatter>(formatter));
+                formatter => Assert.IsType<SystemTextJsonInputFormatter>(formatter));
         }
 
         [Fact]

@@ -317,7 +317,6 @@ namespace Microsoft.AspNetCore.Mvc
                             typeof(MvcCoreMvcOptionsSetup),
                             typeof(MvcDataAnnotationsMvcOptionsSetup),
                             typeof(TempDataMvcOptionsSetup),
-                            typeof(JsonFormatterMvcOptionsSetup),
                         }
                     },
                     {

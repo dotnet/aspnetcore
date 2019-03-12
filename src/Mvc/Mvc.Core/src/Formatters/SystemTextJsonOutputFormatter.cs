@@ -12,19 +12,19 @@ using Microsoft.AspNetCore.Mvc.Formatters.Json;
 namespace Microsoft.AspNetCore.Mvc.Formatters
 {
     /// <summary>
-    /// A <see cref="TextOutputFormatter"/> for JSON content.
+    /// A <see cref="TextOutputFormatter"/> for JSON content that uses <see cref="JsonSerializer"/>.
     /// </summary>
-    public sealed class JsonOutputFormatter : TextOutputFormatter
+    public class SystemTextJsonOutputFormatter : TextOutputFormatter
     {
         private readonly JsonSerializerOptions _serializerOptions;
 
         /// <summary>
-        /// Initializes a new <see cref="JsonOutputFormatter"/> instance.
+        /// Initializes a new <see cref="SystemTextJsonOutputFormatter"/> instance.
         /// </summary>
-        /// <param name="options">The <see cref="JsonFormatterOptions"/>.</param>
-        public JsonOutputFormatter(JsonFormatterOptions options)
+        /// <param name="options">The <see cref="MvcOptions"/>.</param>
+        public SystemTextJsonOutputFormatter(MvcOptions options)
         {
-            _serializerOptions = options?.SerializerOptions ?? throw new ArgumentNullException(nameof(options));
+            _serializerOptions = options.SerializerOptions;
 
             SupportedEncodings.Add(Encoding.UTF8);
             SupportedEncodings.Add(Encoding.Unicode);
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         }
 
         /// <inheritdoc />
-        public override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding)
+        public sealed override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding)
         {
             if (context == null)
             {
@@ -47,17 +47,28 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             }
 
             var httpContext = context.HttpContext;
-            var requestAborted = httpContext.RequestAborted;
 
             var writeStream = GetWriteStream(httpContext, selectedEncoding);
-            await JsonSerializer.WriteAsync(context.Object, context.ObjectType, writeStream, _serializerOptions, requestAborted);
-            await writeStream.FlushAsync(requestAborted);
+            try
+            {
+                await JsonSerializer.WriteAsync(context.Object, context.ObjectType, writeStream, _serializerOptions);
+                await writeStream.FlushAsync();
+            }
+            finally
+            {
+                if (writeStream is TranscodingWriteStream transcoding)
+                {
+                    transcoding.Dispose();
+                }
+            }
         }
 
         private Stream GetWriteStream(HttpContext httpContext, Encoding selectedEncoding)
         {
-            if (selectedEncoding == Encoding.UTF8)
+            if (selectedEncoding.CodePage == Encoding.UTF8.CodePage)
             {
+                // JsonSerializer does not write a BOM. Therefore we do not have to handle it
+                // in any special way.
                 return httpContext.Response.Body;
             }
 

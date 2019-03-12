@@ -42,6 +42,14 @@ namespace FormatterWebSite.Controllers
             };
 
         [HttpGet]
+        public ActionResult<SimpleModel> LargeObjectResult() =>
+            new SimpleModel
+            {
+                Id = 10,
+                Name = "This is long so we can test large objects " + new string('a', 1024 * 65),
+            };
+
+        [HttpGet]
         public ActionResult<SimpleModel> PolymorphicResult() => new DeriviedModel
         {
             Id = 10,

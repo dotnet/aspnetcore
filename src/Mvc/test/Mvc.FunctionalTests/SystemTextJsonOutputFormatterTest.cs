@@ -8,9 +8,9 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class JsonOutputFormatterTest : JsonOutputFormatterTestBase<FormatterWebSite.StartupWithJsonFormatter>
+    public class SystemTextJsonOutputFormatterTest : JsonOutputFormatterTestBase<FormatterWebSite.StartupWithJsonFormatter>
     {
-        public JsonOutputFormatterTest(MvcTestFixture<FormatterWebSite.StartupWithJsonFormatter> fixture)
+        public SystemTextJsonOutputFormatterTest(MvcTestFixture<FormatterWebSite.StartupWithJsonFormatter> fixture)
             : base(fixture)
         {
         }
@@ -71,6 +71,21 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Act
             var response = await Client.GetAsync($"/JsonOutputFormatter/{nameof(JsonOutputFormatterController.PolymorphicResult)}");
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+            Assert.Equal(expected, await response.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
+        public override async Task Formatting_LargeObject()
+        {
+            // Arrange
+            var expectedName = "This is long so we can test large objects " + new string('a', 1024 * 65);
+            var expected = $"{{\"Id\":10,\"Name\":\"{expectedName}\",\"StreetName\":null}}";
+
+            // Act
+            var response = await Client.GetAsync($"/JsonOutputFormatter/{nameof(JsonOutputFormatterController.LargeObjectResult)}");
 
             // Assert
             await response.AssertStatusCodeAsync(HttpStatusCode.OK);

@@ -41,7 +41,6 @@ namespace Microsoft.Extensions.DependencyInjection
 
             // Default framework order
             builder.AddFormatterMappings();
-            builder.AddJsonFormatters();
             builder.AddViews();
             builder.AddRazorViewEngine();
             builder.AddRazorPages();

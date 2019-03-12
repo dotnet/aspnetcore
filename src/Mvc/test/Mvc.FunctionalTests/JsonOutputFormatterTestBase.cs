@@ -142,6 +142,21 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
+        public virtual async Task Formatting_LargeObject()
+        {
+            // Arrange
+            var expectedName = "This is long so we can test large objects " + new string('a', 1024 * 65);
+            var expected = $"{{\"id\":10,\"name\":\"{expectedName}\",\"streetName\":null}}";
+
+            // Act
+            var response = await Client.GetAsync($"/JsonOutputFormatter/{nameof(JsonOutputFormatterController.LargeObjectResult)}");
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+            Assert.Equal(expected, await response.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
         public virtual async Task Formatting_ProblemDetails()
         {
             using var _ = new ActivityReplacer();
