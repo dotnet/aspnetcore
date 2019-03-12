@@ -67,6 +67,9 @@ namespace Microsoft.AspNetCore.Builder
                 {
                     e.Metadata.Add(item);
                 }
+
+                // Add metadata that captures the hub type this endpoint is associated with
+                e.Metadata.Add(new HubMetadata { HubType = typeof(THub) });
             });
 
             return conventionBuilder;
