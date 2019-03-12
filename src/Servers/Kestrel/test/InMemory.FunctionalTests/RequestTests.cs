@@ -778,9 +778,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                 httpContext.Request.BodyReader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
 
-                // Check AdvanceTo(Start, Start) doesn't cause negative issues.
                 readResult = await httpContext.Request.BodyReader.ReadAsync();
-                httpContext.Request.BodyReader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.Start);
+                httpContext.Request.BodyReader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
                 tcs2.SetResult(null);
 
                 readResult = await httpContext.Request.BodyReader.ReadAsync();

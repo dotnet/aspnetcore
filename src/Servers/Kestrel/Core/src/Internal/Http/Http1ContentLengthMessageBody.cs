@@ -208,12 +208,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _context.Input.AdvanceTo(consumed, examined);
 
             var newlyExamined = examinedLength - _totalExaminedInPreviousReadResult;
-            if (newlyExamined > 0)
-            {
-                OnDataRead(newlyExamined);
-                _totalExaminedInPreviousReadResult += newlyExamined;
-                _inputLength -= newlyExamined;
-            }
+
+            // Newly examined can never be negative, pipereader.AdvanceTo will throw.
+            OnDataRead(newlyExamined);
+            _totalExaminedInPreviousReadResult += newlyExamined;
+            _inputLength -= newlyExamined;
 
             _totalExaminedInPreviousReadResult -= consumedLength;
         }
