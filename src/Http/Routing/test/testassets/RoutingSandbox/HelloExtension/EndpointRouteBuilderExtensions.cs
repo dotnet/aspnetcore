@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Builder
 {
     public static class EndpointRouteBuilderExtensions
     {
-        public static IEndpointConventionBuilder MapHello(this IEndpointRouteBuilder routes, string template, string greeter)
+        public static IEndpointConventionBuilder MapHello(this IEndpointRouteBuilder routes, string pattern, string greeter)
         {
             if (routes == null)
             {
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Builder
                .Build();
 
             return routes.Map(
-                template,
+                pattern,
                 "Hello " + greeter,
                 pipeline);
         }
