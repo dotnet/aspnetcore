@@ -87,7 +87,8 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(requestDelegate));
             }
 
-            var conventionBuilder = routes.Map(pattern, "Fallback " + pattern, requestDelegate);
+            var conventionBuilder = routes.Map(pattern, requestDelegate);
+            conventionBuilder.WithDisplayName("Fallback " + pattern);
             conventionBuilder.Add(b => ((RouteEndpointBuilder)b).Order = int.MaxValue);
             return conventionBuilder;
         }

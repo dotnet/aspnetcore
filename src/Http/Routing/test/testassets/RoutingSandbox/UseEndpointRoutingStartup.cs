@@ -71,7 +71,6 @@ namespace RoutingSandbox
                     });
                 builder.MapGet(
                     "/graph",
-                    "DFA Graph",
                     (httpContext) =>
                     {
                         using (var writer = new StreamWriter(httpContext.Response.Body, Encoding.UTF8, 1024, leaveOpen: true))
@@ -82,7 +81,7 @@ namespace RoutingSandbox
                         }
 
                         return Task.CompletedTask;
-                    });
+                    }).WithDisplayName("DFA Graph");
 
                 builder.MapGet("/attributes", HandlerWithAttributes);
 
