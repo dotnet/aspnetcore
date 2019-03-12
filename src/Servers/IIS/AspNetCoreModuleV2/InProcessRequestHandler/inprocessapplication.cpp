@@ -543,7 +543,7 @@ IN_PROCESS_APPLICATION::CreateHandler(
 void
 IN_PROCESS_APPLICATION::HandleRequestCompletion()
 {
-    //SRWSharedLock stopLock(m_stateLock);
+    SRWSharedLock stopLock(m_stateLock);
 
     auto requestCount = --m_requestCount;
 
@@ -554,7 +554,6 @@ IN_PROCESS_APPLICATION::HandleRequestCompletion()
         CallRequestsDrained();
     }
 }
-
 
 void IN_PROCESS_APPLICATION::CallRequestsDrained()
 {

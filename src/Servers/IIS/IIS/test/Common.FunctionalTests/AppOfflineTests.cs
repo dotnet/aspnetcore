@@ -79,11 +79,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             AddAppOffline(deploymentResult.ContentRoot);
 
             await AssertAppOffline(deploymentResult);
-            RetryHelper.RetryOperation(
-                () => DeletePublishOutput(deploymentResult),
-                e => Logger.LogError($"Failed to delete published output: {e.Message}"),
-                retryCount: 3,
-                retryDelayMilliseconds: RetryDelay.Milliseconds);
+            DeletePublishOutput(deploymentResult);
         }
 
         [ConditionalFact(Skip = "https://github.com/aspnet/IISIntegration/issues/933")]
@@ -161,7 +157,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         public async Task GracefulShutdownWorksWithMultipleRequestsInFlight_InProcess()
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite);
-            deploymentParameters.TransformArguments((a, _) => $"{a} RemoveShutdownLimit");
+            deploymentParameters.TransformArguments((a, _) => $"{a} IncreaseShutdownLimit");
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 

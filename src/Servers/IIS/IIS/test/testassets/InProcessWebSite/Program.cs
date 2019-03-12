@@ -64,11 +64,11 @@ namespace TestSite
                         Thread.Sleep(Timeout.Infinite);
                     }
                     break;
-                case "RemoveShutdownLimit":
+                case "IncreaseShutdownLimit":
                     {
                         var host = new WebHostBuilder()
                            .UseIIS()
-                            .UseShutdownTimeout(TimeSpan.FromSeconds(120))
+                           .UseShutdownTimeout(TimeSpan.FromSeconds(120))
                            .UseStartup<Startup>()
                            .Build();
 
