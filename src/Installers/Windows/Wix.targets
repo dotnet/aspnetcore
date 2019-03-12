@@ -29,10 +29,11 @@
     <!-- Don't need to use the name of the bundle since we have separate namespace GUIDs. The name will also changes based on the milestone and destabalize
          the upgrade code. Bundle upgrades pivot on Major.Minor.Patch changes. For example, 3.0.1-preview 1 can upgrade to 3.0.1-preview 8, but 3.0.1
          cannot upgrade to 3.0.2 or 3.1. -->
-    <GenerateGuid NamespaceGuid="$(NamespaceGuid)" Values="$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion);$(Platform)">
+    <BundleGuidInputs>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion);$(Platform)</BundleGuidInputs>
+    <GenerateGuid NamespaceGuid="$(NamespaceGuid)" Values="$(BundleGuidInputs)">
       <Output TaskParameter="Guid" PropertyName="BundleProviderKey" />
     </GenerateGuid>
-    <GenerateGuid NamespaceGuid="$(NamespaceGuid)" Values="$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion);Platform)">
+    <GenerateGuid NamespaceGuid="$(NamespaceGuid)" Values="$(BundleGuidInputs)">
       <Output TaskParameter="Guid" PropertyName="BundleUpgradeCode" />
     </GenerateGuid>
 
