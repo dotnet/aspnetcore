@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
@@ -15,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 {
     public class RequestTargetProcessingTests : LoggedTest
     {
-        [Fact]
+        [ConditionalFact]
         public async Task RequestPathIsNotNormalized()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -46,7 +47,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData("/")]
         [InlineData("/.")]
         [InlineData("/..")]
@@ -92,7 +93,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(HttpMethod.Options, "*")]
         [InlineData(HttpMethod.Connect, "host")]
         public async Task NonPathRequestTargetSetInRawTarget(HttpMethod method, string requestTarget)

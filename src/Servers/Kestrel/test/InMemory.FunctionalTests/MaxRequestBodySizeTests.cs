@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
@@ -16,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 {
     public class MaxRequestBodySizeTests : LoggedTest
     {
-        [Fact]
+        [ConditionalFact]
         public async Task RejectsRequestWithContentLengthHeaderExceedingGlobalLimit()
         {
             // 4 GiB
@@ -55,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             Assert.Equal(CoreStrings.BadRequest_RequestBodyTooLarge, requestRejectedEx.Message);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task RejectsRequestWithContentLengthHeaderExceedingPerRequestLimit()
         {
             // 8 GiB
@@ -102,7 +103,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             Assert.Equal(CoreStrings.BadRequest_RequestBodyTooLarge, requestRejectedEx.Message);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task DoesNotRejectRequestWithContentLengthHeaderExceedingGlobalLimitIfLimitDisabledPerRequest()
         {
             using (var server = new TestServer(async context =>
@@ -143,7 +144,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task DoesNotRejectBodylessGetRequestWithZeroMaxRequestBodySize()
         {
             using (var server = new TestServer(context => context.Request.Body.CopyToAsync(Stream.Null),
@@ -176,7 +177,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task SettingMaxRequestBodySizeAfterReadingFromRequestBodyThrows()
         {
             var perRequestMaxRequestBodySize = 0x10;
@@ -220,7 +221,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             Assert.Equal(CoreStrings.MaxRequestBodySizeCannotBeModifiedAfterRead, invalidOpEx.Message);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task SettingMaxRequestBodySizeAfterUpgradingRequestThrows()
         {
             InvalidOperationException invalidOpEx = null;
@@ -260,7 +261,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             Assert.Equal(CoreStrings.MaxRequestBodySizeCannotBeModifiedForUpgradedRequests, invalidOpEx.Message);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task EveryReadFailsWhenContentLengthHeaderExceedsGlobalLimit()
         {
             BadHttpRequestException requestRejectedEx1 = null;
@@ -302,7 +303,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             Assert.Equal(CoreStrings.BadRequest_RequestBodyTooLarge, requestRejectedEx2.Message);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ChunkFramingAndExtensionsCountTowardsRequestBodySize()
         {
             var chunkedPayload = "5;random chunk extension\r\nHello\r\n6\r\n World\r\n0\r\n\r\n";
@@ -348,7 +349,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             Assert.Equal(CoreStrings.BadRequest_RequestBodyTooLarge, requestRejectedEx.Message);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task TrailingHeadersDoNotCountTowardsRequestBodySize()
         {
             var chunkedPayload = $"5;random chunk extension\r\nHello\r\n6\r\n World\r\n0\r\n";
@@ -391,7 +392,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task PerRequestMaxRequestBodySizeGetsReset()
         {
             var chunkedPayload = "5;random chunk extension\r\nHello\r\n6\r\n World\r\n0\r\n\r\n";
@@ -463,7 +464,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             Assert.Equal(CoreStrings.BadRequest_RequestBodyTooLarge, requestRejectedEx.Message);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task EveryReadFailsWhenChunkedPayloadExceedsGlobalLimit()
         {
             BadHttpRequestException requestRejectedEx1 = null;

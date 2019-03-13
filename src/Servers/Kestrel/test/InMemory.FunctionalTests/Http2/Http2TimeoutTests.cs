@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
     public class Http2TimeoutTests : Http2TestBase
     {
-        [Fact]
+        [ConditionalFact]
         public async Task Preamble_NotReceivedInitially_WithinKeepAliveTimeout_ClosesConnection()
         {
             var mockSystemClock = _serviceContext.MockSystemClock;
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _mockTimeoutHandler.VerifyNoOtherCalls();
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task HEADERS_NotReceivedInitially_WithinKeepAliveTimeout_ClosesConnection()
         {
             var mockSystemClock = _serviceContext.MockSystemClock;
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _mockTimeoutHandler.VerifyNoOtherCalls();
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task HEADERS_NotReceivedAfterFirstRequest_WithinKeepAliveTimeout_ClosesConnection()
         {
             var mockSystemClock = _serviceContext.MockSystemClock;
@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _mockTimeoutHandler.VerifyNoOtherCalls();
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task HEADERS_ReceivedWithoutAllCONTINUATIONs_WithinRequestHeadersTimeout_AbortsConnection()
         {
             var mockSystemClock = _serviceContext.MockSystemClock;
@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _mockConnectionContext.VerifyNoOtherCalls();
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseDrain_SlowerThanMinimumDataRate_AbortsConnection()
         {
             var mockSystemClock = _serviceContext.MockSystemClock;
@@ -193,7 +193,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _mockConnectionContext.VerifyNoOtherCalls();
         }
 
-        [Theory(Skip = "https://github.com/aspnet/AspNetCore-Internal/issues/1879")]
+        [ConditionalTheory(Skip = "https://github.com/aspnet/AspNetCore-Internal/issues/1879")]
         [InlineData(Http2FrameType.DATA)]
         [InlineData(Http2FrameType.CONTINUATION)]
         public async Task AbortedStream_ResetsAndDrainsRequest_RefusesFramesAfterCooldownExpires(Http2FrameType finalFrameType)
@@ -323,7 +323,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _mockConnectionContext.VerifyNoOtherCalls();
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task DATA_Sent_TooSlowlyDueToSocketBackPressureOnLargeWrite_AbortsConnectionAfterRateTimeout()
         {
             var mockSystemClock = _serviceContext.MockSystemClock;
@@ -381,7 +381,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _mockConnectionContext.VerifyNoOtherCalls();
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task DATA_Sent_TooSlowlyDueToFlowControlOnSmallWrite_AbortsConnectionAfterGracePeriod()
         {
             var mockSystemClock = _serviceContext.MockSystemClock;
@@ -435,7 +435,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _mockConnectionContext.VerifyNoOtherCalls();
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task DATA_Sent_TooSlowlyDueToOutputFlowControlOnLargeWrite_AbortsConnectionAfterRateTimeout()
         {
             var mockSystemClock = _serviceContext.MockSystemClock;
@@ -491,7 +491,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _mockConnectionContext.VerifyNoOtherCalls();
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task DATA_Sent_TooSlowlyDueToOutputFlowControlOnMultipleStreams_AbortsConnectionAfterAdditiveRateTimeout()
         {
             var mockSystemClock = _serviceContext.MockSystemClock;
@@ -559,7 +559,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _mockConnectionContext.VerifyNoOtherCalls();
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task DATA_Received_TooSlowlyOnSmallRead_AbortsConnectionAfterGracePeriod()
         {
             var mockSystemClock = _serviceContext.MockSystemClock;
@@ -608,7 +608,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _mockConnectionContext.VerifyNoOtherCalls();
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task DATA_Received_TooSlowlyOnLargeRead_AbortsConnectionAfterRateTimeout()
         {
             var mockSystemClock = _serviceContext.MockSystemClock;
@@ -661,7 +661,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _mockConnectionContext.VerifyNoOtherCalls();
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task DATA_Received_TooSlowlyOnMultipleStreams_AbortsConnectionAfterAdditiveRateTimeout()
         {
             var mockSystemClock = _serviceContext.MockSystemClock;
@@ -730,7 +730,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _mockConnectionContext.VerifyNoOtherCalls();
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task DATA_Received_TooSlowlyOnSecondStream_AbortsConnectionAfterNonAdditiveRateTimeout()
         {
             var mockSystemClock = _serviceContext.MockSystemClock;
@@ -800,7 +800,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _mockConnectionContext.VerifyNoOtherCalls();
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task DATA_Received_SlowlyDueToConnectionFlowControl_DoesNotAbortConnection()
         {
             var initialConnectionWindowSize = _serviceContext.ServerOptions.Limits.Http2.InitialConnectionWindowSize;

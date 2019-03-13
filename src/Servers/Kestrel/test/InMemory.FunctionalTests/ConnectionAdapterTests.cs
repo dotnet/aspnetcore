@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
@@ -27,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 { TestApp.EchoAppPipeWriter }
             };
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(EchoAppRequestDelegates))]
         public async Task CanReadAndWriteWithRewritingConnectionAdapter(RequestDelegate requestDelegate)
         {
@@ -60,7 +61,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             Assert.Equal(sendString.Length, adapter.BytesRead);
         }
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(EchoAppRequestDelegates))]
         public async Task CanReadAndWriteWithAsyncConnectionAdapter(RequestDelegate requestDelegate)
         {
@@ -91,7 +92,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(EchoAppRequestDelegates))]
         public async Task ImmediateFinAfterOnConnectionAsyncClosesGracefully(RequestDelegate requestDelegate)
         {
@@ -114,7 +115,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(EchoAppRequestDelegates))]
         public async Task ImmediateFinAfterThrowingClosesGracefully(RequestDelegate requestDelegate)
         {
@@ -137,7 +138,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [CollectDump]
         [MemberData(nameof(EchoAppRequestDelegates))]
         public async Task ImmediateShutdownAfterOnConnectionAsyncDoesNotCrash(RequestDelegate requestDelegate)
@@ -165,7 +166,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ImmediateShutdownDuringOnConnectionAsyncDoesNotCrash()
         {
             var waitingConnectionAdapter = new WaitingConnectionAdapter();
@@ -195,7 +196,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(EchoAppRequestDelegates))]
         public async Task ThrowingSynchronousConnectionAdapterDoesNotCrashServer(RequestDelegate requestDelegate)
         {
@@ -223,7 +224,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             Assert.Contains(TestApplicationErrorLogger.Messages, m => m.Message.Contains($"Uncaught exception from the {nameof(IConnectionAdapter.OnConnectionAsync)} method of an {nameof(IConnectionAdapter)}."));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task CanFlushAsyncWithConnectionAdapter()
         {
             var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
@@ -257,7 +258,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task CanFlushAsyncWithConnectionAdapterPipeWriter()
         {
             var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))

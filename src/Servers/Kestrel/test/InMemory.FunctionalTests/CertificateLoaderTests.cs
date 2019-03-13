@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
@@ -12,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 {
     public class CertificateLoaderTests : LoggedTest
     {
-        [Theory]
+        [ConditionalTheory]
         [InlineData("no_extensions.pfx")]
         public void IsCertificateAllowedForServerAuth_AllowWithNoExtensions(string testCertName)
         {
@@ -24,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             Assert.True(CertificateLoader.IsCertificateAllowedForServerAuth(cert));
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData("eku.server.pfx")]
         [InlineData("eku.multiple_usages.pfx")]
         public void IsCertificateAllowedForServerAuth_ValidatesEnhancedKeyUsageOnCertificate(string testCertName)
@@ -39,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             Assert.True(CertificateLoader.IsCertificateAllowedForServerAuth(cert));
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData("eku.code_signing.pfx")]
         [InlineData("eku.client.pfx")]
         public void IsCertificateAllowedForServerAuth_RejectsCertificatesMissingServerEku(string testCertName)

@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
@@ -66,7 +67,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             await response.Body.WriteAsync(bytes, 0, bytes.Length);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Http10TransferEncoding()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -95,7 +96,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Http10TransferEncodingPipes()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -124,7 +125,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Http10KeepAliveTransferEncoding()
         {
             var testContext = new TestServiceContext();
@@ -167,7 +168,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task RequestBodyIsConsumedAutomaticallyIfAppDoesntConsumeItFully()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -222,7 +223,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task TrailingHeadersAreParsed()
         {
             var requestCount = 10;
@@ -309,7 +310,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task TrailingHeadersAreParsedWithPipe()
         {
             var requestCount = 10;
@@ -398,7 +399,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 await server.StopAsync();
             }
         }
-        [Fact]
+        [ConditionalFact]
         public async Task TrailingHeadersCountTowardsHeadersTotalSizeLimit()
         {
             const string transferEncodingHeaderLine = "Transfer-Encoding: chunked";
@@ -443,7 +444,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task TrailingHeadersCountTowardsHeaderCountLimit()
         {
             const string transferEncodingHeaderLine = "Transfer-Encoding: chunked";
@@ -485,7 +486,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ExtensionsAreIgnored()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -572,7 +573,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task InvalidLengthResultsIn400()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -616,7 +617,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task InvalidSizedDataResultsIn400()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -662,7 +663,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
 
-        [Fact]
+        [ConditionalFact]
         public async Task ChunkedNotFinalTransferCodingResultsIn400()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -766,7 +767,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ClosingConnectionMidChunkPrefixThrows()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -815,7 +816,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ChunkedRequestCallCancelPendingReadWorks()
         {
             var tcs = new TaskCompletionSource<object>();
@@ -873,7 +874,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ChunkedRequestCallCompleteThrowsExceptionOnRead()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -924,7 +925,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ChunkedRequestCallCompleteWithExceptionCauses500()
         {
             var tcs = new TaskCompletionSource<object>();

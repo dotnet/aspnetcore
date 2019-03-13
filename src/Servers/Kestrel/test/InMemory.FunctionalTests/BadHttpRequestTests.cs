@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
@@ -17,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 {
     public class BadHttpRequestTests : LoggedTest
     {
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(InvalidRequestLineData))]
         public Task TestInvalidRequestLines(string request, string expectedExceptionMessage)
         {
@@ -27,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 expectedExceptionMessage);
         }
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(UnrecognizedHttpVersionData))]
         public Task TestInvalidRequestLinesWithUnrecognizedVersion(string httpVersion)
         {
@@ -37,7 +38,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 CoreStrings.FormatBadRequest_UnrecognizedHTTPVersion(httpVersion));
         }
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(InvalidRequestHeaderData))]
         public Task TestInvalidHeaders(string rawHeaders, string expectedExceptionMessage)
         {
@@ -47,7 +48,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 expectedExceptionMessage);
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData("Hea\0der: value", "Invalid characters in header name.")]
         [InlineData("Header: va\0lue", "Malformed request: invalid headers.")]
         [InlineData("Head\x80r: value", "Invalid characters in header name.")]
@@ -60,7 +61,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 expectedExceptionMessage);
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData("POST")]
         [InlineData("PUT")]
         public Task BadRequestIfMethodRequiresLengthButNoContentLengthOrTransferEncodingInRequest(string method)
@@ -71,7 +72,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 CoreStrings.FormatBadRequest_LengthRequired(method));
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData("POST")]
         [InlineData("PUT")]
         public Task BadRequestIfMethodRequiresLengthButNoContentLengthInHttp10Request(string method)
@@ -82,7 +83,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 CoreStrings.FormatBadRequest_LengthRequiredHttp10(method));
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData("NaN")]
         [InlineData("-1")]
         public Task BadRequestIfContentLengthInvalid(string contentLength)
@@ -93,7 +94,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 CoreStrings.FormatBadRequest_InvalidContentLength_Detail(contentLength));
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData("GET *", "OPTIONS")]
         [InlineData("GET www.host.com", "CONNECT")]
         public Task RejectsIncorrectMethods(string request, string allowedMethod)
@@ -105,7 +106,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 $"Allow: {allowedMethod}");
         }
 
-        [Fact]
+        [ConditionalFact]
         public Task BadRequestIfHostHeaderMissing()
         {
             return TestBadRequest(
@@ -114,7 +115,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 CoreStrings.BadRequest_MissingHostHeader);
         }
 
-        [Fact]
+        [ConditionalFact]
         public Task BadRequestIfMultipleHostHeaders()
         {
             return TestBadRequest("GET / HTTP/1.1\r\nHost: localhost\r\nHost: localhost\r\n\r\n",
@@ -122,7 +123,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 CoreStrings.BadRequest_MultipleHostHeaders);
         }
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(InvalidHostHeaderData))]
         public Task BadRequestIfHostHeaderDoesNotMatchRequestTarget(string requestTarget, string host)
         {
@@ -132,7 +133,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 CoreStrings.FormatBadRequest_InvalidHostHeader_Detail(host.Trim()));
         }
 
-        [Fact]
+        [ConditionalFact]
         public Task BadRequestFor10BadHostHeaderFormat()
         {
             return TestBadRequest(
@@ -141,7 +142,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 CoreStrings.FormatBadRequest_InvalidHostHeader_Detail("a=b"));
         }
 
-        [Fact]
+        [ConditionalFact]
         public Task BadRequestFor11BadHostHeaderFormat()
         {
             return TestBadRequest(
@@ -150,7 +151,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 CoreStrings.FormatBadRequest_InvalidHostHeader_Detail("a=b"));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task BadRequestLogsAreNotHigherThanInformation()
         {
             using (var server = new TestServer(async context =>
@@ -174,7 +175,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             Assert.Contains(TestSink.Writes, w => w.EventId.Id == 17 && w.LogLevel == LogLevel.Information);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task TestRequestSplitting()
         {
             using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory)))

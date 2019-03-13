@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         private static X509Certificate2 _x509Certificate2 = TestResources.GetTestCertificate();
         private static X509Certificate2 _x509Certificate2NoExt = TestResources.GetTestCertificate("no_extensions.pfx");
 
-        [Fact]
+        [ConditionalFact]
         public async Task CanReadAndWriteWithHttpsConnectionAdapter()
         {
             var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task HandshakeDetailsAreAvailable()
         {
             var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task RequireCertificateFailsWhenNoCertificate()
         {
             var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task AllowCertificateContinuesWhenNoCertificate()
         {
             var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public void ThrowsWhenNoServerCertificateIsProvided()
         {
             Assert.Throws<ArgumentException>(() => new HttpsConnectionAdapter(
@@ -148,7 +148,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 );
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task UsesProvidedServerCertificate()
         {
             var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
@@ -174,7 +174,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task UsesProvidedServerCertificateSelector()
         {
             var selectorCalled = 0;
@@ -211,7 +211,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task UsesProvidedServerCertificateSelectorEachTime()
         {
             var selectorCalled = 0;
@@ -262,7 +262,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task UsesProvidedServerCertificateSelectorValidatesEkus()
         {
             var selectorCalled = 0;
@@ -296,7 +296,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task UsesProvidedServerCertificateSelectorOverridesServerCertificate()
         {
             var selectorCalled = 0;
@@ -334,7 +334,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task UsesProvidedServerCertificateSelectorFailsIfYouReturnNull()
         {
             var selectorCalled = 0;
@@ -368,7 +368,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(HttpProtocols.Http1)]
         [InlineData(HttpProtocols.Http1AndHttp2)] // Make sure Http/1.1 doesn't regress with Http/2 enabled.
         public async Task CertificatePassedToHttpContext(HttpProtocols httpProtocols)
@@ -409,7 +409,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task HttpsSchemePassedToRequestFeature()
         {
             var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
@@ -428,7 +428,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task DoesNotSupportTls10()
         {
             var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
@@ -459,7 +459,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Theory(Skip = "https://github.com/aspnet/AspNetCore/issues/7265")]
+        [ConditionalTheory(Skip = "https://github.com/aspnet/AspNetCore/issues/7265")]
         [InlineData(ClientCertificateMode.AllowCertificate)]
         [InlineData(ClientCertificateMode.RequireCertificate)]
         public async Task ClientCertificateValidationGetsCalledWithNotNullParameters(ClientCertificateMode mode)
@@ -497,7 +497,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [SkipOnHelix]
         [InlineData(ClientCertificateMode.AllowCertificate)]
         [InlineData(ClientCertificateMode.RequireCertificate)]
@@ -528,7 +528,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(ClientCertificateMode.AllowCertificate)]
         [InlineData(ClientCertificateMode.RequireCertificate)]
         public async Task RejectsConnectionOnSslPolicyErrorsWhenNoValidation(ClientCertificateMode mode)
@@ -557,7 +557,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task CertificatePassedToHttpContextIsNotDisposed()
         {
             var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
@@ -598,7 +598,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData("no_extensions.pfx")]
         public void AcceptsCertificateWithoutExtensions(string testCertName)
         {
@@ -613,7 +613,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             });
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData("eku.server.pfx")]
         [InlineData("eku.multiple_usages.pfx")]
         public void ValidatesEnhancedKeyUsageOnCertificate(string testCertName)
@@ -631,7 +631,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             });
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData("eku.code_signing.pfx")]
         [InlineData("eku.client.pfx")]
         public void ThrowsForCertificatesMissingServerEku(string testCertName)

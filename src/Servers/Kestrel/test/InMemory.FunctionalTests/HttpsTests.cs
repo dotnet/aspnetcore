@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
@@ -37,7 +38,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             return serverOptions;
         }
 
-        [Fact]
+        [ConditionalFact]
         public void UseHttpsDefaultsToDefaultCert()
         {
             var serverOptions = CreateServerOptions();
@@ -62,7 +63,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             Assert.False(serverOptions.IsDevCertLoaded);
         }
 
-        [Fact]
+        [ConditionalFact]
         public void ConfigureHttpsDefaultsNeverLoadsDefaultCert()
         {
             var serverOptions = CreateServerOptions();
@@ -86,7 +87,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             Assert.Null(serverOptions.DefaultCertificate);
         }
 
-        [Fact]
+        [ConditionalFact]
         public void ConfigureCertSelectorNeverLoadsDefaultCert()
         {
             var serverOptions = CreateServerOptions();
@@ -115,7 +116,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             Assert.Null(serverOptions.DefaultCertificate);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task EmptyRequestLoggedAsDebug()
         {
             var loggerProvider = new HandshakeErrorLoggerProvider();
@@ -143,7 +144,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 userMessage: string.Join(Environment.NewLine, loggerProvider.ErrorLogger.ErrorMessages));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ClientHandshakeFailureLoggedAsDebug()
         {
             var loggerProvider = new HandshakeErrorLoggerProvider();
@@ -173,7 +174,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         // Regression test for https://github.com/aspnet/KestrelHttpServer/issues/1103#issuecomment-246971172
-        [Fact]
+        [ConditionalFact]
         public async Task DoesNotThrowObjectDisposedExceptionOnConnectionAbort()
         {
             var loggerProvider = new HandshakeErrorLoggerProvider();
@@ -219,7 +220,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             Assert.False(loggerProvider.ErrorLogger.ObjectDisposedExceptionLogged);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task DoesNotThrowObjectDisposedExceptionFromWriteAsyncAfterConnectionIsAborted()
         {
             var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -263,7 +264,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         // Regression test for https://github.com/aspnet/KestrelHttpServer/issues/1693
-        [Fact]
+        [ConditionalFact]
         public async Task DoesNotThrowObjectDisposedExceptionOnEmptyConnection()
         {
             var loggerProvider = new HandshakeErrorLoggerProvider();
@@ -290,7 +291,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         // Regression test for https://github.com/aspnet/KestrelHttpServer/pull/1197
-        [Fact]
+        [ConditionalFact]
         public async Task ConnectionFilterDoesNotLeakBlock()
         {
             var loggerProvider = new HandshakeErrorLoggerProvider();
@@ -311,7 +312,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task HandshakeTimesOutAndIsLoggedAsDebug()
         {
             var loggerProvider = new HandshakeErrorLoggerProvider();
@@ -356,7 +357,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             Assert.Equal(LogLevel.Debug, loggerProvider.FilterLogger.LastLogLevel);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ClientAttemptingToUseUnsupportedProtocolIsLoggedAsDebug()
         {
             var loggerProvider = new HandshakeErrorLoggerProvider();

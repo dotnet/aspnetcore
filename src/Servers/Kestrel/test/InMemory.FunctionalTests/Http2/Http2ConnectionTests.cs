@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 using Moq;
@@ -24,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
     public class Http2ConnectionTests : Http2TestBase
     {
-        [Fact]
+        [ConditionalFact]
         public async Task Frame_Received_OverMaxSize_FrameError()
         {
             await InitializeConnectionAsync(_echoApplication);
@@ -41,7 +42,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorFrameOverLimit(length, Http2PeerSettings.MinAllowedMaxFrameSize));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ServerSettings_ChangesRequestMaxFrameSize()
         {
             var length = Http2PeerSettings.MinAllowedMaxFrameSize + 10;
@@ -73,7 +74,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task DATA_Received_ReadByStream()
         {
             await InitializeConnectionAsync(_echoApplication);
@@ -99,7 +100,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.True(_helloWorldBytes.AsSpan().SequenceEqual(dataFrame.PayloadSequence.ToArray()));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task DATA_Received_MaxSize_ReadByStream()
         {
             await InitializeConnectionAsync(_echoApplication);
@@ -126,7 +127,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.True(_maxData.AsSpan().SequenceEqual(dataFrame.PayloadSequence.ToArray()));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task DATA_Received_GreaterThanInitialWindowSize_ReadByStream()
         {
             var initialStreamWindowSize = _serviceContext.ServerOptions.Limits.Http2.InitialStreamWindowSize;
@@ -227,7 +228,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal(updateSize, connectionWindowUpdateFrame1.WindowUpdateSizeIncrement);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task DATA_Received_RightAtWindowLimit_DoesNotPausePipe()
         {
             var initialStreamWindowSize = _serviceContext.ServerOptions.Limits.Http2.InitialStreamWindowSize;
@@ -257,7 +258,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task DATA_Received_Multiple_ReadByStream()
         {
             await InitializeConnectionAsync(_bufferingApplication);
@@ -289,7 +290,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.True(_helloWorldBytes.AsSpan().SequenceEqual(dataFrame.PayloadSequence.ToArray()));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task DATA_Received_Multiplexed_ReadByStreams()
         {
             await InitializeConnectionAsync(_echoApplication);
@@ -355,7 +356,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.True(_worldBytes.AsSpan().SequenceEqual(stream3DataFrame2.PayloadSequence.ToArray()));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task DATA_Received_Multiplexed_GreaterThanInitialWindowSize_ReadByStream()
         {
             var initialStreamWindowSize = _serviceContext.ServerOptions.Limits.Http2.InitialStreamWindowSize;
@@ -471,7 +472,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal(updateSize, connectionWindowUpdateFrame.WindowUpdateSizeIncrement);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task DATA_Received_Multiplexed_AppMustNotBlockOtherFrames()
         {
             var stream1Read = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -540,7 +541,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(0)]
         [InlineData(1)]
         [InlineData(255)]
@@ -569,7 +570,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.True(_helloWorldBytes.AsSpan().SequenceEqual(dataFrame.PayloadSequence.ToArray()));
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(0)]
         [InlineData(1)]
         [InlineData(255)]
@@ -641,7 +642,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal(updateSize, connectionWindowUpdateFrame.WindowUpdateSizeIncrement);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task DATA_Received_ButNotConsumedByApp_CountsTowardsInputFlowControl()
         {
             var initialConnectionWindowSize = _serviceContext.ServerOptions.Limits.Http2.InitialConnectionWindowSize;
@@ -777,7 +778,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal(updateSize, connectionWindowUpdateFrame.WindowUpdateSizeIncrement);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task DATA_Received_StreamIdZero_ConnectionError()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -791,7 +792,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorStreamIdZero(Http2FrameType.DATA));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task DATA_Received_StreamIdEven_ConnectionError()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -805,7 +806,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorStreamIdEven(Http2FrameType.DATA, streamId: 2));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task DATA_Received_PaddingEqualToFramePayloadLength_ConnectionError()
         {
             await InitializeConnectionAsync(_echoApplication);
@@ -820,7 +821,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorPaddingTooLong(Http2FrameType.DATA));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task DATA_Received_PaddingGreaterThanFramePayloadLength_ConnectionError()
         {
             await InitializeConnectionAsync(_echoApplication);
@@ -835,7 +836,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorPaddingTooLong(Http2FrameType.DATA));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task DATA_Received_FrameLengthZeroPaddingZero_ConnectionError()
         {
             await InitializeConnectionAsync(_echoApplication);
@@ -850,7 +851,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorUnexpectedFrameLength(Http2FrameType.DATA, expectedLength: 1));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task DATA_Received_InterleavedWithHeaders_ConnectionError()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -865,7 +866,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorHeadersInterleaved(Http2FrameType.DATA, streamId: 1, headersStreamId: 1));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task DATA_Received_StreamIdle_ConnectionError()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -879,7 +880,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorStreamIdle(Http2FrameType.DATA, streamId: 1));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task DATA_Received_StreamHalfClosedRemote_ConnectionError()
         {
             // Use _waitForAbortApplication so we know the stream will still be active when we send the illegal DATA frame
@@ -896,7 +897,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorStreamHalfClosedRemote(Http2FrameType.DATA, streamId: 1));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task DATA_Received_StreamClosed_ConnectionError()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -925,7 +926,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 });
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task DATA_Received_StreamClosedImplicitly_ConnectionError()
         {
             // http://httpwg.org/specs/rfc7540.html#rfc.section.5.1.1
@@ -957,7 +958,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorStreamClosed(Http2FrameType.DATA, streamId: 1));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task DATA_Received_NoStreamWindowSpace_ConnectionError()
         {
             var initialWindowSize = _serviceContext.ServerOptions.Limits.Http2.InitialStreamWindowSize;
@@ -979,7 +980,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.Http2ErrorFlowControlWindowExceeded);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task DATA_Received_NoConnectionWindowSpace_ConnectionError()
         {
             var initialWindowSize = _serviceContext.ServerOptions.Limits.Http2.InitialConnectionWindowSize;
@@ -1008,7 +1009,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.Http2ErrorFlowControlWindowExceeded);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task DATA_Sent_DespiteConnectionOutputFlowControl_IfEmptyAndEndsStream()
         {
             // Zero-length data frames are allowed to be sent even if there is no space available in the flow control window.
@@ -1093,7 +1094,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await WaitForAllStreamsAsync();
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task DATA_Sent_DespiteStreamOutputFlowControl_IfEmptyAndEndsStream()
         {
             // Zero-length data frames are allowed to be sent even if there is no space available in the flow control window.
@@ -1118,7 +1119,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task HEADERS_Received_Decoded()
         {
             await InitializeConnectionAsync(_readHeadersApplication);
@@ -1139,7 +1140,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(0)]
         [InlineData(1)]
         [InlineData(255)]
@@ -1163,7 +1164,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task HEADERS_Received_WithPriority_Decoded()
         {
             await InitializeConnectionAsync(_readHeadersApplication);
@@ -1184,7 +1185,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(0)]
         [InlineData(1)]
         [InlineData(255)]
@@ -1208,7 +1209,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(true)]
         [InlineData(false)]
         public async Task HEADERS_Received_WithTrailers_Discarded(bool sendData)
@@ -1260,7 +1261,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task HEADERS_Received_ContainsExpect100Continue_100ContinueSent()
         {
             await InitializeConnectionAsync(_echoApplication);
@@ -1292,7 +1293,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task HEADERS_Received_AppCannotBlockOtherFrames()
         {
             var firstRequestReceived = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -1349,7 +1350,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task HEADERS_OverMaxStreamLimit_Refused()
         {
             CreateConnection();
@@ -1379,7 +1380,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task HEADERS_Received_StreamIdZero_ConnectionError()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -1393,7 +1394,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorStreamIdZero(Http2FrameType.HEADERS));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task HEADERS_Received_StreamIdEven_ConnectionError()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -1407,7 +1408,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorStreamIdEven(Http2FrameType.HEADERS, streamId: 2));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task HEADERS_Received_StreamClosed_ConnectionError()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -1437,7 +1438,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 });
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task HEADERS_Received_StreamHalfClosedRemote_ConnectionError()
         {
             // Use _waitForAbortApplication so we know the stream will still be active when we send the illegal DATA frame
@@ -1454,7 +1455,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorStreamHalfClosedRemote(Http2FrameType.HEADERS, streamId: 1));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task HEADERS_Received_StreamClosedImplicitly_ConnectionError()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -1480,7 +1481,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorStreamClosed(Http2FrameType.HEADERS, streamId: 1));
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(1)]
         [InlineData(255)]
         public async Task HEADERS_Received_PaddingEqualToFramePayloadLength_ConnectionError(byte padLength)
@@ -1497,7 +1498,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorPaddingTooLong(Http2FrameType.HEADERS));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task HEADERS_Received_PaddingFieldMissing_ConnectionError()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -1511,7 +1512,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorUnexpectedFrameLength(Http2FrameType.HEADERS, expectedLength: 1));
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(1, 2)]
         [InlineData(254, 255)]
         public async Task HEADERS_Received_PaddingGreaterThanFramePayloadLength_ConnectionError(int frameLength, byte padLength)
@@ -1527,7 +1528,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorPaddingTooLong(Http2FrameType.HEADERS));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task HEADERS_Received_InterleavedWithHeaders_ConnectionError()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -1542,7 +1543,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorHeadersInterleaved(Http2FrameType.HEADERS, streamId: 3, headersStreamId: 1));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task HEADERS_Received_WithPriority_StreamDependencyOnSelf_ConnectionError()
         {
             await InitializeConnectionAsync(_readHeadersApplication);
@@ -1556,7 +1557,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorStreamSelfDependency(Http2FrameType.HEADERS, streamId: 1));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task HEADERS_Received_IncompleteHeaderBlock_ConnectionError()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -1570,7 +1571,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.HPackErrorIncompleteHeaderBlock);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task HEADERS_Received_IntegerOverLimit_ConnectionError()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -1598,7 +1599,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.HPackErrorIntegerTooBig);
         }
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(IllegalTrailerData))]
         public async Task HEADERS_Received_WithTrailers_ContainsIllegalTrailer_ConnectionError(byte[] trailers, string expectedErrorMessage)
         {
@@ -1614,7 +1615,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: expectedErrorMessage);
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(Http2HeadersFrameFlags.NONE)]
         [InlineData(Http2HeadersFrameFlags.END_HEADERS)]
         public async Task HEADERS_Received_WithTrailers_EndStreamNotSet_ConnectionError(Http2HeadersFrameFlags flags)
@@ -1631,7 +1632,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.Http2ErrorHeadersWithTrailersNoEndStream);
         }
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(UpperCaseHeaderNameData))]
         public async Task HEADERS_Received_HeaderNameContainsUpperCaseCharacter_ConnectionError(byte[] headerBlock)
         {
@@ -1645,7 +1646,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.Http2ErrorHeaderNameUppercase);
         }
 
-        [Fact]
+        [ConditionalFact]
         public Task HEADERS_Received_HeaderBlockContainsUnknownPseudoHeaderField_ConnectionError()
         {
             var headers = new[]
@@ -1659,7 +1660,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             return HEADERS_Received_InvalidHeaderFields_ConnectionError(headers, expectedErrorMessage: CoreStrings.Http2ErrorUnknownPseudoHeaderField);
         }
 
-        [Fact]
+        [ConditionalFact]
         public Task HEADERS_Received_HeaderBlockContainsResponsePseudoHeaderField_ConnectionError()
         {
             var headers = new[]
@@ -1673,14 +1674,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             return HEADERS_Received_InvalidHeaderFields_ConnectionError(headers, expectedErrorMessage: CoreStrings.Http2ErrorResponsePseudoHeaderField);
         }
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(DuplicatePseudoHeaderFieldData))]
         public Task HEADERS_Received_HeaderBlockContainsDuplicatePseudoHeaderField_ConnectionError(IEnumerable<KeyValuePair<string, string>> headers)
         {
             return HEADERS_Received_InvalidHeaderFields_ConnectionError(headers, expectedErrorMessage: CoreStrings.Http2ErrorDuplicatePseudoHeaderField);
         }
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(ConnectMissingPseudoHeaderFieldData))]
         public async Task HEADERS_Received_HeaderBlockDoesNotContainMandatoryPseudoHeaderField_MethodIsCONNECT_NoError(IEnumerable<KeyValuePair<string, string>> headers)
         {
@@ -1700,7 +1701,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(PseudoHeaderFieldAfterRegularHeadersData))]
         public Task HEADERS_Received_HeaderBlockContainsPseudoHeaderFieldAfterRegularHeaders_ConnectionError(IEnumerable<KeyValuePair<string, string>> headers)
         {
@@ -1718,7 +1719,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: expectedErrorMessage);
         }
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(MissingPseudoHeaderFieldData))]
         public async Task HEADERS_Received_HeaderBlockDoesNotContainMandatoryPseudoHeaderField_StreamError(IEnumerable<KeyValuePair<string, string>> headers)
         {
@@ -1739,7 +1740,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorStreamClosed(Http2FrameType.HEADERS, streamId: 1));
         }
 
-        [Fact]
+        [ConditionalFact]
         public Task HEADERS_Received_HeaderBlockOverLimit_ConnectionError()
         {
             // > 32kb
@@ -1761,7 +1762,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             return HEADERS_Received_InvalidHeaderFields_ConnectionError(headers, CoreStrings.BadRequest_HeadersExceedMaxTotalSize);
         }
 
-        [Fact]
+        [ConditionalFact]
         public Task HEADERS_Received_TooManyHeaders_ConnectionError()
         {
             // > MaxRequestHeaderCount (100)
@@ -1780,7 +1781,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             return HEADERS_Received_InvalidHeaderFields_ConnectionError(headers, CoreStrings.BadRequest_TooManyHeaders);
         }
 
-        [Fact]
+        [ConditionalFact]
         public Task HEADERS_Received_InvalidCharacters_ConnectionError()
         {
             var headers = new[]
@@ -1794,7 +1795,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             return HEADERS_Received_InvalidHeaderFields_ConnectionError(headers, CoreStrings.BadRequest_MalformedRequestInvalidHeaders);
         }
 
-        [Fact]
+        [ConditionalFact]
         public Task HEADERS_Received_HeaderBlockContainsConnectionHeader_ConnectionError()
         {
             var headers = new[]
@@ -1808,7 +1809,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             return HEADERS_Received_InvalidHeaderFields_ConnectionError(headers, CoreStrings.Http2ErrorConnectionSpecificHeaderField);
         }
 
-        [Fact]
+        [ConditionalFact]
         public Task HEADERS_Received_HeaderBlockContainsTEHeader_ValueIsNotTrailers_ConnectionError()
         {
             var headers = new[]
@@ -1822,7 +1823,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             return HEADERS_Received_InvalidHeaderFields_ConnectionError(headers, CoreStrings.Http2ErrorConnectionSpecificHeaderField);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task HEADERS_Received_HeaderBlockContainsTEHeader_ValueIsTrailers_NoError()
         {
             var headers = new[]
@@ -1849,7 +1850,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task PRIORITY_Received_StreamIdZero_ConnectionError()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -1863,7 +1864,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorStreamIdZero(Http2FrameType.PRIORITY));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task PRIORITY_Received_StreamIdEven_ConnectionError()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -1877,7 +1878,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorStreamIdEven(Http2FrameType.PRIORITY, streamId: 2));
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(4)]
         [InlineData(6)]
         public async Task PRIORITY_Received_LengthNotFive_ConnectionError(int length)
@@ -1893,7 +1894,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorUnexpectedFrameLength(Http2FrameType.PRIORITY, expectedLength: 5));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task PRIORITY_Received_InterleavedWithHeaders_ConnectionError()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -1908,7 +1909,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorHeadersInterleaved(Http2FrameType.PRIORITY, streamId: 1, headersStreamId: 1));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task PRIORITY_Received_StreamDependencyOnSelf_ConnectionError()
         {
             await InitializeConnectionAsync(_readHeadersApplication);
@@ -1922,7 +1923,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorStreamSelfDependency(Http2FrameType.PRIORITY, 1));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task RST_STREAM_Received_ContinuesAppsAwaitingConnectionOutputFlowControl()
         {
             var writeTasks = new Task[4];
@@ -2042,7 +2043,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Contains(3, _abortedStreamIds);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task RST_STREAM_Received_ContinuesAppsAwaitingStreamOutputFlowControl()
         {
             var writeTasks = new Task[6];
@@ -2126,7 +2127,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Contains(5, _abortedStreamIds);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task RST_STREAM_Received_ReturnsSpaceToConnectionInputFlowControlWindow()
         {
             var initialConnectionWindowSize = _serviceContext.ServerOptions.Limits.Http2.InitialConnectionWindowSize;
@@ -2160,7 +2161,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal(updateSize, connectionWindowUpdateFrame.WindowUpdateSizeIncrement);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task RST_STREAM_Received_StreamIdZero_ConnectionError()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -2174,7 +2175,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorStreamIdZero(Http2FrameType.RST_STREAM));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task RST_STREAM_Received_StreamIdEven_ConnectionError()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -2188,7 +2189,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorStreamIdEven(Http2FrameType.RST_STREAM, streamId: 2));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task RST_STREAM_Received_StreamIdle_ConnectionError()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -2202,7 +2203,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorStreamIdle(Http2FrameType.RST_STREAM, streamId: 1));
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(3)]
         [InlineData(5)]
         public async Task RST_STREAM_Received_LengthNotFour_ConnectionError(int length)
@@ -2221,7 +2222,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorUnexpectedFrameLength(Http2FrameType.RST_STREAM, expectedLength: 4));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task RST_STREAM_Received_InterleavedWithHeaders_ConnectionError()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -2237,7 +2238,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         // Compare to h2spec http2/5.1/8
-        [Fact]
+        [ConditionalFact]
         public async Task RST_STREAM_IncompleteRequest_AdditionalDataFrames_ConnectionAborted()
         {
             var tcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -2261,7 +2262,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 Http2ErrorCode.STREAM_CLOSED, CoreStrings.FormatHttp2ErrorStreamAborted(Http2FrameType.DATA, 1));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task RST_STREAM_IncompleteRequest_AdditionalTrailerFrames_ConnectionAborted()
         {
             var tcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -2285,7 +2286,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 Http2ErrorCode.STREAM_CLOSED, CoreStrings.FormatHttp2ErrorStreamAborted(Http2FrameType.HEADERS, 1));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task RST_STREAM_IncompleteRequest_AdditionalResetFrame_ConnectionAborted()
         {
             var tcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -2308,7 +2309,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 Http2ErrorCode.STREAM_CLOSED, CoreStrings.FormatHttp2ErrorStreamAborted(Http2FrameType.RST_STREAM, 1));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task RST_STREAM_IncompleteRequest_AdditionalWindowUpdateFrame_ConnectionAborted()
         {
             var tcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -2331,7 +2332,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 Http2ErrorCode.STREAM_CLOSED, CoreStrings.FormatHttp2ErrorStreamAborted(Http2FrameType.WINDOW_UPDATE, 1));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task SETTINGS_KestrelDefaults_Sent()
         {
             CreateConnection();
@@ -2377,7 +2378,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task SETTINGS_Custom_Sent()
         {
             CreateConnection();
@@ -2427,7 +2428,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task SETTINGS_Received_Sends_ACK()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -2435,7 +2436,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task SETTINGS_ACK_Received_DoesNotSend_ACK()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -2448,7 +2449,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task SETTINGS_Received_StreamIdNotZero_ConnectionError()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -2462,7 +2463,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorStreamIdNotZero(Http2FrameType.SETTINGS));
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(Http2SettingsParameter.SETTINGS_ENABLE_PUSH, 2, Http2ErrorCode.PROTOCOL_ERROR)]
         [InlineData(Http2SettingsParameter.SETTINGS_ENABLE_PUSH, uint.MaxValue, Http2ErrorCode.PROTOCOL_ERROR)]
         [InlineData(Http2SettingsParameter.SETTINGS_INITIAL_WINDOW_SIZE, (uint)int.MaxValue + 1, Http2ErrorCode.FLOW_CONTROL_ERROR)]
@@ -2485,7 +2486,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorSettingsParameterOutOfRange(parameter));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task SETTINGS_Received_InterleavedWithHeaders_ConnectionError()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -2500,7 +2501,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorHeadersInterleaved(Http2FrameType.SETTINGS, streamId: 0, headersStreamId: 1));
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(1)]
         [InlineData(16 * 1024 - 9)] // Min. max. frame size minus header length
         public async Task SETTINGS_Received_WithACK_LengthNotZero_ConnectionError(int length)
@@ -2516,7 +2517,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.Http2ErrorSettingsAckLengthNotZero);
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(1)]
         [InlineData(5)]
         [InlineData(7)]
@@ -2535,7 +2536,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.Http2ErrorSettingsLengthNotMultipleOfSix);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task SETTINGS_Received_WithInitialWindowSizePushingStreamWindowOverMax_ConnectionError()
         {
             await InitializeConnectionAsync(_waitForAbortApplication);
@@ -2559,7 +2560,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.Http2ErrorInitialWindowSizeInvalid);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task SETTINGS_Received_ChangesAllowedResponseMaxFrameSize()
         {
             CreateConnection();
@@ -2616,7 +2617,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task SETTINGS_Received_ClientMaxFrameSizeCannotExceedServerMaxFrameSize()
         {
             var serverMaxFrame = Http2PeerSettings.MinAllowedMaxFrameSize + 1024;
@@ -2655,7 +2656,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task SETTINGS_Received_ChangesHeaderTableSize()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -2673,7 +2674,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task PUSH_PROMISE_Received_ConnectionError()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -2687,7 +2688,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.Http2ErrorPushPromiseReceived);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task PING_Received_SendsACK()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -2701,7 +2702,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task PING_Received_WithACK_DoesNotSendACK()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -2711,7 +2712,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task PING_Received_InterleavedWithHeaders_ConnectionError()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -2726,7 +2727,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorHeadersInterleaved(Http2FrameType.PING, streamId: 0, headersStreamId: 1));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task PING_Received_StreamIdNotZero_ConnectionError()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -2740,7 +2741,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorStreamIdNotZero(Http2FrameType.PING));
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(0)]
         [InlineData(1)]
         [InlineData(7)]
@@ -2758,7 +2759,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorUnexpectedFrameLength(Http2FrameType.PING, expectedLength: 8));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task GOAWAY_Received_ConnectionStops()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -2768,7 +2769,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await WaitForConnectionStopAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task GOAWAY_Received_SetsConnectionStateToClosingAndWaitForAllStreamsToComplete()
         {
             await InitializeConnectionAsync(_echoApplication);
@@ -2814,7 +2815,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await _closedStateReached.Task.DefaultTimeout();
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task GOAWAY_Received_ContinuesAppsAwaitingConnectionOutputFlowControl()
         {
             var writeTasks = new Task[6];
@@ -2917,7 +2918,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Contains(5, _abortedStreamIds);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task GOAWAY_Received_ContinuesAppsAwaitingStreamOutputFlowControl()
         {
             var writeTasks = new Task[6];
@@ -2994,7 +2995,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Contains(5, _abortedStreamIds);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task GOAWAY_Received_StreamIdNotZero_ConnectionError()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -3008,7 +3009,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorStreamIdNotZero(Http2FrameType.GOAWAY));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task GOAWAY_Received_InterleavedWithHeaders_ConnectionError()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -3023,7 +3024,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorHeadersInterleaved(Http2FrameType.GOAWAY, streamId: 0, headersStreamId: 1));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task WINDOW_UPDATE_Received_StreamIdEven_ConnectionError()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -3037,7 +3038,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorStreamIdEven(Http2FrameType.WINDOW_UPDATE, streamId: 2));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task WINDOW_UPDATE_Received_InterleavedWithHeaders_ConnectionError()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -3052,7 +3053,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorHeadersInterleaved(Http2FrameType.WINDOW_UPDATE, streamId: 1, headersStreamId: 1));
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(0, 3)]
         [InlineData(0, 5)]
         [InlineData(1, 3)]
@@ -3070,7 +3071,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorUnexpectedFrameLength(Http2FrameType.WINDOW_UPDATE, expectedLength: 4));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task WINDOW_UPDATE_Received_OnConnection_SizeIncrementZero_ConnectionError()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -3084,7 +3085,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.Http2ErrorWindowUpdateIncrementZero);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task WINDOW_UPDATE_Received_OnStream_SizeIncrementZero_ConnectionError()
         {
             await InitializeConnectionAsync(_waitForAbortApplication);
@@ -3099,7 +3100,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.Http2ErrorWindowUpdateIncrementZero);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task WINDOW_UPDATE_Received_StreamIdle_ConnectionError()
         {
             await InitializeConnectionAsync(_waitForAbortApplication);
@@ -3113,7 +3114,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorStreamIdle(Http2FrameType.WINDOW_UPDATE, streamId: 1));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task WINDOW_UPDATE_Received_OnConnection_IncreasesWindowAboveMaxValue_ConnectionError()
         {
             var maxIncrement = (int)(Http2PeerSettings.MaxWindowSize - Http2PeerSettings.DefaultInitialWindowSize);
@@ -3130,7 +3131,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.Http2ErrorWindowUpdateSizeInvalid);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task WINDOW_UPDATE_Received_OnStream_IncreasesWindowAboveMaxValue_StreamError()
         {
             var maxIncrement = (int)(Http2PeerSettings.MaxWindowSize - Http2PeerSettings.DefaultInitialWindowSize);
@@ -3149,7 +3150,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task WINDOW_UPDATE_Received_OnConnection_Respected()
         {
             var expectedFullFrameCountBeforeBackpressure = Http2PeerSettings.DefaultInitialWindowSize / _maxData.Length;
@@ -3240,7 +3241,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task WINDOW_UPDATE_Received_OnStream_Respected()
         {
             var initialWindowSize = _helloWorldBytes.Length / 2;
@@ -3281,7 +3282,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.True(_helloWorldBytes.AsSpan(initialWindowSize, initialWindowSize).SequenceEqual(dataFrame2.PayloadSequence.ToArray()));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task WINDOW_UPDATE_Received_OnStream_Respected_WhenInitialWindowSizeReducedMidStream()
         {
             // This only affects the stream windows. The connection-level window is always initialized at 64KiB.
@@ -3337,7 +3338,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.True(_helloWorldBytes.AsSpan(9, 3).SequenceEqual(dataFrame3.PayloadSequence.ToArray()));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task CONTINUATION_Received_Decoded()
         {
             await InitializeConnectionAsync(_readHeadersApplication);
@@ -3358,7 +3359,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(true)]
         [InlineData(false)]
         public async Task CONTINUATION_Received_WithTrailers_Discarded(bool sendData)
@@ -3419,7 +3420,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task CONTINUATION_Received_StreamIdMismatch_ConnectionError()
         {
             await InitializeConnectionAsync(_readHeadersApplication);
@@ -3434,7 +3435,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorHeadersInterleaved(Http2FrameType.CONTINUATION, streamId: 3, headersStreamId: 1));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task CONTINUATION_Received_IncompleteHeaderBlock_ConnectionError()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -3449,7 +3450,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.HPackErrorIncompleteHeaderBlock);
         }
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(IllegalTrailerData))]
         public async Task CONTINUATION_Received_WithTrailers_ContainsIllegalTrailer_ConnectionError(byte[] trailers, string expectedErrorMessage)
         {
@@ -3466,7 +3467,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: expectedErrorMessage);
         }
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(MissingPseudoHeaderFieldData))]
         public async Task CONTINUATION_Received_HeaderBlockDoesNotContainMandatoryPseudoHeaderField_StreamError(IEnumerable<KeyValuePair<string, string>> headers)
         {
@@ -3489,7 +3490,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorStreamClosed(Http2FrameType.HEADERS, streamId: 1));
         }
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(ConnectMissingPseudoHeaderFieldData))]
         public async Task CONTINUATION_Received_HeaderBlockDoesNotContainMandatoryPseudoHeaderField_MethodIsCONNECT_NoError(IEnumerable<KeyValuePair<string, string>> headers)
         {
@@ -3510,7 +3511,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task CONTINUATION_Sent_WhenHeadersLargerThanFrameLength()
         {
             await InitializeConnectionAsync(_largeHeadersApplication);
@@ -3554,7 +3555,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal(_4kHeaderValue, _decodedHeaders["h"]);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task UnknownFrameType_Received_Ignored()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -3571,7 +3572,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(0, ignoreNonGoAwayFrames: false);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task UnknownFrameType_Received_InterleavedWithHeaders_ConnectionError()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -3586,7 +3587,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 expectedErrorMessage: CoreStrings.FormatHttp2ErrorHeadersInterleaved(frameType: 42, streamId: 1, headersStreamId: 1));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ConnectionErrorAbortsAllStreams()
         {
             await InitializeConnectionAsync(_waitForAbortApplication);
@@ -3611,7 +3612,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Contains(5, _abortedStreamIds);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ConnectionResetLoggedWithActiveStreams()
         {
             await InitializeConnectionAsync(_waitForAbortApplication);
@@ -3624,7 +3625,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Single(TestApplicationErrorLogger.Messages, m => m.Exception is ConnectionResetException);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ConnectionResetNotLoggedWithNoActiveStreams()
         {
             await InitializeConnectionAsync(_waitForAbortApplication);
@@ -3635,7 +3636,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.DoesNotContain(TestApplicationErrorLogger.Messages, m => m.Exception is ConnectionResetException);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task OnInputOrOutputCompletedCompletesOutput()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -3648,7 +3649,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.True(result.Buffer.IsEmpty);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task AbortSendsFinalGOAWAY()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -3659,7 +3660,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             VerifyGoAway(await ReceiveFrameAsync(), int.MaxValue, Http2ErrorCode.INTERNAL_ERROR);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task CompletionSendsFinalGOAWAY()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -3671,7 +3672,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             VerifyGoAway(await ReceiveFrameAsync(), 0, Http2ErrorCode.NO_ERROR);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task StopProcessingNextRequestSendsGracefulGOAWAYAndWaitsForStreamsToComplete()
         {
             var task = Task.CompletedTask;
@@ -3719,7 +3720,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.True(result.IsCompleted);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task StopProcessingNextRequestSendsGracefulGOAWAYThenFinalGOAWAYWhenAllStreamsComplete()
         {
             await InitializeConnectionAsync(_echoApplication);
@@ -3751,7 +3752,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             VerifyGoAway(await ReceiveFrameAsync(), 1, Http2ErrorCode.NO_ERROR);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task AcceptNewStreamsDuringClosingConnection()
         {
             await InitializeConnectionAsync(_echoApplication);
@@ -3797,7 +3798,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await WaitForConnectionStopAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task IgnoreNewStreamsDuringClosedConnection()
         {
             // Remove callback that completes _pair.Application.Output on abort.
@@ -3817,7 +3818,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.True(result.Buffer.IsEmpty);
         }
 
-        [Fact]
+        [ConditionalFact]
         public void IOExceptionDuringFrameProcessingLoggedAsInfo()
         {
             CreateConnection();
@@ -3834,7 +3835,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Same(ioException, logMessage.Exception);
         }
 
-        [Fact]
+        [ConditionalFact]
         public void UnexpectedExceptionDuringFrameProcessingLoggedAWarning()
         {
             CreateConnection();
@@ -3851,7 +3852,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Same(exception, logMessage.Exception);
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(Http2FrameType.DATA)]
         [InlineData(Http2FrameType.WINDOW_UPDATE)]
         [InlineData(Http2FrameType.HEADERS)]
@@ -3904,7 +3905,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(Http2FrameType.DATA)]
         [InlineData(Http2FrameType.WINDOW_UPDATE)]
         [InlineData(Http2FrameType.HEADERS)]
@@ -3946,7 +3947,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(Http2FrameType.DATA)]
         [InlineData(Http2FrameType.HEADERS)]
         [InlineData(Http2FrameType.CONTINUATION)]
@@ -4019,7 +4020,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(Http2FrameType.DATA)]
         [InlineData(Http2FrameType.HEADERS)]
         public async Task AbortedStream_ResetsAndDrainsRequest_RefusesFramesAfterClientReset(Http2FrameType finalFrameType)

@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Server.Kestrel.Tests;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
@@ -17,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 {
     public class UpgradeTests : LoggedTest
     {
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseThrowsAfterUpgrade()
         {
             var upgrade = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -55,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task RequestBodyAlwaysEmptyAfterUpgrade()
         {
             const string send = "Custom protocol send";
@@ -111,7 +112,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task UpgradeCannotBeCalledMultipleTimes()
         {
             var upgradeTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -153,7 +154,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             Assert.Equal(CoreStrings.UpgradeCannotBeCalledMultipleTimes, ex.Message);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task RejectsRequestWithContentLengthAndUpgrade()
         {
             using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory)))
@@ -179,7 +180,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task AcceptsRequestWithNoContentLengthAndUpgrade()
         {
             using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory)))
@@ -204,7 +205,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task RejectsRequestWithChunkedEncodingAndUpgrade()
         {
             using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory)))
@@ -229,7 +230,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ThrowsWhenUpgradingNonUpgradableRequest()
         {
             var upgradeTcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -263,7 +264,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             Assert.Equal(CoreStrings.CannotUpgradeNonUpgradableRequest, ex.Message);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task RejectsUpgradeWhenLimitReached()
         {
             const int limit = 10;
@@ -315,7 +316,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             Assert.Equal(CoreStrings.UpgradedConnectionLimitReached, exception.Message);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task DoesNotThrowOnFin()
         {
             var appCompletedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);

@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
     public class Http2StreamTests : Http2TestBase
     {
-        [Fact]
+        [ConditionalFact]
         public async Task HEADERS_Received_EmptyMethod_Reset()
         {
             var headers = new[]
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task HEADERS_Received_InvalidCustomMethod_Reset()
         {
             var headers = new[]
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task HEADERS_Received_CustomMethod_Accepted()
         {
             var headers = new[]
@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("0", _decodedHeaders["content-length"]);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task HEADERS_Received_CONNECTMethod_Accepted()
         {
             await InitializeConnectionAsync(_echoMethod);
@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("0", _decodedHeaders["content-length"]);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task HEADERS_Received_OPTIONSStar_LeftOutOfPath()
         {
             await InitializeConnectionAsync(_echoPath);
@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("0", _decodedHeaders["content-length"]);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task HEADERS_Received_OPTIONSSlash_Accepted()
         {
             await InitializeConnectionAsync(_echoPath);
@@ -190,7 +190,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("0", _decodedHeaders["content-length"]);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task HEADERS_Received_PathAndQuery_Separated()
         {
             await InitializeConnectionAsync(context =>
@@ -229,7 +229,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("0", _decodedHeaders["content-length"]);
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData("/", "/")]
         [InlineData("/a%5E", "/a^")]
         [InlineData("/a%E2%82%AC", "/a€")]
@@ -272,7 +272,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("0", _decodedHeaders["content-length"]);
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(HeaderNames.Path, "/")]
         [InlineData(HeaderNames.Scheme, "http")]
         public async Task HEADERS_Received_CONNECTMethod_WithSchemeOrPath_Reset(string headerName, string value)
@@ -289,7 +289,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task HEADERS_Received_SchemeMismatch_Reset()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -306,7 +306,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task HEADERS_Received_MissingAuthority_200Status()
         {
             var headers = new[]
@@ -338,7 +338,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("0", _decodedHeaders["content-length"]);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task HEADERS_Received_EmptyAuthority_200Status()
         {
             var headers = new[]
@@ -371,7 +371,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("0", _decodedHeaders["content-length"]);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task HEADERS_Received_MissingAuthorityFallsBackToHost_200Status()
         {
             var headers = new[]
@@ -405,7 +405,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("abc", _decodedHeaders[HeaderNames.Host]);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task HEADERS_Received_EmptyAuthorityIgnoredOverHost_200Status()
         {
             var headers = new[]
@@ -440,7 +440,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("abc", _decodedHeaders[HeaderNames.Host]);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task HEADERS_Received_AuthorityOverridesHost_200Status()
         {
             var headers = new[]
@@ -475,7 +475,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("def", _decodedHeaders[HeaderNames.Host]);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task HEADERS_Received_AuthorityOverridesInvalidHost_200Status()
         {
             var headers = new[]
@@ -510,7 +510,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("def", _decodedHeaders[HeaderNames.Host]);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task HEADERS_Received_InvalidAuthority_Reset()
         {
             var headers = new[]
@@ -530,7 +530,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task HEADERS_Received_InvalidAuthorityWithValidHost_Reset()
         {
             var headers = new[]
@@ -551,7 +551,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task HEADERS_Received_TwoHosts_StreamReset()
         {
             var headers = new[]
@@ -572,7 +572,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task HEADERS_Received_MaxRequestLineSize_Reset()
         {
             // Default 8kb limit
@@ -594,7 +594,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ContentLength_Received_SingleDataFrame_Verified()
         {
             var headers = new[]
@@ -635,7 +635,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ContentLength_ReceivedInContinuation_SingleDataFrame_Verified()
         {
             await InitializeConnectionAsync(async context =>
@@ -680,7 +680,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ContentLength_Received_MultipleDataFrame_Verified()
         {
             var headers = new[]
@@ -728,7 +728,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ContentLength_Received_MultipleDataFrame_ReadViaPipe_Verified()
         {
             var headers = new[]
@@ -775,7 +775,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ContentLength_Received_MultipleDataFrame_ReadViaPipeAndStream_Verified()
         {
             var tcs = new TaskCompletionSource<object>();
@@ -832,7 +832,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ContentLength_Received_NoDataFrames_Reset()
         {
             var headers = new[]
@@ -851,7 +851,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ContentLength_ReceivedInContinuation_NoDataFrames_Reset()
         {
             var headers = new[]
@@ -874,7 +874,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ContentLength_Received_SingleDataFrameOverSize_Reset()
         {
             IOException thrownEx = null;
@@ -909,7 +909,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.IsType<Http2StreamErrorException>(thrownEx.InnerException);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ContentLength_Received_SingleDataFrameUnderSize_Reset()
         {
             IOException thrownEx = null;
@@ -944,7 +944,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.IsType<Http2StreamErrorException>(thrownEx.InnerException);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ContentLength_Received_MultipleDataFramesOverSize_Reset()
         {
             IOException thrownEx = null;
@@ -980,7 +980,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.IsType<Http2StreamErrorException>(thrownEx.InnerException);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ContentLength_Received_MultipleDataFramesUnderSize_Reset()
         {
             IOException thrownEx = null;
@@ -1064,7 +1064,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
         }
 
-        [Fact] // TODO https://github.com/aspnet/AspNetCore/issues/7034
+        [ConditionalFact] // TODO https://github.com/aspnet/AspNetCore/issues/7034
         public async Task ContentLength_Response_FirstWriteMoreBytesWritten_Throws_Sends500()
         {
             var headers = new[]
@@ -1102,7 +1102,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("11", _decodedHeaders[HeaderNames.ContentLength]);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ContentLength_Response_MoreBytesWritten_ThrowsAndResetsStream()
         {
             var headers = new[]
@@ -1141,7 +1141,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("11", _decodedHeaders[HeaderNames.ContentLength]);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ContentLength_Response_NoBytesWritten_Sends500()
         {
             var headers = new[]
@@ -1179,7 +1179,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task StartAsync_Response_NoBytesWritten_Sends200()
         {
             var headers = new[]
@@ -1213,7 +1213,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task StartAsync_ContentLength_Response_NoBytesWritten_Sends200()
         {
             var headers = new[]
@@ -1249,7 +1249,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task StartAsync_OnStartingThrowsAfterStartAsyncIsCalled()
         {
             InvalidOperationException ex = null;
@@ -1288,7 +1288,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task StartAsync_StartsResponse()
         {
 
@@ -1324,7 +1324,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task StartAsync_WithoutFinalFlushDoesNotFlushUntilResponseEnd()
         {
             var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -1374,7 +1374,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.True(_helloWorldBytes.AsSpan().SequenceEqual(dataFrame.PayloadSequence.ToArray()));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task StartAsync_FlushStillFlushesBody()
         {
             var headers = new[]
@@ -1412,7 +1412,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task StartAsync_WithContentLengthAndEmptyWriteCallsFinalFlush()
         {
 
@@ -1450,7 +1450,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task StartAsync_SingleWriteCallsFinalFlush()
         {
             var headers = new[]
@@ -1493,7 +1493,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.True(_helloWorldBytes.AsSpan().SequenceEqual(dataFrame.PayloadSequence.ToArray()));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task StartAsync_ContentLength_ThrowsException_DataIsFlushed_ConnectionReset()
         {
             var headers = new[]
@@ -1528,7 +1528,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("11", _decodedHeaders[HeaderNames.ContentLength]);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task StartAsync_ThrowsException_DataIsFlushed()
         {
             var headers = new[]
@@ -1561,7 +1561,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ContentLength_Response_TooFewBytesWritten_Resets()
         {
             var headers = new[]
@@ -1599,7 +1599,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("11", _decodedHeaders[HeaderNames.ContentLength]);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task MaxRequestBodySize_ContentLengthUnder_200()
         {
             _serviceContext.ServerOptions.Limits.MaxRequestBodySize = 15;
@@ -1641,7 +1641,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task MaxRequestBodySize_ContentLengthOver_413()
         {
             BadHttpRequestException exception = null;
@@ -1690,7 +1690,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.NotNull(exception);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task MaxRequestBodySize_NoContentLength_Under_200()
         {
             _serviceContext.ServerOptions.Limits.MaxRequestBodySize = 15;
@@ -1731,7 +1731,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task MaxRequestBodySize_NoContentLength_Over_413()
         {
             BadHttpRequestException exception = null;
@@ -1781,7 +1781,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.NotNull(exception);
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(true)]
         [InlineData(false)]
         public async Task MaxRequestBodySize_AppCanLowerLimit(bool includeContentLength)
@@ -1843,7 +1843,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.NotNull(exception);
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(true)]
         [InlineData(false)]
         public async Task MaxRequestBodySize_AppCanRaiseLimit(bool includeContentLength)
@@ -1896,7 +1896,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseTrailers_WithoutData_Sent()
         {
             await InitializeConnectionAsync(context =>
@@ -1934,7 +1934,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("Custom Value", _decodedHeaders["CustomName"]);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseTrailers_WithData_Sent()
         {
             await InitializeConnectionAsync(async context =>
@@ -1976,7 +1976,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("Custom Value", _decodedHeaders["CustomName"]);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseTrailers_WithContinuation_Sent()
         {
             var largeHeader = new string('a', 1024 * 3);
@@ -2042,7 +2042,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal(largeHeader, _decodedHeaders["CustomName5"]);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseTrailers_WithNonAscii_Throws()
         {
             await InitializeConnectionAsync(async context =>
@@ -2078,7 +2078,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseTrailers_TooLong_Throws()
         {
             await InitializeConnectionAsync(async context =>
@@ -2113,7 +2113,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Contains(CoreStrings.HPackErrorNotEnoughBuffer, message.Exception.Message);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ApplicationException_BeforeFirstWrite_Sends500()
         {
             var headers = new[]
@@ -2150,7 +2150,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ApplicationException_AfterFirstWrite_Resets()
         {
             var headers = new[]
@@ -2187,7 +2187,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task RST_STREAM_Received_AbortsStream()
         {
             await InitializeConnectionAsync(_waitForAbortApplication);
@@ -2200,7 +2200,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task RST_STREAM_Received_AbortsStream_FlushedHeadersNotSent()
         {
             await InitializeConnectionAsync(_waitForAbortFlushingApplication);
@@ -2213,7 +2213,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task RST_STREAM_Received_AbortsStream_FlushedDataNotSent()
         {
             await InitializeConnectionAsync(_waitForAbortWithDataApplication);
@@ -2226,7 +2226,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task RST_STREAM_WaitingForRequestBody_RequestBodyThrows()
         {
             var sem = new SemaphoreSlim(0);
@@ -2268,7 +2268,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task RST_STREAM_IncompleteRequest_RequestBodyThrows()
         {
             var sem = new SemaphoreSlim(0);
@@ -2312,7 +2312,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task RequestAbort_SendsRstStream()
         {
             await InitializeConnectionAsync(async context =>
@@ -2352,7 +2352,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task RequestAbort_AfterDataSent_SendsRstStream()
         {
             await InitializeConnectionAsync(async context =>
@@ -2404,7 +2404,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task RequestAbort_ThrowsOperationCanceledExceptionFromSubsequentRequestBodyStreamRead()
         {
             OperationCanceledException thrownEx = null;
@@ -2431,7 +2431,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal(CoreStrings.ConnectionAbortedByApplication, thrownEx.Message);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task RequestAbort_ThrowsOperationCanceledExceptionFromOngoingRequestBodyStreamRead()
         {
             OperationCanceledException thrownEx = null;
@@ -2462,7 +2462,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         // Sync writes after async writes could block the write loop if the callback is not dispatched.
         // https://github.com/aspnet/KestrelHttpServer/issues/2878
-        [Fact]
+        [ConditionalFact]
         public async Task Write_DoesNotBlockWriteLoop()
         {
             const int windowSize = (int)Http2PeerSettings.DefaultMaxFrameSize;
@@ -2509,7 +2509,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseWithHeadersTooLarge_AbortsConnection()
         {
             var appFinished = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -2538,7 +2538,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 CoreStrings.HPackErrorNotEnoughBuffer);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task WriteAsync_PreCancelledCancellationToken_DoesNotAbort()
         {
             var headers = new[]
@@ -2575,7 +2575,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task WriteAsync_CancellationTokenTriggeredDueToFlowControl_SendRST()
         {
             var cts = new CancellationTokenSource();
@@ -2623,7 +2623,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task GetMemoryAdvance_Works()
         {
             var headers = new[]
@@ -2669,7 +2669,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.True(_helloWorldBytes.AsSpan().SequenceEqual(dataFrame.PayloadSequence.ToArray()));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task GetMemoryAdvance_WithStartAsync_Works()
         {
             var headers = new[]
@@ -2715,7 +2715,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.True(_helloWorldBytes.AsSpan().SequenceEqual(dataFrame.PayloadSequence.ToArray()));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task WriteAsync_GetMemoryLargeWriteBeforeFirstFlush()
         {
             var headers = new[]
@@ -2767,7 +2767,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal(Encoding.ASCII.GetBytes(new string('a', 4102)), dataFrame.PayloadSequence.ToArray());
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task WriteAsync_WithGetMemoryWithInitialFlushWorks()
         {
             var headers = new[]
@@ -2820,7 +2820,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal(Encoding.ASCII.GetBytes(new string('a', 4102)), dataFrame.PayloadSequence.ToArray());
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task WriteAsync_GetMemoryMultipleAdvance()
         {
             var headers = new[]
@@ -2866,7 +2866,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.True(_helloWorldBytes.AsSpan().SequenceEqual(dataFrame.PayloadSequence.ToArray()));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task WriteAsync_GetSpanMultipleAdvance()
         {
             var headers = new[]
@@ -2916,7 +2916,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.True(_helloWorldBytes.AsSpan().SequenceEqual(dataFrame.PayloadSequence.ToArray()));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task WriteAsync_GetMemoryAndWrite()
         {
             var headers = new[]
@@ -2962,7 +2962,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.True(_helloWorldBytes.AsSpan().SequenceEqual(dataFrame.PayloadSequence.ToArray()));
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task WriteAsync_GetMemoryWithSizeHintAlwaysReturnsSameSize()
         {
             var headers = new[]
@@ -3004,7 +3004,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task WriteAsync_GetMemoryWithSizeHintAlwaysReturnsSameSizeStartAsync()
         {
             var headers = new[]
@@ -3047,7 +3047,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task WriteAsync_BothPipeAndStreamWorks()
         {
             var headers = new[]
@@ -3111,7 +3111,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ContentLengthWithGetSpanWorks()
         {
             var headers = new[]
@@ -3162,7 +3162,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("12", _decodedHeaders[HeaderNames.ContentLength]);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ContentLengthWithGetMemoryWorks()
         {
             var headers = new[]
@@ -3208,7 +3208,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("12", _decodedHeaders[HeaderNames.ContentLength]);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseBodyCanWrite()
         {
             var headers = new[]
@@ -3248,7 +3248,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("12", _decodedHeaders[HeaderNames.ContentLength]);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseBodyAndResponsePipeWorks()
         {
             var headers = new[]
@@ -3312,7 +3312,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("54", _decodedHeaders[HeaderNames.ContentLength]);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseBodyPipeCompleteWithoutExceptionDoesNotThrow()
         {
             var headers = new[]
@@ -3347,7 +3347,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseBodyPipeCompleteWithoutExceptionWritesDoNotThrow()
         {
             var headers = new[]
@@ -3384,7 +3384,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponseBodyPipeCompleteWithExceptionThrows()
         {
             var expectedException = new Exception();

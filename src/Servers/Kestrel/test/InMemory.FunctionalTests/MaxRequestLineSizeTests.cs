@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
@@ -13,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 {
     public class MaxRequestLineSizeTests : LoggedTest
     {
-        [Theory]
+        [ConditionalTheory]
         [InlineData("GET / HTTP/1.1\r\nHost:\r\n\r\n", 16)]
         [InlineData("GET / HTTP/1.1\r\nHost:\r\n\r\n", 17)]
         [InlineData("GET / HTTP/1.1\r\nHost:\r\n\r\n", 137)]
@@ -48,7 +49,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData("GET / HTTP/1.1\r\n")]
         [InlineData("POST /abc/de HTTP/1.1\r\n")]
         [InlineData("PUT /abc/de?f=ghi HTTP/1.1\r\n")]

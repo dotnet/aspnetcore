@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
@@ -24,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             }
         };
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(ConnectionAdapterData))]
         public async Task ConnectionClosedWhenResponseNotDrainedAtMinimumDataRate(ListenOptions listenOptions)
         {

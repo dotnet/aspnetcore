@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
@@ -24,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 {
     public class RequestTests : LoggedTest
     {
-        [Fact]
+        [ConditionalFact]
         public async Task StreamsAreNotPersistedAcrossRequests()
         {
             var requestBodyPersisted = false;
@@ -58,7 +59,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task PipesAreNotPersistedBySettingStreamPipeWriterAcrossRequests()
         {
             var responseBodyPersisted = false;
@@ -84,7 +85,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task PipesAreNotPersistedAcrossRequests()
         {
             var responseBodyPersisted = false;
@@ -109,7 +110,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task RequestBodyReadAsyncCanBeCancelled()
         {
             var helloTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -178,7 +179,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task CanUpgradeRequestWithConnectionKeepAliveUpgradeHeader()
         {
             var dataRead = false;
@@ -214,7 +215,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             Assert.True(dataRead);
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData("http://localhost/abs/path", "/abs/path", null)]
         [InlineData("https://localhost/abs/path", "/abs/path", null)] // handles mismatch scheme
         [InlineData("https://localhost:22/abs/path", "/abs/path", null)] // handles mismatched ports
@@ -284,7 +285,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task AppCanSetTraceIdentifier()
         {
             const string knownId = "xyz123";
@@ -300,7 +301,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task TraceIdentifierIsUnique()
         {
             const int identifierLength = 22;
@@ -357,7 +358,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Http11KeptAliveByDefault()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -393,7 +394,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
 
-        [Fact]
+        [ConditionalFact]
         public async Task Http10NotKeptAliveByDefault()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -433,7 +434,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Http10KeepAlive()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -468,7 +469,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Http10KeepAliveNotHonoredIfResponseContentLengthNotSet()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -508,7 +509,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Http10KeepAliveHonoredIfResponseContentLengthSet()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -565,7 +566,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task Expect100ContinueHonored()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -598,7 +599,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ZeroContentLengthAssumedOnNonKeepAliveRequestsWithoutContentLengthOrTransferEncodingHeader()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -645,7 +646,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ZeroContentLengthAssumedOnNonKeepAliveRequestsWithoutContentLengthOrTransferEncodingHeaderPipeReader()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -693,7 +694,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ContentLengthReadAsyncPipeReader()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -727,7 +728,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ConnectionClosesWhenFinReceivedBeforeRequestCompletes()
         {
             var testContext = new TestServiceContext(LoggerFactory)
@@ -759,7 +760,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task RequestHeadersAreResetOnEachRequest()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -810,7 +811,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task UpgradeRequestIsNotKeptAliveOrChunked()
         {
             const string message = "Hello World";
@@ -848,7 +849,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task HeadersAndStreamsAreReusedAcrossRequests()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -925,7 +926,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [MemberData(nameof(HostHeaderData))]
         public async Task MatchesValidRequestTargetAndHostHeader(string request, string hostHeader)
         {
@@ -944,7 +945,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ServerConsumesKeepAliveContentLengthRequest()
         {
             // The app doesn't read the request body, so it should be consumed by the server
@@ -986,7 +987,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ServerConsumesKeepAliveChunkedRequest()
         {
             // The app doesn't read the request body, so it should be consumed by the server
@@ -1035,7 +1036,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task NonKeepAliveRequestNotConsumedByAppCompletes()
         {
             // The app doesn't read the request body, so it should be consumed by the server
@@ -1062,7 +1063,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task UpgradedRequestNotConsumedByAppCompletes()
         {
             // The app doesn't read the request body, so it should be consumed by the server
@@ -1096,7 +1097,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
 
-        [Fact]
+        [ConditionalFact]
         public async Task DoesNotEnforceRequestBodyMinimumDataRateOnUpgradedRequest()
         {
             var appEvent = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -1156,7 +1157,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task SynchronousReadsDisallowedByDefault()
         {
             using (var server = new TestServer(async context =>
@@ -1207,7 +1208,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task SynchronousReadsAllowedByOptIn()
         {
             using (var server = new TestServer(async context =>
@@ -1251,7 +1252,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task SynchronousReadsCanBeDisallowedGlobally()
         {
             var testContext = new TestServiceContext(LoggerFactory)
@@ -1296,7 +1297,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task SynchronousReadsCanBeAllowedGlobally()
         {
             var testContext = new TestServiceContext(LoggerFactory)
@@ -1338,7 +1339,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ContentLengthRequestCallCancelPendingReadWorks()
         {
             var tcs = new TaskCompletionSource<object>();
@@ -1390,7 +1391,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ContentLengthRequestCallCompleteThrowsExceptionOnRead()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -1435,7 +1436,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ContentLengthCallCompleteWithExceptionCauses500()
         {
             var tcs = new TaskCompletionSource<object>();

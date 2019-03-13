@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
@@ -15,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 {
     public class ChunkedResponseTests : LoggedTest
     {
-        [Fact]
+        [ConditionalFact]
         public async Task ResponsesAreChunkedAutomatically()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -51,7 +52,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponsesAreNotChunkedAutomaticallyForHttp10Requests()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -80,7 +81,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ResponsesAreChunkedAutomaticallyForHttp11NonKeepAliveRequests()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -117,7 +118,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task SettingConnectionCloseHeaderInAppDoesNotDisableChunking()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -154,7 +155,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ZeroLengthWritesAreIgnored()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -191,7 +192,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ZeroLengthWritesFlushHeaders()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -236,7 +237,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task EmptyResponseBodyHandledCorrectlyWithZeroLengthWrite()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -267,7 +268,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ConnectionClosedIfExceptionThrownAfterWrite()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -301,7 +302,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ConnectionClosedIfExceptionThrownAfterZeroLengthWrite()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -334,7 +335,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task WritesAreFlushedPriorToResponseCompletion()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -381,7 +382,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ChunksCanBeWrittenManually()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -421,7 +422,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ChunksWithGetMemoryAfterStartAsyncBeforeFirstFlushStillFlushes()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -467,7 +468,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ChunksWithGetMemoryBeforeFirstFlushStillFlushes()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -512,7 +513,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ChunksWithGetMemoryLargeWriteBeforeFirstFlush()
         {
             var length = new IntAsRef();
@@ -568,7 +569,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ChunksWithGetMemoryAndStartAsyncWithInitialFlushWorks()
         {
             var length = new IntAsRef();
@@ -626,7 +627,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ChunksWithGetMemoryBeforeFlushEdgeCase()
         {
             var length = 0;
@@ -685,7 +686,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ChunkGetMemoryMultipleAdvance()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -729,7 +730,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ChunkGetSpanMultipleAdvance()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -778,7 +779,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ChunkGetMemoryAndWrite()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -821,7 +822,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ChunkGetMemoryAndWriteWithoutStart()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -863,7 +864,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task GetMemoryWithSizeHint()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -904,7 +905,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task GetMemoryWithSizeHintWithoutStartAsync()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -941,7 +942,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(15)]
         [InlineData(255)]
         public async Task ChunkGetMemoryWithoutStartWithSmallerSizesWork(int writeSize)
@@ -983,7 +984,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(15)]
         [InlineData(255)]
         public async Task ChunkGetMemoryWithStartWithSmallerSizesWork(int writeSize)
@@ -1024,7 +1025,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ChunkedWithBothPipeAndStreamWorks()
         {
             using (var server = new TestServer(async httpContext =>

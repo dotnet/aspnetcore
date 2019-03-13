@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
@@ -14,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 {
     public class RequestHeaderLimitsTests : LoggedTest
     {
-        [Theory]
+        [ConditionalTheory]
         [InlineData(0, 1)]
         [InlineData(0, 1337)]
         [InlineData(1, 0)]
@@ -47,7 +48,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(0, 1)]
         [InlineData(0, 1337)]
         [InlineData(1, 1)]
@@ -80,7 +81,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(1)]
         [InlineData(5)]
         public async Task ServerRejectsRequestWithHeaderTotalSizeOverLimit(int headerCount)
@@ -104,7 +105,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData(2, 1)]
         [InlineData(5, 1)]
         [InlineData(5, 4)]

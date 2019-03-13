@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
@@ -19,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         private static readonly TimeSpan LongDelay = TimeSpan.FromSeconds(30);
         private static readonly TimeSpan ShortDelay = TimeSpan.FromSeconds(LongDelay.TotalSeconds / 10);
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData("Host:\r\n")]
         [InlineData("Host:\r\nContent-Length: 1\r\n")]
         [InlineData("Host:\r\nContent-Length: 1\r\n\r")]
@@ -46,7 +47,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task RequestHeadersTimeoutCanceledAfterHeadersReceived()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -76,7 +77,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [InlineData("P")]
         [InlineData("POST / HTTP/1.1\r")]
         public async Task ConnectionAbortedWhenRequestLineNotReceivedInTime(string requestLine)
@@ -100,7 +101,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task TimeoutNotResetOnEachRequestLineCharacterReceived()
         {
             var testContext = new TestServiceContext(LoggerFactory);

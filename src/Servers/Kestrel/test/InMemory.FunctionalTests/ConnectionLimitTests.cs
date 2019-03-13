@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 {
     public class ConnectionLimitTests : LoggedTest
     {
-        [Fact]
+        [ConditionalFact]
         public async Task ResetsCountWhenConnectionClosed()
         {
             var requestTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             await releasedTcs.Task.DefaultTimeout();
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task UpgradedConnectionsCountsAgainstDifferentLimit()
         {
             using (var server = CreateServerWithMaxConnections(async context =>
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task RejectsConnectionsWhenLimitReached()
         {
             const int max = 10;
@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "https://github.com/aspnet/KestrelHttpServer/issues/2282")]
         public async Task ConnectionCountingReturnsToZero()
         {

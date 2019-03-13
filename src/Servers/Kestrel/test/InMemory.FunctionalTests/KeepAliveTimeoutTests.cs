@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
@@ -23,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
         private readonly TaskCompletionSource<object> _firstRequestReceived = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        [Fact]
+        [ConditionalFact]
         public async Task ConnectionClosedWhenKeepAliveTimeoutExpires()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -50,7 +51,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ConnectionKeptAliveBetweenRequests()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -78,7 +79,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         public async Task ConnectionNotTimedOutWhileRequestBeingSent()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -118,7 +119,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         private async Task ConnectionNotTimedOutWhileAppIsRunning()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -158,7 +159,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         private async Task ConnectionTimesOutWhenOpenedButNoRequestSent()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -178,7 +179,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
         private async Task KeepAliveTimeoutDoesNotApplyToUpgradedConnections()
         {
             var testContext = new TestServiceContext(LoggerFactory);
