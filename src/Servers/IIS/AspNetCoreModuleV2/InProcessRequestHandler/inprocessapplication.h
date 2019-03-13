@@ -150,8 +150,6 @@ private:
     // The event that gets triggered when worker thread should exit
     HandleWrapper<NullHandleTraits> m_pShutdownEvent;
 
-    HandleWrapper<NullHandleTraits> m_pRequestDrainEvent;
-
     // The request handler callback from managed code
     PFN_REQUEST_HANDLER             m_RequestHandler;
     VOID*                           m_RequestHandlerContext;
@@ -169,6 +167,7 @@ private:
     std::atomic_bool                m_blockManagedCallbacks;
     bool                            m_Initialized;
     bool                            m_waitForShutdown;
+
     std::atomic<int>                m_requestCount;
 
     std::unique_ptr<InProcessOptions> m_pConfig;
@@ -187,6 +186,9 @@ private:
 
     void
     StopClr();
+
+    void
+    CallRequestsDrained();
 
     static
     void

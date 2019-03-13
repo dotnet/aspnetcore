@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Xunit;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
+using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
@@ -98,8 +99,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             await deploymentResult.AssertRecycledAsync(() => AssertAppOffline(deploymentResult));
         }
 
-        [ConditionalFact(Skip = "https://github.com/aspnet/AspNetCore/issues/6555")]
-        [RequiresIIS(IISCapability.ShutdownToken)]
+        [ConditionalFact]
+        [RequiresNewHandler]
         public async Task AppOfflineDroppedWhileSiteStarting_SiteShutsDown_InProcess()
         {
             // This test often hits a race between debug logging and stdout redirection closing the handle
@@ -131,17 +132,98 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                         // if AssertAppOffline succeeded ANCM have picked up app_offline before starting the app
                         // try again
                         RemoveAppOffline(deploymentResult.ContentRoot);
+
+                        if (deploymentResult.DeploymentParameters.ServerType == ServerType.IIS)
+                        {
+                            deploymentResult.AssertWorkerProcessStop();
+                            return;
+                        }
                     }
                     catch
                     {
+                        // For IISExpress, we need to catch the exception because IISExpress will not restart a process if it crashed.
+                        // RemoveAppOffline will fail due to a bad request exception as the server is down.
+                        Assert.Contains(TestSink.Writes, context => context.Message.Contains("Drained all requests, notifying managed."));
                         deploymentResult.AssertWorkerProcessStop();
                         return;
                     }
                 }
 
                 Assert.True(false);
-
             }
+        }
+
+        [ConditionalFact]
+        public async Task GracefulShutdownWorksWithMultipleRequestsInFlight_InProcess()
+        {
+            // The goal of this test is to have multiple requests currently in progress
+            // and for app offline to be dropped. We expect that all requests are eventually drained
+            // and graceful shutdown occurs. 
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite);
+            deploymentParameters.TransformArguments((a, _) => $"{a} IncreaseShutdownLimit");
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            var result = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
+
+            // Send two requests that will hang until data is sent from the client.
+            var connectionList = new List<TestConnection>();
+
+            for (var i = 0; i < 2; i++)
+            {
+                var connection = new TestConnection(deploymentResult.HttpClient.BaseAddress.Port);
+                await connection.Send(
+                    "POST /ReadAndCountRequestBody HTTP/1.1",
+                    "Content-Length: 1",
+                    "Host: localhost",
+                    "Connection: close",
+                    "",
+                    "");
+
+                await connection.Receive(
+                  "HTTP/1.1 200 OK", "");
+                await connection.ReceiveHeaders();
+                await connection.Receive("1", $"{i + 1}");
+                connectionList.Add(connection);
+            }
+
+            // Send a request that will end once app lifetime is triggered (ApplicationStopping cts).
+            var statusConnection = new TestConnection(deploymentResult.HttpClient.BaseAddress.Port);
+
+            await statusConnection.Send(
+                "GET /WaitForAppToStartShuttingDown HTTP/1.1",
+                "Host: localhost",
+                "Connection: close",
+                "",
+                "");
+
+            await statusConnection.Receive("HTTP/1.1 200 OK",
+                "");
+
+            await statusConnection.ReceiveHeaders();
+
+            // Receiving some data means we are currently waiting for IHostApplicationLifetime.
+            await statusConnection.Receive("5",
+                "test1",
+                "");
+
+            AddAppOffline(deploymentResult.ContentRoot);
+
+            // Receive the rest of all open connections.
+            await statusConnection.Receive("5", "test2", "");
+
+            for (var i = 0; i < 2; i++)
+            {
+                await connectionList[i].Send("a", "");
+                await connectionList[i].Receive("", "4", "done");
+                connectionList[i].Dispose();
+            }
+
+            deploymentResult.AssertWorkerProcessStop();
+
+            // Shutdown should be graceful here!
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult,
+                EventLogHelpers.InProcessShutdown());
         }
 
         [ConditionalFact]
@@ -282,6 +364,5 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                 File.Delete(file);
             }
         }
-
     }
 }
