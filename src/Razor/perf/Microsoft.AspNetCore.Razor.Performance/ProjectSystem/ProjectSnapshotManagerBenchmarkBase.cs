@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Razor.Performance
             var root = current;
             var projectRoot = Path.Combine(root.FullName, "test", "testapps", "LargeProject");
 
-            HostProject = new HostProject(Path.Combine(projectRoot, "LargeProject.csproj"), FallbackRazorConfiguration.MVC_2_1);
+            HostProject = new HostProject(Path.Combine(projectRoot, "LargeProject.csproj"), FallbackRazorConfiguration.MVC_2_1, rootNamespace: null);
 
             TextLoaders = new TextLoader[4];
             for (var i = 0; i < 4; i++)
