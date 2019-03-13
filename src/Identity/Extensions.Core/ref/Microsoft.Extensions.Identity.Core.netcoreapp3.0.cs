@@ -109,7 +109,8 @@ namespace Microsoft.AspNetCore.Identity
     }
     public partial interface ILookupNormalizer
     {
-        string Normalize(string key);
+        string NormalizeEmail(string email);
+        string NormalizeName(string name);
     }
     public partial interface ILookupProtector
     {
@@ -370,7 +371,8 @@ namespace Microsoft.AspNetCore.Identity
         public virtual System.Threading.Tasks.Task<System.Collections.Generic.IList<System.Security.Claims.Claim>> GetClaimsAsync(TRole role) { throw null; }
         public virtual System.Threading.Tasks.Task<string> GetRoleIdAsync(TRole role) { throw null; }
         public virtual System.Threading.Tasks.Task<string> GetRoleNameAsync(TRole role) { throw null; }
-        public virtual string NormalizeKey(string key) { throw null; }
+        public virtual string NormalizeEmail(string email) { throw null; }
+        public virtual string NormalizeName(string name) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult> RemoveClaimAsync(TRole role, System.Security.Claims.Claim claim) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
@@ -450,10 +452,11 @@ namespace Microsoft.AspNetCore.Identity
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public virtual System.Threading.Tasks.Task<bool> ValidateAsync(string purpose, string token, Microsoft.AspNetCore.Identity.UserManager<TUser> manager, TUser user) { throw null; }
     }
-    public partial class UpperInvariantLookupNormalizer : Microsoft.AspNetCore.Identity.ILookupNormalizer
+    public sealed partial class UpperInvariantLookupNormalizer : Microsoft.AspNetCore.Identity.ILookupNormalizer
     {
         public UpperInvariantLookupNormalizer() { }
-        public virtual string Normalize(string key) { throw null; }
+        public string NormalizeEmail(string email) { throw null; }
+        public string NormalizeName(string name) { throw null; }
     }
     public partial class UserClaimsPrincipalFactory<TUser> : Microsoft.AspNetCore.Identity.IUserClaimsPrincipalFactory<TUser> where TUser : class
     {
