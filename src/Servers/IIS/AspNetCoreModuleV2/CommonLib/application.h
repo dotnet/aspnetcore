@@ -27,13 +27,11 @@ public:
 
         SRWSharedLock stopLock(m_stopLock);
 
+        // If we have acquired the stopLock, we don't need to acquire the data lock
+        // as m_fStoppedCalled is only set by Stop.
+        if (m_fStopCalled)
         {
-            SRWSharedLock dataLock(m_dataLock);
-
-            if (m_fStopCalled)
-            {
-                return S_FALSE;
-            }
+            return S_FALSE;
         }
 
         TraceContextScope traceScope(pHttpContext->GetTraceContext());

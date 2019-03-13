@@ -294,11 +294,7 @@ namespace TestSite
             await ctx.Response.WriteAsync(_requestsInFlight.ToString());
 
             var readBuffer = new byte[1];
-            var result = await ctx.Request.Body.ReadAsync(readBuffer, 0, 1);
-            while (result != 0)
-            {
-                result = await ctx.Request.Body.ReadAsync(readBuffer, 0, 1);
-            }
+            await ctx.Request.Body.ReadAsync(readBuffer, 0, 1);
 
             await ctx.Response.WriteAsync("done");
             Interlocked.Decrement(ref _requestsInFlight);

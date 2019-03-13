@@ -452,7 +452,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
                 retryCount++;
                 Thread.Sleep(delay);
-                delay *= 2;
+                delay *= 1.5;
             }
 
             throw new AggregateException($"Operation did not succeed after {retryCount} retries", exceptions.ToArray());

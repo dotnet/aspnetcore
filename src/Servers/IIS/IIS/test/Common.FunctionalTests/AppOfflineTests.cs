@@ -156,6 +156,9 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         [ConditionalFact]
         public async Task GracefulShutdownWorksWithMultipleRequestsInFlight_InProcess()
         {
+            // The goal of this test is to have multiple requests currently in progress
+            // and for app offline to be dropped. We expect that all requests are eventually drained
+            // and graceful shutdown occurs. 
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite);
             deploymentParameters.TransformArguments((a, _) => $"{a} IncreaseShutdownLimit");
 
@@ -163,6 +166,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
             var result = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
 
+            // Send two requests that will hang until data is sent from the client.
             var connectionList = new List<TestConnection>();
 
             for (var i = 0; i < 2; i++)
@@ -183,10 +187,31 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                 connectionList.Add(connection);
             }
 
+            // Send a request that will end once app lifetime is triggered (ApplicationStopping cts).
+            var statusConnection = new TestConnection(deploymentResult.HttpClient.BaseAddress.Port);
+
+            await statusConnection.Send(
+                "GET /WaitForAppToStartShuttingDown HTTP/1.1",
+                "Host: localhost",
+                "Connection: close",
+                "",
+                "");
+
+            await statusConnection.Receive("HTTP/1.1 200 OK",
+                "");
+
+            await statusConnection.ReceiveHeaders();
+
+            // Receiving some data means we are currently waiting for IHostApplicationLifetime.
+            await statusConnection.Receive("5",
+                "test1",
+                "");
+
             AddAppOffline(deploymentResult.ContentRoot);
 
-            var task = deploymentResult.HttpClient.GetAsync("/WaitForAppToStartShuttingDown");
-         
+            // Receive the rest of all open connections.
+            await statusConnection.Receive("5", "test2", "");
+
             for (var i = 0; i < 2; i++)
             {
                 await connectionList[i].Send("a", "");
@@ -194,10 +219,9 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                 connectionList[i].Dispose();
             }
 
-            await task;
-
             deploymentResult.AssertWorkerProcessStop();
 
+            // Shutdown should be graceful here!
             EventLogHelpers.VerifyEventLogEvent(deploymentResult,
                 EventLogHelpers.InProcessShutdown());
         }

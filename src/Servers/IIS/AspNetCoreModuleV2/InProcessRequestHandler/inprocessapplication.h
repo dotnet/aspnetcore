@@ -169,7 +169,6 @@ private:
     bool                            m_waitForShutdown;
 
     std::atomic<int>                m_requestCount;
-    std::atomic<bool>               m_alreadyDrained;
 
     std::unique_ptr<InProcessOptions> m_pConfig;
 
@@ -188,7 +187,8 @@ private:
     void
     StopClr();
 
-    void CallRequestsDrained();
+    void
+    CallRequestsDrained();
 
     static
     void

@@ -27,8 +27,7 @@ IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(
     m_blockManagedCallbacks(true),
     m_waitForShutdown(true),
     m_pConfig(std::move(pConfig)),
-    m_requestCount(0),
-    m_alreadyDrained(false)
+    m_requestCount(0)
 {
     DBG_ASSERT(m_pConfig);
 
@@ -561,10 +560,10 @@ IN_PROCESS_APPLICATION::HandleRequestCompletion()
 
 void IN_PROCESS_APPLICATION::CallRequestsDrained()
 {
-    auto expected = false;
-    if (m_alreadyDrained.compare_exchange_strong(expected, true))
+    if (m_RequestsDrainedHandler != nullptr)
     {
         LOG_INFO(L"Drained all requests, notifying managed.");
         m_RequestsDrainedHandler(m_ShutdownHandlerContext);
+        m_RequestsDrainedHandler = nullptr;
     }
 }
