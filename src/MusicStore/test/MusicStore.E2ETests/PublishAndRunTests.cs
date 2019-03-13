@@ -35,6 +35,7 @@ namespace E2ETests
                 {
                     ApplicationPath = Helpers.GetApplicationPath(),
                     PublishApplicationBeforeDeployment = true,
+                    PublishedApplicationRootPath = Path.Combine(Path.GetTempPath(), "MusicStore", Path.GetRandomFileName()),
                     PreservePublishedApplicationForDebugging = Helpers.PreservePublishedApplicationForDebugging,
                     UserAdditionalCleanup = parameters =>
                     {
