@@ -75,10 +75,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "perf", "perf", "{AC3CD0BA-D
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarkapps", "benchmarkapps", "{1AF35754-036E-4D19-BE71-6144CEC0E1D5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BenchmarkServer", "perf\benchmarkapps\BenchmarkServer\BenchmarkServer.csproj", "{35C0D65F-643E-42FA-9177-2BFFDE9AFA14}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Crankier", "perf\benchmarkapps\Crankier\Crankier.csproj", "{56563C41-59EA-4B7F-94DC-ADD5923EC087}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SignalR.Microbenchmarks", "perf\Microbenchmarks\Microsoft.AspNetCore.SignalR.Microbenchmarks.csproj", "{B34D6810-1A95-462F-A8DD-76E2B7FC5CEE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "server", "server", "{37DDE730-33D7-4400-9F12-84F0F2C0F319}"
