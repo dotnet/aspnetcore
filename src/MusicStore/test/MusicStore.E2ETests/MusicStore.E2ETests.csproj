@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
@@ -11,6 +11,7 @@
     <NoWarn>$(NoWarn);NU1605</NoWarn>
     <!-- https://github.com/aspnet/AspNetCore/issues/6549 -->
     <BuildHelixPayload>false</BuildHelixPayload>
+    <IsTestProject>false</IsTestProject>
   </PropertyGroup>
 
   <ItemGroup>
