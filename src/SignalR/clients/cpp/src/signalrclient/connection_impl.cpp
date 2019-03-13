@@ -95,7 +95,7 @@ namespace signalr
 
         pplx::task_completion_event<void> start_tce;
 
-        auto weak_connection = weak_from_this();
+        std::weak_ptr<connection_impl> weak_connection = shared_from_this();
 
         pplx::task_from_result()
             .then([weak_connection, url]()
