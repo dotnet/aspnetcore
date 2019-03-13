@@ -16,7 +16,7 @@
         <RelatedBundle Action="Upgrade" Id="{EC5CFEAE-D169-3A4A-AA09-F446BBC39AD9}"/>
         <RelatedBundle Action="Upgrade" Id="{1D6E2BA3-B920-3C74-8F3E-F38E6097A297}"/>
         <RelatedBundle Action="Upgrade" Id="{D73B587E-7C85-3418-9B07-6A8469CF7E94}"/>
-        <?elseif $(var.Platform=x64?>
+        <?elseif $(var.Platform)=x64?>
         <RelatedBundle Action="Upgrade" Id="{F5C19B0F-77DF-3353-96D9-3F398FA38CF7}"/>
         <RelatedBundle Action="Upgrade" Id="{DFC9DEC7-307D-39B5-AF9C-4E8CE923B1BA}"/>
         <RelatedBundle Action="Upgrade" Id="{FDCA5106-C69E-34BB-A3B8-A24ADD0B4769}"/>
