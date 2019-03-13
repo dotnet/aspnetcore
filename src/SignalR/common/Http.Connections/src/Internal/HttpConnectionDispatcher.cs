@@ -223,8 +223,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
                 try
                 {
-                    var pollAgain = true;
-
                     // If the application ended before the transport task then we potentially need to end the connection
                     if (resultTask == connection.ApplicationTask)
                     {
@@ -243,9 +241,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                             // We should be able to safely dispose because there's no more data being written
                             // We don't need to wait for close here since we've already waited for both sides
                             await _manager.DisposeAndRemoveAsync(connection, closeGracefully: false);
-
-                            // Don't poll again if we've removed the connection completely
-                            pollAgain = false;
+                        }
+                        else
+                        {
+                            // Only allow repoll if we aren't removing the connection.
+                            connection.MarkInactive();
                         }
                     }
                     else if (resultTask.IsFaulted)
@@ -255,17 +255,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
                         // transport task was faulted, we should remove the connection
                         await _manager.DisposeAndRemoveAsync(connection, closeGracefully: false);
-
-                        pollAgain = false;
                     }
-                    else if (context.Response.StatusCode == StatusCodes.Status204NoContent)
+                    else
                     {
-                        // Don't poll if the transport task was canceled
-                        pollAgain = false;
-                    }
-
-                    if (pollAgain)
-                    {
+                        // Only allow repoll if we aren't removing the connection.
                         connection.MarkInactive();
                     }
                 }

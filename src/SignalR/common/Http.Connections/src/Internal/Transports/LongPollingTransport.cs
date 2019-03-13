@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal.Transports
             {
                 // 3 cases:
                 // 1 - Request aborted, the client disconnected (no response)
-                // 2 - The poll timeout is hit (204)
+                // 2 - The poll timeout is hit (200)
                 // 3 - A new request comes in and cancels this request (204)
 
                 // Case 1
