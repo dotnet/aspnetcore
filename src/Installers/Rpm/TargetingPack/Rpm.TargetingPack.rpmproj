@@ -27,6 +27,7 @@
     </ProjectReference>
 
     <InstallerOwnedDirectory Include="$(RpmPackageInstallRoot)packs/$(TargetingPackName)/" />
+    <RpmDependency Include="dotnet-targeting-pack-$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)" Version="$(MicrosoftNETCoreAppPackageVersion.Split('-')[0])" />
   </ItemGroup>
 
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
