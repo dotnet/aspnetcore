@@ -16,7 +16,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Internal;
-using Microsoft.AspNetCore.Signalr.Client.Internal;
 using Microsoft.AspNetCore.SignalR.Client.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.Logging;
@@ -50,8 +49,9 @@ namespace Microsoft.AspNetCore.SignalR.Client
         private readonly IServiceProvider _serviceProvider;
         private readonly IConnectionFactory _connectionFactory;
         private readonly ConcurrentDictionary<string, InvocationHandlerList> _handlers = new ConcurrentDictionary<string, InvocationHandlerList>(StringComparer.Ordinal);
-        private readonly TaskQueue taskQueue = new TaskQueue();
 
+        private Task _invocationMessageReceiveTask;
+        private Channel<InvocationMessage> _invocationMessageChannel;
         private long _nextActivationServerTimeout;
         private long _nextActivationSendPing;
         private bool _disposed;
@@ -361,6 +361,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
                 // Set this at the end to avoid setting internal state until the connection is real
                 _connectionState = startingConnectionState;
+                _invocationMessageChannel = Channel.CreateUnbounded<InvocationMessage>();
+                _invocationMessageReceiveTask = startProcessingInvocationMessages();
                 _connectionState.ReceiveTask = ReceiveLoop(_connectionState);
 
                 Log.Started(_logger);
@@ -370,6 +372,19 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 ReleaseConnectionLock();
             }
         }
+
+        private async Task startProcessingInvocationMessages()
+        {
+            
+            while (await _invocationMessageChannel.Reader.WaitToReadAsync())
+            {
+                while (_invocationMessageChannel.Reader.TryRead(out var invocationMessage))
+                {
+                    DispatchInvocationAsync(invocationMessage);
+                }
+            }
+        }
+
 
         private Task CloseAsync(ConnectionContext connection)
         {
@@ -394,7 +409,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
                 CheckDisposed();
                 connectionState = _connectionState;
-                await taskQueue.Drain();
 
                 // Set the stopping flag so that any invocations after this get a useful error message instead of
                 // silently failing or throwing an error about the pipe being completed.
@@ -418,6 +432,12 @@ namespace Microsoft.AspNetCore.SignalR.Client
             if (connectionState != null)
             {
                 await connectionState.StopAsync();
+            }
+
+            if (_invocationMessageChannel != null)
+            {
+                _invocationMessageChannel.Writer.TryComplete();
+                await _invocationMessageReceiveTask;
             }
         }
 
@@ -706,8 +726,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                     break;
                 case InvocationMessage invocation:
                     Log.ReceivedInvocation(_logger, invocation.InvocationId, invocation.Target, invocation.Arguments);
-                    // No need to wait on the On handlers logic. Would prevent us from awaiting other invocations.
-                    _ = taskQueue.Enqueue((state) => DispatchInvocationAsync((InvocationMessage)state), invocation);
+                    await _invocationMessageChannel.Writer.WriteAsync(invocation);
                     break;
                 case CompletionMessage completion:
                     if (!connectionState.TryRemoveInvocation(completion.InvocationId, out irq))
@@ -751,7 +770,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             return (close: false, exception: null);
         }
 
-        private async Task DispatchInvocationAsync(InvocationMessage invocation)
+        private void DispatchInvocationAsync(InvocationMessage invocation)
         {
             // Find the handler
             if (!_handlers.TryGetValue(invocation.Target, out var invocationHandlerList))
@@ -766,7 +785,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             {
                 try
                 {
-                    await handler.InvokeAsync(invocation.Arguments);
+                    handler.InvokeAsync(invocation.Arguments);
                 }
                 catch (Exception ex)
                 {
