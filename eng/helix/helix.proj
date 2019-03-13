@@ -17,7 +17,7 @@
     <HelixBuild Condition=" '$(USERNAME)' == '' ">private-$(USER)</HelixBuild>
     <HelixBuild Condition=" '$(CI)' == 'true' ">$(BUILD_BUILDNUMBER)</HelixBuild>
     <WaitForWorkItemCompletion Condition=" '$(CI)' == 'true' ">true</WaitForWorkItemCompletion>
-    <FailOnMissionControlTestFailure>true</FailOnMissionControlTestFailure>
+    <FailOnMissionControlTestFailure>false</FailOnMissionControlTestFailure>
     <EnableAzurePipelinesReporter>false</EnableAzurePipelinesReporter>
     <IsExternal>true</IsExternal>
     <Creator>aspnetcore</Creator>
