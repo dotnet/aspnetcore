@@ -269,7 +269,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             store.VerifyAll();
         }
 
-        private class CustomNormalizer : INameLookupNormalizer, IEmailLookupNormalizer
+        private class CustomNormalizer : ILookupNormalizer
         {
             public string NormalizeName(string key) => "#"+key;
             public string NormalizeEmail(string key) => "@" + key;
