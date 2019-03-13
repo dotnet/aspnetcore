@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task DisposeAndRemoveAsync(Microsoft.AspNetCore.Http.Connections.Internal.HttpConnectionContext connection, bool closeGracefully) { throw null; }
         public void RemoveConnection(string id) { }
-        public System.Threading.Tasks.Task ScanAsync() { throw null; }
+        public void Scan() { }
         public void Start() { }
         public bool TryGetConnection(string id, out Microsoft.AspNetCore.Http.Connections.Internal.HttpConnectionContext connection) { throw null; }
     }
