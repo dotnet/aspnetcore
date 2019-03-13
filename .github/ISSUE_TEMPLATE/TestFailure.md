@@ -1,5 +1,6 @@
 ---
-title: "Test Failure"
+name: "Test Failure"
+title: "Failed Test: TestName"
 labels: test-failure
 about: "Report a failing/flaky test"
 ---
