@@ -10,7 +10,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Razor\Razor\src\Microsoft.AspNetCore.Razor.csproj" />
     <Reference Include="Microsoft.AspNetCore.Mvc.Razor" />
   </ItemGroup>
 

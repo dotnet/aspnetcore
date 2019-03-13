@@ -12,7 +12,7 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" />
     <Reference Include="Microsoft.AspNetCore.Mvc.RazorPages" />
-    <ProjectReference Include="..\..\..\Razor\Razor.Runtime\src\Microsoft.AspNetCore.Razor.Runtime.csproj" />
+    <Reference Include="Microsoft.AspNetCore.Razor.Runtime" />
     <Reference Include="Microsoft.CodeAnalysis.Razor" />
   </ItemGroup>
 

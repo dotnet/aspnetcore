@@ -17,48 +17,27 @@ namespace Microsoft.AspNetCore.Razor
     /// <summary>
     /// Represents properties and methods that are needed in order to render a view that uses Razor syntax.
     /// </summary>
-    public abstract class RazorRazorPageBase<TOutputContext> : IRazorRazorPage<TOutputContext> where TOutputContext : IOutputContext
+    public abstract class RazorRazorPageBase
     {
         private readonly Stack<TextWriter> _textWriterStack = new Stack<TextWriter>();
         private StringWriter _valueBuffer;
         private AttributeInfo _attributeInfo;
         private TagHelperAttributeInfo _tagHelperAttributeInfo;
 
-        public virtual TOutputContext ViewContext { get; set; }
-
         public string Layout { get; set; }
 
         /// <summary>
-        /// Gets the <see cref="TextWriter"/> that the page is writing output to.
+        /// Gets or sets the <see cref="TextWriter"/> that the page is writing output to.
         /// </summary>
-        /// <summary>
-        /// Gets the <see cref="TextWriter"/> that the page is writing output to.
-        /// </summary>
-        public virtual TextWriter Output
-        {
-            get
-            {
-                var viewContext = ViewContext;
-                if (viewContext == null)
-                {
-                    throw new InvalidOperationException("View context must be set"); //TODO Resources.FormatViewContextMustBeSet(nameof(ViewContext), nameof(Output)));
-                }
-
-                return viewContext.Writer;
-            }
-        }
+        public TextWriter Output { get; set; }
 
         /// <inheritdoc />
         public string Path { get; set; }
 
         /// <inheritdoc />
-        public IDictionary<string, RenderAsyncDelegate> SectionWriters { get; } =
-            new Dictionary<string, RenderAsyncDelegate>(StringComparer.OrdinalIgnoreCase);
-
-        /// <summary>
-        /// Gets the dynamic view data dictionary.
-        /// </summary>
-        public dynamic ViewBag => ViewContext?.ViewBag;
+        // REVIEW: using Func<Task> instead of moving RenderAsyncDelegate around, which is a breaking change
+        public IDictionary<string, Func<Task>> SectionWriters { get; } =
+            new Dictionary<string, Func<Task>>(StringComparer.OrdinalIgnoreCase);
 
         /// <inheritdoc />
         public bool IsLayoutBeingRendered { get; set; }
@@ -67,13 +46,13 @@ namespace Microsoft.AspNetCore.Razor
         public IHtmlContent BodyContent { get; set; }
 
         /// <inheritdoc />
-        public IDictionary<string, RenderAsyncDelegate> PreviousSectionWriters { get; set; }
+        public IDictionary<string, Func<Task>> PreviousSectionWriters { get; set; }
 
         /// <summary>
-        /// Gets the <see cref="System.Text.Encodings.Web.HtmlEncoder"/> to use when this <see cref="RazorRazorPageBase{TOutputContext}"/>
+        /// Gets the <see cref="System.Text.Encodings.Web.HtmlEncoder"/> to use when this <see cref="RazorRazorPageBase"/>
         /// handles non-<see cref="IHtmlContent"/> C# expressions.
         /// </summary>
-        public virtual HtmlEncoder HtmlEncoder { get; set; }
+        public HtmlEncoder HtmlEncoder { get; set; } = HtmlEncoder.Default; // REVIEW: how should we [RazorInject] this in a non-breaking way?
 
         public abstract Task ExecuteAsync();
 
@@ -85,41 +64,25 @@ namespace Microsoft.AspNetCore.Razor
                 throw new ArgumentNullException(nameof(writer));
             }
 
-            var viewContext = ViewContext;
-            _textWriterStack.Push(viewContext.Writer);
-            viewContext.Writer = writer;
+            _textWriterStack.Push(Output);
+            Output = writer;
         }
 
         // Internal for unit testing.
         protected internal virtual TextWriter PopWriter()
         {
-            var viewContext = ViewContext;
             var writer = _textWriterStack.Pop();
-            viewContext.Writer = writer;
+            Output = writer;
             return writer;
         }
 
-        /// <inheritdoc />
-        public abstract string Href(string contentPath);
-
         /// <summary>
         /// Creates a named content section in the page that can be invoked in a Layout page using
         /// <c>RenderSection</c> or <c>RenderSectionAsync</c>
         /// </summary>
         /// <param name="name">The name of the section to create.</param>
-        /// <param name="section">The delegate to execute when rendering the section.</param>
-        /// <remarks>This is a temporary placeholder method to support ASP.NET Core 2.0.0 editor code generation.</remarks>
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        protected void DefineSection(string name, Func<object, Task> section)
-            => DefineSection(name, () => section(null /* writer */));
-
-        /// <summary>
-        /// Creates a named content section in the page that can be invoked in a Layout page using
-        /// <c>RenderSection</c> or <c>RenderSectionAsync</c>
-        /// </summary>
-        /// <param name="name">The name of the section to create.</param>
-        /// <param name="section">The <see cref="RenderAsyncDelegate"/> to execute when rendering the section.</param>
-        public virtual void DefineSection(string name, RenderAsyncDelegate section)
+        /// <param name="section">The <see cref="Func{Task}"/> to execute when rendering the section.</param>
+        public void DefineSection(string name, Func<Task> section)
         {
             if (name == null)
             {
@@ -144,7 +107,7 @@ namespace Microsoft.AspNetCore.Razor
         /// Writes the specified <paramref name="value"/> with HTML encoding to <see cref="Output"/>.
         /// </summary>
         /// <param name="value">The <see cref="object"/> to write.</param>
-        public virtual void Write(object value)
+        public void Write(object value)
         {
             if (value == null || value == HtmlString.Empty)
             {
@@ -167,7 +130,7 @@ namespace Microsoft.AspNetCore.Razor
         /// Writes the specified <paramref name="value"/> with HTML encoding to <see cref="Output"/>.
         /// </summary>
         /// <param name="value">The <see cref="string"/> to write.</param>
-        public virtual void Write(string value)
+        public void Write(string value)
         {
             var writer = Output;
             var encoder = HtmlEncoder;
@@ -184,7 +147,7 @@ namespace Microsoft.AspNetCore.Razor
         /// Writes the specified <paramref name="value"/> without HTML encoding to <see cref="Output"/>.
         /// </summary>
         /// <param name="value">The <see cref="object"/> to write.</param>
-        public virtual void WriteLiteral(object value)
+        public void WriteLiteral(object value)
         {
             if (value == null)
             {
@@ -198,7 +161,7 @@ namespace Microsoft.AspNetCore.Razor
         /// Writes the specified <paramref name="value"/> without HTML encoding to <see cref="Output"/>.
         /// </summary>
         /// <param name="value">The <see cref="string"/> to write.</param>
-        public virtual void WriteLiteral(string value)
+        public void WriteLiteral(string value)
         {
             if (!string.IsNullOrEmpty(value))
             {
@@ -369,14 +332,14 @@ namespace Microsoft.AspNetCore.Razor
         }
 
         /// <summary>
-        /// Invokes <see cref="IOutputContext.FlushAsync"/>.
+        /// Invokes <see cref="TextWriter.FlushAsync"/> on the current <see cref="Output" /> instance.
         /// </summary>
         /// <returns>A <see cref="Task{HtmlString}"/> that represents the asynchronous flush operation and on
         /// completion returns an empty <see cref="HtmlString"/>.</returns>
         /// <remarks>The value returned is a token value that allows FlushAsync to work directly in an HTML
         /// section. However the value does not represent the rendered content.
         /// </remarks>
-        public virtual async Task<HtmlString> FlushAsync()
+        public async Task<HtmlString> FlushAsync()
         {
             // Calls to Flush are allowed if the page does not specify a Layout or if it is executing a section in the
             // Layout.
@@ -386,7 +349,7 @@ namespace Microsoft.AspNetCore.Razor
                 var message = $"Format Layout Cannot Be Rendered ({Path}, {nameof(FlushAsync)})";
                 throw new InvalidOperationException(message);
             }
-            await ViewContext.FlushAsync();
+            await Output.FlushAsync();
             return HtmlString.Empty;
         }
 
