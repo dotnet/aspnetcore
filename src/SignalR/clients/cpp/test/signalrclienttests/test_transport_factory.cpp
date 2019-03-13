@@ -10,12 +10,11 @@ test_transport_factory::test_transport_factory(const std::shared_ptr<websocket_c
 { }
 
 std::shared_ptr<transport> test_transport_factory::create_transport(transport_type transport_type, const logger& logger,
-    const signalr_client_config&, std::function<void(const std::string&)> process_message_callback,
-    std::function<void(const std::exception&)> error_callback)
+    const signalr_client_config&)
 {
     if (transport_type == signalr::transport_type::websockets)
     {
-        return websocket_transport::create([&](){ return m_websocket_client; }, logger, process_message_callback, error_callback);
+        return websocket_transport::create([&](){ return m_websocket_client; }, logger);
     }
 
     throw std::runtime_error("not supported");

@@ -313,9 +313,9 @@ TEST(connection_impl_start, start_fails_if_negotiate_request_fails)
     });
 
     auto websocket_client = std::make_shared<test_websocket_client>();
-    websocket_client->set_receive_function([]()->pplx::task<std::string>
+    websocket_client->set_receive_function([](std::function<void(std::string, std::exception_ptr)> callback)
     {
-        return pplx::task_from_result(std::string("{ }\x1e"));
+        callback("{ }\x1e", nullptr);
     });
 
     auto connection =
@@ -349,9 +349,14 @@ TEST(connection_impl_start, start_fails_if_negotiate_response_has_error)
 
     pplx::task_completion_event<void> tce;
     auto websocket_client = std::make_shared<test_websocket_client>();
-    websocket_client->set_connect_function([tce](const std::string&) mutable
+    websocket_client->set_connect_function([tce](const std::string&, std::function<void(std::exception_ptr)> callback)
     {
-        return pplx::task<void>(tce);
+        pplx::task<void>(tce)
+            .then([callback](pplx::task<void> prev_task)
+        {
+            prev_task.get();
+            callback(nullptr);
+        });
     });
 
     auto connection =
@@ -367,6 +372,8 @@ TEST(connection_impl_start, start_fails_if_negotiate_response_has_error)
     {
         ASSERT_STREQ("bad negotiate", e.what());
     }
+
+    tce.set();
 }
 
 TEST(connection_impl_start, start_fails_if_negotiate_response_does_not_have_websockets)
@@ -385,9 +392,14 @@ TEST(connection_impl_start, start_fails_if_negotiate_response_does_not_have_webs
 
     pplx::task_completion_event<void> tce;
     auto websocket_client = std::make_shared<test_websocket_client>();
-    websocket_client->set_connect_function([tce](const std::string&) mutable
+    websocket_client->set_connect_function([tce](const std::string&, std::function<void(std::exception_ptr)> callback)
     {
-        return pplx::task<void>(tce);
+        pplx::task<void>(tce)
+            .then([callback](pplx::task<void> prev_task)
+        {
+            prev_task.get();
+            callback(nullptr);
+        });
     });
 
     auto connection =
@@ -403,6 +415,8 @@ TEST(connection_impl_start, start_fails_if_negotiate_response_does_not_have_webs
     {
         ASSERT_STREQ("The server does not support WebSockets which is currently the only transport supported by this client.", e.what());
     }
+
+    tce.set();
 }
 
 TEST(connection_impl_start, start_fails_if_negotiate_response_does_not_have_transports)
@@ -421,9 +435,14 @@ TEST(connection_impl_start, start_fails_if_negotiate_response_does_not_have_tran
 
     pplx::task_completion_event<void> tce;
     auto websocket_client = std::make_shared<test_websocket_client>();
-    websocket_client->set_connect_function([tce](const std::string&) mutable
+    websocket_client->set_connect_function([tce](const std::string&, std::function<void(std::exception_ptr)> callback)
     {
-        return pplx::task<void>(tce);
+        pplx::task<void>(tce)
+            .then([callback](pplx::task<void> prev_task)
+        {
+            prev_task.get();
+            callback(nullptr);
+        });
     });
 
     auto connection =
@@ -439,6 +458,8 @@ TEST(connection_impl_start, start_fails_if_negotiate_response_does_not_have_tran
     {
         ASSERT_STREQ("The server does not support WebSockets which is currently the only transport supported by this client.", e.what());
     }
+
+    tce.set();
 }
 
 TEST(connection_impl_start, start_fails_if_negotiate_response_is_invalid)
@@ -457,9 +478,14 @@ TEST(connection_impl_start, start_fails_if_negotiate_response_is_invalid)
 
     pplx::task_completion_event<void> tce;
     auto websocket_client = std::make_shared<test_websocket_client>();
-    websocket_client->set_connect_function([tce](const std::string&) mutable
+    websocket_client->set_connect_function([tce](const std::string&, std::function<void(std::exception_ptr)> callback)
     {
-        return pplx::task<void>(tce);
+        pplx::task<void>(tce)
+            .then([callback](pplx::task<void> prev_task)
+        {
+            prev_task.get();
+            callback(nullptr);
+        });
     });
 
     auto connection =
@@ -475,6 +501,8 @@ TEST(connection_impl_start, start_fails_if_negotiate_response_is_invalid)
     {
         ASSERT_STREQ("* Line 1, Column 28 Syntax error: Malformed token", e.what());
     }
+
+    tce.set();
 }
 
 TEST(connection_impl_start, negotiate_follows_redirect)
@@ -503,10 +531,10 @@ TEST(connection_impl_start, negotiate_follows_redirect)
     auto websocket_client = std::make_shared<test_websocket_client>();
 
     std::string connectUrl;
-    websocket_client->set_connect_function([&connectUrl](const std::string& url)
+    websocket_client->set_connect_function([&connectUrl](const std::string& url, std::function<void(std::exception_ptr)> callback)
     {
         connectUrl = url;
-        return pplx::task_from_result();
+        callback(nullptr);
     });
 
     auto connection =
@@ -550,10 +578,10 @@ TEST(connection_impl_start, negotiate_redirect_uses_accessToken)
     auto websocket_client = std::make_shared<test_websocket_client>();
 
     std::string connectUrl;
-    websocket_client->set_connect_function([&connectUrl](const std::string& url)
+    websocket_client->set_connect_function([&connectUrl](const std::string& url, std::function<void(std::exception_ptr)> callback)
     {
         connectUrl = url;
-        return pplx::task_from_result();
+        callback(nullptr);
     });
 
     auto connection =
@@ -721,9 +749,14 @@ TEST(connection_impl_start, start_fails_if_connect_request_times_out)
 
     pplx::task_completion_event<void> tce;
     auto websocket_client = std::make_shared<test_websocket_client>();
-    websocket_client->set_connect_function([tce](const std::string&) mutable
+    websocket_client->set_connect_function([tce](const std::string&, std::function<void(std::exception_ptr)> callback)
     {
-        return pplx::task<void>(tce);
+        pplx::task<void>(tce)
+            .then([callback](pplx::task<void> prev_task)
+        {
+            prev_task.get();
+            callback(nullptr);
+        });
     });
 
     auto connection =
@@ -739,6 +772,8 @@ TEST(connection_impl_start, start_fails_if_connect_request_times_out)
     {
         ASSERT_STREQ("transport timed out when trying to connect", e.what());
     }
+
+    tce.set();
 }
 
 TEST(connection_impl_process_response, process_response_logs_messages)
