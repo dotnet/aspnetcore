@@ -9,7 +9,7 @@
 namespace signalr
 {
     std::shared_ptr<transport> websocket_transport::create(const std::function<std::shared_ptr<websocket_client>()>& websocket_client_factory,
-        const logger& logger, const std::function<void(const utility::string_t &)>& process_response_callback,
+        const logger& logger, const std::function<void(const std::string &)>& process_response_callback,
         std::function<void(const std::exception&)> error_callback)
     {
         return std::shared_ptr<transport>(
@@ -17,7 +17,7 @@ namespace signalr
     }
 
     websocket_transport::websocket_transport(const std::function<std::shared_ptr<websocket_client>()>& websocket_client_factory,
-        const logger& logger, const std::function<void(const utility::string_t &)>& process_response_callback,
+        const logger& logger, const std::function<void(const std::string &)>& process_response_callback,
         std::function<void(const std::exception&)> error_callback)
         : transport(logger, process_response_callback, error_callback), m_websocket_client_factory(websocket_client_factory)
     {
@@ -41,9 +41,9 @@ namespace signalr
         return transport_type::websockets;
     }
 
-    pplx::task<void> websocket_transport::connect(const utility::string_t& url)
+    pplx::task<void> websocket_transport::connect(const std::string& url)
     {
-        web::uri uri(url);
+        web::uri uri(utility::conversions::to_string_t(url));
         _ASSERTE(uri.scheme() == _XPLATSTR("ws") || uri.scheme() == _XPLATSTR("wss"));
 
         {
@@ -51,11 +51,11 @@ namespace signalr
 
             if (!m_receive_loop_cts.get_token().is_canceled())
             {
-                throw signalr_exception(_XPLATSTR("transport already connected"));
+                throw signalr_exception("transport already connected");
             }
 
             m_logger.log(trace_level::info,
-                utility::string_t(_XPLATSTR("[websocket transport] connecting to: "))
+                std::string("[websocket transport] connecting to: ")
                 .append(url));
 
             auto websocket_client = m_websocket_client_factory();
@@ -83,8 +83,8 @@ namespace signalr
                     {
                         transport->m_logger.log(
                             trace_level::errors,
-                            utility::string_t(_XPLATSTR("[websocket transport] exception when connecting to the server: "))
-                            .append(utility::conversions::to_string_t(e.what())));
+                            std::string("[websocket transport] exception when connecting to the server: ")
+                            .append(e.what()));
 
                         receive_loop_cts.cancel();
                         connect_tce.set_exception(std::current_exception());
@@ -97,7 +97,7 @@ namespace signalr
         }
     }
 
-    pplx::task<void> websocket_transport::send(const utility::string_t &data)
+    pplx::task<void> websocket_transport::send(const std::string &data)
     {
         // send will return a faulted task if client has disconnected
         return safe_get_websocket_client()->send(data);
@@ -133,8 +133,8 @@ namespace signalr
                 {
                     logger.log(
                         trace_level::errors,
-                        utility::string_t(_XPLATSTR("[websocket transport] exception when closing websocket: "))
-                        .append(utility::conversions::to_string_t(e.what())));
+                        std::string("[websocket transport] exception when closing websocket: ")
+                        .append(e.what()));
                 }
             });
     }
@@ -165,7 +165,7 @@ namespace signalr
                 auto transport = weak_transport.lock();
                 if (transport)
                 {
-                    transport->process_response(utility::conversions::to_string_t(message));
+                    transport->process_response(message);
 
                     if (!cts.get_token().is_canceled())
                     {
@@ -186,7 +186,7 @@ namespace signalr
                     cts.cancel();
 
                     logger.log(trace_level::info,
-                        utility::string_t(_XPLATSTR("[websocket transport] receive task canceled.")));
+                        std::string("[websocket transport] receive task canceled."));
                 }
                 catch (const std::exception& e)
                 {
@@ -194,8 +194,8 @@ namespace signalr
 
                     logger.log(
                         trace_level::errors,
-                        utility::string_t(_XPLATSTR("[websocket transport] error receiving response from websocket: "))
-                        .append(utility::conversions::to_string_t(e.what())));
+                        std::string("[websocket transport] error receiving response from websocket: ")
+                        .append(e.what()));
 
                     websocket_client->close()
                         .then([](pplx::task<void> task)
@@ -216,7 +216,7 @@ namespace signalr
 
                     logger.log(
                         trace_level::errors,
-                        utility::string_t(_XPLATSTR("[websocket transport] unknown error occurred when receiving response from websocket")));
+                        std::string("[websocket transport] unknown error occurred when receiving response from websocket"));
 
                     websocket_client->close()
                         .then([](pplx::task<void> task)
@@ -228,7 +228,7 @@ namespace signalr
                     auto transport = weak_transport.lock();
                     if (transport)
                     {
-                        transport->error(signalr_exception(_XPLATSTR("unknown error")));
+                        transport->error(signalr_exception("unknown error"));
                     }
                 }
             });

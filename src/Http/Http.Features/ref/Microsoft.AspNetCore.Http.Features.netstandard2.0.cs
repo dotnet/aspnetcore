@@ -131,6 +131,12 @@ namespace Microsoft.AspNetCore.Http.Features
         public T Fetch(Microsoft.AspNetCore.Http.Features.IFeatureCollection features) { throw null; }
         public T Update(Microsoft.AspNetCore.Http.Features.IFeatureCollection features, T feature) { throw null; }
     }
+    public enum HttpsCompressionMode
+    {
+        Compress = 2,
+        Default = 0,
+        DoNotCompress = 1,
+    }
     public partial interface IFeatureCollection : System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.Type, object>>, System.Collections.IEnumerable
     {
         bool IsReadOnly { get; }
@@ -207,6 +213,10 @@ namespace Microsoft.AspNetCore.Http.Features
     {
         Microsoft.AspNetCore.Http.IHeaderDictionary Trailers { get; set; }
     }
+    public partial interface IHttpsCompressionFeature
+    {
+        Microsoft.AspNetCore.Http.Features.HttpsCompressionMode Mode { get; set; }
+    }
     public partial interface IHttpSendFileFeature
     {
         System.Threading.Tasks.Task SendFileAsync(string path, long offset, long? count, System.Threading.CancellationToken cancellation);
@@ -231,7 +241,7 @@ namespace Microsoft.AspNetCore.Http.Features
     }
     public partial interface IRequestBodyPipeFeature
     {
-        System.IO.Pipelines.PipeReader RequestBodyPipe { get; set; }
+        System.IO.Pipelines.PipeReader Reader { get; set; }
     }
     public partial interface IRequestCookiesFeature
     {
@@ -239,7 +249,7 @@ namespace Microsoft.AspNetCore.Http.Features
     }
     public partial interface IResponseBodyPipeFeature
     {
-        System.IO.Pipelines.PipeWriter ResponseBodyPipe { get; set; }
+        System.IO.Pipelines.PipeWriter Writer { get; set; }
     }
     public partial interface IResponseCookiesFeature
     {

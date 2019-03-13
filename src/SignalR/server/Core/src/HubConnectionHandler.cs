@@ -28,6 +28,7 @@ namespace Microsoft.AspNetCore.SignalR
         private readonly IUserIdProvider _userIdProvider;
         private readonly HubDispatcher<THub> _dispatcher;
         private readonly bool _enableDetailedErrors;
+        private readonly long? _maximumMessageSize;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HubConnectionHandler{THub}"/> class.
@@ -61,6 +62,7 @@ namespace Microsoft.AspNetCore.SignalR
             _dispatcher = dispatcher;
 
             _enableDetailedErrors = _hubOptions.EnableDetailedErrors ?? _globalHubOptions.EnableDetailedErrors ?? false;
+            _maximumMessageSize = _hubOptions.MaximumReceiveMessageSize ?? _globalHubOptions.MaximumReceiveMessageSize;
         }
 
         /// <inheritdoc />
@@ -69,7 +71,7 @@ namespace Microsoft.AspNetCore.SignalR
             // We check to see if HubOptions<THub> are set because those take precedence over global hub options.
             // Then set the keepAlive and handshakeTimeout values to the defaults in HubOptionsSetup incase they were explicitly set to null.
             var keepAlive = _hubOptions.KeepAliveInterval ?? _globalHubOptions.KeepAliveInterval ?? HubOptionsSetup.DefaultKeepAliveInterval;
-            var clientTimeout = _hubOptions.ClientTimeoutInterval ?? _globalHubOptions.ClientTimeoutInterval ?? HubOptionsSetup.DefaultClientTimeoutInterval; 
+            var clientTimeout = _hubOptions.ClientTimeoutInterval ?? _globalHubOptions.ClientTimeoutInterval ?? HubOptionsSetup.DefaultClientTimeoutInterval;
             var handshakeTimeout = _hubOptions.HandshakeTimeout ?? _globalHubOptions.HandshakeTimeout ?? HubOptionsSetup.DefaultHandshakeTimeout;
             var supportedProtocols = _hubOptions.SupportedProtocols ?? _globalHubOptions.SupportedProtocols;
 
@@ -205,9 +207,47 @@ namespace Microsoft.AspNetCore.SignalR
                     {
                         connection.ResetClientTimeout();
 
-                        while (protocol.TryParseMessage(ref buffer, binder, out var message))
+                        // No message limit, just parse and dispatch
+                        if (_maximumMessageSize == null)
                         {
-                            await _dispatcher.DispatchMessageAsync(connection, message);
+                            while (protocol.TryParseMessage(ref buffer, binder, out var message))
+                            {
+                                await _dispatcher.DispatchMessageAsync(connection, message);
+                            }
+                        }
+                        else
+                        {
+                            // We give the parser a sliding window of the default message size
+                            var maxMessageSize = _maximumMessageSize.Value;
+
+                            while (!buffer.IsEmpty)
+                            {
+                                var segment = buffer;
+                                var overLength = false;
+
+                                if (segment.Length > maxMessageSize)
+                                {
+                                    segment = segment.Slice(segment.Start, maxMessageSize);
+                                    overLength = true;
+                                }
+
+                                if (protocol.TryParseMessage(ref segment, binder, out var message))
+                                {
+                                    await _dispatcher.DispatchMessageAsync(connection, message);
+                                }
+                                else if (overLength)
+                                {
+                                    throw new InvalidDataException($"The maximum message size of {maxMessageSize}B was exceeded. The message size can be configured in AddHubOptions.");
+                                }
+                                else
+                                {
+                                    // No need to update the buffer since we didn't parse anything
+                                    break;
+                                }
+
+                                // Update the buffer to the remaining segment
+                                buffer = buffer.Slice(segment.Start);
+                            }
                         }
                     }
 

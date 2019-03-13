@@ -615,18 +615,6 @@ namespace Microsoft.AspNetCore.Components
         public double DeltaZ { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
 }
-namespace Microsoft.AspNetCore.Components.Builder
-{
-    public static partial class ComponentsApplicationBuilderExtensions
-    {
-        public static void AddComponent<TComponent>(this Microsoft.AspNetCore.Components.Builder.IComponentsApplicationBuilder app, string domElementSelector) where TComponent : Microsoft.AspNetCore.Components.IComponent { }
-    }
-    public partial interface IComponentsApplicationBuilder
-    {
-        System.IServiceProvider Services { get; }
-        void AddComponent(System.Type componentType, string domElementSelector);
-    }
-}
 namespace Microsoft.AspNetCore.Components.Forms
 {
     public partial class DataAnnotationsValidator : Microsoft.AspNetCore.Components.ComponentBase
@@ -835,7 +823,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         public Renderer(System.IServiceProvider serviceProvider, Microsoft.AspNetCore.Components.Rendering.IDispatcher dispatcher) { }
         public event System.UnhandledExceptionEventHandler UnhandledSynchronizationException { add { } remove { } }
         protected internal virtual void AddToRenderQueue(int componentId, Microsoft.AspNetCore.Components.RenderFragment renderFragment) { }
-        protected int AssignRootComponentId(Microsoft.AspNetCore.Components.IComponent component) { throw null; }
+        protected internal int AssignRootComponentId(Microsoft.AspNetCore.Components.IComponent component) { throw null; }
         public static Microsoft.AspNetCore.Components.Rendering.IDispatcher CreateDefaultDispatcher() { throw null; }
         public System.Threading.Tasks.Task DispatchEventAsync(int eventHandlerId, Microsoft.AspNetCore.Components.UIEventArgs eventArgs) { throw null; }
         public void Dispose() { }

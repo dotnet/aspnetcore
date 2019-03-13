@@ -4,7 +4,6 @@
 #pragma once
 
 #include "pplx/pplxtasks.h"
-#include "cpprest/details/basic_types.h"
 #include "signalrclient/signalr_client_config.h"
 #include "web_request_factory.h"
 
@@ -12,10 +11,10 @@ namespace signalr
 {
     namespace http_sender
     {
-        pplx::task<utility::string_t> get(web_request_factory& request_factory, const utility::string_t& url,
+        pplx::task<std::string> get(web_request_factory& request_factory, const std::string& url,
             const signalr_client_config& client_config = signalr_client_config{});
 
-        pplx::task<utility::string_t> post(web_request_factory& request_factory, const utility::string_t& url,
+        pplx::task<std::string> post(web_request_factory& request_factory, const std::string& url,
             const signalr_client_config& client_config = signalr_client_config{});
     }
 }

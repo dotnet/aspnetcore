@@ -212,6 +212,23 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
+        public async Task FindByEmailThrowsWithTwoUsersWithSameEmail()
+        {
+            var manager = CreateManager();
+            var userA = new IdentityUser(Guid.NewGuid().ToString());
+            userA.Email = "dupe@dupe.com";
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(userA, "password"));
+            var userB = new IdentityUser(Guid.NewGuid().ToString());
+            userB.Email = "dupe@dupe.com";
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(userB, "password"));
+            await Assert.ThrowsAsync<InvalidOperationException>(async () => await manager.FindByEmailAsync("dupe@dupe.com"));
+
+        }
+
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task AddUserToUnknownRoleFails()
         {
             var manager = CreateManager();

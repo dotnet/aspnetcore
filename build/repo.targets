@@ -24,7 +24,7 @@
     <CompileDependsOn>$(CompileDependsOn);BuildProjects</CompileDependsOn>
 
     <PackageDependsOn>$(PackageDependsOn);PackProjects</PackageDependsOn>
-    <PackageDependsOn Condition=" '$(BuildAllProjects)' == 'true' ">$(PackageDependsOn);BuildSharedFx;RemoveSharedFrameworkOnlyRefsFromNuspec</PackageDependsOn>
+    <PackageDependsOn Condition=" '$(BuildAllProjects)' == 'true' ">$(PackageDependsOn);RemoveSharedFrameworkOnlyRefsFromNuspec;BuildSharedFx</PackageDependsOn>
 
     <TestDependsOn />
     <TestDependsOn Condition=" '$(_RunBuild)' == 'true' ">$(TestDependsOn);Compile</TestDependsOn>
@@ -154,6 +154,7 @@
   <Target Name="Helix" DependsOnTargets="Restore">
     <MSBuild Projects="$(MSBuildThisFileDirectory)..\eng\helix\helix.proj"
              Targets="Test"
+             Properties="$(BuildProperties);$(SolutionProperties);"
              ContinueOnError="ErrorAndStop" />
   </Target>
 </Project>

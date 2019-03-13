@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             await AssertRunning(deploymentResult);
         }
 
-        [ConditionalTheory]
+        [ConditionalTheory(Skip = "https://github.com/aspnet/AspNetCore/issues/7075")]
         [InlineData(HostingModel.InProcess)]
         [InlineData(HostingModel.OutOfProcess)]
         public async Task AppOfflineAddedAndRemovedStress(HostingModel hostingModel)

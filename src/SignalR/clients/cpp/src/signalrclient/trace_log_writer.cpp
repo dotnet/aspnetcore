@@ -6,11 +6,11 @@
 
 namespace signalr
 {
-    void trace_log_writer::write(const utility::string_t &entry)
+    void trace_log_writer::write(const std::string &entry)
     {
 #ifdef _WIN32
         // OutputDebugString is thread safe
-        OutputDebugString(entry.c_str());
+        OutputDebugStringA(entry.c_str());
 #else
         // Note: there is no data race for standard output streams in C++ 11 but the results
         // might be garbled when the method is called concurrently from multiple threads

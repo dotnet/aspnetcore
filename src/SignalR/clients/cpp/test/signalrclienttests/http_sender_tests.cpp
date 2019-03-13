@@ -11,67 +11,67 @@
 
 TEST(http_sender_get_response, request_sent_using_get_method)
 {
-    utility::string_t response_body{ _XPLATSTR("response body") };
+    std::string response_body{ "response body" };
 
-    auto web_request_factory = std::make_unique<test_web_request_factory>([response_body](const web::uri &) -> std::unique_ptr<web_request>
+    auto web_request_factory = std::make_unique<test_web_request_factory>([response_body](const std::string &) -> std::unique_ptr<web_request>
     {
-        auto request = new web_request_stub((unsigned short)200, _XPLATSTR("OK"), response_body);
-        request->on_get_response = [](web_request_stub& request) { ASSERT_EQ(_XPLATSTR("GET"), request.m_method); };
+        auto request = new web_request_stub((unsigned short)200, "OK", response_body);
+        request->on_get_response = [](web_request_stub& request) { ASSERT_EQ("GET", request.m_method); };
 
         return std::unique_ptr<web_request>(request);
     });
 
-    ASSERT_EQ(response_body, http_sender::get(*web_request_factory, _XPLATSTR("url")).get());
+    ASSERT_EQ(response_body, http_sender::get(*web_request_factory, "url").get());
 }
 
 TEST(http_sender_get_response, exception_thrown_if_status_code_not_200)
 {
-    utility::string_t response_phrase(_XPLATSTR("Custom Not Found"));
+    std::string response_phrase("Custom Not Found");
 
-    auto web_request_factory = std::make_unique<test_web_request_factory>([response_phrase](const web::uri &) -> std::unique_ptr<web_request>
+    auto web_request_factory = std::make_unique<test_web_request_factory>([response_phrase](const std::string &) -> std::unique_ptr<web_request>
     {
         return std::unique_ptr<web_request>(new web_request_stub((unsigned short)404, response_phrase));
     });
 
     try
     {
-        http_sender::get(*web_request_factory, _XPLATSTR("url")).get();
+        http_sender::get(*web_request_factory, "url").get();
         ASSERT_TRUE(false); // exception not thrown
     }
     catch (const web_exception &e)
     {
         ASSERT_EQ(
-            _XPLATSTR("web exception - 404 ") + response_phrase,
-            utility::conversions::to_string_t(e.what()));
+            "web exception - 404 " + response_phrase,
+            e.what());
         ASSERT_EQ(404, e.status_code());
     }
 }
 
 TEST(http_sender_get_response, user_agent_set)
 {
-    utility::string_t response_body{ _XPLATSTR("response body") };
+    std::string response_body{ "response body" };
 
-    auto web_request_factory = std::make_unique<test_web_request_factory>([response_body](const web::uri &) -> std::unique_ptr<web_request>
+    auto web_request_factory = std::make_unique<test_web_request_factory>([response_body](const std::string &) -> std::unique_ptr<web_request>
     {
-        auto request = new web_request_stub((unsigned short)200, _XPLATSTR("OK"), response_body);
+        auto request = new web_request_stub((unsigned short)200, "OK", response_body);
         request->on_get_response = [](web_request_stub& request)
         {
-            ASSERT_EQ(_XPLATSTR("SignalR.Client.Cpp/0.1.0-alpha0"), request.m_user_agent_string);
+            ASSERT_EQ("SignalR.Client.Cpp/0.1.0-alpha0", request.m_user_agent_string);
         };
 
         return std::unique_ptr<web_request>(request);
     });
 
-    ASSERT_EQ(response_body, http_sender::get(*web_request_factory, _XPLATSTR("url")).get());
+    ASSERT_EQ(response_body, http_sender::get(*web_request_factory, "url").get());
 }
 
 TEST(http_sender_get_response, headers_set)
 {
-    utility::string_t response_body{ _XPLATSTR("response body") };
+    std::string response_body{ "response body" };
 
-    auto web_request_factory = std::make_unique<test_web_request_factory>([response_body](const web::uri &) -> std::unique_ptr<web_request>
+    auto web_request_factory = std::make_unique<test_web_request_factory>([response_body](const std::string &) -> std::unique_ptr<web_request>
     {
-        auto request = new web_request_stub((unsigned short)200, _XPLATSTR("OK"), response_body);
+        auto request = new web_request_stub((unsigned short)200, "OK", response_body);
         request->on_get_response = [](web_request_stub& request)
         {
             auto http_headers = request.m_signalr_client_config.get_http_headers();
@@ -88,5 +88,5 @@ TEST(http_sender_get_response, headers_set)
     signalr_client_config.set_http_headers(http_headers);
 
     // ensures that web_request.get_response() was invoked
-    ASSERT_EQ(response_body, http_sender::get(*web_request_factory, _XPLATSTR("url"), signalr_client_config).get());
+    ASSERT_EQ(response_body, http_sender::get(*web_request_factory, "url", signalr_client_config).get());
 }

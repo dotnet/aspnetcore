@@ -2014,7 +2014,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/8138")]
         public async Task ErrorDuringPollWillCloseConnection()
         {
             bool ExpectedErrors(WriteContext writeContext)

@@ -323,6 +323,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 return;
             }
 
+            // Advance examined before possibly throwing, so we don't risk examining less than the previous call to ParseChunkedPrefix.
+            examined = reader.Position;
+
             var chunkSize = CalculateChunkSize(ch1, 0);
             ch1 = ch2;
 
@@ -345,10 +348,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     return;
                 }
 
+                // Advance examined before possibly throwing, so we don't risk examining less than the previous call to ParseChunkedPrefix.
+                examined = reader.Position;
+
                 if (ch1 == '\r' && ch2 == '\n')
                 {
                     consumed = reader.Position;
-                    examined = reader.Position;
 
                     AddAndCheckConsumedBytes(reader.Consumed);
                     _inputLength = chunkSize;
@@ -447,10 +452,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             var suffixBuffer = buffer.Slice(0, 2);
             var suffixSpan = suffixBuffer.ToSpan();
+
+            // Advance examined before possibly throwing, so we don't risk examining less than the previous call to ParseChunkedSuffix.
+            examined = suffixBuffer.End;
+
             if (suffixSpan[0] == '\r' && suffixSpan[1] == '\n')
             {
                 consumed = suffixBuffer.End;
-                examined = suffixBuffer.End;
                 AddAndCheckConsumedBytes(2);
                 _mode = Mode.Prefix;
             }
@@ -474,10 +482,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             var trailerBuffer = buffer.Slice(0, 2);
             var trailerSpan = trailerBuffer.ToSpan();
 
+            // Advance examined before possibly throwing, so we don't risk examining less than the previous call to ParseChunkedTrailer.
+            examined = trailerBuffer.End;
+
             if (trailerSpan[0] == '\r' && trailerSpan[1] == '\n')
             {
                 consumed = trailerBuffer.End;
-                examined = trailerBuffer.End;
                 AddAndCheckConsumedBytes(2);
                 _mode = Mode.Complete;
             }

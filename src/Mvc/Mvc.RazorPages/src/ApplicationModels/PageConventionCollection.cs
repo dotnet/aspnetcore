@@ -261,7 +261,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         }
 
         // Internal for unit testing
-        internal static void EnsureValidPageName(string pageName)
+        internal static void EnsureValidPageName(string pageName, string argumentName = "pageName")
         {
             if (string.IsNullOrEmpty(pageName))
             {

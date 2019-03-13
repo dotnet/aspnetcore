@@ -21,15 +21,15 @@ namespace signalr
         : m_underlying_client(create_client_config(signalr_client_config))
     { }
 
-    pplx::task<void> default_websocket_client::connect(const web::uri &url)
+    pplx::task<void> default_websocket_client::connect(const std::string& url)
     {
-        return m_underlying_client.connect(url);
+        return m_underlying_client.connect(utility::conversions::to_string_t(url));
     }
 
-    pplx::task<void> default_websocket_client::send(const utility::string_t &message)
+    pplx::task<void> default_websocket_client::send(const std::string &message)
     {
         web::websockets::client::websocket_outgoing_message msg;
-        msg.set_utf8_message(utility::conversions::to_utf8string(message));
+        msg.set_utf8_message(message);
         return m_underlying_client.send(msg);
     }
 

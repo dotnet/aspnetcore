@@ -4,7 +4,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Server.Circuits;
-using Microsoft.AspNetCore.Components.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,6 +18,7 @@ namespace Microsoft.AspNetCore.Components.Server
     {
         private static readonly object CircuitKey = new object();
         private readonly CircuitFactory _circuitFactory;
+        private readonly CircuitRegistry _circuitRegistry;
         private readonly ILogger _logger;
 
         /// <summary>
@@ -28,6 +28,7 @@ namespace Microsoft.AspNetCore.Components.Server
         public ComponentHub(IServiceProvider services, ILogger<ComponentHub> logger)
         {
             _circuitFactory = services.GetRequiredService<CircuitFactory>();
+            _circuitRegistry = services.GetRequiredService<CircuitRegistry>();
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -48,19 +49,28 @@ namespace Microsoft.AspNetCore.Components.Server
         /// <summary>
         /// Intended for framework use only. Applications should not call this method directly.
         /// </summary>
-        public override async Task OnDisconnectedAsync(Exception exception)
+        public override Task OnDisconnectedAsync(Exception exception)
         {
-            await CircuitHost.DisposeAsync();
+            var circuitHost = CircuitHost;
+            if (circuitHost == null)
+            {
+                return Task.CompletedTask;
+            }
+
+            CircuitHost = null;
+            return _circuitRegistry.DisconnectAsync(circuitHost, Context.ConnectionId);
         }
 
         /// <summary>
         /// Intended for framework use only. Applications should not call this method directly.
         /// </summary>
-        public async Task StartCircuit(string uriAbsolute, string baseUriAbsolute)
+        public async Task<string> StartCircuit(string uriAbsolute, string baseUriAbsolute)
         {
+            var circuitClient = new CircuitClientProxy(Clients.Caller, Context.ConnectionId);
+
             var circuitHost = _circuitFactory.CreateCircuitHost(
                 Context.GetHttpContext(),
-                Clients.Caller,
+                circuitClient,
                 uriAbsolute,
                 baseUriAbsolute);
 
@@ -69,7 +79,31 @@ namespace Microsoft.AspNetCore.Components.Server
             // If initialization fails, this will throw. The caller will fail if they try to call into any interop API.
             await circuitHost.InitializeAsync(Context.ConnectionAborted);
 
+            _circuitRegistry.Register(circuitHost);
+
             CircuitHost = circuitHost;
+
+            return circuitHost.CircuitId;
+        }
+
+        /// <summary>
+        /// Intended for framework use only. Applications should not call this method directly.
+        /// </summary>
+        public async Task<bool> ConnectCircuit(string circuitId)
+        {
+            var circuitHost = await _circuitRegistry.ConnectAsync(circuitId, Clients.Caller, Context.ConnectionId, Context.ConnectionAborted);
+            if (circuitHost != null)
+            {
+                CircuitHost = circuitHost;
+
+                // Dispatch any buffered renders we accumulated during a disconnect.
+                // Note that while the rendering is async, we cannot await it here. The Task returned by ProcessBufferedRenderBatches relies on
+                // OnRenderCompleted to be invoked to complete, and SignalR does not allow concurrent hub method invocations.
+                _ = circuitHost.Renderer.ProcessBufferedRenderBatches();
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>

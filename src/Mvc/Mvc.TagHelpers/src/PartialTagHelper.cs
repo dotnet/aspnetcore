@@ -32,6 +32,11 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         private readonly ICompositeViewEngine _viewEngine;
         private readonly IViewBufferScope _viewBufferScope;
 
+        /// <summary>
+        /// Creates a new <see cref="PartialTagHelper"/>.
+        /// </summary>
+        /// <param name="viewEngine">The <see cref="ICompositeViewEngine"/> used to locate the partial view.</param>
+        /// <param name="viewBufferScope">The <see cref="IViewBufferScope"/>.</param>
         public PartialTagHelper(
             ICompositeViewEngine viewEngine,
             IViewBufferScope viewBufferScope)
@@ -91,6 +96,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         /// </summary>
         public ViewDataDictionary ViewData { get; set; }
 
+        /// <summary>
+        /// Gets the <see cref="Rendering.ViewContext"/> of the executing view.
+        /// </summary>
         [HtmlAttributeNotBound]
         [ViewContext]
         public ViewContext ViewContext { get; set; }

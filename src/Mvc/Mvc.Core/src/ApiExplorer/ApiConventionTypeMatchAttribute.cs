@@ -17,11 +17,18 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
     [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false, Inherited = false)]
     public sealed class ApiConventionTypeMatchAttribute : Attribute
     {
+        /// <summary>
+        /// Initialzes a new instance of <see cref="ApiConventionTypeMatchAttribute"/> with the specified <paramref name="matchBehavior"/>.
+        /// </summary>
+        /// <param name="matchBehavior">The <see cref="ApiConventionTypeMatchBehavior"/>.</param>
         public ApiConventionTypeMatchAttribute(ApiConventionTypeMatchBehavior matchBehavior)
         {
             MatchBehavior = matchBehavior;
         }
 
+        /// <summary>
+        /// Gets the <see cref="ApiConventionTypeMatchBehavior"/>.
+        /// </summary>
         public ApiConventionTypeMatchBehavior MatchBehavior { get; }
     }
 }

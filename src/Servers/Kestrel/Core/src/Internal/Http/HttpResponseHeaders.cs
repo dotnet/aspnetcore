@@ -14,8 +14,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     public sealed partial class HttpResponseHeaders : HttpHeaders
     {
-        private static readonly byte[] _CrLf = new[] { (byte)'\r', (byte)'\n' };
-        private static readonly byte[] _colonSpace = new[] { (byte)':', (byte)' ' };
+        private static ReadOnlySpan<byte> _CrLf => new[] { (byte)'\r', (byte)'\n' };
+        private static ReadOnlySpan<byte> _colonSpace => new[] { (byte)':', (byte)' ' };
 
         public Enumerator GetEnumerator()
         {
@@ -58,6 +58,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return parsed;
         }
 
+        private static void ThrowInvalidContentLengthException(string value)
+        {
+            throw new InvalidOperationException(CoreStrings.FormatInvalidContentLength_InvalidNumber(value));
+        }
+
         [MethodImpl(MethodImplOptions.NoInlining)]
         private void SetValueUnknown(string key, in StringValues value)
         {
@@ -65,16 +70,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             Unknown[key] = value;
         }
 
-        private static void ThrowInvalidContentLengthException(string value)
-        {
-            throw new InvalidOperationException(CoreStrings.FormatInvalidContentLength_InvalidNumber(value));
-        }
-
         public partial struct Enumerator : IEnumerator<KeyValuePair<string, StringValues>>
         {
             private readonly HttpResponseHeaders _collection;
             private readonly long _bits;
-            private int _state;
+            private int _next;
             private KeyValuePair<string, StringValues> _current;
             private readonly bool _hasUnknown;
             private Dictionary<string, StringValues>.Enumerator _unknownEnumerator;
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 _collection = collection;
                 _bits = collection._bits;
-                _state = 0;
+                _next = 0;
                 _current = default;
                 _hasUnknown = collection.MaybeUnknown != null;
                 _unknownEnumerator = _hasUnknown
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             public void Reset()
             {
-                _state = 0;
+                _next = 0;
             }
         }
 

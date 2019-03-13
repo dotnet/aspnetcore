@@ -236,7 +236,7 @@ namespace Microsoft.AspNetCore.Http.Features
     public partial class RequestBodyPipeFeature : Microsoft.AspNetCore.Http.Features.IRequestBodyPipeFeature
     {
         public RequestBodyPipeFeature(Microsoft.AspNetCore.Http.HttpContext context) { }
-        public System.IO.Pipelines.PipeReader RequestBodyPipe { get { throw null; } set { } }
+        public System.IO.Pipelines.PipeReader Reader { get { throw null; } set { } }
     }
     public partial class RequestCookiesFeature : Microsoft.AspNetCore.Http.Features.IRequestCookiesFeature
     {
@@ -255,7 +255,7 @@ namespace Microsoft.AspNetCore.Http.Features
     public partial class ResponseBodyPipeFeature : Microsoft.AspNetCore.Http.Features.IResponseBodyPipeFeature
     {
         public ResponseBodyPipeFeature(Microsoft.AspNetCore.Http.HttpContext context) { }
-        public System.IO.Pipelines.PipeWriter ResponseBodyPipe { get { throw null; } set { } }
+        public System.IO.Pipelines.PipeWriter Writer { get { throw null; } set { } }
     }
     public partial class ResponseCookiesFeature : Microsoft.AspNetCore.Http.Features.IResponseCookiesFeature
     {
@@ -328,7 +328,7 @@ namespace Microsoft.AspNetCore.Http.Internal
     {
         public DefaultHttpRequest(Microsoft.AspNetCore.Http.DefaultHttpContext context) { }
         public override System.IO.Stream Body { get { throw null; } set { } }
-        public override System.IO.Pipelines.PipeReader BodyPipe { get { throw null; } set { } }
+        public override System.IO.Pipelines.PipeReader BodyReader { get { throw null; } set { } }
         public override long? ContentLength { get { throw null; } set { } }
         public override string ContentType { get { throw null; } set { } }
         public override Microsoft.AspNetCore.Http.IRequestCookieCollection Cookies { get { throw null; } set { } }
@@ -355,7 +355,7 @@ namespace Microsoft.AspNetCore.Http.Internal
     {
         public DefaultHttpResponse(Microsoft.AspNetCore.Http.DefaultHttpContext context) { }
         public override System.IO.Stream Body { get { throw null; } set { } }
-        public override System.IO.Pipelines.PipeWriter BodyPipe { get { throw null; } set { } }
+        public override System.IO.Pipelines.PipeWriter BodyWriter { get { throw null; } set { } }
         public override long? ContentLength { get { throw null; } set { } }
         public override string ContentType { get { throw null; } set { } }
         public override Microsoft.AspNetCore.Http.IResponseCookies Cookies { get { throw null; } }
@@ -574,7 +574,6 @@ namespace System.IO.Pipelines
         public override System.IAsyncResult BeginWrite(byte[] buffer, int offset, int count, System.AsyncCallback callback, object state) { throw null; }
         public override void EndWrite(System.IAsyncResult asyncResult) { }
         public override void Flush() { }
-        [System.Diagnostics.DebuggerStepThroughAttribute]
         public override System.Threading.Tasks.Task FlushAsync(System.Threading.CancellationToken cancellationToken) { throw null; }
         public override int Read(byte[] buffer, int offset, int count) { throw null; }
         public override System.Threading.Tasks.Task<int> ReadAsync(byte[] buffer, int offset, int count, System.Threading.CancellationToken cancellationToken) { throw null; }

@@ -2513,7 +2513,7 @@ namespace Microsoft.AspNetCore.Components.Test
         {
             // This represents the scenario where the same event handler is being triggered
             // rapidly, such as an input event while typing. It only applies to asynchronous
-            // batch updates, i.e., server-side Blazor.
+            // batch updates, i.e., server-side Components.
             // Sequence:
             // 1. The client dispatches event X twice (say) in quick succession
             // 2. The server receives the first instance, handles the event, and re-renders
@@ -2566,8 +2566,15 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert 3: After we complete the first UI update in which a given
             // event handler ID is disposed, we can no longer reuse that event handler ID
+
+            // From here we can't see when the async disposal is completed. Just give it plenty of time (Task.Yield isn't enough).
+            // There is a small chance in which the continuations from TaskCompletionSource run asynchronously.
+            // In that case we might not be able to see the results from RemoveEventHandlerIds as they might run asynchronously.
+            // For that case, we are going to queue a continuation on render1TCS.Task, include a 1s delay and await the resulting
+            // task to offer the best chance that we get to see the error in all cases.
+            var awaitableTask = render1TCS.Task.ContinueWith(_ => Task.Delay(1000)).Unwrap();
             render1TCS.SetResult(null);
-            await Task.Delay(500); // From here we can't see when the async disposal is completed. Just give it plenty of time (Task.Yield isn't enough).
+            await awaitableTask;
             var ex = await Assert.ThrowsAsync<ArgumentException>(() =>
             {
                 return renderer.DispatchEventAsync(eventHandlerId, new UIEventArgs());
@@ -2676,7 +2683,7 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public async Task ExceptionsThrownAsynchronouslyCanBeHandled()
+        public async Task ExceptionsThrownAsynchronouslyDuringFirstRenderCanBeHandled()
         {
             // Arrange
             var renderer = new TestRenderer { ShouldHandleExceptions = true };
@@ -2712,6 +2719,36 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.False(renderTask.IsCompleted);
             tcs.SetResult(0);
             await renderTask;
+            Assert.Same(exception, Assert.Single(renderer.HandledExceptions).GetBaseException());
+        }
+
+        [Fact]
+        public async Task ExceptionsThrownAsynchronouslyAfterFirstRenderCanBeHandled()
+        {
+            // This differs from the "during first render" case, because some aspects of the rendering
+            // code paths are special cased for the first render because of prerendering.
+
+            // Arrange
+            var renderer = new TestRenderer { ShouldHandleExceptions = true };
+            var taskToAwait = Task.CompletedTask;
+            var component = new TestComponent(builder =>
+            {
+                builder.OpenComponent<ComponentThatAwaitsTask>(0);
+                builder.AddAttribute(1, nameof(ComponentThatAwaitsTask.TaskToAwait), taskToAwait);
+                builder.CloseComponent();
+            });
+            var componentId = renderer.AssignRootComponentId(component);
+            await renderer.RenderRootComponentAsync(componentId); // Not throwing on first render
+
+            var asyncExceptionTcs = new TaskCompletionSource<object>();
+            taskToAwait = asyncExceptionTcs.Task;
+            await renderer.Invoke(component.TriggerRender);
+
+            // Act
+            var exception = new InvalidOperationException();
+            asyncExceptionTcs.SetException(exception);
+
+            // Assert
             Assert.Same(exception, Assert.Single(renderer.HandledExceptions).GetBaseException());
         }
 
@@ -3687,6 +3724,16 @@ namespace Microsoft.AspNetCore.Components.Test
                 OnParametersSetAsyncSync,
                 OnParametersSetAsyncAsync,
                 OnAfterRenderAsync,
+            }
+        }
+
+        private class ComponentThatAwaitsTask : ComponentBase
+        {
+            [Parameter] public Task TaskToAwait { get; set; }
+
+            protected override async Task OnParametersSetAsync()
+            {
+                await TaskToAwait;
             }
         }
     }

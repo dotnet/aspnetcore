@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 using Xunit;
@@ -739,15 +740,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             };
             await InitializeConnectionAsync(async context =>
             {
-                var readResult = await context.Request.BodyPipe.ReadAsync();
+                var readResult = await context.Request.BodyReader.ReadAsync();
                 while (!readResult.IsCompleted)
                 {
-                    context.Request.BodyPipe.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
-                    readResult = await context.Request.BodyPipe.ReadAsync();
+                    context.Request.BodyReader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
+                    readResult = await context.Request.BodyReader.ReadAsync();
                 }
 
                 Assert.Equal(12, readResult.Buffer.Length);
-                context.Request.BodyPipe.AdvanceTo(readResult.Buffer.End);
+                context.Request.BodyReader.AdvanceTo(readResult.Buffer.End);
             });
 
             await StartStreamAsync(1, headers, endStream: false);
@@ -787,9 +788,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             };
             await InitializeConnectionAsync(async context =>
             {
-                var readResult = await context.Request.BodyPipe.ReadAsync();
+                var readResult = await context.Request.BodyReader.ReadAsync();
                 Assert.Equal(1, readResult.Buffer.Length);
-                context.Request.BodyPipe.AdvanceTo(readResult.Buffer.End);
+                context.Request.BodyReader.AdvanceTo(readResult.Buffer.End);
 
                 tcs.SetResult(null);
 
@@ -1015,17 +1016,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.IsType<Http2StreamErrorException>(thrownEx.InnerException);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/7000  
         public async Task ContentLength_Received_ReadViaPipes()
         {
             await InitializeConnectionAsync(async context =>
             {
-                var readResult = await context.Request.BodyPipe.ReadAsync();
-                Assert.Equal(12, readResult.Buffer.Length);
+                var readResult = await context.Request.BodyReader.ReadAsync();
                 Assert.True(readResult.IsCompleted);
-                context.Request.BodyPipe.AdvanceTo(readResult.Buffer.End);
+                Assert.Equal(12, readResult.Buffer.Length);
+                context.Request.BodyReader.AdvanceTo(readResult.Buffer.End);
 
-                readResult = await context.Request.BodyPipe.ReadAsync();
+                readResult = await context.Request.BodyReader.ReadAsync();
                 Assert.True(readResult.IsCompleted);
             });
 
@@ -2630,19 +2632,65 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 new KeyValuePair<string, string>(HeaderNames.Path, "/"),
                 new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
             };
+            await InitializeConnectionAsync(httpContext =>
+            {
+                var response = httpContext.Response;
+                var memory = response.BodyWriter.GetMemory();
+                var fisrtPartOfResponse = Encoding.ASCII.GetBytes("hello,");
+                fisrtPartOfResponse.CopyTo(memory);
+                response.BodyWriter.Advance(6);
+
+                memory = response.BodyWriter.GetMemory();
+                var secondPartOfResponse = Encoding.ASCII.GetBytes(" world");
+                secondPartOfResponse.CopyTo(memory);
+                response.BodyWriter.Advance(6);
+                return Task.CompletedTask;
+            });
+
+            await StartStreamAsync(1, headers, endStream: true);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 37,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+            var dataFrame = await ExpectAsync(Http2FrameType.DATA,
+                withLength: 12,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
+
+            Assert.Equal(2, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+
+            Assert.True(_helloWorldBytes.AsSpan().SequenceEqual(dataFrame.PayloadSequence.ToArray()));
+        }
+
+        [Fact]
+        public async Task GetMemoryAdvance_WithStartAsync_Works()
+        {
+            var headers = new[]
+             {
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            };
             await InitializeConnectionAsync(async httpContext =>
             {
                 var response = httpContext.Response;
                 await response.StartAsync();
-                var memory = response.BodyPipe.GetMemory();
+                var memory = response.BodyWriter.GetMemory();
                 var fisrtPartOfResponse = Encoding.ASCII.GetBytes("hello,");
                 fisrtPartOfResponse.CopyTo(memory);
-                response.BodyPipe.Advance(6);
+                response.BodyWriter.Advance(6);
 
-                memory = response.BodyPipe.GetMemory();
+                memory = response.BodyWriter.GetMemory();
                 var secondPartOfResponse = Encoding.ASCII.GetBytes(" world");
                 secondPartOfResponse.CopyTo(memory);
-                response.BodyPipe.Advance(6);
+                response.BodyWriter.Advance(6);
             });
 
             await StartStreamAsync(1, headers, endStream: true);
@@ -2680,19 +2728,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
                 var response = httpContext.Response;
                 await response.StartAsync();
-
-                var memory = response.BodyPipe.GetMemory();
+                var memory = response.BodyWriter.GetMemory();
                 Assert.Equal(4096, memory.Length);
                 var fisrtPartOfResponse = Encoding.ASCII.GetBytes(new string('a', memory.Length));
                 fisrtPartOfResponse.CopyTo(memory);
-                response.BodyPipe.Advance(memory.Length);
+                response.BodyWriter.Advance(memory.Length);
 
-                memory = response.BodyPipe.GetMemory();
+                memory = response.BodyWriter.GetMemory();
                 var secondPartOfResponse = Encoding.ASCII.GetBytes("aaaaaa");
                 secondPartOfResponse.CopyTo(memory);
-                response.BodyPipe.Advance(6);
+                response.BodyWriter.Advance(6);
 
-                await response.BodyPipe.FlushAsync();
+                await response.BodyWriter.FlushAsync();
             });
 
             await StartStreamAsync(1, headers, endStream: true);
@@ -2733,19 +2780,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
                 var response = httpContext.Response;
 
-                await response.BodyPipe.FlushAsync();
+                await response.BodyWriter.FlushAsync();
 
-                var memory = response.BodyPipe.GetMemory();
+                var memory = response.BodyWriter.GetMemory();
                 var fisrtPartOfResponse = Encoding.ASCII.GetBytes(new string('a', memory.Length));
                 fisrtPartOfResponse.CopyTo(memory);
-                response.BodyPipe.Advance(memory.Length);
+                response.BodyWriter.Advance(memory.Length);
 
-                memory = response.BodyPipe.GetMemory();
+                memory = response.BodyWriter.GetMemory();
                 var secondPartOfResponse = Encoding.ASCII.GetBytes("aaaaaa");
                 secondPartOfResponse.CopyTo(memory);
-                response.BodyPipe.Advance(6);
+                response.BodyWriter.Advance(6);
 
-                await response.BodyPipe.FlushAsync();
+                await response.BodyWriter.FlushAsync();
             });
 
             await StartStreamAsync(1, headers, endStream: true);
@@ -2786,16 +2833,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
                 var response = httpContext.Response;
 
-                await response.BodyPipe.FlushAsync();
+                await response.BodyWriter.FlushAsync();
 
-                var memory = response.BodyPipe.GetMemory(4096);
+                var memory = response.BodyWriter.GetMemory(4096);
                 var fisrtPartOfResponse = Encoding.ASCII.GetBytes("hello,");
                 fisrtPartOfResponse.CopyTo(memory);
-                response.BodyPipe.Advance(6);
+                response.BodyWriter.Advance(6);
 
                 var secondPartOfResponse = Encoding.ASCII.GetBytes(" world");
                 secondPartOfResponse.CopyTo(memory.Slice(6));
-                response.BodyPipe.Advance(6);
+                response.BodyWriter.Advance(6);
             });
 
             await StartStreamAsync(1, headers, endStream: true);
@@ -2832,18 +2879,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
                 var response = httpContext.Response;
 
-                await response.BodyPipe.FlushAsync();
+                await response.BodyWriter.FlushAsync();
 
                 void NonAsyncMethod()
                 {
-                    var span = response.BodyPipe.GetSpan();
+                    var span = response.BodyWriter.GetSpan();
                     var fisrtPartOfResponse = Encoding.ASCII.GetBytes("hello,");
                     fisrtPartOfResponse.CopyTo(span);
-                    response.BodyPipe.Advance(6);
+                    response.BodyWriter.Advance(6);
 
                     var secondPartOfResponse = Encoding.ASCII.GetBytes(" world");
                     secondPartOfResponse.CopyTo(span.Slice(6));
-                    response.BodyPipe.Advance(6);
+                    response.BodyWriter.Advance(6);
                 }
                 NonAsyncMethod();
             });
@@ -2882,12 +2929,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
                 var response = httpContext.Response;
 
-                await response.StartAsync();
 
-                var memory = response.BodyPipe.GetMemory(4096);
+                var memory = response.BodyWriter.GetMemory(4096);
                 var fisrtPartOfResponse = Encoding.ASCII.GetBytes("hello,");
                 fisrtPartOfResponse.CopyTo(memory);
-                response.BodyPipe.Advance(6);
+                response.BodyWriter.Advance(6);
 
                 await response.WriteAsync(" world");
             });
@@ -2931,10 +2977,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 await response.StartAsync();
 
-                var memory = response.BodyPipe.GetMemory(0);
+                var memory = response.BodyWriter.GetMemory(0);
                 Assert.Equal(4096, memory.Length);
 
-                memory = response.BodyPipe.GetMemory(4096);
+                memory = response.BodyWriter.GetMemory(4096);
                 Assert.Equal(4096, memory.Length);
             });
 
@@ -2959,6 +3005,49 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public async Task WriteAsync_GetMemoryWithSizeHintAlwaysReturnsSameSizeStartAsync()
+        {
+            var headers = new[]
+{
+                new KeyValuePair<string, string>(HeaderNames.Method, "GET"),
+                new KeyValuePair<string, string>(HeaderNames.Path, "/"),
+                new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
+            };
+            await InitializeConnectionAsync(async httpContext =>
+            {
+                var response = httpContext.Response;
+
+                var memory = response.BodyWriter.GetMemory(0);
+                Assert.Equal(4096, memory.Length);
+
+                memory = response.BodyWriter.GetMemory(4096);
+                Assert.Equal(4096, memory.Length);
+
+                await Task.CompletedTask;
+            });
+
+            await StartStreamAsync(1, headers, endStream: true);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 55,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+            var dataFrame = await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            _hpackDecoder.Decode(headersFrame.PayloadSequence, endHeaders: false, handler: this);
+
+            Assert.Equal(3, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", _decodedHeaders[HeaderNames.Status]);
+            Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
+        }
+
+        [Fact]
         public async Task WriteAsync_BothPipeAndStreamWorks()
         {
             var headers = new[]
@@ -2971,18 +3060,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
                 var response = httpContext.Response;
                 await response.StartAsync();
-                var memory = response.BodyPipe.GetMemory(4096);
+                var memory = response.BodyWriter.GetMemory(4096);
                 var fisrtPartOfResponse = Encoding.ASCII.GetBytes("hello,");
                 fisrtPartOfResponse.CopyTo(memory);
-                response.BodyPipe.Advance(6);
+                response.BodyWriter.Advance(6);
                 var secondPartOfResponse = Encoding.ASCII.GetBytes(" world");
                 secondPartOfResponse.CopyTo(memory.Slice(6));
-                response.BodyPipe.Advance(6);
+                response.BodyWriter.Advance(6);
 
-                await response.BodyPipe.FlushAsync();
+                await response.BodyWriter.FlushAsync();
 
                 await response.Body.WriteAsync(Encoding.ASCII.GetBytes("hello, world"));
-                await response.BodyPipe.WriteAsync(Encoding.ASCII.GetBytes("hello, world"));
+                await response.BodyWriter.WriteAsync(Encoding.ASCII.GetBytes("hello, world"));
                 await response.WriteAsync("hello, world");
             });
 
@@ -3035,18 +3124,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
                 var response = httpContext.Response;
                 response.ContentLength = 12;
-                await response.StartAsync();
+                await Task.CompletedTask;
 
                 void NonAsyncMethod()
                 {
-                    var span = response.BodyPipe.GetSpan(4096);
+                    var span = response.BodyWriter.GetSpan(4096);
                     var fisrtPartOfResponse = Encoding.ASCII.GetBytes("hello,");
                     fisrtPartOfResponse.CopyTo(span);
-                    response.BodyPipe.Advance(6);
+                    response.BodyWriter.Advance(6);
 
                     var secondPartOfResponse = Encoding.ASCII.GetBytes(" world");
                     secondPartOfResponse.CopyTo(span.Slice(6));
-                    response.BodyPipe.Advance(6);
+                    response.BodyWriter.Advance(6);
                 }
 
                 NonAsyncMethod();
@@ -3082,20 +3171,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 new KeyValuePair<string, string>(HeaderNames.Path, "/"),
                 new KeyValuePair<string, string>(HeaderNames.Scheme, "http"),
             };
-            await InitializeConnectionAsync(async httpContext =>
+            await InitializeConnectionAsync(httpContext =>
             {
                 var response = httpContext.Response;
                 response.ContentLength = 12;
-                await response.StartAsync();
 
-                var memory = response.BodyPipe.GetMemory(4096);
+                var memory = response.BodyWriter.GetMemory(4096);
                 var fisrtPartOfResponse = Encoding.ASCII.GetBytes("Hello ");
                 fisrtPartOfResponse.CopyTo(memory);
-                response.BodyPipe.Advance(6);
+                response.BodyWriter.Advance(6);
 
                 var secondPartOfResponse = Encoding.ASCII.GetBytes("World!");
                 secondPartOfResponse.CopyTo(memory.Slice(6));
-                response.BodyPipe.Advance(6);
+                response.BodyWriter.Advance(6);
+                return Task.CompletedTask;
             });
 
             await StartStreamAsync(1, headers, endStream: true);
@@ -3172,17 +3261,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
                 var response = httpContext.Response;
                 response.ContentLength = 54;
-                await response.StartAsync();
-                var memory = response.BodyPipe.GetMemory(4096);
+                var memory = response.BodyWriter.GetMemory(4096);
+
                 var fisrtPartOfResponse = Encoding.ASCII.GetBytes("hello,");
                 fisrtPartOfResponse.CopyTo(memory);
-                response.BodyPipe.Advance(6);
+                response.BodyWriter.Advance(6);
                 var secondPartOfResponse = Encoding.ASCII.GetBytes(" world\r\n");
                 secondPartOfResponse.CopyTo(memory.Slice(6));
-                response.BodyPipe.Advance(8);
-                await response.BodyPipe.FlushAsync();
+                response.BodyWriter.Advance(8);
+                await response.BodyWriter.FlushAsync();
                 await response.Body.WriteAsync(Encoding.ASCII.GetBytes("hello, world\r\n"));
-                await response.BodyPipe.WriteAsync(Encoding.ASCII.GetBytes("hello, world\r\n"));
+                await response.BodyWriter.WriteAsync(Encoding.ASCII.GetBytes("hello, world\r\n"));
                 await response.WriteAsync("hello, world");
             });
 
@@ -3234,7 +3323,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             };
             await InitializeConnectionAsync(async context =>
             {
-                context.Response.BodyPipe.Complete();
+                context.Response.BodyWriter.Complete();
                 await Task.CompletedTask;
             });
 
@@ -3269,7 +3358,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             };
             await InitializeConnectionAsync(async context =>
             {
-                context.Response.BodyPipe.Complete();
+                context.Response.BodyWriter.Complete();
                 await context.Response.WriteAsync("");
             });
 
@@ -3307,7 +3396,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             };
             await InitializeConnectionAsync(async context =>
             {
-                context.Response.BodyPipe.Complete(expectedException);
+                context.Response.BodyWriter.Complete(expectedException);
                 await Task.CompletedTask;
             });
 

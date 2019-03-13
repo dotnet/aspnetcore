@@ -5,6 +5,7 @@ using BasicTestApp;
 using BasicTestApp.FormsTest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
+using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using System;
@@ -314,6 +315,27 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             emailInput.Clear();
             emailInput.SendKeys("a@b.com\t");
             WaitAssert.Empty(emailMessagesAccessor);
+        }
+
+        [Fact]
+        public void InputComponentsCauseContainerToRerenderOnChange()
+        {
+            var appElement = MountTestComponent<TypicalValidationComponent>();
+            var ticketClassInput = new SelectElement(appElement.FindElement(By.ClassName("ticket-class")).FindElement(By.TagName("select")));
+            var selectedTicketClassDisplay = appElement.FindElement(By.Id("selected-ticket-class"));
+            var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+
+            // Shows initial state
+            WaitAssert.Equal("Economy", () => selectedTicketClassDisplay.Text);
+
+            // Refreshes on edit
+            ticketClassInput.SelectByValue("Premium");
+            WaitAssert.Equal("Premium", () => selectedTicketClassDisplay.Text);
+
+            // Leaves previous value unchanged if new entry is unparseable
+            ticketClassInput.SelectByText("(select)");
+            WaitAssert.Equal(new[] { "The TicketClass field is not valid." }, messagesAccessor);
+            WaitAssert.Equal("Premium", () => selectedTicketClassDisplay.Text);
         }
 
         private Func<string[]> CreateValidationMessagesAccessor(IWebElement appElement)

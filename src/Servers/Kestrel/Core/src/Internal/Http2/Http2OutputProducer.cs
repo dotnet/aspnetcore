@@ -8,6 +8,7 @@ using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -276,6 +277,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         public void Complete()
         {
             // This will noop for now. See: https://github.com/aspnet/AspNetCore/issues/7370
+        }
+
+        public void Reset()
+        {
         }
 
         private async ValueTask<FlushResult> ProcessDataWrites()

@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                         for (int i = 0; i < 1024; i++)
                         {
-                            await context.Response.BodyPipe.WriteAsync(new Memory<byte>(bytes, 0, bytes.Length));
+                            await context.Response.BodyWriter.WriteAsync(new Memory<byte>(bytes, 0, bytes.Length));
                         }
                     });
                 });
@@ -258,7 +258,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var clientClosedConnection = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             var writeTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            TestSink.MessageLogged += context => {
+            TestSink.MessageLogged += context =>
+            {
                 if (context.LoggerName != "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" &&
                     context.LoggerName != "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets")
                 {
@@ -298,7 +299,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     for (var i = 0; i < 1000; i++)
                     {
-                        await context.Response.BodyPipe.WriteAsync(new Memory<byte>(scratchBuffer, 0, scratchBuffer.Length), context.RequestAborted);
+                        await context.Response.BodyWriter.WriteAsync(new Memory<byte>(scratchBuffer, 0, scratchBuffer.Length), context.RequestAborted);
                         await Task.Delay(10);
                     }
                 }
@@ -340,7 +341,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             Assert.True(requestAborted.Task.IsCompleted);
         }
 
-        [Theory]
+        [Theory(Skip = "https://github.com/aspnet/AspNetCore/issues/7342")]
         [MemberData(nameof(ConnectionAdapterData))]
         public async Task AppCanHandleClientAbortingConnectionMidResponse(ListenOptions listenOptions)
         {
@@ -500,7 +501,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     for (; i < chunks; i++)
                     {
-                        await context.Response.BodyPipe.WriteAsync(new Memory<byte>(chunkData, 0, chunkData.Length), context.RequestAborted);
+                        await context.Response.BodyWriter.WriteAsync(new Memory<byte>(chunkData, 0, chunkData.Length), context.RequestAborted);
                         await Task.Yield();
                     }
 
@@ -607,7 +608,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     for (var i = 0; i < chunks; i++)
                     {
-                        await context.Response.BodyPipe.WriteAsync(new Memory<byte>(chunkData, 0, chunkData.Length), context.RequestAborted);
+                        await context.Response.BodyWriter.WriteAsync(new Memory<byte>(chunkData, 0, chunkData.Length), context.RequestAborted);
                     }
                 }
                 catch (OperationCanceledException)
@@ -771,7 +772,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 for (var i = 0; i < chunkCount; i++)
                 {
-                    await context.Response.BodyPipe.WriteAsync(new Memory<byte>(chunkData, 0, chunkData.Length), context.RequestAborted);
+                    await context.Response.BodyWriter.WriteAsync(new Memory<byte>(chunkData, 0, chunkData.Length), context.RequestAborted);
                 }
 
                 appFuncCompleted.SetResult(null);
@@ -848,7 +849,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 context.Response.Headers[$"X-Custom-Header"] = headerStringValues;
                 context.Response.ContentLength = 0;
 
-                await context.Response.BodyPipe.FlushAsync();
+                await context.Response.BodyWriter.FlushAsync();
             }
 
             using (var server = new TestServer(App, testContext, listenOptions))

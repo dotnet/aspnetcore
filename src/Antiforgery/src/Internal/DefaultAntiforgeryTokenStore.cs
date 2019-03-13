@@ -8,9 +8,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNetCore.Antiforgery.Internal
+namespace Microsoft.AspNetCore.Antiforgery
 {
-    public class DefaultAntiforgeryTokenStore : IAntiforgeryTokenStore
+    internal class DefaultAntiforgeryTokenStore : IAntiforgeryTokenStore
     {
         private readonly AntiforgeryOptions _options;
 

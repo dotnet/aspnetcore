@@ -31,7 +31,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         private readonly string _dotnetLocation = DotNetCommands.GetDotNetExecutable(RuntimeArchitecture.x64);
 
-        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/6549
         [ConditionalFact]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         public async Task ExpandEnvironmentVariableInWebConfig()
@@ -68,7 +67,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.Contains("HTTP Error 500.0 - ANCM In-Process Handler Load Failure", await response.Content.ReadAsStringAsync());
         }
 
-        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/6549
         [ConditionalFact]
         public async Task StartsWithDotnetLocationWithoutExe()
         {
@@ -80,7 +78,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             await StartAsync(deploymentParameters);
         }
 
-        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/6549
         [ConditionalFact]
         public async Task StartsWithDotnetLocationUppercase()
         {
@@ -92,7 +89,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             await StartAsync(deploymentParameters);
         }
 
-        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/6549
         [ConditionalTheory]
         [InlineData("dotnet")]
         [InlineData("dotnet.EXE")]
@@ -112,8 +108,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.Equal(1, TestSink.Writes.Count(w => w.Message.Contains("Invoking where.exe to find dotnet.exe")));
         }
 
-
-        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/6549
+        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/7972
         [ConditionalTheory]
         [InlineData(RuntimeArchitecture.x64)]
         [InlineData(RuntimeArchitecture.x86)]
@@ -135,7 +130,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 var installDir = DotNetCommands.GetDotNetInstallDir(runtimeArchitecture);
                 using (new TestRegistryKey(
                     localMachine,
-                    "SOFTWARE\\dotnet\\Setup\\InstalledVersions\\" + runtimeArchitecture + "\\sdk",
+                    "SOFTWARE\\dotnet\\Setup\\InstalledVersions\\" + runtimeArchitecture,
                     "InstallLocation",
                     installDir))
                 {
@@ -190,16 +185,18 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             await StartAsync(deploymentParameters);
         }
 
-        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/6549
         [ConditionalFact]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         public async Task StartsWithPortableAndBootstraperExe()
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite);
+            deploymentParameters.TransformPath((path, root) => "InProcessWebSite.exe");
+            deploymentParameters.TransformArguments((arguments, root) => "");
+
             // We need the right dotnet on the path in IIS
             deploymentParameters.EnvironmentVariables["PATH"] = Path.GetDirectoryName(DotNetCommands.GetDotNetExecutable(deploymentParameters.RuntimeArchitecture));
+
             // ReferenceTestTasks is workaround for https://github.com/dotnet/sdk/issues/2482
-            deploymentParameters.AdditionalPublishParameters = "AppHost";
             var deploymentResult = await DeployAsync(deploymentParameters);
 
             Assert.True(File.Exists(Path.Combine(deploymentResult.ContentRoot, "InProcessWebSite.exe")));
@@ -325,7 +322,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             }
         }
 
-        [ConditionalFact]
+        [ConditionalFact(Skip = "https://github.com/aspnet/AspNetCore-Internal/issues/1772")]
         public async Task StartupTimeoutIsApplied()
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite);

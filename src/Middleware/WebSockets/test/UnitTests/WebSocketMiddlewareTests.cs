@@ -549,7 +549,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/8187")]
         public async Task OriginIsNotValidatedForNonWebSocketRequests()
         {
             using (var server = KestrelWebSocketHelpers.CreateServer(LoggerFactory, out var port, context =>

@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.Hosting;
-using EnvironmentName = Microsoft.Extensions.Hosting.EnvironmentName;
 
 namespace Microsoft.AspNetCore.Mvc.Testing
 {
@@ -307,7 +306,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             var hostBuilder = HostFactoryResolver.ResolveHostBuilderFactory<IHostBuilder>(typeof(TEntryPoint).Assembly)?.Invoke(Array.Empty<string>());
             if (hostBuilder != null)
             {
-                hostBuilder.UseEnvironment(EnvironmentName.Development);
+                hostBuilder.UseEnvironment(Environments.Development);
             }
             return hostBuilder;
         }
@@ -336,7 +335,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             }
             else
             {
-                return builder.UseEnvironment(EnvironmentName.Development);
+                return builder.UseEnvironment(Environments.Development);
             }
         }
 

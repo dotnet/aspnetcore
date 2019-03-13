@@ -136,6 +136,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         [ConditionalFact]
         [IPv6SupportedCondition]
+#if LIBUV
+        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/8109
+#endif
         public Task RemoteIPv6Address()
         {
             return TestRemoteIPAddress("[::1]", "[::1]", "::1");
@@ -791,6 +794,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Theory]
+#if LIBUV
+        [SkipOnHelix]
+#endif
         [MemberData(nameof(ConnectionAdapterData))]
         public async Task AppCanHandleClientAbortingConnectionMidRequest(ListenOptions listenOptions)
         {

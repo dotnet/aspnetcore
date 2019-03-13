@@ -28,6 +28,9 @@ class NegotiateResponse {
                     case "error":
                         this.error = reader.nextString();
                         break;
+                    case "ProtocolVersion":
+                        this.error = "Detected an ASP.NET SignalR Server. This client only supports connecting to an ASP.NET Core SignalR Server. See https://aka.ms/signalr-core-differences for details.";
+                        return;
                     case "url":
                         this.redirectUrl = reader.nextString();
                         break;
@@ -69,7 +72,6 @@ class NegotiateResponse {
                         break;
                 }
             } while (reader.hasNext());
-
             reader.endObject();
             reader.close();
         } catch (IOException ex) {

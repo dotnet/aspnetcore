@@ -33,6 +33,8 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddScoped(s => s.GetRequiredService<ICircuitAccessor>().Circuit);
             services.TryAddScoped<ICircuitAccessor, DefaultCircuitAccessor>();
 
+            services.TryAddSingleton<CircuitRegistry>();
+
             // We explicitly take over the prerendering and components services here.
             // We can't have two separate component implementations coexisting at the
             // same time, so when you register components (Circuits) it takes over

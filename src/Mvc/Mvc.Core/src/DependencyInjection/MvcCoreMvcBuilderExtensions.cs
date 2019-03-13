@@ -42,6 +42,12 @@ namespace Microsoft.Extensions.DependencyInjection
             return builder;
         }
 
+        /// <summary>
+        /// Configures <see cref="FormatterMappings"/> for the specified <paramref name="builder"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="IMvcBuilder"/>.</param>
+        /// <param name="setupAction">An <see cref="Action"/> to configure the <see cref="FormatterMappings"/>.</param>
+        /// <returns>The <see cref="IMvcBuilder"/>.</returns>
         public static IMvcBuilder AddFormatterMappings(
             this IMvcBuilder builder,
             Action<FormatterMappings> setupAction)
@@ -79,7 +85,14 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(assembly));
             }
 
-            builder.ConfigureApplicationPartManager(manager => manager.ApplicationParts.Add(new AssemblyPart(assembly)));
+            builder.ConfigureApplicationPartManager(manager =>
+            {
+                var partFactory = ApplicationPartFactory.GetApplicationPartFactory(assembly);
+                foreach (var applicationPart in partFactory.GetApplicationParts(assembly))
+                {
+                    manager.ApplicationParts.Add(applicationPart);
+                }
+            });
 
             return builder;
         }

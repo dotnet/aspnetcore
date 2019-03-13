@@ -11,20 +11,20 @@
 class logger : public signalr::log_writer
 {
     // Inherited via log_writer
-    virtual void __cdecl write(const utility::string_t & entry) override
+    virtual void __cdecl write(const std::string & entry) override
     {
         //std::cout << utility::conversions::to_utf8string(entry) << std::endl;
     }
 };
 
-void send_message(signalr::hub_connection& connection, const utility::string_t& name, const utility::string_t& message)
+void send_message(signalr::hub_connection& connection, const std::string& name, const std::string& message)
 {
     web::json::value args{};
-    args[0] = web::json::value::string(name);
-    args[1] = web::json::value(message);
+    args[0] = web::json::value::string(utility::conversions::to_string_t(name));
+    args[1] = web::json::value(utility::conversions::to_string_t(message));
 
     // if you get an internal compiler error uncomment the lambda below or install VS Update 4
-    connection.invoke(U("Invoke"), args/*, [](const web::json::value&){}*/)
+    connection.invoke("Invoke", args/*, [](const web::json::value&){}*/)
         .then([](pplx::task<web::json::value> invoke_task)  // fire and forget but we need to observe exceptions
     {
         try
@@ -39,10 +39,10 @@ void send_message(signalr::hub_connection& connection, const utility::string_t& 
     });
 }
 
-void chat(const utility::string_t& name)
+void chat(const std::string& name)
 {
-    signalr::hub_connection connection(U("http://localhost:5000/default"), signalr::trace_level::all, std::make_shared<logger>());
-    connection.on(U("Send"), [](const web::json::value& m)
+    signalr::hub_connection connection("http://localhost:5000/default", signalr::trace_level::all, std::make_shared<logger>());
+    connection.on("Send", [](const web::json::value& m)
     {
         ucout << std::endl << m.at(0).as_string() << /*U(" wrote:") << m.at(1).as_string() <<*/ std::endl << U("Enter your message: ");
     });
@@ -53,10 +53,10 @@ void chat(const utility::string_t& name)
             ucout << U("Enter your message:");
             for (;;)
             {
-                utility::string_t message;
-                std::getline(ucin, message);
+                std::string message;
+                std::getline(std::cin, message);
 
-                if (message == U(":q"))
+                if (message == ":q")
                 {
                     break;
                 }
@@ -85,8 +85,8 @@ void chat(const utility::string_t& name)
 int main()
 {
     ucout << U("Enter your name: ");
-    utility::string_t name;
-    std::getline(ucin, name);
+    std::string name;
+    std::getline(std::cin, name);
 
     chat(name);
 

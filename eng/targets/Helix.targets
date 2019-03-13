@@ -29,11 +29,16 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <_HelixProjectTargetQueue Include="%(HelixAvailibleTargetQueue.Identity)" Condition="'$(_SelectedPlatforms.Contains(%(Platform)))' == 'true' AND '%(Identity)' == '$(HelixTargetQueue)'" />
+      <!-- Include default queues based on platform -->
+      <_HelixProjectTargetQueue Include="%(HelixAvailibleTargetQueue.Identity)" Condition="'$(_SelectedPlatforms.Contains(%(Platform)))' == 'true' AND '%(EnableByDefault)' == 'true'" />
+      <!-- Unconditionally include queues defined by project  -->
+      <_HelixProjectTargetQueue Include="%(HelixProjectTargetQueue.Identity)" />
+
+      <_HelixApplicableTargetQueue Include="%(_HelixProjectTargetQueue.Identity)" Condition="'%(Identity)' == '$(HelixTargetQueue)'" />
     </ItemGroup>
 
     <PropertyGroup>
-      <BuildHelixPayload Condition="'@(_HelixProjectTargetQueue->Count())' == '0'">false</BuildHelixPayload>
+      <BuildHelixPayload Condition="'@(_HelixApplicableTargetQueue->Count())' == '0'">false</BuildHelixPayload>
     </PropertyGroup>
 
   </Target>
@@ -59,8 +64,8 @@
         <TestAssembly>$(TargetFileName)</TestAssembly>
         <PreCommands>@(HelixPreCommand)</PreCommands>
         <PostCommands>@(HelixPostCommand)</PostCommands>
-        <Command Condition="$(IsWindowsHelixQueue)">call runtests.cmd $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppPackageVersion)</Command>
-        <Command Condition="!$(IsWindowsHelixQueue)">./runtests.sh $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppPackageVersion)</Command>
+        <Command Condition="$(IsWindowsHelixQueue)">call runtests.cmd $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppPackageVersion) $(HelixTargetQueue)</Command>
+        <Command Condition="!$(IsWindowsHelixQueue)">./runtests.sh $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppPackageVersion) $(HelixTargetQueue)</Command>
         <Timeout>$(HelixTimeout)</Timeout>
       </HelixWorkItem>
     </ItemGroup>

@@ -42,15 +42,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var response = httpContext.Response;
             while (true)
             {
-                var readResult = await request.BodyPipe.ReadAsync();
+                var readResult = await request.BodyReader.ReadAsync();
                 if (readResult.IsCompleted)
                 {
                     break;
                 }
                 // Need to copy here.
-                await response.BodyPipe.WriteAsync(readResult.Buffer.ToArray());
+                await response.BodyWriter.WriteAsync(readResult.Buffer.ToArray());
 
-                request.BodyPipe.AdvanceTo(readResult.Buffer.End);
+                request.BodyReader.AdvanceTo(readResult.Buffer.End);
             }
         }
 
@@ -322,8 +322,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                 while (true)
                 {
-                    var result = await request.BodyPipe.ReadAsync();
-                    request.BodyPipe.AdvanceTo(result.Buffer.End);
+                    var result = await request.BodyReader.ReadAsync();
+                    request.BodyReader.AdvanceTo(result.Buffer.End);
                     if (result.IsCompleted)
                     {
                         break;
@@ -828,12 +828,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                 Assert.Equal("POST", request.Method);
 
-                var readResult = await request.BodyPipe.ReadAsync();
-                request.BodyPipe.AdvanceTo(readResult.Buffer.End);
+                var readResult = await request.BodyReader.ReadAsync();
+                request.BodyReader.AdvanceTo(readResult.Buffer.End);
 
-                var requestTask = httpContext.Request.BodyPipe.ReadAsync();
+                var requestTask = httpContext.Request.BodyReader.ReadAsync();
 
-                httpContext.Request.BodyPipe.CancelPendingRead();
+                httpContext.Request.BodyReader.CancelPendingRead();
 
                 Assert.True((await requestTask).IsCanceled);
 
@@ -841,7 +841,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                 response.Headers["Content-Length"] = new[] { "11" };
 
-                await response.BodyPipe.WriteAsync(new Memory<byte>(Encoding.ASCII.GetBytes("Hello World"), 0, 11));
+                await response.BodyWriter.WriteAsync(new Memory<byte>(Encoding.ASCII.GetBytes("Hello World"), 0, 11));
 
             }, testContext))
             {
@@ -885,16 +885,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                 Assert.Equal("POST", request.Method);
 
-                var readResult = await request.BodyPipe.ReadAsync();
-                request.BodyPipe.AdvanceTo(readResult.Buffer.End);
+                var readResult = await request.BodyReader.ReadAsync();
+                request.BodyReader.AdvanceTo(readResult.Buffer.End);
 
-                httpContext.Request.BodyPipe.Complete();
+                httpContext.Request.BodyReader.Complete();
 
-                await Assert.ThrowsAsync<InvalidOperationException>(async () => await request.BodyPipe.ReadAsync());
+                await Assert.ThrowsAsync<InvalidOperationException>(async () => await request.BodyReader.ReadAsync());
 
                 response.Headers["Content-Length"] = new[] { "11" };
 
-                await response.BodyPipe.WriteAsync(new Memory<byte>(Encoding.ASCII.GetBytes("Hello World"), 0, 11));
+                await response.BodyWriter.WriteAsync(new Memory<byte>(Encoding.ASCII.GetBytes("Hello World"), 0, 11));
 
             }, testContext))
             {
@@ -937,14 +937,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                 Assert.Equal("POST", request.Method);
 
-                var readResult = await request.BodyPipe.ReadAsync();
-                request.BodyPipe.AdvanceTo(readResult.Buffer.End);
+                var readResult = await request.BodyReader.ReadAsync();
+                request.BodyReader.AdvanceTo(readResult.Buffer.End);
 
-                httpContext.Request.BodyPipe.Complete(new Exception());
+                httpContext.Request.BodyReader.Complete(new Exception());
 
                 response.Headers["Content-Length"] = new[] { "11" };
 
-                await response.BodyPipe.WriteAsync(new Memory<byte>(Encoding.ASCII.GetBytes("Hello World"), 0, 11));
+                await response.BodyWriter.WriteAsync(new Memory<byte>(Encoding.ASCII.GetBytes("Hello World"), 0, 11));
 
             }, testContext))
             {

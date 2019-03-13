@@ -109,10 +109,10 @@ namespace Microsoft.AspNetCore.Http.Internal
             get { return HttpResponseFeature.HasStarted; }
         }
 
-        public override PipeWriter BodyPipe
+        public override PipeWriter BodyWriter
         {
-            get { return ResponseBodyPipeFeature.ResponseBodyPipe; }
-            set { ResponseBodyPipeFeature.ResponseBodyPipe = value; }
+            get { return ResponseBodyPipeFeature.Writer; }
+            set { ResponseBodyPipeFeature.Writer = value; }
         }
 
         public override void OnStarting(Func<object, Task> callback, object state)
@@ -151,6 +151,11 @@ namespace Microsoft.AspNetCore.Http.Internal
 
         public override Task StartAsync(CancellationToken cancellationToken = default)
         {
+            if (HasStarted)
+            {
+                return Task.CompletedTask;
+            }
+
             if (HttpResponseStartFeature == null)
             {
                 return HttpResponseFeature.Body.FlushAsync(cancellationToken);

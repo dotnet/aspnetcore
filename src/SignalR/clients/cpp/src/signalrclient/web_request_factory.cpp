@@ -7,7 +7,7 @@
 
 namespace signalr
 {
-    std::unique_ptr<web_request> web_request_factory::create_web_request(const utility::string_t& url)
+    std::unique_ptr<web_request> web_request_factory::create_web_request(const std::string& url)
     {
         return std::make_unique<web_request>(url);
     }

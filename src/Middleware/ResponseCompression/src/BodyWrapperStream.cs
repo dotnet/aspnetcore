@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
     /// <summary>
     /// Stream wrapper that create specific compression stream only if necessary.
     /// </summary>
-    internal class BodyWrapperStream : Stream, IHttpBufferingFeature, IHttpSendFileFeature, IHttpResponseStartFeature
+    internal class BodyWrapperStream : Stream, IHttpBufferingFeature, IHttpSendFileFeature, IHttpResponseStartFeature, IHttpsCompressionFeature
     {
         private readonly HttpContext _context;
         private readonly Stream _bodyOriginalStream;
@@ -45,6 +45,8 @@ namespace Microsoft.AspNetCore.ResponseCompression
         {
             return _compressionStream?.DisposeAsync() ?? new ValueTask();
         }
+
+        HttpsCompressionMode IHttpsCompressionFeature.Mode { get; set; } = HttpsCompressionMode.Default;
 
         public override bool CanRead => false;
 

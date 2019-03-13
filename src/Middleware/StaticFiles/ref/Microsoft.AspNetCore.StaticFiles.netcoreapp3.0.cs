@@ -55,8 +55,16 @@ namespace Microsoft.AspNetCore.Builder
         public StaticFileOptions(Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptions sharedOptions) : base (default(Microsoft.AspNetCore.StaticFiles.Infrastructure.SharedOptions)) { }
         public Microsoft.AspNetCore.StaticFiles.IContentTypeProvider ContentTypeProvider { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public string DefaultContentType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Http.Features.HttpsCompressionMode HttpsCompression { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.Action<Microsoft.AspNetCore.StaticFiles.StaticFileResponseContext> OnPrepareResponse { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public bool ServeUnknownFileTypes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+    }
+    public static partial class StaticFilesEndpointRouteBuilderExtensions
+    {
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapFallbackToFile(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder builder, string filePath) { throw null; }
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapFallbackToFile(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder builder, string filePath, Microsoft.AspNetCore.Builder.StaticFileOptions options) { throw null; }
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapFallbackToFile(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder builder, string pattern, string filePath) { throw null; }
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapFallbackToFile(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder builder, string pattern, string filePath, Microsoft.AspNetCore.Builder.StaticFileOptions options) { throw null; }
     }
 }
 namespace Microsoft.AspNetCore.StaticFiles

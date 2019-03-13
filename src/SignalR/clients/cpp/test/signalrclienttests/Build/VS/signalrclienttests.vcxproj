@@ -95,5 +95,6 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <PropertyGroup>
     <IsTestProject>true</IsTestProject>
+    <TestProjectSkipReason>Flaky, due to https://github.com/aspnet/AspNetCore/issues/8421</TestProjectSkipReason>
   </PropertyGroup>
 </Project>

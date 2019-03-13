@@ -4,6 +4,7 @@
 using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
+using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
 using System;
 using Xunit;

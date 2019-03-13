@@ -185,6 +185,27 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
+        [Fact]
+        public void MapHubEndPointRoutingAppliesHubMetadata()
+        {
+            void ConfigureRoutes(IEndpointRouteBuilder routes)
+            {
+                // This "Foo" policy should override the default auth attribute
+                routes.MapHub<AuthHub>("/path");
+            }
+
+            using (var host = BuildWebHostWithEndPointRouting(ConfigureRoutes))
+            {
+                host.Start();
+
+                var dataSource = host.Services.GetRequiredService<EndpointDataSource>();
+                // We register 2 endpoints (/negotiate and /)
+                Assert.Equal(2, dataSource.Endpoints.Count);
+                Assert.Equal(typeof(AuthHub), dataSource.Endpoints[0].Metadata.GetMetadata<HubMetadata>()?.HubType);
+                Assert.Equal(typeof(AuthHub), dataSource.Endpoints[1].Metadata.GetMetadata<HubMetadata>()?.HubType);
+            }
+        }
+
         private class InvalidHub : Hub
         {
             public void OverloadedMethod(int num)

@@ -68,6 +68,8 @@ namespace MvcSandbox
 
                 builder.MapControllers();
                 builder.MapRazorPages();
+
+                builder.MapFallbackToController("Index", "Home");
             });
 
             app.UseDeveloperExceptionPage();

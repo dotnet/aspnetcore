@@ -5,6 +5,10 @@ namespace Microsoft.AspNetCore.Builder
 {
     public static partial class RazorPagesEndpointRouteBuilderExtensions
     {
+        public static void MapFallbackToAreaPage(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes, string page, string area) { }
+        public static void MapFallbackToAreaPage(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes, string pattern, string page, string area) { }
+        public static void MapFallbackToPage(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes, string page) { }
+        public static void MapFallbackToPage(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes, string pattern, string page) { }
         public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapRazorPages(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes) { throw null; }
     }
 }
@@ -516,6 +520,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
     {
         Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.HandlerMethodDescriptor Select(Microsoft.AspNetCore.Mvc.RazorPages.PageContext context);
     }
+    [System.ObsoleteAttribute("This type is obsolete. Use PageLoader instead.")]
     public partial interface IPageLoader
     {
         Microsoft.AspNetCore.Mvc.RazorPages.CompiledPageActionDescriptor Load(Microsoft.AspNetCore.Mvc.RazorPages.PageActionDescriptor actionDescriptor);
@@ -533,6 +538,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         public PageBoundPropertyDescriptor() { }
         System.Reflection.PropertyInfo Microsoft.AspNetCore.Mvc.Infrastructure.IPropertyInfoParameterDescriptor.PropertyInfo { get { throw null; } }
         public System.Reflection.PropertyInfo Property { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+    }
+    public abstract partial class PageLoader : Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.IPageLoader
+    {
+        protected PageLoader() { }
+        public abstract System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.RazorPages.CompiledPageActionDescriptor> LoadAsync(Microsoft.AspNetCore.Mvc.RazorPages.PageActionDescriptor actionDescriptor);
+        Microsoft.AspNetCore.Mvc.RazorPages.CompiledPageActionDescriptor Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.IPageLoader.Load(Microsoft.AspNetCore.Mvc.RazorPages.PageActionDescriptor actionDescriptor) { throw null; }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Class, AllowMultiple=false, Inherited=true)]
     public partial class PageModelAttribute : System.Attribute

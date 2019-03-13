@@ -5,6 +5,7 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
@@ -444,6 +445,191 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     Assert.NotNull(client.HandshakeResponseMessage);
                     Assert.Null(client.HandshakeResponseMessage.Error);
+
+                    client.Dispose();
+
+                    await connectionHandlerTask.OrTimeout();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task HubMessageOverTheMaxMessageSizeThrows()
+        {
+            var payload = Encoding.UTF8.GetBytes("{\"type\":1, \"invocationId\":\"1\", \"target\": \"Echo\", \"arguments\":[\"hello\"]}\u001e");
+            var maximumMessageSize = payload.Length - 10;
+            InvalidDataException exception = null;
+
+            bool ExpectedErrors(WriteContext writeContext)
+            {
+                if (writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.HubConnectionHandler" && (writeContext.Exception is InvalidDataException ide))
+                {
+                    exception = ide;
+                    return true;
+                }
+                return false;
+            }
+
+            using (StartVerifiableLog(ExpectedErrors))
+            {
+                var connectionHandler = HubConnectionHandlerTestUtils.GetHubConnectionHandler(typeof(HubT), LoggerFactory,
+                    services => services.AddSignalR().AddHubOptions<HubT>(o => o.MaximumReceiveMessageSize = maximumMessageSize));
+
+                using (var client = new TestClient())
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                    await client.Connection.Application.Output.WriteAsync(payload);
+
+                    client.Dispose();
+
+                    await connectionHandlerTask.OrTimeout();
+                }
+            }
+
+            Assert.NotNull(exception);
+            Assert.Equal(exception.Message, $"The maximum message size of {maximumMessageSize}B was exceeded. The message size can be configured in AddHubOptions.");
+        }
+
+        [Fact]
+        public async Task ChunkedHubMessageOverTheMaxMessageSizeThrows()
+        {
+            var payload = Encoding.UTF8.GetBytes("{\"type\":1, \"invocationId\":\"1\", \"target\": \"Echo\", \"arguments\":[\"hello\"]}\u001e");
+            var maximumMessageSize = payload.Length - 10;
+            InvalidDataException exception = null;
+
+            bool ExpectedErrors(WriteContext writeContext)
+            {
+                if (writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.HubConnectionHandler" && (writeContext.Exception is InvalidDataException ide))
+                {
+                    exception = ide;
+                    return true;
+                }
+                return false;
+            }
+
+            using (StartVerifiableLog(ExpectedErrors))
+            {
+                var connectionHandler = HubConnectionHandlerTestUtils.GetHubConnectionHandler(typeof(HubT), LoggerFactory,
+                    services => services.AddSignalR().AddHubOptions<HubT>(o => o.MaximumReceiveMessageSize = maximumMessageSize));
+
+                using (var client = new TestClient())
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                    await client.Connection.Application.Output.WriteAsync(payload.AsMemory(0, payload.Length / 2));
+                    await client.Connection.Application.Output.WriteAsync(payload.AsMemory(payload.Length / 2));
+
+                    client.Dispose();
+
+                    await connectionHandlerTask.OrTimeout();
+                }
+            }
+
+            Assert.NotNull(exception);
+            Assert.Equal(exception.Message, $"The maximum message size of {maximumMessageSize}B was exceeded. The message size can be configured in AddHubOptions.");
+        }
+
+        [Fact]
+        public async Task ManyHubMessagesOneOverTheMaxMessageSizeThrows()
+        {
+            var payload1 = Encoding.UTF8.GetBytes("{\"type\":1, \"invocationId\":\"1\", \"target\": \"Echo\", \"arguments\":[\"one\"]}\u001e");
+            var payload2 = Encoding.UTF8.GetBytes("{\"type\":1, \"invocationId\":\"2\", \"target\": \"Echo\", \"arguments\":[\"two\"]}\u001e");
+            var payload3 = Encoding.UTF8.GetBytes("{\"type\":1, \"invocationId\":\"3\", \"target\": \"Echo\", \"arguments\":[\"three\"]}\u001e");
+
+            // Between the first and the second payload so we'll end up slicing with some remaining in the slice for
+            // the next message
+            var maximumMessageSize = payload1.Length + 1;
+            InvalidDataException exception = null;
+
+            bool ExpectedErrors(WriteContext writeContext)
+            {
+                if (writeContext.LoggerName == "Microsoft.AspNetCore.SignalR.HubConnectionHandler" && (writeContext.Exception is InvalidDataException ide))
+                {
+                    exception = ide;
+                    return true;
+                }
+                return false;
+            }
+
+            using (StartVerifiableLog(ExpectedErrors))
+            {
+                var connectionHandler = HubConnectionHandlerTestUtils.GetHubConnectionHandler(typeof(HubT), LoggerFactory,
+                    services => services.AddSignalR().AddHubOptions<HubT>(o => o.MaximumReceiveMessageSize = maximumMessageSize));
+
+                using (var client = new TestClient())
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                    client.Connection.Application.Output.Write(payload1);
+                    client.Connection.Application.Output.Write(payload2);
+                    client.Connection.Application.Output.Write(payload3);
+                    await client.Connection.Application.Output.FlushAsync();
+
+                    // 2 invocations should be processed
+                    var completionMessage = await client.ReadAsync().OrTimeout() as CompletionMessage;
+                    Assert.NotNull(completionMessage);
+                    Assert.Equal("1", completionMessage.InvocationId);
+                    Assert.Equal("one", completionMessage.Result);
+
+                    completionMessage = await client.ReadAsync().OrTimeout() as CompletionMessage;
+                    Assert.NotNull(completionMessage);
+                    Assert.Equal("2", completionMessage.InvocationId);
+                    Assert.Equal("two", completionMessage.Result);
+
+                    // We never receive the 3rd message since it was over the maximum message size
+                    CloseMessage closeMessage = await client.ReadAsync().OrTimeout() as CloseMessage;
+                    Assert.NotNull(closeMessage);
+
+                    client.Dispose();
+
+                    await connectionHandlerTask.OrTimeout();
+                }
+            }
+
+            Assert.NotNull(exception);
+            Assert.Equal(exception.Message, $"The maximum message size of {maximumMessageSize}B was exceeded. The message size can be configured in AddHubOptions.");
+        }
+
+        [Fact]
+        public async Task ManyHubMessagesUnderTheMessageSizeButConfiguredWithMax()
+        {
+            var payload1 = Encoding.UTF8.GetBytes("{\"type\":1, \"invocationId\":\"1\", \"target\": \"Echo\", \"arguments\":[\"one\"]}\u001e");
+            var payload2 = Encoding.UTF8.GetBytes("{\"type\":1, \"invocationId\":\"2\", \"target\": \"Echo\", \"arguments\":[\"two\"]}\u001e");
+            var payload3 = Encoding.UTF8.GetBytes("{\"type\":1, \"invocationId\":\"3\", \"target\": \"Echo\", \"arguments\":[\"three\"]}\u001e");
+
+            // Bigger than all 3 messages
+            var maximumMessageSize = payload3.Length + 10;
+
+            using (StartVerifiableLog())
+            {
+                var connectionHandler = HubConnectionHandlerTestUtils.GetHubConnectionHandler(typeof(HubT), LoggerFactory,
+                    services => services.AddSignalR().AddHubOptions<HubT>(o => o.MaximumReceiveMessageSize = maximumMessageSize));
+
+                using (var client = new TestClient())
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler);
+
+                    client.Connection.Application.Output.Write(payload1);
+                    client.Connection.Application.Output.Write(payload2);
+                    client.Connection.Application.Output.Write(payload3);
+                    await client.Connection.Application.Output.FlushAsync();
+
+                    // 2 invocations should be processed
+                    var completionMessage = await client.ReadAsync().OrTimeout() as CompletionMessage;
+                    Assert.NotNull(completionMessage);
+                    Assert.Equal("1", completionMessage.InvocationId);
+                    Assert.Equal("one", completionMessage.Result);
+
+                    completionMessage = await client.ReadAsync().OrTimeout() as CompletionMessage;
+                    Assert.NotNull(completionMessage);
+                    Assert.Equal("2", completionMessage.InvocationId);
+                    Assert.Equal("two", completionMessage.Result);
+
+                    completionMessage = await client.ReadAsync().OrTimeout() as CompletionMessage;
+                    Assert.NotNull(completionMessage);
+                    Assert.Equal("3", completionMessage.InvocationId);
+                    Assert.Equal("three", completionMessage.Result);
 
                     client.Dispose();
 
@@ -1763,10 +1949,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 var protocol = HubProtocolHelpers.GetHubProtocol(protocolName);
 
-            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(null, LoggerFactory);
-            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<StreamingHub>>();
-            var invocationBinder = new Mock<IInvocationBinder>();
-            invocationBinder.Setup(b => b.GetStreamItemType(It.IsAny<string>())).Returns(typeof(string));
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(null, LoggerFactory);
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<StreamingHub>>();
+                var invocationBinder = new Mock<IInvocationBinder>();
+                invocationBinder.Setup(b => b.GetStreamItemType(It.IsAny<string>())).Returns(typeof(string));
 
                 using (var client = new TestClient(protocol: protocol, invocationBinder: invocationBinder.Object))
                 {
@@ -1909,10 +2095,18 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             get
             {
-                foreach (var method in new[]
+                var methods = new[]
                 {
-                    nameof(StreamingHub.CounterChannel), nameof(StreamingHub.CounterChannelAsync), nameof(StreamingHub.CounterChannelValueTaskAsync)
-                })
+                    nameof(StreamingHub.CounterChannel),
+                    nameof(StreamingHub.CounterChannelAsync),
+                    nameof(StreamingHub.CounterChannelValueTaskAsync),
+                    nameof(StreamingHub.CounterAsyncEnumerable),
+                    nameof(StreamingHub.CounterAsyncEnumerableAsync),
+                    nameof(StreamingHub.CounterAsyncEnumerableImpl),
+                    nameof(StreamingHub.AsyncEnumerableIsPreferedOverChannelReader),
+                };
+
+                foreach (var method in methods)
                 {
                     foreach (var protocolName in HubProtocolHelpers.AllProtocolNames)
                     {
@@ -2660,21 +2854,18 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     var hubActivator = serviceProvider.GetService<IHubActivator<LongRunningHub>>() as CustomHubActivator<LongRunningHub>;
 
-                    // OnConnectedAsync and SimpleMethod hubs have been disposed at this point
-                    Assert.Equal(2, hubActivator.ReleaseCount);
-
                     await client.SendHubMessageAsync(new CancelInvocationMessage(streamInvocationId)).OrTimeout();
 
                     // Completion message for canceled Stream
                     await client.ReadAsync().OrTimeout();
 
-                    // Stream method is now disposed
-                    Assert.Equal(3, hubActivator.ReleaseCount);
-
                     // Shut down
                     client.Dispose();
 
                     await connectionHandlerTask.OrTimeout();
+
+                    // OnConnectedAsync, SimpleMethod, LongRunningStream, OnDisconnectedAsync
+                    Assert.Equal(4, hubActivator.ReleaseCount);
                 }
             }
         }
@@ -2784,7 +2975,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 foreach (string id in ids)
                 {
-                    await client.BeginUploadStreamAsync("invocation_"+id, nameof(MethodHub.StreamingConcat), new[] { id }, Array.Empty<object>());
+                    await client.BeginUploadStreamAsync("invocation_" + id, nameof(MethodHub.StreamingConcat), new[] { id }, Array.Empty<object>());
                 }
 
                 var words = new[] { "zygapophyses", "qwerty", "abcd" };
@@ -2863,7 +3054,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 }
             }
         }
-        
+
         [Fact]
         public async Task ServerReportsProtocolMinorVersion()
         {
@@ -2876,7 +3067,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 testProtocol.Setup(m => m.TransferFormat).Returns(TransferFormat.Binary);
 
                 var connectionHandler = HubConnectionHandlerTestUtils.GetHubConnectionHandler(typeof(HubT),
-                    (services) => services.AddSingleton<IHubProtocol>(testProtocol.Object), LoggerFactory);
+                    LoggerFactory, (services) => services.AddSingleton<IHubProtocol>(testProtocol.Object));
 
                 using (var client = new TestClient(protocol: testProtocol.Object))
                 {
@@ -3150,10 +3341,12 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Theory]
-        [InlineData(nameof(LongRunningHub.CancelableStream))]
-        [InlineData(nameof(LongRunningHub.CancelableStream2), 1, 2)]
-        [InlineData(nameof(LongRunningHub.CancelableStreamMiddle), 1, 2)]
-        public async Task StreamHubMethodCanAcceptCancellationTokenAsArgumentAndBeTriggeredOnCancellation(string methodName, params object[] args)
+        [InlineData(nameof(LongRunningHub.CancelableStreamSingleParameter))]
+        [InlineData(nameof(LongRunningHub.CancelableStreamMultiParameter), 1, 2)]
+        [InlineData(nameof(LongRunningHub.CancelableStreamMiddleParameter), 1, 2)]
+        [InlineData(nameof(LongRunningHub.CancelableStreamGeneratedAsyncEnumerable))]
+        [InlineData(nameof(LongRunningHub.CancelableStreamCustomAsyncEnumerable))]
+        public async Task StreamHubMethodCanBeTriggeredOnCancellation(string methodName, params object[] args)
         {
             using (StartVerifiableLog())
             {
@@ -3207,7 +3400,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 {
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
 
-                    var streamInvocationId = await client.SendStreamInvocationAsync(nameof(LongRunningHub.CancelableStream)).OrTimeout();
+                    var streamInvocationId = await client.SendStreamInvocationAsync(nameof(LongRunningHub.CancelableStreamSingleParameter)).OrTimeout();
                     // Wait for the stream method to start
                     await tcsService.StartedMethod.Task.OrTimeout();
 

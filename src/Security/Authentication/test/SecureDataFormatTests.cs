@@ -4,6 +4,7 @@
 using System;
 using System.Text;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -47,7 +48,8 @@ namespace Microsoft.AspNetCore.Authentication.DataHandler
             Assert.Equal(input, result);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix]
         public void UnprotectWithDifferentPurposeFails()
         {
             var provider = ServiceProvider.GetRequiredService<IDataProtectionProvider>();

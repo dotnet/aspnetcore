@@ -410,10 +410,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         }
         public static string MethodToString(HttpMethod method)
         {
-            int methodIndex = (int)method;
-            if (methodIndex >= 0 && methodIndex <= 8)
+            var methodIndex = (int)method;
+            var methodNames = _methodNames;
+            if ((uint)methodIndex < (uint)methodNames.Length)
             {
-                return _methodNames[methodIndex];
+                return methodNames[methodIndex];
             }
             return null;
         }

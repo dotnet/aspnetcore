@@ -1,4 +1,10 @@
 <Project>
+    <ItemDefinitionGroup>
+        <HelixAvailibleTargetQueue>
+            <EnableByDefault>true</EnableByDefault>
+        </HelixAvailibleTargetQueue>
+    </ItemDefinitionGroup>
+
     <!-- this file is shared between Helix.proj and .csproj files -->
     <ItemGroup>
         <HelixAvailblePlatform Include="Windows" />
@@ -6,6 +12,7 @@
         <HelixAvailblePlatform Include="Linux" />
 
         <HelixAvailibleTargetQueue Include="Windows.10.Amd64.ClientRS4.VS2017.Open" Platform="Windows" />
+        <HelixAvailibleTargetQueue Include="Windows.10.Amd64.EnterpriseRS3.ASPNET.Open" Platform="Windows" EnableByDefault="false" />
         <HelixAvailibleTargetQueue Include="OSX.1012.Amd64.Open" Platform="OSX" />
         <HelixAvailibleTargetQueue Include="Ubuntu.1810.Amd64.Open" Platform="Linux" />
         <HelixAvailibleTargetQueue Include="Ubuntu.1604.Amd64.Open" Platform="Linux" />

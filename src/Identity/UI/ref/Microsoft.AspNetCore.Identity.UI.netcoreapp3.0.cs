@@ -168,10 +168,11 @@ namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Internal
     public abstract partial class RegisterModel : Microsoft.AspNetCore.Mvc.RazorPages.PageModel
     {
         protected RegisterModel() { }
+        public System.Collections.Generic.IList<Microsoft.AspNetCore.Authentication.AuthenticationScheme> ExternalLogins { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         [Microsoft.AspNetCore.Mvc.BindPropertyAttribute]
         public Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Internal.RegisterModel.InputModel Input { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public string ReturnUrl { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public virtual void OnGet(string returnUrl = null) { }
+        public virtual System.Threading.Tasks.Task OnGetAsync(string returnUrl = null) { throw null; }
         public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnPostAsync(string returnUrl = null) { throw null; }
         public partial class InputModel
         {
@@ -580,10 +581,11 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal
     public abstract partial class RegisterModel : Microsoft.AspNetCore.Mvc.RazorPages.PageModel
     {
         protected RegisterModel() { }
+        public System.Collections.Generic.IList<Microsoft.AspNetCore.Authentication.AuthenticationScheme> ExternalLogins { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         [Microsoft.AspNetCore.Mvc.BindPropertyAttribute]
         public Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal.RegisterModel.InputModel Input { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public string ReturnUrl { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public virtual void OnGet(string returnUrl = null) { }
+        public virtual System.Threading.Tasks.Task OnGetAsync(string returnUrl = null) { throw null; }
         public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnPostAsync(string returnUrl = null) { throw null; }
         public partial class InputModel
         {

@@ -3,12 +3,6 @@
 
 namespace Microsoft.AspNetCore.Hosting
 {
-    public partial class ConventionBasedStartup : Microsoft.AspNetCore.Hosting.IStartup
-    {
-        public ConventionBasedStartup(Microsoft.AspNetCore.Hosting.Internal.StartupMethods methods) { }
-        public void Configure(Microsoft.AspNetCore.Builder.IApplicationBuilder app) { }
-        public System.IServiceProvider ConfigureServices(Microsoft.Extensions.DependencyInjection.IServiceCollection services) { throw null; }
-    }
     public partial class DelegateStartup : Microsoft.AspNetCore.Hosting.StartupBase<Microsoft.Extensions.DependencyInjection.IServiceCollection>
     {
         public DelegateStartup(Microsoft.Extensions.DependencyInjection.IServiceProviderFactory<Microsoft.Extensions.DependencyInjection.IServiceCollection> factory, System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder> configureApp) : base (default(Microsoft.Extensions.DependencyInjection.IServiceProviderFactory<Microsoft.Extensions.DependencyInjection.IServiceCollection>)) { }
@@ -104,6 +98,12 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         public System.Reflection.MethodInfo MethodInfo { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public System.Func<System.Func<Microsoft.Extensions.DependencyInjection.IServiceCollection, System.IServiceProvider>, System.Func<Microsoft.Extensions.DependencyInjection.IServiceCollection, System.IServiceProvider>> StartupServiceFilters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.Func<Microsoft.Extensions.DependencyInjection.IServiceCollection, System.IServiceProvider> Build(object instance) { throw null; }
+    }
+    public partial class ConventionBasedStartup : Microsoft.AspNetCore.Hosting.IStartup
+    {
+        public ConventionBasedStartup(Microsoft.AspNetCore.Hosting.Internal.StartupMethods methods) { }
+        public void Configure(Microsoft.AspNetCore.Builder.IApplicationBuilder app) { }
+        public System.IServiceProvider ConfigureServices(Microsoft.Extensions.DependencyInjection.IServiceCollection services) { throw null; }
     }
     public partial class HostedServiceExecutor
     {

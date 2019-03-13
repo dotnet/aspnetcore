@@ -10,15 +10,11 @@ using Interop = Microsoft.AspNetCore.Components.Browser.BrowserUriHelperInterop;
 namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
     /// <summary>
-    /// A Server-Side Blazor implementation of <see cref="IUriHelper"/>.
+    /// A Server-Side Components implementation of <see cref="IUriHelper"/>.
     /// </summary>
     public class RemoteUriHelper : UriHelperBase
     {
         private IJSRuntime _jsRuntime;
-
-        public RemoteUriHelper()
-        {
-        }
 
         /// <summary>
         /// Initializes the <see cref="RemoteUriHelper"/>.
