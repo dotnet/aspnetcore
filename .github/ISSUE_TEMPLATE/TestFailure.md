@@ -1,6 +1,7 @@
 ---
-title: 'Test Failure'
+title: "Test Failure"
 labels: test-failure
+about: "Report a failing/flaky test"
 ---
 
 Ensure your report has the following
