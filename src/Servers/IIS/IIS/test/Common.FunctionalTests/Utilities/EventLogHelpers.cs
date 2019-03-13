@@ -24,13 +24,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             {
                 AssertEntry(expectedRegexMatchString, entries, allowMultiple);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 foreach (var entry in entries)
                 {
-                    logger.LogInformation(entry.Message);
+                    logger.LogInformation("'{Message}', generated {Generated}, written {Written}", entry.Message, entry.TimeGenerated, entry.TimeWritten);
                 }
-                throw ex;
+                throw;
             }
         }
 
