@@ -1,0 +1,8 @@
+---
+title: 'Test Failure'
+labels: test-failure
+---
+
+Ensure your report has the following
+* The full name of the failing test
+* The relevant build log sections in a code-fence (```)
