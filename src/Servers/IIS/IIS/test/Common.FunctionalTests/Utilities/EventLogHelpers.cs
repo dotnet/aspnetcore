@@ -15,22 +15,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
     public class EventLogHelpers
     {
-        public static void VerifyEventLogEvent(IISDeploymentResult deploymentResult, string expectedRegexMatchString, bool allowMultiple = false)
-        {
-            Assert.True(deploymentResult.HostProcess.HasExited);
-
-            var entries = GetEntries(deploymentResult);
-            AssertEntry(expectedRegexMatchString, entries, allowMultiple);
-        }
-
-        public static void VerifyEventLogEvent(IISDeploymentResult deploymentResult, string expectedRegexMatchString, ILogger logger)
+        public static void VerifyEventLogEvent(IISDeploymentResult deploymentResult, string expectedRegexMatchString, ILogger logger, bool allowMultiple = false)
         {
             Assert.True(deploymentResult.HostProcess.HasExited);
 
             var entries = GetEntries(deploymentResult);
             try
             {
-                AssertEntry(expectedRegexMatchString, entries);
+                AssertEntry(expectedRegexMatchString, entries, allowMultiple);
             }
             catch (Exception ex)
             {

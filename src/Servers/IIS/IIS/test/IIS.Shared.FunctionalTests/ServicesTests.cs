@@ -44,7 +44,7 @@ namespace IIS.FunctionalTests
 
                 await Helpers.Retry(async () => await File.ReadAllTextAsync(Path.Combine(result.ContentRoot, "Started.txt")), TimeoutExtensions.DefaultTimeoutValue);
                 StopServer();
-                EventLogHelpers.VerifyEventLogEvent(result, EventLogHelpers.Started(result));
+                EventLogHelpers.VerifyEventLogEvent(result, EventLogHelpers.Started(result), Logger);
             }
         }
 
@@ -73,7 +73,7 @@ namespace IIS.FunctionalTests
 
                 await Helpers.Retry(async () => await File.ReadAllTextAsync(Path.Combine(result.ContentRoot, "Started.txt")), TimeoutExtensions.DefaultTimeoutValue);
                 StopServer();
-                EventLogHelpers.VerifyEventLogEvent(result, EventLogHelpers.Started(result));
+                EventLogHelpers.VerifyEventLogEvent(result, EventLogHelpers.Started(result), Logger);
             }
         }
 

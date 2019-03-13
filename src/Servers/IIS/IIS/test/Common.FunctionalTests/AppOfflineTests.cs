@@ -223,7 +223,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
             // Shutdown should be graceful here!
             EventLogHelpers.VerifyEventLogEvent(deploymentResult,
-                EventLogHelpers.InProcessShutdown());
+                EventLogHelpers.InProcessShutdown(), Logger);
         }
 
         [ConditionalFact]

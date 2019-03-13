@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             StopServer();
 
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.UnableToStart(deploymentResult, subError));
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.UnableToStart(deploymentResult, subError), Logger);
 
             Assert.Contains("HTTP Error 500.0 - ANCM In-Process Handler Load Failure", await response.Content.ReadAsStringAsync());
         }
@@ -167,7 +167,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
                 StopServer();
 
-                EventLogHelpers.VerifyEventLogEvent(deploymentResult, "AspNetCore Module is disabled");
+                EventLogHelpers.VerifyEventLogEvent(deploymentResult, "AspNetCore Module is disabled", Logger);
             }
         }
 
