@@ -10,6 +10,8 @@
 
     <RunTemplateTests>true</RunTemplateTests>
     <SkipTests Condition="'$(RunTemplateTests)' != 'true'">true</SkipTests>
+    <!-- https://github.com/aspnet/AspNetCore/issues/6857 -->
+    <BuildHelixPayload>false</BuildHelixPayload>    
   </PropertyGroup>
 
   <ItemGroup>
