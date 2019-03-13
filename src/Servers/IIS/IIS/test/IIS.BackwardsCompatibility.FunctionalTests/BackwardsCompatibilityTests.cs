@@ -24,6 +24,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
 
             var response = await _fixture.Client.GetAsync("/HelloWorld");
+            _fixture.DeploymentResult.HostProcess.Refresh();
             var handles = _fixture.DeploymentResult.HostProcess.Modules;
 
             foreach (ProcessModule handle in handles)
