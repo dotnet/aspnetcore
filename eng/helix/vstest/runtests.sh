@@ -67,4 +67,23 @@ if grep -q "Exception thrown" discovered.txt; then
     exit 1
 fi
 
-$DOTNET_ROOT/dotnet vstest $1 --logger:trx
+# Run non-flaky tests first
+# We need to specify all possible Flaky filters that apply to this environment, because the flaky attribute
+# only puts the explicit filter traits the user provided in
+# Filter syntax: https://github.com/Microsoft/vstest-docs/blob/master/docs/filter.md
+NONFLAKY_FILTER="Flaky:All!=true&Flaky:Helix:All!=true&Flaky:Helix:Queue:All!=true&Flaky:Helix:Queue:$HELIX!=true"
+echo "Running non-flaky tests."
+$DOTNET_ROOT/dotnet vstest $1 --logger:trx --TestCaseFilter:"$NONFLAKY_FILTER"
+nonflaky_exitcode=$?
+if [ $nonflaky_exitcode != 0 ]; then
+    echo "Non-flaky tests failed!" 1>&2
+fi
+
+FLAKY_FILTER="Flaky:All=true|Flaky:Helix:All=true|Flaky:Helix:Queue:All=true|Flaky:Helix:Queue:$HELIX=true"
+echo "Running known-flaky tests."
+$DOTNET_ROOT/dotnet vstest $1 --logger:trx --TestCaseFilter:"$FLAKY_FILTER"
+if [ $? != 0 ]; then
+    echo "Flaky tests failed!" 1>&2
+fi
+
+exit $nonflaky_exitcode
