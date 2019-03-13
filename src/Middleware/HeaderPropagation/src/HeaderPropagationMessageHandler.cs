@@ -12,10 +12,10 @@ namespace Microsoft.AspNetCore.HeaderPropagation
 {
     public class HeaderPropagationMessageHandler : DelegatingHandler
     {
-        private readonly HeaderPropagationState _state;
+        private readonly HeaderPropagationValues _state;
         private readonly HeaderPropagationOptions _options;
 
-        public HeaderPropagationMessageHandler(IOptions<HeaderPropagationOptions> options, HeaderPropagationState state)
+        public HeaderPropagationMessageHandler(IOptions<HeaderPropagationOptions> options, HeaderPropagationValues state)
         {
             if (options == null)
             {

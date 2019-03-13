@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
             Context = new DefaultHttpContext();
             Next = ctx => Task.CompletedTask;
             Configuration = new HeaderPropagationOptions();
-            State = new HeaderPropagationState();
+            State = new HeaderPropagationValues();
             Middleware = new HeaderPropagationMiddleware(Next,
                 new OptionsWrapper<HeaderPropagationOptions>(Configuration),
                 State);
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         public DefaultHttpContext Context { get; set; }
         public RequestDelegate Next { get; set; }
         public HeaderPropagationOptions Configuration { get; set; }
-        public HeaderPropagationState State { get; set; }
+        public HeaderPropagationValues State { get; set; }
         public HeaderPropagationMiddleware Middleware { get; set; }
 
         [Fact]

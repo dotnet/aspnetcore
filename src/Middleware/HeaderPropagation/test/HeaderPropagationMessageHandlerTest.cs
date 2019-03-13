@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         {
             Handler = new SimpleHandler();
 
-            State = new HeaderPropagationState();
+            State = new HeaderPropagationValues();
             Configuration = new HeaderPropagationOptions();
 
             var headerPropagationMessageHandler =
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         }
 
         private SimpleHandler Handler { get; }
-        public HeaderPropagationState State { get; set; }
+        public HeaderPropagationValues State { get; set; }
         public HeaderPropagationOptions Configuration { get; set; }
         public HttpClient Client { get; set; }
 

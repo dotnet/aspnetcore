@@ -13,9 +13,9 @@ namespace Microsoft.AspNetCore.HeaderPropagation
     {
         private readonly RequestDelegate _next;
         private readonly HeaderPropagationOptions _options;
-        private readonly HeaderPropagationState _state;
+        private readonly HeaderPropagationValues _state;
 
-        public HeaderPropagationMiddleware(RequestDelegate next, IOptions<HeaderPropagationOptions> options, HeaderPropagationState state)
+        public HeaderPropagationMiddleware(RequestDelegate next, IOptions<HeaderPropagationOptions> options, HeaderPropagationValues state)
         {
             _next = next ?? throw new ArgumentNullException(nameof(next));
 

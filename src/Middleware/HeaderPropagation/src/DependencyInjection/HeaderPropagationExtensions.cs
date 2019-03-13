@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation
                 throw new ArgumentNullException(nameof(services));
             }
 
-            services.TryAddSingleton<HeaderPropagationState>();
+            services.TryAddSingleton<HeaderPropagationValues>();
 
             return services;
         }
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation
 
         public static IHttpClientBuilder AddHeaderPropagation(this IHttpClientBuilder builder)
         {
-            builder.Services.TryAddSingleton<HeaderPropagationState>();
+            builder.Services.TryAddSingleton<HeaderPropagationValues>();
             builder.Services.TryAddTransient<HeaderPropagationMessageHandler>();
 
             builder.AddHttpMessageHandler<HeaderPropagationMessageHandler>();
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation
                 throw new ArgumentNullException(nameof(app));
             }
 
-            if (app.ApplicationServices.GetService<HeaderPropagationState>() == null)
+            if (app.ApplicationServices.GetService<HeaderPropagationValues>() == null)
             {
                 throw new InvalidOperationException(UnableToFindServices);
             }
