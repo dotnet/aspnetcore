@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         public async Task HeaderInState_AddCorrectValue()
         {
             // Arrange
-            Configuration.Headers.Add("in", new HeaderPropagationEntry { OutputName = "out" });
+            Configuration.Headers.Add("in", new HeaderPropagationEntry { OutboundHeaderName = "out" });
             State.Headers.Add("in", "test");
 
             // Act

@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation
         {
             foreach ((var header, var entry) in _options.Headers)
             {
-                var outputName = !string.IsNullOrEmpty(entry.OutputName) ? entry.OutputName : header;
+                var outputName = !string.IsNullOrEmpty(entry.OutboundHeaderName) ? entry.OutboundHeaderName : header;
 
                 if (_state.Headers.TryGetValue(header, out var values) &&
                     !StringValues.IsNullOrEmpty(values) &&

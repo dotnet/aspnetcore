@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
             // Arrange
             Configuration.Headers.Add("in", new HeaderPropagationEntry
             {
-                OutputName = "out",
+                OutboundHeaderName = "out",
                 DefaultValuesGenerator = ctx => StringValues.Empty
             });
 

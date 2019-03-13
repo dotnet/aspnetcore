@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation
 {
     public class HeaderPropagationEntry
     {
-        public string OutputName { get; set; }
+        public string OutboundHeaderName { get; set; }
         public StringValues DefaultValues { get; set; }
         public Func<HttpContext, StringValues> DefaultValuesGenerator { get; set; }
         public bool AlwaysAdd { get; set; }

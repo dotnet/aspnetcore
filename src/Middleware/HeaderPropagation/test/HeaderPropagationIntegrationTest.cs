@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
             var builder = CreateBuilder(c =>
                 c.Headers.Add("in", new HeaderPropagationEntry
                 {
-                    OutputName = "out",
+                    OutboundHeaderName = "out",
                 }),
                 handler);
             var server = new TestServer(builder);
