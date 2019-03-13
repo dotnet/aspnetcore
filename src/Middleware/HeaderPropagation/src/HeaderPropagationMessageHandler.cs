@@ -30,13 +30,13 @@ namespace Microsoft.AspNetCore.HeaderPropagation
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
             CancellationToken cancellationToken)
         {
-            foreach (var header in _options.Headers)
+            foreach ((var header, var entry) in _options.Headers)
             {
-                var outputName = !string.IsNullOrEmpty(header.OutputName) ? header.OutputName : header.InputName;
+                var outputName = !string.IsNullOrEmpty(entry.OutputName) ? entry.OutputName : header;
 
-                if (_state.Headers.TryGetValue(header.InputName, out var values) &&
+                if (_state.Headers.TryGetValue(header, out var values) &&
                     !StringValues.IsNullOrEmpty(values) &&
-                    (header.AlwaysAdd || !request.Headers.Contains(outputName)))
+                    (entry.AlwaysAdd || !request.Headers.Contains(outputName)))
                 {
                     request.Headers.TryAddWithoutValidation(outputName, (string[]) values);
                 }

@@ -15,16 +15,16 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         {
             Context = new DefaultHttpContext();
             Next = ctx => Task.CompletedTask;
-            Options = new HeaderPropagationOptions();
+            Configuration = new HeaderPropagationOptions();
             State = new HeaderPropagationState();
             Middleware = new HeaderPropagationMiddleware(Next,
-                new OptionsWrapper<HeaderPropagationOptions>(Options),
+                new OptionsWrapper<HeaderPropagationOptions>(Configuration),
                 State);
         }
 
         public DefaultHttpContext Context { get; set; }
         public RequestDelegate Next { get; set; }
-        public HeaderPropagationOptions Options { get; set; }
+        public HeaderPropagationOptions Configuration { get; set; }
         public HeaderPropagationState State { get; set; }
         public HeaderPropagationMiddleware Middleware { get; set; }
 
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         public async Task HeaderInRequest_AddCorrectValue()
         {
             // Arrange
-            Options.Headers.Add(new HeaderPropagationEntry { InputName = "in" });
+            Configuration.Headers.Add("in", new HeaderPropagationEntry());
             Context.Request.Headers.Add("in", "test");
 
             // Act
@@ -40,14 +40,14 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
 
             // Assert
             Assert.Contains("in", State.Headers.Keys);
-            Assert.Equal(new[] {"test"}, State.Headers["in"]);
+            Assert.Equal(new[] { "test" }, State.Headers["in"]);
         }
 
         [Fact]
         public async Task NoHeaderInRequest_DoesNotAddIt()
         {
             // Arrange
-            Options.Headers.Add(new HeaderPropagationEntry { InputName = "in" });
+            Configuration.Headers.Add("in", new HeaderPropagationEntry());
 
             // Act
             await Middleware.Invoke(Context);
@@ -73,8 +73,8 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         public async Task MultipleHeadersInRequest_AddAllHeaders()
         {
             // Arrange
-            Options.Headers.Add(new HeaderPropagationEntry {InputName = "in"});
-            Options.Headers.Add(new HeaderPropagationEntry { InputName = "another" });
+            Configuration.Headers.Add("in", new HeaderPropagationEntry());
+            Configuration.Headers.Add("another", new HeaderPropagationEntry());
             Context.Request.Headers.Add("in", "test");
             Context.Request.Headers.Add("another", "test2");
 
@@ -83,9 +83,9 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
 
             // Assert
             Assert.Contains("in", State.Headers.Keys);
-            Assert.Equal(new[] {"test"}, State.Headers["in"]);
+            Assert.Equal(new[] { "test" }, State.Headers["in"]);
             Assert.Contains("another", State.Headers.Keys);
-            Assert.Equal(new[] {"test2"}, State.Headers["another"]);
+            Assert.Equal(new[] { "test2" }, State.Headers["another"]);
         }
 
         [Theory]
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         public async Task HeaderEmptyInRequest_DoesNotAddIt(string headerValue)
         {
             // Arrange
-            Options.Headers.Add(new HeaderPropagationEntry { InputName = "in" });
+            Configuration.Headers.Add("in", new HeaderPropagationEntry());
             Context.Request.Headers.Add("in", headerValue);
 
             // Act
@@ -105,14 +105,13 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         }
 
         [Theory]
-        [InlineData(new[] {"default"}, new[] {"default"})]
-        [InlineData(new[] {"default", "other"}, new[] {"default", "other"})]
+        [InlineData(new[] { "default" }, new[] { "default" })]
+        [InlineData(new[] { "default", "other" }, new[] { "default", "other" })]
         public async Task NoHeaderInRequest_AddsDefaultValue(string[] defaultValues,
             string[] expectedValues)
         {
             // Arrange
-            Options.Headers.Add(new HeaderPropagationEntry
-                {InputName = "in", DefaultValues = defaultValues});
+            Configuration.Headers.Add("in", new HeaderPropagationEntry { DefaultValues = defaultValues });
 
             // Act
             await Middleware.Invoke(Context);
@@ -123,16 +122,15 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         }
 
         [Theory]
-        [InlineData(new[] {"default"}, new[] {"default"})]
-        [InlineData(new[] {"default", "other"}, new[] {"default", "other"})]
+        [InlineData(new[] { "default" }, new[] { "default" })]
+        [InlineData(new[] { "default", "other" }, new[] { "default", "other" })]
         public async Task NoHeaderInRequest_UsesDefaultValuesGenerator(string[] defaultValues,
             string[] expectedValues)
         {
             // Arrange
             HttpContext receivedContext = null;
-            Options.Headers.Add(new HeaderPropagationEntry
+            Configuration.Headers.Add("in", new HeaderPropagationEntry
             {
-                InputName = "in",
                 DefaultValues = "no",
                 DefaultValuesGenerator = ctx =>
                 {
@@ -154,9 +152,8 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         public async Task NoHeaderInRequest_EmptyDefaultValuesGenerated_DoesNotAddIt()
         {
             // Arrange
-            Options.Headers.Add(new HeaderPropagationEntry
+            Configuration.Headers.Add("in", new HeaderPropagationEntry
             {
-                InputName = "in",
                 OutputName = "out",
                 DefaultValuesGenerator = ctx => StringValues.Empty
             });

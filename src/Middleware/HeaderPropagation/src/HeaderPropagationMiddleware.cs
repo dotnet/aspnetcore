@@ -30,34 +30,34 @@ namespace Microsoft.AspNetCore.HeaderPropagation
 
         public Task Invoke(HttpContext context)
         {
-            foreach (var header in _options.Headers)
+            foreach ((var header, var entry) in _options.Headers)
             {
-                var values = GetValues(header, context);
+                var values = GetValues(header, entry, context);
 
                 if (!StringValues.IsNullOrEmpty(values))
                 {
-                    _state.Headers.TryAdd(header.InputName, values);
+                    _state.Headers.TryAdd(header, values);
                 }
             }
 
             return _next.Invoke(context);
         }
 
-        private static StringValues GetValues(HeaderPropagationEntry header, HttpContext context)
+        private static StringValues GetValues(string header, HeaderPropagationEntry entry, HttpContext context)
         {
-            if (context.Request.Headers.TryGetValue(header.InputName, out var values)
+            if (context.Request.Headers.TryGetValue(header, out var values)
                 && !StringValues.IsNullOrEmpty(values))
             {
                 return values;
             }
 
-            if (header.DefaultValuesGenerator != null)
+            if (entry.DefaultValuesGenerator != null)
             {
-                values = header.DefaultValuesGenerator(context);
+                values = entry.DefaultValuesGenerator(context);
                 if (!StringValues.IsNullOrEmpty(values)) return values;
             }
 
-            return header.DefaultValues;
+            return entry.DefaultValues;
         }
     }
 }

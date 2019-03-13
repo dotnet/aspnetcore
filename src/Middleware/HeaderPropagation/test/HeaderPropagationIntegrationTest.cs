@@ -24,9 +24,8 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
             // Arrange
             var handler = new SimpleHandler();
             var builder = CreateBuilder(c =>
-                c.Headers.Add(new HeaderPropagationEntry
+                c.Headers.Add("in", new HeaderPropagationEntry
                 {
-                    InputName = "in",
                     OutputName = "out",
                 }),
                 handler);

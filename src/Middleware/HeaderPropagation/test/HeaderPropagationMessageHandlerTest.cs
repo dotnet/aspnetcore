@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         public async Task HeaderInState_AddCorrectValue()
         {
             // Arrange
-            Configuration.Headers.Add(new HeaderPropagationEntry {InputName = "in", OutputName = "out"});
+            Configuration.Headers.Add("in", new HeaderPropagationEntry { OutputName = "out" });
             State.Headers.Add("in", "test");
 
             // Act
@@ -49,14 +49,14 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
 
             // Assert
             Assert.True(Handler.Headers.Contains("out"));
-            Assert.Equal(new[] {"test"}, Handler.Headers.GetValues("out"));
+            Assert.Equal(new[] { "test" }, Handler.Headers.GetValues("out"));
         }
 
         [Fact]
         public async Task HeaderInState_NoOutputName_UseInputName()
         {
             // Arrange
-            Configuration.Headers.Add(new HeaderPropagationEntry { InputName = "in" });
+            Configuration.Headers.Add("in", new HeaderPropagationEntry());
             State.Headers.Add("in", "test");
 
             // Act
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         public async Task NoHeaderInState_DoesNotAddIt()
         {
             // Arrange
-            Configuration.Headers.Add(new HeaderPropagationEntry {InputName = "inout"});
+            Configuration.Headers.Add("inout", new HeaderPropagationEntry());
 
             // Act
             await Client.SendAsync(new HttpRequestMessage());
@@ -97,8 +97,8 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         public async Task MultipleHeadersInState_AddsAll()
         {
             // Arrange
-            Configuration.Headers.Add(new HeaderPropagationEntry {InputName = "inout"});
-            Configuration.Headers.Add(new HeaderPropagationEntry {InputName = "another"});
+            Configuration.Headers.Add("inout", new HeaderPropagationEntry());
+            Configuration.Headers.Add("another", new HeaderPropagationEntry());
             State.Headers.Add("inout", "test");
             State.Headers.Add("another", "test2");
 
@@ -108,8 +108,8 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
             // Assert
             Assert.True(Handler.Headers.Contains("inout"));
             Assert.True(Handler.Headers.Contains("another"));
-            Assert.Equal(new[] {"test"}, Handler.Headers.GetValues("inout"));
-            Assert.Equal(new[] {"test2"}, Handler.Headers.GetValues("another"));
+            Assert.Equal(new[] { "test" }, Handler.Headers.GetValues("inout"));
+            Assert.Equal(new[] { "test2" }, Handler.Headers.GetValues("another"));
         }
 
         [Theory]
@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         public async Task HeaderEmptyInState_DoNotAddIt(string headerValue)
         {
             // Arrange
-            Configuration.Headers.Add(new HeaderPropagationEntry {InputName = "inout"});
+            Configuration.Headers.Add("inout", new HeaderPropagationEntry());
             State.Headers.Add("inout", headerValue);
 
             // Act
@@ -129,19 +129,19 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         }
 
         [Theory]
-        [InlineData(false, "", new[] {""})]
-        [InlineData(false, null, new[] {""})]
-        [InlineData(false, "42", new[] {"42"})]
-        [InlineData(true, "42", new[] {"42", "test"})]
-        [InlineData(true, "", new[] {"", "test"})]
-        [InlineData(true, null, new[] {"", "test"})]
+        [InlineData(false, "", new[] { "" })]
+        [InlineData(false, null, new[] { "" })]
+        [InlineData(false, "42", new[] { "42" })]
+        [InlineData(true, "42", new[] { "42", "test" })]
+        [InlineData(true, "", new[] { "", "test" })]
+        [InlineData(true, null, new[] { "", "test" })]
         public async Task HeaderInState_HeaderAlreadyInOutgoingRequest(bool alwaysAdd, string outgoingValue,
             string[] expectedValues)
         {
             // Arrange
             State.Headers.Add("inout", "test");
-            Configuration.Headers.Add(
-                new HeaderPropagationEntry {InputName = "inout", AlwaysAdd = alwaysAdd});
+            Configuration.Headers.Add("inout",
+                new HeaderPropagationEntry { AlwaysAdd = alwaysAdd });
 
             var request = new HttpRequestMessage();
             request.Headers.Add("inout", outgoingValue);

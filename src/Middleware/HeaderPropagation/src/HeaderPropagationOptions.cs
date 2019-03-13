@@ -7,6 +7,6 @@ namespace Microsoft.AspNetCore.HeaderPropagation
 {
     public class HeaderPropagationOptions
     {
-        public IList<HeaderPropagationEntry> Headers { get; set; } = new List<HeaderPropagationEntry>();
+        public IDictionary<string, HeaderPropagationEntry> Headers { get; set; } = new Dictionary<string, HeaderPropagationEntry>();
     }
 }
