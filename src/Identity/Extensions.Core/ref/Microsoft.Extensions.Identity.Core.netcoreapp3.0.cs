@@ -371,8 +371,7 @@ namespace Microsoft.AspNetCore.Identity
         public virtual System.Threading.Tasks.Task<System.Collections.Generic.IList<System.Security.Claims.Claim>> GetClaimsAsync(TRole role) { throw null; }
         public virtual System.Threading.Tasks.Task<string> GetRoleIdAsync(TRole role) { throw null; }
         public virtual System.Threading.Tasks.Task<string> GetRoleNameAsync(TRole role) { throw null; }
-        public virtual string NormalizeEmail(string email) { throw null; }
-        public virtual string NormalizeName(string name) { throw null; }
+        public virtual string NormalizeKey(string key) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult> RemoveClaimAsync(TRole role, System.Security.Claims.Claim claim) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
@@ -603,7 +602,8 @@ namespace Microsoft.AspNetCore.Identity
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public virtual System.Threading.Tasks.Task<bool> IsLockedOutAsync(TUser user) { throw null; }
         public virtual System.Threading.Tasks.Task<bool> IsPhoneNumberConfirmedAsync(TUser user) { throw null; }
-        public virtual string NormalizeKey(string key) { throw null; }
+        public virtual string NormalizeEmail(string email) { throw null; }
+        public virtual string NormalizeName(string name) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult> RedeemTwoFactorRecoveryCodeAsync(TUser user, string code) { throw null; }
         public virtual void RegisterTokenProvider(string providerName, Microsoft.AspNetCore.Identity.IUserTwoFactorTokenProvider<TUser> provider) { }
