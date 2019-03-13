@@ -444,7 +444,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                     // The application is still running here because the poll is only killed
                     // by the heartbeat so we pretend to do a scan and this should force the application task to complete
-                    await manager.ScanAsync();
+                    manager.Scan();
 
                     // The application task should complete gracefully
                     await connection.ApplicationTask.OrTimeout();

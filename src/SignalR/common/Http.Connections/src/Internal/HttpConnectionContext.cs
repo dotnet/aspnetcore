@@ -443,11 +443,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         {
             lock (_stateLock)
             {
-                LastSeenUtc = DateTime.UtcNow;
-
                 if (Status == HttpConnectionStatus.Active)
                 {
                     Status = HttpConnectionStatus.Inactive;
+                    LastSeenUtc = DateTime.UtcNow;
                 }
             }
         }

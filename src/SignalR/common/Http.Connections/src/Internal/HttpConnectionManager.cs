@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 {
                     try
                     {
-                        await ScanAsync();
+                        Scan();
                     }
                     catch (Exception ex)
                     {
@@ -137,7 +137,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             Log.HeartBeatEnded(_logger);
         }
 
-        public Task ScanAsync()
+        public void Scan()
         {
             // Scan the registered connections looking for ones that have timed out
             foreach (var c in _connections)
@@ -164,8 +164,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                     connection.TickHeartbeat();
                 }
             }
-
-            return Task.CompletedTask;
         }
 
         public void CloseConnections()
