@@ -75,11 +75,6 @@ public:
         }
 
         StopInternal(fServerInitiated);
-
-        if (m_pFinishShutdownEvent != nullptr)
-        {
-            LOG_IF_FAILED(SetEvent(m_pFinishShutdownEvent));
-        }
     }
 
     virtual
@@ -144,8 +139,6 @@ private:
     std::wstring m_applicationVirtualPath;
     std::wstring m_applicationConfigPath;
     std::wstring m_applicationId;
-
-    HandleWrapper<NullHandleTraits> m_pFinishShutdownEvent;
 
     static std::wstring ToVirtualPath(const std::wstring& configurationPath)
     {

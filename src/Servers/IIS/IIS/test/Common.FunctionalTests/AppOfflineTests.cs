@@ -165,11 +165,11 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
             var connectionList = new List<TestConnection>();
 
-            for (var i = 0; i < 3; i++)
+            for (var i = 0; i < 2; i++)
             {
                 var connection = new TestConnection(deploymentResult.HttpClient.BaseAddress.Port);
                 await connection.Send(
-                    "POST /HelloWorldDelayed HTTP/1.1",
+                    "POST /ReadRequestBody HTTP/1.1",
                     "Content-Length: 1",
                     "Host: localhost",
                     "Connection: close",
@@ -179,17 +179,52 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                 connectionList.Add(connection);
             }
 
+            var requestCount = await deploymentResult.HttpClient.GetStringAsync("/CheckReqeustCount");
+
+            var count = 0;
+            while (requestCount != "2" && count < 10)
+            {
+                requestCount = await deploymentResult.HttpClient.GetStringAsync("/CheckReqeustCount");
+            }
+            if (count == 10)
+            {
+                throw new Exception("2 requests are currently not waiting");
+            }
+
+            var statusConnection = new TestConnection(deploymentResult.HttpClient.BaseAddress.Port);
+
+            await statusConnection.Send(
+                "GET /WaitForAppToStartShuttingDown HTTP/1.1",
+                "Host: localhost",
+                "Connection: close",
+                "",
+                "");
+
+            await statusConnection.Receive("HTTP/1.1 200 OK",
+                "");
+
+            await statusConnection.ReceiveHeaders();
+
+            await statusConnection.Receive("5",
+                "test1",
+                "");
             // Shouldn't stop the server here. Instead should drop app offline 
             AddAppOffline(deploymentResult.ContentRoot);
 
-            for (var i = 0; i < 3; i++)
+            await statusConnection.Receive("5", "test2", "");
+
+            for (var i = 0; i < 2; i++)
             {
                 await connectionList[i].Send("a", "");
                 await connectionList[i].Receive(
                     "HTTP/1.1 200 OK");
+                connectionList[i].Dispose();
             }
 
             deploymentResult.AssertWorkerProcessStop();
+
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult,
+                EventLogHelpers.InProcessShutdown());
         }
 
         [ConditionalFact]
@@ -218,13 +253,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
             AddAppOffline(deploymentResult.ContentRoot);
             await AssertAppOffline(deploymentResult);
-
-            // Files should eventually be unlocked, however when AppOffline returns, it doesn't necessarily mean 
-            RetryHelper.RetryOperation(
-                () => DeletePublishOutput(deploymentResult),
-                e => Logger.LogError($"Failed to delete published output: {e.Message}"),
-                retryCount: 3,
-                retryDelayMilliseconds: RetryDelay.Milliseconds);
+            DeletePublishOutput(deploymentResult);
         }
 
         [ConditionalTheory]

@@ -172,6 +172,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             }
         }
 
+        public static string InProcessShutdown()
+        {
+            return "Application 'MACHINE/WEBROOT/APPHOST/.*?' has shutdown.";
+        }
+
         public static string InProcessFailedToStop(IISDeploymentResult deploymentResult, string reason)
         {
             return "Failed to gracefully shutdown application 'MACHINE/WEBROOT/APPHOST/.*?'.";

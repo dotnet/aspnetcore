@@ -221,12 +221,6 @@ namespace TestSite
             await ctx.Response.WriteAsync("Hello World");
         }
 
-        private async Task HelloWorldDelayed(HttpContext ctx)
-        {
-            await ctx.Request.Body.ReadAsync(new byte[1]);
-            await ctx.Response.WriteAsync("Hello World");
-        }
-
         private async Task LargeResponseBody(HttpContext ctx)
         {
             if (int.TryParse(ctx.Request.Query["length"], out var length))
@@ -282,14 +276,31 @@ namespace TestSite
             await Task.WhenAll(t1, t2);
         }
 
+        private int _requestsInFlight = 0;
         private async Task ReadRequestBody(HttpContext ctx)
         {
+            Interlocked.Increment(ref _requestsInFlight);
             var readBuffer = new byte[1];
             var result = await ctx.Request.Body.ReadAsync(readBuffer, 0, 1);
             while (result != 0)
             {
                 result = await ctx.Request.Body.ReadAsync(readBuffer, 0, 1);
             }
+
+            Interlocked.Decrement(ref _requestsInFlight);
+        }
+
+        private async Task CheckReqeustCount(HttpContext ctx)
+        {
+            await ctx.Response.WriteAsync(_requestsInFlight.ToString());
+        }
+
+        private async Task WaitForAppToStartShuttingDown(HttpContext ctx)
+        {
+            await ctx.Response.WriteAsync("test1");
+            var lifetime = ctx.RequestServices.GetService<IHostApplicationLifetime>();
+            lifetime.ApplicationStopping.WaitHandle.WaitOne();
+            await ctx.Response.WriteAsync("test2");
         }
 
         private async Task ReadFullBody(HttpContext ctx)
