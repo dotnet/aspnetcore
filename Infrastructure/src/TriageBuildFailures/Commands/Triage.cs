@@ -31,9 +31,11 @@ namespace TriageBuildFailures.Commands
         {
             _config = config;
             _reporter = reporter;
-            _ciClients[typeof(TeamCityClientWrapper)] = GetTeamCityClient(_config);
-            _ciClients[typeof(VSTSClient)] = GetVSTSClient(_config);
+            var vstsClient = GetVSTSClient(_config);
             _ghClient = GetGitHubClient(_config);
+            _ciClients[typeof(PullRequestClient)] = GetPullRequestClient(_ghClient, vstsClient);
+            _ciClients[typeof(TeamCityClientWrapper)] = GetTeamCityClient(_config);
+            _ciClients[typeof(VSTSClient)] = vstsClient;
             _emailClient = GetEmailClient(_config);
         }
 
@@ -107,7 +109,6 @@ namespace TriageBuildFailures.Commands
         /// Gets the list of CI failures which have not been previously triaged since the CutoffDate
         /// </summary>
         /// <returns>The list of CI failures which have not been previously triaged.</returns>
-
         private async Task<IEnumerable<ICIBuild>> GetUntriagedBuildFailures()
         {
             var result = new List<ICIBuild>();
@@ -160,6 +161,11 @@ namespace TriageBuildFailures.Commands
         private GitHubClientWrapper GetGitHubClient(Config config)
         {
             return new GitHubClientWrapper(config.GitHub, _reporter);
+        }
+
+        private PullRequestClient GetPullRequestClient(GitHubClientWrapper gitHubClient, VSTSClient vstsClient)
+        {
+            return new PullRequestClient(gitHubClient, vstsClient);
         }
 
         private EmailClient GetEmailClient(Config config)

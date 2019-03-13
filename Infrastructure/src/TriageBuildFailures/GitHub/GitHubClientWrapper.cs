@@ -103,6 +103,11 @@ namespace TriageBuildFailures.GitHub
             return await RetryHelpers.RetryAsync(async () => await Client.Issue.Comment.GetAllForIssue(issue.RepositoryOwner, issue.RepositoryName, issue.Number), _reporter);
         }
 
+        public async Task<IEnumerable<IssueComment>> GetIssueComments(GitHubPR pr)
+        {
+            return await RetryHelpers.RetryAsync(async () => await Client.Issue.Comment.GetAllForIssue(pr.RepositoryOwner, pr.RepositoryName, pr.Number), _reporter);
+        }
+
         public async Task CreateComment(GitHubIssue issue, string comment)
         {
             comment = $"This comment was made automatically. If there is a problem contact {Config.BuildBuddyUsername}.\n\n{comment}";
@@ -195,6 +200,16 @@ namespace TriageBuildFailures.GitHub
 
             MemoryCache.Default.Remove(GetIssueCacheKey(owner, repo));
             return new GitHubIssue(await RetryHelpers.RetryAsync(async () => await Client.Issue.Create(owner, repo, newIssue), _reporter));
+        }
+
+        public async Task<IEnumerable<GitHubPR>> GetPullRequests(string owner, string repo)
+        {
+            var prRequest = new PullRequestRequest()
+            {
+                State = ItemStateFilter.Open
+            };
+            var prs = await Client.PullRequest.GetAllForRepository(owner, repo, prRequest);
+            return prs.Select(pr => new GitHubPR(pr));
         }
 
         private async Task EnsureLabelsExist(string owner, string repo, IList<string> labels)

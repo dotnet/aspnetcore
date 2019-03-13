@@ -122,6 +122,17 @@ namespace TriageBuildFailures.VSTS
             return Task.FromResult(vstsTest.TestCaseResult.ErrorMessage);
         }
 
+        public async Task<VSTSBuild> GetBuild(string url)
+        {
+            var uri = new Uri(url);
+            var query = HttpUtility.ParseQueryString(uri.Query);
+            var id = query.Get("buildId");
+            var project = url.Split('/', StringSplitOptions.RemoveEmptyEntries)[2];
+            var vstsUri = $"{project}/_apis/build/builds/{id}";
+            var build = await MakeVSTSRequest<Build>(HttpMethod.Get, vstsUri,apiVersion: ApiVersion.V5_0_Preview5);
+            return new VSTSBuild(build);
+        }
+
         private string GetBuildLogFromValidationResult(VSTSBuild vstsBuild)
         {
             if (vstsBuild.ValidationResults != null && vstsBuild.ValidationResults.Any(v => v.Result.Equals("error", StringComparison.OrdinalIgnoreCase)))
