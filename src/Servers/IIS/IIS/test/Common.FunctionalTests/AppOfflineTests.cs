@@ -195,6 +195,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         {
             for (var j = 0; j < 100; j++)
             {
+                Logger.LogInformation($"Attempt {j}");
+
                 var deploymentResult = await AssertStarts(hostingModel);
 
                 var load = Helpers.StressLoadAsync(deploymentResult.HttpClient, "/HelloWorld", async response => {
@@ -208,7 +210,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                     Assert.True(statusCode == 200 || statusCode == 503, "Status code was " + statusCode);
                 });
 
-                for (int i = 0; i < 1000; i++)
+                for (int i = 0; i < 100; i++)
                 {
                     // AddAppOffline might fail if app_offline is being read by ANCM and deleted at the same time
                     RetryHelper.RetryOperation(
@@ -231,6 +233,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                         throw;
                     }
                 }
+
+                StopServer();
             }
         }
 
