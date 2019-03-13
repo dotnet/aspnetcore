@@ -169,57 +169,32 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             {
                 var connection = new TestConnection(deploymentResult.HttpClient.BaseAddress.Port);
                 await connection.Send(
-                    "POST /ReadRequestBody HTTP/1.1",
+                    "POST /ReadAndCountRequestBody HTTP/1.1",
                     "Content-Length: 1",
                     "Host: localhost",
                     "Connection: close",
                     "",
                     "");
 
+                await connection.Receive(
+                  "HTTP/1.1 200 OK", "");
+                await connection.ReceiveHeaders();
+                await connection.Receive("1", $"{i + 1}");
                 connectionList.Add(connection);
             }
 
-            var requestCount = await deploymentResult.HttpClient.GetStringAsync("/CheckReqeustCount");
-
-            var count = 0;
-            while (requestCount != "2" && count < 10)
-            {
-                requestCount = await deploymentResult.HttpClient.GetStringAsync("/CheckReqeustCount");
-            }
-            if (count == 10)
-            {
-                throw new Exception("2 requests are currently not waiting");
-            }
-
-            var statusConnection = new TestConnection(deploymentResult.HttpClient.BaseAddress.Port);
-
-            await statusConnection.Send(
-                "GET /WaitForAppToStartShuttingDown HTTP/1.1",
-                "Host: localhost",
-                "Connection: close",
-                "",
-                "");
-
-            await statusConnection.Receive("HTTP/1.1 200 OK",
-                "");
-
-            await statusConnection.ReceiveHeaders();
-
-            await statusConnection.Receive("5",
-                "test1",
-                "");
-            // Shouldn't stop the server here. Instead should drop app offline 
             AddAppOffline(deploymentResult.ContentRoot);
 
-            await statusConnection.Receive("5", "test2", "");
-
+            var task = deploymentResult.HttpClient.GetAsync("/WaitForAppToStartShuttingDown");
+         
             for (var i = 0; i < 2; i++)
             {
                 await connectionList[i].Send("a", "");
-                await connectionList[i].Receive(
-                    "HTTP/1.1 200 OK");
+                await connectionList[i].Receive("", "4", "done");
                 connectionList[i].Dispose();
             }
+
+            await task;
 
             deploymentResult.AssertWorkerProcessStop();
 

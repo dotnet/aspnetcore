@@ -276,10 +276,8 @@ namespace TestSite
             await Task.WhenAll(t1, t2);
         }
 
-        private int _requestsInFlight = 0;
         private async Task ReadRequestBody(HttpContext ctx)
         {
-            Interlocked.Increment(ref _requestsInFlight);
             var readBuffer = new byte[1];
             var result = await ctx.Request.Body.ReadAsync(readBuffer, 0, 1);
             while (result != 0)
@@ -287,12 +285,23 @@ namespace TestSite
                 result = await ctx.Request.Body.ReadAsync(readBuffer, 0, 1);
             }
 
-            Interlocked.Decrement(ref _requestsInFlight);
         }
 
-        private async Task CheckReqeustCount(HttpContext ctx)
+        private int _requestsInFlight = 0;
+        private async Task ReadAndCountRequestBody(HttpContext ctx)
         {
+            Interlocked.Increment(ref _requestsInFlight);
             await ctx.Response.WriteAsync(_requestsInFlight.ToString());
+
+            var readBuffer = new byte[1];
+            var result = await ctx.Request.Body.ReadAsync(readBuffer, 0, 1);
+            while (result != 0)
+            {
+                result = await ctx.Request.Body.ReadAsync(readBuffer, 0, 1);
+            }
+
+            await ctx.Response.WriteAsync("done");
+            Interlocked.Decrement(ref _requestsInFlight);
         }
 
         private async Task WaitForAppToStartShuttingDown(HttpContext ctx)
