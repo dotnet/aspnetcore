@@ -16,6 +16,11 @@ namespace Microsoft.AspNetCore.Razor.Language
         public abstract bool IndentWithTabs { get; set; }
 
         /// <summary>
+        /// Gets or sets the root namespace of the generated code.
+        /// </summary>
+        public virtual string RootNamespace { get; set; }
+
+        /// <summary>
         /// Gets or sets a value that indicates whether to suppress the default <c>#pragma checksum</c> directive in the 
         /// generated C# code. If <c>false</c> the checkum directive will be included, otherwise it will not be
         /// generated. Defaults to <c>false</c>, meaning that the checksum will be included.

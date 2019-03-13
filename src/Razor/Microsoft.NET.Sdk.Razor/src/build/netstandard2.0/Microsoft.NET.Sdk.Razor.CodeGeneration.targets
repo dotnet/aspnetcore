@@ -155,6 +155,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       ForceServer="$(_RazorForceBuildServer)"
       PipeName="$(_RazorBuildServerPipeName)"
       Version="$(RazorLangVersion)"
+      RootNamespace="$(RootNamespace)"
       Configuration="@(ResolvedRazorConfiguration)"
       Extensions="@(ResolvedRazorExtension)"
       Sources="@(RazorGenerateWithTargetPath)"

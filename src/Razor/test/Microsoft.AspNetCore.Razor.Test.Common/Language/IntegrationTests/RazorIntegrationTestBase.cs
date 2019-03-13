@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             PathSeparator = Path.DirectorySeparatorChar.ToString();
             WorkingDirectory = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ArbitraryWindowsPath : ArbitraryMacLinuxPath;
 
-            DefaultBaseNamespace = "Test"; // Matches the default working directory
+            DefaultRootNamespace = "Test"; // Matches the default working directory
             DefaultFileName = "TestComponent.cshtml";
         }
 
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
         internal virtual RazorConfiguration Configuration { get; }
 
-        internal virtual string DefaultBaseNamespace { get; }
+        internal virtual string DefaultRootNamespace { get; }
 
         internal virtual string DefaultFileName { get; }
 
@@ -113,6 +113,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         {
             return RazorProjectEngine.Create(configuration, FileSystem, b =>
             {
+                b.SetRootNamespace(DefaultRootNamespace);
+
                 // Turn off checksums, we're testing code generation.
                 b.Features.Add(new SuppressChecksum());
 
@@ -320,7 +322,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         {
             var assemblyResult = CompileToAssembly(DefaultFileName, cshtmlSource);
 
-            var componentFullTypeName = $"{DefaultBaseNamespace}.{Path.GetFileNameWithoutExtension(DefaultFileName)}";
+            var componentFullTypeName = $"{DefaultRootNamespace}.{Path.GetFileNameWithoutExtension(DefaultFileName)}";
             return CompileToComponent(assemblyResult, componentFullTypeName);
         }
 

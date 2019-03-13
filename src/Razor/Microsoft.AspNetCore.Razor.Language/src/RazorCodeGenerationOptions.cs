@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 indentSize: 4,
                 designTime: false,
                 suppressChecksum: false,
+                rootNamespace: null,
                 supressMetadataAttributes: false,
                 suppressPrimaryMethodBody: false);
         }
@@ -24,6 +25,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 indentWithTabs: false,
                 indentSize: 4,
                 designTime: true,
+                rootNamespace: null,
                 suppressChecksum: false,
                 supressMetadataAttributes: true,
                 suppressPrimaryMethodBody: false);
@@ -66,6 +68,11 @@ namespace Microsoft.AspNetCore.Razor.Language
         public abstract bool IndentWithTabs { get; }
 
         public abstract int IndentSize { get; }
+
+        /// <summary>
+        /// Gets the root namespace for the generated code.
+        /// </summary>
+        public virtual string RootNamespace { get; }
 
         /// <summary>
         /// Gets a value that indicates whether to suppress the default <c>#pragma checksum</c> directive in the 

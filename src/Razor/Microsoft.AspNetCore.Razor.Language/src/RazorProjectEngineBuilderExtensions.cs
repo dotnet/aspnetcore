@@ -75,6 +75,23 @@ namespace Microsoft.AspNetCore.Razor.Language
             return builder;
         }
 
+        /// <summary>
+        /// Sets the root namespace for the generated code.
+        /// </summary>
+        /// <param name="builder">The <see cref="RazorProjectEngineBuilder"/>.</param>
+        /// <param name="rootNamespace">The root namespace.</param>
+        /// <returns>The <see cref="RazorProjectEngineBuilder"/>.</returns>
+        public static RazorProjectEngineBuilder SetRootNamespace(this RazorProjectEngineBuilder builder, string rootNamespace)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            builder.Features.Add(new ConfigureRootNamespaceFeature(rootNamespace));
+            return builder;
+        }
+
         public static void SetImportFeature(this RazorProjectEngineBuilder builder, IImportProjectFeature feature)
         {
             if (builder == null)
@@ -279,6 +296,30 @@ namespace Microsoft.AspNetCore.Razor.Language
                 public override bool Exists => true;
 
                 public override Stream Read() => new MemoryStream(_importBytes);
+            }
+        }
+
+        private class ConfigureRootNamespaceFeature : IConfigureRazorCodeGenerationOptionsFeature
+        {
+            private readonly string _rootNamespace;
+
+            public ConfigureRootNamespaceFeature(string rootNamespace)
+            {
+                _rootNamespace = rootNamespace;
+            }
+
+            public int Order { get; set; }
+
+            public RazorEngine Engine { get; set; }
+
+            public void Configure(RazorCodeGenerationOptionsBuilder options)
+            {
+                if (options == null)
+                {
+                    throw new ArgumentNullException(nameof(options));
+                }
+
+                options.RootNamespace = _rootNamespace;
             }
         }
     }

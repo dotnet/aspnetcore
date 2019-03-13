@@ -29,6 +29,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
             Configuration = Option("-c", "Razor configuration name", CommandOptionType.SingleValue);
             ExtensionNames = Option("-n", "extension name", CommandOptionType.MultipleValue);
             ExtensionFilePaths = Option("-e", "extension file path", CommandOptionType.MultipleValue);
+            RootNamespace = Option("--root-namespace", "root namespace for generated code", CommandOptionType.SingleValue);
             GenerateDeclaration = Option("--generate-declaration", "Generate declaration", CommandOptionType.NoValue);
         }
 
@@ -51,6 +52,8 @@ namespace Microsoft.AspNetCore.Razor.Tools
         public CommandOption ExtensionNames { get; }
 
         public CommandOption ExtensionFilePaths { get; }
+
+        public CommandOption RootNamespace { get; }
 
         public CommandOption GenerateDeclaration { get; }
 
@@ -175,6 +178,11 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 if (GenerateDeclaration.HasValue())
                 {
                     b.Features.Add(new SetSuppressPrimaryMethodBodyOptionFeature());
+                }
+
+                if (RootNamespace.HasValue())
+                {
+                    b.SetRootNamespace(RootNamespace.Value());
                 }
             });
 

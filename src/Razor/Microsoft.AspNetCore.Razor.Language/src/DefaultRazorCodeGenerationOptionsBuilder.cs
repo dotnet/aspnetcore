@@ -43,6 +43,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 IndentWithTabs,
                 IndentSize,
                 DesignTime,
+                RootNamespace,
                 SuppressChecksum,
                 SuppressMetadataAttributes,
                 SuppressPrimaryMethodBody);

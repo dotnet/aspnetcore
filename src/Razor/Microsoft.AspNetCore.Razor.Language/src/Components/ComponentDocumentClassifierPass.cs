@@ -18,11 +18,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         private static readonly char[] NamespaceSeparators = new char[] { '.' };
 
         /// <summary>
-        /// The base namespace.
+        /// The fallback value of the root namespace. Only used if the fallback root namespace
+        /// was not passed in.
         /// </summary>
-        // This is a fallback value and will only be used if we can't compute
-        // a reasonable namespace.
-        public string BaseNamespace { get; set; } = "__BlazorGenerated";
+        public string FallbackRootNamespace { get; set; } = "__GeneratedComponent";
 
         /// <summary>
         /// Gets or sets whether to mangle class names.
@@ -58,7 +57,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             ClassDeclarationIntermediateNode @class,
             MethodDeclarationIntermediateNode method)
         {
+            var options = codeDocument.GetDocumentIntermediateNode().Options;
             if (!TryComputeNamespaceAndClass(
+                options,
                 codeDocument.Source.FilePath,
                 codeDocument.Source.RelativePath,
                 out var computedNamespace,
@@ -66,7 +67,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             {
                 // If we can't compute a nice namespace (no relative path) then just generate something
                 // mangled.
-                computedNamespace = BaseNamespace;
+                computedNamespace = FallbackRootNamespace;
                 var checksum = Checksum.BytesToString(codeDocument.Source.GetChecksum());
                 computedClass = $"AspNetCore_{checksum}";
             }
@@ -125,7 +126,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         //
         // However all kinds of thing are possible in tools. We shouldn't barf here if the document isn't 
         // set up correctly.
-        private bool TryComputeNamespaceAndClass(string filePath, string relativePath, out string @namespace, out string @class)
+        private bool TryComputeNamespaceAndClass(
+            RazorCodeGenerationOptions options, 
+            string filePath, 
+            string relativePath, 
+            out string @namespace, 
+            out string @class)
         {
             if (filePath == null || relativePath == null || filePath.Length <= relativePath.Length)
             {
@@ -134,14 +140,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 return false;
             }
 
-            // Try and infer a namespace from the project directory. We don't yet have the ability to pass
-            // the namespace through from the project.
-            var trimLength = relativePath.Length + (relativePath.StartsWith("/") ? 0 : 1);
-            var baseDirectory = filePath.Substring(0, filePath.Length - trimLength);
-
-            var lastSlash = baseDirectory.LastIndexOfAny(PathSeparators);
-            var baseNamespace = lastSlash == -1 ? baseDirectory : baseDirectory.Substring(lastSlash + 1);
-            if (string.IsNullOrEmpty(baseNamespace))
+            var rootNamespace = options.RootNamespace;
+            if (string.IsNullOrEmpty(rootNamespace))
             {
                 @namespace = null;
                 @class = null;
@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             var builder = new StringBuilder();
 
             // Sanitize the base namespace, but leave the dots.
-            var segments = baseNamespace.Split(NamespaceSeparators, StringSplitOptions.RemoveEmptyEntries);
+            var segments = rootNamespace.Split(NamespaceSeparators, StringSplitOptions.RemoveEmptyEntries);
             builder.Append(CSharpIdentifier.SanitizeIdentifier(segments[0]));
             for (var i = 1; i < segments.Length; i++)
             {

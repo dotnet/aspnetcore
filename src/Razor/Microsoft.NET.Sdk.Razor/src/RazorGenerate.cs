@@ -24,6 +24,8 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         private const string AssemblyName = "AssemblyName";
         private const string AssemblyFilePath = "AssemblyFilePath";
 
+        public string RootNamespace { get; set; }
+
         [Required]
         public string Version { get; set; }
 
@@ -134,6 +136,13 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
             builder.AppendLine("-c");
             builder.AppendLine(Configuration[0].GetMetadata(Identity));
+
+            // Added in 3.0
+            if (parsedVersion.Major >= 3 && !string.IsNullOrEmpty(RootNamespace))
+            {
+                builder.AppendLine("--root-namespace");
+                builder.AppendLine(RootNamespace);
+            }
 
             // Added in 3.0
             if (parsedVersion.Major >= 3 && GenerateDeclaration)

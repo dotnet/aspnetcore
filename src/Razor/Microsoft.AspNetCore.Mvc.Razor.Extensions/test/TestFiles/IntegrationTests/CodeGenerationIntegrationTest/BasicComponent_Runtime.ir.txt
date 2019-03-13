@@ -1,5 +1,5 @@
 Document - 
-    NamespaceDeclaration -  - __BlazorGenerated
+    NamespaceDeclaration -  - __GeneratedComponent
         UsingDirective - (1:0,1 [14] ) - System
         UsingDirective - (16:1,1 [34] ) - System.Collections.Generic
         UsingDirective - (51:2,1 [19] ) - System.Linq
