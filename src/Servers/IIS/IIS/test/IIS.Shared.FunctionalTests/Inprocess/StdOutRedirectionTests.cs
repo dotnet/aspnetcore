@@ -25,6 +25,7 @@ namespace IIS.FunctionalTests.Inprocess
         }
 
         [ConditionalFact]
+        [RequiresNewShim]
         public async Task FrameworkNotFoundExceptionLogged_Pipe()
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite);
@@ -42,7 +43,8 @@ namespace IIS.FunctionalTests.Inprocess
                 "The specified framework 'Microsoft.NETCore.App', version '2.9.9' was not found.");
         }
 
-        [ConditionalFact(Skip = "https://github.com/aspnet/AspNetCore-Internal/issues/1814")]
+        [ConditionalFact]
+        [RequiresNewShim]
         public async Task FrameworkNotFoundExceptionLogged_File()
         {
             var deploymentParameters =
