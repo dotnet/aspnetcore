@@ -24,15 +24,15 @@ namespace signalr
         const std::shared_ptr<log_writer>& log_writer)
     {
         return hub_connection_impl::create(url, trace_level, log_writer,
-            std::make_unique<web_request_factory>(), std::make_unique<transport_factory>());
+            nullptr, std::make_unique<transport_factory>());
     }
 
     std::shared_ptr<hub_connection_impl> hub_connection_impl::create(const std::string& url, trace_level trace_level,
-        const std::shared_ptr<log_writer>& log_writer, std::unique_ptr<web_request_factory> web_request_factory,
+        const std::shared_ptr<log_writer>& log_writer, http_client* http_client,
         std::unique_ptr<transport_factory> transport_factory)
     {
         auto connection = std::shared_ptr<hub_connection_impl>(new hub_connection_impl(url, trace_level,
-            log_writer ? log_writer : std::make_shared<trace_log_writer>(), std::move(web_request_factory), std::move(transport_factory)));
+            log_writer ? log_writer : std::make_shared<trace_log_writer>(), http_client, std::move(transport_factory)));
 
         connection->initialize();
 
@@ -40,10 +40,10 @@ namespace signalr
     }
 
     hub_connection_impl::hub_connection_impl(const std::string& url, trace_level trace_level,
-        const std::shared_ptr<log_writer>& log_writer, std::unique_ptr<web_request_factory> web_request_factory,
+        const std::shared_ptr<log_writer>& log_writer, http_client* http_client,
         std::unique_ptr<transport_factory> transport_factory)
         : m_connection(connection_impl::create(url, trace_level, log_writer,
-        std::move(web_request_factory), std::move(transport_factory))), m_logger(log_writer, trace_level),
+        http_client, std::move(transport_factory))), m_logger(log_writer, trace_level),
         m_callback_manager(json::value::parse(_XPLATSTR("{ \"error\" : \"connection went out of scope before invocation result was received\"}"))),
         m_disconnected([]() noexcept {}), m_handshakeReceived(false)
     { }

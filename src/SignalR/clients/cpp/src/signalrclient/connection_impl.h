@@ -29,7 +29,7 @@ namespace signalr
         static std::shared_ptr<connection_impl> create(const std::string& url, trace_level trace_level, const std::shared_ptr<log_writer>& log_writer);
 
         static std::shared_ptr<connection_impl> create(const std::string& url, trace_level trace_level, const std::shared_ptr<log_writer>& log_writer,
-            std::unique_ptr<web_request_factory> web_request_factory, std::unique_ptr<transport_factory> transport_factory);
+            http_client* http_client, std::unique_ptr<transport_factory> transport_factory);
 
         connection_impl(const connection_impl&) = delete;
 
@@ -53,7 +53,6 @@ namespace signalr
         std::atomic<connection_state> m_connection_state;
         logger m_logger;
         std::shared_ptr<transport> m_transport;
-        std::unique_ptr<web_request_factory> m_web_request_factory;
         std::unique_ptr<transport_factory> m_transport_factory;
 
         std::function<void(const std::string&)> m_message_received;
@@ -65,9 +64,10 @@ namespace signalr
         event m_start_completed_event;
         std::string m_connection_id;
         http_client* m_http_client;
+        bool m_owned_http_client;
 
         connection_impl(const std::string& url, trace_level trace_level, const std::shared_ptr<log_writer>& log_writer,
-            std::unique_ptr<web_request_factory> web_request_factory, std::unique_ptr<transport_factory> transport_factory);
+            http_client* http_client, std::unique_ptr<transport_factory> transport_factory);
 
         pplx::task<std::shared_ptr<transport>> start_transport(const std::string& url);
         pplx::task<void> send_connect_request(const std::shared_ptr<transport>& transport,
