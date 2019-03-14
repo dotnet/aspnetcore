@@ -58,7 +58,6 @@ public:
     HRESULT
     LoadManagedApplication();
 
-
     void
     QueueStop();
 

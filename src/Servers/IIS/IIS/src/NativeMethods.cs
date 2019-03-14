@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Server.IIS.Core;
 
 namespace Microsoft.AspNetCore.Server.IIS
 {
-    internal static class NativeMethods
+    public static class NativeMethods
     {
         internal const int HR_OK = 0;
         internal const int ERROR_NOT_FOUND = unchecked((int)0x80070490);
@@ -147,6 +147,9 @@ namespace Microsoft.AspNetCore.Server.IIS
         [DllImport(AspNetCoreModuleDll)]
         private static extern int http_get_authentication_information(IntPtr pInProcessHandler, [MarshalAs(UnmanagedType.BStr)] out string authType, out IntPtr token);
 
+        [DllImport(AspNetCoreModuleDll)]
+        private static extern int http_set_startup_error_page_content([MarshalAs(UnmanagedType.LPWStr)]string content);
+
         public static void HttpPostCompletion(IntPtr pInProcessHandler, int cbBytes)
         {
             Validate(http_post_completion(pInProcessHandler, cbBytes));
@@ -169,7 +172,7 @@ namespace Microsoft.AspNetCore.Server.IIS
             Validate(register_callbacks(pInProcessApplication, requestCallback, shutdownCallback, disconnectCallback, asyncCallback, requestsDrainedHandler, pvRequestContext, pvShutdownContext));
         }
 
-        public static unsafe int HttpWriteResponseBytes(IntPtr pInProcessHandler, HttpApiTypes.HTTP_DATA_CHUNK* pDataChunks, int nChunks, out bool fCompletionExpected)
+        internal static unsafe int HttpWriteResponseBytes(IntPtr pInProcessHandler, HttpApiTypes.HTTP_DATA_CHUNK* pDataChunks, int nChunks, out bool fCompletionExpected)
         {
             return http_write_response_bytes(pInProcessHandler, pDataChunks, nChunks, out fCompletionExpected);
         }
@@ -179,7 +182,7 @@ namespace Microsoft.AspNetCore.Server.IIS
             return http_flush_response_bytes(pInProcessHandler, fMoreData, out fCompletionExpected);
         }
 
-        public static unsafe HttpApiTypes.HTTP_REQUEST_V2* HttpGetRawRequest(IntPtr pInProcessHandler)
+        internal static unsafe HttpApiTypes.HTTP_REQUEST_V2* HttpGetRawRequest(IntPtr pInProcessHandler)
         {
             return http_get_raw_request(pInProcessHandler);
         }
@@ -219,7 +222,7 @@ namespace Microsoft.AspNetCore.Server.IIS
             Validate(http_set_managed_context(pInProcessHandler, pvManagedContext));
         }
 
-        public static IISConfigurationData HttpGetApplicationProperties()
+        internal static IISConfigurationData HttpGetApplicationProperties()
         {
             var iisConfigurationData = new IISConfigurationData();
             Validate(http_get_application_properties(ref iisConfigurationData));
@@ -247,7 +250,7 @@ namespace Microsoft.AspNetCore.Server.IIS
             return http_websockets_read_bytes(pInProcessHandler, pvBuffer, cbBuffer, pfnCompletionCallback, pvCompletionContext, out dwBytesReceived, out fCompletionExpected);
         }
 
-        public static unsafe int HttpWebsocketsWriteBytes(
+        internal static unsafe int HttpWebsocketsWriteBytes(
             IntPtr pInProcessHandler,
             HttpApiTypes.HTTP_DATA_CHUNK* pDataChunks,
             int nChunks,
@@ -295,6 +298,11 @@ namespace Microsoft.AspNetCore.Server.IIS
         public static void HttpGetAuthenticationInformation(IntPtr pInProcessHandler, out string authType, out IntPtr token)
         {
             Validate(http_get_authentication_information(pInProcessHandler, out authType, out token));
+        }
+
+        public static void HttpSetStartupErrorPageContent(string content)
+        {
+            http_set_startup_error_page_content(content);
         }
 
         private static void Validate(int hr)

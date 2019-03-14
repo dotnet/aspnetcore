@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -117,14 +118,22 @@ namespace NativeIISSample
 
         public static void Main(string[] args)
         {
-            var host = new WebHostBuilder()
-                .UseKestrel()
-                .UseIIS()
-                .UseIISIntegration()
-                .UseStartup<Startup>()
-                .Build();
+            AppDomain.CurrentDomain.FirstChanceException += (sender, eventArgs) => {
+                Console.WriteLine("1");
+                NativeMethods.HttpSetStartupErrorPageContent("<pre>" + HtmlEncoder.Default.Encode(eventArgs.Exception.ToString()) + "</pre>");
+            };
 
-            host.Run();
+            Console.WriteLine("0");
+            throw new InvalidOperationException("ex!");
+
+            //var host = new WebHostBuilder()
+            //    .UseKestrel()
+            //    .UseIIS()
+            //    .UseIISIntegration()
+            //    .UseStartup<Startup>()
+            //    .Build();
+
+            //host.Run();
         }
     }
 }

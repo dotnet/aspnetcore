@@ -6,6 +6,7 @@
 #include "requesthandler_config.h"
 
 extern bool g_fInProcessApplicationCreated;
+extern std::wstring g_errorPageContent;
 
 //
 // Initialization export
@@ -502,6 +503,13 @@ set_main_handler(_In_ hostfxr_main_fn main)
     // Allow inprocess application to be recreated as we reuse the same CLR
     g_fInProcessApplicationCreated = false;
     IN_PROCESS_APPLICATION::SetMainCallback(main);
+}
+
+EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
+VOID
+http_set_startup_error_page_content(_In_ LPCWSTR errorPageContent)
+{
+    g_errorPageContent = std::wstring(errorPageContent);
 }
 
 // End of export

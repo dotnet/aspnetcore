@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 #pragma once
+#include <utility>
 #include "requesthandler.h"
 #include "file_utility.h"
 #include "Environment.h"
@@ -9,25 +10,27 @@
 class ServerErrorHandler : public REQUEST_HANDLER
 {
 public:
-
     ServerErrorHandler(IHttpContext &pContext, USHORT statusCode, USHORT subStatusCode, std::string statusText, HRESULT hr, HINSTANCE moduleInstance, bool disableStartupPage, int page) noexcept
+        : ServerErrorHandler(pContext, statusCode, subStatusCode, statusText, hr, GetHtml(moduleInstance, page), disableStartupPage)
+    {
+
+    }
+
+    ServerErrorHandler(IHttpContext &pContext, USHORT statusCode, USHORT subStatusCode, std::string statusText, HRESULT hr, std::string errorPageContent, bool disableStartupPage) noexcept
         : REQUEST_HANDLER(pContext),
           m_pContext(pContext),
           m_HR(hr),
           m_disableStartupPage(disableStartupPage),
-          m_page(page),
-          m_moduleInstance(moduleInstance),
           m_statusCode(statusCode),
           m_subStatusCode(subStatusCode),
-          m_statusText(std::move(statusText))
+          m_statusText(std::move(statusText)),
+          m_content(std::move(errorPageContent))
     {
     }
 
     REQUEST_NOTIFICATION_STATUS ExecuteRequestHandler() override
     {
-        static std::string s_html500Page = GetHtml(m_moduleInstance, m_page);
-
-        WriteStaticResponse(m_pContext, s_html500Page, m_HR, m_disableStartupPage);
+        WriteStaticResponse(m_pContext, m_content, m_HR, m_disableStartupPage);
 
         return RQ_NOTIFICATION_FINISH_REQUEST;
     }
@@ -99,4 +102,5 @@ private:
     USHORT m_statusCode;
     USHORT m_subStatusCode;
     std::string m_statusText;
+    std::string m_content;
 };

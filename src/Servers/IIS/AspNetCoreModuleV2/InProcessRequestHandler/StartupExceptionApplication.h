@@ -15,10 +15,12 @@ public:
         IHttpApplication& pApplication,
         HINSTANCE moduleInstance,
         BOOL disableLogs,
-        HRESULT hr)
+        HRESULT hr,
+        std::wstring errorPageContent)
         : m_disableLogs(disableLogs),
         m_HR(hr),
         m_moduleInstance(moduleInstance),
+        m_errorPageContent(errorPageContent),
         InProcessApplicationBase(pServer, pApplication)
     {
     }
@@ -27,18 +29,20 @@ public:
 
     HRESULT CreateHandler(IHttpContext *pHttpContext, IREQUEST_HANDLER ** pRequestHandler)
     {
-        *pRequestHandler = new ServerErrorHandler(*pHttpContext, 500, 30, "Internal Server Error", m_HR, m_moduleInstance, m_disableLogs, IN_PROCESS_RH_STATIC_HTML);
+        if (m_errorPageContent.length() > 0)
+        {
+            *pRequestHandler = new ServerErrorHandler(*pHttpContext, 500, 30, "Internal Server Error", m_HR, to_multi_byte_string(m_errorPageContent, CP_UTF8), m_disableLogs);
+        }
+        else
+        {
+            *pRequestHandler = new ServerErrorHandler(*pHttpContext, 500, 30, "Internal Server Error", m_HR, m_moduleInstance, m_disableLogs, IN_PROCESS_RH_STATIC_HTML);
+        }
+
         return S_OK;
     }
 
-    std::string&
-        GetStaticHtml500Content()
-    {
-        return html500Page;
-    }
-
 private:
-    std::string html500Page;
+    std::wstring m_errorPageContent;
     BOOL m_disableLogs;
     HRESULT m_HR;
     HINSTANCE m_moduleInstance;
