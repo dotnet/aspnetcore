@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             if (variant.HostingModel == HostingModel.InProcess)
             {
                 // Error is getting logged twice, from shim and handler
-                EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.CouldNotStartStdoutFileRedirection("Q:\\std", deploymentResult), allowMultiple: true);
+                EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.CouldNotStartStdoutFileRedirection("Q:\\std", deploymentResult), Logger, allowMultiple: true);
             }
         }
 
@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             deploymentParameters.HandlerSettings["debugLevel"] = "file,eventlog";
             var deploymentResult = await StartAsync(deploymentParameters);
             StopServer();
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult, @"\[aspnetcorev2.dll\] Initializing logs for .*?Description: IIS ASP.NET Core Module V2");
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, @"\[aspnetcorev2.dll\] Initializing logs for .*?Description: IIS ASP.NET Core Module V2", Logger);
         }
 
         [ConditionalTheory]
@@ -197,11 +197,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             if (variant.HostingModel == HostingModel.InProcess)
             {
-                EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessThreadExitStdOut(deploymentResult, "12", "(.*)彡⾔(.*)"));
+                EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessThreadExitStdOut(deploymentResult, "12", "(.*)彡⾔(.*)"), Logger);
             }
             else
             {
-                EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.OutOfProcessFailedToStart(deploymentResult));
+                EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.OutOfProcessFailedToStart(deploymentResult), Logger);
             }
         }
 

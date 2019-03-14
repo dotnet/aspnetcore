@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             await AssertFailsToStart(deploymentResult);
             var expectedString = new string('a', 30000);
             Assert.Contains(TestSink.Writes, context => context.Message.Contains(expectedString));
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessThreadExitStdOut(deploymentResult, "12", expectedString));
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessThreadExitStdOut(deploymentResult, "12", expectedString), Logger);
         }
 
         [ConditionalTheory]
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var expectedString = new string('a', 30000);
 
             Assert.Contains(expectedString, contents);
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessThreadExitStdOut(deploymentResult, "12", expectedString));
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessThreadExitStdOut(deploymentResult, "12", expectedString), Logger);
         }
 
         [ConditionalFact]

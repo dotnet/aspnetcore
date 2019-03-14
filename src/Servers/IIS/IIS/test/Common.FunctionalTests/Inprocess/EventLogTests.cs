@@ -22,13 +22,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public async Task CheckStartupEventLogMessage()
         {
             var deploymentParameters = _fixture.GetBaseDeploymentParameters();
-            
+
             var deploymentResult = await DeployAsync(deploymentParameters);
             await deploymentResult.AssertStarts();
 
             StopServer();
 
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessStarted(deploymentResult));
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessStarted(deploymentResult), Logger);
         }
 
         [ConditionalFact]
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             StopServer();
 
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult, "Application '.+' has shutdown.");
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, "Application '.+' has shutdown.", Logger);
         }
     }
 }
