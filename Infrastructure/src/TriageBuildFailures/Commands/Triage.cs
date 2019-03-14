@@ -143,7 +143,7 @@ namespace TriageBuildFailures.Commands
 
         private bool IsWatchedBuild(ICIBuild build)
         {
-            if (_watchedBranches.Any(b => build.Branch.StartsWith(b, StringComparison.OrdinalIgnoreCase)))
+            if (_watchedBranches.Any(b => build.Branch.StartsWith(b, StringComparison.OrdinalIgnoreCase)) || build.Branch.StartsWith("refs/pull", StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }

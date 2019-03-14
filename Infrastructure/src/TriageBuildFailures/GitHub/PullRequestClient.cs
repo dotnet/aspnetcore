@@ -30,7 +30,7 @@ namespace TriageBuildFailures.GitHub
         public async Task<IEnumerable<ICIBuild>> GetFailedBuildsAsync(DateTime startDate)
         {
             var prs = await _gitHubClient.GetPullRequests("aspnet", "AspNetCore");
-
+            prs = prs.Where(pr => pr.UpdatedAt >= startDate);
             var builds = new List<VSTSBuild>();
             foreach (var pr in prs)
             {
@@ -67,7 +67,7 @@ namespace TriageBuildFailures.GitHub
         public async Task SetTagAsync(ICIBuild build, string tag)
         {
             var vstsBuild = (VSTSBuild)build;
-            if(vstsBuild.PRSource != null && string.Equals(tag, Triage.TriagedTag))
+            if (vstsBuild.PRSource != null && string.Equals(tag, Triage.TriagedTag))
             {
                 var comment = "I've triaged the above build.";
                 await _gitHubClient.CreateComment(vstsBuild.PRSource, comment);
