@@ -40,8 +40,8 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 if (routers.Count == 0)
                 {
                     throw new InvalidOperationException("Could not find an IRouter associated with the ActionContext. "
-                        + "If your application is using endpoint routing then you can get a UrlHelper instance with "
-                        + "dependency injection or use Microsoft.AspNetCore.Routing.LinkGenerator.");
+                        + "If your application is using endpoint routing then you can get a IUrlHelperFactory with "
+                        + "dependency injection and use it to create a UrlHelper, or use Microsoft.AspNetCore.Routing.LinkGenerator.");
                 }
 
                 return routers[0];
