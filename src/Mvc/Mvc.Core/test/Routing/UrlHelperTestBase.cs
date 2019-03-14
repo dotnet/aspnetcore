@@ -968,7 +968,11 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         public void NoRouter_ErrorsWithFriendlyErrorMessage()
         {
             // Arrange
-            var urlHelper = new UrlHelper(new ActionContext { RouteData = new RouteData(new RouteValueDictionary()) });
+            var urlHelper = new UrlHelper(new ActionContext
+            {
+                RouteData = new RouteData(new RouteValueDictionary()),
+                HttpContext = new DefaultHttpContext()
+            });
 
             // Act
             var ex = Assert.Throws<InvalidOperationException>(() => urlHelper.ActionLink("contact", "home"));
