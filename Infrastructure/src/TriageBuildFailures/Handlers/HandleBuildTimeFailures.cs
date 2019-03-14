@@ -92,7 +92,9 @@ CC {GitHubUtils.GetAtMentions(_Notifiers)}";
                 };
 
                 // TODO: Would be nice if we could figure out how to map broken builds to failure areas
-                await GHClient.CreateIssue(owner, repo, subject, body, issueLabels, assignees: null, hiddenData: hiddenData);
+                var issue = await GHClient.CreateIssue(owner, repo, subject, body, issueLabels, assignees: null, hiddenData: hiddenData);
+                await GHClient.AddIssueToProject(issue, GHClient.Config.ActiveFailuresColumn);
+                Reporter.Output($"Created issue {issue.HtmlUrl}");
             }
         }
 
