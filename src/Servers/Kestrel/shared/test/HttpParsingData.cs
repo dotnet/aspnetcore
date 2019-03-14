@@ -299,12 +299,12 @@ namespace Microsoft.AspNetCore.Testing
 
                 foreach (var method in methods.Except(new[] { "OPTIONS" }))
                 {
-                    data.Add($"{method} * HTTP/1.1\r\n", HttpMethod.Options);
+                    data.Add($"{method} * HTTP/1.1\r\n", (int)HttpMethod.Options);
                 }
 
                 foreach (var method in methods.Except(new[] { "CONNECT" }))
                 {
-                    data.Add($"{method} www.example.com:80 HTTP/1.1\r\n", HttpMethod.Connect);
+                    data.Add($"{method} www.example.com:80 HTTP/1.1\r\n", (int)HttpMethod.Connect);
                 }
 
                 return data;

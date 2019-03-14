@@ -4705,7 +4705,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Http
         }
     }
 
-    public partial class HttpResponseHeaders
+    internal partial class HttpResponseHeaders
     {
         private static ReadOnlySpan<byte> HeaderBytes => new byte[]
         {

@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         private ReadOnlySequence<byte> _buffer;
 
-        public Http1Connection Connection { get; set; }
+        internal Http1Connection Connection { get; set; }
 
         [GlobalSetup]
         public void Setup()

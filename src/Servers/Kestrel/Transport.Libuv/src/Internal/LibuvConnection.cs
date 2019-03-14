@@ -15,7 +15,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv
 {
-    public partial class LibuvConnection : TransportConnection, IDisposable
+    internal partial class LibuvConnection : TransportConnection, IDisposable
     {
         private static readonly int MinAllocBufferSize = KestrelMemoryPool.MinimumSegmentSize / 2;
 

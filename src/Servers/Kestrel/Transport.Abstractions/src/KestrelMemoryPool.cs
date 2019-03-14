@@ -6,7 +6,7 @@ using System.Buffers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions
 {
-    internal static class KestrelMemoryPool
+    public static class KestrelMemoryPool
     {
         public static MemoryPool<byte> Create()
         {

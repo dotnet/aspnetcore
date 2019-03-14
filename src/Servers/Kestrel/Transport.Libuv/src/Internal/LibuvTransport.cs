@@ -14,7 +14,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv
 {
-    public class LibuvTransport : ITransport
+    internal class LibuvTransport : ITransport
     {
         private readonly IEndPointInformation _endPointInformation;
 

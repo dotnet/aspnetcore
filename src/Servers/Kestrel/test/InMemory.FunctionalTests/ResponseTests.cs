@@ -216,8 +216,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 {
                     throw new Exception();
                 },
-                expectedClientStatusCode: HttpStatusCodeServerError,
-                expectedServerStatusCode: HttpStatusCodeServerError);
+                expectedClientStatusCode: HttpStatusCode.InternalServerError,
+                expectedServerStatusCode: HttpStatusCode.InternalServerError);
         }
 
         [Fact]

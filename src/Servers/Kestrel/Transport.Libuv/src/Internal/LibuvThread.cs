@@ -15,7 +15,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv
 {
-    public class LibuvThread : PipeScheduler
+    internal class LibuvThread : PipeScheduler
     {
         // maximum times the work queues swapped and are processed in a single pass
         // as completing a task may immediately have write data to put on the network

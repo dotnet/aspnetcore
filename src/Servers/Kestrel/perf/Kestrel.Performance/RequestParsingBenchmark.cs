@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         public Pipe Pipe { get; set; }
 
-        public Http1Connection Http1Connection { get; set; }
+        internal Http1Connection Http1Connection { get; set; }
 
         [IterationSetup]
         public void Setup()

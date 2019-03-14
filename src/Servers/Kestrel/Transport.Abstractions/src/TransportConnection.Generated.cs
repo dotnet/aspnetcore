@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions
 {
-    internal partial class TransportConnection : IFeatureCollection
+    public partial class TransportConnection : IFeatureCollection
     {
         private static readonly Type IHttpConnectionFeatureType = typeof(IHttpConnectionFeature);
         private static readonly Type IConnectionIdFeatureType = typeof(IConnectionIdFeature);

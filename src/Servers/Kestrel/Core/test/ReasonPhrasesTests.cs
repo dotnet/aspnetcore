@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Xunit;
@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [InlineData(StatusCodes.Status200OK, null, "200 OK")]
         public void Formatting(int statusCode, string reasonPhrase, string expectedResult)
         {
-            var bytes = Internal.Http.ReasonPhrases.ToStatusBytes(statusCode, reasonPhrase);
+            var bytes = Http.ReasonPhrases.ToStatusBytes(statusCode, reasonPhrase);
             Assert.NotNull(bytes);
             Assert.Equal(expectedResult, Encoding.ASCII.GetString(bytes));
         }

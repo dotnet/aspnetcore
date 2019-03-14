@@ -16,7 +16,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;

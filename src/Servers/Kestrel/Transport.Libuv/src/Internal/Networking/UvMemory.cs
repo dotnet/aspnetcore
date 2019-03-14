@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking
     /// <summary>
     /// Summary description for UvMemory
     /// </summary>
-    public abstract class UvMemory : SafeHandle
+    internal abstract class UvMemory : SafeHandle
     {
         protected LibuvFunctions _uv;
         protected int _threadId;

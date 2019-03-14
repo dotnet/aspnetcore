@@ -7,6 +7,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Http
 {
     internal interface IHttpRequestLineHandler
     {
+        // TODO consider promoting this IHttpRequestLineHandler
         void OnStartLine(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, bool pathEncoded);
     }
 }

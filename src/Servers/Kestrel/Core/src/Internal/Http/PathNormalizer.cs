@@ -4,7 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Text;
-using Microsoft.AspNetCore;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Http

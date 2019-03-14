@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -59,10 +59,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// The type of interface being described: either an <see cref="IPEndPoint"/>, Unix domain socket path, or a file descriptor.
         /// </summary>
 #pragma warning disable PUB0001 // Pubternal type in public API
+        // TODO promote ListenType
         public ListenType Type { get; }
 #pragma warning restore PUB0001 // Pubternal type in public API
 
 #pragma warning disable PUB0001 // Pubternal type in public API
+        // TODO promote FileHandleType
         public FileHandleType HandleType
 #pragma warning restore PUB0001 // Pubternal type in public API
         {
@@ -139,6 +141,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// Defaults to empty.
         /// </remarks>
 #pragma warning disable PUB0001 // Pubternal type in public API
+            // TODO promote IConnectionAdapter
         public List<IConnectionAdapter> ConnectionAdapters { get; } = new List<IConnectionAdapter>();
 #pragma warning restore PUB0001 // Pubternal type in public API
 

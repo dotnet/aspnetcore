@@ -93,10 +93,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Theory]
-        [InlineData(HttpMethod.Options, "*")]
-        [InlineData(HttpMethod.Connect, "host")]
-        public async Task NonPathRequestTargetSetInRawTarget(HttpMethod method, string requestTarget)
+        [InlineData((int)HttpMethod.Options, "*")]
+        [InlineData((int)HttpMethod.Connect, "host")]
+        public async Task NonPathRequestTargetSetInRawTarget(int intMethod, string requestTarget)
         {
+            var method = (HttpMethod)intMethod;
             var testContext = new TestServiceContext(LoggerFactory);
 
             using (var server = new TestServer(async context =>

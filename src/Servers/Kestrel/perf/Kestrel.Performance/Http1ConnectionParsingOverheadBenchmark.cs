@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         private const int InnerLoopCount = 512;
 
         public ReadOnlySequence<byte> _buffer;
-        public Http1Connection _http1Connection;
+        private Http1Connection _http1Connection;
 
         [IterationSetup]
         public void Setup()

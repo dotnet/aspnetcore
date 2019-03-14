@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter
 {
-    internal interface IConnectionAdapter
+    public interface IConnectionAdapter
     {
         bool IsHttps { get; }
         Task<IAdaptedConnection> OnConnectionAsync(ConnectionAdapterContext context);

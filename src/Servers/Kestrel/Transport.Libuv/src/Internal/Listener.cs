@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv
     /// <summary>
     /// Base class for listeners in Kestrel. Listens for incoming connections
     /// </summary>
-    public class Listener : ListenerContext, IAsyncDisposable
+    internal class Listener : ListenerContext, IAsyncDisposable
     {
         private bool _closed;
 

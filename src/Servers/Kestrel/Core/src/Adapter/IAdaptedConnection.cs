@@ -6,7 +6,7 @@ using System.IO;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter
 {
-    internal interface IAdaptedConnection : IDisposable
+    public interface IAdaptedConnection : IDisposable
     {
         Stream ConnectionStream { get; }
     }

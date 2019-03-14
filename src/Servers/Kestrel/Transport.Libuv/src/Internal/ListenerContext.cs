@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv
 {
-    public class ListenerContext
+    internal class ListenerContext
     {
         public ListenerContext(LibuvTransportContext transportContext)
         {
