@@ -1619,7 +1619,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [InlineData((int)Http2HeadersFrameFlags.END_HEADERS)]
         public async Task HEADERS_Received_WithTrailers_EndStreamNotSet_ConnectionError(int intFlags)
         {
-            var flags = (Http2HeaderFrameFlags)intFlags;
+            var flags = (Http2HeadersFrameFlags)intFlags;
             await InitializeConnectionAsync(_readTrailersApplication);
 
             await SendHeadersAsync(1, Http2HeadersFrameFlags.END_HEADERS, _browserRequestHeaders);
