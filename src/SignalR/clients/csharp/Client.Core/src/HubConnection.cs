@@ -1012,12 +1012,12 @@ namespace Microsoft.AspNetCore.SignalR.Client
             }
         }
 
-        public void ResetSendPing()
+        private void ResetSendPing()
         {
             Volatile.Write(ref _nextActivationSendPing, (DateTime.UtcNow + KeepAliveInterval).Ticks);
         }
 
-        public void ResetTimeout()
+        private void ResetTimeout()
         {
             Volatile.Write(ref _nextActivationServerTimeout, (DateTime.UtcNow + ServerTimeout).Ticks);
         }
