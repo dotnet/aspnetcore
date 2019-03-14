@@ -1104,13 +1104,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 if (completedTask == request1)
                 {
                     Assert.Equal(StatusCodes.Status409Conflict, context1.Response.StatusCode);
-                    //Assert.Equal(StatusCodes.Status200OK, context2.Response.StatusCode);
                     Assert.False(request2.IsCompleted);
                 }
                 else
                 {
                     Assert.Equal(StatusCodes.Status409Conflict, context2.Response.StatusCode);
-                    //Assert.Equal(StatusCodes.Status200OK, context1.Response.StatusCode);
                     Assert.False(request1.IsCompleted);
                 }
 
