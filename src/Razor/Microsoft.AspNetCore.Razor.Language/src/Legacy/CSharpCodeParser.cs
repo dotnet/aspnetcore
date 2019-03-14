@@ -482,7 +482,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 // Set up auto-complete and parse the code block
                 var editHandler = new AutoCompleteEditHandler(Language.TokenizeString);
                 SpanContext.EditHandler = editHandler;
-                ParseCodeBlock(builder, block, acceptTerminatingBrace: false);
+                ParseCodeBlock(builder, block);
+
+                if (EndOfFile)
+                {
+                    Context.ErrorSink.OnError(
+                        RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                            new SourceSpan(block.Start, contentLength: 1 /* { OR } */), block.Name, "}", "{"));
+                }
 
                 EnsureCurrent();
                 SpanContext.ChunkGenerator = new StatementChunkGenerator();
@@ -521,7 +528,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return SyntaxFactory.CSharpStatementBody(leftBrace, codeBlock, rightBrace);
         }
 
-        private void ParseCodeBlock(in SyntaxListBuilder<RazorSyntaxNode> builder, Block block, bool acceptTerminatingBrace = true)
+        private void ParseCodeBlock(in SyntaxListBuilder<RazorSyntaxNode> builder, Block block)
         {
             EnsureCurrent();
             while (!EndOfFile && !At(SyntaxKind.RightBrace))
@@ -529,19 +536,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 // Parse a statement, then return here
                 ParseStatement(builder, block: block);
                 EnsureCurrent();
-            }
-
-            if (EndOfFile)
-            {
-                Context.ErrorSink.OnError(
-                    RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                        new SourceSpan(block.Start, contentLength: 1 /* { OR } */), block.Name, "}", "{"));
-            }
-            else if (acceptTerminatingBrace)
-            {
-                Assert(SyntaxKind.RightBrace);
-                SpanContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
-                AcceptAndMoveNext();
             }
         }
 
@@ -634,6 +628,24 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         // Verbatim Block
                         AcceptAndMoveNext();
                         ParseCodeBlock(builder, block);
+
+                        // ParseCodeBlock is responsible for parsing the insides of a code block (non-inclusive of braces).
+                        // Therefore, there's one of two cases after parsing: 
+                        //  1. We've hit the End of File (incomplete parse block).
+                        //  2. It's a complete parse block and we're at a right brace.
+
+                        if (EndOfFile)
+                        {
+                            Context.ErrorSink.OnError(
+                                RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                                    new SourceSpan(block.Start, contentLength: 1 /* { OR } */), block.Name, "}", "{"));
+                        }
+                        else
+                        {
+                            Assert(SyntaxKind.RightBrace);
+                            SpanContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
+                            AcceptAndMoveNext();
+                        }
                         break;
                     case SyntaxKind.Keyword:
                         if (!TryParseKeyword(builder, whitespace: null, transition: null))
@@ -736,7 +748,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     token.Kind != SyntaxKind.LeftBracket &&
                     token.Kind != SyntaxKind.RightBrace);
 
-                if (At(SyntaxKind.LeftBrace) ||
+                if ((!Context.FeatureFlags.AllowRazorInAllCodeBlocks && At(SyntaxKind.LeftBrace)) ||
                     At(SyntaxKind.LeftParenthesis) ||
                     At(SyntaxKind.LeftBracket))
                 {
@@ -751,6 +763,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         AcceptUntil(SyntaxKind.LessThan, SyntaxKind.RightBrace);
                         return;
                     }
+                }
+                else if (Context.FeatureFlags.AllowRazorInAllCodeBlocks && At(SyntaxKind.LeftBrace))
+                {
+                    Accept(read);
+                    return;
                 }
                 else if (At(SyntaxKind.Transition) && (NextIs(SyntaxKind.LessThan, SyntaxKind.Colon)))
                 {
@@ -847,6 +864,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             MapDirectives(ParseTagHelperPrefixDirective, SyntaxConstants.CSharp.TagHelperPrefixKeyword);
             MapDirectives(ParseAddTagHelperDirective, SyntaxConstants.CSharp.AddTagHelperKeyword);
             MapDirectives(ParseRemoveTagHelperDirective, SyntaxConstants.CSharp.RemoveTagHelperKeyword);
+
+            // If there wasn't any extensible directives relating to the reserved directives then map them.
+            if (!_directiveParserMap.ContainsKey("class"))
+            {
+                MapDirectives(ParseReservedDirective, "class");
+            }
+
+            if (!_directiveParserMap.ContainsKey("namespace"))
+            {
+                MapDirectives(ParseReservedDirective, "namespace");
+            }
         }
 
         private void EnsureDirectiveIsAtStartOfLine()
@@ -883,17 +911,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 });
 
                 Keywords.Add(directive);
-
-                // These C# keywords are reserved for use in directives. It's an error to use them outside of
-                // a directive. This code removes the error generation if the directive *is* registered.
-                if (string.Equals(directive, "class", StringComparison.OrdinalIgnoreCase))
-                {
-                    _keywordParserMap.Remove(CSharpKeyword.Class);
-                }
-                else if (string.Equals(directive, "namespace", StringComparison.OrdinalIgnoreCase))
-                {
-                    _keywordParserMap.Remove(CSharpKeyword.Namespace);
-                }
             }
         }
 
@@ -1409,10 +1426,21 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             ParseDirectiveBlock(directiveBuilder, descriptor, parseChildren: (childBuilder, startingBraceLocation) =>
                             {
                                 NextToken();
-                                Balance(childBuilder, BalancingModes.NoErrorOnFailure, SyntaxKind.LeftBrace, SyntaxKind.RightBrace, startingBraceLocation);
-                                SpanContext.ChunkGenerator = new StatementChunkGenerator();
+
                                 var existingEditHandler = SpanContext.EditHandler;
                                 SpanContext.EditHandler = new CodeBlockEditHandler(Language.TokenizeString);
+
+                                if (Context.FeatureFlags.AllowRazorInAllCodeBlocks)
+                                {
+                                    var block = new Block(descriptor.Directive, directiveStart);
+                                    ParseCodeBlock(childBuilder, block);
+                                }
+                                else
+                                {
+                                    Balance(childBuilder, BalancingModes.NoErrorOnFailure, SyntaxKind.LeftBrace, SyntaxKind.RightBrace, startingBraceLocation);
+                                }
+
+                                SpanContext.ChunkGenerator = new StatementChunkGenerator();
 
                                 AcceptMarkerTokenIfNecessary();
 
@@ -1607,7 +1635,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             MapKeywords(ParseTryStatement, CSharpKeyword.Try);
             MapKeywords(ParseDoStatement, CSharpKeyword.Do);
             MapKeywords(ParseUsingKeyword, CSharpKeyword.Using);
-            MapKeywords(ParseReservedDirective, CSharpKeyword.Class, CSharpKeyword.Namespace);
         }
 
         private void MapExpressionKeyword(Action<SyntaxListBuilder<RazorSyntaxNode>, CSharpTransitionSyntax> handler, CSharpKeyword keyword)

@@ -10,6 +10,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var allowMinimizedBooleanTagHelperAttributes = false;
             var allowHtmlCommentsInTagHelpers = false;
             var allowComponentFileKind = false;
+            var allowRazorInAllCodeBlocks = false;
             var experimental_AllowConditionalDataDashAttributes = false;
 
             if (version.CompareTo(RazorLanguageVersion.Version_2_1) >= 0)
@@ -23,6 +24,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 // Added in 3.0
                 allowComponentFileKind = true;
+                allowRazorInAllCodeBlocks = true;
             }
 
             if (version.CompareTo(RazorLanguageVersion.Experimental) >= 0)
@@ -34,6 +36,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 allowMinimizedBooleanTagHelperAttributes,
                 allowHtmlCommentsInTagHelpers,
                 allowComponentFileKind,
+                allowRazorInAllCodeBlocks,
                 experimental_AllowConditionalDataDashAttributes);
         }
 
@@ -43,6 +46,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public abstract bool AllowComponentFileKind { get; }
 
+        public abstract bool AllowRazorInAllCodeBlocks { get; }
+
         public abstract bool EXPERIMENTAL_AllowConditionalDataDashAttributes { get; }
 
         private class DefaultRazorParserFeatureFlags : RazorParserFeatureFlags
@@ -51,11 +56,13 @@ namespace Microsoft.AspNetCore.Razor.Language
                 bool allowMinimizedBooleanTagHelperAttributes,
                 bool allowHtmlCommentsInTagHelpers,
                 bool allowComponentFileKind,
+                bool allowRazorInAllCodeBlocks,
                 bool experimental_AllowConditionalDataDashAttributes)
             {
                 AllowMinimizedBooleanTagHelperAttributes = allowMinimizedBooleanTagHelperAttributes;
                 AllowHtmlCommentsInTagHelpers = allowHtmlCommentsInTagHelpers;
                 AllowComponentFileKind = allowComponentFileKind;
+                AllowRazorInAllCodeBlocks = allowRazorInAllCodeBlocks;
                 EXPERIMENTAL_AllowConditionalDataDashAttributes = experimental_AllowConditionalDataDashAttributes;
             }
 
@@ -64,6 +71,8 @@ namespace Microsoft.AspNetCore.Razor.Language
             public override bool AllowHtmlCommentsInTagHelpers { get; }
 
             public override bool AllowComponentFileKind { get; }
+
+            public override bool AllowRazorInAllCodeBlocks { get; }
 
             public override bool EXPERIMENTAL_AllowConditionalDataDashAttributes { get; }
         }

@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             var relativePosition = change.Span.AbsoluteIndex - target.Position;
 
-            if (target.GetContent().IndexOfAny(new[] { '{', '}' }, relativePosition, change.Span.Length) >= 0)
+            if (target.GetContent().IndexOfAny(new[] { '{', '}', '@', '<', '*', }, relativePosition, change.Span.Length) >= 0)
             {
                 return true;
             }
@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         // Internal for testing
         internal static bool ContainsInvalidContent(SourceChange change)
         {
-            if (change.NewText.IndexOfAny(new[] { '{', '}' }) >= 0)
+            if (change.NewText.IndexOfAny(new[] { '{', '}', '@', '<', '*', }) >= 0)
             {
                 return true;
             }
