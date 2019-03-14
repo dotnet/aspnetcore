@@ -50,8 +50,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
         private readonly IConnectionFactory _connectionFactory;
         private readonly ConcurrentDictionary<string, InvocationHandlerList> _handlers = new ConcurrentDictionary<string, InvocationHandlerList>(StringComparer.Ordinal);
 
-        private Task _invocationMessageReceiveTask;
-        private Channel<InvocationMessage> _invocationMessageChannel;
         private long _nextActivationServerTimeout;
         private long _nextActivationSendPing;
         private bool _disposed;
@@ -361,8 +359,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
                 // Set this at the end to avoid setting internal state until the connection is real
                 _connectionState = startingConnectionState;
-                _invocationMessageChannel = Channel.CreateUnbounded<InvocationMessage>();
-                _invocationMessageReceiveTask = StartProcessingInvocationMessages();
                 _connectionState.ReceiveTask = ReceiveLoop(_connectionState);
 
                 Log.Started(_logger);
@@ -370,17 +366,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
             finally
             {
                 ReleaseConnectionLock();
-            }
-        }
-
-        private async Task StartProcessingInvocationMessages()
-        {
-            while (await _invocationMessageChannel.Reader.WaitToReadAsync())
-            {
-                while (_invocationMessageChannel.Reader.TryRead(out var invocationMessage))
-                {
-                    await DispatchInvocationAsync(invocationMessage);
-                }
             }
         }
 
@@ -430,12 +415,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
             if (connectionState != null)
             {
                 await connectionState.StopAsync();
-            }
-
-            if (_invocationMessageChannel != null)
-            {
-                _invocationMessageChannel.Writer.TryComplete();
-                await _invocationMessageReceiveTask;
             }
         }
 
@@ -709,7 +688,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             }
         }
 
-        private async Task<(bool close, Exception exception)> ProcessMessagesAsync(HubMessage message, ConnectionState connectionState)
+        private async Task<(bool close, Exception exception)> ProcessMessagesAsync(HubMessage message, ConnectionState connectionState, ChannelWriter<InvocationMessage> invocationMessageWriter)
         {
             Log.ResettingKeepAliveTimer(_logger);
             ResetTimeout();
@@ -724,7 +703,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                     break;
                 case InvocationMessage invocation:
                     Log.ReceivedInvocation(_logger, invocation.InvocationId, invocation.Target, invocation.Arguments);
-                    await _invocationMessageChannel.Writer.WriteAsync(invocation);
+                    await invocationMessageWriter.WriteAsync(invocation);
                     break;
                 case CompletionMessage completion:
                     if (!connectionState.TryRemoveInvocation(completion.InvocationId, out irq))
@@ -924,6 +903,19 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             var uploadStreamSource = new CancellationTokenSource();
             _uploadStreamToken = uploadStreamSource.Token;
+            var invocationMessageChannel = Channel.CreateUnbounded<InvocationMessage>();
+            var invocationMessageReceiveTask = StartProcessingInvocationMessages(invocationMessageChannel.Reader);
+
+            async Task StartProcessingInvocationMessages(ChannelReader<InvocationMessage> invocationMessageChannelReader)
+            {
+                while (await invocationMessageChannelReader.WaitToReadAsync())
+                {
+                    while (invocationMessageChannelReader.TryRead(out var invocationMessage))
+                    {
+                        await DispatchInvocationAsync(invocationMessage);
+                    }
+                }
+            }
 
             try
             {
@@ -950,7 +942,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                                 Exception exception;
 
                                 // We have data, process it
-                                (close, exception) = await ProcessMessagesAsync(message, connectionState);
+                                (close, exception) = await ProcessMessagesAsync(message, connectionState, invocationMessageChannel.Writer);
                                 if (close)
                                 {
                                     // Closing because we got a close frame, possibly with an error in it.
@@ -991,6 +983,11 @@ namespace Microsoft.AspNetCore.SignalR.Client
             }
             finally
             {
+                if (invocationMessageChannel != null)
+                {
+                    invocationMessageChannel.Writer.TryComplete();
+                    await invocationMessageReceiveTask;
+                }
                 timer.Stop();
                 uploadStreamSource.Cancel();
             }
@@ -1254,8 +1251,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             }
         }
 
-        // Represents all the transient state about a connection
-        // This includes binding information because return type binding depends upon _pendingCalls
+        //TODO: Refactor all HubConnection into the ConnectionState class.
         private class ConnectionState : IInvocationBinder
         {
             private volatile bool _stopping;
