@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
@@ -9,6 +10,9 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.HeaderPropagation
 {
+    /// <summary>
+    /// A Middleware for propagating headers to a <see cref="HttpClient"/>.
+    /// </summary>
     public class HeaderPropagationMiddleware
     {
         private readonly RequestDelegate _next;
@@ -30,31 +34,30 @@ namespace Microsoft.AspNetCore.HeaderPropagation
 
         public Task Invoke(HttpContext context)
         {
-            foreach ((var header, var entry) in _options.Headers)
+            foreach ((var headerName, var entry) in _options.Headers)
             {
-                var values = GetValues(header, entry, context);
+                var values = GetValues(headerName, entry, context);
 
                 if (!StringValues.IsNullOrEmpty(values))
                 {
-                    _state.Headers.TryAdd(header, values);
+                    _state.Headers.TryAdd(headerName, values);
                 }
             }
 
             return _next.Invoke(context);
         }
 
-        private static StringValues GetValues(string header, HeaderPropagationEntry entry, HttpContext context)
+        private static StringValues GetValues(string headerName, HeaderPropagationEntry entry, HttpContext context)
         {
-            if (context.Request.Headers.TryGetValue(header, out var values)
+            if (entry.ValueFactory != null)
+            {
+                return entry.ValueFactory(headerName, context);
+            }
+
+            if (context.Request.Headers.TryGetValue(headerName, out var values)
                 && !StringValues.IsNullOrEmpty(values))
             {
                 return values;
-            }
-
-            if (entry.DefaultValuesGenerator != null)
-            {
-                values = entry.DefaultValuesGenerator(context);
-                if (!StringValues.IsNullOrEmpty(values)) return values;
             }
 
             return entry.DefaultValues;
