@@ -444,7 +444,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
 
                     // The application is still running here because the poll is only killed
                     // by the heartbeat so we pretend to do a scan and this should force the application task to complete
-                    await manager.ScanAsync();
+                    manager.Scan();
 
                     // The application task should complete gracefully
                     await connection.ApplicationTask.OrTimeout();
@@ -1058,6 +1058,66 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 manager.CloseConnections();
 
                 await request2;
+            }
+        }
+
+        [Fact]
+        public async Task MultipleRequestsToActiveConnectionId409ForLongPolling()
+        {
+            using (StartVerifiableLog())
+            {
+                var manager = CreateConnectionManager(LoggerFactory);
+                var connection = manager.CreateConnection();
+                connection.TransportType = HttpTransportType.LongPolling;
+
+                var dispatcher = new HttpConnectionDispatcher(manager, LoggerFactory);
+
+                var context1 = MakeRequest("/foo", connection);
+                var context2 = MakeRequest("/foo", connection);
+
+                var services = new ServiceCollection();
+                services.AddSingleton<TestConnectionHandler>();
+                var builder = new ConnectionBuilder(services.BuildServiceProvider());
+                builder.UseConnectionHandler<TestConnectionHandler>();
+                var app = builder.Build();
+                var options = new HttpConnectionDispatcherOptions();
+
+                // Prime the polling. Expect any empty response showing the transport is initialized.
+                var request1 = dispatcher.ExecuteAsync(context1, options, app);
+                Assert.True(request1.IsCompleted);
+
+                // Manually control PreviousPollTask instead of using a real PreviousPollTask, because a real
+                // PreviousPollTask might complete too early when the second request cancels it.
+                var lastPollTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                connection.PreviousPollTask = lastPollTcs.Task;
+
+                request1 = dispatcher.ExecuteAsync(context1, options, app);
+                var request2 = dispatcher.ExecuteAsync(context2, options, app);
+
+                Assert.False(request1.IsCompleted);
+                Assert.False(request2.IsCompleted);
+
+                lastPollTcs.SetResult(null);
+
+                var completedTask = await Task.WhenAny(request1, request2).OrTimeout();
+
+                if (completedTask == request1)
+                {
+                    Assert.Equal(StatusCodes.Status409Conflict, context1.Response.StatusCode);
+                    Assert.False(request2.IsCompleted);
+                }
+                else
+                {
+                    Assert.Equal(StatusCodes.Status409Conflict, context2.Response.StatusCode);
+                    Assert.False(request1.IsCompleted);
+                }
+
+                Assert.Equal(HttpConnectionStatus.Active, connection.Status);
+
+                manager.CloseConnections();
+
+                await request1.OrTimeout();
+                await request2.OrTimeout();
             }
         }
 
