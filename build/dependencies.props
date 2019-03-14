@@ -6,6 +6,7 @@
     <MicrosoftNETCoreDotNetAppHostPackageVersion>2.1.9</MicrosoftNETCoreDotNetAppHostPackageVersion>
 
     <SystemNetHttpPackageVersion>4.3.4</SystemNetHttpPackageVersion>
+    <SystemNetHttpWinHttpHandlerPackageVersion>4.5.2</SystemNetHttpWinHttpHandlerPackageVersion>
  </PropertyGroup>
 
   <Import Project="$(DotNetPackageVersionPropsPath)" Condition="'$(DotNetPackageVersionPropsPath)' != ''" />
@@ -213,7 +214,6 @@
     <SystemValueTuplePackageVersion>4.5.0</SystemValueTuplePackageVersion>
     <SystemIOPipelinesPackageVersion>4.5.3</SystemIOPipelinesPackageVersion>
     <SystemMemoryPackageVersion>4.5.2</SystemMemoryPackageVersion>
-    <SystemNetHttpWinHttpHandlerPackageVersion>4.5.2</SystemNetHttpWinHttpHandlerPackageVersion>
     <SystemNetWebSocketsWebSocketProtocolPackageVersion>4.5.3</SystemNetWebSocketsWebSocketProtocolPackageVersion>
     <SystemThreadingTasksExtensionsPackageVersion>4.5.2</SystemThreadingTasksExtensionsPackageVersion>
     <Utf8JsonPackageVersion>1.3.7</Utf8JsonPackageVersion>
