@@ -876,6 +876,7 @@ namespace Microsoft.AspNetCore.Mvc
         public bool RequireHttpsPermanent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public bool RespectBrowserAcceptHeader { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public bool ReturnHttpNotAcceptable { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.Text.Json.Serialization.JsonSerializerOptions SerializerOptions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public int? SslPort { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public bool SuppressAsyncSuffixInActionNames { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public bool SuppressInputFormatterBuffering { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
@@ -1854,6 +1855,19 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         public StringOutputFormatter() { }
         public override bool CanWriteResult(Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterCanWriteContext context) { throw null; }
         public override System.Threading.Tasks.Task WriteResponseBodyAsync(Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterWriteContext context, System.Text.Encoding encoding) { throw null; }
+    }
+    public partial class SystemTextJsonInputFormatter : Microsoft.AspNetCore.Mvc.Formatters.TextInputFormatter, Microsoft.AspNetCore.Mvc.Formatters.IInputFormatterExceptionPolicy
+    {
+        public SystemTextJsonInputFormatter(Microsoft.AspNetCore.Mvc.MvcOptions options) { }
+        Microsoft.AspNetCore.Mvc.Formatters.InputFormatterExceptionPolicy Microsoft.AspNetCore.Mvc.Formatters.IInputFormatterExceptionPolicy.ExceptionPolicy { get { throw null; } }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public sealed override System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult> ReadRequestBodyAsync(Microsoft.AspNetCore.Mvc.Formatters.InputFormatterContext context, System.Text.Encoding encoding) { throw null; }
+    }
+    public partial class SystemTextJsonOutputFormatter : Microsoft.AspNetCore.Mvc.Formatters.TextOutputFormatter
+    {
+        public SystemTextJsonOutputFormatter(Microsoft.AspNetCore.Mvc.MvcOptions options) { }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public sealed override System.Threading.Tasks.Task WriteResponseBodyAsync(Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterWriteContext context, System.Text.Encoding selectedEncoding) { throw null; }
     }
     public abstract partial class TextInputFormatter : Microsoft.AspNetCore.Mvc.Formatters.InputFormatter
     {
