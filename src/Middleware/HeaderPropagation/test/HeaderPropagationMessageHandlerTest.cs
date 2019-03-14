@@ -129,19 +129,15 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         }
 
         [Theory]
-        [InlineData(false, "", new[] { "" })]
-        [InlineData(false, null, new[] { "" })]
-        [InlineData(false, "42", new[] { "42" })]
-        [InlineData(true, "42", new[] { "42", "test" })]
-        [InlineData(true, "", new[] { "", "test" })]
-        [InlineData(true, null, new[] { "", "test" })]
-        public async Task HeaderInState_HeaderAlreadyInOutgoingRequest(bool alwaysAdd, string outgoingValue,
+        [InlineData("", new[] { "" })]
+        [InlineData(null, new[] { "" })]
+        [InlineData("42", new[] { "42" })]
+        public async Task HeaderInState_HeaderAlreadyInOutgoingRequest(string outgoingValue,
             string[] expectedValues)
         {
             // Arrange
             State.Headers.Add("inout", "test");
-            Configuration.Headers.Add("inout",
-                new HeaderPropagationEntry { AlwaysAdd = alwaysAdd });
+            Configuration.Headers.Add("inout", new HeaderPropagationEntry());
 
             var request = new HttpRequestMessage();
             request.Headers.Add("inout", outgoingValue);
@@ -152,6 +148,21 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
             // Assert
             Assert.True(Handler.Headers.Contains("inout"));
             Assert.Equal(expectedValues, Handler.Headers.GetValues("inout"));
+        }
+
+        [Fact]
+        public async Task NullEntryInConfiguration_AddCorrectValue()
+        {
+            // Arrange
+            Configuration.Headers.Add("in", null);
+            State.Headers.Add("in", "test");
+
+            // Act
+            await Client.SendAsync(new HttpRequestMessage());
+
+            // Assert
+            Assert.True(Handler.Headers.Contains("in"));
+            Assert.Equal(new[] { "test" }, Handler.Headers.GetValues("in"));
         }
 
         private class SimpleHandler : DelegatingHandler

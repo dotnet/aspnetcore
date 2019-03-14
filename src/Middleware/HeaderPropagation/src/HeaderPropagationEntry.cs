@@ -12,6 +12,5 @@ namespace Microsoft.AspNetCore.HeaderPropagation
         public string OutboundHeaderName { get; set; }
         public StringValues DefaultValues { get; set; }
         public Func<string, HttpContext, StringValues> ValueFactory { get; set; }
-        public bool AlwaysAdd { get; set; }
     }
 }

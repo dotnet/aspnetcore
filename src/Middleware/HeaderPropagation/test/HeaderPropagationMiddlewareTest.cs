@@ -185,5 +185,34 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
             // Assert
             Assert.DoesNotContain("in", State.Headers.Keys);
         }
+
+        [Fact]
+        public async Task NullEntryInConfiguration_HeaderInRequest_AddCorrectValue()
+        {
+            // Arrange
+            Configuration.Headers.Add("in", null);
+            Context.Request.Headers.Add("in", "test");
+
+            // Act
+            await Middleware.Invoke(Context);
+
+            // Assert
+            Assert.Contains("in", State.Headers.Keys);
+            Assert.Equal(new[] { "test" }, State.Headers["in"]);
+        }
+
+        [Fact]
+        public async Task NullEntryInConfiguration_NoHeaderInRequest_AddsDefaultValue()
+        {
+            // Arrange
+            Configuration.Headers.Add("in", new HeaderPropagationEntry { DefaultValues = "default" });
+
+            // Act
+            await Middleware.Invoke(Context);
+
+            // Assert
+            Assert.Contains("in", State.Headers.Keys);
+            Assert.Equal("default", State.Headers["in"]);
+        }
     }
 }

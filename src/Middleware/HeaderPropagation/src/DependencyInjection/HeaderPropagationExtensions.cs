@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation
 {
     public static class HeaderPropagationExtensions
     {
-        private static readonly string UnableToFindServices = string.Format(
+        private static readonly string _unableToFindServices = string.Format(
             "Unable to find the required services. Please add all the required services by calling '{0}.{1}' inside the call to 'ConfigureServices(...)' in the application startup code.",
             nameof(IServiceCollection),
             nameof(AddHeaderPropagation));
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation
 
             if (app.ApplicationServices.GetService<HeaderPropagationValues>() == null)
             {
-                throw new InvalidOperationException(UnableToFindServices);
+                throw new InvalidOperationException(_unableToFindServices);
             }
 
             return app.UseMiddleware<HeaderPropagationMiddleware>();

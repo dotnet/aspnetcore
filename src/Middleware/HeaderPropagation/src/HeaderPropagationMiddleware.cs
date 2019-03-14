@@ -17,9 +17,9 @@ namespace Microsoft.AspNetCore.HeaderPropagation
     {
         private readonly RequestDelegate _next;
         private readonly HeaderPropagationOptions _options;
-        private readonly HeaderPropagationValues _state;
+        private readonly HeaderPropagationValues _values;
 
-        public HeaderPropagationMiddleware(RequestDelegate next, IOptions<HeaderPropagationOptions> options, HeaderPropagationValues state)
+        public HeaderPropagationMiddleware(RequestDelegate next, IOptions<HeaderPropagationOptions> options, HeaderPropagationValues values)
         {
             _next = next ?? throw new ArgumentNullException(nameof(next));
 
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation
             }
             _options = options.Value;
 
-            _state = state ?? throw new ArgumentNullException(nameof(state));
+            _values = values ?? throw new ArgumentNullException(nameof(values));
         }
 
         public Task Invoke(HttpContext context)
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation
 
                 if (!StringValues.IsNullOrEmpty(values))
                 {
-                    _state.Headers.TryAdd(headerName, values);
+                    _values.Headers.TryAdd(headerName, values);
                 }
             }
 
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation
 
         private static StringValues GetValues(string headerName, HeaderPropagationEntry entry, HttpContext context)
         {
-            if (entry.ValueFactory != null)
+            if (entry?.ValueFactory != null)
             {
                 return entry.ValueFactory(headerName, context);
             }
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation
                 return values;
             }
 
-            return entry.DefaultValues;
+            return entry != null ? entry.DefaultValues : StringValues.Empty;
         }
     }
 }
