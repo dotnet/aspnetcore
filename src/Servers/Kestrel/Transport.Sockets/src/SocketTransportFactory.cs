@@ -42,10 +42,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             _trace = new SocketsTrace(logger);
         }
 
-#pragma warning disable PUB0001 // Pubternal type in public API
-        // TODO promote IEndpointInformation and IConnectionDispatcher
         public ITransport Create(IEndPointInformation endPointInformation, IConnectionDispatcher dispatcher)
-#pragma warning restore PUB0001 // Pubternal type in public API
         {
             if (endPointInformation == null)
             {

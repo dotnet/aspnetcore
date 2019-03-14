@@ -58,15 +58,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// <summary>
         /// The type of interface being described: either an <see cref="IPEndPoint"/>, Unix domain socket path, or a file descriptor.
         /// </summary>
-#pragma warning disable PUB0001 // Pubternal type in public API
-        // TODO promote ListenType
         public ListenType Type { get; }
-#pragma warning restore PUB0001 // Pubternal type in public API
 
-#pragma warning disable PUB0001 // Pubternal type in public API
-        // TODO promote FileHandleType
         public FileHandleType HandleType
-#pragma warning restore PUB0001 // Pubternal type in public API
         {
             get => _handleType;
             set

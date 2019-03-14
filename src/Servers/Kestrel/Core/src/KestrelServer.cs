@@ -28,10 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         private int _stopping;
         private readonly TaskCompletionSource<object> _stoppedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-#pragma warning disable PUB0001 // Pubternal type in public API
-        // TODO consider promoting ITransportFactory
         public KestrelServer(IOptions<KestrelServerOptions> options, ITransportFactory transportFactory, ILoggerFactory loggerFactory)
-#pragma warning restore PUB0001
             : this(transportFactory, CreateServiceContext(options, loggerFactory))
         {
         }
