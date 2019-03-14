@@ -3,10 +3,10 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Http2
 {
     [Flags]
-    public enum Http2HeadersFrameFlags : byte
+    internal enum Http2HeadersFrameFlags : byte
     {
         NONE = 0x0,
         END_STREAM = 0x1,

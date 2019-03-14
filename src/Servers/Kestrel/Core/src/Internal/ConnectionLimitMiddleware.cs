@@ -4,11 +4,11 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Core
 {
-    public class ConnectionLimitMiddleware
+    internal class ConnectionLimitMiddleware
     {
         private readonly ConnectionDelegate _next;
         private readonly ResourceCounter _concurrentConnectionCounter;

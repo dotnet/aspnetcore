@@ -4,12 +4,12 @@
 using System;
 using System.Diagnostics;
 using System.Text;
-using Microsoft.AspNetCore.Internal;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Http
 {
-    public static class PathNormalizer
+    internal static class PathNormalizer
     {
         private const byte ByteSlash = (byte)'/';
         private const byte ByteDot = (byte)'.';

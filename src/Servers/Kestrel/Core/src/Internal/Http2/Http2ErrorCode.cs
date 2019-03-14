@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Http2
 {
-    public enum Http2ErrorCode : uint
+    internal enum Http2ErrorCode : uint
     {
         NO_ERROR = 0x0,
         PROTOCOL_ERROR = 0x1,

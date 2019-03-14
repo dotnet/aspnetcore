@@ -5,7 +5,7 @@ using System;
 using System.Net;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking
 {
     public class UvTcpHandle : UvStreamHandle
     {

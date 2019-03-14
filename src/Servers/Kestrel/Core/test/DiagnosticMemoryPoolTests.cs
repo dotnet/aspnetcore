@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Microsoft.Extensions.Internal.Test
+namespace Microsoft.Extensions.Test
 {
     public class DiagnosticMemoryPoolTests: MemoryPoolTests
     {

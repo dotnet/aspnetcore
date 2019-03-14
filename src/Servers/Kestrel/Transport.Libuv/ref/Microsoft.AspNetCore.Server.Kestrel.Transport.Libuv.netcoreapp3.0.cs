@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv
         public int ThreadCount { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
 }
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv
 {
     public partial interface ILibuvTrace : Microsoft.Extensions.Logging.ILogger
     {
@@ -31,22 +31,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         void ConnectionWriteCallback(string connectionId, int status);
         void ConnectionWriteFin(string connectionId, string reason);
     }
-    public partial class LibuvAwaitable<TRequest> : System.Runtime.CompilerServices.ICriticalNotifyCompletion, System.Runtime.CompilerServices.INotifyCompletion where TRequest : Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvRequest
+    public partial class LibuvAwaitable<TRequest> : System.Runtime.CompilerServices.ICriticalNotifyCompletion, System.Runtime.CompilerServices.INotifyCompletion where TRequest : Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvRequest
     {
-        public static readonly System.Action<TRequest, int, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvException, object> Callback;
+        public static readonly System.Action<TRequest, int, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvException, object> Callback;
         public LibuvAwaitable() { }
         public bool IsCompleted { get { throw null; } }
-        public Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.LibuvAwaitable<TRequest> GetAwaiter() { throw null; }
-        public Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.UvWriteResult GetResult() { throw null; }
+        public Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.LibuvAwaitable<TRequest> GetAwaiter() { throw null; }
+        public Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.UvWriteResult GetResult() { throw null; }
         public void OnCompleted(System.Action continuation) { }
         public void UnsafeOnCompleted(System.Action continuation) { }
     }
-    public partial class LibuvConnection : Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.TransportConnection, System.IDisposable
+    public partial class LibuvConnection : Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.TransportConnection, System.IDisposable
     {
-        public LibuvConnection(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvStreamHandle socket, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.ILibuvTrace log, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.LibuvThread thread, System.Net.IPEndPoint remoteEndPoint, System.Net.IPEndPoint localEndPoint) { }
+        public LibuvConnection(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvStreamHandle socket, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.ILibuvTrace log, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.LibuvThread thread, System.Net.IPEndPoint remoteEndPoint, System.Net.IPEndPoint localEndPoint) { }
         public override System.IO.Pipelines.PipeScheduler InputWriterScheduler { get { throw null; } }
         public override System.Buffers.MemoryPool<byte> MemoryPool { get { throw null; } }
-        public Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.LibuvOutputConsumer OutputConsumer { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.LibuvOutputConsumer OutputConsumer { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public override System.IO.Pipelines.PipeScheduler OutputReaderScheduler { get { throw null; } }
         public override void Abort(Microsoft.AspNetCore.Connections.ConnectionAbortedException abortReason) { }
         public void Dispose() { }
@@ -55,20 +55,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
     }
     public partial class LibuvOutputConsumer
     {
-        public LibuvOutputConsumer(System.IO.Pipelines.PipeReader pipe, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.LibuvThread thread, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvStreamHandle socket, string connectionId, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.ILibuvTrace log) { }
+        public LibuvOutputConsumer(System.IO.Pipelines.PipeReader pipe, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.LibuvThread thread, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvStreamHandle socket, string connectionId, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.ILibuvTrace log) { }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task WriteOutputAsync() { throw null; }
     }
     public partial class LibuvThread : System.IO.Pipelines.PipeScheduler
     {
-        public LibuvThread(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.LibuvTransport transport) { }
-        public LibuvThread(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.LibuvTransport transport, int maxLoops) { }
+        public LibuvThread(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.LibuvTransport transport) { }
+        public LibuvThread(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.LibuvTransport transport, int maxLoops) { }
         public System.Exception FatalError { get { throw null; } }
-        public Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvLoopHandle Loop { get { throw null; } }
+        public Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvLoopHandle Loop { get { throw null; } }
         public System.Buffers.MemoryPool<byte> MemoryPool { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public System.Action<System.Action<System.IntPtr>, System.IntPtr> QueueCloseHandle { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public System.Collections.Generic.List<System.WeakReference> Requests { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.WriteReqPool WriteReqPool { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.WriteReqPool WriteReqPool { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public System.Threading.Tasks.Task PostAsync<T>(System.Action<T> callback, T state) { throw null; }
         public void Post<T>(System.Action<T> callback, T state) { }
         public override void Schedule(System.Action<object> action, object state) { }
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         public System.Threading.Tasks.Task StopAsync(System.TimeSpan timeout) { throw null; }
         public void Walk(System.Action<System.IntPtr> callback) { }
     }
-    public partial class LibuvTrace : Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.ILibuvTrace, Microsoft.Extensions.Logging.ILogger
+    public partial class LibuvTrace : Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.ILibuvTrace, Microsoft.Extensions.Logging.ILogger
     {
         public LibuvTrace(Microsoft.Extensions.Logging.ILogger logger) { }
         public System.IDisposable BeginScope<TState>(TState state) { throw null; }
@@ -93,15 +93,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         public bool IsEnabled(Microsoft.Extensions.Logging.LogLevel logLevel) { throw null; }
         public void Log<TState>(Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId, TState state, System.Exception exception, System.Func<TState, System.Exception, string> formatter) { }
     }
-    public partial class LibuvTransport : Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.ITransport
+    public partial class LibuvTransport : Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.ITransport
     {
-        public LibuvTransport(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.LibuvTransportContext context, Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.IEndPointInformation endPointInformation) { }
-        public LibuvTransport(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions uv, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.LibuvTransportContext context, Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.IEndPointInformation endPointInformation) { }
+        public LibuvTransport(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.LibuvTransportContext context, Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.IEndPointInformation endPointInformation) { }
+        public LibuvTransport(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions uv, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.LibuvTransportContext context, Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.IEndPointInformation endPointInformation) { }
         public Microsoft.Extensions.Hosting.IHostApplicationLifetime AppLifetime { get { throw null; } }
-        public Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions Libuv { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.ILibuvTrace Log { get { throw null; } }
-        public System.Collections.Generic.List<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.LibuvThread> Threads { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.LibuvTransportContext TransportContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions Libuv { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.ILibuvTrace Log { get { throw null; } }
+        public System.Collections.Generic.List<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.LibuvThread> Threads { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.LibuvTransportContext TransportContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.LibuvTransportOptions TransportOptions { get { throw null; } }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task BindAsync() { throw null; }
@@ -114,163 +114,163 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
     {
         public LibuvTransportContext() { }
         public Microsoft.Extensions.Hosting.IHostApplicationLifetime AppLifetime { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.IConnectionDispatcher ConnectionDispatcher { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.ILibuvTrace Log { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.IConnectionDispatcher ConnectionDispatcher { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.ILibuvTrace Log { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.LibuvTransportOptions Options { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
-    public partial class LibuvTransportFactory : Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.ITransportFactory
+    public partial class LibuvTransportFactory : Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.ITransportFactory
     {
         public LibuvTransportFactory(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.LibuvTransportOptions> options, Microsoft.Extensions.Hosting.IHostApplicationLifetime applicationLifetime, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
-        public Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.ITransport Create(Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.IEndPointInformation endPointInformation, Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.IConnectionDispatcher dispatcher) { throw null; }
+        public Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.ITransport Create(Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.IEndPointInformation endPointInformation, Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.IConnectionDispatcher dispatcher) { throw null; }
     }
-    public partial class Listener : Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.ListenerContext
+    public partial class Listener : Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.ListenerContext
     {
-        public Listener(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.LibuvTransportContext transportContext) : base (default(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.LibuvTransportContext)) { }
-        protected Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvStreamHandle ListenSocket { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.ILibuvTrace Log { get { throw null; } }
-        protected virtual void DispatchConnection(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvStreamHandle socket) { }
+        public Listener(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.LibuvTransportContext transportContext) : base (default(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.LibuvTransportContext)) { }
+        protected Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvStreamHandle ListenSocket { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.ILibuvTrace Log { get { throw null; } }
+        protected virtual void DispatchConnection(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvStreamHandle socket) { }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public virtual System.Threading.Tasks.Task DisposeAsync() { throw null; }
-        public System.Threading.Tasks.Task StartAsync(Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.IEndPointInformation endPointInformation, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.LibuvThread thread) { throw null; }
+        public System.Threading.Tasks.Task StartAsync(Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.IEndPointInformation endPointInformation, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.LibuvThread thread) { throw null; }
     }
     public partial class ListenerContext
     {
-        public ListenerContext(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.LibuvTransportContext transportContext) { }
-        public Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.IEndPointInformation EndPointInformation { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.LibuvThread Thread { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.LibuvTransportContext TransportContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        protected Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvStreamHandle CreateAcceptSocket() { throw null; }
+        public ListenerContext(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.LibuvTransportContext transportContext) { }
+        public Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.IEndPointInformation EndPointInformation { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.LibuvThread Thread { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.LibuvTransportContext TransportContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        protected Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvStreamHandle CreateAcceptSocket() { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
-        protected System.Threading.Tasks.Task HandleConnectionAsync(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvStreamHandle socket) { throw null; }
+        protected System.Threading.Tasks.Task HandleConnectionAsync(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvStreamHandle socket) { throw null; }
     }
-    public partial class ListenerPrimary : Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Listener
+    public partial class ListenerPrimary : Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Listener
     {
-        public ListenerPrimary(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.LibuvTransportContext transportContext) : base (default(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.LibuvTransportContext)) { }
+        public ListenerPrimary(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.LibuvTransportContext transportContext) : base (default(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.LibuvTransportContext)) { }
         public int UvPipeCount { get { throw null; } }
-        protected override void DispatchConnection(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvStreamHandle socket) { }
+        protected override void DispatchConnection(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvStreamHandle socket) { }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public override System.Threading.Tasks.Task DisposeAsync() { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
-        public System.Threading.Tasks.Task StartAsync(string pipeName, byte[] pipeMessage, Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.IEndPointInformation endPointInformation, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.LibuvThread thread) { throw null; }
+        public System.Threading.Tasks.Task StartAsync(string pipeName, byte[] pipeMessage, Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.IEndPointInformation endPointInformation, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.LibuvThread thread) { throw null; }
     }
-    public partial class ListenerSecondary : Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.ListenerContext
+    public partial class ListenerSecondary : Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.ListenerContext
     {
-        public ListenerSecondary(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.LibuvTransportContext transportContext) : base (default(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.LibuvTransportContext)) { }
-        public Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.ILibuvTrace Log { get { throw null; } }
+        public ListenerSecondary(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.LibuvTransportContext transportContext) : base (default(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.LibuvTransportContext)) { }
+        public Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.ILibuvTrace Log { get { throw null; } }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task DisposeAsync() { throw null; }
-        public System.Threading.Tasks.Task StartAsync(string pipeName, byte[] pipeMessage, Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.IEndPointInformation endPointInformation, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.LibuvThread thread) { throw null; }
+        public System.Threading.Tasks.Task StartAsync(string pipeName, byte[] pipeMessage, Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.IEndPointInformation endPointInformation, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.LibuvThread thread) { throw null; }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public partial struct UvWriteResult
     {
         private object _dummy;
         private int _dummyPrimitive;
-        public UvWriteResult(int status, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvException error) { throw null; }
-        public Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvException Error { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public UvWriteResult(int status, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvException error) { throw null; }
+        public Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvException Error { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public int Status { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
     public partial class WriteReqPool
     {
-        public WriteReqPool(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.LibuvThread thread, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.ILibuvTrace log) { }
-        public Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvWriteReq Allocate() { throw null; }
+        public WriteReqPool(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.LibuvThread thread, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.ILibuvTrace log) { }
+        public Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvWriteReq Allocate() { throw null; }
         public void Dispose() { }
-        public void Return(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvWriteReq req) { }
+        public void Return(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvWriteReq req) { }
     }
 }
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking
 {
     public partial class LibuvFunctions
     {
         public readonly bool IsWindows;
-        protected System.Func<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvStreamHandle, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvStreamHandle, int> _uv_accept;
-        protected System.Func<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvLoopHandle, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvAsyncHandle, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.uv_async_cb, int> _uv_async_init;
-        protected System.Func<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvAsyncHandle, int> _uv_async_send;
-        protected System.Action<System.IntPtr, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.uv_close_cb> _uv_close;
+        protected System.Func<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvStreamHandle, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvStreamHandle, int> _uv_accept;
+        protected System.Func<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvLoopHandle, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvAsyncHandle, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions.uv_async_cb, int> _uv_async_init;
+        protected System.Func<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvAsyncHandle, int> _uv_async_send;
+        protected System.Action<System.IntPtr, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions.uv_close_cb> _uv_close;
         protected System.Func<int, System.IntPtr> _uv_err_name;
-        protected Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.uv_fileno_func _uv_fileno;
-        protected System.Func<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.HandleType, int> _uv_handle_size;
-        protected Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.uv_ip4_addr_func _uv_ip4_addr;
-        protected Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.uv_ip6_addr_func _uv_ip6_addr;
-        protected System.Func<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvStreamHandle, int, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.uv_connection_cb, int> _uv_listen;
+        protected Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions.uv_fileno_func _uv_fileno;
+        protected System.Func<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions.HandleType, int> _uv_handle_size;
+        protected Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions.uv_ip4_addr_func _uv_ip4_addr;
+        protected Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions.uv_ip6_addr_func _uv_ip6_addr;
+        protected System.Func<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvStreamHandle, int, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions.uv_connection_cb, int> _uv_listen;
         protected System.Func<System.IntPtr, int> _uv_loop_close;
-        protected System.Func<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvLoopHandle, int> _uv_loop_init;
+        protected System.Func<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvLoopHandle, int> _uv_loop_init;
         protected System.Func<int> _uv_loop_size;
-        protected System.Func<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvLoopHandle, long> _uv_now;
-        protected System.Func<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvPipeHandle, string, int> _uv_pipe_bind;
-        protected System.Action<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvConnectRequest, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvPipeHandle, string, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.uv_connect_cb> _uv_pipe_connect;
-        protected System.Func<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvLoopHandle, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvPipeHandle, int, int> _uv_pipe_init;
-        protected System.Func<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvPipeHandle, System.IntPtr, int> _uv_pipe_open;
-        protected System.Func<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvPipeHandle, int> _uv_pipe_pending_count;
-        protected System.Func<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvStreamHandle, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.uv_alloc_cb, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.uv_read_cb, int> _uv_read_start;
-        protected System.Func<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvStreamHandle, int> _uv_read_stop;
-        protected System.Action<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvHandle> _uv_ref;
-        protected System.Func<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.RequestType, int> _uv_req_size;
-        protected System.Func<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvLoopHandle, int, int> _uv_run;
-        protected System.Action<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvLoopHandle> _uv_stop;
+        protected System.Func<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvLoopHandle, long> _uv_now;
+        protected System.Func<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvPipeHandle, string, int> _uv_pipe_bind;
+        protected System.Action<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvConnectRequest, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvPipeHandle, string, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions.uv_connect_cb> _uv_pipe_connect;
+        protected System.Func<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvLoopHandle, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvPipeHandle, int, int> _uv_pipe_init;
+        protected System.Func<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvPipeHandle, System.IntPtr, int> _uv_pipe_open;
+        protected System.Func<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvPipeHandle, int> _uv_pipe_pending_count;
+        protected System.Func<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvStreamHandle, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions.uv_alloc_cb, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions.uv_read_cb, int> _uv_read_start;
+        protected System.Func<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvStreamHandle, int> _uv_read_stop;
+        protected System.Action<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvHandle> _uv_ref;
+        protected System.Func<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions.RequestType, int> _uv_req_size;
+        protected System.Func<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvLoopHandle, int, int> _uv_run;
+        protected System.Action<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvLoopHandle> _uv_stop;
         protected System.Func<int, System.IntPtr> _uv_strerror;
-        protected Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.uv_tcp_bind_func _uv_tcp_bind;
-        protected Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.uv_tcp_getpeername_func _uv_tcp_getpeername;
-        protected Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.uv_tcp_getsockname_func _uv_tcp_getsockname;
-        protected System.Func<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvLoopHandle, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvTcpHandle, int> _uv_tcp_init;
-        protected System.Func<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvTcpHandle, int, int> _uv_tcp_nodelay;
-        protected System.Func<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvTcpHandle, System.IntPtr, int> _uv_tcp_open;
-        protected System.Func<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvLoopHandle, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvTimerHandle, int> _uv_timer_init;
-        protected System.Func<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvTimerHandle, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.uv_timer_cb, long, long, int> _uv_timer_start;
-        protected System.Func<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvTimerHandle, int> _uv_timer_stop;
-        protected System.Func<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvStreamHandle, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.uv_buf_t[], int, int> _uv_try_write;
-        protected System.Action<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvHandle> _uv_unref;
+        protected Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions.uv_tcp_bind_func _uv_tcp_bind;
+        protected Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions.uv_tcp_getpeername_func _uv_tcp_getpeername;
+        protected Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions.uv_tcp_getsockname_func _uv_tcp_getsockname;
+        protected System.Func<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvLoopHandle, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvTcpHandle, int> _uv_tcp_init;
+        protected System.Func<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvTcpHandle, int, int> _uv_tcp_nodelay;
+        protected System.Func<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvTcpHandle, System.IntPtr, int> _uv_tcp_open;
+        protected System.Func<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvLoopHandle, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvTimerHandle, int> _uv_timer_init;
+        protected System.Func<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvTimerHandle, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions.uv_timer_cb, long, long, int> _uv_timer_start;
+        protected System.Func<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvTimerHandle, int> _uv_timer_stop;
+        protected System.Func<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvStreamHandle, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions.uv_buf_t[], int, int> _uv_try_write;
+        protected System.Action<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvHandle> _uv_unref;
         protected System.Func<System.IntPtr, int> _uv_unsafe_async_send;
-        protected System.Func<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvLoopHandle, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.uv_walk_cb, System.IntPtr, int> _uv_walk;
-        protected Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.uv_write_func _uv_write;
-        protected Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.uv_write2_func _uv_write2;
+        protected System.Func<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvLoopHandle, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions.uv_walk_cb, System.IntPtr, int> _uv_walk;
+        protected Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions.uv_write_func _uv_write;
+        protected Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions.uv_write2_func _uv_write2;
         public LibuvFunctions() { }
         public LibuvFunctions(bool onlyForTesting) { }
-        public void accept(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvStreamHandle server, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvStreamHandle client) { }
-        public void async_init(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvLoopHandle loop, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvAsyncHandle handle, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.uv_async_cb cb) { }
-        public void async_send(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvAsyncHandle handle) { }
-        public Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.uv_buf_t buf_init(System.IntPtr memory, int len) { throw null; }
-        public void Check(int statusCode, out Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvException error) { throw null; }
-        public void close(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvHandle handle, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.uv_close_cb close_cb) { }
-        public void close(System.IntPtr handle, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.uv_close_cb close_cb) { }
+        public void accept(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvStreamHandle server, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvStreamHandle client) { }
+        public void async_init(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvLoopHandle loop, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvAsyncHandle handle, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions.uv_async_cb cb) { }
+        public void async_send(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvAsyncHandle handle) { }
+        public Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions.uv_buf_t buf_init(System.IntPtr memory, int len) { throw null; }
+        public void Check(int statusCode, out Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvException error) { throw null; }
+        public void close(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvHandle handle, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions.uv_close_cb close_cb) { }
+        public void close(System.IntPtr handle, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions.uv_close_cb close_cb) { }
         public string err_name(int err) { throw null; }
-        public int handle_size(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.HandleType handleType) { throw null; }
-        public void ip4_addr(string ip, int port, out Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.SockAddr addr, out Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvException error) { throw null; }
-        public void ip6_addr(string ip, int port, out Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.SockAddr addr, out Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvException error) { throw null; }
-        public void listen(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvStreamHandle handle, int backlog, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.uv_connection_cb cb) { }
-        public void loop_close(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvLoopHandle handle) { }
-        public void loop_init(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvLoopHandle handle) { }
+        public int handle_size(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions.HandleType handleType) { throw null; }
+        public void ip4_addr(string ip, int port, out Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.SockAddr addr, out Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvException error) { throw null; }
+        public void ip6_addr(string ip, int port, out Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.SockAddr addr, out Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvException error) { throw null; }
+        public void listen(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvStreamHandle handle, int backlog, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions.uv_connection_cb cb) { }
+        public void loop_close(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvLoopHandle handle) { }
+        public void loop_init(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvLoopHandle handle) { }
         public int loop_size() { throw null; }
-        public long now(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvLoopHandle loop) { throw null; }
-        public void pipe_bind(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvPipeHandle handle, string name) { }
-        public void pipe_connect(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvConnectRequest req, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvPipeHandle handle, string name, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.uv_connect_cb cb) { }
-        public void pipe_init(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvLoopHandle loop, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvPipeHandle handle, bool ipc) { }
-        public void pipe_open(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvPipeHandle handle, System.IntPtr hSocket) { }
-        public int pipe_pending_count(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvPipeHandle handle) { throw null; }
-        public void read_start(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvStreamHandle handle, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.uv_alloc_cb alloc_cb, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.uv_read_cb read_cb) { }
-        public void read_stop(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvStreamHandle handle) { }
-        public void @ref(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvHandle handle) { }
-        public int req_size(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.RequestType reqType) { throw null; }
-        public void run(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvLoopHandle handle, int mode) { }
-        public void stop(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvLoopHandle handle) { }
+        public long now(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvLoopHandle loop) { throw null; }
+        public void pipe_bind(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvPipeHandle handle, string name) { }
+        public void pipe_connect(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvConnectRequest req, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvPipeHandle handle, string name, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions.uv_connect_cb cb) { }
+        public void pipe_init(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvLoopHandle loop, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvPipeHandle handle, bool ipc) { }
+        public void pipe_open(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvPipeHandle handle, System.IntPtr hSocket) { }
+        public int pipe_pending_count(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvPipeHandle handle) { throw null; }
+        public void read_start(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvStreamHandle handle, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions.uv_alloc_cb alloc_cb, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions.uv_read_cb read_cb) { }
+        public void read_stop(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvStreamHandle handle) { }
+        public void @ref(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvHandle handle) { }
+        public int req_size(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions.RequestType reqType) { throw null; }
+        public void run(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvLoopHandle handle, int mode) { }
+        public void stop(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvLoopHandle handle) { }
         public string strerror(int err) { throw null; }
-        public void tcp_bind(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvTcpHandle handle, ref Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.SockAddr addr, int flags) { }
-        public void tcp_getpeername(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvTcpHandle handle, out Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.SockAddr addr, ref int namelen) { throw null; }
-        public void tcp_getsockname(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvTcpHandle handle, out Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.SockAddr addr, ref int namelen) { throw null; }
-        public void tcp_init(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvLoopHandle loop, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvTcpHandle handle) { }
-        public void tcp_nodelay(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvTcpHandle handle, bool enable) { }
-        public void tcp_open(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvTcpHandle handle, System.IntPtr hSocket) { }
+        public void tcp_bind(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvTcpHandle handle, ref Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.SockAddr addr, int flags) { }
+        public void tcp_getpeername(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvTcpHandle handle, out Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.SockAddr addr, ref int namelen) { throw null; }
+        public void tcp_getsockname(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvTcpHandle handle, out Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.SockAddr addr, ref int namelen) { throw null; }
+        public void tcp_init(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvLoopHandle loop, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvTcpHandle handle) { }
+        public void tcp_nodelay(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvTcpHandle handle, bool enable) { }
+        public void tcp_open(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvTcpHandle handle, System.IntPtr hSocket) { }
         public void ThrowIfErrored(int statusCode) { }
-        public void timer_init(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvLoopHandle loop, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvTimerHandle handle) { }
-        public void timer_start(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvTimerHandle handle, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.uv_timer_cb cb, long timeout, long repeat) { }
-        public void timer_stop(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvTimerHandle handle) { }
-        public int try_write(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvStreamHandle handle, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.uv_buf_t[] bufs, int nbufs) { throw null; }
-        public void unref(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvHandle handle) { }
+        public void timer_init(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvLoopHandle loop, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvTimerHandle handle) { }
+        public void timer_start(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvTimerHandle handle, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions.uv_timer_cb cb, long timeout, long repeat) { }
+        public void timer_stop(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvTimerHandle handle) { }
+        public int try_write(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvStreamHandle handle, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions.uv_buf_t[] bufs, int nbufs) { throw null; }
+        public void unref(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvHandle handle) { }
         public void unsafe_async_send(System.IntPtr handle) { }
-        public void uv_fileno(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvHandle handle, ref System.IntPtr socket) { }
-        public void walk(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvLoopHandle loop, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.uv_walk_cb walk_cb, System.IntPtr arg) { }
-        public unsafe void write(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvRequest req, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvStreamHandle handle, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.uv_buf_t* bufs, int nbufs, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.uv_write_cb cb) { }
-        public unsafe void write2(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvRequest req, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvStreamHandle handle, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.uv_buf_t* bufs, int nbufs, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvStreamHandle sendHandle, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.uv_write_cb cb) { }
+        public void uv_fileno(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvHandle handle, ref System.IntPtr socket) { }
+        public void walk(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvLoopHandle loop, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions.uv_walk_cb walk_cb, System.IntPtr arg) { }
+        public unsafe void write(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvRequest req, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvStreamHandle handle, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions.uv_buf_t* bufs, int nbufs, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions.uv_write_cb cb) { }
+        public unsafe void write2(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvRequest req, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvStreamHandle handle, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions.uv_buf_t* bufs, int nbufs, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvStreamHandle sendHandle, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions.uv_write_cb cb) { }
         public enum HandleType
         {
             ASYNC = 1,
@@ -305,7 +305,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
             WRITE = 3,
         }
         [System.Runtime.InteropServices.UnmanagedFunctionPointerAttribute(System.Runtime.InteropServices.CallingConvention.Cdecl)]
-        public delegate void uv_alloc_cb(System.IntPtr server, int suggested_size, out Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.uv_buf_t buf);
+        public delegate void uv_alloc_cb(System.IntPtr server, int suggested_size, out Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions.uv_buf_t buf);
         [System.Runtime.InteropServices.UnmanagedFunctionPointerAttribute(System.Runtime.InteropServices.CallingConvention.Cdecl)]
         public delegate void uv_async_cb(System.IntPtr handle);
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
@@ -321,22 +321,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
         [System.Runtime.InteropServices.UnmanagedFunctionPointerAttribute(System.Runtime.InteropServices.CallingConvention.Cdecl)]
         public delegate void uv_connect_cb(System.IntPtr req, int status);
         [System.Runtime.InteropServices.UnmanagedFunctionPointerAttribute(System.Runtime.InteropServices.CallingConvention.Cdecl)]
-        protected delegate int uv_fileno_func(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvHandle handle, ref System.IntPtr socket);
-        protected delegate int uv_ip4_addr_func(string ip, int port, out Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.SockAddr addr);
-        protected delegate int uv_ip6_addr_func(string ip, int port, out Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.SockAddr addr);
+        protected delegate int uv_fileno_func(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvHandle handle, ref System.IntPtr socket);
+        protected delegate int uv_ip4_addr_func(string ip, int port, out Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.SockAddr addr);
+        protected delegate int uv_ip6_addr_func(string ip, int port, out Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.SockAddr addr);
         [System.Runtime.InteropServices.UnmanagedFunctionPointerAttribute(System.Runtime.InteropServices.CallingConvention.Cdecl)]
-        public delegate void uv_read_cb(System.IntPtr server, int nread, ref Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.uv_buf_t buf);
-        protected delegate int uv_tcp_bind_func(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvTcpHandle handle, ref Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.SockAddr addr, int flags);
-        public delegate int uv_tcp_getpeername_func(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvTcpHandle handle, out Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.SockAddr addr, ref int namelen);
-        public delegate int uv_tcp_getsockname_func(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvTcpHandle handle, out Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.SockAddr addr, ref int namelen);
+        public delegate void uv_read_cb(System.IntPtr server, int nread, ref Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions.uv_buf_t buf);
+        protected delegate int uv_tcp_bind_func(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvTcpHandle handle, ref Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.SockAddr addr, int flags);
+        public delegate int uv_tcp_getpeername_func(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvTcpHandle handle, out Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.SockAddr addr, ref int namelen);
+        public delegate int uv_tcp_getsockname_func(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvTcpHandle handle, out Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.SockAddr addr, ref int namelen);
         [System.Runtime.InteropServices.UnmanagedFunctionPointerAttribute(System.Runtime.InteropServices.CallingConvention.Cdecl)]
         public delegate void uv_timer_cb(System.IntPtr handle);
         [System.Runtime.InteropServices.UnmanagedFunctionPointerAttribute(System.Runtime.InteropServices.CallingConvention.Cdecl)]
         public delegate void uv_walk_cb(System.IntPtr handle, System.IntPtr arg);
-        protected unsafe delegate int uv_write2_func(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvRequest req, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvStreamHandle handle, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.uv_buf_t* bufs, int nbufs, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvStreamHandle sendHandle, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.uv_write_cb cb);
+        protected unsafe delegate int uv_write2_func(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvRequest req, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvStreamHandle handle, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions.uv_buf_t* bufs, int nbufs, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvStreamHandle sendHandle, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions.uv_write_cb cb);
         [System.Runtime.InteropServices.UnmanagedFunctionPointerAttribute(System.Runtime.InteropServices.CallingConvention.Cdecl)]
         public delegate void uv_write_cb(System.IntPtr req, int status);
-        protected unsafe delegate int uv_write_func(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvRequest req, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvStreamHandle handle, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.uv_buf_t* bufs, int nbufs, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.uv_write_cb cb);
+        protected unsafe delegate int uv_write_func(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvRequest req, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvStreamHandle handle, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions.uv_buf_t* bufs, int nbufs, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions.uv_write_cb cb);
     }
     public static partial class PlatformApis
     {
@@ -352,37 +352,37 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
         public uint ScopeId { get { throw null; } set { } }
         public System.Net.IPEndPoint GetIPEndPoint() { throw null; }
     }
-    public partial class UvAsyncHandle : Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvHandle
+    public partial class UvAsyncHandle : Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvHandle
     {
-        public UvAsyncHandle(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.ILibuvTrace logger) : base (default(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.ILibuvTrace)) { }
-        public void Init(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvLoopHandle loop, System.Action callback, System.Action<System.Action<System.IntPtr>, System.IntPtr> queueCloseHandle) { }
+        public UvAsyncHandle(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.ILibuvTrace logger) : base (default(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.ILibuvTrace)) { }
+        public void Init(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvLoopHandle loop, System.Action callback, System.Action<System.Action<System.IntPtr>, System.IntPtr> queueCloseHandle) { }
         protected override bool ReleaseHandle() { throw null; }
         public void Send() { }
     }
-    public partial class UvConnectRequest : Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvRequest
+    public partial class UvConnectRequest : Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvRequest
     {
-        public UvConnectRequest(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.ILibuvTrace logger) : base (default(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.ILibuvTrace)) { }
-        public void Connect(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvPipeHandle pipe, string name, System.Action<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvConnectRequest, int, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvException, object> callback, object state) { }
-        public void DangerousInit(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvLoopHandle loop) { }
-        public override void Init(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.LibuvThread thread) { }
+        public UvConnectRequest(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.ILibuvTrace logger) : base (default(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.ILibuvTrace)) { }
+        public void Connect(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvPipeHandle pipe, string name, System.Action<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvConnectRequest, int, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvException, object> callback, object state) { }
+        public void DangerousInit(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvLoopHandle loop) { }
+        public override void Init(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.LibuvThread thread) { }
     }
     public partial class UvException : System.Exception
     {
         public UvException(string message, int statusCode) { }
         public int StatusCode { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
-    public abstract partial class UvHandle : Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvMemory
+    public abstract partial class UvHandle : Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvMemory
     {
-        protected UvHandle(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.ILibuvTrace logger) : base (default(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.ILibuvTrace), default(System.Runtime.InteropServices.GCHandleType)) { }
-        protected void CreateHandle(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions uv, int threadId, int size, System.Action<System.Action<System.IntPtr>, System.IntPtr> queueCloseHandle) { }
+        protected UvHandle(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.ILibuvTrace logger) : base (default(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.ILibuvTrace), default(System.Runtime.InteropServices.GCHandleType)) { }
+        protected void CreateHandle(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions uv, int threadId, int size, System.Action<System.Action<System.IntPtr>, System.IntPtr> queueCloseHandle) { }
         public void Reference() { }
         protected override bool ReleaseHandle() { throw null; }
         public void Unreference() { }
     }
-    public partial class UvLoopHandle : Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvMemory
+    public partial class UvLoopHandle : Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvMemory
     {
-        public UvLoopHandle(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.ILibuvTrace logger) : base (default(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.ILibuvTrace), default(System.Runtime.InteropServices.GCHandleType)) { }
-        public void Init(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions uv) { }
+        public UvLoopHandle(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.ILibuvTrace logger) : base (default(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.ILibuvTrace), default(System.Runtime.InteropServices.GCHandleType)) { }
+        public void Init(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions uv) { }
         public long Now() { throw null; }
         protected override bool ReleaseHandle() { throw null; }
         public void Run(int mode = 0) { }
@@ -390,68 +390,68 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
     }
     public abstract partial class UvMemory : System.Runtime.InteropServices.SafeHandle
     {
-        protected readonly Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.ILibuvTrace _log;
+        protected readonly Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.ILibuvTrace _log;
         protected int _threadId;
-        protected Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions _uv;
-        protected UvMemory(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.ILibuvTrace logger, System.Runtime.InteropServices.GCHandleType handleType = System.Runtime.InteropServices.GCHandleType.Weak) : base (default(System.IntPtr), default(bool)) { }
+        protected Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions _uv;
+        protected UvMemory(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.ILibuvTrace logger, System.Runtime.InteropServices.GCHandleType handleType = System.Runtime.InteropServices.GCHandleType.Weak) : base (default(System.IntPtr), default(bool)) { }
         public override bool IsInvalid { get { throw null; } }
-        public Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions Libuv { get { throw null; } }
+        public Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions Libuv { get { throw null; } }
         public int ThreadId { get { throw null; } }
-        protected void CreateMemory(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions uv, int threadId, int size) { }
+        protected void CreateMemory(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions uv, int threadId, int size) { }
         protected static void DestroyMemory(System.IntPtr memory) { }
         protected static void DestroyMemory(System.IntPtr memory, System.IntPtr gcHandlePtr) { }
         public static THandle FromIntPtr<THandle>(System.IntPtr handle) { throw null; }
         public System.IntPtr InternalGetHandle() { throw null; }
         public void Validate(bool closed = false) { }
     }
-    public partial class UvPipeHandle : Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvStreamHandle
+    public partial class UvPipeHandle : Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvStreamHandle
     {
-        public UvPipeHandle(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.ILibuvTrace logger) : base (default(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.ILibuvTrace)) { }
+        public UvPipeHandle(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.ILibuvTrace logger) : base (default(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.ILibuvTrace)) { }
         public void Bind(string name) { }
-        public void Init(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvLoopHandle loop, System.Action<System.Action<System.IntPtr>, System.IntPtr> queueCloseHandle, bool ipc = false) { }
+        public void Init(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvLoopHandle loop, System.Action<System.Action<System.IntPtr>, System.IntPtr> queueCloseHandle, bool ipc = false) { }
         public void Open(System.IntPtr fileDescriptor) { }
         public int PendingCount() { throw null; }
     }
-    public partial class UvRequest : Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvMemory
+    public partial class UvRequest : Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvMemory
     {
-        protected UvRequest(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.ILibuvTrace logger) : base (default(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.ILibuvTrace), default(System.Runtime.InteropServices.GCHandleType)) { }
-        public virtual void Init(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.LibuvThread thread) { }
+        protected UvRequest(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.ILibuvTrace logger) : base (default(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.ILibuvTrace), default(System.Runtime.InteropServices.GCHandleType)) { }
+        public virtual void Init(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.LibuvThread thread) { }
         protected override bool ReleaseHandle() { throw null; }
     }
-    public abstract partial class UvStreamHandle : Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvHandle
+    public abstract partial class UvStreamHandle : Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvHandle
     {
-        protected UvStreamHandle(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.ILibuvTrace logger) : base (default(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.ILibuvTrace)) { }
-        public void Accept(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvStreamHandle handle) { }
-        public void Listen(int backlog, System.Action<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvStreamHandle, int, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvException, object> callback, object state) { }
-        public void ReadStart(System.Func<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvStreamHandle, int, object, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.uv_buf_t> allocCallback, System.Action<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvStreamHandle, int, object> readCallback, object state) { }
+        protected UvStreamHandle(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.ILibuvTrace logger) : base (default(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.ILibuvTrace)) { }
+        public void Accept(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvStreamHandle handle) { }
+        public void Listen(int backlog, System.Action<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvStreamHandle, int, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvException, object> callback, object state) { }
+        public void ReadStart(System.Func<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvStreamHandle, int, object, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions.uv_buf_t> allocCallback, System.Action<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvStreamHandle, int, object> readCallback, object state) { }
         public void ReadStop() { }
         protected override bool ReleaseHandle() { throw null; }
-        public int TryWrite(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.LibuvFunctions.uv_buf_t buf) { throw null; }
+        public int TryWrite(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.LibuvFunctions.uv_buf_t buf) { throw null; }
     }
-    public partial class UvTcpHandle : Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvStreamHandle
+    public partial class UvTcpHandle : Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvStreamHandle
     {
-        public UvTcpHandle(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.ILibuvTrace logger) : base (default(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.ILibuvTrace)) { }
+        public UvTcpHandle(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.ILibuvTrace logger) : base (default(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.ILibuvTrace)) { }
         public void Bind(System.Net.IPEndPoint endPoint) { }
         public System.Net.IPEndPoint GetPeerIPEndPoint() { throw null; }
         public System.Net.IPEndPoint GetSockIPEndPoint() { throw null; }
-        public void Init(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvLoopHandle loop, System.Action<System.Action<System.IntPtr>, System.IntPtr> queueCloseHandle) { }
+        public void Init(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvLoopHandle loop, System.Action<System.Action<System.IntPtr>, System.IntPtr> queueCloseHandle) { }
         public void NoDelay(bool enable) { }
         public void Open(System.IntPtr fileDescriptor) { }
     }
-    public partial class UvTimerHandle : Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvHandle
+    public partial class UvTimerHandle : Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvHandle
     {
-        public UvTimerHandle(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.ILibuvTrace logger) : base (default(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.ILibuvTrace)) { }
-        public void Init(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvLoopHandle loop, System.Action<System.Action<System.IntPtr>, System.IntPtr> queueCloseHandle) { }
-        public void Start(System.Action<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvTimerHandle> callback, long timeout, long repeat) { }
+        public UvTimerHandle(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.ILibuvTrace logger) : base (default(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.ILibuvTrace)) { }
+        public void Init(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvLoopHandle loop, System.Action<System.Action<System.IntPtr>, System.IntPtr> queueCloseHandle) { }
+        public void Start(System.Action<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvTimerHandle> callback, long timeout, long repeat) { }
         public void Stop() { }
     }
-    public partial class UvWriteReq : Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvRequest
+    public partial class UvWriteReq : Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvRequest
     {
-        public UvWriteReq(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.ILibuvTrace logger) : base (default(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.ILibuvTrace)) { }
-        public void DangerousInit(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvLoopHandle loop) { }
-        public override void Init(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.LibuvThread thread) { }
-        public void Write2(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvStreamHandle handle, System.ArraySegment<System.ArraySegment<byte>> bufs, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvStreamHandle sendHandle, System.Action<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvWriteReq, int, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvException, object> callback, object state) { }
-        public Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.LibuvAwaitable<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvWriteReq> WriteAsync(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvStreamHandle handle, System.ArraySegment<System.ArraySegment<byte>> bufs) { throw null; }
-        public Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.LibuvAwaitable<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvWriteReq> WriteAsync(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking.UvStreamHandle handle, System.Buffers.ReadOnlySequence<byte> buffer) { throw null; }
+        public UvWriteReq(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.ILibuvTrace logger) : base (default(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.ILibuvTrace)) { }
+        public void DangerousInit(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvLoopHandle loop) { }
+        public override void Init(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.LibuvThread thread) { }
+        public void Write2(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvStreamHandle handle, System.ArraySegment<System.ArraySegment<byte>> bufs, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvStreamHandle sendHandle, System.Action<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvWriteReq, int, Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvException, object> callback, object state) { }
+        public Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.LibuvAwaitable<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvWriteReq> WriteAsync(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvStreamHandle handle, System.ArraySegment<System.ArraySegment<byte>> bufs) { throw null; }
+        public Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.LibuvAwaitable<Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvWriteReq> WriteAsync(Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking.UvStreamHandle handle, System.Buffers.ReadOnlySequence<byte> buffer) { throw null; }
     }
 }

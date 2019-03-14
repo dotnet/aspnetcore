@@ -3,9 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv
 {
     public class WriteReqPool
     {

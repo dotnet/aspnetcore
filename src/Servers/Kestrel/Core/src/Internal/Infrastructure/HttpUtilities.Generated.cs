@@ -4,11 +4,11 @@
 using System;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Http;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure
 {
-    public static partial class HttpUtilities
+    internal static partial class HttpUtilities
     {
         // readonly primitive statics can be Jit'd to consts https://github.com/dotnet/coreclr/issues/1079
         private static readonly ulong _httpConnectMethodLong = GetAsciiStringAsLong("CONNECT ");

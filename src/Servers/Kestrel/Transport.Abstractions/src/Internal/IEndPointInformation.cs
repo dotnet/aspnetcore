@@ -3,9 +3,9 @@
 
 using System.Net;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions
 {
-    public interface IEndPointInformation
+    internal interface IEndPointInformation
     {
         /// <summary>
         /// The type of interface being described: either an <see cref="IPEndPoint"/>, Unix domain socket path, or a file descriptor.

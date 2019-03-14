@@ -3,9 +3,9 @@
 
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions
 {
-    public interface IConnectionDispatcher
+    internal interface IConnectionDispatcher
     {
         Task OnConnection(TransportConnection connection);
     }

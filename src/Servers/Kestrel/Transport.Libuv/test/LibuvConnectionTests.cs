@@ -1,12 +1,12 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.TestHelpers;
 using Microsoft.AspNetCore.Testing;
 using Moq;
@@ -94,8 +94,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                     listenerContext.TransportContext.ConnectionDispatcher.OnConnection(connection);
                     connectionTask = connection.Start();
 
-                    mockLibuv.AllocCallback(socket.InternalGetHandle(), 2048, out var ignored);
-                    mockLibuv.ReadCallback(socket.InternalGetHandle(), 5, ref ignored);
+                    mockLibuv.AllocCallback(socketGetHandle(), 2048, out var ignored);
+                    mockLibuv.ReadCallback(socketGetHandle(), 5, ref ignored);
 
                 }, null);
 
@@ -163,8 +163,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                     listenerContext.TransportContext.ConnectionDispatcher.OnConnection(connection);
                     connectionTask = connection.Start();
 
-                    mockLibuv.AllocCallback(socket.InternalGetHandle(), 2048, out var ignored);
-                    mockLibuv.ReadCallback(socket.InternalGetHandle(), 5, ref ignored);
+                    mockLibuv.AllocCallback(socketGetHandle(), 2048, out var ignored);
+                    mockLibuv.ReadCallback(socketGetHandle(), 5, ref ignored);
 
                 }, null);
 
@@ -231,7 +231,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                     connectionTask = connection.Start();
 
                     var ignored = new LibuvFunctions.uv_buf_t();
-                    mockLibuv.ReadCallback(socket.InternalGetHandle(), TestConstants.EOF, ref ignored);
+                    mockLibuv.ReadCallback(socketGetHandle(), TestConstants.EOF, ref ignored);
                 }, (object)null);
 
                 var readAwaitable = await mockConnectionDispatcher.Input.Reader.ReadAsync();

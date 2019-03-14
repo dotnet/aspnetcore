@@ -6,9 +6,9 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Http2.FlowControl
 {
-    public class OutputFlowControlAwaitable : ICriticalNotifyCompletion
+    internal class OutputFlowControlAwaitable : ICriticalNotifyCompletion
     {
         private static readonly Action _callbackCompleted = () => { };
 

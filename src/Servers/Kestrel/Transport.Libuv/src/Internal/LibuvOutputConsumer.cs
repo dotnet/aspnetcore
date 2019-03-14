@@ -4,9 +4,9 @@
 using System;
 using System.IO.Pipelines;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv
 {
     public class LibuvOutputConsumer
     {

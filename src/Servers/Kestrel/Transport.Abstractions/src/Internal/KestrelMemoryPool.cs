@@ -4,9 +4,9 @@
 using System;
 using System.Buffers;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions
 {
-    public static class KestrelMemoryPool
+    internal static class KestrelMemoryPool
     {
         public static MemoryPool<byte> Create()
         {

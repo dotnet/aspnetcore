@@ -10,9 +10,9 @@ using System.Threading;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions
 {
-    public abstract partial class TransportConnection : ConnectionContext
+    internal abstract partial class TransportConnection : ConnectionContext
     {
         private IDictionary<object, object> _items;
         private List<(Action<object> handler, object state)> _heartbeatHandlers;

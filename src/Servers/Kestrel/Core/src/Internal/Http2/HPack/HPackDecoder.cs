@@ -3,11 +3,11 @@
 
 using System;
 using System.Buffers;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Http;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Http2.HPack
 {
-    public class HPackDecoder
+    internal class HPackDecoder
     {
         private enum State
         {

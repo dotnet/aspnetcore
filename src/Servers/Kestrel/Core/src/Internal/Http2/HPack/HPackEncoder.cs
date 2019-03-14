@@ -4,9 +4,9 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Http2.HPack
 {
-    public class HPackEncoder
+    internal class HPackEncoder
     {
         private IEnumerator<KeyValuePair<string, string>> _enumerator;
 

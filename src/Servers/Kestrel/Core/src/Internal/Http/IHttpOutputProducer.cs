@@ -6,9 +6,9 @@ using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Http
 {
-    public interface IHttpOutputProducer
+    internal interface IHttpOutputProducer
     {
         ValueTask<FlushResult> WriteChunkAsync(ReadOnlySpan<byte> data, CancellationToken cancellationToken);
         ValueTask<FlushResult> FlushAsync(CancellationToken cancellationToken);

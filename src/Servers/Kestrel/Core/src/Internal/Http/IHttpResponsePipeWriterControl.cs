@@ -8,9 +8,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Http
 {
-    public interface IHttpResponsePipeWriterControl
+    internal interface IHttpResponsePipeWriterControl
     {
         void ProduceContinue();
         Memory<byte> GetMemory(int sizeHint = 0);

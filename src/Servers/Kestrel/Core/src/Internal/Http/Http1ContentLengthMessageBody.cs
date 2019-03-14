@@ -7,9 +7,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Http
 {
-    public class Http1ContentLengthMessageBody : Http1MessageBody
+    internal class Http1ContentLengthMessageBody : Http1MessageBody
     {
         private readonly long _contentLength;
         private long _inputLength;

@@ -6,9 +6,9 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure
 {
-    public abstract class WriteOnlyStream : Stream
+    internal abstract class WriteOnlyStream : Stream
     {
         public override bool CanRead => false;
 

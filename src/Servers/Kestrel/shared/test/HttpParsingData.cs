@@ -1,11 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Http;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Testing
@@ -277,7 +277,7 @@ namespace Microsoft.AspNetCore.Testing
             }
         }
 
-        public static TheoryData<string, HttpMethod> MethodNotAllowedRequestLine
+        public static TheoryData<string, int> MethodNotAllowedRequestLine
         {
             get
             {
@@ -295,7 +295,7 @@ namespace Microsoft.AspNetCore.Testing
                     "CUSTOM",
                 };
 
-                var data = new TheoryData<string, HttpMethod>();
+                var data = new TheoryData<string, int>();
 
                 foreach (var method in methods.Except(new[] { "OPTIONS" }))
                 {

@@ -6,9 +6,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure
 {
-    public static class ConnectionManagerShutdownExtensions
+    internal static class ConnectionManagerShutdownExtensions
     {
         public static async Task<bool> CloseAllConnectionsAsync(this ConnectionManager connectionManager, CancellationToken token)
         {

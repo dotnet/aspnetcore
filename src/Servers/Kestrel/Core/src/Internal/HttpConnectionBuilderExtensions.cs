@@ -5,11 +5,11 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Core
 {
-    public static class HttpConnectionBuilderExtensions
+    internal static class HttpConnectionBuilderExtensions
     {
         public static IConnectionBuilder UseHttpServer<TContext>(this IConnectionBuilder builder, ServiceContext serviceContext, IHttpApplication<TContext> application, HttpProtocols protocols)
         {

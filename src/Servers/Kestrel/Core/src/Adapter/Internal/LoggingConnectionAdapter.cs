@@ -6,9 +6,9 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter
 {
-    public class LoggingConnectionAdapter : IConnectionAdapter
+    internal class LoggingConnectionAdapter : IConnectionAdapter
     {
         private readonly ILogger _logger;
 

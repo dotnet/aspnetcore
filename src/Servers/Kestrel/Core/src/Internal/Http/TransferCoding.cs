@@ -3,10 +3,10 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Http
 {
     [Flags]
-    public enum TransferCoding
+    internal enum TransferCoding
     {
         None,
         Chunked,

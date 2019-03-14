@@ -8,9 +8,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Buffers;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter
 {
-    public class RawStream : Stream
+    internal class RawStream : Stream
     {
         private readonly PipeReader _input;
         private readonly PipeWriter _output;

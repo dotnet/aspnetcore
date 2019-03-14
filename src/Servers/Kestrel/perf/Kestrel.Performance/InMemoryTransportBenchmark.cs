@@ -5,7 +5,7 @@ using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Buffers;
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             await _connection.ReadResponseAsync(_plaintextPipelinedExpectedResponse.Length);
         }
 
-        public class InMemoryTransportFactory : ITransportFactory
+        internal class InMemoryTransportFactory : ITransportFactory
         {
             private readonly int _connectionsPerEndPoint;
 

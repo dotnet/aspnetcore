@@ -3,9 +3,9 @@
 
 using Microsoft.AspNetCore.Connections;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Http
 {
-    public interface IHttpOutputAborter
+    internal interface IHttpOutputAborter
     {
         void Abort(ConnectionAbortedException abortReason);
     }

@@ -3,9 +3,9 @@
 
 using System.Diagnostics;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Http2.FlowControl
 {
-    public class StreamInputFlowControl
+    internal class StreamInputFlowControl
     {
         private readonly InputFlowControl _connectionLevelFlowControl;
         private readonly InputFlowControl _streamLevelFlowControl;

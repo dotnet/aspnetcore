@@ -4,15 +4,15 @@
 using System;
 using System.Text;
 using System.Threading;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Http
 {
     /// <summary>
     /// Manages the generation of the date header value.
     /// </summary>
-    public class DateHeaderValueManager : IHeartbeatHandler
+    internal class DateHeaderValueManager : IHeartbeatHandler
     {
         private static readonly byte[] _datePreambleBytes = Encoding.ASCII.GetBytes("\r\nDate: ");
 

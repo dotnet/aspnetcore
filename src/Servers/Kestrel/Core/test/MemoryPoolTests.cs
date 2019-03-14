@@ -5,7 +5,7 @@ using System;
 using System.Buffers;
 using Xunit;
 
-namespace Microsoft.Extensions.Internal.Test
+namespace Microsoft.Extensions.Test
 {
     public abstract class MemoryPoolTests
     {

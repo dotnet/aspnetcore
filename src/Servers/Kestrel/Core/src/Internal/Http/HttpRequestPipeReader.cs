@@ -8,12 +8,12 @@ using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Http
 {
     /// <summary>
     /// Default HttpRequest PipeReader implementation to be used by Kestrel.
     /// </summary>
-    public class HttpRequestPipeReader : PipeReader
+    internal class HttpRequestPipeReader : PipeReader
     {
         private MessageBody _body;
         private HttpStreamState _state;

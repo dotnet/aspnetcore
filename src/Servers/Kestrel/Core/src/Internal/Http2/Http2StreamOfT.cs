@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.AspNetCore.Hosting.Server;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Http2
 {
-    public class Http2Stream<TContext> : Http2Stream
+    internal class Http2Stream<TContext> : Http2Stream
     {
         private readonly IHttpApplication<TContext> _application;
 

@@ -7,9 +7,9 @@ using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Http
 {
-    public static class PipelineExtensions
+    internal static class PipelineExtensions
     {
         private const int _maxULongByteLength = 20;
 

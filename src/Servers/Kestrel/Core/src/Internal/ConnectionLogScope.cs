@@ -6,9 +6,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Core
 {
-    public class ConnectionLogScope : IReadOnlyList<KeyValuePair<string, object>>
+    internal class ConnectionLogScope : IReadOnlyList<KeyValuePair<string, object>>
     {
         private readonly string _connectionId;
 

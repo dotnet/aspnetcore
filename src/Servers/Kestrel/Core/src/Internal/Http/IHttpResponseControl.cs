@@ -6,9 +6,9 @@ using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Http
 {
-    public interface IHttpResponseControl
+    internal interface IHttpResponseControl
     {
         void ProduceContinue();
         Memory<byte> GetMemory(int sizeHint = 0);

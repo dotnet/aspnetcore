@@ -3,9 +3,9 @@
 
 using System.Diagnostics;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Http2.FlowControl
 {
-    public struct FlowControl
+    internal struct FlowControl
     {
         public FlowControl(uint initialWindowSize)
         {

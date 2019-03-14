@@ -6,16 +6,16 @@ using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Http;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure
 {
     /// <summary>
     /// This wraps PipeWriter.FlushAsync() in a way that allows multiple awaiters making it safe to call from publicly
     /// exposed Stream implementations while also tracking response data rate.
     /// </summary>
-    public class TimingPipeFlusher
+    internal class TimingPipeFlusher
     {
         private readonly PipeWriter _writer;
         private readonly ITimeoutControl _timeoutControl;

@@ -6,9 +6,9 @@ using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Https
 {
-    public static class CertificateLoader
+    internal static class CertificateLoader
     {
         // See http://oid-info.com/get/1.3.6.1.5.5.7.3.1
         // Indicates that a certificate can be used as a SSL server certificate

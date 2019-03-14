@@ -3,9 +3,9 @@
 
 using System.IO.Pipelines;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions
 {
-    public interface IApplicationTransportFeature
+    internal interface IApplicationTransportFeature
     {
         IDuplexPipe Application { get; set; }
     }

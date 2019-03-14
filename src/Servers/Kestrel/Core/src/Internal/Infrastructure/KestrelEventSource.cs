@@ -4,13 +4,13 @@
 using System.Diagnostics.Tracing;
 using System.Net;
 using System.Runtime.CompilerServices;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure
 {
     [EventSource(Name = "Microsoft-AspNetCore-Server-Kestrel")]
-    public sealed class KestrelEventSource : EventSource
+    internal sealed class KestrelEventSource : EventSource
     {
         public static readonly KestrelEventSource Log = new KestrelEventSource();
 

@@ -7,9 +7,9 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Http
 {
-    public partial class HttpResponseTrailers : HttpHeaders
+    internal partial class HttpResponseTrailers : HttpHeaders
     {
         public Enumerator GetEnumerator()
         {

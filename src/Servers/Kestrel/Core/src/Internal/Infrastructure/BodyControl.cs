@@ -5,11 +5,11 @@ using System;
 using System.IO;
 using System.IO.Pipelines;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Http;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure
 {
-    public class BodyControl
+    internal class BodyControl
     {
         private static readonly ThrowingWasUpgradedWriteOnlyStream _throwingResponseStream
             = new ThrowingWasUpgradedWriteOnlyStream();

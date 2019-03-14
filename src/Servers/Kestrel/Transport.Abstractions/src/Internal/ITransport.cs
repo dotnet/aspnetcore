@@ -3,9 +3,9 @@
 
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions
 {
-    public interface ITransport
+    internal interface ITransport
     {
         // Can only be called once per ITransport
         Task BindAsync();

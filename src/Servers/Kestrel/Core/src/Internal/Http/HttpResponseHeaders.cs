@@ -10,9 +10,9 @@ using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Http
 {
-    public sealed partial class HttpResponseHeaders : HttpHeaders
+    internal sealed partial class HttpResponseHeaders : HttpHeaders
     {
         private static ReadOnlySpan<byte> _CrLf => new[] { (byte)'\r', (byte)'\n' };
         private static ReadOnlySpan<byte> _colonSpace => new[] { (byte)':', (byte)' ' };

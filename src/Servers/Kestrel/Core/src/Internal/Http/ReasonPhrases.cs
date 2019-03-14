@@ -6,9 +6,9 @@ using System.Globalization;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Http
 {
-    public static class ReasonPhrases
+    internal static class ReasonPhrases
     {
         private static readonly byte[] _bytesStatus100 = CreateStatusBytes(StatusCodes.Status100Continue);
         private static readonly byte[] _bytesStatus101 = CreateStatusBytes(StatusCodes.Status101SwitchingProtocols);

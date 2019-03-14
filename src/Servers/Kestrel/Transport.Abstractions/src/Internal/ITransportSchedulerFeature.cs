@@ -3,9 +3,9 @@
 
 using System.IO.Pipelines;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions
 {
-    public interface ITransportSchedulerFeature
+    internal interface ITransportSchedulerFeature
     {
         PipeScheduler InputWriterScheduler { get; }
 

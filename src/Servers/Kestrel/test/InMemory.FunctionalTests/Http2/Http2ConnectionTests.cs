@@ -12,8 +12,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Http2;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Http2.HPack;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
@@ -1615,10 +1615,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Theory]
-        [InlineData(Http2HeadersFrameFlags.NONE)]
-        [InlineData(Http2HeadersFrameFlags.END_HEADERS)]
-        public async Task HEADERS_Received_WithTrailers_EndStreamNotSet_ConnectionError(Http2HeadersFrameFlags flags)
+        [InlineData(nameof(Http2HeadersFrameFlags.NONE))]
+        [InlineData(nameof(Http2HeadersFrameFlags.END_HEADERS))]
+        public async Task HEADERS_Received_WithTrailers_EndStreamNotSet_ConnectionError(string stringFlags)
         {
+            Enum.TryParse(stringFlags, out Http2HeadersFrameFlags flags);
             await InitializeConnectionAsync(_readTrailersApplication);
 
             await SendHeadersAsync(1, Http2HeadersFrameFlags.END_HEADERS, _browserRequestHeaders);
@@ -2463,17 +2464,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Theory]
-        [InlineData(Http2SettingsParameter.SETTINGS_ENABLE_PUSH, 2, Http2ErrorCode.PROTOCOL_ERROR)]
-        [InlineData(Http2SettingsParameter.SETTINGS_ENABLE_PUSH, uint.MaxValue, Http2ErrorCode.PROTOCOL_ERROR)]
-        [InlineData(Http2SettingsParameter.SETTINGS_INITIAL_WINDOW_SIZE, (uint)int.MaxValue + 1, Http2ErrorCode.FLOW_CONTROL_ERROR)]
-        [InlineData(Http2SettingsParameter.SETTINGS_INITIAL_WINDOW_SIZE, uint.MaxValue, Http2ErrorCode.FLOW_CONTROL_ERROR)]
-        [InlineData(Http2SettingsParameter.SETTINGS_MAX_FRAME_SIZE, 0, Http2ErrorCode.PROTOCOL_ERROR)]
-        [InlineData(Http2SettingsParameter.SETTINGS_MAX_FRAME_SIZE, 1, Http2ErrorCode.PROTOCOL_ERROR)]
-        [InlineData(Http2SettingsParameter.SETTINGS_MAX_FRAME_SIZE, 16 * 1024 - 1, Http2ErrorCode.PROTOCOL_ERROR)]
-        [InlineData(Http2SettingsParameter.SETTINGS_MAX_FRAME_SIZE, 16 * 1024 * 1024, Http2ErrorCode.PROTOCOL_ERROR)]
-        [InlineData(Http2SettingsParameter.SETTINGS_MAX_FRAME_SIZE, uint.MaxValue, Http2ErrorCode.PROTOCOL_ERROR)]
-        public async Task SETTINGS_Received_InvalidParameterValue_ConnectionError(Http2SettingsParameter parameter, uint value, Http2ErrorCode expectedErrorCode)
+        [InlineData(nameof(Http2SettingsParameter.SETTINGS_ENABLE_PUSH), 2, nameof(Http2ErrorCode.PROTOCOL_ERROR))]
+        [InlineData(nameof(Http2SettingsParameter.SETTINGS_ENABLE_PUSH), uint.MaxValue, nameof(Http2ErrorCode.PROTOCOL_ERROR))]
+        [InlineData(nameof(Http2SettingsParameter.SETTINGS_INITIAL_WINDOW_SIZE), (uint)int.MaxValue + 1, nameof(Http2ErrorCode.FLOW_CONTROL_ERROR))]
+        [InlineData(nameof(Http2SettingsParameter.SETTINGS_INITIAL_WINDOW_SIZE), uint.MaxValue, nameof(Http2ErrorCode.FLOW_CONTROL_ERROR))]
+        [InlineData(nameof(Http2SettingsParameter.SETTINGS_MAX_FRAME_SIZE), 0, nameof(Http2ErrorCode.PROTOCOL_ERROR))]
+        [InlineData(nameof(Http2SettingsParameter.SETTINGS_MAX_FRAME_SIZE), 1, nameof(Http2ErrorCode.PROTOCOL_ERROR))]
+        [InlineData(nameof(Http2SettingsParameter.SETTINGS_MAX_FRAME_SIZE), 16 * 1024 - 1, nameof(Http2ErrorCode.PROTOCOL_ERROR))]
+        [InlineData(nameof(Http2SettingsParameter.SETTINGS_MAX_FRAME_SIZE), 16 * 1024 * 1024, nameof(Http2ErrorCode.PROTOCOL_ERROR))]
+        [InlineData(nameof(Http2SettingsParameter.SETTINGS_MAX_FRAME_SIZE), uint.MaxValue, nameof(Http2ErrorCode.PROTOCOL_ERROR))]
+        public async Task SETTINGS_Received_InvalidParameterValue_ConnectionError(string stringParameter, uint value, string stringExpectedErrorCode)
         {
+            Enum.TryParse(stringParameter, out Http2SettingsParameter parameter);
+            Enum.TryParse(stringExpectedErrorCode, out Http2ErrorCode expectedErrorCode);
             await InitializeConnectionAsync(_noopApplication);
 
             await SendSettingsWithInvalidParameterValueAsync(parameter, value);
@@ -3852,12 +3855,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Theory]
-        [InlineData(Http2FrameType.DATA)]
-        [InlineData(Http2FrameType.WINDOW_UPDATE)]
-        [InlineData(Http2FrameType.HEADERS)]
-        [InlineData(Http2FrameType.CONTINUATION)]
-        public async Task AppDoesNotReadRequestBody_ResetsAndDrainsRequest(Http2FrameType finalFrameType)
+        [InlineData(nameof(Http2FrameType.DATA))]
+        [InlineData(nameof(Http2FrameType.WINDOW_UPDATE))]
+        [InlineData(nameof(Http2FrameType.HEADERS))]
+        [InlineData(nameof(Http2FrameType.CONTINUATION))]
+        public async Task AppDoesNotReadRequestBody_ResetsAndDrainsRequest(string stringFinalFrameType)
         {
+            Enum.TryParse(stringFinalFrameType, out Http2FrameType finalFrameType);
+
             var headers = new[]
             {
                 new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
@@ -3905,12 +3910,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Theory]
-        [InlineData(Http2FrameType.DATA)]
-        [InlineData(Http2FrameType.WINDOW_UPDATE)]
-        [InlineData(Http2FrameType.HEADERS)]
-        [InlineData(Http2FrameType.CONTINUATION)]
-        public async Task AbortedStream_ResetsAndDrainsRequest(Http2FrameType finalFrameType)
+        [InlineData(nameof(Http2FrameType.DATA))]
+        [InlineData(nameof(Http2FrameType.WINDOW_UPDATE))]
+        [InlineData(nameof(Http2FrameType.HEADERS))]
+        [InlineData(nameof(Http2FrameType.CONTINUATION))]
+        public async Task AbortedStream_ResetsAndDrainsRequest(string stringFinalFrameType)
         {
+            Enum.TryParse(stringFinalFrameType, out Http2FrameType finalFrameType);
+
             var headers = new[]
             {
                 new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
@@ -3947,11 +3954,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Theory]
-        [InlineData(Http2FrameType.DATA)]
-        [InlineData(Http2FrameType.HEADERS)]
-        [InlineData(Http2FrameType.CONTINUATION)]
-        public async Task AbortedStream_ResetsAndDrainsRequest_RefusesFramesAfterEndOfStream(Http2FrameType finalFrameType)
+        [InlineData(nameof(Http2FrameType.DATA))]
+        [InlineData(nameof(Http2FrameType.HEADERS))]
+        [InlineData(nameof(Http2FrameType.CONTINUATION))]
+        public async Task AbortedStream_ResetsAndDrainsRequest_RefusesFramesAfterEndOfStream(string stringFinalFrameType)
         {
+            Enum.TryParse(stringFinalFrameType, out Http2FrameType finalFrameType);
+
             var headers = new[]
             {
                 new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
@@ -4020,10 +4029,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Theory]
-        [InlineData(Http2FrameType.DATA)]
-        [InlineData(Http2FrameType.HEADERS)]
-        public async Task AbortedStream_ResetsAndDrainsRequest_RefusesFramesAfterClientReset(Http2FrameType finalFrameType)
+        [InlineData(nameof(Http2FrameType.DATA))]
+        [InlineData(nameof(Http2FrameType.HEADERS))]
+        public async Task AbortedStream_ResetsAndDrainsRequest_RefusesFramesAfterClientReset(string stringFinalFrameType)
         {
+            Enum.TryParse(stringFinalFrameType, out Http2FrameType finalFrameType);
+
             var headers = new[]
             {
                 new KeyValuePair<string, string>(HeaderNames.Method, "POST"),

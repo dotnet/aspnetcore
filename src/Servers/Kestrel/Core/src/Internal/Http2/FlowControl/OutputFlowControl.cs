@@ -4,9 +4,9 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Http2.FlowControl
 {
-    public class OutputFlowControl
+    internal class OutputFlowControl
     {
         private FlowControl _flow;
         private Queue<OutputFlowControlAwaitable> _awaitableQueue;

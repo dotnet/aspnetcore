@@ -10,9 +10,9 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions
 {
-    public partial class TransportConnection : IHttpConnectionFeature,
+    internal partial class TransportConnection : IHttpConnectionFeature,
                                                IConnectionIdFeature,
                                                IConnectionTransportFeature,
                                                IConnectionItemsFeature,

@@ -3,12 +3,12 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure
 {
     /// <summary>
     /// Summary description for Disposable
     /// </summary>
-    public class Disposable : IDisposable
+    internal class Disposable : IDisposable
     {
         private Action _dispose;
         private bool _disposedValue = false; // To detect redundant calls

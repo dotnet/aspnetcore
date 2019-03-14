@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Testing

@@ -3,9 +3,9 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Http2
 {
-    public class Http2PeerSettings
+    internal class Http2PeerSettings
     {
         // Note these are protocol defaults, not Kestrel defaults.
         public const uint DefaultHeaderTableSize = 4096;

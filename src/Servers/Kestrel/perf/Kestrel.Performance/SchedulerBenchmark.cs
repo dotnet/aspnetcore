@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {

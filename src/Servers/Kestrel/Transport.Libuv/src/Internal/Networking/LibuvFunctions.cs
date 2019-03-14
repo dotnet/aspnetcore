@@ -5,7 +5,7 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking
 {
     public class LibuvFunctions
     {
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
         public void loop_close(UvLoopHandle handle)
         {
             handle.Validate(closed: true);
-            ThrowIfErrored(_uv_loop_close(handle.InternalGetHandle()));
+            ThrowIfErrored(_uv_loop_close(handleGetHandle()));
         }
 
         protected Func<UvLoopHandle, int, int> _uv_run;
@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
         public void close(UvHandle handle, uv_close_cb close_cb)
         {
             handle.Validate(closed: true);
-            _uv_close(handle.InternalGetHandle(), close_cb);
+            _uv_close(handleGetHandle(), close_cb);
         }
 
         public void close(IntPtr handle, uv_close_cb close_cb)

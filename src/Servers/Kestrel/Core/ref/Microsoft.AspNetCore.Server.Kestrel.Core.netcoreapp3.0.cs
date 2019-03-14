@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
     {
         internal BadHttpRequestException() { }
         public int StatusCode { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public static void Throw(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.RequestRejectionReason reason, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod method) { }
+        public static void Throw(Microsoft.AspNetCore.Server.Kestrel.Core.Http.RequestRejectionReason reason, Microsoft.AspNetCore.Server.Kestrel.Core.Http.HttpMethod method) { }
     }
     public partial class Http2Limits
     {
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
     }
     public partial class KestrelServer : Microsoft.AspNetCore.Hosting.Server.IServer, System.IDisposable
     {
-        public KestrelServer(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions> options, Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.ITransportFactory transportFactory, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
+        public KestrelServer(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions> options, Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.ITransportFactory transportFactory, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
         public Microsoft.AspNetCore.Http.Features.IFeatureCollection Features { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions Options { get { throw null; } }
         public void Dispose() { }
@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         public KestrelServerOptions() { }
         public bool AddServerHeader { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public bool AllowSynchronousIO { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.SchedulingMode ApplicationSchedulingMode { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.SchedulingMode ApplicationSchedulingMode { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.IServiceProvider ApplicationServices { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader ConfigurationLoader { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerLimits Limits { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
@@ -140,19 +140,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         public void ListenUnixSocket(string socketPath) { }
         public void ListenUnixSocket(string socketPath, System.Action<Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions> configure) { }
     }
-    public partial class ListenOptions : Microsoft.AspNetCore.Connections.IConnectionBuilder, Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.IEndPointInformation
+    public partial class ListenOptions : Microsoft.AspNetCore.Connections.IConnectionBuilder, Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.IEndPointInformation
     {
         internal ListenOptions() { }
         public System.IServiceProvider ApplicationServices { get { throw null; } }
-        public System.Collections.Generic.List<Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal.IConnectionAdapter> ConnectionAdapters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.List<Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.IConnectionAdapter> ConnectionAdapters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public ulong FileHandle { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.FileHandleType HandleType { get { throw null; } set { } }
+        public Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.FileHandleType HandleType { get { throw null; } set { } }
         public System.Net.IPEndPoint IPEndPoint { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions KestrelServerOptions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public bool NoDelay { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols Protocols { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public string SocketPath { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.ListenType Type { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.ListenType Type { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public Microsoft.AspNetCore.Connections.ConnectionDelegate Build() { throw null; }
         public override string ToString() { throw null; }
         public Microsoft.AspNetCore.Connections.IConnectionBuilder Use(System.Func<Microsoft.AspNetCore.Connections.ConnectionDelegate, Microsoft.AspNetCore.Connections.ConnectionDelegate> middleware) { throw null; }
@@ -164,13 +164,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         public System.TimeSpan GracePeriod { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
 }
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter
 {
     public partial class AdaptedPipeline : System.IO.Pipelines.IDuplexPipe
     {
-        public AdaptedPipeline(System.IO.Pipelines.IDuplexPipe transport, System.IO.Pipelines.Pipe inputPipe, System.IO.Pipelines.Pipe outputPipe, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.IKestrelTrace log) { }
+        public AdaptedPipeline(System.IO.Pipelines.IDuplexPipe transport, System.IO.Pipelines.Pipe inputPipe, System.IO.Pipelines.Pipe outputPipe, Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.IKestrelTrace log) { }
         public System.IO.Pipelines.Pipe Input { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.IKestrelTrace Log { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.IKestrelTrace Log { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public System.IO.Pipelines.Pipe Output { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         System.IO.Pipelines.PipeReader System.IO.Pipelines.IDuplexPipe.Input { get { throw null; } }
         System.IO.Pipelines.PipeWriter System.IO.Pipelines.IDuplexPipe.Output { get { throw null; } }
@@ -190,13 +190,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
     public partial interface IConnectionAdapter
     {
         bool IsHttps { get; }
-        System.Threading.Tasks.Task<Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal.IAdaptedConnection> OnConnectionAsync(Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal.ConnectionAdapterContext context);
+        System.Threading.Tasks.Task<Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.IAdaptedConnection> OnConnectionAsync(Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.ConnectionAdapterContext context);
     }
-    public partial class LoggingConnectionAdapter : Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal.IConnectionAdapter
+    public partial class LoggingConnectionAdapter : Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.IConnectionAdapter
     {
         public LoggingConnectionAdapter(Microsoft.Extensions.Logging.ILogger logger) { }
         public bool IsHttps { get { throw null; } }
-        public System.Threading.Tasks.Task<Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal.IAdaptedConnection> OnConnectionAsync(Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal.ConnectionAdapterContext context) { throw null; }
+        public System.Threading.Tasks.Task<Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.IAdaptedConnection> OnConnectionAsync(Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.ConnectionAdapterContext context) { throw null; }
     }
     public partial class RawStream : System.IO.Stream
     {
@@ -253,16 +253,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Features
         System.ReadOnlyMemory<byte> ApplicationProtocol { get; }
     }
 }
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Core
 {
-    public partial class ConnectionDispatcher : Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.IConnectionDispatcher
+    public partial class ConnectionDispatcher : Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.IConnectionDispatcher
     {
-        public ConnectionDispatcher(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.ServiceContext serviceContext, Microsoft.AspNetCore.Connections.ConnectionDelegate connectionDelegate) { }
-        public System.Threading.Tasks.Task OnConnection(Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.TransportConnection connection) { throw null; }
+        public ConnectionDispatcher(Microsoft.AspNetCore.Server.Kestrel.Core.ServiceContext serviceContext, Microsoft.AspNetCore.Connections.ConnectionDelegate connectionDelegate) { }
+        public System.Threading.Tasks.Task OnConnection(Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.TransportConnection connection) { throw null; }
     }
     public partial class ConnectionLimitMiddleware
     {
-        public ConnectionLimitMiddleware(Microsoft.AspNetCore.Connections.ConnectionDelegate next, long connectionLimit, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.IKestrelTrace trace) { }
+        public ConnectionLimitMiddleware(Microsoft.AspNetCore.Connections.ConnectionDelegate next, long connectionLimit, Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.IKestrelTrace trace) { }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task OnConnectionAsync(Microsoft.AspNetCore.Connections.ConnectionContext connection) { throw null; }
     }
@@ -275,25 +275,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { throw null; }
         public override string ToString() { throw null; }
     }
-    public partial class HttpConnection : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.ITimeoutHandler
+    public partial class HttpConnection : Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.ITimeoutHandler
     {
-        public HttpConnection(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.HttpConnectionContext context) { }
+        public HttpConnection(Microsoft.AspNetCore.Server.Kestrel.Core.HttpConnectionContext context) { }
         public string ConnectionId { get { throw null; } }
         public System.Net.IPEndPoint LocalEndPoint { get { throw null; } }
         public System.Net.IPEndPoint RemoteEndPoint { get { throw null; } }
-        public void OnTimeout(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.TimeoutReason reason) { }
+        public void OnTimeout(Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.TimeoutReason reason) { }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task ProcessRequestsAsync<TContext>(Microsoft.AspNetCore.Hosting.Server.IHttpApplication<TContext> httpApplication) { throw null; }
     }
     public static partial class HttpConnectionBuilderExtensions
     {
-        public static Microsoft.AspNetCore.Connections.IConnectionBuilder UseHttpServer<TContext>(this Microsoft.AspNetCore.Connections.IConnectionBuilder builder, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.ServiceContext serviceContext, Microsoft.AspNetCore.Hosting.Server.IHttpApplication<TContext> application, Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols protocols) { throw null; }
-        public static Microsoft.AspNetCore.Connections.IConnectionBuilder UseHttpServer<TContext>(this Microsoft.AspNetCore.Connections.IConnectionBuilder builder, System.Collections.Generic.IList<Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal.IConnectionAdapter> adapters, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.ServiceContext serviceContext, Microsoft.AspNetCore.Hosting.Server.IHttpApplication<TContext> application, Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols protocols) { throw null; }
+        public static Microsoft.AspNetCore.Connections.IConnectionBuilder UseHttpServer<TContext>(this Microsoft.AspNetCore.Connections.IConnectionBuilder builder, Microsoft.AspNetCore.Server.Kestrel.Core.ServiceContext serviceContext, Microsoft.AspNetCore.Hosting.Server.IHttpApplication<TContext> application, Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols protocols) { throw null; }
+        public static Microsoft.AspNetCore.Connections.IConnectionBuilder UseHttpServer<TContext>(this Microsoft.AspNetCore.Connections.IConnectionBuilder builder, System.Collections.Generic.IList<Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.IConnectionAdapter> adapters, Microsoft.AspNetCore.Server.Kestrel.Core.ServiceContext serviceContext, Microsoft.AspNetCore.Hosting.Server.IHttpApplication<TContext> application, Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols protocols) { throw null; }
     }
     public partial class HttpConnectionContext
     {
         public HttpConnectionContext() { }
-        public System.Collections.Generic.IList<Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal.IConnectionAdapter> ConnectionAdapters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.Collections.Generic.IList<Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.IConnectionAdapter> ConnectionAdapters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.Connections.ConnectionContext ConnectionContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.Http.Features.IFeatureCollection ConnectionFeatures { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public string ConnectionId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
@@ -301,13 +301,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public System.Buffers.MemoryPool<byte> MemoryPool { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols Protocols { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.Net.IPEndPoint RemoteEndPoint { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.ServiceContext ServiceContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.ITimeoutControl TimeoutControl { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.ServiceContext ServiceContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.ITimeoutControl TimeoutControl { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.IO.Pipelines.IDuplexPipe Transport { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
     public partial class HttpConnectionMiddleware<TContext>
     {
-        public HttpConnectionMiddleware(System.Collections.Generic.IList<Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal.IConnectionAdapter> adapters, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.ServiceContext serviceContext, Microsoft.AspNetCore.Hosting.Server.IHttpApplication<TContext> application, Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols protocols) { }
+        public HttpConnectionMiddleware(System.Collections.Generic.IList<Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.IConnectionAdapter> adapters, Microsoft.AspNetCore.Server.Kestrel.Core.ServiceContext serviceContext, Microsoft.AspNetCore.Hosting.Server.IHttpApplication<TContext> application, Microsoft.AspNetCore.Server.Kestrel.Core.HttpProtocols protocols) { }
         public System.Threading.Tasks.Task OnConnectionAsync(Microsoft.AspNetCore.Connections.ConnectionContext connectionContext) { throw null; }
     }
     public partial interface IRequestProcessor
@@ -325,7 +325,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public KestrelServerOptionsSetup(System.IServiceProvider services) { }
         public void Configure(Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions options) { }
     }
-    public partial class KestrelTrace : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.IKestrelTrace, Microsoft.Extensions.Logging.ILogger
+    public partial class KestrelTrace : Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.IKestrelTrace, Microsoft.Extensions.Logging.ILogger
     {
         protected readonly Microsoft.Extensions.Logging.ILogger _logger;
         public KestrelTrace(Microsoft.Extensions.Logging.ILogger logger) { }
@@ -343,15 +343,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public virtual void ConnectionStart(string connectionId) { }
         public virtual void ConnectionStop(string connectionId) { }
         public virtual void HeartbeatSlow(System.TimeSpan interval, System.DateTimeOffset now) { }
-        public virtual void HPackDecodingError(string connectionId, int streamId, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack.HPackDecodingException ex) { }
-        public virtual void HPackEncodingError(string connectionId, int streamId, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack.HPackEncodingException ex) { }
+        public virtual void HPackDecodingError(string connectionId, int streamId, Microsoft.AspNetCore.Server.Kestrel.Core.Http2.HPack.HPackDecodingException ex) { }
+        public virtual void HPackEncodingError(string connectionId, int streamId, Microsoft.AspNetCore.Server.Kestrel.Core.Http2.HPack.HPackEncodingException ex) { }
         public virtual void Http2ConnectionClosed(string connectionId, int highestOpenedStreamId) { }
         public virtual void Http2ConnectionClosing(string connectionId) { }
-        public virtual void Http2ConnectionError(string connectionId, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2ConnectionErrorException ex) { }
-        public void Http2FrameReceived(string connectionId, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2Frame frame) { }
-        public void Http2FrameSending(string connectionId, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2Frame frame) { }
-        public virtual void Http2StreamError(string connectionId, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2StreamErrorException ex) { }
-        public void Http2StreamResetAbort(string traceIdentifier, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2ErrorCode error, Microsoft.AspNetCore.Connections.ConnectionAbortedException abortReason) { }
+        public virtual void Http2ConnectionError(string connectionId, Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2ConnectionErrorException ex) { }
+        public void Http2FrameReceived(string connectionId, Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2Frame frame) { }
+        public void Http2FrameSending(string connectionId, Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2Frame frame) { }
+        public virtual void Http2StreamError(string connectionId, Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2StreamErrorException ex) { }
+        public void Http2StreamResetAbort(string traceIdentifier, Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2ErrorCode error, Microsoft.AspNetCore.Connections.ConnectionAbortedException abortReason) { }
         public virtual bool IsEnabled(Microsoft.Extensions.Logging.LogLevel logLevel) { throw null; }
         public virtual void Log<TState>(Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId, TState state, System.Exception exception, System.Func<TState, System.Exception, string> formatter) { }
         public virtual void NotAllConnectionsAborted() { }
@@ -367,17 +367,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
     public partial class ServiceContext
     {
         public ServiceContext() { }
-        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.ConnectionManager ConnectionManager { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.DateHeaderValueManager DateHeaderValueManager { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.Heartbeat Heartbeat { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpParser<Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.Http1ParsingHandler> HttpParser { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.IKestrelTrace Log { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.ConnectionManager ConnectionManager { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.Http.DateHeaderValueManager DateHeaderValueManager { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.Heartbeat Heartbeat { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.Http.IHttpParser<Microsoft.AspNetCore.Server.Kestrel.Core.Http.Http1ParsingHandler> HttpParser { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.IKestrelTrace Log { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.IO.Pipelines.PipeScheduler Scheduler { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions ServerOptions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.ISystemClock SystemClock { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.ISystemClock SystemClock { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
 }
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Http
 {
     [System.FlagsAttribute]
     public enum ConnectionOptions
@@ -387,10 +387,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         None = 0,
         Upgrade = 4,
     }
-    public partial class DateHeaderValueManager : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.IHeartbeatHandler
+    public partial class DateHeaderValueManager : Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.IHeartbeatHandler
     {
         public DateHeaderValueManager() { }
-        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.DateHeaderValueManager.DateHeaderValues GetDateHeaderValues() { throw null; }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.Http.DateHeaderValueManager.DateHeaderValues GetDateHeaderValues() { throw null; }
         public void OnHeartbeat(System.DateTimeOffset now) { }
         public partial class DateHeaderValues
         {
@@ -399,9 +399,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             public DateHeaderValues() { }
         }
     }
-    public partial class Http1ChunkedEncodingMessageBody : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.Http1MessageBody
+    public partial class Http1ChunkedEncodingMessageBody : Microsoft.AspNetCore.Server.Kestrel.Core.Http.Http1MessageBody
     {
-        public Http1ChunkedEncodingMessageBody(bool keepAlive, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.Http1Connection context) : base (default(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.Http1Connection)) { }
+        public Http1ChunkedEncodingMessageBody(bool keepAlive, Microsoft.AspNetCore.Server.Kestrel.Core.Http.Http1Connection context) : base (default(Microsoft.AspNetCore.Server.Kestrel.Core.Http.Http1Connection)) { }
         public override void AdvanceTo(System.SequencePosition consumed) { }
         public override void AdvanceTo(System.SequencePosition consumed, System.SequencePosition examined) { }
         public override void CancelPendingRead() { }
@@ -415,10 +415,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public override System.Threading.Tasks.ValueTask<System.IO.Pipelines.ReadResult> ReadAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
         public override bool TryRead(out System.IO.Pipelines.ReadResult readResult) { throw null; }
     }
-    public partial class Http1Connection : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpProtocol, Microsoft.AspNetCore.Server.Kestrel.Core.Features.IHttpMinRequestBodyDataRateFeature, Microsoft.AspNetCore.Server.Kestrel.Core.Features.IHttpMinResponseDataRateFeature, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.IRequestProcessor
+    public partial class Http1Connection : Microsoft.AspNetCore.Server.Kestrel.Core.Http.HttpProtocol, Microsoft.AspNetCore.Server.Kestrel.Core.Features.IHttpMinRequestBodyDataRateFeature, Microsoft.AspNetCore.Server.Kestrel.Core.Features.IHttpMinResponseDataRateFeature, Microsoft.AspNetCore.Server.Kestrel.Core.IRequestProcessor
     {
         protected readonly long _keepAliveTicks;
-        public Http1Connection(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.HttpConnectionContext context) : base (default(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.HttpConnectionContext)) { }
+        public Http1Connection(Microsoft.AspNetCore.Server.Kestrel.Core.HttpConnectionContext context) : base (default(Microsoft.AspNetCore.Server.Kestrel.Core.HttpConnectionContext)) { }
         public System.IO.Pipelines.PipeReader Input { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public System.Buffers.MemoryPool<byte> MemoryPool { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         Microsoft.AspNetCore.Server.Kestrel.Core.MinDataRate Microsoft.AspNetCore.Server.Kestrel.Core.Features.IHttpMinRequestBodyDataRateFeature.MinDataRate { get { throw null; } set { } }
@@ -430,16 +430,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         protected override void ApplicationAbort() { }
         protected override bool BeginRead(out System.Threading.Tasks.ValueTask<System.IO.Pipelines.ReadResult> awaitable) { throw null; }
         protected override void BeginRequestProcessing() { }
-        protected override Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.MessageBody CreateMessageBody() { throw null; }
+        protected override Microsoft.AspNetCore.Server.Kestrel.Core.Http.MessageBody CreateMessageBody() { throw null; }
         protected override string CreateRequestId() { throw null; }
         public void HandleReadDataRateTimeout() { }
         public void HandleRequestHeadersTimeout() { }
-        void Microsoft.AspNetCore.Server.Kestrel.Core.Internal.IRequestProcessor.Tick(System.DateTimeOffset now) { }
+        void Microsoft.AspNetCore.Server.Kestrel.Core.IRequestProcessor.Tick(System.DateTimeOffset now) { }
         public void OnInputOrOutputCompleted() { }
         protected override void OnRequestProcessingEnded() { }
         protected override void OnRequestProcessingEnding() { }
         protected override void OnReset() { }
-        public void OnStartLine(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod method, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersion version, System.Span<byte> target, System.Span<byte> path, System.Span<byte> query, System.Span<byte> customMethod, bool pathEncoded) { }
+        public void OnStartLine(Microsoft.AspNetCore.Server.Kestrel.Core.Http.HttpMethod method, Microsoft.AspNetCore.Server.Kestrel.Core.Http.HttpVersion version, System.Span<byte> target, System.Span<byte> path, System.Span<byte> query, System.Span<byte> customMethod, bool pathEncoded) { }
         public void ParseRequest(System.Buffers.ReadOnlySequence<byte> buffer, out System.SequencePosition consumed, out System.SequencePosition examined) { throw null; }
         public void SendTimeoutResponse() { }
         public void StopProcessingNextRequest() { }
@@ -447,9 +447,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public bool TakeStartLine(System.Buffers.ReadOnlySequence<byte> buffer, out System.SequencePosition consumed, out System.SequencePosition examined) { throw null; }
         protected override bool TryParseRequest(System.IO.Pipelines.ReadResult result, out bool endConnection) { throw null; }
     }
-    public partial class Http1ContentLengthMessageBody : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.Http1MessageBody
+    public partial class Http1ContentLengthMessageBody : Microsoft.AspNetCore.Server.Kestrel.Core.Http.Http1MessageBody
     {
-        public Http1ContentLengthMessageBody(bool keepAlive, long contentLength, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.Http1Connection context) : base (default(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.Http1Connection)) { }
+        public Http1ContentLengthMessageBody(bool keepAlive, long contentLength, Microsoft.AspNetCore.Server.Kestrel.Core.Http.Http1Connection context) : base (default(Microsoft.AspNetCore.Server.Kestrel.Core.Http.Http1Connection)) { }
         public override void AdvanceTo(System.SequencePosition consumed) { }
         public override void AdvanceTo(System.SequencePosition consumed, System.SequencePosition examined) { }
         public override void CancelPendingRead() { }
@@ -461,26 +461,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public override System.Threading.Tasks.ValueTask<System.IO.Pipelines.ReadResult> ReadAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
         public override bool TryRead(out System.IO.Pipelines.ReadResult readResult) { throw null; }
     }
-    public abstract partial class Http1MessageBody : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.MessageBody
+    public abstract partial class Http1MessageBody : Microsoft.AspNetCore.Server.Kestrel.Core.Http.MessageBody
     {
-        protected readonly Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.Http1Connection _context;
-        protected Http1MessageBody(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.Http1Connection context) : base (default(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpProtocol), default(Microsoft.AspNetCore.Server.Kestrel.Core.MinDataRate)) { }
+        protected readonly Microsoft.AspNetCore.Server.Kestrel.Core.Http.Http1Connection _context;
+        protected Http1MessageBody(Microsoft.AspNetCore.Server.Kestrel.Core.Http.Http1Connection context) : base (default(Microsoft.AspNetCore.Server.Kestrel.Core.Http.HttpProtocol), default(Microsoft.AspNetCore.Server.Kestrel.Core.MinDataRate)) { }
         protected void CheckCompletedReadResult(System.IO.Pipelines.ReadResult result) { }
-        public static Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.MessageBody For(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersion httpVersion, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpRequestHeaders headers, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.Http1Connection context) { throw null; }
+        public static Microsoft.AspNetCore.Server.Kestrel.Core.Http.MessageBody For(Microsoft.AspNetCore.Server.Kestrel.Core.Http.HttpVersion httpVersion, Microsoft.AspNetCore.Server.Kestrel.Core.Http.HttpRequestHeaders headers, Microsoft.AspNetCore.Server.Kestrel.Core.Http.Http1Connection context) { throw null; }
         protected override System.Threading.Tasks.Task OnConsumeAsync() { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         protected System.Threading.Tasks.Task OnConsumeAsyncAwaited() { throw null; }
     }
-    public partial class Http1OutputProducer : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpOutputAborter, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpOutputProducer, System.IDisposable
+    public partial class Http1OutputProducer : Microsoft.AspNetCore.Server.Kestrel.Core.Http.IHttpOutputAborter, Microsoft.AspNetCore.Server.Kestrel.Core.Http.IHttpOutputProducer, System.IDisposable
     {
-        public Http1OutputProducer(System.IO.Pipelines.PipeWriter pipeWriter, string connectionId, Microsoft.AspNetCore.Connections.ConnectionContext connectionContext, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.IKestrelTrace log, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.ITimeoutControl timeoutControl, Microsoft.AspNetCore.Server.Kestrel.Core.Features.IHttpMinResponseDataRateFeature minResponseDataRateFeature, System.Buffers.MemoryPool<byte> memoryPool) { }
+        public Http1OutputProducer(System.IO.Pipelines.PipeWriter pipeWriter, string connectionId, Microsoft.AspNetCore.Connections.ConnectionContext connectionContext, Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.IKestrelTrace log, Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.ITimeoutControl timeoutControl, Microsoft.AspNetCore.Server.Kestrel.Core.Features.IHttpMinResponseDataRateFeature minResponseDataRateFeature, System.Buffers.MemoryPool<byte> memoryPool) { }
         public void Abort(Microsoft.AspNetCore.Connections.ConnectionAbortedException error) { }
         public void Advance(int bytes) { }
         public void CancelPendingFlush() { }
         public void Complete() { }
         public void Dispose() { }
-        public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> FirstWriteAsync(int statusCode, string reasonPhrase, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpResponseHeaders responseHeaders, bool autoChunk, System.ReadOnlySpan<byte> buffer, System.Threading.CancellationToken cancellationToken) { throw null; }
-        public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> FirstWriteChunkedAsync(int statusCode, string reasonPhrase, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpResponseHeaders responseHeaders, bool autoChunk, System.ReadOnlySpan<byte> buffer, System.Threading.CancellationToken cancellationToken) { throw null; }
+        public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> FirstWriteAsync(int statusCode, string reasonPhrase, Microsoft.AspNetCore.Server.Kestrel.Core.Http.HttpResponseHeaders responseHeaders, bool autoChunk, System.ReadOnlySpan<byte> buffer, System.Threading.CancellationToken cancellationToken) { throw null; }
+        public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> FirstWriteChunkedAsync(int statusCode, string reasonPhrase, Microsoft.AspNetCore.Server.Kestrel.Core.Http.HttpResponseHeaders responseHeaders, bool autoChunk, System.ReadOnlySpan<byte> buffer, System.Threading.CancellationToken cancellationToken) { throw null; }
         public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> FlushAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
         public System.Memory<byte> GetMemory(int sizeHint = 0) { throw null; }
         public System.Span<byte> GetSpan(int sizeHint = 0) { throw null; }
@@ -489,21 +489,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> WriteChunkAsync(System.ReadOnlySpan<byte> buffer, System.Threading.CancellationToken cancellationToken) { throw null; }
         public System.Threading.Tasks.Task WriteDataAsync(System.ReadOnlySpan<byte> buffer, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
         public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> WriteDataToPipeAsync(System.ReadOnlySpan<byte> buffer, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
-        public void WriteResponseHeaders(int statusCode, string reasonPhrase, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpResponseHeaders responseHeaders, bool autoChunk) { }
+        public void WriteResponseHeaders(int statusCode, string reasonPhrase, Microsoft.AspNetCore.Server.Kestrel.Core.Http.HttpResponseHeaders responseHeaders, bool autoChunk) { }
         public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> WriteStreamSuffixAsync() { throw null; }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
-    public readonly partial struct Http1ParsingHandler : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpHeadersHandler, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpRequestLineHandler
+    public readonly partial struct Http1ParsingHandler : Microsoft.AspNetCore.Server.Kestrel.Core.Http.IHttpHeadersHandler, Microsoft.AspNetCore.Server.Kestrel.Core.Http.IHttpRequestLineHandler
     {
-        public readonly Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.Http1Connection Connection;
-        public Http1ParsingHandler(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.Http1Connection connection) { throw null; }
+        public readonly Microsoft.AspNetCore.Server.Kestrel.Core.Http.Http1Connection Connection;
+        public Http1ParsingHandler(Microsoft.AspNetCore.Server.Kestrel.Core.Http.Http1Connection connection) { throw null; }
         public void OnHeader(System.Span<byte> name, System.Span<byte> value) { }
-        public void OnStartLine(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod method, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersion version, System.Span<byte> target, System.Span<byte> path, System.Span<byte> query, System.Span<byte> customMethod, bool pathEncoded) { }
+        public void OnStartLine(Microsoft.AspNetCore.Server.Kestrel.Core.Http.HttpMethod method, Microsoft.AspNetCore.Server.Kestrel.Core.Http.HttpVersion version, System.Span<byte> target, System.Span<byte> path, System.Span<byte> query, System.Span<byte> customMethod, bool pathEncoded) { }
     }
-    public partial class Http1UpgradeMessageBody : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.Http1MessageBody
+    public partial class Http1UpgradeMessageBody : Microsoft.AspNetCore.Server.Kestrel.Core.Http.Http1MessageBody
     {
         public bool _completed;
-        public Http1UpgradeMessageBody(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.Http1Connection context) : base (default(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.Http1Connection)) { }
+        public Http1UpgradeMessageBody(Microsoft.AspNetCore.Server.Kestrel.Core.Http.Http1Connection context) : base (default(Microsoft.AspNetCore.Server.Kestrel.Core.Http.Http1Connection)) { }
         public override bool IsEmpty { get { throw null; } }
         public override void AdvanceTo(System.SequencePosition consumed) { }
         public override void AdvanceTo(System.SequencePosition consumed, System.SequencePosition examined) { }
@@ -536,8 +536,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         protected virtual bool CopyToFast(System.Collections.Generic.KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues>[] array, int arrayIndex) { throw null; }
         protected virtual int GetCountFast() { throw null; }
         protected virtual System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues>> GetEnumeratorFast() { throw null; }
-        public static Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.TransferCoding GetFinalTransferCoding(in Microsoft.Extensions.Primitives.StringValues transferEncoding) { throw null; }
-        public static Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.ConnectionOptions ParseConnection(in Microsoft.Extensions.Primitives.StringValues connection) { throw null; }
+        public static Microsoft.AspNetCore.Server.Kestrel.Core.Http.TransferCoding GetFinalTransferCoding(in Microsoft.Extensions.Primitives.StringValues transferEncoding) { throw null; }
+        public static Microsoft.AspNetCore.Server.Kestrel.Core.Http.ConnectionOptions ParseConnection(in Microsoft.Extensions.Primitives.StringValues connection) { throw null; }
         protected virtual bool RemoveFast(string key) { throw null; }
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public void Reset() { }
         public void SetReadOnly() { }
@@ -576,24 +576,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         Put = (byte)1,
         Trace = (byte)5,
     }
-    public partial class HttpParser<TRequestHandler> : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpParser<TRequestHandler> where TRequestHandler : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpHeadersHandler, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpRequestLineHandler
+    public partial class HttpParser<TRequestHandler> : Microsoft.AspNetCore.Server.Kestrel.Core.Http.IHttpParser<TRequestHandler> where TRequestHandler : Microsoft.AspNetCore.Server.Kestrel.Core.Http.IHttpHeadersHandler, Microsoft.AspNetCore.Server.Kestrel.Core.Http.IHttpRequestLineHandler
     {
         public HttpParser() { }
         public HttpParser(bool showErrorDetails) { }
-        bool Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpParser<TRequestHandler>.ParseHeaders(TRequestHandler handler, in System.Buffers.ReadOnlySequence<byte> buffer, out System.SequencePosition consumed, out System.SequencePosition examined, out int consumedBytes) { throw null; }
-        bool Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpParser<TRequestHandler>.ParseRequestLine(TRequestHandler handler, in System.Buffers.ReadOnlySequence<byte> buffer, out System.SequencePosition consumed, out System.SequencePosition examined) { throw null; }
+        bool Microsoft.AspNetCore.Server.Kestrel.Core.Http.IHttpParser<TRequestHandler>.ParseHeaders(TRequestHandler handler, in System.Buffers.ReadOnlySequence<byte> buffer, out System.SequencePosition consumed, out System.SequencePosition examined, out int consumedBytes) { throw null; }
+        bool Microsoft.AspNetCore.Server.Kestrel.Core.Http.IHttpParser<TRequestHandler>.ParseRequestLine(TRequestHandler handler, in System.Buffers.ReadOnlySequence<byte> buffer, out System.SequencePosition consumed, out System.SequencePosition examined) { throw null; }
         public bool ParseHeaders(TRequestHandler handler, in System.Buffers.ReadOnlySequence<byte> buffer, out System.SequencePosition consumed, out System.SequencePosition examined, out int consumedBytes) { throw null; }
         public bool ParseRequestLine(TRequestHandler handler, in System.Buffers.ReadOnlySequence<byte> buffer, out System.SequencePosition consumed, out System.SequencePosition examined) { throw null; }
     }
-    public abstract partial class HttpProtocol : Microsoft.AspNetCore.Http.Features.IFeatureCollection, Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature, Microsoft.AspNetCore.Http.Features.IHttpConnectionFeature, Microsoft.AspNetCore.Http.Features.IHttpMaxRequestBodySizeFeature, Microsoft.AspNetCore.Http.Features.IHttpRequestFeature, Microsoft.AspNetCore.Http.Features.IHttpRequestIdentifierFeature, Microsoft.AspNetCore.Http.Features.IHttpRequestLifetimeFeature, Microsoft.AspNetCore.Http.Features.IHttpResponseFeature, Microsoft.AspNetCore.Http.Features.IHttpResponseStartFeature, Microsoft.AspNetCore.Http.Features.IHttpUpgradeFeature, Microsoft.AspNetCore.Http.Features.IRequestBodyPipeFeature, Microsoft.AspNetCore.Http.Features.IResponseBodyPipeFeature, Microsoft.AspNetCore.Http.IDefaultHttpContextContainer, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpResponseControl, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.Type, object>>, System.Collections.IEnumerable
+    public abstract partial class HttpProtocol : Microsoft.AspNetCore.Http.Features.IFeatureCollection, Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature, Microsoft.AspNetCore.Http.Features.IHttpConnectionFeature, Microsoft.AspNetCore.Http.Features.IHttpMaxRequestBodySizeFeature, Microsoft.AspNetCore.Http.Features.IHttpRequestFeature, Microsoft.AspNetCore.Http.Features.IHttpRequestIdentifierFeature, Microsoft.AspNetCore.Http.Features.IHttpRequestLifetimeFeature, Microsoft.AspNetCore.Http.Features.IHttpResponseFeature, Microsoft.AspNetCore.Http.Features.IHttpResponseStartFeature, Microsoft.AspNetCore.Http.Features.IHttpUpgradeFeature, Microsoft.AspNetCore.Http.Features.IRequestBodyPipeFeature, Microsoft.AspNetCore.Http.Features.IResponseBodyPipeFeature, Microsoft.AspNetCore.Http.IDefaultHttpContextContainer, Microsoft.AspNetCore.Server.Kestrel.Core.Http.IHttpResponseControl, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.Type, object>>, System.Collections.IEnumerable
     {
-        protected Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.BodyControl bodyControl;
+        protected Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.BodyControl bodyControl;
         protected System.Exception _applicationException;
-        protected Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersion _httpVersion;
+        protected Microsoft.AspNetCore.Server.Kestrel.Core.Http.HttpVersion _httpVersion;
         protected volatile bool _keepAlive;
         protected string _methodText;
-        protected Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.RequestProcessingStatus _requestProcessingStatus;
-        public HttpProtocol(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.HttpConnectionContext context) { }
+        protected Microsoft.AspNetCore.Server.Kestrel.Core.Http.RequestProcessingStatus _requestProcessingStatus;
+        public HttpProtocol(Microsoft.AspNetCore.Server.Kestrel.Core.HttpConnectionContext context) { }
         public bool AllowSynchronousIO { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.Http.Features.IFeatureCollection ConnectionFeatures { get { throw null; } }
         protected string ConnectionId { get { throw null; } }
@@ -601,17 +601,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public bool HasFlushedHeaders { get { throw null; } }
         public bool HasResponseStarted { get { throw null; } }
         public bool HasStartedConsumingRequestBody { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        protected Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpRequestHeaders HttpRequestHeaders { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpResponseControl HttpResponseControl { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        protected Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpResponseHeaders HttpResponseHeaders { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        protected Microsoft.AspNetCore.Server.Kestrel.Core.Http.HttpRequestHeaders HttpRequestHeaders { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.Http.IHttpResponseControl HttpResponseControl { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        protected Microsoft.AspNetCore.Server.Kestrel.Core.Http.HttpResponseHeaders HttpResponseHeaders { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public string HttpVersion { get { throw null; } [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]set { } }
         public bool IsUpgradableRequest { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public bool IsUpgraded { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.Net.IPAddress LocalIpAddress { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public int LocalPort { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        protected Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.IKestrelTrace Log { get { throw null; } }
+        protected Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.IKestrelTrace Log { get { throw null; } }
         public long? MaxRequestBodySize { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod Method { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.Http.HttpMethod Method { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         bool Microsoft.AspNetCore.Http.Features.IFeatureCollection.IsReadOnly { get { throw null; } }
         object Microsoft.AspNetCore.Http.Features.IFeatureCollection.this[System.Type key] { get { throw null; } set { } }
         int Microsoft.AspNetCore.Http.Features.IFeatureCollection.Revision { get { throw null; } }
@@ -643,7 +643,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         System.IO.Pipelines.PipeReader Microsoft.AspNetCore.Http.Features.IRequestBodyPipeFeature.Reader { get { throw null; } set { } }
         System.IO.Pipelines.PipeWriter Microsoft.AspNetCore.Http.Features.IResponseBodyPipeFeature.Writer { get { throw null; } set { } }
         Microsoft.AspNetCore.Http.DefaultHttpContext Microsoft.AspNetCore.Http.IDefaultHttpContextContainer.HttpContext { get { throw null; } }
-        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpOutputProducer Output { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]protected set { } }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.Http.IHttpOutputProducer Output { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]protected set { } }
         public string Path { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public string PathBase { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public string QueryString { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
@@ -660,9 +660,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public System.IO.Pipelines.PipeWriter ResponsePipeWriter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public string Scheme { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         protected Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions ServerOptions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.ServiceContext ServiceContext { get { throw null; } }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.ServiceContext ServiceContext { get { throw null; } }
         public int StatusCode { get { throw null; } set { } }
-        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.ITimeoutControl TimeoutControl { get { throw null; } }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.ITimeoutControl TimeoutControl { get { throw null; } }
         public string TraceIdentifier { get { throw null; } set { } }
         protected void AbortRequest() { }
         public void Advance(int bytes) { }
@@ -671,7 +671,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         protected virtual void BeginRequestProcessing() { }
         public void CancelPendingFlush() { }
         public void Complete(System.Exception ex) { }
-        protected abstract Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.MessageBody CreateMessageBody();
+        protected abstract Microsoft.AspNetCore.Server.Kestrel.Core.Http.MessageBody CreateMessageBody();
         protected abstract string CreateRequestId();
         protected System.Threading.Tasks.Task FireOnCompleted() { throw null; }
         protected System.Threading.Tasks.Task FireOnStarting() { throw null; }
@@ -680,7 +680,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public System.Memory<byte> GetMemory(int sizeHint = 0) { throw null; }
         public System.Span<byte> GetSpan(int sizeHint = 0) { throw null; }
         public void HandleNonBodyResponseWrite() { }
-        public void InitializeBodyControl(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.MessageBody messageBody) { }
+        public void InitializeBodyControl(Microsoft.AspNetCore.Server.Kestrel.Core.Http.MessageBody messageBody) { }
         public System.Threading.Tasks.Task InitializeResponseAsync(int firstWriteByteCount) { throw null; }
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)][System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task InitializeResponseAwaited(System.Threading.Tasks.Task startingTask, int firstWriteByteCount) { throw null; }
@@ -721,7 +721,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> WriteAsyncAwaited(System.Threading.Tasks.Task initializeTask, System.ReadOnlyMemory<byte> data, System.Threading.CancellationToken cancellationToken) { throw null; }
         public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> WritePipeAsync(System.ReadOnlyMemory<byte> data, System.Threading.CancellationToken cancellationToken) { throw null; }
     }
-    public sealed partial class HttpRequestHeaders : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpHeaders
+    public sealed partial class HttpRequestHeaders : Microsoft.AspNetCore.Server.Kestrel.Core.Http.HttpHeaders
     {
         public HttpRequestHeaders() { }
         public bool HasConnection { get { throw null; } }
@@ -777,7 +777,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         protected override void ClearFast() { }
         protected override bool CopyToFast(System.Collections.Generic.KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues>[] array, int arrayIndex) { throw null; }
         protected override int GetCountFast() { throw null; }
-        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpRequestHeaders.Enumerator GetEnumerator() { throw null; }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.Http.HttpRequestHeaders.Enumerator GetEnumerator() { throw null; }
         protected override System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues>> GetEnumeratorFast() { throw null; }
         protected override bool RemoveFast(string key) { throw null; }
         protected override void SetValueFast(string key, in Microsoft.Extensions.Primitives.StringValues value) { }
@@ -804,7 +804,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public override void Complete(System.Exception exception = null) { }
         public override void OnWriterCompleted(System.Action<System.Exception, object> callback, object state) { }
         public override System.Threading.Tasks.ValueTask<System.IO.Pipelines.ReadResult> ReadAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
-        public void StartAcceptingReads(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.MessageBody body) { }
+        public void StartAcceptingReads(Microsoft.AspNetCore.Server.Kestrel.Core.Http.MessageBody body) { }
         public void StopAcceptingReads() { }
         public override bool TryRead(out System.IO.Pipelines.ReadResult result) { throw null; }
     }
@@ -816,7 +816,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         OriginForm = 0,
         Unknown = -1,
     }
-    public sealed partial class HttpResponseHeaders : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpHeaders
+    public sealed partial class HttpResponseHeaders : Microsoft.AspNetCore.Server.Kestrel.Core.Http.HttpHeaders
     {
         public HttpResponseHeaders() { }
         public bool HasConnection { get { throw null; } }
@@ -863,7 +863,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         protected override void ClearFast() { }
         protected override bool CopyToFast(System.Collections.Generic.KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues>[] array, int arrayIndex) { throw null; }
         protected override int GetCountFast() { throw null; }
-        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpResponseHeaders.Enumerator GetEnumerator() { throw null; }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.Http.HttpResponseHeaders.Enumerator GetEnumerator() { throw null; }
         protected override System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues>> GetEnumeratorFast() { throw null; }
         protected override bool RemoveFast(string key) { throw null; }
         public void SetRawConnection(in Microsoft.Extensions.Primitives.StringValues value, byte[] raw) { }
@@ -886,7 +886,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     }
     public partial class HttpResponsePipeWriter : System.IO.Pipelines.PipeWriter
     {
-        public HttpResponsePipeWriter(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpResponseControl pipeControl) { }
+        public HttpResponsePipeWriter(Microsoft.AspNetCore.Server.Kestrel.Core.Http.IHttpResponseControl pipeControl) { }
         public void Abort() { }
         public override void Advance(int bytes) { }
         public override void CancelPendingFlush() { }
@@ -899,7 +899,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public void StopAcceptingWrites() { }
         public override System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> WriteAsync(System.ReadOnlyMemory<byte> source, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
     }
-    public partial class HttpResponseTrailers : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpHeaders
+    public partial class HttpResponseTrailers : Microsoft.AspNetCore.Server.Kestrel.Core.Http.HttpHeaders
     {
         public HttpResponseTrailers() { }
         public Microsoft.Extensions.Primitives.StringValues HeaderETag { get { throw null; } set { } }
@@ -907,7 +907,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         protected override void ClearFast() { }
         protected override bool CopyToFast(System.Collections.Generic.KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues>[] array, int arrayIndex) { throw null; }
         protected override int GetCountFast() { throw null; }
-        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpResponseTrailers.Enumerator GetEnumerator() { throw null; }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.Http.HttpResponseTrailers.Enumerator GetEnumerator() { throw null; }
         protected override System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<string, Microsoft.Extensions.Primitives.StringValues>> GetEnumeratorFast() { throw null; }
         protected override bool RemoveFast(string key) { throw null; }
         protected override void SetValueFast(string key, in Microsoft.Extensions.Primitives.StringValues value) { }
@@ -950,8 +950,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         void Advance(int bytes);
         void CancelPendingFlush();
         void Complete();
-        System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> FirstWriteAsync(int statusCode, string reasonPhrase, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpResponseHeaders responseHeaders, bool autoChunk, System.ReadOnlySpan<byte> data, System.Threading.CancellationToken cancellationToken);
-        System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> FirstWriteChunkedAsync(int statusCode, string reasonPhrase, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpResponseHeaders responseHeaders, bool autoChunk, System.ReadOnlySpan<byte> data, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> FirstWriteAsync(int statusCode, string reasonPhrase, Microsoft.AspNetCore.Server.Kestrel.Core.Http.HttpResponseHeaders responseHeaders, bool autoChunk, System.ReadOnlySpan<byte> data, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> FirstWriteChunkedAsync(int statusCode, string reasonPhrase, Microsoft.AspNetCore.Server.Kestrel.Core.Http.HttpResponseHeaders responseHeaders, bool autoChunk, System.ReadOnlySpan<byte> data, System.Threading.CancellationToken cancellationToken);
         System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> FlushAsync(System.Threading.CancellationToken cancellationToken);
         System.Memory<byte> GetMemory(int sizeHint = 0);
         System.Span<byte> GetSpan(int sizeHint = 0);
@@ -960,17 +960,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> WriteChunkAsync(System.ReadOnlySpan<byte> data, System.Threading.CancellationToken cancellationToken);
         System.Threading.Tasks.Task WriteDataAsync(System.ReadOnlySpan<byte> data, System.Threading.CancellationToken cancellationToken);
         System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> WriteDataToPipeAsync(System.ReadOnlySpan<byte> data, System.Threading.CancellationToken cancellationToken);
-        void WriteResponseHeaders(int statusCode, string reasonPhrase, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpResponseHeaders responseHeaders, bool autoChunk);
+        void WriteResponseHeaders(int statusCode, string reasonPhrase, Microsoft.AspNetCore.Server.Kestrel.Core.Http.HttpResponseHeaders responseHeaders, bool autoChunk);
         System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> WriteStreamSuffixAsync();
     }
-    public partial interface IHttpParser<TRequestHandler> where TRequestHandler : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpHeadersHandler, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpRequestLineHandler
+    public partial interface IHttpParser<TRequestHandler> where TRequestHandler : Microsoft.AspNetCore.Server.Kestrel.Core.Http.IHttpHeadersHandler, Microsoft.AspNetCore.Server.Kestrel.Core.Http.IHttpRequestLineHandler
     {
         bool ParseHeaders(TRequestHandler handler, in System.Buffers.ReadOnlySequence<byte> buffer, out System.SequencePosition consumed, out System.SequencePosition examined, out int consumedBytes);
         bool ParseRequestLine(TRequestHandler handler, in System.Buffers.ReadOnlySequence<byte> buffer, out System.SequencePosition consumed, out System.SequencePosition examined);
     }
     public partial interface IHttpRequestLineHandler
     {
-        void OnStartLine(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod method, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersion version, System.Span<byte> target, System.Span<byte> path, System.Span<byte> query, System.Span<byte> customMethod, bool pathEncoded);
+        void OnStartLine(Microsoft.AspNetCore.Server.Kestrel.Core.Http.HttpMethod method, Microsoft.AspNetCore.Server.Kestrel.Core.Http.HttpVersion version, System.Span<byte> target, System.Span<byte> path, System.Span<byte> query, System.Span<byte> customMethod, bool pathEncoded);
     }
     public partial interface IHttpResponseControl
     {
@@ -998,13 +998,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         protected long _alreadyTimedBytes;
         protected bool _backpressure;
         protected bool _timingEnabled;
-        protected MessageBody(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpProtocol context, Microsoft.AspNetCore.Server.Kestrel.Core.MinDataRate minRequestBodyDataRate) { }
+        protected MessageBody(Microsoft.AspNetCore.Server.Kestrel.Core.Http.HttpProtocol context, Microsoft.AspNetCore.Server.Kestrel.Core.MinDataRate minRequestBodyDataRate) { }
         public virtual bool IsEmpty { get { throw null; } }
-        protected Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.IKestrelTrace Log { get { throw null; } }
+        protected Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.IKestrelTrace Log { get { throw null; } }
         public bool RequestKeepAlive { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]protected set { } }
         public bool RequestUpgrade { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]protected set { } }
-        public static Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.MessageBody ZeroContentLengthClose { get { throw null; } }
-        public static Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.MessageBody ZeroContentLengthKeepAlive { get { throw null; } }
+        public static Microsoft.AspNetCore.Server.Kestrel.Core.Http.MessageBody ZeroContentLengthClose { get { throw null; } }
+        public static Microsoft.AspNetCore.Server.Kestrel.Core.Http.MessageBody ZeroContentLengthKeepAlive { get { throw null; } }
         protected void AddAndCheckConsumedBytes(long consumedBytes) { }
         public abstract void AdvanceTo(System.SequencePosition consumed);
         public abstract void AdvanceTo(System.SequencePosition consumed, System.SequencePosition examined);
@@ -1097,9 +1097,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         None = 0,
         Other = 2,
     }
-    public partial class ZeroContentLengthMessageBody : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.MessageBody
+    public partial class ZeroContentLengthMessageBody : Microsoft.AspNetCore.Server.Kestrel.Core.Http.MessageBody
     {
-        public ZeroContentLengthMessageBody(bool keepAlive) : base (default(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpProtocol), default(Microsoft.AspNetCore.Server.Kestrel.Core.MinDataRate)) { }
+        public ZeroContentLengthMessageBody(bool keepAlive) : base (default(Microsoft.AspNetCore.Server.Kestrel.Core.Http.HttpProtocol), default(Microsoft.AspNetCore.Server.Kestrel.Core.MinDataRate)) { }
         public override bool IsEmpty { get { throw null; } }
         public override void AdvanceTo(System.SequencePosition consumed) { }
         public override void AdvanceTo(System.SequencePosition consumed, System.SequencePosition examined) { }
@@ -1112,24 +1112,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public override bool TryRead(out System.IO.Pipelines.ReadResult result) { throw null; }
     }
 }
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Http2
 {
-    public partial class Http2Connection : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpHeadersHandler, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.IHttp2StreamLifetimeHandler, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.IRequestProcessor
+    public partial class Http2Connection : Microsoft.AspNetCore.Server.Kestrel.Core.Http.IHttpHeadersHandler, Microsoft.AspNetCore.Server.Kestrel.Core.Http2.IHttp2StreamLifetimeHandler, Microsoft.AspNetCore.Server.Kestrel.Core.IRequestProcessor
     {
-        public Http2Connection(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.HttpConnectionContext context) { }
+        public Http2Connection(Microsoft.AspNetCore.Server.Kestrel.Core.HttpConnectionContext context) { }
         public static byte[] ClientPreface { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public Microsoft.AspNetCore.Http.Features.IFeatureCollection ConnectionFeatures { get { throw null; } }
         public string ConnectionId { get { throw null; } }
         public System.IO.Pipelines.PipeReader Input { get { throw null; } }
         public Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerLimits Limits { get { throw null; } }
-        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.IKestrelTrace Log { get { throw null; } }
-        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.ISystemClock SystemClock { get { throw null; } }
-        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.ITimeoutControl TimeoutControl { get { throw null; } }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.IKestrelTrace Log { get { throw null; } }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.ISystemClock SystemClock { get { throw null; } }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.ITimeoutControl TimeoutControl { get { throw null; } }
         public void Abort(Microsoft.AspNetCore.Connections.ConnectionAbortedException ex) { }
         public void HandleReadDataRateTimeout() { }
         public void HandleRequestHeadersTimeout() { }
-        void Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.IHttp2StreamLifetimeHandler.OnStreamCompleted(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2Stream stream) { }
-        void Microsoft.AspNetCore.Server.Kestrel.Core.Internal.IRequestProcessor.Tick(System.DateTimeOffset now) { }
+        void Microsoft.AspNetCore.Server.Kestrel.Core.Http2.IHttp2StreamLifetimeHandler.OnStreamCompleted(Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2Stream stream) { }
+        void Microsoft.AspNetCore.Server.Kestrel.Core.IRequestProcessor.Tick(System.DateTimeOffset now) { }
         public void OnHeader(System.Span<byte> name, System.Span<byte> value) { }
         public void OnInputOrOutputCompleted() { }
         [System.Diagnostics.DebuggerStepThroughAttribute]
@@ -1139,8 +1139,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
     }
     public partial class Http2ConnectionErrorException : System.Exception
     {
-        public Http2ConnectionErrorException(string message, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2ErrorCode errorCode) { }
-        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2ErrorCode ErrorCode { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Http2ConnectionErrorException(string message, Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2ErrorCode errorCode) { }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2ErrorCode ErrorCode { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
     [System.FlagsAttribute]
     public enum Http2ContinuationFrameFlags : byte
@@ -1176,18 +1176,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
     {
         public Http2Frame() { }
         public bool ContinuationEndHeaders { get { throw null; } }
-        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2ContinuationFrameFlags ContinuationFlags { get { throw null; } set { } }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2ContinuationFrameFlags ContinuationFlags { get { throw null; } set { } }
         public bool DataEndStream { get { throw null; } }
-        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2DataFrameFlags DataFlags { get { throw null; } set { } }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2DataFrameFlags DataFlags { get { throw null; } set { } }
         public bool DataHasPadding { get { throw null; } }
         public byte DataPadLength { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public int DataPayloadLength { get { throw null; } }
         public byte Flags { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2ErrorCode GoAwayErrorCode { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2ErrorCode GoAwayErrorCode { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public int GoAwayLastStreamId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public bool HeadersEndHeaders { get { throw null; } }
         public bool HeadersEndStream { get { throw null; } }
-        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2HeadersFrameFlags HeadersFlags { get { throw null; } set { } }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2HeadersFrameFlags HeadersFlags { get { throw null; } set { } }
         public bool HeadersHasPadding { get { throw null; } }
         public bool HeadersHasPriority { get { throw null; } }
         public byte HeadersPadLength { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
@@ -1196,24 +1196,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         public int HeadersStreamDependency { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public int PayloadLength { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public bool PingAck { get { throw null; } }
-        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2PingFrameFlags PingFlags { get { throw null; } set { } }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2PingFrameFlags PingFlags { get { throw null; } set { } }
         public bool PriorityIsExclusive { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public int PriorityStreamDependency { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public byte PriorityWeight { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2ErrorCode RstStreamErrorCode { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2ErrorCode RstStreamErrorCode { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public bool SettingsAck { get { throw null; } }
-        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2SettingsFrameFlags SettingsFlags { get { throw null; } set { } }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2SettingsFrameFlags SettingsFlags { get { throw null; } set { } }
         public int StreamId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2FrameType Type { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2FrameType Type { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public int WindowUpdateSizeIncrement { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public void PrepareContinuation(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2ContinuationFrameFlags flags, int streamId) { }
+        public void PrepareContinuation(Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2ContinuationFrameFlags flags, int streamId) { }
         public void PrepareData(int streamId, byte? padLength = default(byte?)) { }
-        public void PrepareGoAway(int lastStreamId, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2ErrorCode errorCode) { }
-        public void PrepareHeaders(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2HeadersFrameFlags flags, int streamId) { }
-        public void PreparePing(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2PingFrameFlags flags) { }
+        public void PrepareGoAway(int lastStreamId, Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2ErrorCode errorCode) { }
+        public void PrepareHeaders(Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2HeadersFrameFlags flags, int streamId) { }
+        public void PreparePing(Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2PingFrameFlags flags) { }
         public void PreparePriority(int streamId, int streamDependency, bool exclusive, byte weight) { }
-        public void PrepareRstStream(int streamId, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2ErrorCode errorCode) { }
-        public void PrepareSettings(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2SettingsFrameFlags flags) { }
+        public void PrepareRstStream(int streamId, Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2ErrorCode errorCode) { }
+        public void PrepareSettings(Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2SettingsFrameFlags flags) { }
         public void PrepareWindowUpdate(int streamId, int sizeIncrement) { }
         public override string ToString() { throw null; }
     }
@@ -1221,9 +1221,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
     {
         public const int HeaderLength = 9;
         public const int SettingSize = 6;
-        public static int GetPayloadFieldsLength(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2Frame frame) { throw null; }
-        public static bool ReadFrame(System.Buffers.ReadOnlySequence<byte> readableBuffer, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2Frame frame, uint maxFrameSize, out System.Buffers.ReadOnlySequence<byte> framePayload) { throw null; }
-        public static System.Collections.Generic.IList<Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2PeerSetting> ReadSettings(System.Buffers.ReadOnlySequence<byte> payload) { throw null; }
+        public static int GetPayloadFieldsLength(Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2Frame frame) { throw null; }
+        public static bool ReadFrame(System.Buffers.ReadOnlySequence<byte> readableBuffer, Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2Frame frame, uint maxFrameSize, out System.Buffers.ReadOnlySequence<byte> framePayload) { throw null; }
+        public static System.Collections.Generic.IList<Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2PeerSetting> ReadSettings(System.Buffers.ReadOnlySequence<byte> payload) { throw null; }
     }
     public enum Http2FrameType : byte
     {
@@ -1240,23 +1240,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
     }
     public partial class Http2FrameWriter
     {
-        public Http2FrameWriter(System.IO.Pipelines.PipeWriter outputPipeWriter, Microsoft.AspNetCore.Connections.ConnectionContext connectionContext, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2Connection http2Connection, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl.OutputFlowControl connectionOutputFlowControl, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.ITimeoutControl timeoutControl, Microsoft.AspNetCore.Server.Kestrel.Core.MinDataRate minResponseDataRate, string connectionId, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.IKestrelTrace log) { }
+        public Http2FrameWriter(System.IO.Pipelines.PipeWriter outputPipeWriter, Microsoft.AspNetCore.Connections.ConnectionContext connectionContext, Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2Connection http2Connection, Microsoft.AspNetCore.Server.Kestrel.Core.Http2.FlowControl.OutputFlowControl connectionOutputFlowControl, Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.ITimeoutControl timeoutControl, Microsoft.AspNetCore.Server.Kestrel.Core.MinDataRate minResponseDataRate, string connectionId, Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.IKestrelTrace log) { }
         public void Abort(Microsoft.AspNetCore.Connections.ConnectionAbortedException error) { }
-        public void AbortPendingStreamDataWrites(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl.StreamOutputFlowControl flowControl) { }
+        public void AbortPendingStreamDataWrites(Microsoft.AspNetCore.Server.Kestrel.Core.Http2.FlowControl.StreamOutputFlowControl flowControl) { }
         public void Complete() { }
-        public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> FlushAsync(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpOutputAborter outputAborter, System.Threading.CancellationToken cancellationToken) { throw null; }
+        public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> FlushAsync(Microsoft.AspNetCore.Server.Kestrel.Core.Http.IHttpOutputAborter outputAborter, System.Threading.CancellationToken cancellationToken) { throw null; }
         public bool TryUpdateConnectionWindow(int bytes) { throw null; }
-        public bool TryUpdateStreamWindow(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl.StreamOutputFlowControl flowControl, int bytes) { throw null; }
+        public bool TryUpdateStreamWindow(Microsoft.AspNetCore.Server.Kestrel.Core.Http2.FlowControl.StreamOutputFlowControl flowControl, int bytes) { throw null; }
         public void UpdateMaxFrameSize(uint maxFrameSize) { }
         public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> Write100ContinueAsync(int streamId) { throw null; }
-        public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> WriteDataAsync(int streamId, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl.StreamOutputFlowControl flowControl, System.Buffers.ReadOnlySequence<byte> data, bool endStream) { throw null; }
-        public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> WriteGoAwayAsync(int lastStreamId, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2ErrorCode errorCode) { throw null; }
-        public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> WritePingAsync(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2PingFrameFlags flags, System.Buffers.ReadOnlySequence<byte> payload) { throw null; }
+        public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> WriteDataAsync(int streamId, Microsoft.AspNetCore.Server.Kestrel.Core.Http2.FlowControl.StreamOutputFlowControl flowControl, System.Buffers.ReadOnlySequence<byte> data, bool endStream) { throw null; }
+        public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> WriteGoAwayAsync(int lastStreamId, Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2ErrorCode errorCode) { throw null; }
+        public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> WritePingAsync(Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2PingFrameFlags flags, System.Buffers.ReadOnlySequence<byte> payload) { throw null; }
         public void WriteResponseHeaders(int streamId, int statusCode, Microsoft.AspNetCore.Http.IHeaderDictionary headers) { }
-        public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> WriteResponseTrailers(int streamId, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpResponseTrailers headers) { throw null; }
-        public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> WriteRstStreamAsync(int streamId, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2ErrorCode errorCode) { throw null; }
+        public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> WriteResponseTrailers(int streamId, Microsoft.AspNetCore.Server.Kestrel.Core.Http.HttpResponseTrailers headers) { throw null; }
+        public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> WriteRstStreamAsync(int streamId, Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2ErrorCode errorCode) { throw null; }
         public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> WriteSettingsAckAsync() { throw null; }
-        public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> WriteSettingsAsync(System.Collections.Generic.IList<Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2PeerSetting> settings) { throw null; }
+        public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> WriteSettingsAsync(System.Collections.Generic.IList<Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2PeerSetting> settings) { throw null; }
         public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> WriteWindowUpdateAsync(int streamId, int sizeIncrement) { throw null; }
     }
     [System.FlagsAttribute]
@@ -1268,14 +1268,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         PADDED = (byte)8,
         PRIORITY = (byte)32,
     }
-    public partial class Http2MessageBody : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.MessageBody
+    public partial class Http2MessageBody : Microsoft.AspNetCore.Server.Kestrel.Core.Http.MessageBody
     {
-        internal Http2MessageBody() : base (default(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpProtocol), default(Microsoft.AspNetCore.Server.Kestrel.Core.MinDataRate)) { }
+        internal Http2MessageBody() : base (default(Microsoft.AspNetCore.Server.Kestrel.Core.Http.HttpProtocol), default(Microsoft.AspNetCore.Server.Kestrel.Core.MinDataRate)) { }
         public override void AdvanceTo(System.SequencePosition consumed) { }
         public override void AdvanceTo(System.SequencePosition consumed, System.SequencePosition examined) { }
         public override void CancelPendingRead() { }
         public override void Complete(System.Exception exception) { }
-        public static Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.MessageBody For(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2Stream context, Microsoft.AspNetCore.Server.Kestrel.Core.MinDataRate minRequestBodyDataRate) { throw null; }
+        public static Microsoft.AspNetCore.Server.Kestrel.Core.Http.MessageBody For(Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2Stream context, Microsoft.AspNetCore.Server.Kestrel.Core.MinDataRate minRequestBodyDataRate) { throw null; }
         protected override void OnDataRead(long bytesRead) { }
         protected override void OnReadStarted() { }
         protected override void OnReadStarting() { }
@@ -1285,35 +1285,35 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         public override System.Threading.Tasks.ValueTask<System.IO.Pipelines.ReadResult> ReadAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
         public override bool TryRead(out System.IO.Pipelines.ReadResult readResult) { throw null; }
     }
-    public partial class Http2OutputProducer : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpOutputAborter, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpOutputProducer
+    public partial class Http2OutputProducer : Microsoft.AspNetCore.Server.Kestrel.Core.Http.IHttpOutputAborter, Microsoft.AspNetCore.Server.Kestrel.Core.Http.IHttpOutputProducer
     {
-        public Http2OutputProducer(int streamId, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2FrameWriter frameWriter, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl.StreamOutputFlowControl flowControl, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.ITimeoutControl timeoutControl, System.Buffers.MemoryPool<byte> pool, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2Stream stream, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.IKestrelTrace log) { }
+        public Http2OutputProducer(int streamId, Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2FrameWriter frameWriter, Microsoft.AspNetCore.Server.Kestrel.Core.Http2.FlowControl.StreamOutputFlowControl flowControl, Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.ITimeoutControl timeoutControl, System.Buffers.MemoryPool<byte> pool, Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2Stream stream, Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.IKestrelTrace log) { }
         public void Advance(int bytes) { }
         public void CancelPendingFlush() { }
         public void Complete() { }
         public void Dispose() { }
-        public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> FirstWriteAsync(int statusCode, string reasonPhrase, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpResponseHeaders responseHeaders, bool autoChunk, System.ReadOnlySpan<byte> data, System.Threading.CancellationToken cancellationToken) { throw null; }
-        public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> FirstWriteChunkedAsync(int statusCode, string reasonPhrase, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpResponseHeaders responseHeaders, bool autoChunk, System.ReadOnlySpan<byte> data, System.Threading.CancellationToken cancellationToken) { throw null; }
+        public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> FirstWriteAsync(int statusCode, string reasonPhrase, Microsoft.AspNetCore.Server.Kestrel.Core.Http.HttpResponseHeaders responseHeaders, bool autoChunk, System.ReadOnlySpan<byte> data, System.Threading.CancellationToken cancellationToken) { throw null; }
+        public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> FirstWriteChunkedAsync(int statusCode, string reasonPhrase, Microsoft.AspNetCore.Server.Kestrel.Core.Http.HttpResponseHeaders responseHeaders, bool autoChunk, System.ReadOnlySpan<byte> data, System.Threading.CancellationToken cancellationToken) { throw null; }
         public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> FlushAsync(System.Threading.CancellationToken cancellationToken) { throw null; }
         public System.Memory<byte> GetMemory(int sizeHint = 0) { throw null; }
         public System.Span<byte> GetSpan(int sizeHint = 0) { throw null; }
-        void Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpOutputAborter.Abort(Microsoft.AspNetCore.Connections.ConnectionAbortedException abortReason) { }
-        System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpOutputProducer.WriteChunkAsync(System.ReadOnlySpan<byte> data, System.Threading.CancellationToken cancellationToken) { throw null; }
+        void Microsoft.AspNetCore.Server.Kestrel.Core.Http.IHttpOutputAborter.Abort(Microsoft.AspNetCore.Connections.ConnectionAbortedException abortReason) { }
+        System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> Microsoft.AspNetCore.Server.Kestrel.Core.Http.IHttpOutputProducer.WriteChunkAsync(System.ReadOnlySpan<byte> data, System.Threading.CancellationToken cancellationToken) { throw null; }
         public void Reset() { }
         public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> Write100ContinueAsync() { throw null; }
         public System.Threading.Tasks.Task WriteChunkAsync(System.ReadOnlySpan<byte> span, System.Threading.CancellationToken cancellationToken) { throw null; }
         public System.Threading.Tasks.Task WriteDataAsync(System.ReadOnlySpan<byte> data, System.Threading.CancellationToken cancellationToken) { throw null; }
         public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> WriteDataToPipeAsync(System.ReadOnlySpan<byte> data, System.Threading.CancellationToken cancellationToken) { throw null; }
-        public void WriteResponseHeaders(int statusCode, string ReasonPhrase, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpResponseHeaders responseHeaders, bool autoChunk) { }
-        public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> WriteRstStreamAsync(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2ErrorCode error) { throw null; }
+        public void WriteResponseHeaders(int statusCode, string ReasonPhrase, Microsoft.AspNetCore.Server.Kestrel.Core.Http.HttpResponseHeaders responseHeaders, bool autoChunk) { }
+        public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> WriteRstStreamAsync(Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2ErrorCode error) { throw null; }
         public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> WriteStreamSuffixAsync() { throw null; }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct Http2PeerSetting
     {
         private readonly int _dummyPrimitive;
-        public Http2PeerSetting(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2SettingsParameter parameter, uint value) { throw null; }
-        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2SettingsParameter Parameter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Http2PeerSetting(Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2SettingsParameter parameter, uint value) { throw null; }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2SettingsParameter Parameter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public uint Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
     public partial class Http2PeerSettings
@@ -1332,7 +1332,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         public uint MaxConcurrentStreams { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public uint MaxFrameSize { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public uint MaxHeaderListSize { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public void Update(System.Collections.Generic.IList<Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2PeerSetting> settings) { }
+        public void Update(System.Collections.Generic.IList<Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2PeerSetting> settings) { }
     }
     [System.FlagsAttribute]
     public enum Http2PingFrameFlags : byte
@@ -1357,12 +1357,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
     }
     public partial class Http2SettingsParameterOutOfRangeException : System.Exception
     {
-        public Http2SettingsParameterOutOfRangeException(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2SettingsParameter parameter, long lowerBound, long upperBound) { }
-        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2SettingsParameter Parameter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Http2SettingsParameterOutOfRangeException(Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2SettingsParameter parameter, long lowerBound, long upperBound) { }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2SettingsParameter Parameter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
-    public abstract partial class Http2Stream : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpProtocol, Microsoft.AspNetCore.Http.Features.IHttpResponseTrailersFeature, Microsoft.AspNetCore.Server.Kestrel.Core.Features.IHttp2StreamIdFeature, System.Threading.IThreadPoolWorkItem
+    public abstract partial class Http2Stream : Microsoft.AspNetCore.Server.Kestrel.Core.Http.HttpProtocol, Microsoft.AspNetCore.Http.Features.IHttpResponseTrailersFeature, Microsoft.AspNetCore.Server.Kestrel.Core.Features.IHttp2StreamIdFeature, System.Threading.IThreadPoolWorkItem
     {
-        public Http2Stream(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2StreamContext context) : base (default(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.HttpConnectionContext)) { }
+        public Http2Stream(Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2StreamContext context) : base (default(Microsoft.AspNetCore.Server.Kestrel.Core.HttpConnectionContext)) { }
         public bool EndStreamReceived { get { throw null; } }
         public long? InputRemaining { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         Microsoft.AspNetCore.Http.IHeaderDictionary Microsoft.AspNetCore.Http.Features.IHttpResponseTrailersFeature.Trailers { get { throw null; } set { } }
@@ -1374,10 +1374,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         public void Abort(System.IO.IOException abortReason) { }
         public void AbortRstStreamReceived() { }
         protected override void ApplicationAbort() { }
-        protected override Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.MessageBody CreateMessageBody() { throw null; }
+        protected override Microsoft.AspNetCore.Server.Kestrel.Core.Http.MessageBody CreateMessageBody() { throw null; }
         protected override string CreateRequestId() { throw null; }
         public abstract void Execute();
-        public System.Threading.Tasks.Task OnDataAsync(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2Frame dataFrame, System.Buffers.ReadOnlySequence<byte> payload) { throw null; }
+        public System.Threading.Tasks.Task OnDataAsync(Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2Frame dataFrame, System.Buffers.ReadOnlySequence<byte> payload) { throw null; }
         public void OnDataRead(int bytesRead) { }
         public void OnEndStreamReceived() { }
         protected override void OnErrorAfterResponseStarted() { }
@@ -1386,44 +1386,44 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         protected override bool TryParseRequest(System.IO.Pipelines.ReadResult result, out bool endConnection) { throw null; }
         public bool TryUpdateOutputWindow(int bytes) { throw null; }
     }
-    public partial class Http2StreamContext : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.HttpConnectionContext
+    public partial class Http2StreamContext : Microsoft.AspNetCore.Server.Kestrel.Core.HttpConnectionContext
     {
         public Http2StreamContext() { }
-        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2PeerSettings ClientPeerSettings { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl.InputFlowControl ConnectionInputFlowControl { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl.OutputFlowControl ConnectionOutputFlowControl { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2FrameWriter FrameWriter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2PeerSettings ServerPeerSettings { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2PeerSettings ClientPeerSettings { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.Http2.FlowControl.InputFlowControl ConnectionInputFlowControl { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.Http2.FlowControl.OutputFlowControl ConnectionOutputFlowControl { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2FrameWriter FrameWriter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2PeerSettings ServerPeerSettings { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public int StreamId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.IHttp2StreamLifetimeHandler StreamLifetimeHandler { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.Http2.IHttp2StreamLifetimeHandler StreamLifetimeHandler { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
     public partial class Http2StreamErrorException : System.Exception
     {
-        public Http2StreamErrorException(int streamId, string message, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2ErrorCode errorCode) { }
-        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2ErrorCode ErrorCode { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Http2StreamErrorException(int streamId, string message, Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2ErrorCode errorCode) { }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2ErrorCode ErrorCode { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public int StreamId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
-    public partial class Http2Stream<TContext> : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2Stream
+    public partial class Http2Stream<TContext> : Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2Stream
     {
-        public Http2Stream(Microsoft.AspNetCore.Hosting.Server.IHttpApplication<TContext> application, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2StreamContext context) : base (default(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2StreamContext)) { }
+        public Http2Stream(Microsoft.AspNetCore.Hosting.Server.IHttpApplication<TContext> application, Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2StreamContext context) : base (default(Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2StreamContext)) { }
         public override void Execute() { }
     }
     public partial interface IHttp2StreamLifetimeHandler
     {
-        void OnStreamCompleted(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2Stream stream);
+        void OnStreamCompleted(Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2Stream stream);
     }
     public partial class ThreadPoolAwaitable : System.Runtime.CompilerServices.ICriticalNotifyCompletion, System.Runtime.CompilerServices.INotifyCompletion
     {
         internal ThreadPoolAwaitable() { }
-        public static Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.ThreadPoolAwaitable Instance;
+        public static Microsoft.AspNetCore.Server.Kestrel.Core.Http2.ThreadPoolAwaitable Instance;
         public bool IsCompleted { get { throw null; } }
-        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.ThreadPoolAwaitable GetAwaiter() { throw null; }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.Http2.ThreadPoolAwaitable GetAwaiter() { throw null; }
         public void GetResult() { }
         public void OnCompleted(System.Action continuation) { }
         public void UnsafeOnCompleted(System.Action continuation) { }
     }
 }
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Http2.FlowControl
 {
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public partial struct FlowControl
@@ -1448,7 +1448,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
     public partial class OutputFlowControl
     {
         public OutputFlowControl(uint initialWindowSize) { }
-        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl.OutputFlowControlAwaitable AvailabilityAwaitable { get { throw null; } }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.Http2.FlowControl.OutputFlowControlAwaitable AvailabilityAwaitable { get { throw null; } }
         public int Available { get { throw null; } }
         public bool IsAborted { get { throw null; } }
         public void Abort() { }
@@ -1460,14 +1460,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
         public OutputFlowControlAwaitable() { }
         public bool IsCompleted { get { throw null; } }
         public void Complete() { }
-        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl.OutputFlowControlAwaitable GetAwaiter() { throw null; }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.Http2.FlowControl.OutputFlowControlAwaitable GetAwaiter() { throw null; }
         public void GetResult() { }
         public void OnCompleted(System.Action continuation) { }
         public void UnsafeOnCompleted(System.Action continuation) { }
     }
     public partial class StreamInputFlowControl
     {
-        public StreamInputFlowControl(int streamId, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2FrameWriter frameWriter, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl.InputFlowControl connectionLevelFlowControl, uint initialWindowSize, uint minWindowSizeIncrement) { }
+        public StreamInputFlowControl(int streamId, Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2FrameWriter frameWriter, Microsoft.AspNetCore.Server.Kestrel.Core.Http2.FlowControl.InputFlowControl connectionLevelFlowControl, uint initialWindowSize, uint minWindowSizeIncrement) { }
         public void Abort() { }
         public void Advance(int bytes) { }
         public void StopWindowUpdates() { }
@@ -1475,22 +1475,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl
     }
     public partial class StreamOutputFlowControl
     {
-        public StreamOutputFlowControl(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl.OutputFlowControl connectionLevelFlowControl, uint initialWindowSize) { }
+        public StreamOutputFlowControl(Microsoft.AspNetCore.Server.Kestrel.Core.Http2.FlowControl.OutputFlowControl connectionLevelFlowControl, uint initialWindowSize) { }
         public int Available { get { throw null; } }
         public bool IsAborted { get { throw null; } }
         public void Abort() { }
         public void Advance(int bytes) { }
-        public int AdvanceUpToAndWait(long bytes, out Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl.OutputFlowControlAwaitable awaitable) { throw null; }
+        public int AdvanceUpToAndWait(long bytes, out Microsoft.AspNetCore.Server.Kestrel.Core.Http2.FlowControl.OutputFlowControlAwaitable awaitable) { throw null; }
         public bool TryUpdateWindow(int bytes) { throw null; }
     }
 }
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Http2.HPack
 {
     public partial class DynamicTable
     {
         public DynamicTable(int maxSize) { }
         public int Count { get { throw null; } }
-        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack.HeaderField this[int index] { get { throw null; } }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.Http2.HPack.HeaderField this[int index] { get { throw null; } }
         public int MaxSize { get { throw null; } }
         public int Size { get { throw null; } }
         public void Insert(System.Span<byte> name, System.Span<byte> value) { }
@@ -1510,7 +1510,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
     public partial class HPackDecoder
     {
         public HPackDecoder(int maxDynamicTableSize, int maxRequestHeaderFieldSize) { }
-        public void Decode(System.Buffers.ReadOnlySequence<byte> data, bool endHeaders, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpHeadersHandler handler) { }
+        public void Decode(System.Buffers.ReadOnlySequence<byte> data, bool endHeaders, Microsoft.AspNetCore.Server.Kestrel.Core.Http.IHttpHeadersHandler handler) { }
     }
     public partial class HPackDecodingException : System.Exception
     {
@@ -1554,8 +1554,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
     {
         internal StaticTable() { }
         public int Count { get { throw null; } }
-        public static Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack.StaticTable Instance { get { throw null; } }
-        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack.HeaderField this[int index] { get { throw null; } }
+        public static Microsoft.AspNetCore.Server.Kestrel.Core.Http2.HPack.StaticTable Instance { get { throw null; } }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.Http2.HPack.HeaderField this[int index] { get { throw null; } }
         public System.Collections.Generic.IReadOnlyDictionary<int, int> StatusIndex { get { throw null; } }
     }
     public static partial class StatusCodes
@@ -1563,37 +1563,37 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
         public static byte[] ToStatusBytes(int statusCode) { throw null; }
     }
 }
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure
 {
     public partial class BodyControl
     {
-        public BodyControl(Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature bodyControl, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpResponseControl responseControl) { }
+        public BodyControl(Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature bodyControl, Microsoft.AspNetCore.Server.Kestrel.Core.Http.IHttpResponseControl responseControl) { }
         public void Abort(System.Exception error) { }
-        public (System.IO.Stream request, System.IO.Stream response, System.IO.Pipelines.PipeReader reader, System.IO.Pipelines.PipeWriter writer) Start(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.MessageBody body) { throw null; }
+        public (System.IO.Stream request, System.IO.Stream response, System.IO.Pipelines.PipeReader reader, System.IO.Pipelines.PipeWriter writer) Start(Microsoft.AspNetCore.Server.Kestrel.Core.Http.MessageBody body) { throw null; }
         public void Stop() { }
         public System.IO.Stream Upgrade() { throw null; }
     }
     public partial class ConnectionManager
     {
-        public ConnectionManager(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.IKestrelTrace trace, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.ResourceCounter upgradedConnections) { }
-        public ConnectionManager(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.IKestrelTrace trace, long? upgradedConnectionLimit) { }
-        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.ResourceCounter UpgradedConnectionCount { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public void AddConnection(long id, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.KestrelConnection connection) { }
+        public ConnectionManager(Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.IKestrelTrace trace, Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.ResourceCounter upgradedConnections) { }
+        public ConnectionManager(Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.IKestrelTrace trace, long? upgradedConnectionLimit) { }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.ResourceCounter UpgradedConnectionCount { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public void AddConnection(long id, Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.KestrelConnection connection) { }
         public void RemoveConnection(long id) { }
-        public void Walk(System.Action<Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.KestrelConnection> callback) { }
+        public void Walk(System.Action<Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.KestrelConnection> callback) { }
     }
     public static partial class ConnectionManagerShutdownExtensions
     {
         [System.Diagnostics.DebuggerStepThroughAttribute]
-        public static System.Threading.Tasks.Task<bool> AbortAllConnectionsAsync(this Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.ConnectionManager connectionManager) { throw null; }
+        public static System.Threading.Tasks.Task<bool> AbortAllConnectionsAsync(this Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.ConnectionManager connectionManager) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
-        public static System.Threading.Tasks.Task<bool> CloseAllConnectionsAsync(this Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.ConnectionManager connectionManager, System.Threading.CancellationToken token) { throw null; }
+        public static System.Threading.Tasks.Task<bool> CloseAllConnectionsAsync(this Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.ConnectionManager connectionManager, System.Threading.CancellationToken token) { throw null; }
     }
     public partial class ConnectionReference
     {
-        public ConnectionReference(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.KestrelConnection connection) { }
+        public ConnectionReference(Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.KestrelConnection connection) { }
         public string ConnectionId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public bool TryGetConnection(out Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.KestrelConnection connection) { throw null; }
+        public bool TryGetConnection(out Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.KestrelConnection connection) { throw null; }
     }
     public partial class Disposable : System.IDisposable
     {
@@ -1604,13 +1604,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
     public partial class Heartbeat : System.IDisposable
     {
         public static readonly System.TimeSpan Interval;
-        public Heartbeat(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.IHeartbeatHandler[] callbacks, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.ISystemClock systemClock, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.IDebugger debugger, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.IKestrelTrace trace) { }
+        public Heartbeat(Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.IHeartbeatHandler[] callbacks, Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.ISystemClock systemClock, Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.IDebugger debugger, Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.IKestrelTrace trace) { }
         public void Dispose() { }
         public void Start() { }
     }
-    public partial class HeartbeatManager : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.IHeartbeatHandler, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.ISystemClock
+    public partial class HeartbeatManager : Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.IHeartbeatHandler, Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.ISystemClock
     {
-        public HeartbeatManager(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.ConnectionManager connectionManager) { }
+        public HeartbeatManager(Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.ConnectionManager connectionManager) { }
         public System.DateTimeOffset UtcNow { get { throw null; } }
         public long UtcNowTicks { get { throw null; } }
         public System.DateTimeOffset UtcNowUnsynchronized { get { throw null; } }
@@ -1626,14 +1626,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         public static string GetAsciiOrUTF8StringNonNullCharacters(this System.Span<byte> span) { throw null; }
         public static string GetAsciiStringEscaped(this System.Span<byte> span, int maxChars) { throw null; }
         public static string GetAsciiStringNonNullCharacters(this System.Span<byte> span) { throw null; }
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public static bool GetKnownHttpScheme(this System.Span<byte> span, out Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpScheme knownScheme) { throw null; }
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public static bool GetKnownMethod(this System.Span<byte> span, out Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod method, out int length) { throw null; }
-        public static Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod GetKnownMethod(string value) { throw null; }
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public static bool GetKnownVersion(this System.Span<byte> span, out Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersion knownVersion, out byte length) { throw null; }
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public static bool GetKnownHttpScheme(this System.Span<byte> span, out Microsoft.AspNetCore.Server.Kestrel.Core.Http.HttpScheme knownScheme) { throw null; }
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public static bool GetKnownMethod(this System.Span<byte> span, out Microsoft.AspNetCore.Server.Kestrel.Core.Http.HttpMethod method, out int length) { throw null; }
+        public static Microsoft.AspNetCore.Server.Kestrel.Core.Http.HttpMethod GetKnownMethod(string value) { throw null; }
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public static bool GetKnownVersion(this System.Span<byte> span, out Microsoft.AspNetCore.Server.Kestrel.Core.Http.HttpVersion knownVersion, out byte length) { throw null; }
         public static bool IsHostHeaderValid(string hostText) { throw null; }
-        public static string MethodToString(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod method) { throw null; }
-        public static string SchemeToString(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpScheme scheme) { throw null; }
-        public static string VersionToString(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersion httpVersion) { throw null; }
+        public static string MethodToString(Microsoft.AspNetCore.Server.Kestrel.Core.Http.HttpMethod method) { throw null; }
+        public static string SchemeToString(Microsoft.AspNetCore.Server.Kestrel.Core.Http.HttpScheme scheme) { throw null; }
+        public static string VersionToString(Microsoft.AspNetCore.Server.Kestrel.Core.Http.HttpVersion httpVersion) { throw null; }
     }
     public partial interface IDebugger
     {
@@ -1658,15 +1658,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         void ConnectionStart(string connectionId);
         void ConnectionStop(string connectionId);
         void HeartbeatSlow(System.TimeSpan interval, System.DateTimeOffset now);
-        void HPackDecodingError(string connectionId, int streamId, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack.HPackDecodingException ex);
-        void HPackEncodingError(string connectionId, int streamId, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack.HPackEncodingException ex);
+        void HPackDecodingError(string connectionId, int streamId, Microsoft.AspNetCore.Server.Kestrel.Core.Http2.HPack.HPackDecodingException ex);
+        void HPackEncodingError(string connectionId, int streamId, Microsoft.AspNetCore.Server.Kestrel.Core.Http2.HPack.HPackEncodingException ex);
         void Http2ConnectionClosed(string connectionId, int highestOpenedStreamId);
         void Http2ConnectionClosing(string connectionId);
-        void Http2ConnectionError(string connectionId, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2ConnectionErrorException ex);
-        void Http2FrameReceived(string connectionId, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2Frame frame);
-        void Http2FrameSending(string connectionId, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2Frame frame);
-        void Http2StreamError(string connectionId, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2StreamErrorException ex);
-        void Http2StreamResetAbort(string traceIdentifier, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.Http2ErrorCode error, Microsoft.AspNetCore.Connections.ConnectionAbortedException abortReason);
+        void Http2ConnectionError(string connectionId, Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2ConnectionErrorException ex);
+        void Http2FrameReceived(string connectionId, Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2Frame frame);
+        void Http2FrameSending(string connectionId, Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2Frame frame);
+        void Http2StreamError(string connectionId, Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2StreamErrorException ex);
+        void Http2StreamResetAbort(string traceIdentifier, Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Http2ErrorCode error, Microsoft.AspNetCore.Connections.ConnectionAbortedException abortReason);
         void NotAllConnectionsAborted();
         void NotAllConnectionsClosedGracefully();
         void RequestBodyDone(string connectionId, string traceIdentifier);
@@ -1685,13 +1685,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
     }
     public partial interface ITimeoutControl
     {
-        Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.TimeoutReason TimerReason { get; }
+        Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.TimeoutReason TimerReason { get; }
         void BytesRead(long count);
         void BytesWrittenToBuffer(Microsoft.AspNetCore.Server.Kestrel.Core.MinDataRate minRate, long count);
         void CancelTimeout();
-        void InitializeHttp2(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl.InputFlowControl connectionInputFlowControl);
-        void ResetTimeout(long ticks, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.TimeoutReason timeoutReason);
-        void SetTimeout(long ticks, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.TimeoutReason timeoutReason);
+        void InitializeHttp2(Microsoft.AspNetCore.Server.Kestrel.Core.Http2.FlowControl.InputFlowControl connectionInputFlowControl);
+        void ResetTimeout(long ticks, Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.TimeoutReason timeoutReason);
+        void SetTimeout(long ticks, Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.TimeoutReason timeoutReason);
         void StartRequestBody(Microsoft.AspNetCore.Server.Kestrel.Core.MinDataRate minRate);
         void StartTimingRead();
         void StartTimingWrite();
@@ -1701,29 +1701,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
     }
     public partial interface ITimeoutHandler
     {
-        void OnTimeout(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.TimeoutReason reason);
+        void OnTimeout(Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.TimeoutReason reason);
     }
     public partial class KestrelConnection
     {
-        public KestrelConnection(Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.TransportConnection transportConnection) { }
+        public KestrelConnection(Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.TransportConnection transportConnection) { }
         public System.Threading.Tasks.Task ExecutionTask { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.TransportConnection TransportConnection { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.TransportConnection TransportConnection { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
     [System.Diagnostics.Tracing.EventSourceAttribute(Name="Microsoft-AspNetCore-Server-Kestrel")]
     public sealed partial class KestrelEventSource : System.Diagnostics.Tracing.EventSource
     {
         internal KestrelEventSource() { }
-        public static readonly Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.KestrelEventSource Log;
+        public static readonly Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.KestrelEventSource Log;
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)][System.Diagnostics.Tracing.EventAttribute(5, Level=System.Diagnostics.Tracing.EventLevel.Verbose)]
         public void ConnectionRejected(string connectionId) { }
         [System.Diagnostics.Tracing.NonEventAttribute]
-        public void ConnectionStart(Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.TransportConnection connection) { }
+        public void ConnectionStart(Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.TransportConnection connection) { }
         [System.Diagnostics.Tracing.NonEventAttribute]
-        public void ConnectionStop(Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.TransportConnection connection) { }
+        public void ConnectionStop(Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.TransportConnection connection) { }
         [System.Diagnostics.Tracing.NonEventAttribute]
-        public void RequestStart(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpProtocol httpProtocol) { }
+        public void RequestStart(Microsoft.AspNetCore.Server.Kestrel.Core.Http.HttpProtocol httpProtocol) { }
         [System.Diagnostics.Tracing.NonEventAttribute]
-        public void RequestStop(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpProtocol httpProtocol) { }
+        public void RequestStop(Microsoft.AspNetCore.Server.Kestrel.Core.Http.HttpProtocol httpProtocol) { }
     }
     public abstract partial class ReadOnlyStream : System.IO.Stream
     {
@@ -1737,12 +1737,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
     public abstract partial class ResourceCounter
     {
         protected ResourceCounter() { }
-        public static Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.ResourceCounter Unlimited { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public static Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.ResourceCounter Quota(long amount) { throw null; }
+        public static Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.ResourceCounter Unlimited { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public static Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.ResourceCounter Quota(long amount) { throw null; }
         public abstract void ReleaseOne();
         public abstract bool TryLockOne();
     }
-    public partial class ThrowingWasUpgradedWriteOnlyStream : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.WriteOnlyStream
+    public partial class ThrowingWasUpgradedWriteOnlyStream : Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.WriteOnlyStream
     {
         public ThrowingWasUpgradedWriteOnlyStream() { }
         public override bool CanSeek { get { throw null; } }
@@ -1754,18 +1754,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         public override void Write(byte[] buffer, int offset, int count) { }
         public override System.Threading.Tasks.Task WriteAsync(byte[] buffer, int offset, int count, System.Threading.CancellationToken cancellationToken) { throw null; }
     }
-    public partial class TimeoutControl : Microsoft.AspNetCore.Server.Kestrel.Core.Features.IConnectionTimeoutFeature, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.ITimeoutControl
+    public partial class TimeoutControl : Microsoft.AspNetCore.Server.Kestrel.Core.Features.IConnectionTimeoutFeature, Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.ITimeoutControl
     {
-        public TimeoutControl(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.ITimeoutHandler timeoutHandler) { }
-        public Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.TimeoutReason TimerReason { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public TimeoutControl(Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.ITimeoutHandler timeoutHandler) { }
+        public Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.TimeoutReason TimerReason { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public void BytesRead(long count) { }
         public void BytesWrittenToBuffer(Microsoft.AspNetCore.Server.Kestrel.Core.MinDataRate minRate, long count) { }
         public void CancelTimeout() { }
-        public void InitializeHttp2(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl.InputFlowControl connectionInputFlowControl) { }
+        public void InitializeHttp2(Microsoft.AspNetCore.Server.Kestrel.Core.Http2.FlowControl.InputFlowControl connectionInputFlowControl) { }
         void Microsoft.AspNetCore.Server.Kestrel.Core.Features.IConnectionTimeoutFeature.ResetTimeout(System.TimeSpan timeSpan) { }
         void Microsoft.AspNetCore.Server.Kestrel.Core.Features.IConnectionTimeoutFeature.SetTimeout(System.TimeSpan timeSpan) { }
-        public void ResetTimeout(long ticks, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.TimeoutReason timeoutReason) { }
-        public void SetTimeout(long ticks, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.TimeoutReason timeoutReason) { }
+        public void ResetTimeout(long ticks, Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.TimeoutReason timeoutReason) { }
+        public void SetTimeout(long ticks, Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.TimeoutReason timeoutReason) { }
         public void StartRequestBody(Microsoft.AspNetCore.Server.Kestrel.Core.MinDataRate minRate) { }
         public void StartTimingRead() { }
         public void StartTimingWrite() { }
@@ -1776,7 +1776,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
     }
     public static partial class TimeoutControlExtensions
     {
-        public static void StartDrainTimeout(this Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.ITimeoutControl timeoutControl, Microsoft.AspNetCore.Server.Kestrel.Core.MinDataRate minDataRate, long? maxResponseBufferSize) { }
+        public static void StartDrainTimeout(this Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.ITimeoutControl timeoutControl, Microsoft.AspNetCore.Server.Kestrel.Core.MinDataRate minDataRate, long? maxResponseBufferSize) { }
     }
     public enum TimeoutReason
     {
@@ -1790,11 +1790,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
     }
     public partial class TimingPipeFlusher
     {
-        public TimingPipeFlusher(System.IO.Pipelines.PipeWriter writer, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.ITimeoutControl timeoutControl, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.IKestrelTrace log) { }
+        public TimingPipeFlusher(System.IO.Pipelines.PipeWriter writer, Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.ITimeoutControl timeoutControl, Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.IKestrelTrace log) { }
         public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> FlushAsync() { throw null; }
-        public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> FlushAsync(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpOutputAborter outputAborter, System.Threading.CancellationToken cancellationToken) { throw null; }
+        public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> FlushAsync(Microsoft.AspNetCore.Server.Kestrel.Core.Http.IHttpOutputAborter outputAborter, System.Threading.CancellationToken cancellationToken) { throw null; }
         public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> FlushAsync(Microsoft.AspNetCore.Server.Kestrel.Core.MinDataRate minRate, long count) { throw null; }
-        public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> FlushAsync(Microsoft.AspNetCore.Server.Kestrel.Core.MinDataRate minRate, long count, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpOutputAborter outputAborter, System.Threading.CancellationToken cancellationToken) { throw null; }
+        public System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> FlushAsync(Microsoft.AspNetCore.Server.Kestrel.Core.MinDataRate minRate, long count, Microsoft.AspNetCore.Server.Kestrel.Core.Http.IHttpOutputAborter outputAborter, System.Threading.CancellationToken cancellationToken) { throw null; }
     }
     public abstract partial class WriteOnlyStream : System.IO.Stream
     {
@@ -1826,17 +1826,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
         public System.Security.Authentication.SslProtocols SslProtocols { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
 }
-namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Https
 {
     public static partial class CertificateLoader
     {
         public static System.Security.Cryptography.X509Certificates.X509Certificate2 LoadFromStoreCert(string subject, string storeName, System.Security.Cryptography.X509Certificates.StoreLocation storeLocation, bool allowInvalid) { throw null; }
     }
-    public partial class HttpsConnectionAdapter : Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal.IConnectionAdapter
+    public partial class HttpsConnectionAdapter : Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.IConnectionAdapter
     {
         public HttpsConnectionAdapter(Microsoft.AspNetCore.Server.Kestrel.Https.HttpsConnectionAdapterOptions options) { }
         public HttpsConnectionAdapter(Microsoft.AspNetCore.Server.Kestrel.Https.HttpsConnectionAdapterOptions options, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
         public bool IsHttps { get { throw null; } }
-        public System.Threading.Tasks.Task<Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal.IAdaptedConnection> OnConnectionAsync(Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal.ConnectionAdapterContext context) { throw null; }
+        public System.Threading.Tasks.Task<Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.IAdaptedConnection> OnConnectionAsync(Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.ConnectionAdapterContext context) { throw null; }
     }
 }
