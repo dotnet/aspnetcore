@@ -29,7 +29,6 @@
     <!-- In test scenarios $(BinariesRoot) is defined in a generated Directory.Build.props file -->
     <Reference Include="Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib"/>
     <Reference Include="Microsoft.AspNetCore.Razor.Runtime"/>
-    <Reference Include="Microsoft.AspNetCore.Razor.Design" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(BinariesRoot)'!=''">

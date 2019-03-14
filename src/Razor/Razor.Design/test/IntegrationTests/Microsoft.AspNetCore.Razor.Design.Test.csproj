@@ -69,4 +69,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
     </ItemGroup>
   </Target>
 
+  <Target Name="RestoreTestProjects" BeforeTargets="Restore">
+    <MSBuild Projects="..\testassets\RestoreTestProjects\RestoreTestProjects.csproj" Targets="Restore" />
+  </Target>
+
 </Project>
