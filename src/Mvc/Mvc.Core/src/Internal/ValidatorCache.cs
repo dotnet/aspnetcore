@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             return validators;
         }
 
-        private struct CacheEntry
+        private readonly struct CacheEntry
         {
             public CacheEntry(IReadOnlyList<IModelValidator> validators)
             {

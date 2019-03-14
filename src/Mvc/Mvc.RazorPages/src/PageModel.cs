@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         }
 
         /// <summary>
-        /// Gets or sets <see cref="ViewDataDictionary"/> used by <see cref="PageResult"/>.
+        /// Gets the <see cref="ViewDataDictionary"/>.
         /// </summary>
         public ViewDataDictionary ViewData => PageContext?.ViewData;
 
@@ -524,7 +524,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// Creates a <see cref="BadRequestResult"/> that produces a <see cref="StatusCodes.Status400BadRequest"/> response.
         /// </summary>
         /// <returns>The created <see cref="BadRequestResult"/> for the response.</returns>
-        [NonAction]
         public virtual BadRequestResult BadRequest()
             => new BadRequestResult();
 
@@ -533,7 +532,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// </summary>
         /// <param name="error">An error object to be returned to the client.</param>
         /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
-        [NonAction]
         public virtual BadRequestObjectResult BadRequest(object error)
             => new BadRequestObjectResult(error);
 
@@ -542,7 +540,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// </summary>
         /// <param name="modelState">The <see cref="ModelStateDictionary" /> containing errors to be returned to the client.</param>
         /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
-        [NonAction]
         public virtual BadRequestObjectResult BadRequest(ModelStateDictionary modelState)
         {
             if (modelState == null)
@@ -1618,6 +1615,105 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             => new UnauthorizedResult();
 
         /// <summary>
+        /// Creates a <see cref="PartialViewResult"/> by specifying the name of a partial to render.
+        /// </summary>
+        /// <param name="viewName">The partial name.</param>
+        /// <returns>The created <see cref="PartialViewResult"/> object for the response.</returns>
+        public virtual PartialViewResult Partial(string viewName)
+        {
+            return Partial(viewName, model: null);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="PartialViewResult"/> by specifying the name of a partial to render and the model object.
+        /// </summary>
+        /// <param name="viewName">The partial name.</param>
+        /// <param name="model">The model to be passed into the partial.</param>
+        /// <returns>The created <see cref="PartialViewResult"/> object for the response.</returns>
+        public virtual PartialViewResult Partial(string viewName, object model)
+        {
+            ViewData.Model = model;
+
+            return new PartialViewResult
+            {
+                ViewName = viewName,
+                ViewData = ViewData
+            };
+        }
+
+        #region ViewComponentResult
+        /// <summary>
+        /// Creates a <see cref="ViewComponentResult"/> by specifying the name of a view component to render.
+        /// </summary>
+        /// <param name="componentName">
+        /// The view component name. Can be a view component
+        /// <see cref="ViewComponents.ViewComponentDescriptor.ShortName"/> or
+        /// <see cref="ViewComponents.ViewComponentDescriptor.FullName"/>.</param>
+        /// <returns>The created <see cref="ViewComponentResult"/> object for the response.</returns>
+        public virtual ViewComponentResult ViewComponent(string componentName)
+        {
+            return ViewComponent(componentName, arguments: null);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="ViewComponentResult"/> by specifying the <see cref="Type"/> of a view component to
+        /// render.
+        /// </summary>
+        /// <param name="componentType">The view component <see cref="Type"/>.</param>
+        /// <returns>The created <see cref="ViewComponentResult"/> object for the response.</returns>
+        public virtual ViewComponentResult ViewComponent(Type componentType)
+        {
+            return ViewComponent(componentType, arguments: null);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="ViewComponentResult"/> by specifying the name of a view component to render.
+        /// </summary>
+        /// <param name="componentName">
+        /// The view component name. Can be a view component
+        /// <see cref="ViewComponents.ViewComponentDescriptor.ShortName"/> or
+        /// <see cref="ViewComponents.ViewComponentDescriptor.FullName"/>.</param>
+        /// <param name="arguments">
+        /// An <see cref="object"/> with properties representing arguments to be passed to the invoked view component
+        /// method. Alternatively, an <see cref="System.Collections.Generic.IDictionary{String, Object}"/> instance
+        /// containing the invocation arguments.
+        /// </param>
+        /// <returns>The created <see cref="ViewComponentResult"/> object for the response.</returns>
+        public virtual ViewComponentResult ViewComponent(string componentName, object arguments)
+        {
+            return new ViewComponentResult
+            {
+                ViewComponentName = componentName,
+                Arguments = arguments,
+                ViewData = ViewData,
+                TempData = TempData
+            };
+        }
+
+        /// <summary>
+        /// Creates a <see cref="ViewComponentResult"/> by specifying the <see cref="Type"/> of a view component to
+        /// render.
+        /// </summary>
+        /// <param name="componentType">The view component <see cref="Type"/>.</param>
+        /// <param name="arguments">
+        /// An <see cref="object"/> with properties representing arguments to be passed to the invoked view component
+        /// method. Alternatively, an <see cref="System.Collections.Generic.IDictionary{String, Object}"/> instance
+        /// containing the invocation arguments.
+        /// </param>
+        /// <returns>The created <see cref="ViewComponentResult"/> object for the response.</returns>
+        public virtual ViewComponentResult ViewComponent(Type componentType, object arguments)
+        {
+            return new ViewComponentResult
+            {
+                ViewComponentType = componentType,
+                Arguments = arguments,
+                ViewData = ViewData,
+                TempData = TempData
+            };
+        }
+        #endregion
+
+        /// <summary>
         /// Validates the specified <paramref name="model"/> instance.
         /// </summary>
         /// <param name="model">The model to validate.</param>
@@ -1657,7 +1753,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             return ModelState.IsValid;
         }
 
-#region IAsyncPageFilter \ IPageFilter
+        #region IAsyncPageFilter \ IPageFilter
         /// <summary>
         /// Called after a handler method has been selected, but before model binding occurs.
         /// </summary>
@@ -1724,6 +1820,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
                 OnPageHandlerExecuted(await next());
             }
         }
-#endregion
+        #endregion
     }
 }

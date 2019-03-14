@@ -4,8 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Internal;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
 {
@@ -15,6 +17,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
     /// </summary>
     public class ValidationVisitor
     {
+        private int? _maxValidationDepth;
+
         /// <summary>
         /// Creates a new <see cref="ValidationVisitor"/>.
         /// </summary>
@@ -26,7 +30,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         public ValidationVisitor(
             ActionContext actionContext,
             IModelValidatorProvider validatorProvider,
+#pragma warning disable PUB0001 // Pubternal type in public API
             ValidatorCache validatorCache,
+#pragma warning restore PUB0001
             IModelMetadataProvider metadataProvider,
             ValidationStateDictionary validationState)
         {
@@ -58,11 +64,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
 
         protected IModelValidatorProvider ValidatorProvider { get; }
         protected IModelMetadataProvider MetadataProvider { get; }
+#pragma warning disable PUB0001 // Pubternal type in public API
         protected ValidatorCache Cache { get; }
+#pragma warning restore PUB0001
         protected ActionContext Context { get; }
         protected ModelStateDictionary ModelState { get; }
         protected ValidationStateDictionary ValidationState { get; }
+#pragma warning disable PUB0001 // Pubternal type in public API
         protected ValidationStack CurrentPath { get; }
+#pragma warning restore PUB0001
 
         protected object Container { get; set; }
         protected string Key { get; set; }
@@ -71,9 +81,41 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         protected IValidationStrategy Strategy { get; set; }
 
         /// <summary>
+        /// Gets or sets the maximum depth to constrain the validation visitor when validating.
+        /// <para>
+        /// <see cref="ValidationVisitor"/> traverses the object graph of the model being validated. For models
+        /// that are very deep or are infinitely recursive, validation may result in stack overflow.
+        /// </para>
+        /// <para>
+        /// When not <see langword="null"/>, <see cref="Visit(ModelMetadata, string, object)"/> will throw if
+        /// current traversal depth exceeds the specified value.
+        /// </para>
+        /// </summary>
+        public int? MaxValidationDepth
+        {
+            get => _maxValidationDepth;
+            set
+            {
+                if (value != null && value <= 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value));
+                }
+
+                _maxValidationDepth = value;
+            }
+        }
+
+        /// <summary>
         /// Indicates whether validation of a complex type should be performed if validation fails for any of its children. The default behavior is false.
         /// </summary>
         public bool ValidateComplexTypesIfChildValidationFails { get; set; }
+
+        /// <summary>
+        ///  Gets or sets a value that determines if <see cref="ValidationVisitor"/> can short circuit validation when a model
+        ///  does not have any associated validators.
+        /// </summary>
+        public bool AllowShortCircuitingValidationWhenNoValidatorsArePresent { get; set; }
+
         /// <summary>
         /// Validates a object.
         /// </summary>
@@ -99,7 +141,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             if (model == null && key != null && !alwaysValidateAtTopLevel)
             {
                 var entry = ModelState[key];
-                if (entry != null && entry.ValidationState != ModelValidationState.Valid)
+
+                // Rationale: We might see the same model state key for two different objects and want to preserve any
+                // known invalidity.
+                if (entry != null && entry.ValidationState != ModelValidationState.Invalid)
                 {
                     entry.ValidationState = ModelValidationState.Valid;
                 }
@@ -182,6 +227,33 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
                 return true;
             }
 
+            if (MaxValidationDepth != null && CurrentPath.Count > MaxValidationDepth)
+            {
+                // Non cyclic but too deep an object graph.
+
+                // Pop the current model to make ValidationStack.Dispose happy
+                CurrentPath.Pop(model);
+
+                string message;
+                switch (metadata.MetadataKind)
+                {
+                    case ModelMetadataKind.Property:
+                        message = Resources.FormatValidationVisitor_ExceededMaxPropertyDepth(nameof(ValidationVisitor), MaxValidationDepth, metadata.Name, metadata.ContainerType);
+                        break;
+
+                    default:
+                        // Since the minimum depth is never 0, MetadataKind can never be Parameter. Consequently we only special case MetadataKind.Property.
+                        message = Resources.FormatValidationVisitor_ExceededMaxDepth(nameof(ValidationVisitor), MaxValidationDepth, metadata.ModelType);
+                        break;
+                }
+
+                message += " " + Resources.FormatValidationVisitor_ExceededMaxDepthFix(nameof(MvcOptions), nameof(MvcOptions.MaxValidationDepth));
+                throw new InvalidOperationException(message)
+                {
+                    HelpLink = "https://aka.ms/AA21ue1",
+                };
+            }
+
             var entry = GetValidationEntry(model);
             key = entry?.Key ?? key ?? string.Empty;
             metadata = entry?.Metadata ?? metadata;
@@ -196,6 +268,26 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             {
                 // Use the key on the entry, because we might not have entries in model state.
                 SuppressValidation(entry.Key);
+                CurrentPath.Pop(model);
+                return true;
+            }
+            // If the metadata indicates that no validators exist AND the aggregate state for the key says that the model graph
+            // is not invalid (i.e. is one of Unvalidated, Valid, or Skipped) we can safely mark the graph as valid.
+            else if (
+                AllowShortCircuitingValidationWhenNoValidatorsArePresent &&
+                metadata.HasValidators == false &&
+                ModelState.GetFieldValidationState(key) != ModelValidationState.Invalid)
+            {
+                // No validators will be created for this graph of objects. Mark it as valid if it wasn't previously validated.
+                var entries = ModelState.FindKeysWithPrefix(key);
+                foreach (var item in entries)
+                {
+                    if (item.Value.ValidationState == ModelValidationState.Unvalidated)
+                    {
+                        item.Value.ValidationState = ModelValidationState.Valid;
+                    }
+                }
+
                 CurrentPath.Pop(model);
                 return true;
             }
@@ -290,7 +382,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             var entries = ModelState.FindKeysWithPrefix(key);
             foreach (var entry in entries)
             {
-                entry.Value.ValidationState = ModelValidationState.Skipped;
+                if (entry.Value.ValidationState != ModelValidationState.Invalid)
+                {
+                    entry.Value.ValidationState = ModelValidationState.Skipped;
+                }
             }
         }
 
@@ -305,7 +400,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             return entry;
         }
 
-        protected struct StateManager : IDisposable
+        protected readonly struct StateManager : IDisposable
         {
             private readonly ValidationVisitor _visitor;
             private readonly object _container;

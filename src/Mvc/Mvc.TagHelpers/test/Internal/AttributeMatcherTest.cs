@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
         }
 
         [Fact]
-        public void DetermineMode_SetsModeWithHigestValue()
+        public void DetermineMode_SetsModeWithHighestValue()
         {
             // Arrange
             var modeInfos = new[]

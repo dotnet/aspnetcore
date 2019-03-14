@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             };
 
             var projectEngine = CreateProjectEngine(builder => builder.AddTagHelpers(descriptors));
-            var projectItem = CreateProjectItem();
+            var projectItem = CreateProjectItemFromFile();
 
             // Act
             var codeDocument = projectEngine.Process(projectItem);
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             };
 
             var projectEngine = CreateProjectEngine(builder => builder.AddTagHelpers(descriptors));
-            var projectItem = CreateProjectItem();
+            var projectItem = CreateProjectItemFromFile();
 
             // Act
             var codeDocument = projectEngine.Process(projectItem);
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             };
 
             var projectEngine = CreateProjectEngine(builder => builder.AddTagHelpers(descriptors));
-            var projectItem = CreateProjectItem();
+            var projectItem = CreateProjectItemFromFile();
 
             // Act
             var codeDocument = projectEngine.Process(projectItem);

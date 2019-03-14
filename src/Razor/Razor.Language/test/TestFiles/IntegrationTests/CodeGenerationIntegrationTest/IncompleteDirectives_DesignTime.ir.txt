@@ -82,3 +82,5 @@ Document -
                 HtmlContent - (339:23,9 [3] IncompleteDirectives.cshtml)
                     IntermediateToken - (339:23,9 [3] IncompleteDirectives.cshtml) - Html - {\n
                 MalformedDirective - (342:24,0 [12] IncompleteDirectives.cshtml) - functions
+                    CSharpCode - (354:24,12 [0] IncompleteDirectives.cshtml)
+                        IntermediateToken - (354:24,12 [0] IncompleteDirectives.cshtml) - CSharp - 

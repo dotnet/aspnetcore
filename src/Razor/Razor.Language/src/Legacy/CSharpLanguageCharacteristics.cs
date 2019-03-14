@@ -6,61 +6,61 @@ using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
-    internal class CSharpLanguageCharacteristics : LanguageCharacteristics<CSharpTokenizer, CSharpSymbol, CSharpSymbolType>
+    internal class CSharpLanguageCharacteristics : LanguageCharacteristics<CSharpTokenizer, CSharpToken, CSharpTokenType>
     {
         private static readonly CSharpLanguageCharacteristics _instance = new CSharpLanguageCharacteristics();
 
-        private static Dictionary<CSharpSymbolType, string> _symbolSamples = new Dictionary<CSharpSymbolType, string>()
+        private static Dictionary<CSharpTokenType, string> _tokenSamples = new Dictionary<CSharpTokenType, string>()
         {
-            { CSharpSymbolType.Arrow, "->" },
-            { CSharpSymbolType.Minus, "-" },
-            { CSharpSymbolType.Decrement, "--" },
-            { CSharpSymbolType.MinusAssign, "-=" },
-            { CSharpSymbolType.NotEqual, "!=" },
-            { CSharpSymbolType.Not, "!" },
-            { CSharpSymbolType.Modulo, "%" },
-            { CSharpSymbolType.ModuloAssign, "%=" },
-            { CSharpSymbolType.AndAssign, "&=" },
-            { CSharpSymbolType.And, "&" },
-            { CSharpSymbolType.DoubleAnd, "&&" },
-            { CSharpSymbolType.LeftParenthesis, "(" },
-            { CSharpSymbolType.RightParenthesis, ")" },
-            { CSharpSymbolType.Star, "*" },
-            { CSharpSymbolType.MultiplyAssign, "*=" },
-            { CSharpSymbolType.Comma, "," },
-            { CSharpSymbolType.Dot, "." },
-            { CSharpSymbolType.Slash, "/" },
-            { CSharpSymbolType.DivideAssign, "/=" },
-            { CSharpSymbolType.DoubleColon, "::" },
-            { CSharpSymbolType.Colon, ":" },
-            { CSharpSymbolType.Semicolon, ";" },
-            { CSharpSymbolType.QuestionMark, "?" },
-            { CSharpSymbolType.NullCoalesce, "??" },
-            { CSharpSymbolType.RightBracket, "]" },
-            { CSharpSymbolType.LeftBracket, "[" },
-            { CSharpSymbolType.XorAssign, "^=" },
-            { CSharpSymbolType.Xor, "^" },
-            { CSharpSymbolType.LeftBrace, "{" },
-            { CSharpSymbolType.OrAssign, "|=" },
-            { CSharpSymbolType.DoubleOr, "||" },
-            { CSharpSymbolType.Or, "|" },
-            { CSharpSymbolType.RightBrace, "}" },
-            { CSharpSymbolType.Tilde, "~" },
-            { CSharpSymbolType.Plus, "+" },
-            { CSharpSymbolType.PlusAssign, "+=" },
-            { CSharpSymbolType.Increment, "++" },
-            { CSharpSymbolType.LessThan, "<" },
-            { CSharpSymbolType.LessThanEqual, "<=" },
-            { CSharpSymbolType.LeftShift, "<<" },
-            { CSharpSymbolType.LeftShiftAssign, "<<=" },
-            { CSharpSymbolType.Assign, "=" },
-            { CSharpSymbolType.Equals, "==" },
-            { CSharpSymbolType.GreaterThan, ">" },
-            { CSharpSymbolType.GreaterThanEqual, ">=" },
-            { CSharpSymbolType.RightShift, ">>" },
-            { CSharpSymbolType.RightShiftAssign, ">>=" },
-            { CSharpSymbolType.Hash, "#" },
-            { CSharpSymbolType.Transition, "@" },
+            { CSharpTokenType.Arrow, "->" },
+            { CSharpTokenType.Minus, "-" },
+            { CSharpTokenType.Decrement, "--" },
+            { CSharpTokenType.MinusAssign, "-=" },
+            { CSharpTokenType.NotEqual, "!=" },
+            { CSharpTokenType.Not, "!" },
+            { CSharpTokenType.Modulo, "%" },
+            { CSharpTokenType.ModuloAssign, "%=" },
+            { CSharpTokenType.AndAssign, "&=" },
+            { CSharpTokenType.And, "&" },
+            { CSharpTokenType.DoubleAnd, "&&" },
+            { CSharpTokenType.LeftParenthesis, "(" },
+            { CSharpTokenType.RightParenthesis, ")" },
+            { CSharpTokenType.Star, "*" },
+            { CSharpTokenType.MultiplyAssign, "*=" },
+            { CSharpTokenType.Comma, "," },
+            { CSharpTokenType.Dot, "." },
+            { CSharpTokenType.Slash, "/" },
+            { CSharpTokenType.DivideAssign, "/=" },
+            { CSharpTokenType.DoubleColon, "::" },
+            { CSharpTokenType.Colon, ":" },
+            { CSharpTokenType.Semicolon, ";" },
+            { CSharpTokenType.QuestionMark, "?" },
+            { CSharpTokenType.NullCoalesce, "??" },
+            { CSharpTokenType.RightBracket, "]" },
+            { CSharpTokenType.LeftBracket, "[" },
+            { CSharpTokenType.XorAssign, "^=" },
+            { CSharpTokenType.Xor, "^" },
+            { CSharpTokenType.LeftBrace, "{" },
+            { CSharpTokenType.OrAssign, "|=" },
+            { CSharpTokenType.DoubleOr, "||" },
+            { CSharpTokenType.Or, "|" },
+            { CSharpTokenType.RightBrace, "}" },
+            { CSharpTokenType.Tilde, "~" },
+            { CSharpTokenType.Plus, "+" },
+            { CSharpTokenType.PlusAssign, "+=" },
+            { CSharpTokenType.Increment, "++" },
+            { CSharpTokenType.LessThan, "<" },
+            { CSharpTokenType.LessThanEqual, "<=" },
+            { CSharpTokenType.LeftShift, "<<" },
+            { CSharpTokenType.LeftShiftAssign, "<<=" },
+            { CSharpTokenType.Assign, "=" },
+            { CSharpTokenType.Equals, "==" },
+            { CSharpTokenType.GreaterThan, ">" },
+            { CSharpTokenType.GreaterThanEqual, ">=" },
+            { CSharpTokenType.RightShift, ">>" },
+            { CSharpTokenType.RightShiftAssign, ">>=" },
+            { CSharpTokenType.Hash, "#" },
+            { CSharpTokenType.Transition, "@" },
         };
 
         protected CSharpLanguageCharacteristics()
@@ -74,96 +74,96 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return new CSharpTokenizer(source);
         }
 
-        protected override CSharpSymbol CreateSymbol(string content, CSharpSymbolType type, IReadOnlyList<RazorDiagnostic> errors)
+        protected override CSharpToken CreateToken(string content, CSharpTokenType type, IReadOnlyList<RazorDiagnostic> errors)
         {
-            return new CSharpSymbol(content, type, errors);
+            return new CSharpToken(content, type, errors);
         }
 
-        public override string GetSample(CSharpSymbolType type)
+        public override string GetSample(CSharpTokenType type)
         {
             string sample;
-            if (!_symbolSamples.TryGetValue(type, out sample))
+            if (!_tokenSamples.TryGetValue(type, out sample))
             {
                 switch (type)
                 {
-                    case CSharpSymbolType.Identifier:
-                        return Resources.CSharpSymbol_Identifier;
-                    case CSharpSymbolType.Keyword:
-                        return Resources.CSharpSymbol_Keyword;
-                    case CSharpSymbolType.IntegerLiteral:
-                        return Resources.CSharpSymbol_IntegerLiteral;
-                    case CSharpSymbolType.NewLine:
-                        return Resources.CSharpSymbol_Newline;
-                    case CSharpSymbolType.WhiteSpace:
-                        return Resources.CSharpSymbol_Whitespace;
-                    case CSharpSymbolType.Comment:
-                        return Resources.CSharpSymbol_Comment;
-                    case CSharpSymbolType.RealLiteral:
-                        return Resources.CSharpSymbol_RealLiteral;
-                    case CSharpSymbolType.CharacterLiteral:
-                        return Resources.CSharpSymbol_CharacterLiteral;
-                    case CSharpSymbolType.StringLiteral:
-                        return Resources.CSharpSymbol_StringLiteral;
+                    case CSharpTokenType.Identifier:
+                        return Resources.CSharpToken_Identifier;
+                    case CSharpTokenType.Keyword:
+                        return Resources.CSharpToken_Keyword;
+                    case CSharpTokenType.IntegerLiteral:
+                        return Resources.CSharpToken_IntegerLiteral;
+                    case CSharpTokenType.NewLine:
+                        return Resources.CSharpToken_Newline;
+                    case CSharpTokenType.WhiteSpace:
+                        return Resources.CSharpToken_Whitespace;
+                    case CSharpTokenType.Comment:
+                        return Resources.CSharpToken_Comment;
+                    case CSharpTokenType.RealLiteral:
+                        return Resources.CSharpToken_RealLiteral;
+                    case CSharpTokenType.CharacterLiteral:
+                        return Resources.CSharpToken_CharacterLiteral;
+                    case CSharpTokenType.StringLiteral:
+                        return Resources.CSharpToken_StringLiteral;
                     default:
-                        return Resources.Symbol_Unknown;
+                        return Resources.Token_Unknown;
                 }
             }
             return sample;
         }
 
-        public override CSharpSymbol CreateMarkerSymbol()
+        public override CSharpToken CreateMarkerToken()
         {
-            return new CSharpSymbol(string.Empty, CSharpSymbolType.Unknown);
+            return new CSharpToken(string.Empty, CSharpTokenType.Unknown);
         }
 
-        public override CSharpSymbolType GetKnownSymbolType(KnownSymbolType type)
+        public override CSharpTokenType GetKnownTokenType(KnownTokenType type)
         {
             switch (type)
             {
-                case KnownSymbolType.Identifier:
-                    return CSharpSymbolType.Identifier;
-                case KnownSymbolType.Keyword:
-                    return CSharpSymbolType.Keyword;
-                case KnownSymbolType.NewLine:
-                    return CSharpSymbolType.NewLine;
-                case KnownSymbolType.WhiteSpace:
-                    return CSharpSymbolType.WhiteSpace;
-                case KnownSymbolType.Transition:
-                    return CSharpSymbolType.Transition;
-                case KnownSymbolType.CommentStart:
-                    return CSharpSymbolType.RazorCommentTransition;
-                case KnownSymbolType.CommentStar:
-                    return CSharpSymbolType.RazorCommentStar;
-                case KnownSymbolType.CommentBody:
-                    return CSharpSymbolType.RazorComment;
+                case KnownTokenType.Identifier:
+                    return CSharpTokenType.Identifier;
+                case KnownTokenType.Keyword:
+                    return CSharpTokenType.Keyword;
+                case KnownTokenType.NewLine:
+                    return CSharpTokenType.NewLine;
+                case KnownTokenType.WhiteSpace:
+                    return CSharpTokenType.WhiteSpace;
+                case KnownTokenType.Transition:
+                    return CSharpTokenType.Transition;
+                case KnownTokenType.CommentStart:
+                    return CSharpTokenType.RazorCommentTransition;
+                case KnownTokenType.CommentStar:
+                    return CSharpTokenType.RazorCommentStar;
+                case KnownTokenType.CommentBody:
+                    return CSharpTokenType.RazorComment;
                 default:
-                    return CSharpSymbolType.Unknown;
+                    return CSharpTokenType.Unknown;
             }
         }
 
-        public override CSharpSymbolType FlipBracket(CSharpSymbolType bracket)
+        public override CSharpTokenType FlipBracket(CSharpTokenType bracket)
         {
             switch (bracket)
             {
-                case CSharpSymbolType.LeftBrace:
-                    return CSharpSymbolType.RightBrace;
-                case CSharpSymbolType.LeftBracket:
-                    return CSharpSymbolType.RightBracket;
-                case CSharpSymbolType.LeftParenthesis:
-                    return CSharpSymbolType.RightParenthesis;
-                case CSharpSymbolType.LessThan:
-                    return CSharpSymbolType.GreaterThan;
-                case CSharpSymbolType.RightBrace:
-                    return CSharpSymbolType.LeftBrace;
-                case CSharpSymbolType.RightBracket:
-                    return CSharpSymbolType.LeftBracket;
-                case CSharpSymbolType.RightParenthesis:
-                    return CSharpSymbolType.LeftParenthesis;
-                case CSharpSymbolType.GreaterThan:
-                    return CSharpSymbolType.LessThan;
+                case CSharpTokenType.LeftBrace:
+                    return CSharpTokenType.RightBrace;
+                case CSharpTokenType.LeftBracket:
+                    return CSharpTokenType.RightBracket;
+                case CSharpTokenType.LeftParenthesis:
+                    return CSharpTokenType.RightParenthesis;
+                case CSharpTokenType.LessThan:
+                    return CSharpTokenType.GreaterThan;
+                case CSharpTokenType.RightBrace:
+                    return CSharpTokenType.LeftBrace;
+                case CSharpTokenType.RightBracket:
+                    return CSharpTokenType.LeftBracket;
+                case CSharpTokenType.RightParenthesis:
+                    return CSharpTokenType.LeftParenthesis;
+                case CSharpTokenType.GreaterThan:
+                    return CSharpTokenType.LessThan;
                 default:
                     Debug.Fail("FlipBracket must be called with a bracket character");
-                    return CSharpSymbolType.Unknown;
+                    return CSharpTokenType.Unknown;
             }
         }
 

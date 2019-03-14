@@ -3,7 +3,11 @@ ASP.NET Core SignalR
 
 ASP.NET Core SignalR is a new library for ASP.NET Core developers that makes it incredibly simple to add real-time web functionality to your applications. What is "real-time web" functionality? It's the ability to have your server-side code push content to the connected clients as it happens, in real-time.
 
-You can watch an introductory presentation here - [Introducing ASP.NET Core SignalR](https://www.youtube.com/watch?v=fgTu-xYFDdM)
+You can watch an introductory presentation here - [ASP.NET Core SignalR: Build 2018](https://www.youtube.com/watch?v=Lws0zOaseIM)
+
+## Documentation
+
+Documentation for ASP.NET Core SignalR can be found in the [Real-time Apps](https://docs.microsoft.com/en-us/aspnet/core/signalr/introduction?view=aspnetcore-2.1) section of the ASP.NET Core Documentation site.
 
 ## TypeScript Version
 
@@ -40,7 +44,7 @@ npm install @aspnet/signalr --registry https://dotnet.myget.org/f/aspnetcore-dev
 We also have a MsgPack protocol library which is installed via:
 
 ```bash
- npm install @aspnet/signalr-protocol-msgpack
+npm install @aspnet/signalr-protocol-msgpack
 ```
 
 ## Deploying

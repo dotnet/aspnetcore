@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Xunit;
 
@@ -71,6 +72,35 @@ namespace Microsoft.AspNetCore.Mvc
                 {
                     Assert.Equal("unsafeError", item.Key);
                     Assert.Equal(new[] { "The input was not valid." }, item.Value);
+                });
+        }
+
+        [Fact]
+        public void Constructor_CopiesPassedInDictionary()
+        {
+            // Arrange
+            var errors = new Dictionary<string, string[]>
+            {
+                ["key1"] = new[] { "error1", "error2" },
+                ["key2"] = new[] { "error3", },
+            };
+
+            // Act
+            var problemDescription = new ValidationProblemDetails(errors);
+
+            // Assert
+            Assert.Equal("One or more validation errors occurred.", problemDescription.Title);
+            Assert.Collection(
+                problemDescription.Errors,
+                item =>
+                {
+                    Assert.Equal("key1", item.Key);
+                    Assert.Equal(new[] { "error1", "error2" }, item.Value);
+                },
+                item =>
+                {
+                    Assert.Equal("key2", item.Key);
+                    Assert.Equal(new[] { "error3" }, item.Value);
                 });
         }
     }

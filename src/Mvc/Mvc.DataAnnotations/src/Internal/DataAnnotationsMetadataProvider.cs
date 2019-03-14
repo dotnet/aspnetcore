@@ -182,7 +182,19 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 
                 var groupedDisplayNamesAndValues = new List<KeyValuePair<EnumGroupAndName, string>>();
                 var namesAndValues = new Dictionary<string, string>();
-                var enumLocalizer = _stringLocalizerFactory?.Create(underlyingType);
+
+                IStringLocalizer enumLocalizer = null;
+                if (_localizationOptions.AllowDataAnnotationsLocalizationForEnumDisplayAttributes)
+                {
+                    if (_stringLocalizerFactory != null && _localizationOptions.DataAnnotationLocalizerProvider != null)
+                    {
+                        enumLocalizer = _localizationOptions.DataAnnotationLocalizerProvider(underlyingType, _stringLocalizerFactory);
+                    }
+                }
+                else
+                {
+                    enumLocalizer = _stringLocalizerFactory?.Create(underlyingType);
+                }
 
                 var enumFields = Enum.GetNames(underlyingType)
                     .Select(name => underlyingType.GetField(name))
@@ -305,15 +317,30 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                 throw new ArgumentNullException(nameof(context));
             }
 
+            var attributes = new List<object>(context.Attributes.Count);
+
+            for (var i = 0; i < context.Attributes.Count; i++)
+            {
+                var attribute = context.Attributes[i];
+                if (attribute is ValidationProviderAttribute validationProviderAttribute)
+                {
+                    attributes.AddRange(validationProviderAttribute.GetValidationAttributes());
+                }
+                else
+                {
+                    attributes.Add(attribute);
+                }
+            }
+
             // RequiredAttribute marks a property as required by validation - this means that it
             // must have a non-null value on the model during validation.
-            var requiredAttribute = context.Attributes.OfType<RequiredAttribute>().FirstOrDefault();
+            var requiredAttribute = attributes.OfType<RequiredAttribute>().FirstOrDefault();
             if (requiredAttribute != null)
             {
                 context.ValidationMetadata.IsRequired = true;
             }
 
-            foreach (var attribute in context.Attributes.OfType<ValidationAttribute>())
+            foreach (var attribute in attributes.OfType<ValidationAttribute>())
             {
                 // If another provider has already added this attribute, do not repeat it.
                 // This will prevent attributes like RemoteAttribute (which implement ValidationAttribute and

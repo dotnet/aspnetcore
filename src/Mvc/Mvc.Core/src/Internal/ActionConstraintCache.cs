@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             _actionConstraintProviders = actionConstraintProviders.OrderBy(item => item.Order).ToArray();
         }
 
-        private InnerCache CurrentCache
+        internal InnerCache CurrentCache
         {
             get
             {
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
                 if (current == null || current.Version != actionDescriptors.Version)
                 {
-                    current = new InnerCache(actionDescriptors.Version);
+                    current = new InnerCache(actionDescriptors);
                     _currentCache = current;
                 }
 
@@ -150,10 +150,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             {
                 return null;
             }
-            
+
             var actionConstraints = new IActionConstraint[count];
             var actionConstraintIndex = 0;
-            for (int i = 0; i < items.Count; i++)
+            for (var i = 0; i < items.Count; i++)
             {
                 var actionConstraint = items[i].Constraint;
                 if (actionConstraint != null)
@@ -165,20 +165,22 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             return actionConstraints;
         }
 
-        private class InnerCache
+        internal class InnerCache
         {
-            public InnerCache(int version)
+            private readonly ActionDescriptorCollection _actions;
+
+            public InnerCache(ActionDescriptorCollection actions)
             {
-                Version = version;
+                _actions = actions;
             }
 
             public ConcurrentDictionary<ActionDescriptor, CacheEntry> Entries { get; } =
                 new ConcurrentDictionary<ActionDescriptor, CacheEntry>();
 
-            public int Version { get; }
+            public int Version => _actions.Version;
         }
 
-        private struct CacheEntry
+        internal readonly struct CacheEntry
         {
             public CacheEntry(IReadOnlyList<IActionConstraint> actionConstraints)
             {

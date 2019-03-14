@@ -1,15 +1,15 @@
 TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(3,2): Error RZ1018: Directive 'addTagHelper' must have a value.
-TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(3,14): Error RZ1020: Invalid tag helper directive look up text ''. The correct look up text format is: "name, assemblyName".
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(3,14): Error RZ1036: Invalid tag helper directive look up text ''. The correct look up text format is: "name, assemblyName".
 TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(4,2): Error RZ1018: Directive 'addTagHelper' must have a value.
-TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(4,15): Error RZ1020: Invalid tag helper directive look up text ''. The correct look up text format is: "name, assemblyName".
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(4,15): Error RZ1036: Invalid tag helper directive look up text ''. The correct look up text format is: "name, assemblyName".
 TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(5,15): Error RZ1000: Unterminated string literal.  Strings that start with a quotation mark (") must be terminated before the end of the line.  However, strings that start with @ and a quotation mark (@") can span multiple lines.
-TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(5,15): Error RZ1020: Invalid tag helper directive look up text '"'. The correct look up text format is: "name, assemblyName".
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(5,15): Error RZ1036: Invalid tag helper directive look up text '"'. The correct look up text format is: "name, assemblyName".
 TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(7,2): Error RZ1018: Directive 'removeTagHelper' must have a value.
-TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(7,17): Error RZ1020: Invalid tag helper directive look up text ''. The correct look up text format is: "name, assemblyName".
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(7,17): Error RZ1036: Invalid tag helper directive look up text ''. The correct look up text format is: "name, assemblyName".
 TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(8,2): Error RZ1018: Directive 'removeTagHelper' must have a value.
-TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(8,18): Error RZ1020: Invalid tag helper directive look up text ''. The correct look up text format is: "name, assemblyName".
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(8,18): Error RZ1036: Invalid tag helper directive look up text ''. The correct look up text format is: "name, assemblyName".
 TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(9,18): Error RZ1000: Unterminated string literal.  Strings that start with a quotation mark (") must be terminated before the end of the line.  However, strings that start with @ and a quotation mark (@") can span multiple lines.
-TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(9,18): Error RZ1020: Invalid tag helper directive look up text '"'. The correct look up text format is: "name, assemblyName".
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(9,18): Error RZ1036: Invalid tag helper directive look up text '"'. The correct look up text format is: "name, assemblyName".
 TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(11,2): Error RZ1018: Directive 'tagHelperPrefix' must have a value.
 TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(12,2): Error RZ1018: Directive 'tagHelperPrefix' must have a value.
 TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(12,1): Error RZ2001: The 'tagHelperPrefix' directive may only occur once per document.

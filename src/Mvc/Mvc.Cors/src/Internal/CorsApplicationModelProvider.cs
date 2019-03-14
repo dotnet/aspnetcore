@@ -6,7 +6,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Internal;
-using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Mvc.Cors.Internal
 {
@@ -67,22 +67,31 @@ namespace Microsoft.AspNetCore.Mvc.Cors.Internal
 
                     if (isCorsEnabledGlobally || corsOnController || corsOnAction)
                     {
-                        UpdateHttpMethodActionConstraint(actionModel);
+                        UpdateActionToAcceptCorsPreflight(actionModel);
                     }
                 }
             }
         }
 
-        private static void UpdateHttpMethodActionConstraint(ActionModel actionModel)
+        private static void UpdateActionToAcceptCorsPreflight(ActionModel actionModel)
         {
             for (var i = 0; i < actionModel.Selectors.Count; i++)
             {
                 var selectorModel = actionModel.Selectors[i];
+
                 for (var j = 0; j < selectorModel.ActionConstraints.Count; j++)
                 {
                     if (selectorModel.ActionConstraints[j] is HttpMethodActionConstraint httpConstraint)
                     {
                         selectorModel.ActionConstraints[j] = new CorsHttpMethodActionConstraint(httpConstraint);
+                    }
+                }
+
+                for (int j = 0; j < selectorModel.EndpointMetadata.Count; j++)
+                {
+                    if (selectorModel.EndpointMetadata[j] is HttpMethodMetadata httpMethodMetadata)
+                    {
+                        selectorModel.EndpointMetadata[j] = new HttpMethodMetadata(httpMethodMetadata.HttpMethods, true);
                     }
                 }
             }

@@ -20,8 +20,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         public async Task FormFileModelBinder_SingleFile_BindSuccessful()
         {
             // Arrange
-            var formFiles = new FormFileCollection();
-            formFiles.Add(GetMockFormFile("file", "file1.txt"));
+            var formFiles = new FormFileCollection
+            {
+                GetMockFormFile("file", "file1.txt")
+            };
             var httpContext = GetMockHttpContext(GetMockFormCollection(formFiles));
             var bindingContext = GetBindingContext(typeof(IEnumerable<IFormFile>), httpContext);
             var binder = new FormFileModelBinder(NullLoggerFactory.Instance);
@@ -35,6 +37,192 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var entry = bindingContext.ValidationState[bindingContext.Result.Model];
             Assert.False(entry.SuppressValidation);
             Assert.Equal("file", entry.Key);
+            Assert.Null(entry.Metadata);
+        }
+
+        [Fact]
+        public async Task FormFileModelBinder_SingleFileAtTopLevel_BindSuccessfully_WithEmptyModelName()
+        {
+            // Arrange
+            var formFiles = new FormFileCollection
+            {
+                GetMockFormFile("file", "file1.txt")
+            };
+
+            var httpContext = GetMockHttpContext(GetMockFormCollection(formFiles));
+            var binder = new FormFileModelBinder(NullLoggerFactory.Instance);
+
+            // Mimic ParameterBinder overwriting ModelName on top level model. In this top-level binding case,
+            // FormFileModelBinder uses FieldName from the get-go. (OriginalModelName will be checked but ignored.)
+            var bindingContext = DefaultModelBindingContext.CreateBindingContext(
+                new ActionContext { HttpContext = httpContext },
+                Mock.Of<IValueProvider>(),
+                new EmptyModelMetadataProvider().GetMetadataForType(typeof(IFormFile)),
+                bindingInfo: null,
+                modelName: "file");
+            bindingContext.ModelName = string.Empty;
+
+            // Act
+            await binder.BindModelAsync(bindingContext);
+
+            // Assert
+            Assert.True(bindingContext.Result.IsModelSet);
+
+            var entry = bindingContext.ValidationState[bindingContext.Result.Model];
+            Assert.False(entry.SuppressValidation);
+            Assert.Equal("file", entry.Key);
+            Assert.Null(entry.Metadata);
+        }
+
+        [Fact]
+        public async Task FormFileModelBinder_SingleFileWithinTopLevelPoco_BindSuccessfully()
+        {
+            // Arrange
+            const string propertyName = nameof(NestedFormFiles.Files);
+            var formFiles = new FormFileCollection
+            {
+                GetMockFormFile($"{propertyName}", "file1.txt")
+            };
+
+            var httpContext = GetMockHttpContext(GetMockFormCollection(formFiles));
+            var binder = new FormFileModelBinder(NullLoggerFactory.Instance);
+
+            // In this non-top-level binding case, FormFileModelBinder tries ModelName and succeeds.
+            var propertyInfo = typeof(NestedFormFiles).GetProperty(propertyName);
+            var metadata = new EmptyModelMetadataProvider().GetMetadataForProperty(
+                propertyInfo,
+                propertyInfo.PropertyType);
+            var bindingContext = DefaultModelBindingContext.CreateBindingContext(
+                new ActionContext { HttpContext = httpContext },
+                Mock.Of<IValueProvider>(),
+                metadata,
+                bindingInfo: null,
+                modelName: "FileList");
+            bindingContext.IsTopLevelObject = false;
+            bindingContext.Model = new FileList();
+            bindingContext.ModelName = propertyName;
+
+            // Act
+            await binder.BindModelAsync(bindingContext);
+
+            // Assert
+            Assert.True(bindingContext.Result.IsModelSet);
+
+            var entry = bindingContext.ValidationState[bindingContext.Result.Model];
+            Assert.False(entry.SuppressValidation);
+            Assert.Equal($"{propertyName}", entry.Key);
+            Assert.Null(entry.Metadata);
+        }
+
+        [Fact]
+        public async Task FormFileModelBinder_SingleFileWithinTopLevelPoco_BindSuccessfully_WithShortenedModelName()
+        {
+            // Arrange
+            const string propertyName = nameof(NestedFormFiles.Files);
+            var formFiles = new FormFileCollection
+            {
+                GetMockFormFile($"FileList.{propertyName}", "file1.txt")
+            };
+
+            var httpContext = GetMockHttpContext(GetMockFormCollection(formFiles));
+            var binder = new FormFileModelBinder(NullLoggerFactory.Instance);
+
+            // Mimic ParameterBinder overwriting ModelName on top level model then ComplexTypeModelBinder entering a
+            // nested context for the NestedFormFiles property. In this non-top-level binding case, FormFileModelBinder
+            // tries ModelName then falls back to add an (OriginalModelName + ".") prefix.
+            var propertyInfo = typeof(NestedFormFiles).GetProperty(propertyName);
+            var metadata = new EmptyModelMetadataProvider().GetMetadataForProperty(
+                propertyInfo,
+                propertyInfo.PropertyType);
+            var bindingContext = DefaultModelBindingContext.CreateBindingContext(
+                new ActionContext { HttpContext = httpContext },
+                Mock.Of<IValueProvider>(),
+                metadata,
+                bindingInfo: null,
+                modelName: "FileList");
+            bindingContext.IsTopLevelObject = false;
+            bindingContext.Model = new FileList();
+            bindingContext.ModelName = propertyName;
+
+            // Act
+            await binder.BindModelAsync(bindingContext);
+
+            // Assert
+            Assert.True(bindingContext.Result.IsModelSet);
+
+            var entry = bindingContext.ValidationState[bindingContext.Result.Model];
+            Assert.False(entry.SuppressValidation);
+            Assert.Equal($"FileList.{propertyName}", entry.Key);
+            Assert.Null(entry.Metadata);
+        }
+
+        [Fact]
+        public async Task FormFileModelBinder_SingleFileWithinTopLevelDictionary_BindSuccessfully()
+        {
+            // Arrange
+            var formFiles = new FormFileCollection
+            {
+                GetMockFormFile("[myFile]", "file1.txt")
+            };
+
+            var httpContext = GetMockHttpContext(GetMockFormCollection(formFiles));
+            var binder = new FormFileModelBinder(NullLoggerFactory.Instance);
+
+            // In this non-top-level binding case, FormFileModelBinder tries ModelName and succeeds.
+            var bindingContext = DefaultModelBindingContext.CreateBindingContext(
+                new ActionContext { HttpContext = httpContext },
+                Mock.Of<IValueProvider>(),
+                new EmptyModelMetadataProvider().GetMetadataForType(typeof(IFormFile)),
+                bindingInfo: null,
+                modelName: "FileDictionary");
+            bindingContext.IsTopLevelObject = false;
+            bindingContext.ModelName = "[myFile]";
+
+            // Act
+            await binder.BindModelAsync(bindingContext);
+
+            // Assert
+            Assert.True(bindingContext.Result.IsModelSet);
+
+            var entry = bindingContext.ValidationState[bindingContext.Result.Model];
+            Assert.False(entry.SuppressValidation);
+            Assert.Equal("[myFile]", entry.Key);
+            Assert.Null(entry.Metadata);
+        }
+
+        [Fact]
+        public async Task FormFileModelBinder_SingleFileWithinTopLevelDictionary_BindSuccessfully_WithShortenedModelName()
+        {
+            // Arrange
+            var formFiles = new FormFileCollection
+            {
+                GetMockFormFile("FileDictionary[myFile]", "file1.txt")
+            };
+
+            var httpContext = GetMockHttpContext(GetMockFormCollection(formFiles));
+            var binder = new FormFileModelBinder(NullLoggerFactory.Instance);
+
+            // Mimic ParameterBinder overwriting ModelName on top level model then DictionaryModelBinder entering a
+            // nested context for the KeyValuePair.Value property. In this non-top-level binding case,
+            // FormFileModelBinder tries ModelName then falls back to add an OriginalModelName prefix.
+            var bindingContext = DefaultModelBindingContext.CreateBindingContext(
+                new ActionContext { HttpContext = httpContext },
+                Mock.Of<IValueProvider>(),
+                new EmptyModelMetadataProvider().GetMetadataForType(typeof(IFormFile)),
+                bindingInfo: null,
+                modelName: "FileDictionary");
+            bindingContext.IsTopLevelObject = false;
+            bindingContext.ModelName = "[myFile]";
+
+            // Act
+            await binder.BindModelAsync(bindingContext);
+
+            // Assert
+            Assert.True(bindingContext.Result.IsModelSet);
+
+            var entry = bindingContext.ValidationState[bindingContext.Result.Model];
+            Assert.False(entry.SuppressValidation);
+            Assert.Equal("FileDictionary[myFile]", entry.Key);
             Assert.Null(entry.Metadata);
         }
 
@@ -127,8 +315,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         public async Task FormFileModelBinder_ReturnsFailedResult_WhenNamesDoNotMatch()
         {
             // Arrange
-            var formFiles = new FormFileCollection();
-            formFiles.Add(GetMockFormFile("different name", "file1.txt"));
+            var formFiles = new FormFileCollection
+            {
+                GetMockFormFile("different name", "file1.txt")
+            };
             var httpContext = GetMockHttpContext(GetMockFormCollection(formFiles));
             var bindingContext = GetBindingContext(typeof(IFormFile), httpContext);
             var binder = new FormFileModelBinder(NullLoggerFactory.Instance);
@@ -147,9 +337,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         public async Task FormFileModelBinder_UsesFieldNameForTopLevelObject(bool isTopLevel, string expected)
         {
             // Arrange
-            var formFiles = new FormFileCollection();
-            formFiles.Add(GetMockFormFile("FieldName", "file1.txt"));
-            formFiles.Add(GetMockFormFile("ModelName", "file1.txt"));
+            var formFiles = new FormFileCollection
+            {
+                GetMockFormFile("FieldName", "file1.txt"),
+                GetMockFormFile("ModelName", "file1.txt")
+            };
             var httpContext = GetMockHttpContext(GetMockFormCollection(formFiles));
 
             var bindingContext = GetBindingContext(typeof(IFormFile), httpContext);
@@ -173,8 +365,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         public async Task FormFileModelBinder_ReturnsFailedResult_WithEmptyContentDisposition()
         {
             // Arrange
-            var formFiles = new FormFileCollection();
-            formFiles.Add(new Mock<IFormFile>().Object);
+            var formFiles = new FormFileCollection
+            {
+                new Mock<IFormFile>().Object
+            };
             var httpContext = GetMockHttpContext(GetMockFormCollection(formFiles));
             var bindingContext = GetBindingContext(typeof(IFormFile), httpContext);
             var binder = new FormFileModelBinder(NullLoggerFactory.Instance);
@@ -191,8 +385,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         public async Task FormFileModelBinder_ReturnsFailedResult_WithNoFileNameAndZeroLength()
         {
             // Arrange
-            var formFiles = new FormFileCollection();
-            formFiles.Add(GetMockFormFile("file", ""));
+            var formFiles = new FormFileCollection
+            {
+                GetMockFormFile("file", "")
+            };
             var httpContext = GetMockHttpContext(GetMockFormCollection(formFiles));
             var bindingContext = GetBindingContext(typeof(IFormFile), httpContext);
             var binder = new FormFileModelBinder(NullLoggerFactory.Instance);
@@ -322,6 +518,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
         private class FileList : List<IFormFile>
         {
+        }
+
+        private class NestedFormFiles
+        {
+            public FileList Files { get; }
         }
     }
 }

@@ -5,7 +5,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 {
     public enum RuntimeFlavor
     {
-        Clr,
-        CoreClr
+        None,
+        CoreClr,
+        Clr
     }
 }

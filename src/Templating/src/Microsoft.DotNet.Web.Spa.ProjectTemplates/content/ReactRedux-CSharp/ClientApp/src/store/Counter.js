@@ -1,4 +1,4 @@
-﻿const incrementCountType = 'INCREMENT_COUNT';
+const incrementCountType = 'INCREMENT_COUNT';
 const decrementCountType = 'DECREMENT_COUNT';
 const initialState = { count: 0 };
 

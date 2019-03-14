@@ -1,0 +1,100 @@
+Statement block - Gen<None> - 141 - (0:0,0)
+    Code span - Gen<Stmt> - [try { var foo = new { } } catch(Foo Bar Baz) { var foo = new { } } catch(Foo Bar Baz) { var foo = new { } } catch(Foo Bar Baz) {] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:78
+        CSharpTokenType.Keyword;[try];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.LeftBrace;[{];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Identifier;[var];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Identifier;[foo];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Assign;[=];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Keyword;[new];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.LeftBrace;[{];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.RightBrace;[}];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.RightBrace;[}];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Keyword;[catch];
+        CSharpTokenType.LeftParenthesis;[(];
+        CSharpTokenType.Identifier;[Foo];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Identifier;[Bar];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Identifier;[Baz];
+        CSharpTokenType.RightParenthesis;[)];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.LeftBrace;[{];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Identifier;[var];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Identifier;[foo];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Assign;[=];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Keyword;[new];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.LeftBrace;[{];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.RightBrace;[}];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.RightBrace;[}];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Keyword;[catch];
+        CSharpTokenType.LeftParenthesis;[(];
+        CSharpTokenType.Identifier;[Foo];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Identifier;[Bar];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Identifier;[Baz];
+        CSharpTokenType.RightParenthesis;[)];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.LeftBrace;[{];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Identifier;[var];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Identifier;[foo];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Assign;[=];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Keyword;[new];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.LeftBrace;[{];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.RightBrace;[}];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.RightBrace;[}];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Keyword;[catch];
+        CSharpTokenType.LeftParenthesis;[(];
+        CSharpTokenType.Identifier;[Foo];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Identifier;[Bar];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Identifier;[Baz];
+        CSharpTokenType.RightParenthesis;[)];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.LeftBrace;[{];
+    Markup block - Gen<None> - 12 - (128:0,128)
+        Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:Any - (128:0,128) - Tokens:1
+            HtmlTokenType.WhiteSpace;[ ];
+        Tag block - Gen<None> - 3 - (129:0,129)
+            Markup span - Gen<Markup> - [<p>] - SpanEditHandler;Accepts:None - (129:0,129) - Tokens:3
+                HtmlTokenType.OpenAngle;[<];
+                HtmlTokenType.Text;[p];
+                HtmlTokenType.CloseAngle;[>];
+        Markup span - Gen<Markup> - [Foo] - SpanEditHandler;Accepts:Any - (132:0,132) - Tokens:1
+            HtmlTokenType.Text;[Foo];
+        Tag block - Gen<None> - 4 - (135:0,135)
+            Markup span - Gen<Markup> - [</p>] - SpanEditHandler;Accepts:None - (135:0,135) - Tokens:4
+                HtmlTokenType.OpenAngle;[<];
+                HtmlTokenType.ForwardSlash;[/];
+                HtmlTokenType.Text;[p];
+                HtmlTokenType.CloseAngle;[>];
+        Markup span - Gen<Markup> - [ ] - SpanEditHandler;Accepts:None - (139:0,139) - Tokens:1
+            HtmlTokenType.WhiteSpace;[ ];
+    Code span - Gen<Stmt> - [}] - SpanEditHandler;Accepts:Any - (140:0,140) - Tokens:1
+        CSharpTokenType.RightBrace;[}];

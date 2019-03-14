@@ -5,6 +5,7 @@ using System;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Resources = Microsoft.AspNetCore.Mvc.RazorPages.Resources;
 
 namespace Microsoft.Extensions.DependencyInjection
 {

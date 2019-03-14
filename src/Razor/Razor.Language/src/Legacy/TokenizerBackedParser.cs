@@ -8,20 +8,20 @@ using System.Linq;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
-    internal abstract partial class TokenizerBackedParser<TTokenizer, TSymbol, TSymbolType> : ParserBase
-        where TSymbolType : struct
-        where TTokenizer : Tokenizer<TSymbol, TSymbolType>
-        where TSymbol : SymbolBase<TSymbolType>
+    internal abstract partial class TokenizerBackedParser<TTokenizer, TToken, TTokenType> : ParserBase
+        where TTokenType : struct
+        where TTokenizer : Tokenizer<TToken, TTokenType>
+        where TToken : TokenBase<TTokenType>
     {
-        private readonly TokenizerView<TTokenizer, TSymbol, TSymbolType> _tokenizer;
+        private readonly TokenizerView<TTokenizer, TToken, TTokenType> _tokenizer;
 
-        protected TokenizerBackedParser(LanguageCharacteristics<TTokenizer, TSymbol, TSymbolType> language, ParserContext context)
+        protected TokenizerBackedParser(LanguageCharacteristics<TTokenizer, TToken, TTokenType> language, ParserContext context)
             : base(context)
         {
             Language = language;
 
             var languageTokenizer = Language.CreateTokenizer(Context.Source);
-            _tokenizer = new TokenizerView<TTokenizer, TSymbol, TSymbolType>(languageTokenizer);
+            _tokenizer = new TokenizerView<TTokenizer, TToken, TTokenType>(languageTokenizer);
             Span = new SpanBuilder(CurrentLocation);
         }
 
@@ -29,12 +29,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         protected Action<SpanBuilder> SpanConfig { get; set; }
 
-        protected TSymbol CurrentSymbol
+        protected TToken CurrentToken
         {
             get { return _tokenizer.Current; }
         }
 
-        protected TSymbol PreviousSymbol { get; private set; }
+        protected TToken PreviousToken { get; private set; }
 
         protected SourceLocation CurrentLocation => _tokenizer.Tokenizer.CurrentLocation;
 
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             get { return _tokenizer.EndOfFile; }
         }
 
-        protected LanguageCharacteristics<TTokenizer, TSymbol, TSymbolType> Language { get; }
+        protected LanguageCharacteristics<TTokenizer, TToken, TTokenType> Language { get; }
 
         protected virtual void HandleEmbeddedTransition()
         {
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public override void BuildSpan(SpanBuilder span, SourceLocation start, string content)
         {
-            foreach (ISymbol sym in Language.TokenizeString(start, content))
+            foreach (IToken sym in Language.TokenizeString(start, content))
             {
                 span.Accept(sym);
             }
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
         }
 
-        protected TSymbol Lookahead(int count)
+        protected TToken Lookahead(int count)
         {
             if (count < 0)
             {
@@ -80,42 +80,42 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
             else if (count == 0)
             {
-                return CurrentSymbol;
+                return CurrentToken;
             }
 
-            // We add 1 in order to store the current symbol.
-            var symbols = new TSymbol[count + 1];
-            var currentSymbol = CurrentSymbol;
+            // We add 1 in order to store the current token.
+            var tokens = new TToken[count + 1];
+            var currentToken = CurrentToken;
 
-            symbols[0] = currentSymbol;
+            tokens[0] = currentToken;
 
             // We need to look forward "count" many times.
             for (var i = 1; i <= count; i++)
             {
                 NextToken();
-                symbols[i] = CurrentSymbol;
+                tokens[i] = CurrentToken;
             }
 
             // Restore Tokenizer's location to where it was pointing before the look-ahead.
             for (var i = count; i >= 0; i--)
             {
-                PutBack(symbols[i]);
+                PutBack(tokens[i]);
             }
 
-            // The PutBacks above will set CurrentSymbol to null. EnsureCurrent will set our CurrentSymbol to the
-            // next symbol.
+            // The PutBacks above will set CurrentToken to null. EnsureCurrent will set our CurrentToken to the
+            // next token.
             EnsureCurrent();
 
-            return symbols[count];
+            return tokens[count];
         }
 
         /// <summary>
         /// Looks forward until the specified condition is met.
         /// </summary>
-        /// <param name="condition">A predicate accepting the symbol being evaluated and the list of symbols which have been looped through.</param>
-        /// <returns>true, if the condition was met. false - if the condition wasn't met and the last symbol has already been processed.</returns>
-        /// <remarks>The list of previous symbols is passed in the reverse order. So the last processed element will be the first one in the list.</remarks>
-        protected bool LookaheadUntil(Func<TSymbol, IEnumerable<TSymbol>, bool> condition)
+        /// <param name="condition">A predicate accepting the token being evaluated and the list of tokens which have been looped through.</param>
+        /// <returns>true, if the condition was met. false - if the condition wasn't met and the last token has already been processed.</returns>
+        /// <remarks>The list of previous tokens is passed in the reverse order. So the last processed element will be the first one in the list.</remarks>
+        protected bool LookaheadUntil(Func<TToken, IEnumerable<TToken>, bool> condition)
         {
             if (condition == null)
             {
@@ -124,8 +124,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             var matchFound = false;
 
-            var symbols = new List<TSymbol>();
-            symbols.Add(CurrentSymbol);
+            var tokens = new List<TToken>();
+            tokens.Add(CurrentToken);
 
             while (true)
             {
@@ -134,8 +134,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     break;
                 }
 
-                symbols.Add(CurrentSymbol);
-                if (condition(CurrentSymbol, symbols))
+                tokens.Add(CurrentToken);
+                if (condition(CurrentToken, tokens))
                 {
                     matchFound = true;
                     break;
@@ -143,13 +143,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
 
             // Restore Tokenizer's location to where it was pointing before the look-ahead.
-            for (var i = symbols.Count - 1; i >= 0; i--)
+            for (var i = tokens.Count - 1; i >= 0; i--)
             {
-                PutBack(symbols[i]);
+                PutBack(tokens[i]);
             }
 
-            // The PutBacks above will set CurrentSymbol to null. EnsureCurrent will set our CurrentSymbol to the
-            // next symbol.
+            // The PutBacks above will set CurrentToken to null. EnsureCurrent will set our CurrentToken to the
+            // next token.
             EnsureCurrent();
 
             return matchFound;
@@ -157,57 +157,57 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         protected internal bool NextToken()
         {
-            PreviousSymbol = CurrentSymbol;
+            PreviousToken = CurrentToken;
             return _tokenizer.Next();
         }
 
         // Helpers
         [Conditional("DEBUG")]
-        internal void Assert(TSymbolType expectedType)
+        internal void Assert(TTokenType expectedType)
         {
-            Debug.Assert(!EndOfFile && SymbolTypeEquals(CurrentSymbol.Type, expectedType));
+            Debug.Assert(!EndOfFile && TokenTypeEquals(CurrentToken.Type, expectedType));
         }
 
-        abstract protected bool SymbolTypeEquals(TSymbolType x, TSymbolType y);
+        abstract protected bool TokenTypeEquals(TTokenType x, TTokenType y);
 
-        protected internal void PutBack(TSymbol symbol)
+        protected internal void PutBack(TToken token)
         {
-            if (symbol != null)
+            if (token != null)
             {
-                _tokenizer.PutBack(symbol);
+                _tokenizer.PutBack(token);
             }
         }
 
         /// <summary>
-        /// Put the specified symbols back in the input stream. The provided list MUST be in the ORDER THE SYMBOLS WERE READ. The
-        /// list WILL be reversed and the Putback(TSymbol) will be called on each item.
+        /// Put the specified tokens back in the input stream. The provided list MUST be in the ORDER THE TOKENS WERE READ. The
+        /// list WILL be reversed and the Putback(TToken) will be called on each item.
         /// </summary>
         /// <remarks>
-        /// If a document contains symbols: a, b, c, d, e, f
+        /// If a document contains tokens: a, b, c, d, e, f
         /// and AcceptWhile or AcceptUntil is used to collect until d
         /// the list returned by AcceptWhile/Until will contain: a, b, c IN THAT ORDER
         /// that is the correct format for providing to this method. The caller of this method would,
         /// in that case, want to put c, b and a back into the stream, so "a, b, c" is the CORRECT order
         /// </remarks>
-        protected internal void PutBack(IEnumerable<TSymbol> symbols)
+        protected internal void PutBack(IEnumerable<TToken> tokens)
         {
-            foreach (TSymbol symbol in symbols.Reverse())
+            foreach (TToken token in tokens.Reverse())
             {
-                PutBack(symbol);
+                PutBack(token);
             }
         }
 
         protected internal void PutCurrentBack()
         {
-            if (!EndOfFile && CurrentSymbol != null)
+            if (!EndOfFile && CurrentToken != null)
             {
-                PutBack(CurrentSymbol);
+                PutBack(CurrentToken);
             }
         }
 
         protected internal bool Balance(BalancingModes mode)
         {
-            var left = CurrentSymbol.Type;
+            var left = CurrentToken.Type;
             var right = Language.FlipBracket(left);
             var start = CurrentStart;
             AcceptAndMoveNext();
@@ -223,13 +223,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return Balance(mode, left, right, start);
         }
 
-        protected internal bool Balance(BalancingModes mode, TSymbolType left, TSymbolType right, SourceLocation start)
+        protected internal bool Balance(BalancingModes mode, TTokenType left, TTokenType right, SourceLocation start)
         {
             var startPosition = CurrentStart.AbsoluteIndex;
             var nesting = 1;
             if (!EndOfFile)
             {
-                var syms = new List<TSymbol>();
+                var syms = new List<TToken>();
                 do
                 {
                     if (IsAtEmbeddedTransition(
@@ -253,7 +253,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     }
                     if (nesting > 0)
                     {
-                        syms.Add(CurrentSymbol);
+                        syms.Add(CurrentToken);
                     }
                 }
                 while (nesting > 0 && NextToken());
@@ -280,29 +280,29 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 }
                 else
                 {
-                    // Accept all the symbols we saw
+                    // Accept all the tokens we saw
                     Accept(syms);
                 }
             }
             return nesting == 0;
         }
 
-        protected internal bool NextIs(TSymbolType type)
+        protected internal bool NextIs(TTokenType type)
         {
-            return NextIs(sym => sym != null && SymbolTypeEquals(type, sym.Type));
+            return NextIs(sym => sym != null && TokenTypeEquals(type, sym.Type));
         }
 
-        protected internal bool NextIs(params TSymbolType[] types)
+        protected internal bool NextIs(params TTokenType[] types)
         {
-            return NextIs(sym => sym != null && types.Any(t => SymbolTypeEquals(t, sym.Type)));
+            return NextIs(sym => sym != null && types.Any(t => TokenTypeEquals(t, sym.Type)));
         }
 
-        protected internal bool NextIs(Func<TSymbol, bool> condition)
+        protected internal bool NextIs(Func<TToken, bool> condition)
         {
-            var cur = CurrentSymbol;
+            var cur = CurrentToken;
             if (NextToken())
             {
-                var result = condition(CurrentSymbol);
+                var result = condition(CurrentToken);
                 PutCurrentBack();
                 PutBack(cur);
                 EnsureCurrent();
@@ -317,27 +317,27 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return false;
         }
 
-        protected internal bool Was(TSymbolType type)
+        protected internal bool Was(TTokenType type)
         {
-            return PreviousSymbol != null && SymbolTypeEquals(PreviousSymbol.Type, type);
+            return PreviousToken != null && TokenTypeEquals(PreviousToken.Type, type);
         }
 
-        protected internal bool At(TSymbolType type)
+        protected internal bool At(TTokenType type)
         {
-            return !EndOfFile && CurrentSymbol != null && SymbolTypeEquals(CurrentSymbol.Type, type);
+            return !EndOfFile && CurrentToken != null && TokenTypeEquals(CurrentToken.Type, type);
         }
 
         protected internal bool AcceptAndMoveNext()
         {
-            Accept(CurrentSymbol);
+            Accept(CurrentToken);
             return NextToken();
         }
 
-        protected TSymbol AcceptSingleWhiteSpaceCharacter()
+        protected TToken AcceptSingleWhiteSpaceCharacter()
         {
-            if (Language.IsWhiteSpace(CurrentSymbol))
+            if (Language.IsWhiteSpace(CurrentToken))
             {
-                Tuple<TSymbol, TSymbol> pair = Language.SplitSymbol(CurrentSymbol, 1, Language.GetKnownSymbolType(KnownSymbolType.WhiteSpace));
+                Tuple<TToken, TToken> pair = Language.SplitToken(CurrentToken, 1, Language.GetKnownTokenType(KnownTokenType.WhiteSpace));
                 Accept(pair.Item1);
                 Span.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
                 NextToken();
@@ -346,32 +346,32 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return null;
         }
 
-        protected internal void Accept(IEnumerable<TSymbol> symbols)
+        protected internal void Accept(IEnumerable<TToken> tokens)
         {
-            foreach (TSymbol symbol in symbols)
+            foreach (TToken token in tokens)
             {
-                Accept(symbol);
+                Accept(token);
             }
         }
 
-        protected internal void Accept(TSymbol symbol)
+        protected internal void Accept(TToken token)
         {
-            if (symbol != null)
+            if (token != null)
             {
-                foreach (var error in symbol.Errors)
+                foreach (var error in token.Errors)
                 {
                     Context.ErrorSink.OnError(error);
                 }
 
-                Span.Accept(symbol);
+                Span.Accept(token);
             }
         }
 
-        protected internal bool AcceptAll(params TSymbolType[] types)
+        protected internal bool AcceptAll(params TTokenType[] types)
         {
-            foreach (TSymbolType type in types)
+            foreach (TTokenType type in types)
             {
-                if (CurrentSymbol == null || !SymbolTypeEquals(CurrentSymbol.Type, type))
+                if (CurrentToken == null || !TokenTypeEquals(CurrentToken.Type, type))
                 {
                     return false;
                 }
@@ -380,11 +380,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return true;
         }
 
-        protected internal void AddMarkerSymbolIfNecessary()
+        protected internal void AddMarkerTokenIfNecessary()
         {
-            if (Span.Symbols.Count == 0 && Context.Builder.LastAcceptedCharacters != AcceptedCharactersInternal.Any)
+            if (Span.Tokens.Count == 0 && Context.Builder.LastAcceptedCharacters != AcceptedCharactersInternal.Any)
             {
-                Accept(Language.CreateMarkerSymbol());
+                Accept(Language.CreateMarkerToken());
             }
         }
 
@@ -408,7 +408,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private void Output()
         {
-            if (Span.Symbols.Count > 0)
+            if (Span.Tokens.Count > 0)
             {
                 var nextStart = Span.End;
 
@@ -462,23 +462,23 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             Initialize(Span);
         }
 
-        protected internal void Expected(KnownSymbolType type)
+        protected internal void Expected(KnownTokenType type)
         {
-            Expected(Language.GetKnownSymbolType(type));
+            Expected(Language.GetKnownTokenType(type));
         }
 
-        protected internal void Expected(params TSymbolType[] types)
+        protected internal void Expected(params TTokenType[] types)
         {
-            Debug.Assert(!EndOfFile && CurrentSymbol != null && types.Contains(CurrentSymbol.Type));
+            Debug.Assert(!EndOfFile && CurrentToken != null && types.Contains(CurrentToken.Type));
             AcceptAndMoveNext();
         }
 
-        protected internal bool Optional(KnownSymbolType type)
+        protected internal bool Optional(KnownTokenType type)
         {
-            return Optional(Language.GetKnownSymbolType(type));
+            return Optional(Language.GetKnownTokenType(type));
         }
 
-        protected internal bool Optional(TSymbolType type)
+        protected internal bool Optional(TTokenType type)
         {
             if (At(type))
             {
@@ -490,7 +490,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         protected bool EnsureCurrent()
         {
-            if (CurrentSymbol == null)
+            if (CurrentToken == null)
             {
                 return NextToken();
             }
@@ -498,62 +498,62 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return true;
         }
 
-        protected internal void AcceptWhile(TSymbolType type)
+        protected internal void AcceptWhile(TTokenType type)
         {
-            AcceptWhile(sym => SymbolTypeEquals(type, sym.Type));
+            AcceptWhile(sym => TokenTypeEquals(type, sym.Type));
         }
 
         // We want to avoid array allocations and enumeration where possible, so we use the same technique as string.Format
-        protected internal void AcceptWhile(TSymbolType type1, TSymbolType type2)
+        protected internal void AcceptWhile(TTokenType type1, TTokenType type2)
         {
-            AcceptWhile(sym => SymbolTypeEquals(type1, sym.Type) || SymbolTypeEquals(type2, sym.Type));
+            AcceptWhile(sym => TokenTypeEquals(type1, sym.Type) || TokenTypeEquals(type2, sym.Type));
         }
 
-        protected internal void AcceptWhile(TSymbolType type1, TSymbolType type2, TSymbolType type3)
+        protected internal void AcceptWhile(TTokenType type1, TTokenType type2, TTokenType type3)
         {
-            AcceptWhile(sym => SymbolTypeEquals(type1, sym.Type) || SymbolTypeEquals(type2, sym.Type) || SymbolTypeEquals(type3, sym.Type));
+            AcceptWhile(sym => TokenTypeEquals(type1, sym.Type) || TokenTypeEquals(type2, sym.Type) || TokenTypeEquals(type3, sym.Type));
         }
 
-        protected internal void AcceptWhile(params TSymbolType[] types)
+        protected internal void AcceptWhile(params TTokenType[] types)
         {
-            AcceptWhile(sym => types.Any(expected => SymbolTypeEquals(expected, sym.Type)));
+            AcceptWhile(sym => types.Any(expected => TokenTypeEquals(expected, sym.Type)));
         }
 
-        protected internal void AcceptUntil(TSymbolType type)
+        protected internal void AcceptUntil(TTokenType type)
         {
-            AcceptWhile(sym => !SymbolTypeEquals(type, sym.Type));
+            AcceptWhile(sym => !TokenTypeEquals(type, sym.Type));
         }
 
         // We want to avoid array allocations and enumeration where possible, so we use the same technique as string.Format
-        protected internal void AcceptUntil(TSymbolType type1, TSymbolType type2)
+        protected internal void AcceptUntil(TTokenType type1, TTokenType type2)
         {
-            AcceptWhile(sym => !SymbolTypeEquals(type1, sym.Type) && !SymbolTypeEquals(type2, sym.Type));
+            AcceptWhile(sym => !TokenTypeEquals(type1, sym.Type) && !TokenTypeEquals(type2, sym.Type));
         }
 
-        protected internal void AcceptUntil(TSymbolType type1, TSymbolType type2, TSymbolType type3)
+        protected internal void AcceptUntil(TTokenType type1, TTokenType type2, TTokenType type3)
         {
-            AcceptWhile(sym => !SymbolTypeEquals(type1, sym.Type) && !SymbolTypeEquals(type2, sym.Type) && !SymbolTypeEquals(type3, sym.Type));
+            AcceptWhile(sym => !TokenTypeEquals(type1, sym.Type) && !TokenTypeEquals(type2, sym.Type) && !TokenTypeEquals(type3, sym.Type));
         }
 
-        protected internal void AcceptUntil(params TSymbolType[] types)
+        protected internal void AcceptUntil(params TTokenType[] types)
         {
-            AcceptWhile(sym => types.All(expected => !SymbolTypeEquals(expected, sym.Type)));
+            AcceptWhile(sym => types.All(expected => !TokenTypeEquals(expected, sym.Type)));
         }
 
-        protected internal void AcceptWhile(Func<TSymbol, bool> condition)
+        protected internal void AcceptWhile(Func<TToken, bool> condition)
         {
             Accept(ReadWhileLazy(condition));
         }
 
-        protected internal IEnumerable<TSymbol> ReadWhile(Func<TSymbol, bool> condition)
+        protected internal IEnumerable<TToken> ReadWhile(Func<TToken, bool> condition)
         {
             return ReadWhileLazy(condition).ToList();
         }
 
-        protected TSymbol AcceptWhiteSpaceInLines()
+        protected TToken AcceptWhiteSpaceInLines()
         {
-            TSymbol lastWs = null;
-            while (Language.IsWhiteSpace(CurrentSymbol) || Language.IsNewLine(CurrentSymbol))
+            TToken lastWs = null;
+            while (Language.IsWhiteSpace(CurrentToken) || Language.IsNewLine(CurrentToken))
             {
                 // Capture the previous whitespace node
                 if (lastWs != null)
@@ -561,14 +561,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Accept(lastWs);
                 }
 
-                if (Language.IsWhiteSpace(CurrentSymbol))
+                if (Language.IsWhiteSpace(CurrentToken))
                 {
-                    lastWs = CurrentSymbol;
+                    lastWs = CurrentToken;
                 }
-                else if (Language.IsNewLine(CurrentSymbol))
+                else if (Language.IsNewLine(CurrentToken))
                 {
                     // Accept newline and reset last whitespace tracker
-                    Accept(CurrentSymbol);
+                    Accept(CurrentToken);
                     lastWs = null;
                 }
 
@@ -579,18 +579,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         protected bool AtIdentifier(bool allowKeywords)
         {
-            return CurrentSymbol != null &&
-                   (Language.IsIdentifier(CurrentSymbol) ||
-                    (allowKeywords && Language.IsKeyword(CurrentSymbol)));
+            return CurrentToken != null &&
+                   (Language.IsIdentifier(CurrentToken) ||
+                    (allowKeywords && Language.IsKeyword(CurrentToken)));
         }
 
         // Don't open this to sub classes because it's lazy but it looks eager.
         // You have to advance the Enumerable to read the next characters.
-        internal IEnumerable<TSymbol> ReadWhileLazy(Func<TSymbol, bool> condition)
+        internal IEnumerable<TToken> ReadWhileLazy(Func<TToken, bool> condition)
         {
-            while (EnsureCurrent() && condition(CurrentSymbol))
+            while (EnsureCurrent() && condition(CurrentToken))
             {
-                yield return CurrentSymbol;
+                yield return CurrentToken;
                 NextToken();
             }
         }
@@ -620,9 +620,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         protected void RazorComment()
         {
-            if (!Language.KnowsSymbolType(KnownSymbolType.CommentStart) ||
-                !Language.KnowsSymbolType(KnownSymbolType.CommentStar) ||
-                !Language.KnowsSymbolType(KnownSymbolType.CommentBody))
+            if (!Language.KnowsTokenType(KnownTokenType.CommentStart) ||
+                !Language.KnowsTokenType(KnownTokenType.CommentStar) ||
+                !Language.KnowsTokenType(KnownTokenType.CommentBody))
             {
                 throw new InvalidOperationException(Resources.Language_Does_Not_Support_RazorComment);
             }
@@ -634,18 +634,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Context.Builder.CurrentBlock.ChunkGenerator = new RazorCommentChunkGenerator();
                     var start = CurrentStart;
 
-                    Expected(KnownSymbolType.CommentStart);
+                    Expected(KnownTokenType.CommentStart);
                     Output(SpanKindInternal.Transition, AcceptedCharactersInternal.None);
 
-                    Expected(KnownSymbolType.CommentStar);
+                    Expected(KnownTokenType.CommentStar);
                     Output(SpanKindInternal.MetaCode, AcceptedCharactersInternal.None);
 
-                    Optional(KnownSymbolType.CommentBody);
-                    AddMarkerSymbolIfNecessary();
+                    Optional(KnownTokenType.CommentBody);
+                    AddMarkerTokenIfNecessary();
                     Output(SpanKindInternal.Comment);
 
                     var errorReported = false;
-                    if (!Optional(KnownSymbolType.CommentStar))
+                    if (!Optional(KnownTokenType.CommentStar))
                     {
                         errorReported = true;
                         Context.ErrorSink.OnError(
@@ -657,7 +657,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         Output(SpanKindInternal.MetaCode, AcceptedCharactersInternal.None);
                     }
 
-                    if (!Optional(KnownSymbolType.CommentStart))
+                    if (!Optional(KnownTokenType.CommentStart))
                     {
                         if (!errorReported)
                         {

@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// <summary>
     /// An <see cref="IActionResult"/> which renders a view component to the response.
     /// </summary>
-    public class ViewComponentResult : ActionResult
+    public class ViewComponentResult : ActionResult, IStatusCodeActionResult
     {
         /// <summary>
         /// Gets or sets the arguments provided to the view component.
