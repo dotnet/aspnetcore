@@ -11,19 +11,6 @@ namespace Microsoft.AspNetCore.Hosting
 }
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 {
-    public sealed partial class SocketTransportFactory : Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.ITransportFactory
-    {
-        public SocketTransportFactory(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions> options, Microsoft.Extensions.Hosting.IHostApplicationLifetime applicationLifetime, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
-        public Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.ITransport Create(Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.IEndPointInformation endPointInformation, Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.IConnectionDispatcher dispatcher) { throw null; }
-    }
-    public partial class SocketTransportOptions
-    {
-        public SocketTransportOptions() { }
-        public int IOQueueCount { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-    }
-}
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
-{
     public static partial class BufferExtensions
     {
         public static System.ArraySegment<byte> GetArray(this System.Memory<byte> memory) { throw null; }
@@ -88,5 +75,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         public void ConnectionWriteFin(string connectionId, string reason) { }
         public bool IsEnabled(Microsoft.Extensions.Logging.LogLevel logLevel) { throw null; }
         public void Log<TState>(Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId, TState state, System.Exception exception, System.Func<TState, System.Exception, string> formatter) { }
+    }
+    public sealed partial class SocketTransportFactory : Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.ITransportFactory
+    {
+        public SocketTransportFactory(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions> options, Microsoft.Extensions.Hosting.IHostApplicationLifetime applicationLifetime, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
+        public Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.ITransport Create(Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.IEndPointInformation endPointInformation, Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.IConnectionDispatcher dispatcher) { throw null; }
+    }
+    public partial class SocketTransportOptions
+    {
+        public SocketTransportOptions() { }
+        public int IOQueueCount { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
 }
