@@ -5,7 +5,6 @@ using McMaster.Extensions.CommandLineUtils;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using TriageBuildFailures.Abstractions;
@@ -24,13 +23,14 @@ namespace TriageBuildFailures.Commands
         private readonly IDictionary<Type, ICIClient> _ciClients = new Dictionary<Type, ICIClient>();
         private readonly GitHubClientWrapper _ghClient;
         private readonly EmailClient _emailClient;
-        private IReporter _reporter;
+        private readonly IReporter _reporter;
         private readonly Config _config;
 
         public Triage(Config config, IReporter reporter)
         {
             _config = config;
             _reporter = reporter;
+
             var vstsClient = GetVSTSClient(_config);
             _ghClient = GetGitHubClient(_config);
             _ciClients[typeof(PullRequestClient)] = GetPullRequestClient(_ghClient, vstsClient);
@@ -40,6 +40,24 @@ namespace TriageBuildFailures.Commands
         }
 
         private DateTime CutoffDate { get; } = DateTime.Now.AddHours(-24);
+
+        private static readonly IEnumerable<HandleFailureBase> Handlers = new List<HandleFailureBase>
+        {
+            new HandleLowValueBuilds(),
+            new HandleUniverseMovedOn(),
+            new HandleSnapshotDependency(),
+            new HandleTestFailures(),
+            new HandleBuildTimeFailures(),
+            new HandleUnhandled(),
+        };
+
+        private static readonly IEnumerable<string> _watchedBranches = new List<string> {
+            "master",
+            "release/",
+            "2.2",
+            "2.1",
+            "2.0"
+        };
 
         /// <summary>
         /// Handle each CI failure in the most appropriate way.
@@ -70,16 +88,6 @@ namespace TriageBuildFailures.Commands
                 _reporter.LogTeamCityStatistic("RAAS:RetriesUsed", RetryHelpers.GetTotalRetriesUsed());
             }
         }
-
-        private static readonly IEnumerable<HandleFailureBase> Handlers = new List<HandleFailureBase>
-        {
-            new HandleLowValueBuilds(),
-            new HandleUniverseMovedOn(),
-            new HandleSnapshotDependency(),
-            new HandleTestFailures(),
-            new HandleBuildTimeFailures(),
-            new HandleUnhandled(),
-        };
 
         /// <summary>
         /// Take the appropriate action for a CI failure.
@@ -115,13 +123,13 @@ namespace TriageBuildFailures.Commands
             foreach (var ciClientKvp in _ciClients)
             {
                 var ciClient = ciClientKvp.Value;
-                var failedBuilds = await ciClient.GetFailedBuilds(CutoffDate);
+                var failedBuilds = await ciClient.GetFailedBuildsAsync(CutoffDate);
 
                 foreach (var failedBuild in failedBuilds)
                 {
                     if (IsWatchedBuild(failedBuild))
                     {
-                        var tags = await ciClient.GetTags(failedBuild);
+                        var tags = await ciClient.GetTagsAsync(failedBuild);
                         if (!tags.Contains(TriagedTag))
                         {
                             result.Add(failedBuild);
@@ -132,14 +140,6 @@ namespace TriageBuildFailures.Commands
 
             return result;
         }
-
-        private static readonly IEnumerable<string> _watchedBranches = new List<string> {
-            "master",
-            "release/",
-            "2.2",
-            "2.1",
-            "2.0"
-        };
 
         private bool IsWatchedBuild(ICIBuild build)
         {
@@ -155,7 +155,7 @@ namespace TriageBuildFailures.Commands
 
         private async Task MarkTriaged(ICIBuild build)
         {
-            await _ciClients[build.CIType].SetTag(build, TriagedTag);
+            await _ciClients[build.CIType].SetTagAsync(build, TriagedTag);
         }
 
         private GitHubClientWrapper GetGitHubClient(Config config)

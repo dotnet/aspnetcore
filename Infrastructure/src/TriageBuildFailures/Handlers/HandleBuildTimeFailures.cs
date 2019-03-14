@@ -15,7 +15,7 @@ namespace TriageBuildFailures.Handlers
     /// </summary>
     public class HandleBuildTimeFailures : HandleFailureBase
     {
-        private IEnumerable<string> BuildTimeErrors = new string[]
+        private readonly IEnumerable<string> BuildTimeErrors = new string[]
         {
             "E:	 ",
             "error NU1603:",
@@ -38,7 +38,7 @@ namespace TriageBuildFailures.Handlers
         public override async Task<bool> CanHandleFailure(ICIBuild build)
         {
             var client = GetClient(build);
-            var log = await client.GetBuildLog(build);
+            var log = await client.GetBuildLogAsync(build);
             var errors = GetErrorsFromLog(log);
             return errors != null && errors.Count() > 0;
         }
@@ -48,7 +48,7 @@ namespace TriageBuildFailures.Handlers
 
         public override async Task HandleFailure(ICIBuild build)
         {
-            var log = await GetClient(build).GetBuildLog(build);
+            var log = await GetClient(build).GetBuildLogAsync(build);
             var owner = "aspnet";
             var repo = GitHubUtils.PrivateRepo;
             var issues = await GHClient.GetIssues(owner, repo);

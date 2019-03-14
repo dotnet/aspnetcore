@@ -4,19 +4,20 @@
 using System;
 using System.Collections.Generic;
 using TriageBuildFailures.Abstractions;
+using TriageBuildFailures.GitHub;
 
 namespace TriageBuildFailures.VSTS.Models
 {
     public class VSTSBuild : ICIBuild
     {
-        private Build _build;
+        private readonly Build _build;
 
         public VSTSBuild(Build build)
         {
             _build = build;
         }
 
-        public Type CIType => typeof(VSTSClient);
+        public Type CIType { get; set; } = typeof(VSTSBuild);
 
         public string Id => _build.Id;
 
@@ -57,6 +58,8 @@ namespace TriageBuildFailures.VSTS.Models
         {
             return config.VSTS;
         }
+
+        public GitHubPR PRSource { get; set; }
 
         public IEnumerable<ValidationResults> ValidationResults => _build.ValidationResults;
     }

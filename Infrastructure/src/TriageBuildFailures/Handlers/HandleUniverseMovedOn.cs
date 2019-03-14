@@ -18,7 +18,7 @@ namespace TriageBuildFailures.Handlers
 
         public override async Task<bool> CanHandleFailure(ICIBuild build)
         {
-            var buildLog = await GetClient(build).GetBuildLog(build);
+            var buildLog = await GetClient(build).GetBuildLogAsync(build);
             return UpdateUniverseBuilds.Contains(build.BuildTypeID) && buildLog.Contains(UniverseMovedOn);
         }
 

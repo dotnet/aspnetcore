@@ -15,7 +15,7 @@ namespace TriageBuildFailures.Handlers
         {
             if (build is TeamCityBuild tcBuild)
             {
-                var buildLog = await GetClient(build).GetBuildLog(build);
+                var buildLog = await GetClient(build).GetBuildLogAsync(build);
                 return buildLog.Contains(SnapshotMessage);
             }
             else

@@ -23,7 +23,7 @@ namespace TriageBuildFailures.Handlers
 
         public async override Task<bool> CanHandleFailure(ICIBuild build)
         {
-            var tests = await GetClient(build).GetTests(build, BuildStatus.FAILURE);
+            var tests = await GetClient(build).GetTestsAsync(build, BuildStatus.FAILURE);
             return tests.Any(s => s.Status == BuildStatus.FAILURE);
         }
 
@@ -48,7 +48,7 @@ namespace TriageBuildFailures.Handlers
         public override async Task HandleFailure(ICIBuild build)
         {
             var client = GetClient(build);
-            var tests = await client.GetTests(build, BuildStatus.FAILURE);
+            var tests = await client.GetTestsAsync(build, BuildStatus.FAILURE);
             if (tests.Any(s => s.Status != BuildStatus.FAILURE))
             {
                 throw new Exception("Tests which didn't fail got through somehow.");
@@ -65,7 +65,7 @@ namespace TriageBuildFailures.Handlers
 
                 var flakyIssues = await GHClient.GetFlakyIssues(owner, repo);
 
-                var errors = await client.GetTestFailureText(failure);
+                var errors = await client.GetTestFailureTextAsync(failure);
 
                 var applicableIssue = await GetApplicableIssue(client, flakyIssues, failure);
 
@@ -122,6 +122,7 @@ CC {GetOwnerMentions(failureArea)}";
 
                     Reporter.Output($"Creating new issue for test failure {failure.Name}...");
                     var issue = await GHClient.CreateIssue(owner, repo, subject, body, issueLabels, assignees, hiddenData: hiddenData);
+                    await GHClient.AddIssueToProject(issue, GHClient.Config.ActiveFailuresColumn);
                     Reporter.Output($"Created issue {issue.HtmlUrl}");
                 }
                 // The issue already exists, comment on it if we haven't already done so for this build.
@@ -176,7 +177,7 @@ CC {GetOwnerMentions(failureArea)}";
             return shortTestName.Split('.').Last();
         }
 
-        private static Regex WordRegex = new Regex(@"[ \r\n\\?()]+", RegexOptions.Compiled);
+        private static readonly Regex WordRegex = new Regex(@"[ \r\n\\?()]+", RegexOptions.Compiled);
 
         private static bool MessagesAreClose(string source, string target)
         {
@@ -219,7 +220,7 @@ CC {GetOwnerMentions(failureArea)}";
 
         private async Task<GitHubIssue> GetApplicableIssue(ICIClient client, IEnumerable<GitHubIssue> issues, ICITestOccurrence failure)
         {
-            var testError = await client.GetTestFailureText(failure);
+            var testError = await client.GetTestFailureTextAsync(failure);
             var testException = SafeGetExceptionMessage(testError); ;
             var shortTestName = GetTestName(failure);
 

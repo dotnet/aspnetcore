@@ -9,16 +9,16 @@ namespace TriageBuildFailures.Abstractions
 {
     public interface ICIClient
     {
-        Task<IEnumerable<ICIBuild>> GetFailedBuilds(DateTime startDate);
+        Task<IEnumerable<ICIBuild>> GetFailedBuildsAsync(DateTime startDate);
 
-        Task<IEnumerable<string>> GetTags(ICIBuild build);
+        Task<IEnumerable<string>> GetTagsAsync(ICIBuild build);
 
-        Task SetTag(ICIBuild build, string tag);
+        Task SetTagAsync(ICIBuild build, string tag);
 
-        Task<string> GetBuildLog(ICIBuild build);
+        Task<string> GetBuildLogAsync(ICIBuild build);
 
-        Task<IEnumerable<ICITestOccurrence>> GetTests(ICIBuild build, BuildStatus? buildStatus = null);
+        Task<IEnumerable<ICITestOccurrence>> GetTestsAsync(ICIBuild build, BuildStatus? buildStatus = null);
 
-        Task<string> GetTestFailureText(ICITestOccurrence failure);
+        Task<string> GetTestFailureTextAsync(ICITestOccurrence failure);
     }
 }

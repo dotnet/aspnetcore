@@ -37,7 +37,7 @@ namespace TriageBuildFailures.TeamCity
             }
         }
 
-        public async Task<string> GetTestFailureText(ICITestOccurrence test)
+        public async Task<string> GetTestFailureTextAsync(ICITestOccurrence test)
         {
             var url = $"failedTestText.html?buildId={test.BuildId}&testId={test.TestId}";
             using (var stream = await MakeTeamCityRequest(HttpMethod.Get, url, timeout: TimeSpan.FromMinutes(1)))
@@ -74,7 +74,7 @@ namespace TriageBuildFailures.TeamCity
             }
         }
 
-        public async Task<IEnumerable<ICITestOccurrence>> GetTests(ICIBuild build, BuildStatus? buildStatus = null)
+        public async Task<IEnumerable<ICITestOccurrence>> GetTestsAsync(ICIBuild build, BuildStatus? buildStatus = null)
         {
             var locator = $"build:(id:{build.Id})";
             if (buildStatus != null)
@@ -100,7 +100,7 @@ namespace TriageBuildFailures.TeamCity
             }
         }
 
-        public async Task<IEnumerable<string>> GetTags(ICIBuild build)
+        public async Task<IEnumerable<string>> GetTagsAsync(ICIBuild build)
         {
             var url = $"httpAuth/app/rest/builds/{build.Id}/tags";
             using (var stream = await MakeTeamCityRequest(HttpMethod.Get, url, timeout: TimeSpan.FromMinutes(1)))
@@ -112,13 +112,13 @@ namespace TriageBuildFailures.TeamCity
             }
         }
 
-        public async Task SetTag(ICIBuild build, string tag)
+        public async Task SetTagAsync(ICIBuild build, string tag)
         {
             var url = $"app/rest/builds/{build.Id}/tags/";
             (await MakeTeamCityRequest(HttpMethod.Post, url, tag)).Dispose();
         }
 
-        public async Task<IEnumerable<ICIBuild>> GetFailedBuilds(DateTime startDate)
+        public async Task<IEnumerable<ICIBuild>> GetFailedBuildsAsync(DateTime startDate)
         {
             return await GetBuilds($"sinceDate:{TCDateTime(startDate)},status:FAILURE");
         }
@@ -217,7 +217,7 @@ namespace TriageBuildFailures.TeamCity
             return date.ToString("yyyyMMddTHHmmss") + "-0800";
         }
 
-        public async Task<string> GetBuildLog(ICIBuild build)
+        public async Task<string> GetBuildLogAsync(ICIBuild build)
         {
             var buildLogDir = Path.Combine("temp", "BuildLogs");
             var buildLogFile = Path.Combine(buildLogDir, $"{build.Id}.txt");

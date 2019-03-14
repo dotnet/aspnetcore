@@ -34,8 +34,7 @@ namespace TriageBuildFailures.GitHub
 
         public override bool Equals(object obj)
         {
-            var issue = obj as GitHubIssue;
-            return issue != null &&
+            return obj is GitHubIssue issue &&
                    RepositoryName == issue.RepositoryName &&
                    RepositoryOwner == issue.RepositoryOwner &&
                    Number == issue.Number;

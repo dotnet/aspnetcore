@@ -11,5 +11,6 @@ namespace TriageBuildFailures.GitHub
         public string BuildBuddyUsername { get; set; }
         public string BotUsername { get; set; }
         public IEnumerable<GitHubAreaConfig> IssueAreas { get; set; }
+        public int ActiveFailuresColumn { get; set; }
     }
 }

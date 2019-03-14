@@ -21,8 +21,6 @@ namespace TriageBuildFailures.GitHub
         public GitHubClient Client { get; private set; }
 
         private readonly IReporter _reporter;
-        private static readonly Random _random = new Random();
-        private const string _tempFolder = "temp";
 
         public const int MaxBodyLength = 64000;
 
@@ -30,7 +28,6 @@ namespace TriageBuildFailures.GitHub
 
         public GitHubClientWrapper(GitHubConfig config, IReporter reporter)
         {
-            var apiConnection = new ApiConnection(new Connection(ProductHeader));
             _reporter = reporter;
             Config = config;
             Client = new GitHubClient(ProductHeader)
@@ -110,9 +107,16 @@ namespace TriageBuildFailures.GitHub
 
         public async Task CreateComment(GitHubIssue issue, string comment)
         {
-            comment = $"This comment was made automatically. If there is a problem contact {Config.BuildBuddyUsername}.\n\n{comment}";
+            comment = ModifyComment(comment);
 
             await RetryHelpers.RetryAsync(async () => await Client.Issue.Comment.Create(issue.RepositoryOwner, issue.RepositoryName, issue.Number, comment), _reporter);
+        }
+
+        public async Task CreateComment(GitHubPR pRSource, string comment)
+        {
+            comment = ModifyComment(comment);
+
+            await RetryHelpers.RetryAsync(async () => await Client.Issue.Comment.Create(pRSource.RepositoryOwner, pRSource.RepositoryName, pRSource.Number, comment), _reporter);
         }
 
         public async Task EditComment(GitHubIssue issue, IssueComment comment, string newBody)
@@ -210,6 +214,11 @@ namespace TriageBuildFailures.GitHub
             };
             var prs = await Client.PullRequest.GetAllForRepository(owner, repo, prRequest);
             return prs.Select(pr => new GitHubPR(pr));
+        }
+
+        private string ModifyComment(string comment)
+        {
+            return $"This comment was made automatically. If there is a problem contact {Config.BuildBuddyUsername}.\n\n{comment}";
         }
 
         private async Task EnsureLabelsExist(string owner, string repo, IList<string> labels)

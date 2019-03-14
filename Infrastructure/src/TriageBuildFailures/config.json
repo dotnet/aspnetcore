@@ -65,7 +65,8 @@
         "AreaName": "area-webtools",
         "OwnerNames": "vijayrkn"
       }
-    ]
+    ],
+    "ActiveFailuresColumn": 4605798
   },
   "TeamCity": {
     "Server": "aspnetci",

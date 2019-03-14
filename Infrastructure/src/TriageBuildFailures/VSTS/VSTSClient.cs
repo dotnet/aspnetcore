@@ -30,7 +30,7 @@ namespace TriageBuildFailures.VSTS
             Default = V4_1_Preview2,
         }
 
-        private VSTSConfig Config;
+        private readonly VSTSConfig Config;
         private readonly IReporter _reporter;
 
         public VSTSClient(VSTSConfig vstsConfig, IReporter reporter)
@@ -39,7 +39,7 @@ namespace TriageBuildFailures.VSTS
             _reporter = reporter;
         }
 
-        public async Task<IEnumerable<ICIBuild>> GetFailedBuilds(DateTime startDate)
+        public async Task<IEnumerable<ICIBuild>> GetFailedBuildsAsync(DateTime startDate)
         {
             var projects = await GetProjects();
 
@@ -53,7 +53,7 @@ namespace TriageBuildFailures.VSTS
             return results;
         }
 
-        public async Task<IEnumerable<string>> GetTags(ICIBuild build)
+        public async Task<IEnumerable<string>> GetTagsAsync(ICIBuild build)
         {
             var vstsBuild = (VSTSBuild)build;
             var result = await MakeVSTSRequest<VSTSArray<string>>(HttpMethod.Get, $"{vstsBuild.Project}/_apis/build/builds/{build.Id}/tags");
@@ -61,13 +61,13 @@ namespace TriageBuildFailures.VSTS
             return result.Value;
         }
 
-        public async Task SetTag(ICIBuild build, string tag)
+        public async Task SetTagAsync(ICIBuild build, string tag)
         {
             var vstsBuild = (VSTSBuild)build;
             await MakeVSTSRequest<VSTSArray<string>>(HttpMethod.Put, $"{vstsBuild.Project}/_apis/build/builds/{build.Id}/tags/{tag}", apiVersion: ApiVersion.V5_0_Preview2);
         }
 
-        public async Task<string> GetBuildLog(ICIBuild build)
+        public async Task<string> GetBuildLogAsync(ICIBuild build)
         {
             var vstsBuild = (VSTSBuild)build;
             var logs = await MakeVSTSRequest<VSTSArray<VSTSBuildLog>>(HttpMethod.Get, $"{vstsBuild.Project}/_apis/build/builds/{build.Id}/logs");
@@ -101,7 +101,7 @@ namespace TriageBuildFailures.VSTS
             }
         }
 
-        public async Task<IEnumerable<ICITestOccurrence>> GetTests(ICIBuild build, BuildStatus? buildStatus = null)
+        public async Task<IEnumerable<ICITestOccurrence>> GetTestsAsync(ICIBuild build, BuildStatus? buildStatus = null)
         {
             var runs = await GetTestRuns(build);
 
@@ -115,7 +115,7 @@ namespace TriageBuildFailures.VSTS
             return result;
         }
 
-        public Task<string> GetTestFailureText(ICITestOccurrence failure)
+        public Task<string> GetTestFailureTextAsync(ICITestOccurrence failure)
         {
             var vstsTest = failure as VSTSTestOccurrence;
 
@@ -127,7 +127,19 @@ namespace TriageBuildFailures.VSTS
             var uri = new Uri(url);
             var query = HttpUtility.ParseQueryString(uri.Query);
             var id = query.Get("buildId");
-            var project = url.Split('/', StringSplitOptions.RemoveEmptyEntries)[2];
+            string project;
+            if (url.Contains("dev.azure.com"))
+            {
+                project = url.Split('/', StringSplitOptions.RemoveEmptyEntries)[3];
+            }
+            else if (url.Contains("dnceng.visualstudio.com"))
+            {
+                project = url.Split('/', StringSplitOptions.RemoveEmptyEntries)[2];
+            }
+            else
+            {
+                throw new NotImplementedException("Unsupported url format");
+            }
             var vstsUri = $"{project}/_apis/build/builds/{id}";
             var build = await MakeVSTSRequest<Build>(HttpMethod.Get, vstsUri,apiVersion: ApiVersion.V5_0_Preview5);
             return new VSTSBuild(build);
