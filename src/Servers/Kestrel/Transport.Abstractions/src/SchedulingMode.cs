@@ -3,7 +3,6 @@
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions
 {
-    // TODO promote this.
     public enum SchedulingMode
     {
         Default,

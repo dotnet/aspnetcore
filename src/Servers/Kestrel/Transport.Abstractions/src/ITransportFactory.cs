@@ -3,9 +3,6 @@
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions
 {
-    /// <summary>
-    /// 
-    /// </summary>
     public interface ITransportFactory
     {
         ITransport Create(IEndPointInformation endPointInformation, IConnectionDispatcher dispatcher);
