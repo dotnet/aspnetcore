@@ -11,9 +11,6 @@
     <NoWarn>$(NoWarn);NU1605</NoWarn>
     <!-- https://github.com/aspnet/AspNetCore/issues/6549 -->
     <BuildHelixPayload>false</BuildHelixPayload>
-    <IsTestProject>false</IsTestProject>
-    <IsReferenceAssemblyProject>false</IsReferenceAssemblyProject>
-    <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
   </PropertyGroup>
 
   <ItemGroup>
@@ -38,5 +35,41 @@
     <Reference Include="Microsoft.Extensions.Logging.Testing" />
     <Reference Include="System.Data.SqlClient" />
   </ItemGroup>
+
+  <Target Name="_RunPublishAssets" BeforeTargets="AfterBuild" DependsOnTargets="PublishAssets" Condition="'$(SkipTests)' != 'true' OR '$(BuildHelixPayload)' != 'false'" />
+
+  <Target Name="PublishAssets">
+    <ItemGroup>
+      <Architecture Include="x64" />
+      <Architecture Include="x86" Condition="$([MSBuild]::IsOSPlatform('Windows'))" />
+      <ApplicationType Include="Portable;Standalone" Architecture="%(Architecture.Identity)" />
+
+      <PublishAsset
+        Include="..\..\samples\MusicStore\MusicStore.csproj"
+        Architecture="%(ApplicationType.Architecture)"
+        ApplicationType="%(ApplicationType.Identity)"
+        PublishDirectory="$(MSBuildThisFileDirectory)$(OutputPath)testassets\%(ApplicationType.Identity)\%(ApplicationType.Architecture)\" />
+    </ItemGroup>
+
+    <MSBuild
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="_PublishAsset"
+      Properties="PublishProject=%(PublishAsset.Identity);Architecture=%(Architecture);ApplicationType=%(ApplicationType);PublishDirectory=%(PublishDirectory)"
+      BuildInParallel="false" />
+  </Target>
+
+  <Target Name="_PublishAsset">
+
+    <PropertyGroup>
+      <PublishCommandOptions>PublishDir=$(PublishDirectory);Configuration=$(Configuration);TargetArchitecture=$(Architecture)</PublishCommandOptions>
+
+      <PublishCommandOptions Condition="'$(ApplicationType)' == 'Standalone'">$(PublishCommandOptions);RuntimeIdentifier=$(TargetOSName)-$(Architecture)</PublishCommandOptions>
+
+      <!-- Workaround for https://github.com/aspnet/websdk/issues/422 -->
+      <PublishCommandOptions Condition="'$(ApplicationType)' == 'Portable'">$(PublishCommandOptions);UseAppHost=false;</PublishCommandOptions>
+    </PropertyGroup>
+
+    <MSBuild Projects="$(PublishProject)" Targets="Restore;Publish" Properties="$(PublishCommandOptions)" />
+  </Target>
 
 </Project>

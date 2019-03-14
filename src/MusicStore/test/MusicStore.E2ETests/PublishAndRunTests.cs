@@ -1,12 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
+using MusicStore;
 using Xunit;
 
 namespace E2ETests
@@ -15,7 +18,7 @@ namespace E2ETests
     public class PublishAndRunTests : LoggedTest
     {
         public static TestMatrix TestVariants
-            => TestMatrix.ForServers(ServerType.IISExpress, ServerType.HttpSys)
+            => TestMatrix.ForServers(ServerType.IISExpress, ServerType.HttpSys, ServerType.Kestrel)
                 .WithTfms(Tfm.NetCoreApp30)
                 .WithAllApplicationTypes()
                 .WithAllHostingModels()
@@ -31,15 +34,19 @@ namespace E2ETests
                 var logger = loggerFactory.CreateLogger("Publish_And_Run_Tests");
                 var musicStoreDbName = DbUtils.GetUniqueName();
 
+                var publishDirectory = Path.Combine(AppContext.BaseDirectory, "testassets", variant.ApplicationType.ToString(), variant.Architecture.ToString());
+
                 var deploymentParameters = new DeploymentParameters(variant)
                 {
+                    ApplicationName = "MusicStore",
                     ApplicationPath = Helpers.GetApplicationPath(),
-                    PublishApplicationBeforeDeployment = true,
+                    PublishedApplicationRootPath = publishDirectory,
                     PreservePublishedApplicationForDebugging = Helpers.PreservePublishedApplicationForDebugging,
                     UserAdditionalCleanup = parameters =>
                     {
                         DbUtils.DropDatabase(musicStoreDbName, logger);
-                    }
+                    },
+                    ApplicationPublisher = new PublishedApplicationPublisher("MusicStore"),
                 };
 
                 // Override the connection strings using environment based configuration
