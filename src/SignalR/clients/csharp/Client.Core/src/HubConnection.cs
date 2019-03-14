@@ -983,11 +983,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
             }
             finally
             {
-                if (invocationMessageChannel != null)
-                {
-                    invocationMessageChannel.Writer.TryComplete();
-                    await invocationMessageReceiveTask;
-                }
+                invocationMessageChannel.Writer.TryComplete();
+                await invocationMessageReceiveTask;
                 timer.Stop();
                 uploadStreamSource.Cancel();
             }
@@ -1251,7 +1248,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             }
         }
 
-        //TODO: Refactor all HubConnection into the ConnectionState class.
+        //TODO: Refactor all transient state about the connection into the ConnectionState class.
         private class ConnectionState : IInvocationBinder
         {
             private volatile bool _stopping;
