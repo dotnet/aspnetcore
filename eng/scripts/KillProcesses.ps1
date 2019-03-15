@@ -17,7 +17,7 @@ function _killJavaInstances() {
         try {
             Stop-Process $proc
         } catch {
-            Write-Host "Failed to kill java process: $proc 
+            Write-Host "Failed to kill java process: $proc"
         }
     }
 }
