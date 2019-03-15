@@ -27,7 +27,7 @@ namespace signalr
         transport_type get_transport_type() const noexcept override;
 
         void start(const std::string& url, transfer_format format, std::function<void(std::exception_ptr)> callback) override;
-        void stop(/*format,*/ std::function<void(std::exception_ptr)> callback) override;
+        void stop(std::function<void(std::exception_ptr)> callback) override;
         void on_close(std::function<void(std::exception_ptr)> callback) override;
 
         void send(std::string payload, std::function<void(std::exception_ptr)> callback) override;

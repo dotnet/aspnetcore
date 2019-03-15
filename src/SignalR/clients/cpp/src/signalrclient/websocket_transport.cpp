@@ -18,7 +18,8 @@ namespace signalr
 
     websocket_transport::websocket_transport(const std::function<std::shared_ptr<websocket_client>()>& websocket_client_factory,
         const logger& logger)
-        : transport(logger), m_websocket_client_factory(websocket_client_factory), m_close_callback([](std::exception_ptr) {})
+        : transport(logger), m_websocket_client_factory(websocket_client_factory), m_close_callback([](std::exception_ptr) {}),
+        m_process_response_callback([](std::string, std::exception_ptr) {})
     {
         // we use this cts to check if the receive loop is running so it should be
         // initially cancelled to indicate that the receive loop is not running
@@ -29,8 +30,9 @@ namespace signalr
     {
         try
         {
-            // TODO: wait
-            stop([](std::exception_ptr) { });
+            pplx::task_completion_event<void> event;
+            stop([event](std::exception_ptr) { event.set(); });
+            pplx::create_task(event).get();
         }
         catch (...) // must not throw from the destructor
         {}
@@ -188,7 +190,7 @@ namespace signalr
         }
     }
 
-    void websocket_transport::stop(/*format,*/ std::function<void(std::exception_ptr)> callback)
+    void websocket_transport::stop(std::function<void(std::exception_ptr)> callback)
     {
         std::shared_ptr<websocket_client> websocket_client = nullptr;
 

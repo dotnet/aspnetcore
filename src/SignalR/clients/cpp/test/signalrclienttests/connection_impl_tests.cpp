@@ -57,11 +57,8 @@ TEST(connection_impl_start, connection_state_is_connecting_when_connection_is_be
 
     auto websocket_client = create_test_websocket_client(
         /* receive function */ [](std::function<void(std::string, std::exception_ptr)> callback) { callback("", std::make_exception_ptr(std::runtime_error("should not be invoked"))); },
-        /* send function */ [](const std::string){ return pplx::task_from_exception<void>(std::runtime_error("should not be invoked"));  },
-        /* connect function */[](const std::string&)
-        {
-            return pplx::task_from_exception<void>(web::websockets::client::websocket_exception(_XPLATSTR("connecting failed")));
-        });
+        /* send function */ [](const std::string&, std::function<void(std::exception_ptr)> callback) { callback(std::make_exception_ptr(std::runtime_error("should not be invoked"))); },
+        /* connect function */[](const std::string&, std::function<void(std::exception_ptr)> callback) { callback(std::make_exception_ptr(web::websockets::client::websocket_exception(_XPLATSTR("connecting failed")))); });
 
     auto connection = create_connection(websocket_client, writer, trace_level::errors);
 
@@ -85,7 +82,7 @@ TEST(connection_impl_start, connection_state_is_connecting_when_connection_is_be
 TEST(connection_impl_start, connection_state_is_connected_when_connection_established_succesfully)
 {
     auto websocket_client = create_test_websocket_client(
-        /* receive function */ [](std::function<void(std::string, std::exception_ptr)> callback) { callback("{ }\x1e", nullptr)); });
+        /* receive function */ [](std::function<void(std::string, std::exception_ptr)> callback) { callback("{ }\x1e", nullptr); });
     auto connection = create_connection(websocket_client);
     connection->start().get();
     ASSERT_EQ(connection->get_connection_state(), connection_state::connected);
@@ -141,11 +138,11 @@ TEST(connection_impl_start, start_sets_id_query_string)
 
     auto websocket_client = create_test_websocket_client(
         /* receive function */ [](std::function<void(std::string, std::exception_ptr)> callback) { callback("", std::make_exception_ptr(std::runtime_error("should not be invoked"))); },
-        /* send function */ [](const std::string&) { return pplx::task_from_exception<void>(std::runtime_error("should not be invoked"));  },
-        /* connect function */[&query_string](const std::string& url)
+        /* send function */ [](const std::string&, std::function<void(std::exception_ptr)> callback) { callback(std::make_exception_ptr(std::runtime_error("should not be invoked")));  },
+        /* connect function */[&query_string](const std::string& url, std::function<void(std::exception_ptr)> callback)
     {
         query_string = utility::conversions::to_utf8string(url.substr(url.find('?') + 1));
-        return pplx::task_from_exception<void>(web::websockets::client::websocket_exception("connecting failed"));
+        callback(std::make_exception_ptr(web::websockets::client::websocket_exception("connecting failed")));
     });
 
     auto connection = connection_impl::create(create_uri(""), trace_level::errors, writer, create_test_http_client(), std::make_unique<test_transport_factory>(websocket_client));
@@ -168,11 +165,11 @@ TEST(connection_impl_start, start_appends_id_query_string)
 
     auto websocket_client = create_test_websocket_client(
         /* receive function */ [](std::function<void(std::string, std::exception_ptr)> callback) { callback("", std::make_exception_ptr(std::runtime_error("should not be invoked"))); },
-        /* send function */ [](const std::string) { return pplx::task_from_exception<void>(std::runtime_error("should not be invoked"));  },
-        /* connect function */[&query_string](const std::string& url)
+        /* send function */ [](const std::string&, std::function<void(std::exception_ptr)> callback) { callback(std::make_exception_ptr(std::runtime_error("should not be invoked")));  },
+        /* connect function */[&query_string](const std::string& url, std::function<void(std::exception_ptr)> callback)
     {
         query_string = utility::conversions::to_utf8string(url.substr(url.find('?') + 1));
-        return pplx::task_from_exception<void>(web::websockets::client::websocket_exception(_XPLATSTR("connecting failed")));
+        callback(std::make_exception_ptr(web::websockets::client::websocket_exception(_XPLATSTR("connecting failed"))));
     });
 
     auto connection = connection_impl::create(create_uri("a=b&c=d"), trace_level::errors, writer, create_test_http_client(), std::make_unique<test_transport_factory>(websocket_client));
@@ -244,10 +241,10 @@ TEST(connection_impl_start, start_fails_if_transport_connect_throws)
 
     auto websocket_client = create_test_websocket_client(
         /* receive function */ [](std::function<void(std::string, std::exception_ptr)> callback) { callback("", std::make_exception_ptr(std::runtime_error("should not be invoked"))); },
-        /* send function */ [](const std::string){ return pplx::task_from_exception<void>(std::runtime_error("should not be invoked"));  },
-        /* connect function */[](const std::string&)
+        /* send function */ [](const std::string&, std::function<void(std::exception_ptr)> callback){ callback(std::make_exception_ptr(std::runtime_error("should not be invoked")));  },
+        /* connect function */[](const std::string&, std::function<void(std::exception_ptr)> callback)
         {
-            return pplx::task_from_exception<void>(web::websockets::client::websocket_exception(_XPLATSTR("connecting failed")));
+            callback(std::make_exception_ptr(web::websockets::client::websocket_exception(_XPLATSTR("connecting failed"))));
         });
 
     auto connection = create_connection(websocket_client, writer, trace_level::errors);
@@ -276,9 +273,9 @@ TEST(connection_impl_send, send_fails_if_transport_fails_when_receiving_messages
     std::shared_ptr<log_writer> writer(std::make_shared<memory_log_writer>());
 
     auto websocket_client = create_test_websocket_client([](std::function<void(std::string, std::exception_ptr)> callback) { callback("", nullptr); },
-        /* send function */ [](const std::string &)
+        /* send function */ [](const std::string &, std::function<void(std::exception_ptr)> callback)
         {
-            return pplx::task_from_exception<void>(std::runtime_error("send error"));
+            callback(std::make_exception_ptr(std::runtime_error("send error")));
         });
 
     auto connection = create_connection(websocket_client, writer, trace_level::errors);
@@ -431,7 +428,7 @@ TEST(connection_impl_start, start_fails_if_negotiate_response_does_not_have_tran
             ? "{ \"availableTransports\": [ ] }"
             : "";
 
-        http_response{ 200, response_body };
+        return http_response{ 200, response_body };
     });
 
     pplx::task_completion_event<void> tce;
@@ -639,7 +636,7 @@ TEST(connection_impl_start, negotiate_fails_if_ProtocolVersion_in_response)
             response_body = "{\"ProtocolVersion\" : \"\" }";
         }
 
-        http_response{ 200, response_body };
+        return http_response{ 200, response_body };
     });
 
     auto websocket_client = std::make_shared<test_websocket_client>();
@@ -703,11 +700,11 @@ TEST(connection_impl_start, negotiate_redirect_uses_own_query_string)
 
     auto websocket_client = create_test_websocket_client(
         /* receive function */ [](std::function<void(std::string, std::exception_ptr)> callback) { callback("", std::make_exception_ptr(std::runtime_error("should not be invoked"))); },
-        /* send function */ [](const std::string) { return pplx::task_from_exception<void>(std::runtime_error("should not be invoked"));  },
-        /* connect function */[&query_string](const std::string& url)
+        /* send function */ [](const std::string&, std::function<void(std::exception_ptr)> callback) { callback(std::make_exception_ptr(std::runtime_error("should not be invoked"))); },
+        /* connect function */[&query_string](const std::string& url, std::function<void(std::exception_ptr)> callback)
     {
         query_string = url.substr(url.find('?') + 1);
-        return pplx::task_from_exception<void>(web::websockets::client::websocket_exception(_XPLATSTR("connecting failed")));
+        callback(std::make_exception_ptr(web::websockets::client::websocket_exception(_XPLATSTR("connecting failed"))));
     });
 
     auto http_client = std::make_unique<test_http_client>([](const std::string& url, http_request)
@@ -806,10 +803,10 @@ TEST(connection_impl_send, message_sent)
 
     auto websocket_client = create_test_websocket_client(
         /* receive function */ [](std::function<void(std::string, std::exception_ptr)> callback) { callback("{ }\x1e", nullptr); },
-        /* send function */ [&actual_message](const std::string& message)
+        /* send function */ [&actual_message](const std::string& message, std::function<void(std::exception_ptr)> callback)
     {
         actual_message = message;
-        return pplx::task_from_result();
+        callback(nullptr);
     });
 
     auto connection = create_connection(websocket_client);
@@ -849,9 +846,9 @@ TEST(connection_impl_send, exceptions_from_send_logged_and_propagated)
         {
             callback("{}", nullptr);
         },
-        /* send function */ [](const std::string&)
+        /* send function */ [](const std::string&, std::function<void(std::exception_ptr)> callback)
         {
-            return pplx::task_from_exception<void>(std::runtime_error("error"));
+            callback(std::make_exception_ptr(std::runtime_error("error")));
         });
 
     auto connection = create_connection(websocket_client, writer, trace_level::errors);
@@ -1067,13 +1064,14 @@ TEST(connection_impl_stop, stopping_disconnecting_connection_returns_cancelled_t
 
     auto websocket_client = create_test_websocket_client(
         /* receive function */ [](std::function<void(std::string, std::exception_ptr)> callback) { callback("{ }\x1e", nullptr); },
-        /* send function */ [](const std::string){ return pplx::task_from_exception<void>(std::runtime_error("should not be invoked")); },
-        /* connect function */ [&close_event](const std::string&) { return pplx::task_from_result(); },
-        /* close function */ [&close_event]()
+        /* send function */ [](const std::string, std::function<void(std::exception_ptr)> callback){ callback(std::make_exception_ptr(std::runtime_error("should not be invoked"))); },
+        /* connect function */ [&close_event](const std::string&, std::function<void(std::exception_ptr)> callback) { callback(nullptr); },
+        /* close function */ [&close_event](std::function<void(std::exception_ptr)> callback)
         {
-            return pplx::create_task([&close_event]()
+            pplx::create_task([&close_event, callback]()
             {
                 close_event.wait();
+                callback(nullptr);
             });
         });
 
@@ -1447,10 +1445,10 @@ TEST(connection_id, connection_id_is_set_if_start_fails_but_negotiate_request_su
 
     auto websocket_client = create_test_websocket_client(
         /* receive function */ [](std::function<void(std::string, std::exception_ptr)> callback){ callback("", std::make_exception_ptr(std::runtime_error("should not be invoked"))); },
-        /* send function */ [](const std::string){ return pplx::task_from_exception<void>(std::runtime_error("should not be invoked"));  },
-        /* connect function */[](const std::string&)
+        /* send function */ [](const std::string, std::function<void(std::exception_ptr)> callback){ callback(std::make_exception_ptr(std::runtime_error("should not be invoked")));  },
+        /* connect function */[](const std::string&, std::function<void(std::exception_ptr)> callback)
         {
-            return pplx::task_from_exception<void>(web::websockets::client::websocket_exception(_XPLATSTR("connecting failed")));
+            callback(std::make_exception_ptr(web::websockets::client::websocket_exception(_XPLATSTR("connecting failed"))));
         });
 
     auto connection = create_connection(websocket_client, writer, trace_level::errors);
