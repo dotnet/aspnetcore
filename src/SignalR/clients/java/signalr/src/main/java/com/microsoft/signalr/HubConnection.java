@@ -38,6 +38,7 @@ public class HubConnection {
     private List<OnClosedCallback> onClosedCallbackList;
     private final boolean skipNegotiate;
     private Single<String> accessTokenProvider;
+    private Single<String> redirectAccessTokenProvider;
     private final Map<String, String> headers = new HashMap<>();
     private ConnectionState connectionState = null;
     private HttpClient httpClient;
@@ -255,10 +256,10 @@ public class HubConnection {
             }
 
             if (negotiateResponse.getAccessToken() != null) {
-                this.accessTokenProvider = Single.just(negotiateResponse.getAccessToken());
+                this.redirectAccessTokenProvider = Single.just(negotiateResponse.getAccessToken());
                 // We know the Single is non blocking in this case
                 // It's fine to call blockingGet() on it.
-                String token = this.accessTokenProvider.blockingGet();
+                String token = this.redirectAccessTokenProvider.blockingGet();
                 this.headers.put("Authorization", "Bearer " + token);
             }
 
@@ -308,9 +309,10 @@ public class HubConnection {
         negotiate.flatMapCompletable(url -> {
             logger.debug("Starting HubConnection.");
             if (transport == null) {
+                Single<String> tokenProvider = redirectAccessTokenProvider != null ? redirectAccessTokenProvider : accessTokenProvider;
                 switch (transportEnum) {
                     case LONG_POLLING:
-                        transport = new LongPollingTransport(headers, httpClient, accessTokenProvider);
+                        transport = new LongPollingTransport(headers, httpClient, tokenProvider);
                         break;
                     default:
                         transport = new WebSocketTransport(headers, httpClient);
@@ -473,6 +475,7 @@ public class HubConnection {
             logger.info("HubConnection stopped.");
             hubConnectionState = HubConnectionState.DISCONNECTED;
             handshakeResponseSubject.onComplete();
+            redirectAccessTokenProvider = null;
         } finally {
             hubConnectionStateLock.unlock();
         }

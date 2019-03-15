@@ -1652,6 +1652,48 @@ class HubConnectionTest {
     }
 
     @Test
+    public void accessTokenProviderReferenceIsKeptAfterNegotiateRedirect() {
+        AtomicReference<String> token = new AtomicReference<>();
+        AtomicReference<String> beforeRedirectToken = new AtomicReference<>();
+
+        TestHttpClient client = new TestHttpClient()
+                .on("POST", "http://example.com/negotiate", (req) -> {
+                    beforeRedirectToken.set(req.getHeaders().get("Authorization"));
+                    return Single.just(new HttpResponse(200, "", "{\"url\":\"http://testexample.com/\",\"accessToken\":\"newToken\"}"));
+                })
+                .on("POST", "http://testexample.com/negotiate", (req) -> {
+                    token.set(req.getHeaders().get("Authorization"));
+                    return Single.just(new HttpResponse(200, "", "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                            + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"));
+                });
+
+        MockTransport transport = new MockTransport(true);
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example.com")
+                .withTransportImplementation(transport)
+                .withHttpClient(client)
+                .withAccessTokenProvider(Single.just("User Registered Token"))
+                .build();
+
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
+        hubConnection.stop();
+        assertEquals("Bearer User Registered Token", beforeRedirectToken.get());
+        assertEquals("Bearer newToken", token.get());
+
+        // Clear the tokens to see if they get reset to the proper values
+        beforeRedirectToken.set("");
+        token.set("");
+
+        // Restart the connection to make sure that the orignal accessTokenProvider that we registered is still registered before the redirect.
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
+        hubConnection.stop();
+        assertEquals("Bearer User Registered Token", beforeRedirectToken.get());
+        assertEquals("Bearer newToken", token.get());
+    }
+
+    @Test
     public void accessTokenProviderIsUsedForNegotiate() {
         AtomicReference<String> token = new AtomicReference<>();
         TestHttpClient client = new TestHttpClient()
