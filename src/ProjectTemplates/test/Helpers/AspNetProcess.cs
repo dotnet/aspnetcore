@@ -113,7 +113,37 @@ namespace Templates.Test.Helpers
             }
         }
 
-        public Task AssertOk(string requestUrl)
+        public async Task AssertLinksWork(string requestUrl)
+        {
+            var request = new HttpRequestMessage(
+                HttpMethod.Get,
+                new Uri(_listeningUri, requestUrl));
+
+            var response = await _httpClient.SendAsync(request);
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var parser = new HtmlParser();
+            var html = await parser.ParseAsync(await response.Content.ReadAsStreamAsync());
+            foreach (IHtmlAnchorElement link in html.Links)
+            {
+                if(link.Protocol == "about:")
+                {
+                    AssertOk(link.PathName);
+                }
+                else
+                {
+                    var result = await _httpClient.GetAsync(link.Href);
+                    Assert.True(IsSuccessStatusCode(result), $"{link.Href} is a broken link!");
+                }
+            }
+        }
+
+        private bool IsSuccessStatusCode(HttpResponseMessage response)
+        {
+            return response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.Redirect;
+        }
+
+        private void AssertOk(string requestUrl)
             => AssertStatusCode(requestUrl, HttpStatusCode.OK);
 
         public Task AssertNotFound(string requestUrl)

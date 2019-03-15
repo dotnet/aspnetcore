@@ -22,12 +22,14 @@ namespace Templates.Test
 
         public ITestOutputHelper Output { get; }
 
-        [Fact]
-        public async Task EmptyWebTemplateAsync()
+        [Theory]
+        [InlineData(null)]
+        [InlineData("F#")]
+        public async Task EmptyWebTemplateAsync(string languageOverride)
         {
-            Project = await ProjectFactory.GetOrCreateProject("empty", Output);
+            Project = await ProjectFactory.GetOrCreateProject("empty" + (languageOverride == "F#" ? "fsharp" : "csharp"), Output);
 
-            var createResult = await Project.RunDotNetNewAsync("web");
+            var createResult = await Project.RunDotNetNewAsync("web", language: languageOverride);
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));
 
             var publishResult = await Project.RunDotNetPublishAsync();

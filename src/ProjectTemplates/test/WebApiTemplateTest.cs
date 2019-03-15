@@ -22,12 +22,14 @@ namespace Templates.Test
 
         public Project Project { get; set; }
 
-        [Fact]
-        public async Task WebApiTemplateAsync()
+        [Theory]
+        [InlineData(null)]
+        [InlineData("F#")]
+        public async Task WebApiTemplateAsync(string languageOverride)
         {
-            Project = await FactoryFixture.GetOrCreateProject("webapi", Output);
+            Project = await FactoryFixture.GetOrCreateProject("webapi" + (languageOverride == "F#" ? "fsharp" : "csharp"), Output);
 
-            var createResult = await Project.RunDotNetNewAsync("webapi");
+            var createResult = await Project.RunDotNetNewAsync("webapi", language: languageOverride);
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));
 
             var publishResult = await Project.RunDotNetPublishAsync();
