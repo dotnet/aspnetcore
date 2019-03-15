@@ -1677,7 +1677,7 @@ class HubConnectionTest {
 
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
-        hubConnection.stop();
+        hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
         assertEquals("Bearer User Registered Token", beforeRedirectToken.get());
         assertEquals("Bearer newToken", token.get());
 
