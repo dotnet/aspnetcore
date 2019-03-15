@@ -127,7 +127,7 @@ namespace Microsoft.Extensions.Http
             try
             {
                 var policy = _policy ?? SelectPolicy(request);
-                response = await policy.ExecuteAsync((c, ct) => SendCoreAsync(request, c, ct), context, cancellationToken);
+                response = await policy.ExecuteAsync((c, ct) => SendCoreAsync(request, c, ct), context, cancellationToken).ConfigureAwait(false);
             }
             finally
             {

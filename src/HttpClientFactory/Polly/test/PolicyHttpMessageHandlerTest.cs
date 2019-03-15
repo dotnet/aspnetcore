@@ -5,6 +5,7 @@ using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Internal;
 using Polly;
 using Polly.Timeout;
 using Xunit;
@@ -35,7 +36,7 @@ namespace Microsoft.Extensions.Http
                 else if (callCount == 1)
                 {
                     callCount++;
-                    return expected;
+                    return Task.FromResult(expected);
                 }
                 else
                 {
@@ -80,7 +81,7 @@ namespace Microsoft.Extensions.Http
                 else if (callCount == 1)
                 {
                     callCount++;
-                    return expected;
+                    return Task.FromResult(expected);
                 }
                 else
                 {
@@ -150,7 +151,7 @@ namespace Microsoft.Extensions.Http
                 else if (callCount == 1)
                 {
                     callCount++;
-                    return expected;
+                    return Task.FromResult(expected);
                 }
                 else
                 {
@@ -180,7 +181,7 @@ namespace Microsoft.Extensions.Http
                 context = c;
                 Assert.NotNull(context);
                 Assert.Same(context, req.GetPolicyExecutionContext());
-                return expected;
+                return Task.FromResult(expected);
             };
 
             var request = new HttpRequestMessage();
@@ -210,7 +211,7 @@ namespace Microsoft.Extensions.Http
                 context = c;
                 Assert.NotNull(c);
                 Assert.Same(c, req.GetPolicyExecutionContext());
-                return expected;
+                return Task.FromResult(expected);
             };
 
             var request = new HttpRequestMessage();
@@ -273,9 +274,43 @@ namespace Microsoft.Extensions.Http
             Assert.Null(request.GetPolicyExecutionContext()); // We do clean up a context we generated, when the execution throws.
         }
 
+        [Fact]
+        public void SendAsync_WorksInSingleThreadedSyncContext()
+        {
+            // Arrange
+            var policy = Policy.TimeoutAsync<HttpResponseMessage>(TimeSpan.FromSeconds(10));
+            var handler = new TestPolicyHttpMessageHandler(policy);
+
+            handler.OnSendAsync = async (req, c, ct) =>
+            {
+                await Task.Delay(1).ConfigureAwait(false);
+                return null;
+            };
+
+            var hangs = true;
+
+            // Act
+            using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3)))
+            {
+                var token = cts.Token;
+                token.Register(() => throw new OperationCanceledException(token));
+
+                SingleThreadedSynchronizationContext.Run(() =>
+                {
+                    // Act
+                    var request = new HttpRequestMessage();
+                    handler.SendAsync(request, CancellationToken.None).GetAwaiter().GetResult();
+                    hangs = false;
+                });
+            }
+
+            // Assert
+            Assert.False(hangs);
+        }
+
         private class TestPolicyHttpMessageHandler : PolicyHttpMessageHandler
         {
-            public Func<HttpRequestMessage, Context, CancellationToken, HttpResponseMessage> OnSendAsync { get; set; }
+            public Func<HttpRequestMessage, Context, CancellationToken, Task<HttpResponseMessage>> OnSendAsync { get; set; }
 
             public TestPolicyHttpMessageHandler(IAsyncPolicy<HttpResponseMessage> policy)
                 : base(policy)
@@ -295,7 +330,7 @@ namespace Microsoft.Extensions.Http
             protected override Task<HttpResponseMessage> SendCoreAsync(HttpRequestMessage request, Context context, CancellationToken cancellationToken)
             {
                 Assert.NotNull(OnSendAsync);
-                return Task.FromResult(OnSendAsync(request, context, cancellationToken));
+                return OnSendAsync(request, context, cancellationToken);
             }
         }
     }
