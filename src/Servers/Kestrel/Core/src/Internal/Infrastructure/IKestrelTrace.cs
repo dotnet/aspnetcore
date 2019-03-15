@@ -3,11 +3,11 @@
 
 using System;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Http2;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Http2.HPack;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
     internal interface IKestrelTrace : ILogger
     {

@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     internal interface IHttpResponsePipeWriterControl
     {

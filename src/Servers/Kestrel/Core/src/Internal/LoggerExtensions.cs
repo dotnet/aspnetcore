@@ -5,7 +5,7 @@ using System;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.Kestrel
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
     internal static class LoggerExtensions
     {

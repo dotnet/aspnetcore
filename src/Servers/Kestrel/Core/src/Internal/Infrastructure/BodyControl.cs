@@ -5,9 +5,9 @@ using System;
 using System.IO;
 using System.IO.Pipelines;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
     internal class BodyControl
     {

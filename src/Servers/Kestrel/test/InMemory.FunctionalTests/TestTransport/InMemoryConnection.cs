@@ -2,14 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Testing;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport
 {
     internal class InMemoryConnection : StreamBackedTestConnection
     {
-
         public InMemoryConnection(InMemoryTransportConnection transportConnection)
             : base(new RawStream(transportConnection.Output, transportConnection.Input))
         {

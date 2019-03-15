@@ -10,7 +10,7 @@ using System.Threading;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
 {
     public abstract partial class TransportConnection : ConnectionContext
     {

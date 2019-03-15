@@ -7,8 +7,8 @@ using System.IO.Pipelines;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Http2;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Moq;
 using Xunit;
 

@@ -5,7 +5,7 @@ using System;
 using System.IO.Pipelines;
 using Microsoft.AspNetCore.Http.Features;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     internal class HttpResponseStream : WriteOnlyPipeStream
     {

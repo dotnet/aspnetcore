@@ -28,7 +28,7 @@ using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;";
 
             return FeatureCollectionGenerator.GenerateFile(
-                namespaceName: "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions",
+                namespaceName: "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal",
                 className: "TransportConnection",
                 allFeatures: features,
                 implementedFeatures: features,

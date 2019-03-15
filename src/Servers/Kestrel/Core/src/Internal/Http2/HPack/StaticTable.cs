@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Http2.HPack
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 {
     internal class StaticTable
     {

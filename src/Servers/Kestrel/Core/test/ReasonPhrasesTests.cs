@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [InlineData(StatusCodes.Status200OK, null, "200 OK")]
         public void Formatting(int statusCode, string reasonPhrase, string expectedResult)
         {
-            var bytes = Http.ReasonPhrases.ToStatusBytes(statusCode, reasonPhrase);
+            var bytes = Internal.Http.ReasonPhrases.ToStatusBytes(statusCode, reasonPhrase);
             Assert.NotNull(bytes);
             Assert.Equal(expectedResult, Encoding.ASCII.GetString(bytes));
         }

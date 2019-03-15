@@ -4,7 +4,7 @@
 using System.Globalization;
 using System.Text;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Http2.HPack
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 {
     internal static class StatusCodes
     {

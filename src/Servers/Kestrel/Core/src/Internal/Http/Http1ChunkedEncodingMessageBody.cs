@@ -9,10 +9,9 @@ using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     /// <summary>
     ///   http://tools.ietf.org/html/rfc2616#section-3.6.1

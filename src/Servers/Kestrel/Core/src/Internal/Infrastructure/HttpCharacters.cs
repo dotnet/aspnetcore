@@ -4,7 +4,7 @@
 using System;
 using System.Runtime.CompilerServices;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
     internal static class HttpCharacters
     {

@@ -17,19 +17,19 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Http2;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Http2.FlowControl;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Http2.HPack;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
 using Xunit.Abstractions;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {

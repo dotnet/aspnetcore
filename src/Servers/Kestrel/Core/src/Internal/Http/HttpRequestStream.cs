@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     internal class HttpRequestStream : ReadOnlyPipeStream
     {

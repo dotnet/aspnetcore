@@ -5,7 +5,7 @@ using System.IO;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
 {
     // Even though this only includes the non-adapted ConnectionStream currently, this is a context in case
     // we want to add more connection metadata later.

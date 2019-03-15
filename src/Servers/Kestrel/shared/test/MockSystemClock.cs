@@ -3,7 +3,7 @@
 
 using System;
 using System.Threading;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Testing
 {

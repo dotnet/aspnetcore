@@ -3,7 +3,7 @@
 
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
 {
     public interface ITransport
     {

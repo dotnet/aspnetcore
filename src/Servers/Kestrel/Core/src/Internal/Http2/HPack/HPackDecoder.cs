@@ -3,9 +3,9 @@
 
 using System;
 using System.Buffers;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Http2.HPack
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 {
     internal class HPackDecoder
     {

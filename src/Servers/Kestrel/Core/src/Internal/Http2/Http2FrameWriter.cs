@@ -11,12 +11,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Http2.FlowControl;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Http2.HPack;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Http2.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Http2
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
     internal class Http2FrameWriter
     {

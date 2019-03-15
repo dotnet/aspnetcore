@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var httpHeadersGeneratedPath = Path.Combine(repositoryRoot, "src/Servers/Kestrel/Core/src/Internal/Http/HttpHeaders.Generated.cs");
             var httpProtocolGeneratedPath = Path.Combine(repositoryRoot, "src/Servers/Kestrel/Core/src/Internal/Http/HttpProtocol.Generated.cs");
             var httpUtilitiesGeneratedPath = Path.Combine(repositoryRoot, "src/Servers/Kestrel/Core/src/Internal/Infrastructure/HttpUtilities.Generated.cs");
-            var transportConnectionGeneratedPath = Path.Combine(repositoryRoot, "src/Servers/Kestrel/Transport.Abstractions/src/TransportConnection.Generated.cs");
+            var transportConnectionGeneratedPath = Path.Combine(repositoryRoot, "src/Servers/Kestrel/Transport.Abstractions/src/Internal/TransportConnection.Generated.cs");
 
             var testHttpHeadersGeneratedPath = Path.GetTempFileName();
             var testHttpProtocolGeneratedPath = Path.GetTempFileName();

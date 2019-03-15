@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO.Pipelines;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
     internal class ServiceContext
     {

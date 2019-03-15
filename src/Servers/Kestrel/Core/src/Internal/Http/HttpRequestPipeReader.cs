@@ -8,7 +8,7 @@ using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     /// <summary>
     /// Default HttpRequest PipeReader implementation to be used by Kestrel.

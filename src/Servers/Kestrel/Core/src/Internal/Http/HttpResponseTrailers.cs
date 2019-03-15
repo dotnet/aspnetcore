@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     internal partial class HttpResponseTrailers : HttpHeaders
     {

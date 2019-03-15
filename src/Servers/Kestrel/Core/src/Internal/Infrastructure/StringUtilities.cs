@@ -5,7 +5,7 @@ using System;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
     internal class StringUtilities
     {

@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Buffers;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
 {
     internal class RawStream : Stream
     {

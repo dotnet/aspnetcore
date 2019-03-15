@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Http2.HPack
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 {
     internal readonly struct HeaderField
     {

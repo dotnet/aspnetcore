@@ -5,9 +5,9 @@ using System;
 using System.Diagnostics;
 using System.Text;
 using Microsoft.AspNetCore.Internal;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     internal static class PathNormalizer
     {

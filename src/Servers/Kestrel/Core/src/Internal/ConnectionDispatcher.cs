@@ -7,11 +7,11 @@ using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
     internal class ConnectionDispatcher : IConnectionDispatcher
     {

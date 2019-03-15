@@ -9,12 +9,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Internal;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Http2.FlowControl;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Http2
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
     internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter
     {

@@ -7,7 +7,7 @@ using System.Diagnostics.Tracing;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging.Testing;

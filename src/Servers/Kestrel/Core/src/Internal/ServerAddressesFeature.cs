@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
     internal class ServerAddressesFeature : IServerAddressesFeature
     {

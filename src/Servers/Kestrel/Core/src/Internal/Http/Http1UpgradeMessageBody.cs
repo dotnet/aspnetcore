@@ -6,7 +6,7 @@ using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     /// <summary>
     /// The upgrade stream uses the raw connection stream instead of going through the RequestBodyPipe. This

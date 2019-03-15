@@ -6,7 +6,7 @@ using System.Globalization;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     internal static class ReasonPhrases
     {

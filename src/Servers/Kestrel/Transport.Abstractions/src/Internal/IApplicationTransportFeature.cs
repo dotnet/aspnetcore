@@ -3,7 +3,7 @@
 
 using System.IO.Pipelines;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
 {
     public interface IApplicationTransportFeature
     {

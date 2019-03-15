@@ -6,7 +6,7 @@ using System.IO;
 using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.Http2
 {

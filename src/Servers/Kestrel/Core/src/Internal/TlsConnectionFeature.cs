@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Https
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
     internal class TlsConnectionFeature : ITlsConnectionFeature, ITlsApplicationProtocolFeature, ITlsHandshakeFeature
     {

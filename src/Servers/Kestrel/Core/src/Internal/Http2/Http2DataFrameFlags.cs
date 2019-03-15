@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Http2
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
     [Flags]
     internal enum Http2DataFrameFlags : byte

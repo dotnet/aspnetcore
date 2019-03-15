@@ -334,7 +334,7 @@ using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {{
 {Each(loops, loop => $@"
     internal partial class {loop.ClassName}
