@@ -79,7 +79,7 @@ using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;";
 
             return FeatureCollectionGenerator.GenerateFile(
-                namespaceName: "Microsoft.AspNetCore.Server.Kestrel.Core.Http",
+                namespaceName: "Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http",
                 className: "HttpProtocol",
                 allFeatures: allFeatures,
                 implementedFeatures: implementedFeatures,
