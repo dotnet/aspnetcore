@@ -5,7 +5,7 @@ using System;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking
 {
     internal abstract class UvStreamHandle : UvHandle
     {

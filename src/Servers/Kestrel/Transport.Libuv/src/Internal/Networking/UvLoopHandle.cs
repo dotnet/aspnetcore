@@ -4,7 +4,7 @@
 using System;
 using System.Threading;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Networking
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking
 {
     internal class UvLoopHandle : UvMemory
     {

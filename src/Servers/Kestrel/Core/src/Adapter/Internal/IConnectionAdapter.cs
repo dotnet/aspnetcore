@@ -4,7 +4,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
 {
     public interface IConnectionAdapter
     {

@@ -4,7 +4,7 @@
 using System;
 using System.IO;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
 {
     public interface IAdaptedConnection : IDisposable
     {

@@ -4,7 +4,7 @@
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.Extensions.Hosting;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 {
     internal class LibuvTransportContext
     {

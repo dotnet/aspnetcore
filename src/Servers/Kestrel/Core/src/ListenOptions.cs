@@ -7,9 +7,9 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core
 {
@@ -135,7 +135,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// Defaults to empty.
         /// </remarks>
 #pragma warning disable PUB0001 // Pubternal type in public API
-            // TODO promote IConnectionAdapter
         public List<IConnectionAdapter> ConnectionAdapters { get; } = new List<IConnectionAdapter>();
 #pragma warning restore PUB0001 // Pubternal type in public API
 

@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public void ExistsWithCorrectId()
         {
             var esType = typeof(KestrelServer).GetTypeInfo().Assembly.GetType(
-                "Microsoft.AspNetCore.Server.Kestrel.Core.Infrastructure.Internal.KestrelEventSource",
+                "Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure.KestrelEventSource",
                 throwOnError: true,
                 ignoreCase: false
             );
