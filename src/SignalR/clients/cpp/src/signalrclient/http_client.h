@@ -28,7 +28,7 @@ namespace signalr
     class http_response
     {
     public:
-        int status_code;
+        int status_code = 0;
         std::string content;
     };
 

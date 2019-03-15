@@ -24,7 +24,7 @@ namespace signalr
             const std::shared_ptr<log_writer>& log_writer);
 
         static std::shared_ptr<hub_connection_impl> create(const std::string& url, trace_level trace_level,
-            const std::shared_ptr<log_writer>& log_writer, http_client* http_client,
+            const std::shared_ptr<log_writer>& log_writer, std::unique_ptr<http_client> http_client,
             std::unique_ptr<transport_factory> transport_factory);
 
         hub_connection_impl(const hub_connection_impl&) = delete;
@@ -46,7 +46,7 @@ namespace signalr
 
     private:
         hub_connection_impl(const std::string& url, trace_level trace_level, const std::shared_ptr<log_writer>& log_writer,
-            http_client* http_client, std::unique_ptr<transport_factory> transport_factory);
+            std::unique_ptr<http_client> http_client, std::unique_ptr<transport_factory> transport_factory);
 
         std::shared_ptr<connection_impl> m_connection;
         logger m_logger;
