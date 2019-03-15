@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
 using Xunit;
@@ -176,6 +178,39 @@ namespace Microsoft.Extensions.Configuration.KeyPerFile.Test
             Assert.Equal("SecretValue0", config["ignore.Secret0"]);
             Assert.Equal("SecretValue1", config["ignore.Secret1"]);
             Assert.Equal("SecretValue2", config["Secret2"]);
+        }
+
+        [Fact]
+        public void BindingDoesNotThrowIfReloadedDuringBinding()
+        {
+            var testFileProvider = new TestFileProvider(
+                new TestFile("Number", "-2"),
+                new TestFile("Text", "Foo"));
+
+            var config = new ConfigurationBuilder()
+                .AddKeyPerFile(o => o.FileProvider = testFileProvider)
+                .Build();
+
+            MyOptions options = null;
+
+            using (var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(250)))
+            {
+                _ = Task.Run(() => { while (!cts.IsCancellationRequested) config.Reload(); });
+
+                while (!cts.IsCancellationRequested)
+                {
+                    options = config.Get<MyOptions>();
+                }
+            }
+
+            Assert.Equal(-2, options.Number);
+            Assert.Equal("Foo", options.Text);
+        }
+
+        private sealed class MyOptions
+        {
+            public int Number { get; set; }
+            public string Text { get; set; }
         }
     }
 

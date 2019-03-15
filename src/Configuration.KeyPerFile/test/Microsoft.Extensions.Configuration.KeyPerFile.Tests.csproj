@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.Extensions.Configuration.Binder" />
     <Reference Include="Microsoft.Extensions.Configuration.KeyPerFile" />
   </ItemGroup>
 
