@@ -185,11 +185,16 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json
             return readBytes == 0;
         }
 
-        private void ThrowArgumentOutOfRangeException(byte[] buffer, int offset, int count)
+        private static void ThrowArgumentOutOfRangeException(byte[] buffer, int offset, int count)
         {
-            if (count == 0)
+            if (count <= 0)
             {
-                throw new ArgumentException(nameof(count));
+                throw new ArgumentOutOfRangeException(nameof(count));
+            }
+
+            if (offset <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(offset));
             }
 
             if (buffer.Length - offset < count)
