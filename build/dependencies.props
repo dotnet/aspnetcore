@@ -6,7 +6,9 @@
     <MicrosoftNETCoreDotNetAppHostPackageVersion>2.1.9</MicrosoftNETCoreDotNetAppHostPackageVersion>
 
     <SystemNetHttpWinHttpHandlerPackageVersion>4.5.2</SystemNetHttpWinHttpHandlerPackageVersion>
- </PropertyGroup>
+
+    <MicrosoftExtensionsConfigurationBinderPackageVersion>2.1.1</MicrosoftExtensionsConfigurationBinderPackageVersion>
+  </PropertyGroup>
 
   <Import Project="$(DotNetPackageVersionPropsPath)" Condition="'$(DotNetPackageVersionPropsPath)' != ''" />
 
@@ -33,7 +35,6 @@
     <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>2.1.1</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
     <MicrosoftExtensionsConfigurationAbstractionsPackageVersion>2.1.1</MicrosoftExtensionsConfigurationAbstractionsPackageVersion>
     <MicrosoftExtensionsConfigurationAzureKeyVaultPackageVersion>2.1.1</MicrosoftExtensionsConfigurationAzureKeyVaultPackageVersion>
-    <MicrosoftExtensionsConfigurationBinderPackageVersion>2.1.1</MicrosoftExtensionsConfigurationBinderPackageVersion>
     <MicrosoftExtensionsConfigurationCommandLinePackageVersion>2.1.1</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
     <MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>2.1.1</MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>
     <MicrosoftExtensionsConfigurationFileExtensionsPackageVersion>2.1.1</MicrosoftExtensionsConfigurationFileExtensionsPackageVersion>
