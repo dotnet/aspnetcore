@@ -135,6 +135,16 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
                         if (deploymentResult.DeploymentParameters.ServerType == ServerType.IIS)
                         {
+                            // Worker process may not have stopped if app offline is dropped first before starting
+                            // We can send a reqeust and check if the server is up, and if so add and and remove app offline again
+                            // to shut the site down.
+                            var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
+                            if (response.IsSuccessStatusCode)
+                            {
+                                AddAppOffline(deploymentResult.ContentRoot);
+                                RemoveAppOffline(deploymentResult.ContentRoot);
+                            }
+
                             deploymentResult.AssertWorkerProcessStop();
                             return;
                         }
