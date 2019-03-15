@@ -5,4 +5,5 @@
 
   <Target Name="Pack" />
   <Target Name="Restore" />
+  <Target Name="ResolveNuGetPackageAssets" />
 </Project>

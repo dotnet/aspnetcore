@@ -16,7 +16,6 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
@@ -37,13 +36,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         {
             // Arrange
             Task requestDelegate(HttpContext context) => Task.FromResult(true);
-            var middlwareFilter = new MiddlewareFilter(requestDelegate);
+            var middlewareFilter = new MiddlewareFilter(requestDelegate);
             var httpContext = new DefaultHttpContext();
             var resourceExecutingContext = GetResourceExecutingContext(httpContext);
             var resourceExecutionDelegate = GetResourceExecutionDelegate(httpContext);
 
             // Act
-            await middlwareFilter.OnResourceExecutionAsync(resourceExecutingContext, resourceExecutionDelegate);
+            await middlewareFilter.OnResourceExecutionAsync(resourceExecutingContext, resourceExecutionDelegate);
 
             // Assert
             var feature = resourceExecutingContext.HttpContext.Features.Get<IMiddlewareFilterFeature>();
@@ -399,7 +398,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                       logger,
                       diagnosticSource,
                       mapper,
-                      CreatControllerContext(actionContext, valueProviderFactories, maxAllowedErrorsInModelState),
+                      CreateControllerContext(actionContext, valueProviderFactories, maxAllowedErrorsInModelState),
                       CreateCacheEntry((ControllerActionDescriptor)actionContext.ActionDescriptor, controllerFactory),
                       filters)
             {
@@ -421,7 +420,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 return ObjectMethodExecutor.Create(actionDescriptor.MethodInfo, actionDescriptor.ControllerTypeInfo);
             }
 
-            private static ControllerContext CreatControllerContext(
+            private static ControllerContext CreateControllerContext(
                 ActionContext actionContext,
                 IReadOnlyList<IValueProviderFactory> valueProviderFactories,
                 int maxAllowedErrorsInModelState)
@@ -450,56 +449,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
         }
 
-        private class TestParameterBinder : ParameterBinder
-        {
-            private readonly IDictionary<string, object> _actionParameters;
-
-            public TestParameterBinder(IDictionary<string, object> actionParameters)
-                : base(
-                    new EmptyModelMetadataProvider(),
-                    TestModelBinderFactory.CreateDefault(),
-                    Mock.Of<IObjectModelValidator>(),
-                    Options.Create(new MvcOptions
-                    {
-                        AllowValidatingTopLevelNodes = true,
-                    }),
-                    NullLoggerFactory.Instance)
-            {
-                _actionParameters = actionParameters;
-            }
-
-            public override Task<ModelBindingResult> BindModelAsync(
-                ActionContext actionContext,
-                IValueProvider valueProvider,
-                ParameterDescriptor parameter,
-                object value)
-            {
-                if (_actionParameters.TryGetValue(parameter.Name, out var result))
-                {
-                    return Task.FromResult(ModelBindingResult.Success(result));
-                }
-
-                return Task.FromResult(ModelBindingResult.Failed());
-            }
-
-            public Task BindArgumentsAsync(
-                ControllerContext controllerContext,
-                object controller,
-                IDictionary<string, object> arguments)
-            {
-                foreach (var entry in _actionParameters)
-                {
-                    arguments.Add(entry.Key, entry.Value);
-                }
-
-                return Task.CompletedTask;
-            }
-        }
-
         private sealed class TestController
         {
         }
-
 
         private enum TestResourceFilterAction
         {

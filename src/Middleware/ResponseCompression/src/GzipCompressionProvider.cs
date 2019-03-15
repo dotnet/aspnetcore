@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.ResponseCompression
             {
 #if NET461
                 return false;
-#elif NETSTANDARD2_0
+#elif NETSTANDARD2_0 || NETCOREAPP2_1
                 return true;
 #else
 #error target frameworks need to be updated

@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Internal
             var valueTask = actionMethodExecutor.Execute(mapper, objectMethodExecutor, controller, Array.Empty<object>());
 
             // Assert
-            Assert.IsType<PartialViewResult>(valueTask.Result);
+            Assert.IsType<ContentResult>(valueTask.Result);
         }
 
         [Fact]
@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Internal
             var valueTask = actionMethodExecutor.Execute(mapper, objectMethodExecutor, controller, Array.Empty<object>());
 
             // Assert
-            Assert.IsType<PartialViewResult>(valueTask.Result);
+            Assert.IsType<ContentResult>(valueTask.Result);
         }
 
         [Fact]
@@ -166,7 +166,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Internal
             var valueTask = actionMethodExecutor.Execute(mapper, objectMethodExecutor, controller, Array.Empty<object>());
 
             // Assert
-            Assert.IsType<ViewResult>(valueTask.Result);
+            Assert.IsType<StatusCodeResult>(valueTask.Result);
         }
 
         [Fact]
@@ -183,7 +183,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Internal
 
             // Assert
             await valueTask;
-            Assert.IsType<ViewResult>(valueTask.Result);
+            Assert.IsType<StatusCodeResult>(valueTask.Result);
         }
 
         [Fact]
@@ -291,7 +291,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Internal
 
             public IActionResult ReturnIActionResult() => new ContentResult();
 
-            public PartialViewResult ReturnsIActionResultSubType() => new PartialViewResult();
+            public ContentResult ReturnsIActionResultSubType() => new ContentResult();
 
             public ActionResult<TestModel> ReturnsActionResultOfT() => new ActionResult<TestModel>(new TestModel());
 
@@ -309,9 +309,9 @@ namespace Microsoft.AspNetCore.Mvc.Core.Internal
                 return Task.CompletedTask;
             }
 
-            public Task<IActionResult> ReturnIActionResultAsync() => Task.FromResult((IActionResult)new ViewResult());
+            public Task<IActionResult> ReturnIActionResultAsync() => Task.FromResult((IActionResult)new StatusCodeResult(201));
 
-            public Task<ViewResult> ReturnsIActionResultSubTypeAsync() => Task.FromResult(new ViewResult());
+            public Task<StatusCodeResult> ReturnsIActionResultSubTypeAsync() => Task.FromResult(new StatusCodeResult(200));
 
             public Task<TestModel> ReturnsModelAsModelAsync() => Task.FromResult(new TestModel());
 

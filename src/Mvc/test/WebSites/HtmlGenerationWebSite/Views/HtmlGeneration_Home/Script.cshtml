@@ -1,4 +1,4 @@
-@*
+﻿@*
     Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
     Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 *@
@@ -21,6 +21,33 @@
 
     <script src="~/blank.js" asp-fallback-src-include="**/site.js" asp-fallback-test="false" title='"the" title'>
         // Fallback to globbed src
+    </script>
+    
+    <script src="~/styles/siteIntegrity.js?a=integrity"
+            asp-fallback-src="~/styles/sub/site2.js?a=integrity"
+            asp-fallback-test="true"
+            crossorigin="anonymous"
+            integrity="sha256-tMQLOHBNPE829MHQPO8metegsGobA/henDPOvtZOWhQ=">
+       // Script loading primary source, applied integrity hash to primary source.
+    </script>
+
+    <script src="~/styles/siteIntegrity.js?a=integrity"
+            asp-fallback-src="~/styles/sub/siteIntegrity2.js?a=integrity"
+            asp-fallback-test="false"
+            asp-suppress-fallback-integrity="false"
+            crossorigin="anonymous"
+            integrity="sha256-tMQLOHBNPE829MHQPO8metegsGobA/henDPOvtZOWhQ=">
+
+       // Script uses fallback source, applies integrity hash to fallback.
+    </script>
+
+    <script src="~/styles/siteIntegrity.js?a=integrity"
+            asp-fallback-src="~/styles/sub/siteIntegrity3.js?a=integrity"
+            asp-fallback-test="false"
+            asp-suppress-fallback-integrity="true"
+            crossorigin="anonymous"
+            integrity="sha256-tMQLOHBNPE829MHQPO8metegsGobA/henDPOvtZOWhQ=">
+       // Script uses fallback source, ignores integrity hash on fallback.
     </script>
 
     <script src="~/blank.js"

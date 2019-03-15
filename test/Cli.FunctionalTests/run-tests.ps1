@@ -43,7 +43,7 @@ param(
     $TestRuntimeIdentifier,
     $HostRid,
     $ProdConManifestUrl,
-    $ProdConChannel = 'release/2.1',
+    $ProdConChannel = 'release/2.2',
     $AdditionalRestoreSources
 )
 

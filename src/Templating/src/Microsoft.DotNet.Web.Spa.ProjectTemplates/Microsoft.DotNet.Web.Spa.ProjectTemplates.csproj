@@ -3,8 +3,10 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
-    <Description>Single Page Application templates for ASP.NET Core</Description>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <Description>Single Page Application templates for ASP.NET Core
+
+    To install the templates in this package, run 'dotnet new --install $(PackageId)::$(PackageVersion)'.</Description>
     <PackageTags>$(PackageTags);spa</PackageTags>
   </PropertyGroup>
 
@@ -18,14 +20,16 @@
   <!-- Set this last to ensure the properties get the final versions which may be overridden by CI. -->
   <PropertyGroup>
     <GeneratedContentProperties>
+      MicrosoftAspNetCoreAppPackageVersion=$(MicrosoftAspNetCoreAppPackageVersion);
       MicrosoftAspNetCorePackageVersion=$(MicrosoftAspNetCorePackageVersion);
+      MicrosoftAspNetCoreAppPackageVersion=$(MicrosoftAspNetCoreAppPackageVersion);
       MicrosoftAspNetCoreHttpsPolicyPackageVersion=$(MicrosoftAspNetCoreHttpsPolicyPackageVersion);
       MicrosoftAspNetCoreMvcPackageVersion=$(MicrosoftAspNetCoreMvcPackageVersion);
       MicrosoftAspNetCoreRazorDesignPackageVersion=$(MicrosoftAspNetCoreRazorDesignPackageVersion);
       MicrosoftAspNetCoreSpaServicesPackageVersion=$(MicrosoftAspNetCoreSpaServicesPackageVersion);
       MicrosoftAspNetCoreSpaServicesExtensionsPackageVersion=$(MicrosoftAspNetCoreSpaServicesExtensionsPackageVersion);
       MicrosoftAspNetCoreStaticFilesPackageVersion=$(MicrosoftAspNetCoreStaticFilesPackageVersion);
-      MicrosoftVisualStudioWebCodeGenerationToolsPackageVersion=$(MicrosoftVisualStudioWebCodeGenerationToolsPackageVersion);
+      MicrosoftNETCoreApp22PackageVersion=$(MicrosoftNETCoreApp22PackageVersion);
     </GeneratedContentProperties>
   </PropertyGroup>
 

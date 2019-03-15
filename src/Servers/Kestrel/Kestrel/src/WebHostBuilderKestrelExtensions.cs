@@ -50,7 +50,24 @@ namespace Microsoft.AspNetCore.Hosting
         /// </returns>
         public static IWebHostBuilder UseKestrel(this IWebHostBuilder hostBuilder, Action<KestrelServerOptions> options)
         {
-            return hostBuilder.UseKestrel().ConfigureServices(services =>
+            return hostBuilder.UseKestrel().ConfigureKestrel(options);
+        }
+
+        /// <summary>
+        /// Configures Kestrel options but does not register an IServer. See <see cref="UseKestrel(IWebHostBuilder)"/>.
+        /// </summary>
+        /// <param name="hostBuilder">
+        /// The Microsoft.AspNetCore.Hosting.IWebHostBuilder to configure.
+        /// </param>
+        /// <param name="options">
+        /// A callback to configure Kestrel options.
+        /// </param>
+        /// <returns>
+        /// The Microsoft.AspNetCore.Hosting.IWebHostBuilder.
+        /// </returns>
+        public static IWebHostBuilder ConfigureKestrel(this IWebHostBuilder hostBuilder, Action<KestrelServerOptions> options)
+        {
+            return hostBuilder.ConfigureServices(services =>
             {
                 services.Configure(options);
             });
@@ -68,12 +85,27 @@ namespace Microsoft.AspNetCore.Hosting
         /// </returns>
         public static IWebHostBuilder UseKestrel(this IWebHostBuilder hostBuilder, Action<WebHostBuilderContext, KestrelServerOptions> configureOptions)
         {
+            return hostBuilder.UseKestrel().ConfigureKestrel(configureOptions);
+        }
+
+        /// <summary>
+        /// Configures Kestrel options but does not register an IServer. See <see cref="UseKestrel(IWebHostBuilder)"/>.
+        /// </summary>
+        /// <param name="hostBuilder">
+        /// The Microsoft.AspNetCore.Hosting.IWebHostBuilder to configure.
+        /// </param>
+        /// <param name="configureOptions">A callback to configure Kestrel options.</param>
+        /// <returns>
+        /// The Microsoft.AspNetCore.Hosting.IWebHostBuilder.
+        /// </returns>
+        public static IWebHostBuilder ConfigureKestrel(this IWebHostBuilder hostBuilder, Action<WebHostBuilderContext, KestrelServerOptions> configureOptions)
+        {
             if (configureOptions == null)
             {
                 throw new ArgumentNullException(nameof(configureOptions));
             }
 
-            return hostBuilder.UseKestrel().ConfigureServices((context, services) =>
+            return hostBuilder.ConfigureServices((context, services) =>
             {
                 services.Configure<KestrelServerOptions>(options =>
                 {

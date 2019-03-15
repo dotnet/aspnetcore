@@ -66,6 +66,7 @@ try {
         exit 0
     }
 
+    Invoke-Block { git add "$RepoRoot/global.json" }
     Invoke-Block { git add "$RepoRoot/korebuild-lock.txt" }
     Invoke-Block { git add "$RepoRoot/build/dependencies.props" }
 

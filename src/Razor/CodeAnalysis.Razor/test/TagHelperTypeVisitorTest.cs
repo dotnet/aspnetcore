@@ -86,9 +86,6 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             Assert.False(isTagHelper);
         }
 
-
-
-
         public class Invalid_NestedPublicTagHelper : TagHelper
         {
         }

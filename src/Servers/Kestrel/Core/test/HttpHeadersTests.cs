@@ -225,9 +225,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             IDictionary<string, StringValues> headers = httpHeaders;
 
-            StringValues value;
-
-            Assert.False(headers.TryGetValue("Content-Length", out value));
+            Assert.False(headers.TryGetValue("Content-Length", out var value));
             Assert.Null(httpHeaders.ContentLength);
             Assert.False(httpHeaders.ContentLength.HasValue);
 

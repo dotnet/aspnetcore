@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
     /// uses <see cref="DependencyContext"/> for registered <see cref="AssemblyPart"/> instances to create 
     /// <see cref="MetadataReference"/>.
     /// </summary>
+    [Obsolete("This type is obsolete and will be removed in a future version. See https://aka.ms/AA1x4gg for details.")]
     public class MetadataReferenceFeatureProvider : IApplicationFeatureProvider<MetadataReferenceFeature>
     {
         /// <inheritdoc />

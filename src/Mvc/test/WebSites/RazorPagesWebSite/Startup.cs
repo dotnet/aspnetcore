@@ -4,6 +4,7 @@
 using System.Globalization;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using RazorPagesWebSite.Conventions;
 
@@ -25,7 +26,8 @@ namespace RazorPagesWebSite
                     options.Conventions.AddPageRoute("/Pages/NotTheRoot", string.Empty);
                     options.Conventions.Add(new CustomModelTypeConvention());
                 })
-                .WithRazorPagesAtContentRoot();
+                .WithRazorPagesAtContentRoot()
+                .SetCompatibilityVersion(CompatibilityVersion.Latest);
         }
 
         public void Configure(IApplicationBuilder app)

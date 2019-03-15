@@ -122,16 +122,15 @@ namespace Microsoft.AspNetCore
         ///     load <see cref="IConfiguration"/> from 'appsettings.json' and 'appsettings.[<see cref="IHostingEnvironment.EnvironmentName"/>].json',
         ///     load <see cref="IConfiguration"/> from User Secrets when <see cref="IHostingEnvironment.EnvironmentName"/> is 'Development' using the entry assembly,
         ///     load <see cref="IConfiguration"/> from environment variables,
-        ///     configures the <see cref="ILoggerFactory"/> to log to the console and debug output,
-        ///     enables IIS integration,
-        ///     and enables the ability for frameworks to bind their options to their default configuration sections.
+        ///     configure the <see cref="ILoggerFactory"/> to log to the console and debug output,
+        ///     and enable IIS integration.
         /// </remarks>
         /// <returns>The initialized <see cref="IWebHostBuilder"/>.</returns>
         public static IWebHostBuilder CreateDefaultBuilder() =>
             CreateDefaultBuilder(args: null);
 
         /// <summary>
-        ///   Initializes a new instance of the <see cref="WebHostBuilder"/> class with pre-configured defaults.
+        /// Initializes a new instance of the <see cref="WebHostBuilder"/> class with pre-configured defaults.
         /// </summary>
         /// <remarks>
         ///   The following defaults are applied to the returned <see cref="WebHostBuilder"/>:
@@ -141,20 +140,28 @@ namespace Microsoft.AspNetCore
         ///     load <see cref="IConfiguration"/> from User Secrets when <see cref="IHostingEnvironment.EnvironmentName"/> is 'Development' using the entry assembly,
         ///     load <see cref="IConfiguration"/> from environment variables,
         ///     load <see cref="IConfiguration"/> from supplied command line args,
-        ///     configures the <see cref="ILoggerFactory"/> to log to the console and debug output,
-        ///     enables IIS integration,
-        ///     and enables the ability for frameworks to bind their options to their default configuration sections.
+        ///     configure the <see cref="ILoggerFactory"/> to log to the console and debug output,
+        ///     and enable IIS integration.
         /// </remarks>
         /// <param name="args">The command line args.</param>
         /// <returns>The initialized <see cref="IWebHostBuilder"/>.</returns>
         public static IWebHostBuilder CreateDefaultBuilder(string[] args)
         {
-            var builder = new WebHostBuilder()
-                .UseKestrel((builderContext, options) =>
+            var builder = new WebHostBuilder();
+
+            if (string.IsNullOrEmpty(builder.GetSetting(WebHostDefaults.ContentRootKey)))
+            {
+                builder.UseContentRoot(Directory.GetCurrentDirectory());
+            }
+            if (args != null)
+            {
+                builder.UseConfiguration(new ConfigurationBuilder().AddCommandLine(args).Build());
+            }
+
+            builder.UseKestrel((builderContext, options) =>
                 {
                     options.Configure(builderContext.Configuration.GetSection("Kestrel"));
                 })
-                .UseContentRoot(Directory.GetCurrentDirectory())
                 .ConfigureAppConfiguration((hostingContext, config) =>
                 {
                     var env = hostingContext.HostingEnvironment;
@@ -183,6 +190,7 @@ namespace Microsoft.AspNetCore
                     logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
                     logging.AddConsole();
                     logging.AddDebug();
+                    logging.AddEventSourceLogger();
                 })
                 .ConfigureServices((hostingContext, services) =>
                 {
@@ -203,16 +211,12 @@ namespace Microsoft.AspNetCore
 
                     services.AddTransient<IStartupFilter, HostFilteringStartupFilter>();
                 })
+                .UseIIS()
                 .UseIISIntegration()
                 .UseDefaultServiceProvider((context, options) =>
                 {
                     options.ValidateScopes = context.HostingEnvironment.IsDevelopment();
                 });
-
-            if (args != null)
-            {
-                builder.UseConfiguration(new ConfigurationBuilder().AddCommandLine(args).Build());
-            }
 
             return builder;
         }
@@ -228,9 +232,8 @@ namespace Microsoft.AspNetCore
         ///     load <see cref="IConfiguration"/> from User Secrets when <see cref="IHostingEnvironment.EnvironmentName"/> is 'Development' using the entry assembly,
         ///     load <see cref="IConfiguration"/> from environment variables,
         ///     load <see cref="IConfiguration"/> from supplied command line args,
-        ///     configures the <see cref="ILoggerFactory"/> to log to the console and debug output,
-        ///     enables IIS integration,
-        ///     enables the ability for frameworks to bind their options to their default configuration sections.
+        ///     configure the <see cref="ILoggerFactory"/> to log to the console and debug output,
+        ///     enable IIS integration.
         /// </remarks>
         /// <typeparam name ="TStartup">The type containing the startup methods for the application.</typeparam>
         /// <param name="args">The command line args.</param>

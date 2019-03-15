@@ -70,8 +70,7 @@ namespace Microsoft.AspNetCore.StaticFiles
 
             public IFileInfo GetFileInfo(string subpath)
             {
-                IFileInfo result;
-                if (_files.TryGetValue(subpath, out result))
+                if (_files.TryGetValue(subpath, out var result))
                 {
                     return result;
                 }

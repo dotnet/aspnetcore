@@ -1,0 +1,7 @@
+Markup block - Gen<None> - 23 - (0:0,0)
+    Tag block - Gen<TagHelper> - 15 - (0:0,0) - p - PTagHelper - CatchALlTagHelper
+        StartTagAndEndTag - <p> ... </p>
+        Tag block - Gen<TagHelper> - 8 - (3:0,3) - strong - StrongTagHelper - CatchALlTagHelper
+            StartTagAndEndTag - <strong>
+    Tag block - Gen<TagHelper> - 8 - (15:0,15) - strong - StrongTagHelper - CatchALlTagHelper
+        StartTagAndEndTag - <strong>

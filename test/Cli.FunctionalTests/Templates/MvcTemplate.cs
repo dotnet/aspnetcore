@@ -1,11 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Cli.FunctionalTests.Util;
 
 namespace Cli.FunctionalTests.Templates
 {
@@ -28,8 +26,6 @@ namespace Cli.FunctionalTests.Templates
                 Path.Combine("Razor", RazorPath, "Shared", "_Layout.g.cshtml.cs"),
                 Path.Combine("Razor", RazorPath, "Shared", "_ValidationScriptsPartial.g.cshtml.cs"),
                 Path.Combine("Razor", RazorPath, "Shared", "Error.g.cshtml.cs"),
-                Path.Combine("Razor", RazorPath, "Home", "About.g.cshtml.cs"),
-                Path.Combine("Razor", RazorPath, "Home", "Contact.g.cshtml.cs"),
             }.Select(p => Path.Combine(OutputPath, p)));
     }
 }

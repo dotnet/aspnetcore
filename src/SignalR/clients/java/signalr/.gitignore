@@ -1,0 +1,13 @@
+# Gradle Files
+.gradletasknamecache
+.gradle/
+build/
+bin/
+.settings/
+out/
+*.class
+*.jar
+.project
+.classpath
+# We need the gradle-wrapper.jar file so that others can use the gradle wrapper
+!gradle/wrapper/gradle-wrapper.jar

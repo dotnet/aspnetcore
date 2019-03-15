@@ -8,69 +8,69 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
 {
     public class HtmlMarkupParserTests
     {
-        private static readonly HtmlSymbol doubleHyphenSymbol = new HtmlSymbol("--", HtmlSymbolType.DoubleHyphen);
+        private static readonly HtmlToken doubleHyphenToken = new HtmlToken("--", HtmlTokenType.DoubleHyphen);
 
-        public static IEnumerable<object[]> NonDashSymbols
+        public static IEnumerable<object[]> NonDashTokens
         {
             get
             {
-                yield return new[] { new HtmlSymbol("--", HtmlSymbolType.DoubleHyphen) };
-                yield return new[] { new HtmlSymbol("asdf", HtmlSymbolType.Text) };
-                yield return new[] { new HtmlSymbol(">", HtmlSymbolType.CloseAngle) };
-                yield return new[] { new HtmlSymbol("<", HtmlSymbolType.OpenAngle) };
-                yield return new[] { new HtmlSymbol("!", HtmlSymbolType.Bang) };
+                yield return new[] { new HtmlToken("--", HtmlTokenType.DoubleHyphen) };
+                yield return new[] { new HtmlToken("asdf", HtmlTokenType.Text) };
+                yield return new[] { new HtmlToken(">", HtmlTokenType.CloseAngle) };
+                yield return new[] { new HtmlToken("<", HtmlTokenType.OpenAngle) };
+                yield return new[] { new HtmlToken("!", HtmlTokenType.Bang) };
             }
         }
 
         [Theory]
-        [MemberData(nameof(NonDashSymbols))]
-        public void IsHyphen_ReturnsFalseForNonDashSymbol(object symbol)
+        [MemberData(nameof(NonDashTokens))]
+        public void IsHyphen_ReturnsFalseForNonDashToken(object token)
         {
             // Arrange
-            var convertedSymbol = (HtmlSymbol)symbol;
+            var convertedToken = (HtmlToken)token;
 
             // Act & Assert
-            Assert.False(HtmlMarkupParser.IsHyphen(convertedSymbol));
+            Assert.False(HtmlMarkupParser.IsHyphen(convertedToken));
         }
 
         [Fact]
-        public void IsHyphen_ReturnsTrueForADashSymbol()
+        public void IsHyphen_ReturnsTrueForADashToken()
         {
             // Arrange
-            var dashSymbol = new HtmlSymbol("-", HtmlSymbolType.Text);
+            var dashToken = new HtmlToken("-", HtmlTokenType.Text);
 
             // Act & Assert
-            Assert.True(HtmlMarkupParser.IsHyphen(dashSymbol));
+            Assert.True(HtmlMarkupParser.IsHyphen(dashToken));
         }
 
         [Fact]
-        public void AcceptAllButLastDoubleHypens_ReturnsTheOnlyDoubleHyphenSymbol()
+        public void AcceptAllButLastDoubleHypens_ReturnsTheOnlyDoubleHyphenToken()
         {
             // Arrange
             var sut = CreateTestParserForContent("-->");
 
             // Act
-            var symbol = sut.AcceptAllButLastDoubleHyphens();
+            var token = sut.AcceptAllButLastDoubleHyphens();
 
             // Assert
-            Assert.Equal(doubleHyphenSymbol, symbol);
-            Assert.True(sut.At(HtmlSymbolType.CloseAngle));
-            Assert.Equal(doubleHyphenSymbol, sut.PreviousSymbol);
+            Assert.Equal(doubleHyphenToken, token);
+            Assert.True(sut.At(HtmlTokenType.CloseAngle));
+            Assert.Equal(doubleHyphenToken, sut.PreviousToken);
         }
 
         [Fact]
-        public void AcceptAllButLastDoubleHypens_ReturnsTheDoubleHyphenSymbolAfterAcceptingTheDash()
+        public void AcceptAllButLastDoubleHypens_ReturnsTheDoubleHyphenTokenAfterAcceptingTheDash()
         {
             // Arrange
             var sut = CreateTestParserForContent("--->");
 
             // Act
-            var symbol = sut.AcceptAllButLastDoubleHyphens();
+            var token = sut.AcceptAllButLastDoubleHyphens();
 
             // Assert
-            Assert.Equal(doubleHyphenSymbol, symbol);
-            Assert.True(sut.At(HtmlSymbolType.CloseAngle));
-            Assert.True(HtmlMarkupParser.IsHyphen(sut.PreviousSymbol));
+            Assert.Equal(doubleHyphenToken, token);
+            Assert.True(sut.At(HtmlTokenType.CloseAngle));
+            Assert.True(HtmlMarkupParser.IsHyphen(sut.PreviousToken));
         }
 
         [Fact]
@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
         public void IsHtmlCommentAhead_ReturnsTrueForValidCommentTagWithExtraInfoAfter()
         {
             // Arrange
-            var sut = CreateTestParserForContent("-- comment --> the first part is a valid comment without the Open angle and bang symbols");
+            var sut = CreateTestParserForContent("-- comment --> the first part is a valid comment without the Open angle and bang tokens");
 
             // Act & Assert
             Assert.True(sut.IsHtmlCommentAhead());
@@ -157,8 +157,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
         public void IsCommentContentEndingInvalid_ReturnsFalseForAllowedContent()
         {
             // Arrange
-            var expectedSymbol1 = new HtmlSymbol("a", HtmlSymbolType.Text);
-            var sequence = Enumerable.Range((int)'a', 26).Select(item => new HtmlSymbol(((char)item).ToString(), HtmlSymbolType.Text));
+            var expectedToken1 = new HtmlToken("a", HtmlTokenType.Text);
+            var sequence = Enumerable.Range((int)'a', 26).Select(item => new HtmlToken(((char)item).ToString(), HtmlTokenType.Text));
 
             // Act & Assert
             Assert.False(HtmlMarkupParser.IsCommentContentEndingInvalid(sequence));
@@ -168,8 +168,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
         public void IsCommentContentEndingInvalid_ReturnsTrueForDisallowedContent()
         {
             // Arrange
-            var expectedSymbol1 = new HtmlSymbol("a", HtmlSymbolType.Text);
-            var sequence = new[] { new HtmlSymbol("<", HtmlSymbolType.OpenAngle), new HtmlSymbol("!", HtmlSymbolType.Bang), new HtmlSymbol("-", HtmlSymbolType.Text) };
+            var expectedToken1 = new HtmlToken("a", HtmlTokenType.Text);
+            var sequence = new[] { new HtmlToken("<", HtmlTokenType.OpenAngle), new HtmlToken("!", HtmlTokenType.Bang), new HtmlToken("-", HtmlTokenType.Text) };
 
             // Act & Assert
             Assert.True(HtmlMarkupParser.IsCommentContentEndingInvalid(sequence));
@@ -179,8 +179,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
         public void IsCommentContentEndingInvalid_ReturnsFalseForEmptyContent()
         {
             // Arrange
-            var expectedSymbol1 = new HtmlSymbol("a", HtmlSymbolType.Text);
-            var sequence = Array.Empty<HtmlSymbol>();
+            var expectedToken1 = new HtmlToken("a", HtmlTokenType.Text);
+            var sequence = Array.Empty<HtmlToken>();
 
             // Act & Assert
             Assert.False(HtmlMarkupParser.IsCommentContentEndingInvalid(sequence));
@@ -188,9 +188,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
 
         private class TestHtmlMarkupParser : HtmlMarkupParser
         {
-            public new HtmlSymbol PreviousSymbol
+            public new HtmlToken PreviousToken
             {
-                get => base.PreviousSymbol;
+                get => base.PreviousToken;
             }
 
             public new bool IsHtmlCommentAhead()
@@ -203,7 +203,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
                 this.EnsureCurrent();
             }
 
-            public new HtmlSymbol AcceptAllButLastDoubleHyphens()
+            public new HtmlToken AcceptAllButLastDoubleHyphens()
             {
                 return base.AcceptAllButLastDoubleHyphens();
             }

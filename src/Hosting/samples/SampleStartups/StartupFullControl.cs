@@ -15,9 +15,9 @@ namespace SampleStartups
         public static void Main(string[] args)
         {
             var config = new ConfigurationBuilder()
-                .AddCommandLine(args)
                 .AddEnvironmentVariables(prefix: "ASPNETCORE_")
                 .AddJsonFile("hosting.json", optional: true)
+                .AddCommandLine(args)
                 .Build();
 
             var host = new WebHostBuilder()
