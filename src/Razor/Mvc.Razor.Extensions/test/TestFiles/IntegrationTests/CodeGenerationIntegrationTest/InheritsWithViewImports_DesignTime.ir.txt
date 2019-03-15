@@ -10,7 +10,6 @@ Document -
         UsingDirective - (178:6,1 [43] ) - Microsoft.AspNetCore.Mvc.ViewFeatures
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_InheritsWithViewImports - MyPageModel<MyModel> - 
             DesignTimeDirective - 
-                DirectiveToken - (10:0,10 [19] InheritsWithViewImports_Imports0.cshtml) - MyPageModel<TModel>
                 DirectiveToken - (231:7,8 [62] ) - global::Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper<TModel>
                 DirectiveToken - (294:7,71 [4] ) - Html
                 DirectiveToken - (308:8,8 [54] ) - global::Microsoft.AspNetCore.Mvc.Rendering.IJsonHelper
@@ -24,6 +23,7 @@ Document -
                 DirectiveToken - (617:12,14 [96] ) - Microsoft.AspNetCore.Mvc.Razor.TagHelpers.UrlResolutionTagHelper, Microsoft.AspNetCore.Mvc.Razor
                 DirectiveToken - (729:13,14 [87] ) - Microsoft.AspNetCore.Mvc.Razor.TagHelpers.HeadTagHelper, Microsoft.AspNetCore.Mvc.Razor
                 DirectiveToken - (832:14,14 [87] ) - Microsoft.AspNetCore.Mvc.Razor.TagHelpers.BodyTagHelper, Microsoft.AspNetCore.Mvc.Razor
+                DirectiveToken - (10:0,10 [19] TestFiles\IntegrationTests\CodeGenerationIntegrationTest\_ViewImports.cshtml) - MyPageModel<TModel>
                 DirectiveToken - (14:1,7 [7] InheritsWithViewImports.cshtml) - MyModel
             CSharpCode - 
                 IntermediateToken -  - CSharp - #pragma warning disable 0414

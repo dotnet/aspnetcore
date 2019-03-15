@@ -265,6 +265,9 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
         [Theory]
         [InlineData("application/xml")]
+        [InlineData("application/mathml-content+xml")]
+        [InlineData("application/mathml-presentation+xml")]
+        [InlineData("application/mathml+xml; test=value")]
         public void XMLFormatter_CanRead_ReturnsTrueForSupportedMediaTypes(string requestContentType)
         {
             // Arrange
@@ -289,9 +292,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         }
 
         [Theory]
-        [InlineData("application/mathml-content+xml")]
-        [InlineData("application/mathml-presentation+xml")]
-        [InlineData("application/mathml+xml; undefined=ignored")]
         [InlineData("application/octet-stream; padding=3")]
         [InlineData("application/xml-dtd; undefined=ignored")]
         [InlineData("multipart/mixed; boundary=gc0p4Jq0M2Yt08j34c0p")]

@@ -1,0 +1,7 @@
+[
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Connections.DefaultConnectionContext : Microsoft.AspNetCore.Connections.ConnectionContext, System.IDisposable, Microsoft.AspNetCore.Connections.Features.IConnectionIdFeature, Microsoft.AspNetCore.Connections.Features.IConnectionItemsFeature, Microsoft.AspNetCore.Connections.Features.IConnectionTransportFeature, Microsoft.AspNetCore.Connections.Features.IConnectionUserFeature, Microsoft.AspNetCore.Connections.Features.IConnectionLifetimeFeature",
+    "MemberId": "public System.Void Abort()",
+    "Kind": "Removal"
+  }
+]

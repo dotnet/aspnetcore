@@ -21,10 +21,10 @@ namespace Microsoft.AspNetCore.Mvc
             // Act & Assert
             foreach (var property in formOptionsProperties)
             {
-                var formLimiAttributeProperty = formLimitsAttributeProperties
+                var formLimitAttributeProperty = formLimitsAttributeProperties
                     .Where(pi => property.Name == pi.Name && pi.PropertyType == property.PropertyType)
                     .SingleOrDefault();
-                Assert.NotNull(formLimiAttributeProperty);
+                Assert.NotNull(formLimitAttributeProperty);
             }
         }
 

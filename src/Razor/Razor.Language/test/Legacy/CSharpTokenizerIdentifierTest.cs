@@ -10,73 +10,73 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void Simple_Identifier_Is_Recognized()
         {
-            TestTokenizer("foo", new CSharpSymbol("foo", CSharpSymbolType.Identifier));
+            TestTokenizer("foo", new CSharpToken("foo", CSharpTokenType.Identifier));
         }
 
         [Fact]
         public void Identifier_Starting_With_Underscore_Is_Recognized()
         {
-            TestTokenizer("_foo", new CSharpSymbol("_foo", CSharpSymbolType.Identifier));
+            TestTokenizer("_foo", new CSharpToken("_foo", CSharpTokenType.Identifier));
         }
 
         [Fact]
         public void Identifier_Can_Contain_Digits()
         {
-            TestTokenizer("foo4", new CSharpSymbol("foo4", CSharpSymbolType.Identifier));
+            TestTokenizer("foo4", new CSharpToken("foo4", CSharpTokenType.Identifier));
         }
 
         [Fact]
         public void Identifier_Can_Start_With_Titlecase_Letter()
         {
-            TestTokenizer("ῼfoo", new CSharpSymbol("ῼfoo", CSharpSymbolType.Identifier));
+            TestTokenizer("ῼfoo", new CSharpToken("ῼfoo", CSharpTokenType.Identifier));
         }
 
         [Fact]
         public void Identifier_Can_Start_With_Letter_Modifier()
         {
-            TestTokenizer("ᵊfoo", new CSharpSymbol("ᵊfoo", CSharpSymbolType.Identifier));
+            TestTokenizer("ᵊfoo", new CSharpToken("ᵊfoo", CSharpTokenType.Identifier));
         }
 
         [Fact]
         public void Identifier_Can_Start_With_Other_Letter()
         {
-            TestTokenizer("ƻfoo", new CSharpSymbol("ƻfoo", CSharpSymbolType.Identifier));
+            TestTokenizer("ƻfoo", new CSharpToken("ƻfoo", CSharpTokenType.Identifier));
         }
 
         [Fact]
         public void Identifier_Can_Start_With_Number_Letter()
         {
-            TestTokenizer("Ⅽool", new CSharpSymbol("Ⅽool", CSharpSymbolType.Identifier));
+            TestTokenizer("Ⅽool", new CSharpToken("Ⅽool", CSharpTokenType.Identifier));
         }
 
         [Fact]
         public void Identifier_Can_Contain_Non_Spacing_Mark()
         {
-            TestTokenizer("foo\u0300", new CSharpSymbol("foo\u0300", CSharpSymbolType.Identifier));
+            TestTokenizer("foo\u0300", new CSharpToken("foo\u0300", CSharpTokenType.Identifier));
         }
 
         [Fact]
         public void Identifier_Can_Contain_Spacing_Combining_Mark()
         {
-            TestTokenizer("fooः", new CSharpSymbol("fooः", CSharpSymbolType.Identifier));
+            TestTokenizer("fooः", new CSharpToken("fooः", CSharpTokenType.Identifier));
         }
 
         [Fact]
         public void Identifier_Can_Contain_Non_English_Digit()
         {
-            TestTokenizer("foo١", new CSharpSymbol("foo١", CSharpSymbolType.Identifier));
+            TestTokenizer("foo١", new CSharpToken("foo١", CSharpTokenType.Identifier));
         }
 
         [Fact]
         public void Identifier_Can_Contain_Connector_Punctuation()
         {
-            TestTokenizer("foo‿bar", new CSharpSymbol("foo‿bar", CSharpSymbolType.Identifier));
+            TestTokenizer("foo‿bar", new CSharpToken("foo‿bar", CSharpTokenType.Identifier));
         }
 
         [Fact]
         public void Identifier_Can_Contain_Format_Character()
         {
-            TestTokenizer("foo؃bar", new CSharpSymbol("foo؃bar", CSharpSymbolType.Identifier));
+            TestTokenizer("foo؃bar", new CSharpToken("foo؃bar", CSharpTokenType.Identifier));
         }
 
         [Fact]
@@ -164,7 +164,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private void TestKeyword(string keyword, CSharpKeyword keywordType)
         {
-            TestTokenizer(keyword, new CSharpSymbol(keyword, CSharpSymbolType.Keyword) { Keyword = keywordType });
+            TestTokenizer(keyword, new CSharpToken(keyword, CSharpTokenType.Keyword) { Keyword = keywordType });
         }
     }
 }

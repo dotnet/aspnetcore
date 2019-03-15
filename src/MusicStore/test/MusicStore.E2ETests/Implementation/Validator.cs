@@ -116,6 +116,12 @@ namespace E2ETests
             }
         }
 
+        public void VerifyArchitecture(HttpResponseMessage response, RuntimeArchitecture arch)
+        {
+            Assert.True(response.Headers.TryGetValues("Arch", out var values), "Missing Arch header");
+            Assert.Equal(arch.ToString(), values.First(), ignoreCase: true);
+        }
+
         public async Task VerifyNtlmHomePage(HttpResponseMessage response)
         {
             await VerifyHomePage(response, useNtlmAuthentication: true);

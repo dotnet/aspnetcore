@@ -3,6 +3,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Cors.Infrastructure
@@ -17,10 +18,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             var policy = new CorsPolicy();
             options.AddPolicy(options.DefaultPolicyName, policy);
 
-            var corsOptions = new TestCorsOptions
-            {
-                Value = options
-            };
+            var corsOptions = Options.Create(options);
             var policyProvider = new DefaultCorsPolicyProvider(corsOptions);
 
             // Act
@@ -40,10 +38,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             var policy = new CorsPolicy();
             options.AddPolicy(policyName, policy);
 
-            var corsOptions = new TestCorsOptions
-            {
-                Value = options
-            };
+            var corsOptions = Options.Create(options);
             var policyProvider = new DefaultCorsPolicyProvider(corsOptions);
 
             // Act

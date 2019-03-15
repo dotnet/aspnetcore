@@ -1,6 +1,4 @@
-﻿using System.Buffers;
-
-namespace System.IO.Pipelines
+﻿namespace System.IO.Pipelines
 {
     internal class DuplexPipe : IDuplexPipe
     {

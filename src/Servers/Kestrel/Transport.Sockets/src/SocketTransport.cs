@@ -8,7 +8,6 @@ using System.IO.Pipelines;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.ExceptionServices;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Connections;
@@ -22,7 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
     {
         private static readonly PipeScheduler[] ThreadPoolSchedulerArray = new PipeScheduler[] { PipeScheduler.ThreadPool };
 
-        private readonly MemoryPool<byte> _memoryPool = KestrelMemoryPool.Create();
+        private readonly MemoryPool<byte> _memoryPool;
         private readonly IEndPointInformation _endPointInformation;
         private readonly IConnectionDispatcher _dispatcher;
         private readonly IApplicationLifetime _appLifetime;
@@ -39,7 +38,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             IConnectionDispatcher dispatcher,
             IApplicationLifetime applicationLifetime,
             int ioQueueCount,
-            ISocketsTrace trace)
+            ISocketsTrace trace,
+            MemoryPool<byte> memoryPool)
         {
             Debug.Assert(endPointInformation != null);
             Debug.Assert(endPointInformation.Type == ListenType.IPEndPoint);
@@ -51,6 +51,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             _dispatcher = dispatcher;
             _appLifetime = applicationLifetime;
             _trace = trace;
+            _memoryPool = memoryPool;
 
             if (ioQueueCount > 0)
             {
@@ -79,8 +80,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             IPEndPoint endPoint = _endPointInformation.IPEndPoint;
 
             var listenSocket = new Socket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-
-            EnableRebinding(listenSocket);
+            NativeMethods.DisableHandleInheritance(listenSocket);
 
             // Kestrel expects IPv6Any to bind to both IPv6 and IPv4
             if (endPoint.Address == IPAddress.IPv6Any)
@@ -155,7 +155,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                             acceptSocket.NoDelay = _endPointInformation.NoDelay;
 
                             var connection = new SocketConnection(acceptSocket, _memoryPool, _schedulers[schedulerIndex], _trace);
-                            HandleConnectionAsync(connection);
+
+                            // REVIEW: This task should be tracked by the server for graceful shutdown
+                            // Today it's handled specifically for http but not for arbitrary middleware
+                            _ = HandleConnectionAsync(connection);
                         }
                         catch (SocketException) when (!_unbinding)
                         {
@@ -182,48 +185,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             }
         }
 
-        private void HandleConnectionAsync(SocketConnection connection)
+        private async Task HandleConnectionAsync(SocketConnection connection)
         {
             try
             {
-                _dispatcher.OnConnection(connection);
-                _ = connection.StartAsync();
+                var middlewareTask = _dispatcher.OnConnection(connection);
+                var transportTask = connection.StartAsync();
+
+                await transportTask;
+                await middlewareTask;
+
+                connection.Dispose();
             }
             catch (Exception ex)
             {
                 _trace.LogCritical(ex, $"Unexpected exception in {nameof(SocketTransport)}.{nameof(HandleConnectionAsync)}.");
-            }
-        }
-
-        [DllImport("libc", SetLastError = true)]
-        private static extern int setsockopt(int socket, int level, int option_name, IntPtr option_value, uint option_len);
-
-        private const int SOL_SOCKET_OSX = 0xffff;
-        private const int SO_REUSEADDR_OSX = 0x0004;
-        private const int SOL_SOCKET_LINUX = 0x0001;
-        private const int SO_REUSEADDR_LINUX = 0x0002;
-
-        // Without setting SO_REUSEADDR on macOS and Linux, binding to a recently used endpoint can fail.
-        // https://github.com/dotnet/corefx/issues/24562
-        private unsafe void EnableRebinding(Socket listenSocket)
-        {
-            var optionValue = 1;
-            var setsockoptStatus = 0;
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                setsockoptStatus = setsockopt(listenSocket.Handle.ToInt32(), SOL_SOCKET_LINUX, SO_REUSEADDR_LINUX,
-                                              (IntPtr)(&optionValue), sizeof(int));
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                setsockoptStatus = setsockopt(listenSocket.Handle.ToInt32(), SOL_SOCKET_OSX, SO_REUSEADDR_OSX,
-                                              (IntPtr)(&optionValue), sizeof(int));
-            }
-
-            if (setsockoptStatus != 0)
-            {
-                _trace.LogInformation("Setting SO_REUSEADDR failed with errno '{errno}'.", Marshal.GetLastWin32Error());
             }
         }
     }

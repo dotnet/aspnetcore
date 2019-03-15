@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             Assert.Collection(
                 result.OrderBy(p => p.Key),
                 property => Assert.Equal(nameof(BaseController.BaseProperty), property.PropertyInfo.Name),
-                property => Assert.Equal(nameof(DerivedController.DeriviedProperty), property.PropertyInfo.Name));
+                property => Assert.Equal(nameof(DerivedController.DerivedProperty), property.PropertyInfo.Name));
         }
 
         [Fact]
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         public class DerivedController : BaseController
         {
             [ViewData]
-            public string DeriviedProperty { get; set; }
+            public string DerivedProperty { get; set; }
         }
 
         public class PropertyWithKeyController

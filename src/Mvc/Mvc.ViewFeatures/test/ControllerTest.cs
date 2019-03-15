@@ -439,7 +439,7 @@ namespace Microsoft.AspNetCore.Mvc.Test
             var viewData = new ViewDataDictionary(metadataProvider, new ModelStateDictionary());
             var tempData = new TempDataDictionary(httpContext, Mock.Of<ITempDataProvider>());
 
-            var valiatorProviders = new[]
+            var validatorProviders = new[]
             {
                 new DataAnnotationsModelValidatorProvider(
                     new ValidationAttributeAdapterProvider(),
@@ -458,7 +458,7 @@ namespace Microsoft.AspNetCore.Mvc.Test
             {
                 ControllerContext = controllerContext,
                 MetadataProvider = metadataProvider,
-                ObjectValidator = new DefaultObjectValidator(metadataProvider, valiatorProviders),
+                ObjectValidator = new DefaultObjectValidator(metadataProvider, validatorProviders, new MvcOptions()),
                 TempData = tempData,
                 ViewData = viewData,
             };

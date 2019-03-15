@@ -4,23 +4,44 @@
 using BenchmarkServer.Hubs;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace BenchmarkServer
 {
     public class Startup
     {
+        private readonly IConfiguration _config;
+        public Startup(IConfiguration configuration)
+        {
+            _config = configuration;
+        }
+
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSignalR()
-                .AddMessagePackProtocol();
+            var signalrBuilder = services.AddSignalR(o =>
+            {
+                o.EnableDetailedErrors = true;
+            })
+            .AddMessagePackProtocol();
+
+            var redisConnectionString = _config["SignalRRedis"];
+            if (!string.IsNullOrEmpty(redisConnectionString))
+            {
+                signalrBuilder.AddRedis(redisConnectionString);
+            }
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             app.UseSignalR(routes =>
             {
-                routes.MapHub<EchoHub>("/echo");
+                routes.MapHub<EchoHub>("/echo", o =>
+                {
+                    // Remove backpressure for benchmarking
+                    o.TransportMaxBufferSize = 0;
+                    o.ApplicationMaxBufferSize = 0;
+                });
             });
         }
     }

@@ -19,12 +19,12 @@ node_modules/
 .r
 .w
 .deps
-global.json
 msbuild.ProjectImports.zip
 .env
 scripts/tmp/
 .dotnet/
 .tools/
+src/**/global.json
 launchSettings.json
 korebuild-lock.txt
 .gradle/

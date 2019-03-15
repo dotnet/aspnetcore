@@ -15,6 +15,7 @@
         "suppressImplicitAnyIndexErrors": true,
         "noEmitOnError": true,
         "stripInternal": true,
+        "strict": true,
         "lib": [ "es5", "es2015.promise", "es2015.iterable", "dom" ],
         "baseUrl": ".",
         "paths": {

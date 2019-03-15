@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy
         /// If the HttpsPort is not set, we will try to get the HttpsPort from the following:
         /// 1. HTTPS_PORT environment variable
         /// 2. IServerAddressesFeature
-        /// 3. 443 (or not set) 
+        /// If that fails then the middleware will log a warning and turn off.
         /// </remarks>
         public int? HttpsPort { get; set; }
     }

@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -45,12 +46,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             await transport.StopAsync();
         }
 
-        [Theory]
-        [MemberData(nameof(ConnectionAdapterData))]
-        public async Task TransportCanBindUnbindAndStop(ListenOptions listenOptions)
+        [Fact]
+        public async Task TransportCanBindUnbindAndStop()
         {
             var transportContext = new TestLibuvTransportContext();
-            var transport = new LibuvTransport(transportContext, listenOptions);
+            var transport = new LibuvTransport(transportContext, new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)));
 
             await transport.BindAsync();
             await transport.UnbindAsync();
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             var serviceContext = new TestServiceContext();
             listenOptions.UseHttpServer(listenOptions.ConnectionAdapters, serviceContext, new DummyApplication(TestApp.EchoApp), HttpProtocols.Http1);
 
-            var transportContext = new TestLibuvTransportContext()
+            var transportContext = new TestLibuvTransportContext
             {
                 ConnectionDispatcher = new ConnectionDispatcher(serviceContext, listenOptions.Build())
             };
@@ -85,6 +85,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 }
             }
 
+            Assert.True(await serviceContext.ConnectionManager.CloseAllConnectionsAsync(new CancellationTokenSource(TestConstants.DefaultTimeout).Token));
             await transport.UnbindAsync();
             await transport.StopAsync();
         }
@@ -103,7 +104,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 
             listenOptions.UseHttpServer(listenOptions.ConnectionAdapters, serviceContext, testApplication, HttpProtocols.Http1);
 
-            var transportContext = new TestLibuvTransportContext()
+            var transportContext = new TestLibuvTransportContext
             {
                 ConnectionDispatcher = new ConnectionDispatcher(serviceContext, listenOptions.Build()),
                 Options = new LibuvTransportOptions { ThreadCount = threadCount }

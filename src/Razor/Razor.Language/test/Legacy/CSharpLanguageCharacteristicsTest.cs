@@ -8,13 +8,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     public class CSharpLanguageCharacteristicsTest
     {
         [Fact]
-        public void GetSample_RightShiftAssign_ReturnsCorrectSymbol()
+        public void GetSample_RightShiftAssign_ReturnsCorrectToken()
         {
             // Arrange & Act
-            var symbol = CSharpLanguageCharacteristics.Instance.GetSample(CSharpSymbolType.RightShiftAssign);
+            var token = CSharpLanguageCharacteristics.Instance.GetSample(CSharpTokenType.RightShiftAssign);
 
             // Assert
-            Assert.Equal(">>=", symbol);
+            Assert.Equal(">>=", token);
         }
     }
 }

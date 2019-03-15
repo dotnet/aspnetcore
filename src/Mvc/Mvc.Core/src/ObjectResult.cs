@@ -5,25 +5,31 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc
 {
-    public class ObjectResult : ActionResult
+    public class ObjectResult : ActionResult, IStatusCodeActionResult
     {
+        private MediaTypeCollection _contentTypes;
+
         public ObjectResult(object value)
         {
             Value = value;
             Formatters = new FormatterCollection<IOutputFormatter>();
-            ContentTypes = new MediaTypeCollection();
+            _contentTypes = new MediaTypeCollection();
         }
 
+        [ActionResultObjectValue]
         public object Value { get; set; }
 
         public FormatterCollection<IOutputFormatter> Formatters { get; set; }
 
-        public MediaTypeCollection ContentTypes { get; set; }
+        public MediaTypeCollection ContentTypes
+        {
+            get => _contentTypes;
+            set => _contentTypes = value ?? throw new ArgumentNullException(nameof(value));
+        }
 
         public Type DeclaredType { get; set; }
 
@@ -51,6 +57,11 @@ namespace Microsoft.AspNetCore.Mvc
             if (StatusCode.HasValue)
             {
                 context.HttpContext.Response.StatusCode = StatusCode.Value;
+
+                if (Value is ProblemDetails details && !details.Status.HasValue)
+                {
+                    details.Status = StatusCode.Value;
+                }
             }
         }
     }

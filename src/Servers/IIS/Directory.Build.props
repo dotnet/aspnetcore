@@ -1,0 +1,10 @@
+<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
+
+  <PropertyGroup>
+    <!-- TODO: fix targets which expect project output to be in the project directory. -->
+    <BaseIntermediateOutputPath />
+    <BaseOutputPath />
+  </PropertyGroup>
+
+</Project>

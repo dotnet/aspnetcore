@@ -22,6 +22,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
     {
         private const string ForAttributeName = "for";
         private const string ModelAttributeName = "model";
+        private const string FallbackAttributeName = "fallback-name";
+        private const string OptionalAttributeName = "optional";
         private object _model;
         private bool _hasModel;
         private bool _hasFor;
@@ -32,7 +34,10 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
         public PartialTagHelper(
             ICompositeViewEngine viewEngine,
-            IViewBufferScope viewBufferScope)
+#pragma warning disable PUB0001 // Pubternal type in public API
+            IViewBufferScope viewBufferScope
+#pragma warning restore PUB0001
+            )
         {
             _viewEngine = viewEngine ?? throw new ArgumentNullException(nameof(viewEngine));
             _viewBufferScope = viewBufferScope ?? throw new ArgumentNullException(nameof(viewBufferScope));
@@ -72,6 +77,19 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         /// <summary>
+        /// When optional, executing the tag helper will no-op if the view cannot be located. 
+        /// Otherwise will throw stating the view could not be found.
+        /// </summary>
+        [HtmlAttributeName(OptionalAttributeName)]
+        public bool Optional { get; set; }
+
+        /// <summary>
+        /// View to lookup if the view specified by <see cref="Name"/> cannot be located.
+        /// </summary>
+        [HtmlAttributeName(FallbackAttributeName)]
+        public string FallbackName { get; set; }
+
+        /// <summary>
         /// A <see cref="ViewDataDictionary"/> to pass into the partial view.
         /// </summary>
         public ViewDataDictionary ViewData { get; set; }
@@ -93,14 +111,44 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 throw new ArgumentNullException(nameof(context));
             }
 
+            // Reset the TagName. We don't want `partial` to render.
+            output.TagName = null;
+
+            var result = FindView(Name);
+            var viewSearchedLocations = result.SearchedLocations;
+            var fallBackViewSearchedLocations = Enumerable.Empty<string>();
+
+            if (!result.Success && !string.IsNullOrEmpty(FallbackName))
+            {
+                result = FindView(FallbackName);
+                fallBackViewSearchedLocations = result.SearchedLocations;
+            }
+
+            if (!result.Success)
+            {
+                if (Optional)
+                {
+                    // Could not find the view or fallback view, but the partial is marked as optional.
+                    return;
+                }
+
+                var locations = Environment.NewLine + string.Join(Environment.NewLine, viewSearchedLocations);
+                var errorMessage = Resources.FormatViewEngine_PartialViewNotFound(Name, locations);
+
+                if (!string.IsNullOrEmpty(FallbackName))
+                {
+                    locations = Environment.NewLine + string.Join(Environment.NewLine, result.SearchedLocations);
+                    errorMessage += Environment.NewLine + Resources.FormatViewEngine_FallbackViewNotFound(FallbackName, locations);
+                }
+
+                throw new InvalidOperationException(errorMessage);
+            }
+
             var model = ResolveModel();
-            var viewBuffer = new ViewBuffer(_viewBufferScope, Name, ViewBuffer.PartialViewPageSize);
+            var viewBuffer = new ViewBuffer(_viewBufferScope, result.ViewName, ViewBuffer.PartialViewPageSize);
             using (var writer = new ViewBufferTextWriter(viewBuffer, Encoding.UTF8))
             {
-                await RenderPartialViewAsync(writer, model);
-
-                // Reset the TagName. We don't want `partial` to render.
-                output.TagName = null;
+                await RenderPartialViewAsync(writer, model, result.View);
                 output.Content.SetHtmlContent(viewBuffer);
             }
         }
@@ -136,29 +184,26 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             return ViewContext.ViewData.Model;
         }
 
-        private async Task RenderPartialViewAsync(TextWriter writer, object model)
+        private ViewEngineResult FindView(string partialName)
         {
-            var viewEngineResult = _viewEngine.GetView(ViewContext.ExecutingFilePath, Name, isMainPage: false);
+            var viewEngineResult = _viewEngine.GetView(ViewContext.ExecutingFilePath, partialName, isMainPage: false);
             var getViewLocations = viewEngineResult.SearchedLocations;
             if (!viewEngineResult.Success)
             {
-                viewEngineResult = _viewEngine.FindView(ViewContext, Name, isMainPage: false);
+                viewEngineResult = _viewEngine.FindView(ViewContext, partialName, isMainPage: false);
             }
 
             if (!viewEngineResult.Success)
             {
                 var searchedLocations = Enumerable.Concat(getViewLocations, viewEngineResult.SearchedLocations);
-                var locations = string.Empty;
-                if (searchedLocations.Any())
-                {
-                    locations += Environment.NewLine + string.Join(Environment.NewLine, searchedLocations);
-                }
-
-                throw new InvalidOperationException(
-                    Resources.FormatViewEngine_PartialViewNotFound(Name, locations));
+                return ViewEngineResult.NotFound(partialName, searchedLocations);
             }
 
-            var view = viewEngineResult.View;
+            return viewEngineResult;
+        }
+
+        private async Task RenderPartialViewAsync(TextWriter writer, object model, IView view)
+        {
             // Determine which ViewData we should use to construct a new ViewData
             var baseViewData = ViewData ?? ViewContext.ViewData;
             var newViewData = new ViewDataDictionary<object>(baseViewData, model);

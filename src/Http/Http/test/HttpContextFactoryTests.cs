@@ -22,7 +22,25 @@ namespace Microsoft.AspNetCore.Http
             var context = contextFactory.Create(new FeatureCollection());
 
             // Assert
-            Assert.True(ReferenceEquals(context, accessor.HttpContext));
+            Assert.Same(context, accessor.HttpContext);
+        }
+
+        [Fact]
+        public void DisposeHttpContextSetsHttpContextAccessorToNull()
+        {
+            // Arrange
+            var accessor = new HttpContextAccessor();
+            var contextFactory = new HttpContextFactory(Options.Create(new FormOptions()), accessor);
+
+            // Act
+            var context = contextFactory.Create(new FeatureCollection());
+
+            // Assert
+            Assert.Same(context, accessor.HttpContext);
+
+            contextFactory.Dispose(context);
+
+            Assert.Null(accessor.HttpContext);
         }
 
         [Fact]

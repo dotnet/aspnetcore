@@ -26,11 +26,13 @@ namespace PackageBaselineGenerator
 
         private readonly CommandOption _source;
         private readonly CommandOption _output;
+        private readonly CommandOption _feedv3;
 
         public Program()
         {
             _source = Option("-s|--source <SOURCE>", "The NuGet v2 source of the package to fetch", CommandOptionType.SingleValue);
             _output = Option("-o|--output <OUT>", "The generated file output path", CommandOptionType.SingleValue);
+            _feedv3 = Option("--v3", "Sources is nuget v3", CommandOptionType.NoValue);
 
             Invoke = () => Run().GetAwaiter().GetResult();
         }
@@ -78,11 +80,15 @@ namespace PackageBaselineGenerator
 
                 if (!File.Exists(nupkgPath))
                 {
-                    var url = $"{source}/{id}/{version}";
+                    var url = _feedv3.HasValue()
+                        ? $"{source}/{id.ToLowerInvariant()}/{version}/{id.ToLowerInvariant()}.{version}.nupkg"
+                        : $"{source}/{id}/{version}";
+                    Console.WriteLine($"Downloading {url}");
+
+                    var response = await client.GetStreamAsync(url);
+
                     using (var file = File.Create(nupkgPath))
                     {
-                        Console.WriteLine($"Downloading {url}");
-                        var response = await client.GetStreamAsync(url);
                         await response.CopyToAsync(file);
                     }
                 }
@@ -90,20 +96,15 @@ namespace PackageBaselineGenerator
 
                 using (var reader = new PackageArchiveReader(nupkgPath))
                 {
-                    var first = true;
+                    doc.Root.Add(new XComment($" Package: {id}"));
+
+                    var propertyGroup = new XElement("PropertyGroup",
+                        new XAttribute("Condition", $" '$(PackageId)' == '{id}' "),
+                        new XElement("BaselinePackageVersion", version));
+                    doc.Root.Add(propertyGroup);
+
                     foreach (var group in reader.NuspecReader.GetDependencyGroups())
                     {
-                        if (first)
-                        {
-                            first = false;
-                            doc.Root.Add(new XComment($" Package: {id}"));
-
-                            var propertyGroup = new XElement("PropertyGroup",
-                                new XAttribute("Condition", $" '$(PackageId)' == '{id}' "),
-                                new XElement("BaselinePackageVersion", version));
-                            doc.Root.Add(propertyGroup);
-                        }
-
                         var itemGroup = new XElement("ItemGroup", new XAttribute("Condition", $" '$(PackageId)' == '{id}' AND '$(TargetFramework)' == '{group.TargetFramework.GetShortFolderName()}' "));
                         doc.Root.Add(itemGroup);
 
@@ -125,7 +126,7 @@ namespace PackageBaselineGenerator
             {
                 doc.Save(writer);
             }
-
+            Console.WriteLine($"Generated file in {output}");
             return 0;
         }
     }

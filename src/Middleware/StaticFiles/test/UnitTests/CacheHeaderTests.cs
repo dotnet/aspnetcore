@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.StaticFiles
 
         [Theory]
         [MemberData(nameof(SupportedMethods))]
-        public async Task IfMatchShouldBeServedForAstrisk(HttpMethod method)
+        public async Task IfMatchShouldBeServedForAsterisk(HttpMethod method)
         {
             TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
             var req = new HttpRequestMessage(method, "http://localhost/SubFolder/extra.xml");
@@ -230,7 +230,7 @@ namespace Microsoft.AspNetCore.StaticFiles
 
             DateTimeOffset lastModified = resp1.Content.Headers.LastModified.Value;
             DateTimeOffset pastDate = lastModified.AddHours(-1);
-            DateTimeOffset furtureDate = lastModified.AddHours(1);
+            DateTimeOffset futureDate = lastModified.AddHours(1);
 
             HttpResponseMessage resp2 = await server
                 .CreateRequest("/SubFolder/extra.xml")
@@ -247,7 +247,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             HttpResponseMessage resp4 = await server
                 .CreateRequest("/SubFolder/extra.xml")
                 .AddHeader("If-None-Match", "\"fake\"")
-                .And(req => req.Headers.IfModifiedSince = furtureDate)
+                .And(req => req.Headers.IfModifiedSince = futureDate)
                 .SendAsync(method.Method);
 
             Assert.Equal(HttpStatusCode.OK, resp2.StatusCode);
@@ -322,7 +322,7 @@ namespace Microsoft.AspNetCore.StaticFiles
 
         [Theory]
         [MemberData(nameof(SupportedMethods))]
-        public async Task SuppportsIfModifiedDateFormats(HttpMethod method)
+        public async Task SupportsIfModifiedDateFormats(HttpMethod method)
         {
             TestServer server = StaticFilesTestServer.Create(app => app.UseFileServer());
             HttpResponseMessage res1 = await server

@@ -1,0 +1,78 @@
+<!--
+  Common targets for building RPM.
+-->
+<Project>
+  <UsingTask Condition=" '$(BuildToolsTaskAssembly)' != '' AND Exists('$(BuildToolsTaskAssembly)') " TaskName="Microsoft.AspNetCore.BuildTools.GenerateFileFromTemplate" AssemblyFile="$(BuildToolsTaskAssembly)" />
+  <UsingTask Condition=" '$(BuildToolsTaskAssembly)' != '' AND Exists('$(BuildToolsTaskAssembly)') " TaskName="Microsoft.AspNetCore.BuildTools.Run" AssemblyFile="$(BuildToolsTaskAssembly)" />
+
+  <!-- Output paths -->
+  <PropertyGroup>
+    <RpmPackageInstallRoot Condition="'$(RpmPackageInstallRoot)' != '' AND !HasTrailingSlash('$(RpmPackageInstallRoot)')">$(RpmPackageInstallRoot)/</RpmPackageInstallRoot>
+    <TargetPath>$(InstallersOutputPath)$(OutputFileName)</TargetPath>
+  </PropertyGroup>
+
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
+
+  <Target Name="GetTargetPath" Returns="$(TargetPath)" />
+
+  <Target Name="PrepareForBuild">
+    <MakeDir Directories="$(IntermediateOutputPath);$(IntermediatePackageRoot)" />
+
+    <Error Text="Currently only linux-x64 is supported by Rpm installers." Condition=" '$(SharedFxRid)' != 'linux-x64' " />
+
+    <Error Text="Missing required property: RpmPackageInstallRoot" Condition=" '$(RpmPackageInstallRoot)' == '' " />
+  </Target>
+
+  <Target Name="Build" DependsOnTargets="PrepareForBuild;ResolveProjectReferences;GetTargetPath">
+    <!-- Layout files in package_root/ for the build.sh script. -->
+    <ItemGroup>
+      <SharedFxAssetFolder Include="%(_ResolvedFxProjects.InstallerAssetPaths)" SharedFxName="%(_ResolvedFxProjects.SharedFxName)" />
+      <PackageFiles Include="%(SharedFxAssetFolder.Identity)\**\*">
+        <DestinationDir>$(IntermediatePackageRoot)shared\%(SharedFxAssetFolder.SharedFxName)\$(SharedFxVersion)\</DestinationDir>
+      </PackageFiles>
+    </ItemGroup>
+
+    <Copy SourceFiles="@(PackageFiles)" DestinationFiles="@(PackageFiles->'%(DestinationDir)%(RecursiveDir)%(FileName)%(Extension)')" />
+
+    <!-- Create layout: Create changelog -->
+    <PropertyGroup>
+      <ChangeLogProps>DATE=$([System.DateTime]::UtcNow.ToString(ddd MMM dd yyyy))</ChangeLogProps>
+      <ChangeLogProps>$(ChangeLogProps);MAINTAINER_NAME=$(Authors)</ChangeLogProps>
+      <ChangeLogProps>$(ChangeLogProps);MAINTAINER_EMAIL=$(MaintainerEmail)</ChangeLogProps>
+      <ChangeLogProps>$(ChangeLogProps);PACKAGE_VERSION=$(PackageVersion)</ChangeLogProps>
+      <ChangeLogProps>$(ChangeLogProps);PACKAGE_REVISION=$(PackageRevision)</ChangeLogProps>
+
+      <GeneratedChangeLog>$(IntermediateOutputPath)changelog</GeneratedChangeLog>
+    </PropertyGroup>
+
+    <GenerateFileFromTemplate TemplateFile="$(MSBuildThisFileDirectory)changelog.in" OutputPath="$(GeneratedChangeLog)" Properties="$(ChangeLogProps)" />
+
+    <!-- Run fpm -->
+    <PropertyGroup>
+      <RpmArch Condition=" '$(SharedFxRid)' == 'linux-x64' ">amd64</RpmArch>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <FpmArgs Include="--verbose" />
+      <FpmArgs Include="--input-type;dir" />
+      <FpmArgs Include="--output-type;rpm" />
+      <FpmArgs Include="--name;$(PackageId)" />
+      <FpmArgs Include="--package;$(TargetPath)" />
+      <FpmArgs Include="--version;$(PackageVersion)" />
+      <FpmArgs Include="--iteration;$(PackageRevision)" />
+      <FpmArgs Include="--architecture;$(RpmArch)" />
+      <FpmArgs Include="--depends;%(RpmDependency.Identity) &gt;= %(RpmDependency.Version)" Condition=" '%(RpmDependency.Identity)' != '' "  />
+      <FpmArgs Include="--rpm-changelog;$(GeneratedChangeLog)" />
+      <FpmArgs Include="--rpm-summary;$(SharedFxProductName)" />
+      <FpmArgs Include="--description;$(SharedFxDescription)" />
+      <FpmArgs Include="--maintainer;$(Authors) &lt;$(MaintainerEmail)&gt;" />
+      <FpmArgs Include="--vendor;$(RpmPackageVendor)" />
+      <FpmArgs Include="--license;$(PackageLicenseType)" />
+      <FpmArgs Include="--url;$(PackageProjectUrl)" />
+      <FpmArgs Include="--directories;%(InstallerOwnedDirectory.Identity)" Condition=" '%(InstallerOwnedDirectory.Identity)' != '' " />
+      <FpmArgs Include="$(IntermediatePackageRoot)=$(RpmPackageInstallRoot)" />
+    </ItemGroup>
+
+    <Run FileName="fpm" Arguments="@(FpmArgs)" />
+  </Target>
+</Project>

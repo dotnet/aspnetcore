@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Mvc.TestCommon;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Net.Http.Headers;
 using Xunit;
@@ -35,7 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var options = new FormatterMappings();
             options.SetMediaTypeMappingForFormat(setFormat, MediaTypeHeaderValue.Parse(contentType));
 
-            // Act 
+            // Act
             var returnMediaType = options.GetMediaTypeMappingForFormat(getFormat);
 
             // Assert
@@ -79,7 +78,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         [InlineData("application/*")]
         [InlineData("*/json")]
         [InlineData("*/*")]
-        public void FormatterMappings_Wildcardformat(string format)
+        public void FormatterMappings_WildcardFormat(string format)
         {
             // Arrange
             var options = new FormatterMappings();
@@ -118,7 +117,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             mediaType = MediaTypeHeaderValue.Parse("application/bar");
             options.SetMediaTypeMappingForFormat("bar", mediaType);
 
-            // Act 
+            // Act
             var cleared = options.ClearMediaTypeMappingForFormat(format);
 
             // Assert

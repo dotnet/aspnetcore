@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <PackageTags>aspnetcore</PackageTags>
+    <PackageDescription>Provides a default set of APIs for building an ASP.NET Core application, and also includes API for third-party integrations with ASP.NET Core.
+
+This package requires the ASP.NET Core runtime. This runtime is installed by the .NET Core SDK, or can be acquired separately using installers available at https://aka.ms/dotnet-download.
+    </PackageDescription>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="build\$(TargetFramework)\*.props" PackagePath="%(Identity)" />
+    <Content Include="build\$(TargetFramework)\*.targets" PackagePath="%(Identity)" />
+    <Content Include="lib\$(TargetFramework)\_._" PackagePath="%(Identity)" />
+  </ItemGroup>
+
+  <ItemDefinitionGroup>
+    <Dependency>
+      <VersionRangeType>Minimum</VersionRangeType>
+    </Dependency>
+  </ItemDefinitionGroup>
+
+  <Import Project="..\..\Microsoft.AspNetCore.App\Microsoft.AspNetCore.App.props" />
+
+  <ItemGroup>
+    <Dependency Include="Microsoft.AspNetCore.ApplicationInsights.HostingStartup"  Version="$(MicrosoftAspNetCoreApplicationInsightsHostingStartupPackageVersion)" />
+    <Dependency Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup"     Version="$(MicrosoftAspNetCoreAzureAppServicesHostingStartupPackageVersion)" />
+    <Dependency Include="Microsoft.AspNetCore.AzureAppServicesIntegration"         Version="$(MicrosoftAspNetCoreAzureAppServicesIntegrationPackageVersion)" />
+    <Dependency Include="Microsoft.AspNetCore.DataProtection.AzureKeyVault"        Version="$(MicrosoftAspNetCoreDataProtectionAzureKeyVaultPackageVersion)" />
+    <Dependency Include="Microsoft.AspNetCore.DataProtection.AzureStorage"         Version="$(MicrosoftAspNetCoreDataProtectionAzureStoragePackageVersion)" />
+    <Dependency Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv"      Version="$(MicrosoftAspNetCoreServerKestrelTransportLibuvPackageVersion)" />
+    <Dependency Include="Microsoft.AspNetCore.SignalR.Redis"                       Version="$(MicrosoftAspNetCoreSignalRRedisPackageVersion)" />
+    <Dependency Include="Microsoft.Data.Sqlite.Core"                               Version="$(MicrosoftDataSqliteCorePackageVersion)" />
+    <Dependency Include="Microsoft.Data.Sqlite"                                    Version="$(MicrosoftDataSqlitePackageVersion)" />
+    <Dependency Include="Microsoft.EntityFrameworkCore.Sqlite.Core"                Version="$(MicrosoftEntityFrameworkCoreSqliteCorePackageVersion)" />
+    <Dependency Include="Microsoft.EntityFrameworkCore.Sqlite"                     Version="$(MicrosoftEntityFrameworkCoreSqlitePackageVersion)" />
+    <Dependency Include="Microsoft.Extensions.Caching.Redis"                       Version="$(MicrosoftExtensionsCachingRedisPackageVersion)" />
+    <Dependency Include="Microsoft.Extensions.Configuration.AzureKeyVault"         Version="$(MicrosoftExtensionsConfigurationAzureKeyVaultPackageVersion)" />
+    <Dependency Include="Microsoft.Extensions.Logging.AzureAppServices"            Version="$(MicrosoftExtensionsLoggingAzureAppServicesPackageVersion)" />
+    <Dependency Include="Microsoft.VisualStudio.Web.BrowserLink"                   Version="$(MicrosoftVisualStudioWebBrowserLinkPackageVersion)" />
+  </ItemGroup>
+
+</Project>

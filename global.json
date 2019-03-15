@@ -1,0 +1,8 @@
+{
+    "sdk": {
+        "version": "2.2.102"
+    },
+    "msbuild-sdks": {
+        "Internal.AspNetCore.Sdk": "2.2.1-build-20190117.2"
+    }
+}
