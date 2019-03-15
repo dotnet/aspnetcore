@@ -61,7 +61,7 @@ namespace TriageBuildFailures.GitHub
 
         public Task<IEnumerable<ICITestOccurrence>> GetTestsAsync(ICIBuild build, BuildStatus? buildStatus = null)
         {
-            return _vstsClient.GetTestsAsync(build);
+            return _vstsClient.GetTestsAsync(build, buildStatus);
         }
 
         public async Task SetTagAsync(ICIBuild build, string tag)
