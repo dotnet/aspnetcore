@@ -15,11 +15,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private readonly long _contentLength;
         private long _inputLength;
         private bool _readCompleted;
-        private bool _finalAdvanceAfterReadingEntireContentLength;
         private bool _completed;
         private bool _isReading;
         private int _userCanceled;
         private long _totalExaminedInPreviousReadResult;
+        private bool _finalAdvanceCalled;
 
         public Http1ContentLengthMessageBody(bool keepAlive, long contentLength, Http1Connection context)
             : base(context)
@@ -153,6 +153,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return true;
         }
 
+        public override Task ConsumeAsync()
+        {
+            TryStart();
+
+            if (!_readResult.Buffer.IsEmpty && _inputLength == 0)
+            {
+                _context.Input.AdvanceTo(_readResult.Buffer.End);
+            }
+
+            return OnConsumeAsync();
+        }
         private void ThrowIfCompleted()
         {
             if (_completed)
@@ -166,7 +177,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (_readResult.Buffer.Length >= _inputLength + _totalExaminedInPreviousReadResult)
             {
                 _readCompleted = true;
-                _readResult = new ReadResult(_readResult.Buffer.Slice(0, _inputLength + _totalExaminedInPreviousReadResult), _readResult.IsCanceled, _readCompleted);
+                _readResult = new ReadResult(
+                    _readResult.Buffer.Slice(0, _inputLength + _totalExaminedInPreviousReadResult),
+                    _readResult.IsCanceled && Interlocked.Exchange(ref _userCanceled, 0) == 1,
+                    _readCompleted);
             }
 
             if (_readResult.IsCompleted)
@@ -191,12 +205,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             if (_readCompleted)
             {
-                _readResult = new ReadResult(_readResult.Buffer.Slice(consumed, _readResult.Buffer.End), isCanceled: false, _readCompleted);
+                _readResult = new ReadResult(_readResult.Buffer.Slice(consumed, _readResult.Buffer.End), Interlocked.Exchange(ref _userCanceled, 0) == 1, _readCompleted);
 
-                if (!_finalAdvanceAfterReadingEntireContentLength)
+                if (_readResult.Buffer.Length == 0 && !_finalAdvanceCalled)
                 {
-                    _context.Input.AdvanceTo(consumed, examined);
-                    _finalAdvanceAfterReadingEntireContentLength = true;
+                    _context.Input.AdvanceTo(consumed);
+                    _finalAdvanceCalled = true;
                 }
 
                 return;
@@ -209,7 +223,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             var newlyExamined = examinedLength - _totalExaminedInPreviousReadResult;
 
-            // Newly examined can never be negative, pipereader.AdvanceTo will throw.
             OnDataRead(newlyExamined);
             _totalExaminedInPreviousReadResult += newlyExamined;
             _inputLength -= newlyExamined;
