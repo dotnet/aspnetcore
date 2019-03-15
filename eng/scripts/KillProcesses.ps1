@@ -10,6 +10,12 @@ function _kill($processName) {
     }
 }
 
+function _killSeleniumJavaInstances(){
+    Get-Process java |
+        Where-Object { $_.Path -like "$env:JAVA_HOME*" } |
+        Stop-Process
+}
+
 _kill dotnet.exe
 _kill testhost.exe
 _kill iisexpress.exe
@@ -22,6 +28,8 @@ _kill vctip.exe
 _kill chrome.exe
 _kill h2spec.exe
 _kill WerFault.exe
+_killSeleniumJavaInstances
+
 if (Get-Command iisreset -ErrorAction ignore) {
     iisreset /restart
 }
