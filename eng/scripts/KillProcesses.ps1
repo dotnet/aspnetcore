@@ -22,6 +22,7 @@ _kill vctip.exe
 _kill chrome.exe
 _kill h2spec.exe
 _kill WerFault.exe
+_kill java.exe
 if (Get-Command iisreset -ErrorAction ignore) {
     iisreset /restart
 }
