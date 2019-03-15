@@ -11,6 +11,19 @@ namespace Microsoft.AspNetCore.Hosting
 }
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 {
+    public sealed partial class SocketTransportFactory : Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.ITransportFactory
+    {
+        public SocketTransportFactory(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions> options, Microsoft.Extensions.Hosting.IHostApplicationLifetime applicationLifetime, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
+        public Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.ITransport Create(Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.IEndPointInformation endPointInformation, Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.IConnectionDispatcher dispatcher) { throw null; }
+    }
+    public partial class SocketTransportOptions
+    {
+        public SocketTransportOptions() { }
+        public int IOQueueCount { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+    }
+}
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
+{
     public static partial class BufferExtensions
     {
         public static System.ArraySegment<byte> GetArray(this System.Memory<byte> memory) { throw null; }
@@ -36,31 +49,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         public SocketAwaitableEventArgs(System.IO.Pipelines.PipeScheduler ioScheduler) { }
         public bool IsCompleted { get { throw null; } }
         public void Complete() { }
-        public Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketAwaitableEventArgs GetAwaiter() { throw null; }
+        public Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal.SocketAwaitableEventArgs GetAwaiter() { throw null; }
         public int GetResult() { throw null; }
         public void OnCompleted(System.Action continuation) { }
         protected override void OnCompleted(System.Net.Sockets.SocketAsyncEventArgs _) { }
         public void UnsafeOnCompleted(System.Action continuation) { }
     }
-    public sealed partial class SocketReceiver : Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketSenderReceiverBase
+    public sealed partial class SocketReceiver : Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal.SocketSenderReceiverBase
     {
         public SocketReceiver(System.Net.Sockets.Socket socket, System.IO.Pipelines.PipeScheduler scheduler) : base (default(System.Net.Sockets.Socket), default(System.IO.Pipelines.PipeScheduler)) { }
-        public Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketAwaitableEventArgs ReceiveAsync(System.Memory<byte> buffer) { throw null; }
-        public Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketAwaitableEventArgs WaitForDataAsync() { throw null; }
+        public Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal.SocketAwaitableEventArgs ReceiveAsync(System.Memory<byte> buffer) { throw null; }
+        public Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal.SocketAwaitableEventArgs WaitForDataAsync() { throw null; }
     }
-    public sealed partial class SocketSender : Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketSenderReceiverBase
+    public sealed partial class SocketSender : Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal.SocketSenderReceiverBase
     {
         public SocketSender(System.Net.Sockets.Socket socket, System.IO.Pipelines.PipeScheduler scheduler) : base (default(System.Net.Sockets.Socket), default(System.IO.Pipelines.PipeScheduler)) { }
-        public Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketAwaitableEventArgs SendAsync(System.Buffers.ReadOnlySequence<byte> buffers) { throw null; }
+        public Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal.SocketAwaitableEventArgs SendAsync(System.Buffers.ReadOnlySequence<byte> buffers) { throw null; }
     }
     public abstract partial class SocketSenderReceiverBase : System.IDisposable
     {
-        protected readonly Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketAwaitableEventArgs _awaitableEventArgs;
+        protected readonly Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal.SocketAwaitableEventArgs _awaitableEventArgs;
         protected readonly System.Net.Sockets.Socket _socket;
         protected SocketSenderReceiverBase(System.Net.Sockets.Socket socket, System.IO.Pipelines.PipeScheduler scheduler) { }
         public void Dispose() { }
     }
-    public partial class SocketsTrace : Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.ISocketsTrace, Microsoft.Extensions.Logging.ILogger
+    public partial class SocketsTrace : Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal.ISocketsTrace, Microsoft.Extensions.Logging.ILogger
     {
         public SocketsTrace(Microsoft.Extensions.Logging.ILogger logger) { }
         public System.IDisposable BeginScope<TState>(TState state) { throw null; }
@@ -75,15 +88,5 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         public void ConnectionWriteFin(string connectionId, string reason) { }
         public bool IsEnabled(Microsoft.Extensions.Logging.LogLevel logLevel) { throw null; }
         public void Log<TState>(Microsoft.Extensions.Logging.LogLevel logLevel, Microsoft.Extensions.Logging.EventId eventId, TState state, System.Exception exception, System.Func<TState, System.Exception, string> formatter) { }
-    }
-    public sealed partial class SocketTransportFactory : Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.ITransportFactory
-    {
-        public SocketTransportFactory(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions> options, Microsoft.Extensions.Hosting.IHostApplicationLifetime applicationLifetime, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
-        public Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.ITransport Create(Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.IEndPointInformation endPointInformation, Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.IConnectionDispatcher dispatcher) { throw null; }
-    }
-    public partial class SocketTransportOptions
-    {
-        public SocketTransportOptions() { }
-        public int IOQueueCount { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
 }

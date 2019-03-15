@@ -6,7 +6,7 @@ using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Https
+namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 {
     public static class CertificateLoader
     {

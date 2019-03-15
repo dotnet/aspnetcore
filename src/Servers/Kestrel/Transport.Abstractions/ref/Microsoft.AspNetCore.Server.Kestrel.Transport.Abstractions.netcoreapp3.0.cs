@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
 {
     public enum FileHandleType
     {
@@ -15,16 +15,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions
     }
     public partial interface IConnectionDispatcher
     {
-        System.Threading.Tasks.Task OnConnection(Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.TransportConnection connection);
+        System.Threading.Tasks.Task OnConnection(Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.TransportConnection connection);
     }
     public partial interface IEndPointInformation
     {
         ulong FileHandle { get; }
-        Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.FileHandleType HandleType { get; set; }
+        Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.FileHandleType HandleType { get; set; }
         System.Net.IPEndPoint IPEndPoint { get; set; }
         bool NoDelay { get; }
         string SocketPath { get; }
-        Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.ListenType Type { get; }
+        Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.ListenType Type { get; }
     }
     public partial interface ITransport
     {
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions
     }
     public partial interface ITransportFactory
     {
-        Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.ITransport Create(Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.IEndPointInformation endPointInformation, Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.IConnectionDispatcher dispatcher);
+        Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.ITransport Create(Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.IEndPointInformation endPointInformation, Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.IConnectionDispatcher dispatcher);
     }
     public partial interface ITransportSchedulerFeature
     {
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions
         Inline = 2,
         ThreadPool = 1,
     }
-    public abstract partial class TransportConnection : Microsoft.AspNetCore.Connections.ConnectionContext, Microsoft.AspNetCore.Connections.Features.IConnectionHeartbeatFeature, Microsoft.AspNetCore.Connections.Features.IConnectionIdFeature, Microsoft.AspNetCore.Connections.Features.IConnectionItemsFeature, Microsoft.AspNetCore.Connections.Features.IConnectionLifetimeFeature, Microsoft.AspNetCore.Connections.Features.IConnectionLifetimeNotificationFeature, Microsoft.AspNetCore.Connections.Features.IConnectionTransportFeature, Microsoft.AspNetCore.Connections.Features.IMemoryPoolFeature, Microsoft.AspNetCore.Http.Features.IFeatureCollection, Microsoft.AspNetCore.Http.Features.IHttpConnectionFeature, Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.IApplicationTransportFeature, Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.ITransportSchedulerFeature, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.Type, object>>, System.Collections.IEnumerable
+    public abstract partial class TransportConnection : Microsoft.AspNetCore.Connections.ConnectionContext, Microsoft.AspNetCore.Connections.Features.IConnectionHeartbeatFeature, Microsoft.AspNetCore.Connections.Features.IConnectionIdFeature, Microsoft.AspNetCore.Connections.Features.IConnectionItemsFeature, Microsoft.AspNetCore.Connections.Features.IConnectionLifetimeFeature, Microsoft.AspNetCore.Connections.Features.IConnectionLifetimeNotificationFeature, Microsoft.AspNetCore.Connections.Features.IConnectionTransportFeature, Microsoft.AspNetCore.Connections.Features.IMemoryPoolFeature, Microsoft.AspNetCore.Http.Features.IFeatureCollection, Microsoft.AspNetCore.Http.Features.IHttpConnectionFeature, Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.IApplicationTransportFeature, Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.ITransportSchedulerFeature, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.Type, object>>, System.Collections.IEnumerable
     {
         protected readonly System.Threading.CancellationTokenSource _connectionClosingCts;
         public TransportConnection() { }
@@ -87,9 +87,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions
         int Microsoft.AspNetCore.Http.Features.IHttpConnectionFeature.LocalPort { get { throw null; } set { } }
         System.Net.IPAddress Microsoft.AspNetCore.Http.Features.IHttpConnectionFeature.RemoteIpAddress { get { throw null; } set { } }
         int Microsoft.AspNetCore.Http.Features.IHttpConnectionFeature.RemotePort { get { throw null; } set { } }
-        System.IO.Pipelines.IDuplexPipe Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.IApplicationTransportFeature.Application { get { throw null; } set { } }
-        System.IO.Pipelines.PipeScheduler Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.ITransportSchedulerFeature.InputWriterScheduler { get { throw null; } }
-        System.IO.Pipelines.PipeScheduler Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.ITransportSchedulerFeature.OutputReaderScheduler { get { throw null; } }
+        System.IO.Pipelines.IDuplexPipe Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.IApplicationTransportFeature.Application { get { throw null; } set { } }
+        System.IO.Pipelines.PipeScheduler Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.ITransportSchedulerFeature.InputWriterScheduler { get { throw null; } }
+        System.IO.Pipelines.PipeScheduler Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.ITransportSchedulerFeature.OutputReaderScheduler { get { throw null; } }
         public System.IO.Pipelines.PipeReader Output { get { throw null; } }
         public virtual System.IO.Pipelines.PipeScheduler OutputReaderScheduler { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public System.Net.IPAddress RemoteAddress { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }

@@ -9,7 +9,7 @@ using System.IO.Pipelines;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
     public sealed class SocketSender : SocketSenderReceiverBase
     {

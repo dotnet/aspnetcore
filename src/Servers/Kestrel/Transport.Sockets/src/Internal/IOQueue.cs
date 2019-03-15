@@ -6,7 +6,7 @@ using System.Collections.Concurrent;
 using System.IO.Pipelines;
 using System.Threading;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
     public class IOQueue : PipeScheduler, IThreadPoolWorkItem
     {
