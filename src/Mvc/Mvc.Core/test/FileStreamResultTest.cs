@@ -437,6 +437,7 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Null(httpResponse.ContentLength);
             Assert.Empty(httpResponse.Headers[HeaderNames.ContentRange]);
             Assert.NotEmpty(httpResponse.Headers[HeaderNames.LastModified]);
+            Assert.Empty(httpResponse.Headers[HeaderNames.ContentType]);
             Assert.Empty(body);
             Assert.False(readStream.CanSeek);
         }

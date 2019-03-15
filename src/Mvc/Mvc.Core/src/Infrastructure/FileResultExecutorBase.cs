@@ -75,6 +75,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             if (preconditionState == PreconditionState.NotModified)
             {
                 response.StatusCode = StatusCodes.Status304NotModified;
+                response.ContentType = null;
                 return (range: null, rangeLength: 0, serveBody: false);
             }
             else if (preconditionState == PreconditionState.PreconditionFailed)
