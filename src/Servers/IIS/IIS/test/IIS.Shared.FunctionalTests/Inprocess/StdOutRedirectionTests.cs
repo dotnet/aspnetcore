@@ -19,7 +19,6 @@ namespace IIS.FunctionalTests.Inprocess
     {
         public StdOutRedirectionTests(PublishedSitesFixture fixture) : base(fixture)
         {
-            _fixture = fixture;
         }
 
         [ConditionalFact]

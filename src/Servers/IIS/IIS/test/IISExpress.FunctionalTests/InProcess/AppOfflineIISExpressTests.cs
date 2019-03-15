@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests;
@@ -49,22 +48,6 @@ namespace IISExpress.FunctionalTests.Inprocess
                         // if AssertAppOffline succeeded ANCM have picked up app_offline before starting the app
                         // try again
                         RemoveAppOffline(deploymentResult.ContentRoot);
-
-                        if (deploymentResult.DeploymentParameters.ServerType == ServerType.IIS)
-                        {
-                            // Worker process may not have stopped if app offline is dropped first before starting
-                            // We can send a reqeust and check if the server is up, and if so add and and remove app offline again
-                            // to shut the site down.
-                            var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
-                            if (response.IsSuccessStatusCode)
-                            {
-                                AddAppOffline(deploymentResult.ContentRoot);
-                                RemoveAppOffline(deploymentResult.ContentRoot);
-                            }
-
-                            deploymentResult.AssertWorkerProcessStop();
-                            return;
-                        }
                     }
                     catch
                     {

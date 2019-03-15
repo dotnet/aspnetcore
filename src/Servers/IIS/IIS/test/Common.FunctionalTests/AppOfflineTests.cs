@@ -23,7 +23,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
     {
         public AppOfflineTests(PublishedSitesFixture fixture) : base(fixture)
         {
-            _fixture = fixture;
         }
 
         [ConditionalTheory]

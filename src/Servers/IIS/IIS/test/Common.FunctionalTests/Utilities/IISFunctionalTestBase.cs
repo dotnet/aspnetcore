@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities
     public class IISFunctionalTestBase : FunctionalTestsBase
     {
         protected static readonly TimeSpan RetryDelay = TimeSpan.FromMilliseconds(100);
-        protected PublishedSitesFixture _fixture;
+        protected PublishedSitesFixture _fixture { get; set; }
 
         public IISFunctionalTestBase(PublishedSitesFixture fixture, ITestOutputHelper output = null) : base(output)
         {

@@ -19,7 +19,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
     {
         public BasicAuthTests(PublishedSitesFixture fixture) : base(fixture)
         {
-            _fixture = fixture;
         }
 
         public static TestMatrix TestVariants

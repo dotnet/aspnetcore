@@ -15,7 +15,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
     {
         public CommonStartupTests(PublishedSitesFixture fixture) : base(fixture)
         {
-            _fixture = fixture;
         }
 
         public static TestMatrix TestVariants
