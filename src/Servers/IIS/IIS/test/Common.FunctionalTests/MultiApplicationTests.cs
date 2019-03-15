@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task RunsTwoOutOfProcessApps()
         {
-            var parameters = _fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
+            var parameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
             parameters.ServerConfigActionList.Add(DuplicateApplication);
             var result = await DeployAsync(parameters);
             var id1 = await result.HttpClient.GetStringAsync("/app1/ProcessId");
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task FailsAndLogsWhenRunningTwoInProcessApps()
         {
-            var parameters = _fixture.GetBaseDeploymentParameters(HostingModel.InProcess);
+            var parameters = Fixture.GetBaseDeploymentParameters(HostingModel.InProcess);
             parameters.ServerConfigActionList.Add(DuplicateApplication);
 
             var result = await DeployAsync(parameters);
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [InlineData(HostingModel.InProcess)]
         public async Task FailsAndLogsEventLogForMixedHostingModel(HostingModel firstApp)
         {
-            var parameters = _fixture.GetBaseDeploymentParameters(firstApp);
+            var parameters = Fixture.GetBaseDeploymentParameters(firstApp);
             parameters.ServerConfigActionList.Add(DuplicateApplication);
             var result = await DeployAsync(parameters);
 

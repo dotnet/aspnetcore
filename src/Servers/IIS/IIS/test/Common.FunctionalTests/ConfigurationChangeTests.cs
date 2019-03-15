@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task ConfigurationChangeStopsInProcess()
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(HostingModel.InProcess);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.InProcess);
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task ConfigurationChangeForcesChildProcessRestart()
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task OutOfProcessToInProcessHostingModelSwitchWorks()
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [InlineData(HostingModel.OutOfProcess)]
         public async Task ConfigurationTouchedStress(HostingModel hostingModel)
         {
-            var deploymentResult = await DeployAsync(_fixture.GetBaseDeploymentParameters(hostingModel));
+            var deploymentResult = await DeployAsync(Fixture.GetBaseDeploymentParameters(hostingModel));
 
             await deploymentResult.AssertStarts();
             var load = Helpers.StressLoad(deploymentResult.HttpClient, "/HelloWorld", response => {

@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [MemberData(nameof(TestVariants))]
         public async Task StartupStress(TestVariant variant)
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 

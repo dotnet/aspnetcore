@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task ServerShutsDownWhenMainExits()
         {
-            var parameters = _fixture.GetBaseDeploymentParameters();
+            var parameters = Fixture.GetBaseDeploymentParameters();
             var deploymentResult = await DeployAsync(parameters);
             try
             {
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task ServerShutsDownWhenMainExitsStress()
         {
-            var parameters = _fixture.GetBaseDeploymentParameters();
+            var parameters = Fixture.GetBaseDeploymentParameters();
             var deploymentResult = await StartAsync(parameters);
 
             var load = Helpers.StressLoad(deploymentResult.HttpClient, "/HelloWorld", response => {
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task GracefulShutdown_DoesNotCrashProcess()
         {
-            var parameters = _fixture.GetBaseDeploymentParameters();
+            var parameters = Fixture.GetBaseDeploymentParameters();
             var result = await DeployAsync(parameters);
 
             var response = await result.HttpClient.GetAsync("/HelloWorld");
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task ForcefulShutdown_DoesCrashProcess()
         {
-            var parameters = _fixture.GetBaseDeploymentParameters();
+            var parameters = Fixture.GetBaseDeploymentParameters();
             var result = await DeployAsync(parameters);
 
             var response = await result.HttpClient.GetAsync("/HelloWorld");

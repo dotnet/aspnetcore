@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [MemberData(nameof(TestVariants))]
         public async Task HelloWorld(TestVariant variant)
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
             deploymentParameters.ServerConfigActionList.Add(
                 (element, _) => {
                     element

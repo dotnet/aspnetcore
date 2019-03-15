@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var username = Environment.GetEnvironmentVariable("ASPNETCORE_MODULE_TEST_USER");
             var password = Environment.GetEnvironmentVariable("ASPNETCORE_MODULE_TEST_PASSWORD");
 
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
             deploymentParameters.SetAnonymousAuth(enabled: false);
             deploymentParameters.SetWindowsAuth(enabled: false);
             deploymentParameters.SetBasicAuth(enabled: true);

@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         private async Task UpgradeFeatureDetectionDeployer(bool disableWebSocket, string expected, HostingModel hostingModel)
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(hostingModel);
 
             if (disableWebSocket)
             {

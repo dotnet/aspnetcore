@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         [InlineData(HostingModel.OutOfProcess, 502, "502.5")]
         public async Task AppOfflineDroppedWhileSiteFailedToStartInShim_AppOfflineServed(HostingModel hostingModel, int statusCode, string content)
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel: hostingModel);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(hostingModel: hostingModel);
             deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("processPath", "nonexistent"));
 
             var deploymentResult = await DeployAsync(deploymentParameters);
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             // The goal of this test is to have multiple requests currently in progress
             // and for app offline to be dropped. We expect that all requests are eventually drained
             // and graceful shutdown occurs. 
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
             deploymentParameters.TransformArguments((a, _) => $"{a} IncreaseShutdownLimit");
 
             var deploymentResult = await DeployAsync(deploymentParameters);

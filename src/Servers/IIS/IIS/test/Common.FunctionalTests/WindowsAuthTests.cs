@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [MemberData(nameof(TestVariants))]
         public async Task WindowsAuthTest(TestVariant variant)
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
             deploymentParameters.SetAnonymousAuth(enabled: false);
             deploymentParameters.SetWindowsAuth();
 

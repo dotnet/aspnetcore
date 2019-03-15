@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         private async Task ClientCertTest(TestVariant variant, bool sendClientCert)
         {
             var port = TestPortHelper.GetNextSSLPort();
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
             deploymentParameters.ApplicationBaseUriHint = $"https://localhost:{port}/";
             deploymentParameters.AddHttpsToServerConfig();
 

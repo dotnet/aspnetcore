@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [MemberData(nameof(TestVariants))]
         public async Task NtlmAuthentication(TestVariant variant)
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
             deploymentParameters.ApplicationBaseUriHint = $"https://localhost:0/";
 
             deploymentParameters.SetWindowsAuth(enabled: true);

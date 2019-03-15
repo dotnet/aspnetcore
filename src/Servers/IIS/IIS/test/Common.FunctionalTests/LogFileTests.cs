@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         private async Task CheckStdoutToFile(TestVariant variant, string path)
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
             deploymentParameters.EnableLogging(_logFolderPath);
 
             var deploymentResult = await DeployAsync(deploymentParameters);
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [MemberData(nameof(TestVariants))]
         public async Task InvalidFilePathForLogs_ServerStillRuns(TestVariant variant)
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
 
             deploymentParameters.WebConfigActionList.Add(
                 WebConfigHelpers.AddOrModifyAspNetCoreSection("stdoutLogEnabled", "true"));
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [RequiresNewShim]
         public async Task StartupMessagesAreLoggedIntoDebugLogFile(TestVariant variant)
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
             deploymentParameters.HandlerSettings["debugLevel"] = "file";
             deploymentParameters.HandlerSettings["debugFile"] = "subdirectory\\debug.txt";
 
@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [MemberData(nameof(TestVariants))]
         public async Task StartupMessagesAreLoggedIntoDefaultDebugLogFile(TestVariant variant)
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
             deploymentParameters.HandlerSettings["debugLevel"] = "file";
 
             var deploymentResult = await DeployAsync(deploymentParameters);
@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [MemberData(nameof(TestVariants))]
         public async Task StartupMessagesAreLoggedIntoDefaultDebugLogFileWhenEnabledWithEnvVar(TestVariant variant)
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
             deploymentParameters.EnvironmentVariables["ASPNETCORE_MODULE_DEBUG"] = "file";
             // Add empty debugFile handler setting to prevent IIS deployer from overriding debug settings
             deploymentParameters.HandlerSettings["debugFile"] = "";
@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             try
             {
-                var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant);
+                var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
                 deploymentParameters.EnvironmentVariables["ASPNETCORE_MODULE_DEBUG_FILE"] = firstTempFile;
                 deploymentParameters.AddDebugLogToWebConfig(secondTempFile);
 
@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         public async Task DebugLogsAreWrittenToEventLog(TestVariant variant)
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
             deploymentParameters.HandlerSettings["debugLevel"] = "file,eventlog";
             var deploymentResult = await StartAsync(deploymentParameters);
             StopServer();
@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             var path = "CheckConsoleFunctions";
 
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite, variant.HostingModel);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite, variant.HostingModel);
             deploymentParameters.TransformArguments((a, _) => $"{a} {path}"); // For standalone this will need to remove space
 
             var logFolderPath = _logFolderPath + "\\彡⾔";
@@ -206,7 +206,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [MemberData(nameof(TestVariants))]
         public async Task OnlyOneFileCreatedWithProcessStartTime(TestVariant variant)
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
 
             deploymentParameters.EnableLogging(_logFolderPath);
 
