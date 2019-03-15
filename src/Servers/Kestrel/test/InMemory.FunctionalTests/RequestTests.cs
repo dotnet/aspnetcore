@@ -850,7 +850,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-
         [Fact]
         public async Task ConnectionClosesWhenFinReceivedBeforeRequestCompletes()
         {
