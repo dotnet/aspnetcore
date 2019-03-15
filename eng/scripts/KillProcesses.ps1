@@ -10,6 +10,18 @@ function _kill($processName) {
     }
 }
 
+function _killJavaInstances() {
+    $_javaProcesses = Get-Process java -ErrorAction SilentlyContinue |
+        Where-Object { $_.Path -like "$env:JAVA_HOME*" };
+    foreach($_javaProcess in $_javaProcesses) {
+        try {
+            Stop-Process $proc
+        } catch {
+            Write-Host "Failed to kill java process: $proc"
+        }
+    }
+}
+
 _kill dotnet.exe
 _kill testhost.exe
 _kill iisexpress.exe
@@ -22,6 +34,8 @@ _kill vctip.exe
 _kill chrome.exe
 _kill h2spec.exe
 _kill WerFault.exe
+_killJavaInstances
+
 if (Get-Command iisreset -ErrorAction ignore) {
     iisreset /restart
 }
