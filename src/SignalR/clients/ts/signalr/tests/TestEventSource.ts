@@ -25,12 +25,18 @@ export class TestEventSource {
         return this._onopen!;
     }
 
+    public static eventSourceSet: PromiseSource;
     public static eventSource: TestEventSource;
     public closed: boolean = false;
 
     constructor(url: string, eventSourceInitDict?: EventSourceInit) {
         this.url = url;
+
         TestEventSource.eventSource = this;
+
+        if (TestEventSource.eventSourceSet) {
+            TestEventSource.eventSourceSet.resolve();
+        }
     }
 
     public close(): void {

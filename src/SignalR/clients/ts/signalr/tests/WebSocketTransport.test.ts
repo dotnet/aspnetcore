@@ -53,7 +53,7 @@ describe("WebSocketTransport", () => {
                 connectComplete = true;
             })();
 
-            await TestWebSocket.webSocket.openSet;
+            await TestWebSocket.webSocket.closeSet;
 
             expect(connectComplete).toBe(false);
 

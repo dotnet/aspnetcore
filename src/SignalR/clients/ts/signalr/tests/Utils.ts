@@ -1,7 +1,20 @@
+import { INegotiateResponse } from "signalr/src/HttpConnection";
+
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 20000;
+
+export const defaultConnectionId = "abc123";
+
+export const defaultNegotiateResponse: INegotiateResponse = {
+    availableTransports: [
+        { transport: "WebSockets", transferFormats: ["Text", "Binary"] },
+        { transport: "ServerSentEvents", transferFormats: ["Text"] },
+        { transport: "LongPolling", transferFormats: ["Text", "Binary"] },
+    ],
+    connectionId: defaultConnectionId,
+};
 
 export function registerUnhandledRejectionHandler(): void {
     process.on("unhandledRejection", (error) => {

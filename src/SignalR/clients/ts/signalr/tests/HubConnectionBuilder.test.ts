@@ -1,8 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+import { DefaultReconnectPolicy } from "../src/DefaultReconnectPolicy";
 import { HttpRequest, HttpResponse } from "../src/HttpClient";
-import { HubConnection } from "../src/HubConnection";
+import { HubConnection, HubConnectionState } from "../src/HubConnection";
 import { HubConnectionBuilder } from "../src/HubConnectionBuilder";
 import { IHttpConnectionOptions } from "../src/IHttpConnectionOptions";
 import { HubMessage, IHubProtocol } from "../src/IHubProtocol";
@@ -63,18 +64,10 @@ describe("HubConnectionBuilder", () => {
                 })
                 .build();
 
-            // Start the connection
-            const closed = makeClosedPromise(connection);
+            await expect(connection.start()).rejects.toThrow("The underlying connection closed before the hub handshake could complete.");
+            expect(connection.state).toBe(HubConnectionState.Disconnected);
 
-            const startPromise = connection.start();
-
-            const pollRequest = await pollSent.promise;
-            expect(pollRequest.url).toMatch(/http:\/\/example.com\?id=abc123.*/);
-
-            await closed;
-            try {
-                await startPromise;
-            } catch { }
+            expect((await pollSent.promise).url).toMatch(/http:\/\/example.com\?id=abc123.*/);
         });
     });
 
@@ -93,11 +86,11 @@ describe("HubConnectionBuilder", () => {
 
             const pollSent = new PromiseSource<HttpRequest>();
             const pollCompleted = new PromiseSource<HttpResponse>();
-            const negotiateReceived = new PromiseSource<HttpRequest>();
+            let negotiateRequest!: HttpRequest;
             const testClient = createTestClient(pollSent, pollCompleted.promise)
                 .on("POST", "http://example.com?id=abc123", (req) => {
                     // Respond from the poll with the handshake response
-                    negotiateReceived.resolve(req);
+                    negotiateRequest = req;
                     pollCompleted.resolve(new HttpResponse(204, "No Content", "{}"));
                     return new HttpResponse(202);
                 });
@@ -111,18 +104,10 @@ describe("HubConnectionBuilder", () => {
                 .withHubProtocol(protocol)
                 .build();
 
-            // Start the connection
-            const closed = makeClosedPromise(connection);
+            await expect(connection.start()).rejects.toThrow("The underlying connection closed before the hub handshake could complete.");
+            expect(connection.state).toBe(HubConnectionState.Disconnected);
 
-            const startPromise = connection.start();
-
-            const negotiateRequest = await negotiateReceived.promise;
             expect(negotiateRequest.content).toBe(`{"protocol":"${protocol.name}","version":1}\x1E`);
-
-            await closed;
-            try {
-                await startPromise;
-            } catch { }
         });
     });
 
@@ -219,6 +204,54 @@ describe("HubConnectionBuilder", () => {
         expect(httpConnectionLogger.messages).toContain("Starting connection with transfer format 'Text'.");
         expect(hubConnectionLogger.messages).not.toContain("Starting connection with transfer format 'Text'.");
     });
+
+    it("reconnectPolicy undefined by default", () => {
+        const builder = new HubConnectionBuilder().withUrl("http://example.com");
+        expect(builder.reconnectPolicy).toBeUndefined();
+    });
+
+    it("withAutomaticReconnect throws if reconnectPolicy is already set", () => {
+        const builder = new HubConnectionBuilder().withAutomaticReconnect();
+        expect(() => builder.withAutomaticReconnect()).toThrow("A reconnectPolicy has already been set.");
+    });
+
+    it("withAutomaticReconnect uses default retryDelays when called with no arguments", () => {
+        // From DefaultReconnectPolicy.ts
+        const DEFAULT_RETRY_DELAYS_IN_MILLISECONDS = [0, 2000, 10000, 30000, null];
+        const builder = new HubConnectionBuilder()
+            .withAutomaticReconnect();
+
+        let retryCount = 0;
+        for (const delay of DEFAULT_RETRY_DELAYS_IN_MILLISECONDS) {
+            expect(builder.reconnectPolicy!.nextRetryDelayInMilliseconds(retryCount++, 0)).toBe(delay);
+        }
+    });
+
+    it("withAutomaticReconnect uses custom retryDelays when provided", () => {
+        const customRetryDelays = [ 3, 1, 4, 1, 5, 9 ];
+        const builder = new HubConnectionBuilder()
+            .withAutomaticReconnect(customRetryDelays);
+
+        let retryCount = 0;
+        for (const delay of customRetryDelays) {
+            expect(builder.reconnectPolicy!.nextRetryDelayInMilliseconds(retryCount++, 0)).toBe(delay);
+        }
+
+        expect(builder.reconnectPolicy!.nextRetryDelayInMilliseconds(retryCount, 0)).toBe(null);
+    });
+
+    it("withAutomaticReconnect uses a custom IReconnectPolicy when provided", () => {
+        const customRetryDelays = [ 127, 0, 0, 1 ];
+        const builder = new HubConnectionBuilder()
+            .withAutomaticReconnect(new DefaultReconnectPolicy(customRetryDelays));
+
+        let retryCount = 0;
+        for (const delay of customRetryDelays) {
+            expect(builder.reconnectPolicy!.nextRetryDelayInMilliseconds(retryCount++, 0)).toBe(delay);
+        }
+
+        expect(builder.reconnectPolicy!.nextRetryDelayInMilliseconds(retryCount, 0)).toBe(null);
+    });
 });
 
 class CaptureLogger implements ILogger {
@@ -261,18 +294,6 @@ function createTestClient(pollSent: PromiseSource<HttpRequest>, pollCompleted: P
                 return pollCompleted;
             }
         });
-}
-
-function makeClosedPromise(connection: HubConnection): Promise<void> {
-    const closed = new PromiseSource();
-    connection.onclose((error) => {
-        if (error) {
-            closed.reject(error);
-        } else {
-            closed.resolve();
-        }
-    });
-    return closed.promise;
 }
 
 function eachMissingValue(callback: (val: undefined | null, name: string) => void) {

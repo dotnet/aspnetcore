@@ -22,7 +22,6 @@ function createHubConnection(connection: IConnection, logger?: ILogger | null, p
 registerUnhandledRejectionHandler();
 
 describe("HubConnection", () => {
-
     describe("start", () => {
         it("sends handshake message", async () => {
             await VerifyLogger.run(async (logger) => {
@@ -462,7 +461,7 @@ describe("HubConnection", () => {
                 const invokePromise = hubConnection.invoke("testMethod");
                 await hubConnection.stop();
 
-                await expect(invokePromise).rejects.toThrow("Invocation canceled due to connection being closed.");
+                await expect(invokePromise).rejects.toThrow("Invocation canceled due to the underlying connection being closed.");
             });
         });
 
@@ -691,9 +690,9 @@ describe("HubConnection", () => {
                     }
                     await expect(startPromise)
                         .rejects
-                        .toBe("Server returned handshake error: Error!");
+                        .toThrow("Server returned handshake error: Error!");
 
-                    expect(closeError!.message).toEqual("Server returned handshake error: Error!");
+                    expect(closeError).toEqual(undefined);
                 } finally {
                     await hubConnection.stop();
                 }
@@ -962,7 +961,7 @@ describe("HubConnection", () => {
                         .subscribe(observer);
                     await hubConnection.stop();
 
-                    await expect(observer.completed).rejects.toThrow("Error: Invocation canceled due to connection being closed.");
+                    await expect(observer.completed).rejects.toThrow("Error: Invocation canceled due to the underlying connection being closed.");
                 } finally {
                     await hubConnection.stop();
                 }
@@ -1100,6 +1099,7 @@ describe("HubConnection", () => {
                     hubConnection.onclose((e) => invocations++);
                     hubConnection.onclose((e) => invocations++);
                     // Typically this would be called by the transport
+                    (hubConnection as any).connectionState = HubConnectionState.Connected;
                     connection.onclose!();
                     expect(invocations).toBe(2);
                 } finally {
@@ -1117,6 +1117,7 @@ describe("HubConnection", () => {
                     hubConnection.onclose((e) => error = e);
 
                     // Typically this would be called by the transport
+                    (hubConnection as any).connectionState = HubConnectionState.Connected;
                     connection.onclose!(new Error("Test error."));
                     expect(error!.message).toBe("Test error.");
                 } finally {
@@ -1133,6 +1134,7 @@ describe("HubConnection", () => {
                     hubConnection.onclose(null!);
                     hubConnection.onclose(undefined!);
                     // Typically this would be called by the transport
+                    (hubConnection as any).connectionState = HubConnectionState.Connected;
                     connection.onclose!();
                     // expect no errors
                 } finally {
@@ -1147,6 +1149,7 @@ describe("HubConnection", () => {
                 const hubConnection = createHubConnection(connection, logger);
                 try {
                     let state: HubConnectionState | undefined;
+                    (hubConnection as any).connectionState = HubConnectionState.Connected;
                     hubConnection.onclose((e) => state = hubConnection.state);
                     // Typically this would be called by the transport
                     connection.onclose!();
@@ -1236,10 +1239,12 @@ async function pingAndWait(connection: TestConnection): Promise<void> {
 }
 
 class TestConnection implements IConnection {
-    public readonly features: any = {};
 
+    public readonly features: any = {};
     public onreceive: ((data: string | ArrayBuffer) => void) | null;
     public onclose: ((error?: Error) => void) | null;
+    public onreconnecting: ((e?: Error) => void) | null;
+    public onreconnected: ((connectionId?: string) => void) | null;
     public sentData: any[];
     public lastInvocationId: string | null;
 
@@ -1248,6 +1253,8 @@ class TestConnection implements IConnection {
     constructor(autoHandshake: boolean = true) {
         this.onreceive = null;
         this.onclose = null;
+        this.onreconnecting = null;
+        this.onreconnected = null;
         this.sentData = [];
         this.lastInvocationId = null;
         this.autoHandshake = autoHandshake;
@@ -1280,6 +1287,14 @@ class TestConnection implements IConnection {
             this.onclose(error);
         }
         return Promise.resolve();
+    }
+
+    public connectionLost(error: Error): Promise<void> {
+        return this.stop(error);
+    }
+
+    public continueReconnecting(error: Error): Promise<void> {
+        throw new Error("Method not implemented.");
     }
 
     public receiveHandshakeResponse(error?: string): void {
