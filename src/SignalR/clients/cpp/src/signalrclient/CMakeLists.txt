@@ -23,4 +23,4 @@ set (SOURCES
 
 add_library (signalrclient SHARED ${SOURCES})
 
-target_link_libraries(signalrclient ${CPPREST_SO})
+target_link_libraries(signalrclient ${CPPREST_SO} ${OPENSSL_LIBRARIES} Boost::boost Boost::system Boost::chrono Boost::thread)

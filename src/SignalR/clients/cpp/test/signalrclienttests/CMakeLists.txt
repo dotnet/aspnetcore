@@ -25,9 +25,10 @@ set (SOURCES
 include_directories(
     ../../src/signalrclient)
 
-find_package(Boost COMPONENTS system REQUIRED)
-find_package(OpenSSL REQUIRED)
+# find_package(Boost COMPONENTS system REQUIRED)
+# find_package(OpenSSL REQUIRED)
  
 add_executable (signalrclienttests ${SOURCES})
-target_link_libraries(signalrclienttests gtest gtest_main signalrclient ${CPPREST_SO} ${Boost_SYSTEM_LIBRARY} ${OPENSSL_LIBRARIES})
+# target_link_libraries(signalrclienttests gtest gtest_main signalrclient ${CPPREST_SO} ${Boost_SYSTEM_LIBRARY} ${OPENSSL_LIBRARIES})
+target_link_libraries(signalrclienttests gtest signalrclient ${CPPREST_SO})
 add_test(signalrclienttests signalrclienttests)
