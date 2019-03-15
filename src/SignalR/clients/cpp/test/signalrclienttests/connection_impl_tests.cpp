@@ -209,7 +209,7 @@ TEST(connection_impl_start, start_logs_exceptions)
     ASSERT_FALSE(log_entries.empty());
 
     auto entry = remove_date_from_log_entry(log_entries[0]);
-    ASSERT_EQ("[error       ] connection could not be started due to: web exception - 404 Bad request\n", entry);
+    ASSERT_EQ("[error       ] connection could not be started due to: negotiate failed with status code 404\n", entry);
 }
 
 
@@ -231,7 +231,7 @@ TEST(connection_impl_start, start_propagates_exceptions_from_negotiate)
     }
     catch (const std::exception &e)
     {
-        ASSERT_EQ(_XPLATSTR("web exception - 404 Bad request"), utility::conversions::to_string_t(e.what()));
+        ASSERT_STREQ("negotiate failed with status code 404", e.what());
     }
 }
 
@@ -325,9 +325,9 @@ TEST(connection_impl_start, start_fails_if_negotiate_request_fails)
         connection->start().get();
         ASSERT_TRUE(false); // exception not thrown
     }
-    catch (const web_exception &e)
+    catch (const std::exception &e)
     {
-        ASSERT_STREQ("web exception - 400 Bad Request", e.what());
+        ASSERT_STREQ("negotiate failed with status code 400", e.what());
     }
 }
 
@@ -544,12 +544,12 @@ TEST(connection_impl_start, negotiate_follows_redirect)
     ASSERT_EQ("ws://redirected/?id=f7707523-307d-4cba-9abf-3eef701241e8", connectUrl);
 }
 
-TEST(connection_impl_start, negotiate_redirect_uses_accessToken)
+TEST(connection_impl_start, DISABLED_negotiate_redirect_uses_accessToken)
 {
     std::shared_ptr<log_writer> writer(std::make_shared<memory_log_writer>());
     std::string accessToken;
 
-    auto http_client = std::make_unique<test_http_client>([&accessToken](const std::string& url, http_request)
+    auto http_client = std::make_unique<test_http_client>([&accessToken](const std::string& url, http_request request)
     {
         std::string response_body = "";
         if (url.find("/negotiate") != std::string::npos)

@@ -80,9 +80,25 @@ namespace signalr
                             std::string("[websocket transport] error receiving response from websocket: ")
                             .append(e.what()));
 
-                        websocket_client->stop([](std::exception_ptr exception)
+                        std::promise<void> prom;
+                        websocket_client->stop([&prom](std::exception_ptr exception)
                             {
+                                if (exception != nullptr)
+                                {
+                                    prom.set_exception(exception);
+                                }
+                                else
+                                {
+                                    prom.set_value();
+                                }
                             });
+                        try
+                        {
+                            prom.get_future().get();
+                        }
+                        // We prefer the outer exception bubbling up to the user
+                        // REVIEW: log here?
+                        catch (...) { }
 
                         auto transport = weak_transport.lock();
                         if (transport)
@@ -98,9 +114,25 @@ namespace signalr
                             trace_level::errors,
                             std::string("[websocket transport] unknown error occurred when receiving response from websocket"));
 
-                        websocket_client->stop([](std::exception_ptr)
+                        std::promise<void> prom;
+                        websocket_client->stop([&prom](std::exception_ptr exception)
                             {
+                                if (exception != nullptr)
+                                {
+                                    prom.set_exception(exception);
+                                }
+                                else
+                                {
+                                    prom.set_value();
+                                }
                             });
+                        try
+                        {
+                            prom.get_future().get();
+                        }
+                        // We prefer the outer exception bubbling up to the user
+                        // REVIEW: log here?
+                        catch (...) {}
 
                         auto transport = weak_transport.lock();
                         if (transport)

@@ -29,6 +29,12 @@ namespace signalr
                     return;
                 }
 
+                if (http_response.status_code != 200)
+                {
+                    tce.set_exception(signalr_exception("negotiate failed with status code " + std::to_string(http_response.status_code)));
+                    return;
+                }
+
                 try
                 {
                     auto negotiation_response_json = web::json::value::parse(utility::conversions::to_string_t(http_response.content));

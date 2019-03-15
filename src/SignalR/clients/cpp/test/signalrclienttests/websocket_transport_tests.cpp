@@ -7,8 +7,84 @@
 #include "test_websocket_client.h"
 #include "websocket_transport.h"
 #include "memory_log_writer.h"
+#include <future>
 
 using namespace signalr;
+
+template <typename T>
+class manual_reset_event
+{
+public:
+    void set(T value)
+    {
+        m_promise.set_value(value);
+    }
+
+    void set_exception(std::exception exception)
+    {
+        m_promise.set_exception(std::make_exception_ptr(exception));
+    }
+
+    void set_exception(std::exception_ptr exception)
+    {
+        m_promise.set_exception(exception);
+    }
+
+    T get()
+    {
+        // TODO: timeout
+        try
+        {
+            auto ret = m_promise.get_future().get();
+            m_promise = std::promise<T>();
+            return ret;
+        }
+        catch (...)
+        {
+            m_promise = std::promise<T>();
+            std::rethrow_exception(std::current_exception());
+        }
+    }
+private:
+    std::promise<T> m_promise;
+};
+
+template <>
+class manual_reset_event<void>
+{
+public:
+    void set()
+    {
+        m_promise.set_value();
+    }
+
+    void set_exception(std::exception exception)
+    {
+        m_promise.set_exception(std::make_exception_ptr(exception));
+    }
+
+    void set_exception(std::exception_ptr exception)
+    {
+        m_promise.set_exception(exception);
+    }
+
+    void get()
+    {
+        try
+        {
+            m_promise.get_future().get();
+        }
+        catch (...)
+        {
+            m_promise = std::promise<void>();
+            std::rethrow_exception(std::current_exception());
+        }
+
+        m_promise = std::promise<void>();
+    }
+private:
+    std::promise<void> m_promise;
+};
 
 TEST(websocket_transport_connect, connect_connects_and_starts_receive_loop)
 {
@@ -32,17 +108,13 @@ TEST(websocket_transport_connect, connect_connects_and_starts_receive_loop)
 
     auto ws_transport = websocket_transport::create([&](){ return client; }, logger(writer, trace_level::info));
 
-    std::mutex mtx;
-    std::unique_lock<std::mutex> lock(mtx);
-    std::condition_variable cv;
-    bool start_finished;
-    ws_transport->start("ws://fakeuri.org/connect?param=42", transfer_format::text, [&cv, &start_finished](std::exception_ptr exception)
+    auto mre = manual_reset_event<void>();
+    ws_transport->start("ws://fakeuri.org/connect?param=42", transfer_format::text, [&mre](std::exception_ptr)
     {
-        start_finished = true;
-        cv.notify_one();
+        mre.set();
     });
 
-    ASSERT_FALSE(cv.wait_until(lock, std::chrono::steady_clock::now() + std::chrono::seconds(5), [start_finished]() { return start_finished; }) == false);
+    mre.get();
 
     ASSERT_TRUE(connect_called);
     ASSERT_FALSE(receive_called->wait(5000));
@@ -66,18 +138,13 @@ TEST(websocket_transport_connect, connect_propagates_exceptions)
 
     try
     {
-        std::mutex mtx;
-        std::unique_lock<std::mutex> lock(mtx);
-        std::condition_variable cv;
-        std::exception_ptr start_exception;
-        ws_transport->start("ws://fakeuri.org", transfer_format::text, [&cv, &start_exception](std::exception_ptr exception)
+        auto mre = manual_reset_event<void>();
+        ws_transport->start("ws://fakeuri.org", transfer_format::text, [&mre](std::exception_ptr exception)
         {
-            start_exception = exception;
-            cv.notify_one();
+            mre.set_exception(exception);
         });
-
-        ASSERT_TRUE(cv.wait_until(lock, std::chrono::steady_clock::now() + std::chrono::seconds(5), [start_exception]() { return start_exception != nullptr; }));
-        std::rethrow_exception(start_exception);
+        mre.get();
+        ASSERT_TRUE(false);
     }
     catch (const std::exception &e)
     {
@@ -96,17 +163,16 @@ TEST(websocket_transport_connect, connect_logs_exceptions)
     std::shared_ptr<log_writer> writer(std::make_shared<memory_log_writer>());
     auto ws_transport = websocket_transport::create([&](){ return client; }, logger(writer, trace_level::errors));
 
-    std::mutex mtx;
-    std::unique_lock<std::mutex> lock(mtx);
-    std::condition_variable cv;
-    std::exception_ptr start_exception;
-    ws_transport->start("ws://fakeuri.org", transfer_format::text, [&cv, &start_exception](std::exception_ptr exception)
+    auto mre = manual_reset_event<void>();
+    ws_transport->start("ws://fakeuri.org", transfer_format::text, [&mre](std::exception_ptr exception)
     {
-        start_exception = exception;
-        cv.notify_one();
+        mre.set_exception(exception);
     });
-
-    ASSERT_TRUE(cv.wait_until(lock, std::chrono::steady_clock::now() + std::chrono::seconds(5), [start_exception]() { return start_exception != nullptr; }));
+    try
+    {
+        mre.get();
+    }
+    catch (...) {}
 
     auto log_entries = std::dynamic_pointer_cast<memory_log_writer>(writer)->get_log_entries();
 
@@ -124,29 +190,21 @@ TEST(websocket_transport_connect, cannot_call_connect_on_already_connected_trans
     auto client = std::make_shared<test_websocket_client>();
     auto ws_transport = websocket_transport::create([&](){ return client; }, logger(std::make_shared<trace_log_writer>(), trace_level::none));
 
-    std::mutex mtx;
-    std::unique_lock<std::mutex> lock(mtx);
-    std::condition_variable cv;
-    bool start_completed;
-    ws_transport->start("ws://fakeuri.org", transfer_format::text, [&cv, &start_completed](std::exception_ptr)
+    auto mre = manual_reset_event<void>();
+    ws_transport->start("ws://fakeuri.org", transfer_format::text, [&mre](std::exception_ptr)
     {
-        start_completed = true;
-        cv.notify_one();
+        mre.set();
     });
-
-    ASSERT_TRUE(cv.wait_until(lock, std::chrono::steady_clock::now() + std::chrono::seconds(5), [start_completed]() { return start_completed; }));
+    mre.get();
 
     try
     {
-        std::exception_ptr start_exception;
-        ws_transport->start("ws://fakeuri.org", transfer_format::text, [&cv, &start_exception](std::exception_ptr exception)
+        ws_transport->start("ws://fakeuri.org", transfer_format::text, [&mre](std::exception_ptr exception)
         {
-            start_exception = exception;
-            cv.notify_one();
+            mre.set_exception(exception);
         });
-
-        ASSERT_TRUE(cv.wait_until(lock, std::chrono::steady_clock::now() + std::chrono::seconds(5), [start_exception]() { return start_exception != nullptr; }));
-        std::rethrow_exception(start_exception);
+        mre.get();
+        ASSERT_TRUE(false);
     }
     catch (const std::exception &e)
     {
@@ -159,36 +217,24 @@ TEST(websocket_transport_connect, can_connect_after_disconnecting)
     auto client = std::make_shared<test_websocket_client>();
     auto ws_transport = websocket_transport::create([&](){ return client; }, logger(std::make_shared<trace_log_writer>(), trace_level::none));
 
-    std::mutex mtx;
-    std::unique_lock<std::mutex> lock(mtx);
-    std::condition_variable cv;
-    bool callback_completed;
-    ws_transport->start("ws://fakeuri.org", transfer_format::text, [&cv, &callback_completed](std::exception_ptr)
+    auto mre = manual_reset_event<void>();
+    ws_transport->start("ws://fakeuri.org", transfer_format::text, [&mre](std::exception_ptr)
     {
-        callback_completed = true;
-        cv.notify_one();
+        mre.set();
     });
+    mre.get();
 
-    ASSERT_TRUE(cv.wait_until(lock, std::chrono::steady_clock::now() + std::chrono::seconds(5), [callback_completed]() { return callback_completed; }));
-    callback_completed = false;
-
-    ws_transport->stop([&cv, &callback_completed](std::exception_ptr)
+    ws_transport->stop([&mre](std::exception_ptr)
     {
-        callback_completed = true;
-        cv.notify_one();
+        mre.set();
     });
+    mre.get();
 
-    ASSERT_TRUE(cv.wait_until(lock, std::chrono::steady_clock::now() + std::chrono::seconds(5), [callback_completed]() { return callback_completed; }));
-    callback_completed = false;
-
-    ws_transport->start("ws://fakeuri.org", transfer_format::text, [&cv, &callback_completed](std::exception_ptr)
+    ws_transport->start("ws://fakeuri.org", transfer_format::text, [&mre](std::exception_ptr)
     {
-        callback_completed = true;
-        cv.notify_one();
+        mre.set();
     });
-
-    ASSERT_TRUE(cv.wait_until(lock, std::chrono::steady_clock::now() + std::chrono::seconds(5), [callback_completed]() { return callback_completed; }));
-    // shouldn't throw or crash
+    mre.get();
 }
 
 TEST(websocket_transport_send, send_creates_and_sends_websocket_messages)
@@ -205,25 +251,18 @@ TEST(websocket_transport_send, send_creates_and_sends_websocket_messages)
 
     auto ws_transport = websocket_transport::create([&](){ return client; }, logger(std::make_shared<trace_log_writer>(), trace_level::none));
 
-    std::mutex mtx;
-    std::unique_lock<std::mutex> lock(mtx);
-    std::condition_variable cv;
-    bool callback_completed;
-    ws_transport->start("ws://url", transfer_format::text, [&cv, &callback_completed](std::exception_ptr)
+    auto mre = manual_reset_event<void>();
+    ws_transport->start("ws://url", transfer_format::text, [&mre](std::exception_ptr)
     {
-        callback_completed = true;
-        cv.notify_one();
+        mre.set();
     });
+    mre.get();
 
-    ASSERT_TRUE(cv.wait_until(lock, std::chrono::steady_clock::now() + std::chrono::seconds(5), [callback_completed]() { return callback_completed; }));
-    callback_completed = false;
-
-    ws_transport->send("ABC", [&cv, &callback_completed](std::exception_ptr)
+    ws_transport->send("ABC", [&mre](std::exception_ptr)
     {
-        callback_completed = true;
-        cv.notify_one();
+        mre.set();
     });
-    ASSERT_TRUE(cv.wait_until(lock, std::chrono::steady_clock::now() + std::chrono::seconds(5), [callback_completed]() { return callback_completed; }));
+    mre.get();
 
     ASSERT_TRUE(send_called);
 }
@@ -242,59 +281,59 @@ TEST(websocket_transport_disconnect, disconnect_closes_websocket)
 
     auto ws_transport = websocket_transport::create([&](){ return client; }, logger(std::make_shared<trace_log_writer>(), trace_level::none));
 
-    std::mutex mtx;
-    std::unique_lock<std::mutex> lock(mtx);
-    std::condition_variable cv;
-    bool callback_completed;
-    ws_transport->start("ws://url", transfer_format::text, [&cv, &callback_completed](std::exception_ptr)
+    auto mre = manual_reset_event<void>();
+    ws_transport->start("ws://url", transfer_format::text, [&mre](std::exception_ptr)
     {
-        callback_completed = true;
-        cv.notify_one();
+        mre.set();
     });
-    ASSERT_TRUE(cv.wait_until(lock, std::chrono::steady_clock::now() + std::chrono::seconds(5), [callback_completed]() { return callback_completed; }));
-    callback_completed = false;
+    mre.get();
 
-    ws_transport->stop([&cv, &callback_completed](std::exception_ptr)
+    ws_transport->stop([&mre](std::exception_ptr)
     {
-        callback_completed = true;
-        cv.notify_one();
+        mre.set();
     });
-    ASSERT_TRUE(cv.wait_until(lock, std::chrono::steady_clock::now() + std::chrono::seconds(5), [callback_completed]() { return callback_completed; }));
+    mre.get();
 
     ASSERT_TRUE(close_called);
 }
 
-TEST(websocket_transport_disconnect, disconnect_does_not_throw)
+TEST(websocket_transport_stop, propogates_exception_from_close)
 {
     auto client = std::make_shared<test_websocket_client>();
 
     bool close_called = false;
     client->set_close_function([&close_called](std::function<void(std::exception_ptr)> callback)
     {
-        callback(std::make_exception_ptr(std::exception()));
         close_called = true;
+        callback(std::make_exception_ptr(std::exception()));
     });
 
     auto ws_transport = websocket_transport::create([&](){ return client; }, logger(std::make_shared<trace_log_writer>(), trace_level::none));
 
-    std::mutex mtx;
-    std::unique_lock<std::mutex> lock(mtx);
-    std::condition_variable cv;
-    bool callback_completed;
-    ws_transport->start("ws://url", transfer_format::text, [&cv, &callback_completed](std::exception_ptr)
+    auto mre = manual_reset_event<void>();
+    ws_transport->start("ws://url", transfer_format::text, [&mre](std::exception_ptr)
     {
-        callback_completed = true;
-        cv.notify_one();
+        mre.set();
     });
-    ASSERT_TRUE(cv.wait_until(lock, std::chrono::steady_clock::now() + std::chrono::seconds(5), [callback_completed]() { return callback_completed; }));
-    callback_completed = false;
+    mre.get();
 
-    ws_transport->stop([&cv, &callback_completed](std::exception_ptr)
+    ws_transport->stop([&mre](std::exception_ptr exception)
     {
-        callback_completed = true;
-        cv.notify_one();
+        if (exception)
+        {
+            mre.set_exception(exception);
+        }
+        else
+        {
+            mre.set();
+        }
     });
-    ASSERT_TRUE(cv.wait_until(lock, std::chrono::steady_clock::now() + std::chrono::seconds(5), [callback_completed]() { return callback_completed; }));
+    try
+    {
+        mre.get();
+        ASSERT_TRUE(false);
+    }
+    catch (...) { }
 
     ASSERT_TRUE(close_called);
 }
@@ -311,24 +350,18 @@ TEST(websocket_transport_disconnect, disconnect_logs_exceptions)
 
     auto ws_transport = websocket_transport::create([&](){ return client; }, logger(writer, trace_level::errors));
 
-    std::mutex mtx;
-    std::unique_lock<std::mutex> lock(mtx);
-    std::condition_variable cv;
-    bool callback_completed;
-    ws_transport->start("ws://url", transfer_format::text, [&cv, &callback_completed](std::exception_ptr)
+    auto mre = manual_reset_event<void>();
+    ws_transport->start("ws://url", transfer_format::text, [&mre](std::exception_ptr)
     {
-        callback_completed = true;
-        cv.notify_one();
+        mre.set();
     });
-    ASSERT_TRUE(cv.wait_until(lock, std::chrono::steady_clock::now() + std::chrono::seconds(5), [callback_completed]() { return callback_completed; }));
-    callback_completed = false;
+    mre.get();
 
-    ws_transport->stop([&cv, &callback_completed](std::exception_ptr)
+    ws_transport->stop([&mre](std::exception_ptr)
     {
-        callback_completed = true;
-        cv.notify_one();
+        mre.set();
     });
-    ASSERT_TRUE(cv.wait_until(lock, std::chrono::steady_clock::now() + std::chrono::seconds(5), [callback_completed]() { return callback_completed; }));
+    mre.get();
 
     auto log_entries = std::dynamic_pointer_cast<memory_log_writer>(writer)->get_log_entries();
 
@@ -377,47 +410,37 @@ TEST(websocket_transport_disconnect, DISABLED_receive_not_called_after_disconnec
 
     auto ws_transport = websocket_transport::create([&](){ return client; }, logger(std::make_shared<trace_log_writer>(), trace_level::none));
 
-    std::mutex mtx;
-    std::unique_lock<std::mutex> lock(mtx);
-    std::condition_variable cv;
-    bool callback_completed;
-    ws_transport->start("ws://fakeuri.org", transfer_format::text, [&cv, &callback_completed](std::exception_ptr)
+    auto mre = manual_reset_event<void>();
+    ws_transport->start("ws://fakeuri.org", transfer_format::text, [&mre](std::exception_ptr)
     {
-        callback_completed = true;
-        cv.notify_one();
+        mre.set();
     });
-    ASSERT_TRUE(cv.wait_until(lock, std::chrono::steady_clock::now() + std::chrono::seconds(5), [callback_completed]() { return callback_completed; }));
-    callback_completed = false;
+    mre.get();
 
     pplx::create_task(receive_task_started_tce).get();
 
-    ws_transport->stop([&cv, &callback_completed](std::exception_ptr)
+    ws_transport->stop([&mre](std::exception_ptr)
     {
-        callback_completed = true;
-        cv.notify_one();
+        mre.set();
     });
-    ASSERT_TRUE(cv.wait_until(lock, std::chrono::steady_clock::now() + std::chrono::seconds(5), [callback_completed]() { return callback_completed; }));
-    callback_completed = false;
+    mre.get();
 
     receive_task_tce = pplx::task_completion_event<std::string>();
     receive_task_started_tce = pplx::task_completion_event<void>();
 
-    ws_transport->start("ws://fakeuri.org", transfer_format::text, [&cv, &callback_completed](std::exception_ptr)
+    ws_transport->start("ws://fakeuri.org", transfer_format::text, [&mre](std::exception_ptr)
     {
-        callback_completed = true;
-        cv.notify_one();
+        mre.set();
     });
-    ASSERT_TRUE(cv.wait_until(lock, std::chrono::steady_clock::now() + std::chrono::seconds(5), [callback_completed]() { return callback_completed; }));
-    callback_completed = false;
+    mre.get();
 
     pplx::create_task(receive_task_started_tce).get();
 
-    ws_transport->stop([&cv, &callback_completed](std::exception_ptr)
+    ws_transport->stop([&mre](std::exception_ptr)
     {
-        callback_completed = true;
-        cv.notify_one();
+        mre.set();
     });
-    ASSERT_TRUE(cv.wait_until(lock, std::chrono::steady_clock::now() + std::chrono::seconds(5), [callback_completed]() { return callback_completed; }));
+    mre.get();
 
     ASSERT_EQ(2, num_called);
 }
@@ -436,16 +459,12 @@ TEST(websocket_transport_disconnect, disconnect_is_no_op_if_transport_not_starte
 
     auto ws_transport = websocket_transport::create([&](){ return client; }, logger(std::make_shared<trace_log_writer>(), trace_level::none));
 
-    std::mutex mtx;
-    std::unique_lock<std::mutex> lock(mtx);
-    std::condition_variable cv;
-    bool callback_completed;
-    ws_transport->stop([&cv, &callback_completed](std::exception_ptr)
+    auto mre = manual_reset_event<void>();
+    ws_transport->stop([&mre](std::exception_ptr)
     {
-        callback_completed = true;
-        cv.notify_one();
+        mre.set();
     });
-    ASSERT_TRUE(cv.wait_until(lock, std::chrono::steady_clock::now() + std::chrono::seconds(5), [callback_completed]() { return callback_completed; }));
+    mre.get();
 
     ASSERT_FALSE(close_called);
 }
@@ -466,25 +485,18 @@ TEST(websocket_transport_disconnect, exceptions_from_outstanding_receive_task_ob
 
     auto ws_transport = websocket_transport::create([&](){ return client; }, logger(std::make_shared<trace_log_writer>(), trace_level::none));
 
-    std::mutex mtx;
-    std::unique_lock<std::mutex> lock(mtx);
-    std::condition_variable cv;
-    bool callback_completed;
-    ws_transport->start("ws://fakeuri.org", transfer_format::text, [&cv, &callback_completed](std::exception_ptr)
+    auto mre = manual_reset_event<void>();
+    ws_transport->start("ws://fakeuri.org", transfer_format::text, [&mre](std::exception_ptr)
     {
-        callback_completed = true;
-        cv.notify_one();
+        mre.set();
     });
-    ASSERT_TRUE(cv.wait_until(lock, std::chrono::steady_clock::now() + std::chrono::seconds(5), [callback_completed]() { return callback_completed; }));
-    callback_completed = false;
+    mre.get();
 
-    ws_transport->stop([&cv, &callback_completed](std::exception_ptr)
+    ws_transport->stop([&mre](std::exception_ptr)
     {
-        callback_completed = true;
-        cv.notify_one();
+        mre.set();
     });
-    ASSERT_TRUE(cv.wait_until(lock, std::chrono::steady_clock::now() + std::chrono::seconds(5), [callback_completed]() { return callback_completed; }));
-    callback_completed = false;
+    mre.get();
 
     // at this point the cancellation token that closes the receive loop is set to cancelled so
     // we can unblock the the receive task which throws an exception that should be observed otwherwise the test will crash
@@ -506,8 +518,8 @@ TEST(websocket_transport_receive_loop, receive_loop_logs_if_receive_task_cancele
 {
     receive_loop_logs_exception_runner(
         pplx::task_canceled("canceled"),
-        "[info        ] [websocket transport] receive task canceled.\n",
-        trace_level::info);
+        "[error       ] [websocket transport] error receiving response from websocket: canceled\n",
+        trace_level::errors);
 }
 
 TEST(websocket_transport_receive_loop, receive_loop_logs_std_exception)
@@ -526,24 +538,20 @@ void receive_loop_logs_exception_runner(const T& e, const std::string& expected_
 
     client->set_receive_function([&receive_event, &e](std::function<void(std::string, std::exception_ptr)> callback)
     {
-        receive_event.set();
         callback("", std::make_exception_ptr(e));
+        receive_event.set();
     });
 
     std::shared_ptr<log_writer> writer(std::make_shared<memory_log_writer>());
 
     auto ws_transport = websocket_transport::create([&](){ return client; }, logger(writer, trace_level));
 
-    std::mutex mtx;
-    std::unique_lock<std::mutex> lock(mtx);
-    std::condition_variable cv;
-    bool callback_completed;
-    ws_transport->start("ws://url", transfer_format::text, [&cv, &callback_completed](std::exception_ptr)
+    auto mre = manual_reset_event<void>();
+    ws_transport->start("ws://url", transfer_format::text, [&mre](std::exception_ptr)
     {
-        callback_completed = true;
-        cv.notify_one();
+        mre.set();
     });
-    ASSERT_TRUE(cv.wait_until(lock, std::chrono::steady_clock::now() + std::chrono::seconds(5), [callback_completed]() { return callback_completed; }));
+    mre.get();
 
     receive_event.wait();
 
@@ -554,7 +562,7 @@ void receive_loop_logs_exception_runner(const T& e, const std::string& expected_
 
     ASSERT_NE(std::find_if(log_entries.begin(), log_entries.end(),
         [&expected_message](std::string entry) { return remove_date_from_log_entry(entry) == expected_message; }),
-        log_entries.end());
+        log_entries.end()) << dump_vector(log_entries);
 }
 
 TEST(websocket_transport_receive_loop, process_response_callback_called_when_message_received)
@@ -568,24 +576,22 @@ TEST(websocket_transport_receive_loop, process_response_callback_called_when_mes
     auto process_response_event = std::make_shared<event>();
     auto msg = std::make_shared<std::string>();
 
-    auto process_response = [msg, process_response_event](const std::string& message)
+    auto process_response = [msg, process_response_event](const std::string& message, std::exception_ptr exception)
     {
+        ASSERT_FALSE(exception);
         *msg = message;
         process_response_event->set();
     };
 
     auto ws_transport = websocket_transport::create([&](){ return client; }, logger(std::make_shared<trace_log_writer>(), trace_level::none));
+    ws_transport->on_receive(process_response);
 
-    std::mutex mtx;
-    std::unique_lock<std::mutex> lock(mtx);
-    std::condition_variable cv;
-    bool callback_completed;
-    ws_transport->start("ws://fakeuri.org", transfer_format::text, [&cv, &callback_completed](std::exception_ptr)
+    auto mre = manual_reset_event<void>();
+    ws_transport->start("ws://fakeuri.org", transfer_format::text, [&mre](std::exception_ptr)
     {
-        callback_completed = true;
-        cv.notify_one();
+        mre.set();
     });
-    ASSERT_TRUE(cv.wait_until(lock, std::chrono::steady_clock::now() + std::chrono::seconds(5), [callback_completed]() { return callback_completed; }));
+    mre.get();
 
     process_response_event->wait(1000);
 
@@ -610,24 +616,28 @@ TEST(websocket_transport_receive_loop, error_callback_called_when_exception_thro
     auto error_event = std::make_shared<event>();
     auto exception_msg = std::make_shared<std::string>();
 
-    auto error_callback = [exception_msg, error_event](const std::exception& e)
+    auto error_callback = [exception_msg, error_event](std::exception_ptr exception)
     {
-        *exception_msg = e.what();
+        try
+        {
+            std::rethrow_exception(exception);
+        }
+        catch (const std::exception& e)
+        {
+            *exception_msg = e.what();
+        }
         error_event->set();
     };
 
     auto ws_transport = websocket_transport::create([&](){ return client; }, logger(std::make_shared<trace_log_writer>(), trace_level::none));
+    ws_transport->on_close(error_callback);
 
-    std::mutex mtx;
-    std::unique_lock<std::mutex> lock(mtx);
-    std::condition_variable cv;
-    bool callback_completed;
-    ws_transport->start("ws://fakeuri.org", transfer_format::text, [&cv, &callback_completed](std::exception_ptr)
+    auto mre = manual_reset_event<void>();
+    ws_transport->start("ws://fakeuri.org", transfer_format::text, [&mre](std::exception_ptr)
     {
-        callback_completed = true;
-        cv.notify_one();
+        mre.set();
     });
-    ASSERT_TRUE(cv.wait_until(lock, std::chrono::steady_clock::now() + std::chrono::seconds(5), [callback_completed]() { return callback_completed; }));
+    mre.get();
 
     error_event->wait(1000);
 
