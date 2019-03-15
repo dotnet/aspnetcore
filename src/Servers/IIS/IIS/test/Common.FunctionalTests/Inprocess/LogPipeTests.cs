@@ -14,11 +14,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
     [Collection(PublishedSitesCollection.Name)]
     public class LogPipeTests : IISFunctionalTestBase
     {
-        private readonly PublishedSitesFixture _fixture;
-
-        public LogPipeTests(PublishedSitesFixture fixture)
+        public LogPipeTests(PublishedSitesFixture fixture) : base(fixture)
         {
-            _fixture = fixture;
         }
 
         [ConditionalTheory]

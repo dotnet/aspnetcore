@@ -17,9 +17,7 @@ namespace IIS.FunctionalTests.Inprocess
     [Collection(PublishedSitesCollection.Name)]
     public class StdOutRedirectionTests : LogFileTestBase
     {
-        private readonly PublishedSitesFixture _fixture;
-
-        public StdOutRedirectionTests(PublishedSitesFixture fixture)
+        public StdOutRedirectionTests(PublishedSitesFixture fixture) : base(fixture)
         {
             _fixture = fixture;
         }

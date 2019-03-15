@@ -17,9 +17,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
     [Collection(PublishedSitesCollection.Name)]
     public class BasicAuthTests : IISFunctionalTestBase
     {
-        private readonly PublishedSitesFixture _fixture;
-
-        public BasicAuthTests(PublishedSitesFixture fixture)
+        public BasicAuthTests(PublishedSitesFixture fixture) : base(fixture)
         {
             _fixture = fixture;
         }

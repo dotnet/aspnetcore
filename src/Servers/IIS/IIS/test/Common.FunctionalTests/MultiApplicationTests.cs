@@ -18,14 +18,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
     [Collection(PublishedSitesCollection.Name)]
     public class MultiApplicationTests : IISFunctionalTestBase
     {
-        private readonly PublishedSitesFixture _fixture;
-
         private PublishedApplication _publishedApplication;
         private PublishedApplication _rootApplication;
 
-        public MultiApplicationTests(PublishedSitesFixture fixture)
+        public MultiApplicationTests(PublishedSitesFixture fixture) : base(fixture)
         {
-            _fixture = fixture;
         }
 
         [ConditionalFact]

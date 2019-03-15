@@ -23,11 +23,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         private static readonly Random _random = new Random();
 
-        private readonly PublishedSitesFixture _fixture;
-
-        public AspNetCorePortTests(PublishedSitesFixture fixture)
+        public AspNetCorePortTests(PublishedSitesFixture fixture) : base(fixture)
         {
-            _fixture = fixture;
         }
 
         public static TestMatrix TestVariants

@@ -20,10 +20,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
     [Collection(PublishedSitesCollection.Name)]
     public class ConfigurationChangeTests : IISFunctionalTestBase
     {
-        private static readonly TimeSpan RetryDelay = TimeSpan.FromMilliseconds(100);
-        private readonly PublishedSitesFixture _fixture;
 
-        public ConfigurationChangeTests(PublishedSitesFixture fixture)
+        public ConfigurationChangeTests(PublishedSitesFixture fixture) : base(fixture)
         {
             _fixture = fixture;
         }

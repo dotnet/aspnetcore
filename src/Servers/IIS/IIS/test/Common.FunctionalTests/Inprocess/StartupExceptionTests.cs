@@ -13,11 +13,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
     [Collection(PublishedSitesCollection.Name)]
     public class StartupExceptionTests : LogFileTestBase
     {
-        private readonly PublishedSitesFixture _fixture;
-
-        public StartupExceptionTests(PublishedSitesFixture fixture)
+        public StartupExceptionTests(PublishedSitesFixture fixture) : base(fixture)
         {
-            _fixture = fixture;
         }
 
         [ConditionalTheory]

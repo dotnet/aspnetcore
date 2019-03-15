@@ -13,11 +13,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
     public class EnvironmentVariableTests: IISFunctionalTestBase
     {
-        private readonly PublishedSitesFixture _fixture;
-
-        public EnvironmentVariableTests(PublishedSitesFixture fixture)
+        public EnvironmentVariableTests(PublishedSitesFixture fixture) : base(fixture)
         {
-            _fixture = fixture;
         }
 
         [ConditionalTheory]

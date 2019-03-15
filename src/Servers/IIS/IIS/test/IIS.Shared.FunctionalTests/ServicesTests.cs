@@ -19,11 +19,8 @@ namespace IIS.FunctionalTests
     [Collection(PublishedSitesCollection.Name)]
     public class ApplicationInitializationTests : IISFunctionalTestBase
     {
-        private readonly PublishedSitesFixture _fixture;
-
-        public ApplicationInitializationTests(PublishedSitesFixture fixture)
+        public ApplicationInitializationTests(PublishedSitesFixture fixture) : base(fixture)
         {
-            _fixture = fixture;
         }
 
         [ConditionalTheory]

@@ -16,11 +16,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
     public class UpgradeFeatureDetectionTests : IISFunctionalTestBase
     {
         private readonly string _isWebsocketsSupported = Environment.OSVersion.Version >= new Version(6, 2) ? "Enabled" : "Disabled";
-        private readonly PublishedSitesFixture _fixture;
 
-        public UpgradeFeatureDetectionTests(PublishedSitesFixture fixture)
+        public UpgradeFeatureDetectionTests(PublishedSitesFixture fixture) : base(fixture)
         {
-            _fixture = fixture;
         }
 
         [ConditionalFact]

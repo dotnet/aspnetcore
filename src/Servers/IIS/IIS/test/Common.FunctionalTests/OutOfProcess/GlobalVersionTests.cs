@@ -18,11 +18,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
     [Collection(PublishedSitesCollection.Name)]
     public class GlobalVersionTests : IISFunctionalTestBase
     {
-        private readonly PublishedSitesFixture _fixture;
-
-        public GlobalVersionTests(PublishedSitesFixture fixture)
+        public GlobalVersionTests(PublishedSitesFixture fixture) : base(fixture)
         {
-            _fixture = fixture;
         }
 
         private const string _handlerVersion20 = "2.0.0";

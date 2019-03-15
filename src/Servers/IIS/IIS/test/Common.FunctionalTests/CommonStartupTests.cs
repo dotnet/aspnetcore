@@ -13,9 +13,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
     [Collection(PublishedSitesCollection.Name)]
     public class CommonStartupTests : IISFunctionalTestBase
     {
-        private readonly PublishedSitesFixture _fixture;
-
-        public CommonStartupTests(PublishedSitesFixture fixture)
+        public CommonStartupTests(PublishedSitesFixture fixture) : base(fixture)
         {
             _fixture = fixture;
         }

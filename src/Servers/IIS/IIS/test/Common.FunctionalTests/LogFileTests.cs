@@ -15,11 +15,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
     [Collection(PublishedSitesCollection.Name)]
     public class LoggingTests : LogFileTestBase
     {
-        private readonly PublishedSitesFixture _fixture;
-
-        public LoggingTests(PublishedSitesFixture fixture)
+        public LoggingTests(PublishedSitesFixture fixture) : base(fixture)
         {
-            _fixture = fixture;
         }
 
         public static TestMatrix TestVariants

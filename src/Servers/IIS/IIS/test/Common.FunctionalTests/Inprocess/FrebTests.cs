@@ -19,10 +19,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
     [Collection(PublishedSitesCollection.Name)]
     public class FrebTests : LogFileTestBase
     {
-        private readonly PublishedSitesFixture _fixture;
-        public FrebTests(PublishedSitesFixture fixture)
+        public FrebTests(PublishedSitesFixture fixture) : base(fixture)
         {
-            _fixture = fixture;
         }
 
         public static IList<FrebLogItem> FrebChecks()
