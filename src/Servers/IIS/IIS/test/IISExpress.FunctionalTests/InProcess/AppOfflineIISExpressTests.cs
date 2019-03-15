@@ -10,9 +10,10 @@ using Xunit;
 
 namespace IISExpress.FunctionalTests.Inprocess
 {
-    public class AppOfflineTests : IISFunctionalTestBase
+    [Collection(PublishedSitesCollection.Name)]
+    public class AppOfflineIISExpressTests : IISFunctionalTestBase
     {
-        public AppOfflineTests(PublishedSitesFixture fixture) : base(fixture)
+        public AppOfflineIISExpressTests(PublishedSitesFixture fixture) : base(fixture)
         {
         }
 
