@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Hosting;
 
-namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Internal
+namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal
 
 {
     /// <summary>

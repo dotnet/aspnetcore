@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Internal
 
                     if (_userManager.Options.SignIn.RequireConfirmedAccount)
                     {
-                        return RedirectToPage("RegisterConfirmation");
+                        return RedirectToPage("RegisterConfirmation", new { email = Input.Email });
                     }
                     else
                     {

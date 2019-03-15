@@ -50,7 +50,7 @@ namespace IdentitySample.DefaultUI
                  .AddRoles<IdentityRole>()
                  .AddEntityFrameworkStores<ApplicationDbContext>();
 
-//            services.AddSingleton<IUserConfirmation<ApplicationUser>, BadDude>();
+            //services.AddSingleton<IUserConfirmation<ApplicationUser>, BadDude>();
         }
 
 
