@@ -23,7 +23,7 @@ export default class App extends Component {
 ////#endif
 ////#if (IndividualLocalAuth)
         <AuthorizeRoute path='/fetch-data' component={FetchData} />
-        <Route path={ApplicationPaths.ApiAuthorizationPrefix} Component={ApiAuthorizationRoutes} />
+        <Route path={ApplicationPaths.ApiAuthorizationPrefix} component={ApiAuthorizationRoutes} />
 ////#endif
       </Layout>
     );
