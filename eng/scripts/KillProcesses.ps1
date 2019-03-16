@@ -15,9 +15,9 @@ function _killJavaInstances() {
         Where-Object { $_.Path -like "$env:JAVA_HOME*" };
     foreach($_javaProcess in $_javaProcesses) {
         try {
-            Stop-Process $proc
+            Stop-Process $_javaProcess
         } catch {
-            Write-Host "Failed to kill java process: $proc"
+            Write-Host "Failed to kill java process: $_javaProcess"
         }
     }
 }
