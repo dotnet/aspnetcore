@@ -1,13 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="$(MSBuildThisFileDirectory)..\..\..\Logging\Logging.Testing\src\build\Microsoft.Extensions.Logging.Testing.props" />
+
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.2;net461</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.0;net472</TargetFrameworks>
     <TestGroupName>Caching.Memory</TestGroupName>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.Caching.Memory" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
+    <Reference Include="Microsoft.Extensions.Logging.Testing" />
   </ItemGroup>
 
 </Project>

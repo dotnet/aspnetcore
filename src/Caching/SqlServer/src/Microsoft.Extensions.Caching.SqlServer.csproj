@@ -6,10 +6,12 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>cache;distributedcache;sqlserver</PackageTags>
-
-    <!-- Temporary workaround for API Check crash that is part of aspnet/BuildTools#201. -->
-    <EnableApiCheck>false</EnableApiCheck>
+    <IsShipping>true</IsShipping>
   </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Extensions.Caching.SqlServer.Tests" />
+  </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.Caching.Abstractions" />

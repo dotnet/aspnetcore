@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,6 +11,7 @@ using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Http.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
+using Moq.Protected;
 using Xunit;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -772,6 +775,50 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         [Fact]
+        public void AddHttpClient_GetAwaiterAndResult_InSingleThreadedSynchronizationContext_ShouldNotHangs()
+        {
+            // Arrange
+            using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10)))
+            {
+                var token = cts.Token;
+                token.Register(() => throw new OperationCanceledException(token));
+                var serviceCollection = new ServiceCollection();
+                serviceCollection.AddHttpClient("example.com")
+                    .ConfigurePrimaryHttpMessageHandler(() =>
+                    {
+                        var mockHandler = new Mock<HttpMessageHandler>();
+                        mockHandler
+                        .Protected()
+                        .Setup<Task<HttpResponseMessage>>(
+                            "SendAsync",
+                            ItExpr.IsAny<HttpRequestMessage>(),
+                            ItExpr.IsAny<CancellationToken>()
+                        )
+                        .Returns(async () =>
+                        {
+                            await Task.Delay(1).ConfigureAwait(false);
+                            return new HttpResponseMessage(HttpStatusCode.OK);
+                        });
+                        return mockHandler.Object;
+                    });
+
+                var services = serviceCollection.BuildServiceProvider();
+                var factory = services.GetRequiredService<IHttpClientFactory>();
+                var client = factory.CreateClient("example.com");
+                var hangs = true;
+                SingleThreadedSynchronizationContext.Run(() =>
+                {
+                    // Act
+                    client.GetAsync("http://example.com", token).GetAwaiter().GetResult();
+                    hangs = false;
+                });
+
+                // Assert
+                Assert.False(hangs);
+            }
+        }
+
+        [Fact]
         public void SuppressScope_False_CreatesNewScope()
         {
             // Arrange
@@ -995,6 +1042,36 @@ namespace Microsoft.Extensions.DependencyInjection
             public HttpClient HttpClient { get; }
 
             public TransientService Service { get; }
+        }
+
+        private class SingleThreadedSynchronizationContext : SynchronizationContext
+        {
+            private readonly Queue<(SendOrPostCallback Callback, object State)> _queue = new Queue<(SendOrPostCallback Callback, object State)>();
+
+            public override void Post(SendOrPostCallback d, object state)
+            {
+                _queue.Enqueue((d, state));
+            }
+
+            public static void Run(Action action)
+            {
+                var previous = Current;
+                var context = new SingleThreadedSynchronizationContext();
+                SetSynchronizationContext(context);
+                try
+                {
+                    action();
+                    while (context._queue.Count > 0)
+                    {
+                        var item = context._queue.Dequeue();
+                        item.Callback(item.State);
+                    }
+                }
+                finally
+                {
+                    SetSynchronizationContext(previous);
+                }
+            }
         }
     }
 }

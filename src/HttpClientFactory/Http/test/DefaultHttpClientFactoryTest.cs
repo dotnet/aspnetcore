@@ -482,7 +482,11 @@ namespace Microsoft.Extensions.Http
                 kvp = default;
             }
 
-            // Act - 1
+            // Let's verify the the ActiveHandlerTrackingEntry is gone. This would be prevent
+            // the handler from being disposed if it was still rooted.
+            Assert.Empty(factory.ActiveEntryState);
+
+            // Act - 1 - Run a cleanup cycle, this will not dispose the handler, because the client is still live.
             factory.CleanupTimer_Tick();
 
             // Assert
@@ -496,6 +500,7 @@ namespace Microsoft.Extensions.Http
             lock (this)
             {
                 // Prevent reordering
+                GC.KeepAlive(client1);
                 client1 = null;
             }
 

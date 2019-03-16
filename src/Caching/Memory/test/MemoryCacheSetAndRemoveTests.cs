@@ -553,7 +553,7 @@ namespace Microsoft.Extensions.Caching.Memory
                     var entrySize = random.Next(0, 5);
                     cache.Set(random.Next(0, 10), entrySize, new MemoryCacheEntryOptions { Size = entrySize });
                 }
-            }, cts.Token);
+            });
 
             var task1 = Task.Run(() =>
             {
@@ -562,7 +562,7 @@ namespace Microsoft.Extensions.Caching.Memory
                     var entrySize = random.Next(0, 5);
                     cache.Set(random.Next(0, 10), entrySize, new MemoryCacheEntryOptions { Size = entrySize });
                 }
-            }, cts.Token);
+            });
 
             var task2 = Task.Run(() =>
             {
@@ -571,7 +571,7 @@ namespace Microsoft.Extensions.Caching.Memory
                     var entrySize = random.Next(0, 5);
                     cache.Set(random.Next(0, 10), entrySize, new MemoryCacheEntryOptions { Size = entrySize });
                 }
-            }, cts.Token);
+            });
 
             cts.CancelAfter(TimeSpan.FromSeconds(5));
             var task3 = Task.Delay(TimeSpan.FromSeconds(7));

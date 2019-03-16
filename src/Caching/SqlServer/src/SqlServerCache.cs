@@ -48,7 +48,7 @@ namespace Microsoft.Extensions.Caching.SqlServer
                 cacheOptions.ExpiredItemsDeletionInterval.Value < MinimumExpiredItemsDeletionInterval)
             {
                 throw new ArgumentException(
-                    $"{nameof(SqlServerCacheOptions.ExpiredItemsDeletionInterval)} cannot be less the minimum " +
+                    $"{nameof(SqlServerCacheOptions.ExpiredItemsDeletionInterval)} cannot be less than the minimum " +
                     $"value of {MinimumExpiredItemsDeletionInterval.TotalMinutes} minutes.");
             }
             if (cacheOptions.DefaultSlidingExpiration <= TimeSpan.Zero)

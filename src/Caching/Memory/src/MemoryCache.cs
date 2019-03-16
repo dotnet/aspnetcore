@@ -8,6 +8,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Caching.Memory
@@ -21,6 +23,7 @@ namespace Microsoft.Extensions.Caching.Memory
         private readonly ConcurrentDictionary<object, CacheEntry> _entries;
         private long _cacheSize = 0;
         private bool _disposed;
+        private ILogger _logger;
 
         // We store the delegates locally to prevent allocations
         // every time a new CacheEntry is created.
@@ -35,13 +38,27 @@ namespace Microsoft.Extensions.Caching.Memory
         /// </summary>
         /// <param name="optionsAccessor">The options of the cache.</param>
         public MemoryCache(IOptions<MemoryCacheOptions> optionsAccessor)
+            : this(optionsAccessor, NullLoggerFactory.Instance) { }
+
+        /// <summary>
+        /// Creates a new <see cref="MemoryCache"/> instance.
+        /// </summary>
+        /// <param name="optionsAccessor">The options of the cache.</param>
+        /// <param name="loggerFactory"></param>
+        public MemoryCache(IOptions<MemoryCacheOptions> optionsAccessor, ILoggerFactory loggerFactory)
         {
             if (optionsAccessor == null)
             {
                 throw new ArgumentNullException(nameof(optionsAccessor));
             }
 
+            if (loggerFactory == null)
+            {
+                throw new ArgumentNullException(nameof(loggerFactory));
+            }
+
             _options = optionsAccessor.Value;
+            _logger = loggerFactory.CreateLogger<MemoryCache>();
 
             _entries = new ConcurrentDictionary<object, CacheEntry>();
             _setEntry = SetEntry;
@@ -341,6 +358,8 @@ namespace Microsoft.Extensions.Caching.Memory
 
         private void TriggerOvercapacityCompaction()
         {
+            _logger.LogDebug("Overcapacity compaction triggered");
+
             // Spawn background thread for compaction
             ThreadPool.QueueUserWorkItem(s => OvercapacityCompaction((MemoryCache)s), this);
         }
@@ -348,11 +367,16 @@ namespace Microsoft.Extensions.Caching.Memory
         private static void OvercapacityCompaction(MemoryCache cache)
         {
             var currentSize = Interlocked.Read(ref cache._cacheSize);
+
+            cache._logger.LogDebug($"Overcapacity compaction executing. Current size {currentSize}");
+
             var lowWatermark = cache._options.SizeLimit * (1 - cache._options.CompactionPercentage);
             if (currentSize > lowWatermark)
             {
                 cache.Compact(currentSize - (long)lowWatermark, entry => entry.Size.Value);
             }
+
+            cache._logger.LogDebug($"Overcapacity compaction executed. New size {Interlocked.Read(ref cache._cacheSize)}");
         }
 
         /// Remove at least the given percentage (0.10 for 10%) of the total entries (or estimated memory?), according to the following policy:

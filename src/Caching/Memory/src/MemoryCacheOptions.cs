@@ -14,9 +14,6 @@ namespace Microsoft.Extensions.Caching.Memory
 
         public ISystemClock Clock { get; set; }
 
-        [Obsolete("This is obsolete and will be removed in a future version.")]
-        public bool CompactOnMemoryPressure { get; set; }
-
         /// <summary>
         /// Gets or sets the minimum length of time between successive scans for expired items.
         /// </summary>
