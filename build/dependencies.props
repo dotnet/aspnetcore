@@ -4,6 +4,10 @@
     <!-- MicrosoftNETCoreApp22PackageVersion is assigned at the bottom so it can automatically pick up MicrosoftNETCoreAppPackageVersion in an orchestrated build. -->
     <MicrosoftNETCoreAppPackageVersion>2.2.3</MicrosoftNETCoreAppPackageVersion>
     <MicrosoftNETCoreDotNetAppHostPackageVersion>2.2.3</MicrosoftNETCoreDotNetAppHostPackageVersion>
+
+    <MicrosoftExtensionsConfigurationBinderPackageVersion>2.2.0</MicrosoftExtensionsConfigurationBinderPackageVersion>
+    <MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>2.2.0</MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>
+    <MicrosoftExtensionsConfigurationKeyPerFilePackageVersion>2.2.0</MicrosoftExtensionsConfigurationKeyPerFilePackageVersion>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -46,13 +50,10 @@
     <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>2.2.0</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
     <MicrosoftExtensionsConfigurationAbstractionsPackageVersion>2.2.0</MicrosoftExtensionsConfigurationAbstractionsPackageVersion>
     <MicrosoftExtensionsConfigurationAzureKeyVaultPackageVersion>2.2.0</MicrosoftExtensionsConfigurationAzureKeyVaultPackageVersion>
-    <MicrosoftExtensionsConfigurationBinderPackageVersion>2.2.0</MicrosoftExtensionsConfigurationBinderPackageVersion>
     <MicrosoftExtensionsConfigurationCommandLinePackageVersion>2.2.0</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
-    <MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>2.2.0</MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>
     <MicrosoftExtensionsConfigurationFileExtensionsPackageVersion>2.2.0</MicrosoftExtensionsConfigurationFileExtensionsPackageVersion>
     <MicrosoftExtensionsConfigurationIniPackageVersion>2.2.0</MicrosoftExtensionsConfigurationIniPackageVersion>
     <MicrosoftExtensionsConfigurationJsonPackageVersion>2.2.0</MicrosoftExtensionsConfigurationJsonPackageVersion>
-    <MicrosoftExtensionsConfigurationKeyPerFilePackageVersion>2.2.0</MicrosoftExtensionsConfigurationKeyPerFilePackageVersion>
     <MicrosoftExtensionsConfigurationPackageVersion>2.2.0</MicrosoftExtensionsConfigurationPackageVersion>
     <MicrosoftExtensionsConfigurationUserSecretsPackageVersion>2.2.0</MicrosoftExtensionsConfigurationUserSecretsPackageVersion>
     <MicrosoftExtensionsConfigurationXmlPackageVersion>2.2.0</MicrosoftExtensionsConfigurationXmlPackageVersion>
