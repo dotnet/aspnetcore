@@ -5,7 +5,12 @@
     <Description>File provider for files in embedded resources for Microsoft.Extensions.FileProviders.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
     <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
+    <IsShipping>true</IsShipping>
   </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Extensions.FileProviders.Embedded.Tests" />
+  </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.FileProviders.Abstractions" />
@@ -18,7 +23,6 @@
   </ItemGroup>
 
   <Target Name="PopulateNuspec" BeforeTargets="GenerateNuspec" DependsOnTargets="BuiltProjectOutputGroup;DocumentationProjectOutputGroup;DebugSymbolsProjectOutputGroup;">
-
     <PropertyGroup>
       <NuspecProperties>
         id=$(PackageId);
@@ -40,12 +44,9 @@
         OutputDocumentation=@(DocumentationProjectOutputGroupOutput);
 
         <!-- Include the assembly and symbols from the tasks project -->
-        TaskAssemblyNetStandard=..\..\Manifest.MSBuildTask\src\bin\$(Configuration)\netstandard1.5\$(AssemblyName).Manifest.Task.dll;
-        TaskSymbolNetStandard=..\..\Manifest.MSBuildTask\src\bin\$(Configuration)\netstandard1.5\$(AssemblyName).Manifest.Task.pdb;
-        TaskAssemblyNet461=..\..\Manifest.MSBuildTask\src\bin\$(Configuration)\net461\$(AssemblyName).Manifest.Task.dll;
-        TaskSymbolNet461=..\..\Manifest.MSBuildTask\src\bin\$(Configuration)\net461\$(AssemblyName).Manifest.Task.pdb;
+        TaskAssemblyNetStandard=$(ArtifactsDir)bin\$(AssemblyName).Manifest.Task\$(Configuration)\netstandard2.0\$(AssemblyName).Manifest.Task.dll;
+        TaskSymbolNetStandard=$(ArtifactsDir)bin\$(AssemblyName).Manifest.Task\$(Configuration)\netstandard2.0\$(AssemblyName).Manifest.Task.pdb;
       </NuspecProperties>
     </PropertyGroup>
   </Target>
-
 </Project>

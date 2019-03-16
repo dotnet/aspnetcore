@@ -60,7 +60,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                     throw new ArgumentException($"The {nameof(Period)} must not be infinite.", nameof(value));
                 }
 
-                _delay = value;
+                _period = value;
             }
         }
 

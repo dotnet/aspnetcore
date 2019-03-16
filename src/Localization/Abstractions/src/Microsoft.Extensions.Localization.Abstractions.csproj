@@ -10,6 +10,7 @@ Microsoft.Extensions.Localization.IStringLocalizer&lt;T&gt;</Description>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>localization</PackageTags>
+    <IsShipping>true</IsShipping>
   </PropertyGroup>
 
 </Project>
