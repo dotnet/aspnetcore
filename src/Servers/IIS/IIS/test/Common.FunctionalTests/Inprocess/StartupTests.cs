@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -22,11 +21,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
     [Collection(PublishedSitesCollection.Name)]
     public class StartupTests : IISFunctionalTestBase
     {
-        private readonly PublishedSitesFixture _fixture;
-
-        public StartupTests(PublishedSitesFixture fixture)
+        public StartupTests(PublishedSitesFixture fixture) : base(fixture)
         {
-            _fixture = fixture;
         }
 
         private readonly string _dotnetLocation = DotNetCommands.GetDotNetExecutable(RuntimeArchitecture.x64);
@@ -36,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public async Task ExpandEnvironmentVariableInWebConfig()
         {
             // Point to dotnet installed in user profile.
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters();
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters();
             deploymentParameters.EnvironmentVariables["DotnetPath"] = _dotnetLocation;
             deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("processPath", "%DotnetPath%"));
             await StartAsync(deploymentParameters);
@@ -50,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [InlineData("dotnet.zip", "", @"Process path 'dotnet.zip' doesn't have '.exe' extension.")]
         public async Task InvalidProcessPath_ExpectServerError(string path, string arguments, string subError)
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters();
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters();
             deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("processPath", path));
             deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("arguments", arguments));
 
@@ -70,7 +66,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task StartsWithDotnetLocationWithoutExe()
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters();
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters();
 
             var dotnetLocationWithoutExtension = _dotnetLocation.Substring(0, _dotnetLocation.LastIndexOf("."));
             deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("processPath", dotnetLocationWithoutExtension));
@@ -81,7 +77,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task StartsWithDotnetLocationUppercase()
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters();
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters();
 
             var dotnetLocationWithoutExtension = _dotnetLocation.Substring(0, _dotnetLocation.LastIndexOf(".")).ToUpperInvariant();
             deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("processPath", dotnetLocationWithoutExtension));
@@ -95,7 +91,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         public async Task StartsWithDotnetOnThePath(string path)
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters();
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters();
 
             deploymentParameters.EnvironmentVariables["PATH"] = Path.GetDirectoryName(_dotnetLocation);
             deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("processPath", path));
@@ -117,7 +113,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         public async Task StartsWithDotnetInstallLocation(RuntimeArchitecture runtimeArchitecture)
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters();
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters();
             deploymentParameters.RuntimeArchitecture = runtimeArchitecture;
 
             // IIS doesn't allow empty PATH
@@ -149,7 +145,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         public async Task DoesNotStartIfDisabled()
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters();
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters();
 
             using (new TestRegistryKey(
                 Registry.LocalMachine,
@@ -181,7 +177,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [MemberData(nameof(TestVariants))]
         public async Task HelloWorld(TestVariant variant)
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
             await StartAsync(deploymentParameters);
         }
 
@@ -189,7 +185,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         public async Task StartsWithPortableAndBootstraperExe()
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
             deploymentParameters.TransformPath((path, root) => "InProcessWebSite.exe");
             deploymentParameters.TransformArguments((arguments, root) => "");
 
@@ -209,7 +205,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task DetectsOverriddenServer()
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
             deploymentParameters.TransformArguments((a, _) => $"{a} OverriddenServer");
 
             var deploymentResult = await DeployAsync(deploymentParameters);
@@ -226,7 +222,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task LogsStartupExceptionExitError()
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
             deploymentParameters.TransformArguments((a, _) => $"{a} Throw");
 
             var deploymentResult = await DeployAsync(deploymentParameters);
@@ -244,7 +240,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task LogsUnexpectedThreadExitError()
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
             deploymentParameters.TransformArguments((a, _) => $"{a} EarlyReturn");
             var deploymentResult = await DeployAsync(deploymentParameters);
 
@@ -261,7 +257,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task RemoveHostfxrFromApp_InProcessHostfxrAPIAbsent()
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
             deploymentParameters.ApplicationType = ApplicationType.Standalone;
             var deploymentResult = await DeployAsync(deploymentParameters);
 
@@ -278,7 +274,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [RequiresNewShim]
         public async Task RemoveHostfxrFromApp_InProcessHostfxrLoadFailure()
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
             deploymentParameters.ApplicationType = ApplicationType.Standalone;
             var deploymentResult = await DeployAsync(deploymentParameters);
 
@@ -292,7 +288,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task TargedDifferenceSharedFramework_FailedToFindNativeDependencies()
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
             var deploymentResult = await DeployAsync(deploymentParameters);
 
             Helpers.ModifyFrameworkVersionInRuntimeConfig(deploymentResult);
@@ -304,7 +300,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task RemoveInProcessReference_FailedToFindRequestHandler()
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
             deploymentParameters.ApplicationType = ApplicationType.Standalone;
             var deploymentResult = await DeployAsync(deploymentParameters);
 
@@ -325,7 +321,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact(Skip = "https://github.com/aspnet/AspNetCore-Internal/issues/1772")]
         public async Task StartupTimeoutIsApplied()
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(_fixture.InProcessTestSite);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
             deploymentParameters.TransformArguments((a, _) => $"{a} Hang");
             deploymentParameters.WebConfigActionList.Add(
                 WebConfigHelpers.AddOrModifyAspNetCoreSection("startupTimeLimit", "1"));
@@ -345,7 +341,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task CheckInvalidHostingModelParameter()
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters();
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters();
             deploymentParameters.WebConfigActionList.Add(WebConfigHelpers.AddOrModifyAspNetCoreSection("hostingModel", "bogus"));
 
             var deploymentResult = await DeployAsync(deploymentParameters);
@@ -369,7 +365,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public async Task ReportsWebConfigAuthoringErrors(string scenario)
         {
             var (expectedError, action) = InvalidConfigTransformations[scenario];
-            var iisDeploymentParameters = _fixture.GetBaseDeploymentParameters();
+            var iisDeploymentParameters = Fixture.GetBaseDeploymentParameters();
             iisDeploymentParameters.WebConfigActionList.Add((element, _) => action(element));
             var deploymentResult = await DeployAsync(iisDeploymentParameters);
             var result = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
@@ -414,7 +410,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public async Task StartsWithWebConfigVariationsPortable(string scenario)
         {
             var action = PortableConfigTransformations[scenario];
-            var iisDeploymentParameters = _fixture.GetBaseDeploymentParameters();
+            var iisDeploymentParameters = Fixture.GetBaseDeploymentParameters();
             var expectedArguments = action(iisDeploymentParameters);
             var result = await DeployAsync(iisDeploymentParameters);
             Assert.Equal(expectedArguments, await result.HttpClient.GetStringAsync("/CommandLineArgs"));
@@ -478,7 +474,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public async Task StartsWithWebConfigVariationsStandalone(string scenario)
         {
             var action = StandaloneConfigTransformations[scenario];
-            var iisDeploymentParameters = _fixture.GetBaseDeploymentParameters();
+            var iisDeploymentParameters = Fixture.GetBaseDeploymentParameters();
             iisDeploymentParameters.ApplicationType = ApplicationType.Standalone;
             var expectedArguments = action(iisDeploymentParameters);
             var result = await DeployAsync(iisDeploymentParameters);
@@ -513,7 +509,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [RequiresNewHandler]
         public async Task SetCurrentDirectoryHandlerSettingWorks()
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters();
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters();
             deploymentParameters.HandlerSettings["SetCurrentDirectory"] = "false";
 
             var deploymentResult = await DeployAsync(deploymentParameters);
@@ -530,7 +526,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         public async Task StartupIsSuspendedWhenEventIsUsed()
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters();
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters();
             deploymentParameters.ApplicationType = ApplicationType.Standalone;
             deploymentParameters.EnvironmentVariables["ASPNETCORE_STARTUP_SUSPEND_EVENT"] = "ANCM_TestEvent";
 
