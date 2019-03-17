@@ -26,6 +26,7 @@ namespace MvcSandbox
             {
                 options.ConstraintMap["slugify"] = typeof(SlugifyParameterTransformer);
             });
+            services.AddRazorComponents();
             services.AddMvc()
                 .AddRazorRuntimeCompilation()
                 .SetCompatibilityVersion(Microsoft.AspNetCore.Mvc.CompatibilityVersion.Latest);
@@ -34,11 +35,14 @@ namespace MvcSandbox
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app)
         {
+            app.UseDeveloperExceptionPage();
+            app.UseStaticFiles();
+
             app.UseRouting(builder =>
             {
                 builder.MapGet(
                     requestDelegate: WriteEndpoints,
-                    pattern: "/endpoints").WithDisplayName("Home");
+                    pattern: "/endpoints").WithDisplayName("Endpoints");
 
                 builder.MapControllerRoute(
                     name: "default",
@@ -66,12 +70,9 @@ namespace MvcSandbox
 
                 builder.MapControllers();
                 builder.MapRazorPages();
-
-                builder.MapFallbackToController("Index", "Home");
+                builder.MapComponentHub<MvcSandbox.Components.App>("app");
+                builder.MapFallbackToPage("/Components");
             });
-
-            app.UseDeveloperExceptionPage();
-            app.UseStaticFiles();
 
             app.UseEndpoint();
         }
