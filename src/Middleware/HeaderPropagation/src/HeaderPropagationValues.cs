@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation
         private readonly static AsyncLocal<Dictionary<string, StringValues>> _headers = new AsyncLocal<Dictionary<string, StringValues>>();
 
         /// <summary>
-        /// Gets the headers values from the current request that can be propagated.
+        /// Gets the headers values collected by the <see cref="HeaderPropagationMiddleware"/> from the current request that can be propagated.
         /// </summary>
         public Dictionary<string, StringValues> Headers
         {
