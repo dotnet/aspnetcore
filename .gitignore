@@ -2,6 +2,7 @@ bin/
 obj/
 .vs/
 .vscode/
+.idea/
 *.suo
 *.user
 _ReSharper.*
