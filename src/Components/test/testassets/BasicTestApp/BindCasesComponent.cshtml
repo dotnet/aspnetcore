@@ -75,6 +75,18 @@
     <span id="textbox-nullable-decimal-value">@textboxNullableDecimalValue</span>
     <input id="textbox-nullable-decimal-mirror" bind="textboxNullableDecimalValue" readonly />
 </p>
+<p>
+    decimal (invalid-input):
+    <input id="textbox-decimal-invalid" bind="textboxDecimalInvalidValue" />
+    <span id="textbox-decimal-invalid-value">@textboxDecimalInvalidValue</span>
+    <input id="textbox-decimal-invalid-mirror" bind="textboxDecimalInvalidValue" readonly />
+</p>
+<p>
+    Nullable decimal (invalid-input):
+    <input id="textbox-nullable-decimal-invalid" bind="textboxNullableDecimalInvalidValue" />
+    <span id="textbox-nullable-decimal-invalid-value">@textboxNullableDecimalInvalidValue</span>
+    <input id="textbox-nullable-decimal-invalid-mirror" bind="textboxNullableDecimalInvalidValue" readonly />
+</p>
 
 <h2>Text Area</h2>
 <p>
@@ -116,7 +128,7 @@
         <option value=@SelectableValue.Third>Third choice</option>
         @if (includeFourthOption)
         {
-        <option value=@SelectableValue.Fourth>Fourth choice</option>
+            <option value=@SelectableValue.Fourth>Fourth choice</option>
         }
     </select>
     <span id="select-box-value">@selectValue</span>
@@ -144,6 +156,8 @@
     double? textboxNullableDoubleValue = null;
     decimal textboxDecimalValue = 0.0000000000000000000000000001M;
     decimal? textboxNullableDecimalValue = null;
+    decimal textboxDecimalInvalidValue = 0.0000000000000000000000000001M;
+    decimal? textboxNullableDecimalInvalidValue = null;
 
     bool includeFourthOption = false;
     enum SelectableValue { First, Second, Third, Fourth }

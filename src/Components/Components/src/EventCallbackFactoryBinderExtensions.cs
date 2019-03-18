@@ -11,74 +11,263 @@ namespace Microsoft.AspNetCore.Components
     /// </summary>
     public static class EventCallbackFactoryBinderExtensions
     {
+        private delegate bool BindConverter<T>(object obj, out T value);
+
         // Perf: conversion delegates are written as static funcs so we can prevent
         // allocations for these simple cases.
-        private static Func<object, string> ConvertToString = (obj) => (string)obj;
+        private readonly static BindConverter<string> ConvertToString = ConvertToStringCore;
 
-        private static Func<object, bool> ConvertToBool = (obj) => (bool)obj;
-        private static Func<object, bool?> ConvertToNullableBool = (obj) => (bool?)obj;
-
-        private static Func<object, int> ConvertToInt = (obj) => int.Parse((string)obj);
-        private static Func<object, int?> ConvertToNullableInt = (obj) =>
+        private static bool ConvertToStringCore(object obj, out string value)
         {
-            if (int.TryParse((string)obj, out var value))
+            // We expect the input to already be a string.
+            value = (string)obj;
+            return true;
+        }
+
+        private static BindConverter<bool> ConvertToBool = ConvertToBoolCore;
+        private static BindConverter<bool?> ConvertToNullableBool = ConvertToNullableBoolCore;
+
+        private static bool ConvertToBoolCore(object obj, out bool value)
+        {
+            // We expect the input to already be a bool.
+            value = (bool)obj;
+            return true;
+        }
+
+        private static bool ConvertToNullableBoolCore(object obj, out bool? value)
+        {
+            // We expect the input to already be a bool.
+            value = (bool?)obj;
+            return true;
+        }
+
+        private static BindConverter<int> ConvertToInt = ConvertToIntCore;
+        private static BindConverter<int?> ConvertToNullableInt = ConvertToNullableIntCore;
+
+        private static bool ConvertToIntCore(object obj, out int value)
+        {
+            var text = (string)obj;
+            if (string.IsNullOrEmpty(text))
             {
-                return value;
+                value = default;
+                return false;
             }
 
-            return null;
-        };
-
-        private static Func<object, long> ConvertToLong = (obj) => long.Parse((string)obj);
-        private static Func<object, long?> ConvertToNullableLong = (obj) =>
-        {
-            if (long.TryParse((string)obj, out var value))
+            if (!int.TryParse(text, out var converted))
             {
-                return value;
+                value = default;
+                return false;
             }
 
-            return null;
-        };
+            value = converted;
+            return true;
+        }
 
-        private static Func<object, float> ConvertToFloat = (obj) => float.Parse((string)obj);
-        private static Func<object, float?> ConvertToNullableFloat = (obj) =>
+        private static bool ConvertToNullableIntCore(object obj, out int? value)
         {
-            if (float.TryParse((string)obj, out var value))
+            var text = (string)obj;
+            if (string.IsNullOrEmpty(text))
             {
-                return value;
+                value = default;
+                return true;
             }
 
-            return null;
-        };
-
-        private static Func<object, double> ConvertToDouble = (obj) => double.Parse((string)obj);
-        private static Func<object, double?> ConvertToNullableDouble = (obj) =>
-        {
-            if (double.TryParse((string)obj, out var value))
+            if (!int.TryParse(text, out var converted))
             {
-                return value;
+                value = default;
+                return false;
             }
 
-            return null;
-        };
+            value = converted;
+            return true;
+        }
 
-        private static Func<object, decimal> ConvertToDecimal = (obj) => decimal.Parse((string)obj);
-        private static Func<object, decimal?> ConvertToNullableDecimal = (obj) =>
+        private static BindConverter<long> ConvertToLong = ConvertToLongCore;
+        private static BindConverter<long?> ConvertToNullableLong = ConvertToNullableLongCore;
+
+        private static bool ConvertToLongCore(object obj, out long value)
         {
-            if (decimal.TryParse((string)obj, out var value))
+            var text = (string)obj;
+            if (string.IsNullOrEmpty(text))
             {
-                return value;
+                value = default;
+                return false;
             }
 
-            return null;
-        };
-
-        private static class EnumConverter<T> where T : Enum
-        {
-            public static Func<object, T> Convert = (obj) =>
+            if (!long.TryParse(text, out var converted))
             {
-                return (T)Enum.Parse(typeof(T), (string)obj);
-            };
+                value = default;
+                return false;
+            }
+
+            value = converted;
+            return true;
+        }
+
+        private static bool ConvertToNullableLongCore(object obj, out long? value)
+        {
+            var text = (string)obj;
+            if (string.IsNullOrEmpty(text))
+            {
+                value = default;
+                return true;
+            }
+
+            if (!long.TryParse(text, out var converted))
+            {
+                value = default;
+                return false;
+            }
+
+            value = converted;
+            return true;
+        }
+
+        private static BindConverter<float> ConvertToFloat = ConvertToFloatCore;
+        private static BindConverter<float?> ConvertToNullableFloat = ConvertToNullableFloatCore;
+
+        private static bool ConvertToFloatCore(object obj, out float value)
+        {
+            var text = (string)obj;
+            if (string.IsNullOrEmpty(text))
+            {
+                value = default;
+                return false;
+            }
+
+            if (!float.TryParse(text, out var converted))
+            {
+                value = default;
+                return false;
+            }
+
+            value = converted;
+            return true;
+        }
+
+        private static bool ConvertToNullableFloatCore(object obj, out float? value)
+        {
+            var text = (string)obj;
+            if (string.IsNullOrEmpty(text))
+            {
+                value = default;
+                return true;
+            }
+
+            if (!float.TryParse(text, out var converted))
+            {
+                value = default;
+                return false;
+            }
+
+            value = converted;
+            return true;
+        }
+
+        private static BindConverter<double> ConvertToDouble = ConvertToDoubleCore;
+        private static BindConverter<double?> ConvertToNullableDouble = ConvertToNullableDoubleCore;
+
+        private static bool ConvertToDoubleCore(object obj, out double value)
+        {
+            var text = (string)obj;
+            if (string.IsNullOrEmpty(text))
+            {
+                value = default;
+                return false;
+            }
+
+            if (!double.TryParse(text, out var converted))
+            {
+                value = default;
+                return false;
+            }
+
+            value = converted;
+            return true;
+        }
+
+        private static bool ConvertToNullableDoubleCore(object obj, out double? value)
+        {
+            var text = (string)obj;
+            if (string.IsNullOrEmpty(text))
+            {
+                value = default;
+                return true;
+            }
+
+            if (!double.TryParse(text, out var converted))
+            {
+                value = default;
+                return false;
+            }
+
+            value = converted;
+            return true;
+        }
+
+        private static BindConverter<decimal> ConvertToDecimal = ConvertToDecimalCore;
+        private static BindConverter<decimal?> ConvertToNullableDecimal = ConvertToNullableDecimalCore;
+
+        private static bool ConvertToDecimalCore(object obj, out decimal value)
+        {
+            var text = (string)obj;
+            if (string.IsNullOrEmpty(text))
+            {
+                value = default;
+                return false;
+            }
+
+            if (!decimal.TryParse(text, out var converted))
+            {
+                value = default;
+                return false;
+            }
+
+            value = converted;
+            return true;
+        }
+
+        private static bool ConvertToNullableDecimalCore(object obj, out decimal? value)
+        {
+            var text = (string)obj;
+            if (string.IsNullOrEmpty(text))
+            {
+                value = default;
+                return true;
+            }
+
+            if (!decimal.TryParse(text, out var converted))
+            {
+                value = default;
+                return false;
+            }
+
+            value = converted;
+            return true;
+        }
+
+        private static class EnumConverter<T> where T : struct, Enum
+        {
+            public static readonly BindConverter<T> Convert = ConvertCore;
+
+            public static bool ConvertCore(object obj, out T value)
+            {
+                var text = (string)obj;
+                if (string.IsNullOrEmpty(text))
+                {
+                    value = default;
+                    return true;
+                }
+
+                if (!Enum.TryParse<T>(text, out var converted))
+                {
+                    value = default;
+                    return false;
+                }
+
+                value = converted;
+                return true;
+            }
         }
 
         /// <summary>
@@ -330,7 +519,22 @@ namespace Microsoft.AspNetCore.Components
             // when a format is used.
             Action<UIChangeEventArgs> callback = (e) =>
             {
-                setter(ConvertDateTime(e.Value, format: null));
+                DateTime value = default;
+                var converted = false;
+                try
+                {
+                    value = ConvertDateTime(e.Value, format: null);
+                    converted = true;
+                }
+                catch
+                {
+                }
+
+                // See comments in CreateBinderCore
+                if (converted)
+                {
+                    setter(value);
+                }
             };
             return factory.Create<UIChangeEventArgs>(receiver, callback);
         }
@@ -355,7 +559,22 @@ namespace Microsoft.AspNetCore.Components
             // when a format is used.
             Action<UIChangeEventArgs> callback = (e) =>
             {
-                setter(ConvertDateTime(e.Value, format));
+                DateTime value = default;
+                var converted = false;
+                try
+                {
+                    value = ConvertDateTime(e.Value, format);
+                    converted = true;
+                }
+                catch
+                {
+                }
+
+                // See comments in CreateBinderCore
+                if (converted)
+                {
+                    setter(value);
+                }
             };
             return factory.Create<UIChangeEventArgs>(receiver, callback);
         }
@@ -373,7 +592,7 @@ namespace Microsoft.AspNetCore.Components
             this EventCallbackFactory factory,
             object receiver,
             Action<T> setter,
-            T existingValue) where T : Enum
+            T existingValue) where T : struct, Enum
         {
             return CreateBinderCore<T>(factory, receiver, setter, EnumConverter<T>.Convert);
         }
@@ -399,11 +618,27 @@ namespace Microsoft.AspNetCore.Components
             this EventCallbackFactory factory,
             object receiver,
             Action<T> setter,
-            Func<object, T> converter)
+            BindConverter<T> converter)
         {
             Action<UIChangeEventArgs> callback = e =>
             {
-                setter(converter(e.Value));
+                T value = default;
+                var converted = false;
+                try
+                {
+                    converted = converter(e.Value, out value);
+                }
+                catch
+                {
+                }
+
+                // We only invoke the setter if the conversion didn't throw. This is valuable because it allows us to attempt
+                // to process invalid input but avoid dirtying the state of the component if can't be converted. Imagine if
+                // we assigned default(T) on failure - this would result in trouncing the user's typed in value.
+                if (converted)
+                {
+                    setter(value);
+                }
             };
             return factory.Create<UIChangeEventArgs>(receiver, callback);
         }
