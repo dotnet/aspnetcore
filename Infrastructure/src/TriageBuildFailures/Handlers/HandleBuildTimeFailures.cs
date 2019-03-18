@@ -44,7 +44,7 @@ namespace TriageBuildFailures.Handlers
         }
 
         private const string _BrokenBuildLabel = "Broken Build";
-        private static readonly string[] _Notifiers = new string[] { "Eilon", "mkArtakMSFT", "muratg" };
+        private static readonly string[] _Notifiers = new string[] { "Eilon", "mkArtakMSFT", "anurse" };
 
         public override async Task HandleFailure(ICIBuild build)
         {

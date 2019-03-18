@@ -15,11 +15,11 @@
     "IssueAreas": [
       {
         "AreaName": "area-caching",
-        "OwnerNames": "muratg"
+        "OwnerNames": "anurse"
       },
       {
         "AreaName": "area-common",
-        "OwnerNames": "muratg"
+        "OwnerNames": "anurse"
       },
       {
         "AreaName": "area-configuration",
@@ -43,19 +43,19 @@
       },
       {
         "AreaName": "area-platform",
-        "OwnerNames": "muratg"
+        "OwnerNames": "anurse"
       },
       {
         "AreaName": "area-security",
-        "OwnerNames": "muratg"
+        "OwnerNames": "anurse"
       },
       {
         "AreaName": "area-servers",
-        "OwnerNames": "muratg"
+        "OwnerNames": "anurse"
       },
       {
         "AreaName": "area-signalr",
-        "OwnerNames": "muratg"
+        "OwnerNames": "anurse"
       },
       {
         "AreaName": "area-tools",
@@ -89,9 +89,8 @@
     "BuildPath": "\\aspnet",
     "BuildIdIgnoreList": [
       "189", //AspNetCore-site-extensions @pakrym is still bringing this online, so it will be too noisy for now.,
-      
       // aspnet/websdk. Owned by @vijay's team. We don't track issues for that.
-      "266", 
+      "266",
       "281"
     ]
   }
