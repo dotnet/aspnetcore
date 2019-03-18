@@ -61,9 +61,12 @@
   <Target Name="_PublishAsset">
 
     <PropertyGroup>
-      <PublishCommandOptions>PublishDir=$(PublishDirectory);Configuration=$(Configuration);TargetArchitecture=$(Architecture)</PublishCommandOptions>
+      <_TargetOsName Condition=" $([MSBuild]::IsOSPlatform('Windows'))">win</_TargetOsName>
+      <_TargetOsName Condition=" $([MSBuild]::IsOSPlatform('OSX'))">osx</_TargetOsName>
+      <_TargetOsName Condition=" $([MSBuild]::IsOSPlatform('Linux'))">linux</_TargetOsName>
 
-      <PublishCommandOptions Condition="'$(ApplicationType)' == 'Standalone'">$(PublishCommandOptions);RuntimeIdentifier=$(TargetOSName)-$(Architecture)</PublishCommandOptions>
+      <PublishCommandOptions>PublishDir=$(PublishDirectory);Configuration=$(Configuration);TargetArchitecture=$(Architecture)</PublishCommandOptions>
+      <PublishCommandOptions Condition="'$(ApplicationType)' == 'Standalone'">$(PublishCommandOptions);RuntimeIdentifier=$(_TargetOsName)-$(Architecture)</PublishCommandOptions>
 
       <!-- Workaround for https://github.com/aspnet/websdk/issues/422 -->
       <PublishCommandOptions Condition="'$(ApplicationType)' == 'Portable'">$(PublishCommandOptions);UseAppHost=false;</PublishCommandOptions>
@@ -73,3 +76,4 @@
   </Target>
 
 </Project>
+
