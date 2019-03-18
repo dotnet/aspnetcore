@@ -82,16 +82,18 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             return await externalLogin.SendEmailAsync(email);
         }
 
-        internal static async Task<Account.Manage.Index> SendEmailConfirmationLinkAsync(Index index)
+        internal static async Task<Email> SendEmailConfirmationLinkAsync(Index index)
         {
             var manage = await index.ClickManageLinkAsync();
-            return await manage.SendConfirmationEmailAsync();
+            var email = await manage.ClickEmailLinkAsync();
+            return await email.SendConfirmationEmailAsync();
         }
 
-        internal static async Task<Account.Manage.Index> SendUpdateProfileAsync(Index index, string newEmail)
+        internal static async Task<Email> SendUpdateEmailAsync(Index index, string newEmail)
         {
             var manage = await index.ClickManageLinkAsync();
-            return await manage.SendUpdateProfileAsync(newEmail);
+            var email = await manage.ClickEmailLinkAsync();
+            return await email.SendUpdateEmailAsync(newEmail);
         }
 
         internal static async Task<Index> LoginWithSocialLoginAsync(HttpClient client, string userName)

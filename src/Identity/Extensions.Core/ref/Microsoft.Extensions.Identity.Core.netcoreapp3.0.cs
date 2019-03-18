@@ -26,6 +26,12 @@ namespace Microsoft.AspNetCore.Identity
         public virtual string Protect(string data) { throw null; }
         public virtual string Unprotect(string data) { throw null; }
     }
+    public partial class DefaultUserConfirmation<TUser> : Microsoft.AspNetCore.Identity.IUserConfirmation<TUser> where TUser : class
+    {
+        public DefaultUserConfirmation() { }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public virtual System.Threading.Tasks.Task<bool> IsConfirmedAsync(Microsoft.AspNetCore.Identity.UserManager<TUser> manager, TUser user) { throw null; }
+    }
     public partial class EmailTokenProvider<TUser> : Microsoft.AspNetCore.Identity.TotpSecurityStampBasedTokenProvider<TUser> where TUser : class
     {
         public EmailTokenProvider() { }
@@ -193,6 +199,10 @@ namespace Microsoft.AspNetCore.Identity
         System.Threading.Tasks.Task<System.Collections.Generic.IList<TUser>> GetUsersForClaimAsync(System.Security.Claims.Claim claim, System.Threading.CancellationToken cancellationToken);
         System.Threading.Tasks.Task RemoveClaimsAsync(TUser user, System.Collections.Generic.IEnumerable<System.Security.Claims.Claim> claims, System.Threading.CancellationToken cancellationToken);
         System.Threading.Tasks.Task ReplaceClaimAsync(TUser user, System.Security.Claims.Claim claim, System.Security.Claims.Claim newClaim, System.Threading.CancellationToken cancellationToken);
+    }
+    public partial interface IUserConfirmation<TUser> where TUser : class
+    {
+        System.Threading.Tasks.Task<bool> IsConfirmedAsync(Microsoft.AspNetCore.Identity.UserManager<TUser> manager, TUser user);
     }
     public partial interface IUserEmailStore<TUser> : Microsoft.AspNetCore.Identity.IUserStore<TUser>, System.IDisposable where TUser : class
     {
@@ -396,6 +406,7 @@ namespace Microsoft.AspNetCore.Identity
     public partial class SignInOptions
     {
         public SignInOptions() { }
+        public bool RequireConfirmedAccount { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public bool RequireConfirmedEmail { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public bool RequireConfirmedPhoneNumber { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
