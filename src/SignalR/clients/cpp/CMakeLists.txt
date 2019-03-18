@@ -13,15 +13,19 @@ include
 
 find_library(CPPREST_SO NAMES "cpprest" PATHS ${CPPREST_LIB_DIR} REQUIRED)
 
-if(APPLE)
-  file(GLOB OPENSSL_ROOT_DIR /usr/local/Cellar/openssl/*)
-  list(REVERSE OPENSSL_ROOT_DIR)
-  set(CMAKE_REQUIRED_INCLUDES "${OPENSSL_INCLUDE_DIR}")
-  set(CMAKE_REQUIRED_LIBRARIES "${OPENSSL_LIBRARIES}")
-endif()
+if(NOT WIN32)
+  if(APPLE)
+    file(GLOB OPENSSL_ROOT_DIR /usr/local/Cellar/openssl/*)
+    list(REVERSE OPENSSL_ROOT_DIR)
+    set(CMAKE_REQUIRED_INCLUDES "${OPENSSL_INCLUDE_DIR}")
+    set(CMAKE_REQUIRED_LIBRARIES "${OPENSSL_LIBRARIES}")
+  endif()
 
-find_package(OpenSSL 1.0.0 REQUIRED)
-find_package(Boost REQUIRED COMPONENTS system thread chrono)
+  find_package(OpenSSL 1.0.0 REQUIRED)
+  find_package(Boost REQUIRED COMPONENTS system thread chrono)
+
+  include_directories ("${OPENSSL_INCLUDE_DIR}")
+endif()
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
