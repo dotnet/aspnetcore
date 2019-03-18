@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                     descriptor.RouteValues.Add("page", model.ViewEnginePath);
                 }
 
-                descriptor.AttributeRouteInfo.Template = CreatePageRoute(model, selector, descriptor);
+                descriptor.AttributeRouteInfo.Template = TransformPageRoute(model, selector, descriptor);
 
                 // Mark all pages as a "dynamic endpoint" - this is how we deal with the compilation of pages
                 // in endpoint routing.
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             }
         }
 
-        private static string CreatePageRoute(PageRouteModel model, SelectorModel selectorModel, PageActionDescriptor descriptor)
+        private static string TransformPageRoute(PageRouteModel model, SelectorModel selectorModel, PageActionDescriptor descriptor)
         {
             var pageRouteMetadata = selectorModel.EndpointMetadata.OfType<PageRouteMetadata>().SingleOrDefault();
             if (pageRouteMetadata == null)
