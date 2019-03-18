@@ -46,37 +46,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         };
 
-        // Temporary "intentionally-flaky" test to prove out FlakyAttribute infrastructure
-        // To be removed before merging!
-        [Fact]
-        [Flaky("http://example.com/", HelixQueues.Windows10Amd64)]
-        public void FailOnHelixWindows()
-        {
-            if (string.Equals(Environment.GetEnvironmentVariable("HELIX"), "Windows.10.Amd64.ClientRS4.VS2017.Open"))
-            {
-                throw new Exception($"Flaky on Helix Queue: {Environment.GetEnvironmentVariable("HELIX")}");
-            }
-        }
-
-        [Fact]
-        [Flaky("http://example.com/", AzurePipelines.macOS)]
-        public void FailOnAzPDarwin()
-        {
-            if (string.Equals(Environment.GetEnvironmentVariable("AGENT_OS"), "Darwin"))
-            {
-                throw new Exception($"Flaky on AzP OS: {Environment.GetEnvironmentVariable("AGENT_OS")}");
-            }
-        }
-
-        [Fact]
-        [Flaky("http://example.com", "All")] // No constant for "All" yet: https://github.com/aspnet/Extensions/issues/1246
-        public void FailAlways()
-        {
-            throw new Exception("Flaky always");
-        }
-
-        // End of temporary flaky tests.
-
         [Theory]
         [InlineData(10 * 1024 * 1024, true)]
         // In the following dataset, send at least 2GB.
