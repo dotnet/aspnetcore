@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    public class HttpResponsePipeWriter : PipeWriter
+    internal class HttpResponsePipeWriter : PipeWriter
     {
         private HttpStreamState _state;
         private readonly IHttpResponseControl _pipeControl;

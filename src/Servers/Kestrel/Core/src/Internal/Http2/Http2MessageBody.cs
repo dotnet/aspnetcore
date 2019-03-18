@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
-    public class Http2MessageBody : MessageBody
+    internal class Http2MessageBody : MessageBody
     {
         private readonly Http2Stream _context;
         private ReadResult _readResult;

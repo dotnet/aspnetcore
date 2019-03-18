@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    public static class PathNormalizer
+    internal static class PathNormalizer
     {
         private const byte ByteSlash = (byte)'/';
         private const byte ByteDot = (byte)'.';

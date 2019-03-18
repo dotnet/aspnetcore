@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
@@ -194,10 +193,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Theory(Skip = "https://github.com/aspnet/AspNetCore-Internal/issues/1879")]
-        [InlineData(Http2FrameType.DATA)]
-        [InlineData(Http2FrameType.CONTINUATION)]
-        public async Task AbortedStream_ResetsAndDrainsRequest_RefusesFramesAfterCooldownExpires(Http2FrameType finalFrameType)
+        [InlineData((int)Http2FrameType.DATA)]
+        [InlineData((int)Http2FrameType.CONTINUATION)]
+        public async Task AbortedStream_ResetsAndDrainsRequest_RefusesFramesAfterCooldownExpires(int intFinalFrameType)
         {
+            var finalFrameType = (Http2FrameType)intFinalFrameType;
             // Remove callback that completes _pair.Application.Output on abort.
             _mockConnectionContext.Reset();
 

@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    public enum HttpScheme
+    internal enum HttpScheme
     {
         Unknown = -1,
         Http = 0,

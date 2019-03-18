@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
     /// <summary>
     /// Summary description for TestServer
     /// </summary>
-    public class TestServer : IDisposable, IStartup
+    internal class TestServer : IDisposable, IStartup
     {
         private IWebHost _host;
         private ListenOptions _listenOptions;

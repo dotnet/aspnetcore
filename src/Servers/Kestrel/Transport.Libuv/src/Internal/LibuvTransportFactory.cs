@@ -9,7 +9,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 {
-    public class LibuvTransportFactory : ITransportFactory
+    internal class LibuvTransportFactory : ITransportFactory
     {
         private readonly LibuvTransportContext _baseTransportContext;
 

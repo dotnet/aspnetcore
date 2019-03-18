@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Testing
 {
-    public class TestServiceContext : ServiceContext
+    internal class TestServiceContext : ServiceContext
     {
         public TestServiceContext()
         {

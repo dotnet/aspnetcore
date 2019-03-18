@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    public interface IHttpHeadersHandler
+    internal interface IHttpHeadersHandler
     {
         void OnHeader(Span<byte> name, Span<byte> value);
     }

@@ -16,7 +16,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
-    public class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter
+    internal class Http2OutputProducer : IHttpOutputProducer, IHttpOutputAborter
     {
         private readonly int _streamId;
         private readonly Http2FrameWriter _frameWriter;

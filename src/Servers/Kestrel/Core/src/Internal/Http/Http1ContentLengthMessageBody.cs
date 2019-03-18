@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Connections;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    public class Http1ContentLengthMessageBody : Http1MessageBody
+    internal class Http1ContentLengthMessageBody : Http1MessageBody
     {
         private readonly long _contentLength;
         private long _inputLength;
