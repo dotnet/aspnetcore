@@ -164,6 +164,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             return OnConsumeAsync();
         }
+        
         private void ThrowIfCompleted()
         {
             if (_completed)
