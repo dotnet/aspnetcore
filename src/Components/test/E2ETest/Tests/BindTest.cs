@@ -199,8 +199,12 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.Equal("-42", boundValue.Text);
             Assert.Equal("-42", mirrorValue.GetAttribute("value"));
 
-            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            // Modify target; value is not updated because it's not convertable.
             target.Clear();
+            Browser.Equal("-42", () => boundValue.Text);
+            Assert.Equal("-42", mirrorValue.GetAttribute("value"));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
             target.SendKeys("42\t");
             Browser.Equal("42", () => boundValue.Text);
             Assert.Equal("42", mirrorValue.GetAttribute("value"));
@@ -218,6 +222,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             // Modify target; verify value is updated and that textboxes linked to the same data are updated
             target.Clear();
+            Browser.Equal("", () => boundValue.Text);
+            Assert.Equal("", mirrorValue.GetAttribute("value"));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
             target.SendKeys("-42\t");
             Browser.Equal("-42", () => boundValue.Text);
             Assert.Equal("-42", mirrorValue.GetAttribute("value"));
@@ -245,8 +253,12 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.Equal("3000000000", boundValue.Text);
             Assert.Equal("3000000000", mirrorValue.GetAttribute("value"));
 
-            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            // Modify target; value is not updated because it's not convertable.
             target.Clear();
+            Browser.Equal("3000000000", () => boundValue.Text);
+            Assert.Equal("3000000000", mirrorValue.GetAttribute("value"));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
             target.SendKeys("-3000000000\t");
             Browser.Equal("-3000000000", () => boundValue.Text);
             Assert.Equal("-3000000000", mirrorValue.GetAttribute("value"));
@@ -264,6 +276,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             // Modify target; verify value is updated and that textboxes linked to the same data are updated
             target.Clear();
+            Browser.Equal("", () => boundValue.Text);
+            Assert.Equal("", mirrorValue.GetAttribute("value"));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
             target.SendKeys("3000000000\t");
             Browser.Equal("3000000000", () => boundValue.Text);
             Assert.Equal("3000000000", mirrorValue.GetAttribute("value"));
@@ -291,8 +307,12 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.Equal("3.141", boundValue.Text);
             Assert.Equal("3.141", mirrorValue.GetAttribute("value"));
 
-            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            // Modify target; value is not updated because it's not convertable.
             target.Clear();
+            Browser.Equal("3.141", () => boundValue.Text);
+            Assert.Equal("3.141", mirrorValue.GetAttribute("value"));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
             target.SendKeys("-3.141\t");
             Browser.Equal("-3.141", () => boundValue.Text);
             Assert.Equal("-3.141", mirrorValue.GetAttribute("value"));
@@ -310,6 +330,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             // Modify target; verify value is updated and that textboxes linked to the same data are updated
             target.Clear();
+            Browser.Equal("", () => boundValue.Text);
+            Assert.Equal("", mirrorValue.GetAttribute("value"));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
             target.SendKeys("3.141\t");
             Browser.Equal("3.141", () => boundValue.Text);
             Assert.Equal("3.141", mirrorValue.GetAttribute("value"));
@@ -337,8 +361,12 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.Equal("3.14159265359", boundValue.Text);
             Assert.Equal("3.14159265359", mirrorValue.GetAttribute("value"));
 
-            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            // Modify target; value is not updated because it's not convertable.
             target.Clear();
+            Browser.Equal("3.14159265359", () => boundValue.Text);
+            Assert.Equal("3.14159265359", mirrorValue.GetAttribute("value"));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
             target.SendKeys("-3.14159265359\t");
             Browser.Equal("-3.14159265359", () => boundValue.Text);
             Assert.Equal("-3.14159265359", mirrorValue.GetAttribute("value"));
@@ -363,6 +391,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             // Modify target; verify value is updated and that textboxes linked to the same data are updated
             target.Clear();
+            Browser.Equal("", () => boundValue.Text);
+            Assert.Equal("", mirrorValue.GetAttribute("value"));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
             target.SendKeys("3.14159265359\t");
             Browser.Equal("3.14159265359", () => boundValue.Text);
             Assert.Equal("3.14159265359", mirrorValue.GetAttribute("value"));
@@ -397,9 +429,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.Equal("0.0000000000000000000000000001", boundValue.Text);
             Assert.Equal("0.0000000000000000000000000001", mirrorValue.GetAttribute("value"));
 
+            // Modify target; value is not updated because it's not convertable.
+            target.Clear();
+            Browser.Equal("0.0000000000000000000000000001", () => boundValue.Text);
+            Assert.Equal("0.0000000000000000000000000001", mirrorValue.GetAttribute("value"));
+
             // Modify target; verify value is updated and that textboxes linked to the same data are updated
             // Decimal should preserve trailing zeros
-            target.Clear();
             target.SendKeys("0.010\t");
             Browser.Equal("0.010", () => boundValue.Text);
             Assert.Equal("0.010", mirrorValue.GetAttribute("value"));
@@ -417,6 +453,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             // Modify target; verify value is updated and that textboxes linked to the same data are updated
             target.Clear();
+            Browser.Equal("", () => boundValue.Text);
+            Assert.Equal("", mirrorValue.GetAttribute("value"));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
             target.SendKeys("0.0000000000000000000000000001\t");
             Browser.Equal("0.0000000000000000000000000001", () => boundValue.Text);
             Assert.Equal("0.0000000000000000000000000001", mirrorValue.GetAttribute("value"));
@@ -433,6 +473,70 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             target.SendKeys("\t");
             Browser.Equal(string.Empty, () => boundValue.Text);
             Assert.Equal(string.Empty, mirrorValue.GetAttribute("value"));
+        }
+
+        // This tests what happens you put invalid (unconvertable) input in. This is separate from the
+        // other tests because it requires type="text" - the other tests use type="number"
+        [Fact]
+        public void CanBindTextbox_Decimal_InvalidInput()
+        {
+            var target = Browser.FindElement(By.Id("textbox-decimal-invalid"));
+            var boundValue = Browser.FindElement(By.Id("textbox-decimal-invalid-value"));
+            var mirrorValue = Browser.FindElement(By.Id("textbox-decimal-invalid-mirror"));
+            Assert.Equal("0.0000000000000000000000000001", target.GetAttribute("value"));
+            Assert.Equal("0.0000000000000000000000000001", boundValue.Text);
+            Assert.Equal("0.0000000000000000000000000001", mirrorValue.GetAttribute("value"));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            target.Clear();
+            target.SendKeys("0.01\t");
+            Browser.Equal("0.01", () => boundValue.Text);
+            Assert.Equal("0.01", mirrorValue.GetAttribute("value"));
+
+            // Modify target to something invalid - the invalid value is preserved in the input, the other displays
+            // don't change and still have the last value valid.
+            target.SendKeys("A\t");
+            Browser.Equal("0.01", () => boundValue.Text);
+            Assert.Equal("0.01", mirrorValue.GetAttribute("value"));
+            Assert.Equal("0.01A", target.GetAttribute("value"));
+
+            // Modify target to something valid.
+            target.SendKeys(Keys.Backspace);
+            target.SendKeys("1\t");
+            Browser.Equal("0.011", () => boundValue.Text);
+            Assert.Equal("0.011", mirrorValue.GetAttribute("value"));
+        }
+
+        // This tests what happens you put invalid (unconvertable) input in. This is separate from the
+        // other tests because it requires type="text" - the other tests use type="number"
+        [Fact]
+        public void CanBindTextbox_NullableDecimal_InvalidInput()
+        {
+            var target = Browser.FindElement(By.Id("textbox-nullable-decimal-invalid"));
+            var boundValue = Browser.FindElement(By.Id("textbox-nullable-decimal-invalid-value"));
+            var mirrorValue = Browser.FindElement(By.Id("textbox-nullable-decimal-invalid-mirror"));
+            Assert.Equal(string.Empty, target.GetAttribute("value"));
+            Assert.Equal(string.Empty, boundValue.Text);
+            Assert.Equal(string.Empty, mirrorValue.GetAttribute("value"));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            target.Clear();
+            target.SendKeys("0.01\t");
+            Browser.Equal("0.01", () => boundValue.Text);
+            Assert.Equal("0.01", mirrorValue.GetAttribute("value"));
+
+            // Modify target to something invalid - the invalid value is preserved in the input, the other displays
+            // don't change and still have the last value valid.
+            target.SendKeys("A\t");
+            Browser.Equal("0.01", () => boundValue.Text);
+            Assert.Equal("0.01", mirrorValue.GetAttribute("value"));
+            Assert.Equal("0.01A", target.GetAttribute("value"));
+
+            // Modify target to something valid.
+            target.SendKeys(Keys.Backspace);
+            target.SendKeys("1\t");
+            Browser.Equal("0.011", () => boundValue.Text);
+            Assert.Equal("0.011", mirrorValue.GetAttribute("value"));
         }
     }
 }

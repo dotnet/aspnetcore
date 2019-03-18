@@ -51,7 +51,7 @@ namespace BasicWebSite.Controllers
             };
 
         [HttpGet("/components")]
-        [HttpGet("/components/routable")]
+        [HttpGet("/components/{component}")]
         public IActionResult Index()
         {
             return View();

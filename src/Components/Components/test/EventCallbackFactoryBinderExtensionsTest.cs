@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components
     public class EventCallbackFactoryBinderExtensionsTest
     {
         [Fact]
-        public async Task CreateBinder_ThrowsConversionException()
+        public async Task CreateBinder_SwallowsConversionException()
         {
             // Arrange
             var value = 17;
@@ -20,12 +20,61 @@ namespace Microsoft.AspNetCore.Components
             var binder = EventCallback.Factory.CreateBinder(component, setter, value);
 
             // Act
-            await Assert.ThrowsAsync<FormatException>(() =>
+            await binder.InvokeAsync(new UIChangeEventArgs() { Value = "not-an-integer!", });
+
+            Assert.Equal(17, value); // Setter not called
+            Assert.Equal(1, component.Count);
+        }
+
+        [Fact]
+        public async Task CreateBinder_ThrowsSetterException()
+        {
+            // Arrange
+            var component = new EventCountingComponent();
+            Action<int> setter = (_) => { throw new InvalidTimeZoneException(); };
+
+            var binder = EventCallback.Factory.CreateBinder(component, setter, 17);
+
+            // Act
+            await Assert.ThrowsAsync<InvalidTimeZoneException>(() =>
             {
-                return binder.InvokeAsync(new UIChangeEventArgs() { Value = "not-an-integer!", });
+                return binder.InvokeAsync(new UIChangeEventArgs() { Value = "18", });
             });
 
-            Assert.Equal(17, value);
+            Assert.Equal(1, component.Count);
+        }
+
+        [Fact]
+        public async Task CreateBinder_BindsEmpty_DoesNotCallSetter()
+        {
+            // Arrange
+            var value = 17;
+            var component = new EventCountingComponent();
+            Action<int> setter = (_) => value = _;
+
+            var binder = EventCallback.Factory.CreateBinder(component, setter, value);
+
+            // Act
+            await binder.InvokeAsync(new UIChangeEventArgs() { Value = "not-an-integer!", });
+
+            Assert.Equal(17, value); // Setter not called
+            Assert.Equal(1, component.Count);
+        }
+
+        [Fact]
+        public async Task CreateBinder_BindsEmpty_CallsSetterForNullable()
+        {
+            // Arrange
+            var value = (int?)17;
+            var component = new EventCountingComponent();
+            Action<int?> setter = (_) => value = _;
+
+            var binder = EventCallback.Factory.CreateBinder(component, setter, value);
+
+            // Act
+            await binder.InvokeAsync(new UIChangeEventArgs() { Value = "", });
+
+            Assert.Null(value); // Setter called
             Assert.Equal(1, component.Count);
         }
 
