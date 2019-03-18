@@ -24,3 +24,5 @@ set (SOURCES
 add_library (signalrclient SHARED ${SOURCES})
 
 target_link_libraries(signalrclient ${CPPREST_SO} ${OPENSSL_LIBRARIES} Boost::boost Boost::system Boost::chrono Boost::thread)
+
+add_custom_command(TARGET signalrclient POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/include $<TARGET_FILE_DIR:signalrclient>/include)
