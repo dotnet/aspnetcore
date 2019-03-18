@@ -1,0 +1,2 @@
+﻿@page "/path/[page]/{id?}"
+Transformed to: @($"/path{ViewContext.RouteData.Values["page"]}/{ViewContext.RouteData.Values["id"]}")

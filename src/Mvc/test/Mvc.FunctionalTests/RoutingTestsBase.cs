@@ -1545,6 +1545,30 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("/PageParameter/PageParameter?page=17", content);
         }
 
+        [Fact]
+        public async Task Page_PageWithRouteTokensInAbsoluteRoute()
+        {
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/path/PageWithRouteTokensInAbsoluteRoute/1");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var body = await response.Content.ReadAsStringAsync();
+            Assert.Equal("Transformed to: /path/PageWithRouteTokensInAbsoluteRoute/1", body);
+        }
+
+        [Fact]
+        public async Task Area_Page_PageWithRouteTokensInAbsoluteRoute()
+        {
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/Admin/1");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var body = await response.Content.ReadAsStringAsync();
+            Assert.Equal("Transformed to: /Admin/1", body);
+        }
+
         protected static LinkBuilder LinkFrom(string url)
         {
             return new LinkBuilder(url);
