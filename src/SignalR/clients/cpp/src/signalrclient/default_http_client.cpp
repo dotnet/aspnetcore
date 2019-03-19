@@ -61,7 +61,7 @@ namespace signalr
                     signalr::http_response response;
                     response.content = response_body;
                     response.status_code = status_code;
-                    callback(response, nullptr);
+                    callback(std::move(response), nullptr);
                 });
             }
             catch (...)

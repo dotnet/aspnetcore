@@ -22,5 +22,5 @@ void test_http_client::send(std::string url, http_request request, std::function
         exception = std::current_exception();
     }
 
-    callback(response, exception);
+    callback(std::move(response), exception);
 }
