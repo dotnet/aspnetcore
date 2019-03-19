@@ -11,7 +11,7 @@ namespace signalr
     namespace negotiate
     {
         pplx::task<negotiation_response> negotiate(http_client& client, const std::string& base_url,
-            const signalr_client_config&)
+            const signalr_client_config& config)
         {
             auto negotiate_url = url_builder::build_negotiate(base_url);
 
@@ -20,6 +20,12 @@ namespace signalr
             // TODO: signalr_client_config
             http_request request;
             request.method = http_method::POST;
+
+            for (auto& header : config.get_http_headers())
+            {
+                request.headers.insert(std::make_pair(utility::conversions::to_utf8string(header.first), utility::conversions::to_utf8string(header.second)));
+            }
+
             client.send(negotiate_url, request, [tce](http_response http_response, std::exception_ptr exception)
             {
                 if (exception != nullptr)

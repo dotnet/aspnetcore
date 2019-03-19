@@ -544,7 +544,7 @@ TEST(connection_impl_start, negotiate_follows_redirect)
     ASSERT_EQ("ws://redirected/?id=f7707523-307d-4cba-9abf-3eef701241e8", connectUrl);
 }
 
-TEST(connection_impl_start, DISABLED_negotiate_redirect_uses_accessToken)
+TEST(connection_impl_start, negotiate_redirect_uses_accessToken)
 {
     std::shared_ptr<log_writer> writer(std::make_shared<memory_log_writer>());
     std::string accessToken;
@@ -565,11 +565,7 @@ TEST(connection_impl_start, DISABLED_negotiate_redirect_uses_accessToken)
             }
         }
 
-        /*auto request = new web_request_stub((unsigned short)200, "OK", response_body);
-        request->on_get_response = [&accessToken](web_request_stub& stub)
-        {
-            accessToken = utility::conversions::to_utf8string(stub.m_signalr_client_config.get_http_headers()[_XPLATSTR("Authorization")]);
-        };*/
+        accessToken = request.headers["Authorization"];
         return http_response{ 200, response_body };
     });
 
