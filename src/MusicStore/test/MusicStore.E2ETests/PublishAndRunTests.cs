@@ -36,6 +36,7 @@ namespace E2ETests
                     ApplicationPath = Helpers.GetApplicationPath(),
                     PublishApplicationBeforeDeployment = true,
                     PreservePublishedApplicationForDebugging = Helpers.PreservePublishedApplicationForDebugging,
+                    PublishedApplicationRootPath = Path.Combine(Path.GetTempPath(), "MusicStore", Path.GetRandomFileName()),
                     UserAdditionalCleanup = parameters =>
                     {
                         DbUtils.DropDatabase(musicStoreDbName, logger);
