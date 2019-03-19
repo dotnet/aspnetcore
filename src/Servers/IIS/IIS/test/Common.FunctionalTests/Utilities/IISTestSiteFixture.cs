@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         private static void Configure(IISDeploymentParameters deploymentParameters)
         {
-            deploymentParameters.ApplicationPublisher = new IISPublishedApplicationPublisher(Helpers.GetOutOfProcessTestSitesName());;
+            deploymentParameters.ApplicationPublisher = new PublishedApplicationPublisher(Helpers.GetOutOfProcessTestSitesName());;
             deploymentParameters.HostingModel = HostingModel.OutOfProcess;
         }
     }
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         private static void Configure(IISDeploymentParameters deploymentParameters)
         {
-            deploymentParameters.ApplicationPublisher = new IISPublishedApplicationPublisher(Helpers.GetOutOfProcessTestSitesName());;
+            deploymentParameters.ApplicationPublisher = new PublishedApplicationPublisher(Helpers.GetOutOfProcessTestSitesName());;
             deploymentParameters.ApplicationPath = Helpers.GetOutOfProcessTestSitesName();
             deploymentParameters.HostingModel = HostingModel.OutOfProcess;
         }
@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 TargetFramework = Tfm.NetCoreApp30,
                 HostingModel = HostingModel.InProcess,
                 PublishApplicationBeforeDeployment = true,
-                ApplicationPublisher = new IISPublishedApplicationPublisher(Helpers.GetInProcessTestSitesName()),
+                ApplicationPublisher = new PublishedApplicationPublisher(Helpers.GetInProcessTestSitesName()),
                 ServerType =  DeployerSelector.ServerType
             };
 
