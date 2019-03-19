@@ -100,20 +100,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileCountEquals(result, 0, Path.Combine(PublishOutputPath, "Views"), "*.cshtml");
         }
 
-        [Fact] // This will use the old precompilation tool, RazorSDK shouldn't get involved.
-        [InitializeTestProject("SimpleMvc")]
-        public async Task Publish_WithMvcRazorCompileOnPublish_Noops()
-        {
-            var result = await DotnetMSBuild("Publish", "/p:MvcRazorCompileOnPublish=true");
-
-            Assert.BuildPassed(result);
-
-            Assert.FileExists(result, PublishOutputPath, "SimpleMvc.dll");
-            Assert.FileExists(result, PublishOutputPath, "SimpleMvc.pdb");
-            Assert.FileDoesNotExist(result, PublishOutputPath, "SimpleMvc.Views.dll");
-            Assert.FileDoesNotExist(result, PublishOutputPath, "SimpleMvc.Views.pdb");
-        }
-
         [Fact] // This is an override to force the new toolset
         [InitializeTestProject("SimpleMvc")]
         public async Task Publish_WithMvcRazorCompileOnPublish_AndRazorSDK_PublishesAssembly()
@@ -152,20 +138,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileCountEquals(result, 0, Path.Combine(PublishOutputPath, "refs"), "*.dll");
         }
 
-        [Fact]
-        [InitializeTestProject("SimpleMvc")]
-        public async Task Publish_NoopsWithMvcRazorCompileOnPublish_False()
-        {
-            var result = await DotnetMSBuild("Publish", "/p:MvcRazorCompileOnPublish=false");
 
-            Assert.BuildPassed(result);
-
-            // Everything we do should noop - including building the app.
-            Assert.FileExists(result, PublishOutputPath, "SimpleMvc.dll");
-            Assert.FileExists(result, PublishOutputPath, "SimpleMvc.pdb");
-            Assert.FileDoesNotExist(result, PublishOutputPath, "SimpleMvc.Views.dll");
-            Assert.FileDoesNotExist(result, PublishOutputPath, "SimpleMvc.Views.pdb");
-        }
 
         [Fact]
         [InitializeTestProject("SimpleMvc")]

@@ -7,10 +7,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-
-    <_EnableAllInclusiveRazorSdk>true</_EnableAllInclusiveRazorSdk>
     <RazorLangVersion>3.0</RazorLangVersion>
-    <RazorDefaultConfiguration>MVC-3.0</RazorDefaultConfiguration>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(RunningAsTest)' == ''">
@@ -26,10 +23,6 @@
 
   <ItemGroup Condition="'$(BinariesRoot)'!=''">
     <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.Test.ComponentShim.dll"/>
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectCapability Include="DotNetCoreRazorConfiguration" />
   </ItemGroup>
 
   <!-- Test Placeholder -->

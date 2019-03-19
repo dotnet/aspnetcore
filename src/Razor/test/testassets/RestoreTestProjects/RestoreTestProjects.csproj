@@ -9,6 +9,7 @@
     <ProjectReference Include="..\ClassLibrary2\ClassLibrary2.csproj" />
     <ProjectReference Include="..\ClassLibraryMvc21\ClassLibraryMvc21.csproj" />
     <ProjectReference Include="..\ComponentLibrary\ComponentLibrary.csproj" />
+    <ProjectReference Include="..\ComponentApp\ComponentApp.csproj" />
     <ProjectReference Include="..\LargeProject\LargeProject.csproj" />
     <ProjectReference Include="..\SimpleMvcFSharp\SimpleMvcFSharp.fsproj" />
     <ProjectReference Include="..\SimpleMvc\SimpleMvc.csproj" />

@@ -24,6 +24,56 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("MvcWithComponents")]
         public Task Build_Components_WithDesktopMSBuild_Works() => Build_ComponentsWorks(MSBuildProcessKind.Desktop);
 
+        [Fact]
+        [InitializeTestProject("ComponentApp")]
+        public async Task Build_DoesNotProduceMvcArtifacts_IfAddRazorSupportForMvcIsFalse()
+        {
+            var result = await DotnetMSBuild("Build");
+
+            Assert.BuildPassed(result);
+
+            Assert.FileExists(result, OutputPath, "ComponentApp.dll");
+            Assert.FileExists(result, OutputPath, "ComponentApp.pdb");
+
+            // Verify component compilation succeeded
+            Assert.AssemblyContainsType(result, Path.Combine(OutputPath, "ComponentApp.dll"), "ComponentApp.Components.Pages.Counter");
+
+            // Verify MVC artifacts do not appear in the output.
+            Assert.FileDoesNotExist(result, OutputPath, "ComponentApp.Views.dll");
+            Assert.FileDoesNotExist(result, OutputPath, "ComponentApp.Views.pdb");
+            Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvc.RazorAssemblyInfo.cs");
+            Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvc.RazorTargetAssemblyInfo.cs");
+        }
+
+        [Fact]
+        [InitializeTestProject("ComponentLibrary")]
+        public async Task Build_WithoutRazorLangVersion_ProducesWarning()
+        {
+            TargetFramework = "netstandard2.0";
+            var result = await DotnetMSBuild("Build", "/p:RazorLangVersion=");
+
+            Assert.BuildPassed(result, allowWarnings: true);
+
+            // We should see a build warning
+            Assert.BuildWarning(result, "RAZORSDK1005");
+        }
+
+        [Fact]
+        [InitializeTestProject("ComponentLibrary")]
+        public async Task Building_NetstandardComponentLibrary()
+        {
+            TargetFramework = "netstandard2.0";
+
+            // Build
+            var result = await DotnetMSBuild("Build");
+
+            Assert.BuildPassed(result);
+            Assert.FileExists(result, OutputPath, "ComponentLibrary.dll");
+            Assert.FileExists(result, OutputPath, "ComponentLibrary.pdb");
+            Assert.FileDoesNotExist(result, OutputPath, "ComponentLibrary.Views.dll");
+            Assert.FileDoesNotExist(result, OutputPath, "ComponentLibrary.Views.pdb");
+        }
+
         private async Task Build_ComponentsWorks(MSBuildProcessKind msBuildProcessKind)
         {
             var result = await DotnetMSBuild("Build", msBuildProcessKind: msBuildProcessKind);

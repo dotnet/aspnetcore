@@ -28,12 +28,12 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.NuspecContains(
                 result,
                 Path.Combine("obj", Configuration, "ClassLibrary.1.0.0.nuspec"),
-                @"<files include=""any/netstandard2.0/Views/Shared/_Layout.cshtml"" buildAction=""Content"" />");
+                @"<files include=""any/netcoreapp3.0/Views/Shared/_Layout.cshtml"" buildAction=""Content"" />");
 
             Assert.NupkgContains(
                 result,
                 Path.Combine("bin", Configuration, "ClassLibrary.1.0.0.nupkg"),
-                Path.Combine("contentFiles", "any", "netstandard2.0", "Views", "Shared", "_Layout.cshtml"));
+                Path.Combine("contentFiles", "any", "netcoreapp3.0", "Views", "Shared", "_Layout.cshtml"));
         }
 
         [Fact]
@@ -55,25 +55,25 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 Assert.NuspecContains(
                     result,
                     Path.Combine("obj", Configuration, "ClassLibrary.1.0.0.nuspec"),
-                    $"<file src=\"{Path.Combine(Project.DirectoryPath, "bin", Configuration, "netstandard2.0", "ClassLibrary.Views.dll")}\" " +
-                    $"target=\"{Path.Combine("lib", "netstandard2.0", "ClassLibrary.Views.dll")}\" />");
+                    $"<file src=\"{Path.Combine(Project.DirectoryPath, "bin", Configuration, "netcoreapp3.0", "ClassLibrary.Views.dll")}\" " +
+                    $"target=\"{Path.Combine("lib", "netcoreapp3.0", "ClassLibrary.Views.dll")}\" />");
 
                 Assert.NuspecDoesNotContain(
                     result,
                     Path.Combine("obj", Configuration, "ClassLibrary.1.0.0.nuspec"),
-                    $"<file src=\"{Path.Combine(Project.DirectoryPath, "bin", Configuration, "netstandard2.0", "ClassLibrary.Views.pdb")}\" " +
-                    $"target=\"{Path.Combine("lib", "netstandard2.0", "ClassLibrary.Views.pdb")}\" />");
+                    $"<file src=\"{Path.Combine(Project.DirectoryPath, "bin", Configuration, "netcoreapp3.0", "ClassLibrary.Views.pdb")}\" " +
+                    $"target=\"{Path.Combine("lib", "netcoreapp3.0", "ClassLibrary.Views.pdb")}\" />");
             }
 
             Assert.NuspecDoesNotContain(
                 result,
                 Path.Combine("obj", Configuration, "ClassLibrary.1.0.0.nuspec"),
-                @"<files include=""any/netstandard2.0/Views/Shared/_Layout.cshtml"" buildAction=""Content"" />");
+                @"<files include=""any/netcoreapp3.0/Views/Shared/_Layout.cshtml"" buildAction=""Content"" />");
 
             Assert.NupkgContains(
                 result,
                 Path.Combine("bin", Configuration, "ClassLibrary.1.0.0.nupkg"),
-                Path.Combine("lib", "netstandard2.0", "ClassLibrary.Views.dll"));
+                Path.Combine("lib", "netcoreapp3.0", "ClassLibrary.Views.dll"));
         }
 
         [Fact]
@@ -93,25 +93,25 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 Assert.NuspecContains(
                     result,
                     Path.Combine("obj", Configuration, "ClassLibrary.1.0.0.nuspec"),
-                    $"<file src=\"{Path.Combine(Project.DirectoryPath, "bin", Configuration, "netstandard2.0", "ClassLibrary.Views.dll")}\" " +
-                    $"target=\"{Path.Combine("lib", "netstandard2.0", "ClassLibrary.Views.dll")}\" />");
+                    $"<file src=\"{Path.Combine(Project.DirectoryPath, "bin", Configuration, "netcoreapp3.0", "ClassLibrary.Views.dll")}\" " +
+                    $"target=\"{Path.Combine("lib", "netcoreapp3.0", "ClassLibrary.Views.dll")}\" />");
 
                 Assert.NuspecDoesNotContain(
                     result,
                     Path.Combine("obj", Configuration, "ClassLibrary.1.0.0.nuspec"),
-                    $"<file src=\"{Path.Combine(Project.DirectoryPath, "bin", Configuration, "netstandard2.0", "ClassLibrary.Views.pdb")}\" " +
-                    $"target=\"{Path.Combine("lib", "netstandard2.0", "ClassLibrary.Views.pdb")}\" />");
+                    $"<file src=\"{Path.Combine(Project.DirectoryPath, "bin", Configuration, "netcoreapp3.0", "ClassLibrary.Views.pdb")}\" " +
+                    $"target=\"{Path.Combine("lib", "netcoreapp3.0", "ClassLibrary.Views.pdb")}\" />");
             }
 
             Assert.NuspecDoesNotContain(
                 result,
                 Path.Combine("obj", Configuration, "ClassLibrary.1.0.0.nuspec"),
-                @"<files include=""any/netstandard2.0/Views/Shared/_Layout.cshtml"" buildAction=""Content"" />");
+                @"<files include=""any/netcoreapp3.0/Views/Shared/_Layout.cshtml"" buildAction=""Content"" />");
 
             Assert.NupkgContains(
                 result,
                 Path.Combine("bin", Configuration, "ClassLibrary.1.0.0.nupkg"),
-                Path.Combine("lib", "netstandard2.0", "ClassLibrary.Views.dll"));
+                Path.Combine("lib", "netcoreapp3.0", "ClassLibrary.Views.dll"));
         }
 
         [Fact]
@@ -128,21 +128,21 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 Assert.NuspecContains(
                     result,
                     Path.Combine("obj", Configuration, "ClassLibrary.1.0.0.symbols.nuspec"),
-                    $"<file src=\"{Path.Combine(Project.DirectoryPath, "bin", Configuration, "netstandard2.0", "ClassLibrary.Views.dll")}\" " +
-                    $"target=\"{Path.Combine("lib", "netstandard2.0", "ClassLibrary.Views.dll")}\" />");
+                    $"<file src=\"{Path.Combine(Project.DirectoryPath, "bin", Configuration, "netcoreapp3.0", "ClassLibrary.Views.dll")}\" " +
+                    $"target=\"{Path.Combine("lib", "netcoreapp3.0", "ClassLibrary.Views.dll")}\" />");
 
                 Assert.NuspecContains(
                     result,
                     Path.Combine("obj", Configuration, "ClassLibrary.1.0.0.symbols.nuspec"),
-                    $"<file src=\"{Path.Combine(Project.DirectoryPath, "bin", Configuration, "netstandard2.0", "ClassLibrary.Views.pdb")}\" " +
-                    $"target=\"{Path.Combine("lib", "netstandard2.0", "ClassLibrary.Views.pdb")}\" />");
+                    $"<file src=\"{Path.Combine(Project.DirectoryPath, "bin", Configuration, "netcoreapp3.0", "ClassLibrary.Views.pdb")}\" " +
+                    $"target=\"{Path.Combine("lib", "netcoreapp3.0", "ClassLibrary.Views.pdb")}\" />");
             }
 
             Assert.NupkgContains(
                 result,
                 Path.Combine("bin", Configuration, "ClassLibrary.1.0.0.symbols.nupkg"),
-                Path.Combine("lib", "netstandard2.0", "ClassLibrary.Views.dll"),
-                Path.Combine("lib", "netstandard2.0", "ClassLibrary.Views.pdb"));
+                Path.Combine("lib", "netcoreapp3.0", "ClassLibrary.Views.dll"),
+                Path.Combine("lib", "netcoreapp3.0", "ClassLibrary.Views.pdb"));
         }
 
         [Fact]
@@ -162,19 +162,19 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 Assert.NuspecContains(
                     result,
                     Path.Combine("obj", Configuration, "ClassLibrary.1.0.0.nuspec"),
-                    $"<file src=\"{Path.Combine(Project.DirectoryPath, "bin", Configuration, "netstandard2.0", "ClassLibrary.Views.dll")}\" " +
-                    $"target=\"{Path.Combine("lib", "netstandard2.0", "ClassLibrary.Views.dll")}\" />");
+                    $"<file src=\"{Path.Combine(Project.DirectoryPath, "bin", Configuration, "netcoreapp3.0", "ClassLibrary.Views.dll")}\" " +
+                    $"target=\"{Path.Combine("lib", "netcoreapp3.0", "ClassLibrary.Views.dll")}\" />");
 
                 Assert.NuspecContains(
                     result,
                     Path.Combine("obj", Configuration, "ClassLibrary.1.0.0.nuspec"),
-                    @"<files include=""any/netstandard2.0/Views/Shared/_Layout.cshtml"" buildAction=""Content"" />");
+                    @"<files include=""any/netcoreapp3.0/Views/Shared/_Layout.cshtml"" buildAction=""Content"" />");
             }
 
             Assert.NupkgContains(
                 result,
                 Path.Combine("bin", Configuration, "ClassLibrary.1.0.0.nupkg"),
-                Path.Combine("lib", "netstandard2.0", "ClassLibrary.Views.dll"));
+                Path.Combine("lib", "netcoreapp3.0", "ClassLibrary.Views.dll"));
         }
     }
 }

@@ -2,8 +2,20 @@
 
   <PropertyGroup>
     <RazorSdkDirectoryRoot>$(RazorSdkArtifactsDirectory)$(Configuration)\sdk-output\</RazorSdkDirectoryRoot>
-    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
   </PropertyGroup>
+
+  <!--
+  The AspNetCore repo depends on AspNetCore-Tooling, and we want to avoid creating a cylical dependency between the two
+  by adding a reference to Microsoft.AspNetCore.App. We'll instead simulate the presence of the reference.
+  -->
+  <PropertyGroup>
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+    <_ReferencesAspNetCoreApp>true</_ReferencesAspNetCoreApp>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.NETCore.App" />
+  </ItemGroup>
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
@@ -13,10 +25,6 @@
     <!-- We don't want to run build server when not running as tests. -->
     <UseRazorBuildServer>false</UseRazorBuildServer>
   </PropertyGroup>
-
-  <ItemGroup>
-    <FrameworkReference Include="Microsoft.NETCore.App" />
-  </ItemGroup>
 
   <ItemGroup Condition="'$(BinariesRoot)'==''">
     <!-- In test scenarios $(BinariesRoot) is defined in a generated Directory.Build.props file -->

@@ -2,9 +2,17 @@
 
   <PropertyGroup>
     <RazorSdkDirectoryRoot>$(RazorSdkArtifactsDirectory)$(Configuration)\sdk-output\</RazorSdkDirectoryRoot>
-    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
     <_RazorComponentInclude>Components\**\*.cshtml</_RazorComponentInclude>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.NETCore.App" />
+  </ItemGroup>
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
@@ -14,10 +22,6 @@
     <!-- We don't want to run build server when not running as tests. -->
     <UseRazorBuildServer>false</UseRazorBuildServer>
   </PropertyGroup>
-
-  <ItemGroup>
-    <FrameworkReference Include="Microsoft.NETCore.App" />
-  </ItemGroup>
 
   <ItemGroup Condition="'$(BinariesRoot)'==''">
     <!-- In test scenarios $(BinariesRoot) is defined in a generated Directory.Build.props file -->

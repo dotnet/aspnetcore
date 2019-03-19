@@ -26,8 +26,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       Defines the ability to understand the configuration for the Razor language service provided by
       the runtime/toolset packages. Introduced in 2.1
     -->
-    <ProjectCapability Include="DotNetCoreRazorConfiguration" Condition="'$(_TargetingNETCoreApp30OrLater)'=='true'"/>
-
+    <ProjectCapability Include="DotNetCoreRazorConfiguration" Condition="'$(_Targeting30OrNewerRazorLangVersion)' == 'true'"/>
 
     <!--
       Activates the set of nesting behaviors we want from solution explorer.

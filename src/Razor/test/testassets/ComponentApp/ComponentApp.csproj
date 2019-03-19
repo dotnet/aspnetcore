@@ -2,34 +2,32 @@
 
   <PropertyGroup>
     <RazorSdkDirectoryRoot>$(RazorSdkArtifactsDirectory)$(Configuration)\sdk-output\</RazorSdkDirectoryRoot>
+    <_RazorComponentInclude>**\*.cshtml</_RazorComponentInclude>
   </PropertyGroup>
 
   <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
-    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <FrameworkReference Include="Microsoft.NETCore.App" />
   </ItemGroup>
 
-  <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
-  </PropertyGroup>
-
   <PropertyGroup Condition="'$(RunningAsTest)' == ''">
     <!-- We don't want to run build server when not running as tests. -->
     <UseRazorBuildServer>false</UseRazorBuildServer>
   </PropertyGroup>
 
+  <!-- DO NOT add addition references here. This is meant to simulate a non-MVC library -->
   <ItemGroup Condition="'$(BinariesRoot)'==''">
     <!-- In test scenarios $(BinariesRoot) is defined in a generated Directory.Build.props file -->
-    <ProjectReference Include="..\..\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib.csproj"/>
+    <ProjectReference Include="..\..\Microsoft.AspNetCore.Razor.Test.ComponentShim\Microsoft.AspNetCore.Razor.Test.ComponentShim.csproj"/>
   </ItemGroup>
 
   <ItemGroup Condition="'$(BinariesRoot)'!=''">
     <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.Test.ComponentShim.dll"/>
-    <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib.dll"/>
   </ItemGroup>
 
   <!-- Test Placeholder -->

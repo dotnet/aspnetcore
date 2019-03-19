@@ -33,4 +33,9 @@
   <Target Name="_IntrospectProjectCapabilityItems">
     <Message Text="ProjectCapability: %(ProjectCapability.Identity)" Importance="High" />
   </Target>
+
+  <Target Name="_IntrospectResolvedConfiguration">
+    <Message Text="RazorLangVersion: $(RazorLangVersion)" Importance="High" />
+    <Message Text="ResolvedRazorConfiguration: @(ResolvedRazorConfiguration)" Importance="High" />
+  </Target>
 </Project>

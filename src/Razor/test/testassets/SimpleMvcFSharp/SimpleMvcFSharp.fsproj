@@ -2,8 +2,15 @@
 
   <PropertyGroup>
     <RazorSdkDirectoryRoot>$(RazorSdkArtifactsDirectory)$(Configuration)\sdk-output\</RazorSdkDirectoryRoot>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
   </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.NETCore.App" />
+  </ItemGroup>
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
@@ -19,10 +26,6 @@
     <Compile Include="Program.fs" />
   </ItemGroup>
 
-  <ItemGroup>
-    <FrameworkReference Include="Microsoft.NETCore.App" />
-  </ItemGroup>
-
   <ItemGroup Condition="'$(BinariesRoot)'==''">
     <!-- In test scenarios $(BinariesRoot) is defined in a generated Directory.Build.props file -->
     <ProjectReference Include="..\..\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib.csproj"/>
@@ -31,7 +34,7 @@
   <ItemGroup Condition="'$(BinariesRoot)'!=''">
     <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.Test.ComponentShim.dll"/>
     <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib.dll"/>
-  </ItemGroup>  
+  </ItemGroup>
 
   <!-- Test Placeholder -->
 

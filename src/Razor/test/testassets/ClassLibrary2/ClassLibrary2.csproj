@@ -5,11 +5,16 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+  </PropertyGroup>
 
-    <_EnableAllInclusiveRazorSdk>true</_EnableAllInclusiveRazorSdk>
-    <RazorLangVersion>3.0</RazorLangVersion>
-    <RazorDefaultConfiguration>MVC-3.0</RazorDefaultConfiguration>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.NETCore.App" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(RunningAsTest)' == ''">

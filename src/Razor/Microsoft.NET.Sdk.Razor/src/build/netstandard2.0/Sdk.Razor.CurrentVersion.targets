@@ -9,7 +9,7 @@ WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and
 Copyright (c) .NET Foundation. All rights reserved.
 ***********************************************************************************************
 -->
-<Project ToolsVersion="14.0" TreatAsLocalProperty="_RazorSdkTasksTFM">
+<Project ToolsVersion="14.0" TreatAsLocalProperty="_RazorSdkTasksTFM;_Targeting30OrNewerRazorLangVersion">
   <!-- 
     Targets supporting Razor MSBuild integration. Contain support for generating C# code using Razor
     and including the generated code in the project lifecycle, including compiling, publishing and producing
@@ -28,9 +28,38 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_RazorSdkTasksTFM Condition=" '$(MSBuildRuntimeType)' == 'Core'">netstandard2.0</_RazorSdkTasksTFM>
     <_RazorSdkTasksTFM Condition=" '$(_RazorSdkTasksTFM)' == ''">net46</_RazorSdkTasksTFM>
     <RazorSdkBuildTasksAssembly>$(RazorSdkBuildTasksDirectoryRoot)$(_RazorSdkTasksTFM)\Microsoft.NET.Sdk.Razor.Tasks.dll</RazorSdkBuildTasksAssembly>
+  </PropertyGroup>
 
+  <!-- Resolve the RazorLangVersion based on values imported or TFM. -->
+  <PropertyGroup>
     <_TargetFrameworkVersionWithoutV>$(TargetFrameworkVersion.TrimStart('vV'))</_TargetFrameworkVersionWithoutV>
-    <_EnableAllInclusiveRazorSdk Condition="'$(_EnableInclusiveRazorSdk)' == '' AND '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(_TargetFrameworkVersionWithoutV)' &gt; '2.9'">true</_EnableAllInclusiveRazorSdk>
+
+    <!--
+      Infer the RazorLangVersion if no value was specified. When adding support for newer target frameworks, list newer language versions first.
+    -->
+    <RazorLangVersion Condition="'$(RazorLangVersion)' == '' AND '$(_TargetFrameworkVersionWithoutV)' &gt; '2.9'">3.0</RazorLangVersion>
+
+    <!--
+      In 3.0, we expect RazorLangVersion to either be specified in the template or inferred via TFM. In 2.x, RazorLangVersion is
+      specified via the Razor.Design package. We'll default to a version of 2.1, the earliest version that the SDK supports.
+      A 2.1 version should result in a build warning if the project contains Components.
+    -->
+    <RazorLangVersion Condition="'$(RazorLangVersion)' == ''">2.1</RazorLangVersion>
+
+    <!-- Keep this in sync with RazorLangVersion.cs if we introduce new text based values. -->
+    <_Targeting30OrNewerRazorLangVersion Condition="
+        '$(RazorLangVersion)' == 'Latest' OR
+        '$(RazorLangVersion)' == 'Experimental' OR
+        ('$(RazorLangVersion)' != '' AND '$(RazorLangVersion)' &gt; '2.9')">true</_Targeting30OrNewerRazorLangVersion>
+  </PropertyGroup>
+
+
+  <PropertyGroup>
+    <!--
+      The property IsRazorCompilerReferenced is defined by the 2.x Razor.Design package. We can use this as a best guess to determine if a project is targeting 2.x or earlier.
+      This is useful to provide 3.0 or newer specific build warnings. However, since it's not very reliable, we should not use this to make build-altering decisions.
+    -->
+    <_IsTargetingRazor2X Condition="'$(IsRazorCompilerReferenced)'=='true'">true</_IsTargetingRazor2X>
   </PropertyGroup>
 
   <!--
@@ -47,12 +76,14 @@ Copyright (c) .NET Foundation. All rights reserved.
       AssignRazorGenerateTargetPaths;
       ResolveAssemblyReferenceRazorGenerateInputs;
       _CheckForMissingRazorCompiler;
+      _CheckForIncorrectMvcConfiguration;
       ResolveTagHelperRazorGenerateInputs
     </PrepareForRazorGenerateDependsOn>
 
     <PrepareForRazorComponentGenerateDependsOn>
       ResolveRazorConfiguration;
       ResolveRazorComponentInputs;
+      _CheckForIncorrectComponentsConfiguration;
       AssignRazorComponentTargetPaths;
     </PrepareForRazorComponentGenerateDependsOn>
 
@@ -63,8 +94,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </RazorGenerateDependsOn>
 
     <RazorComponentGenerateDependsOn>
-      PrepareForRazorComponentGenerate;
-      RazorComponentGenerateCore
+      PrepareForRazorComponentGenerate
     </RazorComponentGenerateDependsOn>
 
     <PrepareForRazorCompileDependsOn>
@@ -155,7 +185,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!--
       Use the suffix .Views when producing compiled view assemblies. This matches the requirements for Mvc's ViewsFeatureProvider.
     -->
-    <RazorTargetNameSuffix Condition="'$(_EnableInclusiveRazorSdk)' == '' AND '$(RazorTargetNameSuffix)'==''">.Views</RazorTargetNameSuffix>
+    <RazorTargetNameSuffix Condition="'$(RazorTargetNameSuffix)'=='' AND '$(_Targeting30OrNewerRazorLangVersion)' == 'true'">.Views</RazorTargetNameSuffix>
 
     <!-- Suffix appended to $(TargetName) to produce $(RazorTargetName), the name of the assembly produced by Razor -->
     <RazorTargetNameSuffix Condition="'$(RazorTargetNameSuffix)' == ''">.Razor</RazorTargetNameSuffix>
@@ -216,8 +246,16 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_RazorDebugSymbolsProduced Condition="'$(DebugType)'=='embedded'">false</_RazorDebugSymbolsProduced>
   </PropertyGroup>
 
-  <!-- Resolve the toolset to use -->
-  <PropertyGroup>
+  <!--
+    Resolve the toolset to use. This specifically applies to compilation with 2.x projects where compilation could be performed either using
+    the PrecompilationTool (Microsoft.AspNetCore.Mvc.Razor.ViewCompilation) or the RazorSDK and we have to infer the tool that is to be used.
+    In 3.0 or later, there is only the RazorSdk.
+   -->
+  <PropertyGroup Condition="'$(_Targeting30OrNewerRazorLangVersion)' == 'true'">
+    <ResolvedRazorCompileToolset>RazorSdk</ResolvedRazorCompileToolset>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(ResolvedRazorCompileToolset)' == ''">
     <!-- Default value for the property 'MvcRazorCompileOnPublish' is empty. If it has been explicitly enabled, continue using precompilation. -->
     <ResolvedRazorCompileToolset Condition="'$(MvcRazorCompileOnPublish)' == 'true'">PrecompilationTool</ResolvedRazorCompileToolset>
 
@@ -228,7 +266,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ResolvedRazorCompileToolset Condition="'$(MvcRazorCompileOnPublish)' == '' AND '$(RazorCompileToolset)' == 'RazorSdk'">$(RazorCompileToolset)</ResolvedRazorCompileToolset>
 
     <!-- If RazorSdk is not referenced, fall-back to Precompilation tool when referenced by a 2.2 or earlier targeting project. -->
-    <ResolvedRazorCompileToolset Condition="'$(ResolvedRazorCompileToolset)' == 'RazorSdk' And '$(IsRazorCompilerReferenced)' != 'true' AND '$(_EnableAllInclusiveRazorSdk)' != 'true'">PrecompilationTool</ResolvedRazorCompileToolset>
+    <ResolvedRazorCompileToolset Condition="'$(ResolvedRazorCompileToolset)' == 'RazorSdk' And '$(IsRazorCompilerReferenced)' != 'true'">PrecompilationTool</ResolvedRazorCompileToolset>
 
     <!-- Previous versions of the precompilation tool still depends on the msbuild property 'MvcRazorCompileOnPublish'. Hence, setting it to the old default value -->
     <MvcRazorCompileOnPublish Condition="'$(MvcRazorCompileOnPublish)' == ''">true</MvcRazorCompileOnPublish>
@@ -281,12 +319,12 @@ Copyright (c) .NET Foundation. All rights reserved.
     Condition="'$(IsRazorCompilerReferenced)' == 'true' AND '$(RazorCodeGenerationTargetsPath)' != '' AND Exists('$(RazorCodeGenerationTargetsPath)')" />
 
   <!-- When targeting 3.x and later projects, we have to infer configuration by inspecting the project. -->
-  <Import Project="Microsoft.NET.Sdk.Razor.Configuration.targets" Condition="'$(_EnableAllInclusiveRazorSdk)' == 'true'" />
+  <Import Project="Microsoft.NET.Sdk.Razor.Configuration.targets" Condition="'$(_Targeting30OrNewerRazorLangVersion)' == 'true'" />
 
-  <!-- For projects targeting 3.x and later, use the compiler that ships in the Sdk -->
-  <Import Project="Microsoft.NET.Sdk.Razor.CodeGeneration.targets" Condition="'$(_EnableAllInclusiveRazorSdk)' == 'true'" />
+  <!-- For projects targeting 3.x and later, use the compiler that ships in the SDK -->
+  <Import Project="Microsoft.NET.Sdk.Razor.CodeGeneration.targets" Condition="'$(_Targeting30OrNewerRazorLangVersion)' == 'true'" />
 
-  <Import Project="Microsoft.NET.Sdk.Razor.Component.targets" />
+  <Import Project="Microsoft.NET.Sdk.Razor.Component.targets" Condition="'$(_Targeting30OrNewerRazorLangVersion)' == 'true'" />
 
   <Import Project="Microsoft.NET.Sdk.Razor.GenerateAssemblyInfo.targets" />
 
@@ -319,15 +357,28 @@ Copyright (c) .NET Foundation. All rights reserved.
     Computes the applicable @(ResolvedRazorConfiguration) and @(ResolvedRazorExtension) items that match the project's
     configuration. 
   -->
-  <Target
-    Name="ResolveRazorConfiguration"
-    Condition="'$(RazorDefaultConfiguration)'!=''">
-
-    <ItemGroup>
+  <Target Name="ResolveRazorConfiguration">
+    <ItemGroup Condition="'$(RazorDefaultConfiguration)'!=''">
       <ResolvedRazorConfiguration Include="@(RazorConfiguration->WithMetadataValue('Identity', '$(RazorDefaultConfiguration)')->Distinct())" />
     </ItemGroup>
 
-    <FindInList List="@(RazorExtension)" ItemSpecToFind="@(ResolvedRazorConfiguration->Metadata('Extensions'))">
+    <!--
+      ResolvedRazorConfiguration should only ever have one item in it. If misconfigured, we may resolve more than one item which
+      may result in incorrect results or poorly worded build errors.
+    -->
+    <Warning Text="Unable to resolve a Razor configuration for the value '$(_RazorConfiguration)'. Available configurations '@(RazorConfiguration)'.'"
+      Code="RazorSDK1000"
+      Condition="'@(ResolvedRazorConfiguration->Count())' == '0'" />
+
+    <Warning Text="More than one Razor configuration was resolved for the value '$(_RazorConfiguration)'. Available configurations '@(RazorConfiguration)'.
+A common cause is a reference to an incompatible version of the 'Microsoft.AspNetCore.Mvc' or 'Microsoft.AspNetCore.Razor.Design' package."
+      Code="RazorSDK1001"
+      Condition="'@(ResolvedRazorConfiguration->Count())' &gt; '1'" />
+
+    <FindInList
+        List="@(RazorExtension)"
+        ItemSpecToFind="@(ResolvedRazorConfiguration->Metadata('Extensions'))"
+        Condition="'@(ResolvedRazorConfiguration->HasMetadata('Extensions')->Count())' != '0'">
       <Output TaskParameter="ItemFound" ItemName="ResolvedRazorExtension" />
     </FindInList>
   </Target>
@@ -729,9 +780,34 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="_CheckForMissingRazorCompiler" Condition="'$(IsRazorCompilerReferenced)' != 'true'">
     <Error
+      Code="RAZORSDK1003"
       Text="A PackageReference for 'Microsoft.AspNetCore.Razor.Design' was not included in your project. This package is required to compile Razor files. Typically, a
-      transitive reference to 'Microsoft.AspNetCore.Razor.Design' and references required to compile Razor files are obtained by adding a PackageReference
-      for 'Microsoft.AspNetCore.Mvc' in your project. For more information, see https://go.microsoft.com/fwlink/?linkid=868374." />
+ transitive reference to 'Microsoft.AspNetCore.Razor.Design' and references required to compile Razor files are obtained by adding a PackageReference
+ for 'Microsoft.AspNetCore.Mvc' in your project. For more information, see https://go.microsoft.com/fwlink/?linkid=868374." />
+  </Target>
+
+  <Target Name="_CheckForIncorrectMvcConfiguration"
+    Condition="'@(ResolvedRazorConfiguration)' == 'Default' AND
+      ('$(RazorCompileOnBuild)' == 'true' OR '$(RazorCompileOnPublish)' =='true') AND
+      '@(RazorGenerate->Count())' != '0' AND
+      '$(_Targeting30OrNewerRazorLangVersion)' == 'true' AND
+      '$(_IsTargetingRazor2X)' != 'true'">
+    <Warning
+       Code="RAZORSDK1004"
+       Text="One or more Razor view or page files were found, but the project is not configured to add Razor support for MVC. The MSBuild property 'AddRazorSupportForMvc' must be set to correctly
+ compile Razor files that target MVC. For more information, see https://go.microsoft.com/fwlink/?linkid=868374." />
+  </Target>
+
+  <Target Name="_CheckForIncorrectComponentsConfiguration"
+    Condition="('$(RazorCompileOnBuild)' == 'true' OR '$(RazorCompileOnPublish)' =='true') AND
+      '@(RazorComponent->Count())' != '0' AND
+      '$(_Targeting30OrNewerRazorLangVersion)' != 'true' AND
+      '$(_IsTargetingRazor2X)' != 'true'">
+
+    <Warning
+       Code="RAZORSDK1005"
+       Text="One or more Razor component files (.razor) were found, but the project is not configured to compile Razor Components. Configure the project by targeting RazorLangVersion 3.0 or newer.
+ For more information, see https://go.microsoft.com/fwlink/?linkid=868374." />
   </Target>
 
   <Target Name="_ResolveRazorTargetPath">

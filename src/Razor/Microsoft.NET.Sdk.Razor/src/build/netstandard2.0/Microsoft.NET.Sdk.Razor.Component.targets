@@ -12,6 +12,14 @@ Copyright (c) .NET Foundation. All rights reserved.
 
 <Project ToolsVersion="14.0">
 
+  <!-- Wire up RazorComponentGenerateCore only once we know we are importing this target file. This prevents avoidable build failures. -->
+  <PropertyGroup>
+    <RazorComponentGenerateDependsOn>
+      $(RazorComponentGenerateDependsOn);
+      RazorComponentGenerateCore
+    </RazorComponentGenerateDependsOn>
+  </PropertyGroup>
+
   <PropertyGroup>
     <!-- Used for tracking inputs to component generation -->
     <_RazorComponentInputHash></_RazorComponentInputHash>

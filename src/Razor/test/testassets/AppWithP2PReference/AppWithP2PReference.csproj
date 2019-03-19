@@ -2,8 +2,16 @@
   
   <PropertyGroup>
     <RazorSdkDirectoryRoot>$(RazorSdkArtifactsDirectory)$(Configuration)\sdk-output\</RazorSdkDirectoryRoot>
-    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.NETCore.App" />
+  </ItemGroup>
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
@@ -17,7 +25,6 @@
   <!-- Test Placeholder -->
 
   <ItemGroup>
-    <FrameworkReference Include="Microsoft.NETCore.App" />
     <ProjectReference Include="..\ClassLibrary\ClassLibrary.csproj"/>
   </ItemGroup>
 

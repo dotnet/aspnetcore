@@ -6,6 +6,7 @@ using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
+    // Note: RazorSDK is aware of version monikers such as "latest", and "experimental". Update it if we introduce new monikers.
     [DebuggerDisplay("{" + nameof(DebuggerToString) + "(),nq}")]
     public sealed class RazorLanguageVersion : IEquatable<RazorLanguageVersion>, IComparable<RazorLanguageVersion>
     {

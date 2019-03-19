@@ -18,8 +18,9 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         // Matches `{filename}: error {code}: {message} [{project}]
         // See https://stackoverflow.com/questions/3441452/msbuild-and-ignorestandarderrorwarningformat/5180353#5180353
         private static readonly Regex ErrorRegex = new Regex(@"^(?'location'.+): error (?'errorcode'[A-Z0-9]+): (?'message'.+) \[(?'project'.+)\]$");
+        private static readonly Regex WarningRegex = new Regex(@"^(?'location'.+): warning (?'errorcode'[A-Z0-9]+): (?'message'.+) \[(?'project'.+)\]$");
 
-        public static void BuildPassed(MSBuildResult result)
+        public static void BuildPassed(MSBuildResult result, bool allowWarnings = false)
         {
             if (result == null)
             {
@@ -29,6 +30,12 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             if (result.ExitCode != 0)
             {
                 throw new BuildFailedException(result);
+            }
+
+            var buildWarnings = GetBuildWarnings(result).Select(m => m.line);
+            if (!allowWarnings && buildWarnings.Any())
+            {
+                throw new BuildWarningsException(result, buildWarnings);
             }
         }
 
@@ -63,6 +70,47 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             }
 
             throw new BuildErrorMissingException(result, errorCode, location);
+        }
+
+        public static void BuildWarning(MSBuildResult result, string errorCode, string location = null)
+        {
+            if (result == null)
+            {
+                throw new ArgumentNullException(nameof(result));
+            }
+
+            // We don't really need to search line by line, I'm doing this so that it's possible/easy to debug.
+            foreach (var (_, match) in GetBuildWarnings(result))
+            {
+                if (match.Groups["errorcode"].Value != errorCode)
+                {
+                    continue;
+                }
+
+                if (location != null && match.Groups["location"].Value.Trim() != location)
+                {
+                    continue;
+                }
+
+                // This is a match
+                return;
+            }
+
+            throw new BuildErrorMissingException(result, errorCode, location);
+        }
+
+        private static IEnumerable<(string line, Match match)> GetBuildWarnings(MSBuildResult result)
+        {
+            var lines = result.Output.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            for (var i = 0; i < lines.Length; i++)
+            {
+                var line = lines[i];
+                var match = WarningRegex.Match(line);
+                if (match.Success)
+                {
+                    yield return (line, match);
+                }
+            }
         }
 
         public static void BuildFailed(MSBuildResult result)
@@ -440,6 +488,9 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                     message.AppendLine();
                     message.AppendLine();
                     message.Append(Result.Output);
+                    message.AppendLine();
+                    message.Append("Exit Code:");
+                    message.Append(Result.ExitCode);
                     return message.ToString();
                 }
             }
@@ -477,6 +528,19 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             }
 
             protected override string Heading => "Build failed.";
+        }
+
+        private class BuildWarningsException : MSBuildXunitException
+        {
+            public BuildWarningsException(MSBuildResult result, IEnumerable<string> warnings)
+                : base(result)
+            {
+                Warnings = warnings.ToList();
+            }
+
+            public List<string> Warnings { get; }
+
+            protected override string Heading => "Build contains unexpected warnings: " + string.Join(Environment.NewLine, Warnings);
         }
 
         private class BuildPassedException : MSBuildXunitException
