@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             }
             catch (HttpRequestException)
             {
-                // Connection reset is expected both for outofproc and inproc
+                // Connection reset is expected
             }
         }
 

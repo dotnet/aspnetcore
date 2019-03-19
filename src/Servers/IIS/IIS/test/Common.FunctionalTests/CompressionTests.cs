@@ -13,9 +13,9 @@ using Xunit;
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
     [Collection(PublishedSitesCollection.Name)]
-    public class CompressionOutOfProcessTests : IISFunctionalTestBase
+    public class CompressionTests : IISFunctionalTestBase
     {
-        public CompressionOutOfProcessTests(PublishedSitesFixture fixture) : base(fixture)
+        public CompressionTests(PublishedSitesFixture fixture) : base(fixture)
         {
         }
 
@@ -40,7 +40,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 await response.Content.ReadAsByteArrayAsync());
         }
 
-        
         [ConditionalFact]
         public async Task PassesThroughCompressionInProcess()
         {
