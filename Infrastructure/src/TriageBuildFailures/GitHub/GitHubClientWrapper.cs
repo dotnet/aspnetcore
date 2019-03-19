@@ -212,7 +212,7 @@ namespace TriageBuildFailures.GitHub
             {
                 State = ItemStateFilter.Open
             };
-            var prs = await Client.PullRequest.GetAllForRepository(owner, repo, prRequest);
+            var prs = await RetryHelpers.RetryAsync(async () => await Client.PullRequest.GetAllForRepository(owner, repo, prRequest), _reporter);
             return prs.Select(pr => new GitHubPR(pr));
         }
 
