@@ -3,7 +3,7 @@
 
 package com.microsoft.signalr;
 
-import java.lang.reflect.Array;
+import java.io.StringReader;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.google.gson.stream.JsonReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +39,7 @@ public class HubConnection {
     private List<OnClosedCallback> onClosedCallbackList;
     private final boolean skipNegotiate;
     private Single<String> accessTokenProvider;
+    private Single<String> redirectAccessTokenProvider;
     private final Map<String, String> headers = new HashMap<>();
     private ConnectionState connectionState = null;
     private HttpClient httpClient;
@@ -180,6 +182,7 @@ public class HubConnection {
                         logger.error("Failed to bind arguments received in invocation '{}' of '{}'.", msg.getInvocationId(), msg.getTarget(), msg.getException());
                         break;
                     case INVOCATION:
+
                         InvocationMessage invocationMessage = (InvocationMessage) message;
                         List<InvocationHandler> handlers = this.handlers.get(invocationMessage.getTarget());
                         if (handlers != null) {
@@ -248,17 +251,18 @@ public class HubConnection {
                 throw new RuntimeException(String.format("Unexpected status code returned from negotiate: %d %s.",
                         response.getStatusCode(), response.getStatusText()));
             }
-            NegotiateResponse negotiateResponse = new NegotiateResponse(response.getContent());
+            JsonReader reader = new JsonReader(new StringReader(response.getContent()));
+            NegotiateResponse negotiateResponse = new NegotiateResponse(reader);
 
             if (negotiateResponse.getError() != null) {
                 throw new RuntimeException(negotiateResponse.getError());
             }
 
             if (negotiateResponse.getAccessToken() != null) {
-                this.accessTokenProvider = Single.just(negotiateResponse.getAccessToken());
+                this.redirectAccessTokenProvider = Single.just(negotiateResponse.getAccessToken());
                 // We know the Single is non blocking in this case
                 // It's fine to call blockingGet() on it.
-                String token = this.accessTokenProvider.blockingGet();
+                String token = this.redirectAccessTokenProvider.blockingGet();
                 this.headers.put("Authorization", "Bearer " + token);
             }
 
@@ -296,21 +300,22 @@ public class HubConnection {
         });
 
         stopError = null;
-        Single<String> negotiate = null;
+        Single<NegotiateResponse> negotiate = null;
         if (!skipNegotiate) {
             negotiate = tokenCompletable.andThen(Single.defer(() -> startNegotiate(baseUrl, 0)));
         } else {
-            negotiate = tokenCompletable.andThen(Single.defer(() -> Single.just(baseUrl)));
+            negotiate = tokenCompletable.andThen(Single.defer(() -> Single.just(new NegotiateResponse(baseUrl))));
         }
 
         CompletableSubject start = CompletableSubject.create();
 
-        negotiate.flatMapCompletable(url -> {
+        negotiate.flatMapCompletable(negotiateResponse -> {
             logger.debug("Starting HubConnection.");
             if (transport == null) {
+                Single<String> tokenProvider = negotiateResponse.getAccessToken() != null ? Single.just(negotiateResponse.getAccessToken()) : accessTokenProvider;
                 switch (transportEnum) {
                     case LONG_POLLING:
-                        transport = new LongPollingTransport(headers, httpClient, accessTokenProvider);
+                        transport = new LongPollingTransport(headers, httpClient, tokenProvider);
                         break;
                     default:
                         transport = new WebSocketTransport(headers, httpClient);
@@ -320,7 +325,7 @@ public class HubConnection {
             transport.setOnReceive(this.callback);
             transport.setOnClose((message) -> stopConnection(message));
 
-            return transport.start(url).andThen(Completable.defer(() -> {
+            return transport.start(negotiateResponse.getFinalUrl()).andThen(Completable.defer(() -> {
                 String handshake = HandshakeProtocol.createHandshakeRequestMessage(
                         new HandshakeRequestMessage(protocol.getName(), protocol.getVersion()));
 
@@ -376,7 +381,7 @@ public class HubConnection {
         }, new Date(0), tickRate);
     }
 
-    private Single<String> startNegotiate(String url, int negotiateAttempts) {
+    private Single<NegotiateResponse> startNegotiate(String url, int negotiateAttempts) {
         if (hubConnectionState != HubConnectionState.DISCONNECTED) {
             return Single.just(null);
         }
@@ -409,8 +414,8 @@ public class HubConnection {
                         finalUrl = url + "?id=" + response.getConnectionId();
                     }
                 }
-
-                return Single.just(finalUrl);
+                response.setFinalUrl(finalUrl);
+                return Single.just(response);
             }
 
             return startNegotiate(response.getRedirectUrl(), negotiateAttempts + 1);
@@ -473,6 +478,9 @@ public class HubConnection {
             logger.info("HubConnection stopped.");
             hubConnectionState = HubConnectionState.DISCONNECTED;
             handshakeResponseSubject.onComplete();
+            redirectAccessTokenProvider = null;
+            transportEnum = TransportEnum.ALL;
+            this.headers.remove("Authorization");
         } finally {
             hubConnectionStateLock.unlock();
         }
