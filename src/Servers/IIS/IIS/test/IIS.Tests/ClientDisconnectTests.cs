@@ -277,7 +277,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var requestStartedCompletionSource = CreateTaskCompletionSource();
             var requestCompletedCompletionSource = CreateTaskCompletionSource();
 
-
             var data = new byte[1024];
             using (var testServer = await TestServer.Create(async ctx =>
             {
