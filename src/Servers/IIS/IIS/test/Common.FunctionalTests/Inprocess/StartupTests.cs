@@ -318,24 +318,28 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             }
         }
 
-        [ConditionalFact(Skip = "https://github.com/aspnet/AspNetCore-Internal/issues/1772")]
+        [ConditionalFact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1772")]
         public async Task StartupTimeoutIsApplied()
         {
-            var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
-            deploymentParameters.TransformArguments((a, _) => $"{a} Hang");
-            deploymentParameters.WebConfigActionList.Add(
-                WebConfigHelpers.AddOrModifyAspNetCoreSection("startupTimeLimit", "1"));
+            using (AppVerifier.Disable(DeployerSelector.ServerType, 0x300))
+            {
+                var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
+                deploymentParameters.TransformArguments((a, _) => $"{a} Hang");
+                deploymentParameters.WebConfigActionList.Add(
+                    WebConfigHelpers.AddOrModifyAspNetCoreSection("startupTimeLimit", "1"));
 
-            var deploymentResult = await DeployAsync(deploymentParameters);
+                var deploymentResult = await DeployAsync(deploymentParameters);
 
-            var response = await deploymentResult.HttpClient.GetAsync("/");
-            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+                var response = await deploymentResult.HttpClient.GetAsync("/");
+                Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
 
-            StopServer();
+                StopServer();
 
-            EventLogHelpers.VerifyEventLogEvents(deploymentResult,
-                EventLogHelpers.InProcessFailedToStart(deploymentResult, "Managed server didn't initialize after 1000 ms.")
-                );
+                EventLogHelpers.VerifyEventLogEvents(deploymentResult,
+                    EventLogHelpers.InProcessFailedToStart(deploymentResult, "Managed server didn't initialize after 1000 ms.")
+                    );
+            }
         }
 
         [ConditionalFact]
