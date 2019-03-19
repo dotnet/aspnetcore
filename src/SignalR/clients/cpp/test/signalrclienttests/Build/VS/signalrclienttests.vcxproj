@@ -61,7 +61,7 @@
     <ClCompile Include="..\..\hub_exception_tests.cpp" />
     <ClCompile Include="..\..\logger_tests.cpp" />
     <ClCompile Include="..\..\memory_log_writer.cpp" />
-    <ClCompile Include="..\..\request_sender_tests.cpp" />
+    <ClCompile Include="..\..\negotiate_tests.cpp" />
     <ClCompile Include="..\..\signalrclienttests.cpp" />
     <ClCompile Include="..\..\stdafx.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
