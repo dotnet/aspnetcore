@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
-    internal static partial class HttpUtilities
+    public static partial class HttpUtilities
     {
         public const string Http10Version = "HTTP/1.0";
         public const string Http11Version = "HTTP/1.1";
