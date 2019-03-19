@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 template = AttributeRouteModel.ReplaceTokens(
                     template, 
                     descriptor.RouteValues, 
-                    model.RouteParameterTransformer).Replace("//", "/");
+                    model.RouteParameterTransformer);
             }
 
             return AttributeRouteModel.CombineTemplates(pageRoute, template);

@@ -409,13 +409,19 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                                 throw new InvalidOperationException(message);
                             }
 
+                            if (value.StartsWith('/'))
+                            {
+                                // Page route value
+                                value = value.Substring(1);
+                            }
+
                             if (routeTokenTransformer != null)
                             {
                                 value = routeTokenTransformer.TransformOutbound(value);
                             }
 
                             builder.Append(value);
-
+                            
                             if (c == '[')
                             {
                                 state = TemplateParserState.SeenLeft;

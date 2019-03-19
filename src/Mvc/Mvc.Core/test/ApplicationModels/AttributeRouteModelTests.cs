@@ -667,6 +667,17 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                     },
                     "Home/[[[Index]/{id}"
                 };
+
+                yield return new object[]
+                {
+                    "[area]/[page]/{id}",
+                    new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "area", "Area" },
+                        { "page", "/Page" }
+                    },
+                    "Area/Page/{id}"
+                };
             }
         }
 
