@@ -59,6 +59,13 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
         private readonly ConnectionLogScope _logScope;
 
+        // The receive loop has a single reader and single writer at a time so optimize the channel for that
+        private static readonly UnboundedChannelOptions _receiveLoopOptions = new UnboundedChannelOptions
+        {
+            SingleReader = true,
+            SingleWriter = true
+        };
+
         // Transient state to a connection
         private ConnectionState _connectionState;
         private int _serverProtocolMinorVersion;
@@ -899,11 +906,11 @@ namespace Microsoft.AspNetCore.SignalR.Client
             // Performs periodic tasks -- here sending pings and checking timeout
             // Disposed with `timer.Stop()` in the finally block below
             var timer = new TimerAwaitable(TickRate, TickRate);
-            _ = TimerLoop(timer);
+            var timerTask = TimerLoop(timer);
 
             var uploadStreamSource = new CancellationTokenSource();
             _uploadStreamToken = uploadStreamSource.Token;
-            var invocationMessageChannel = Channel.CreateUnbounded<InvocationMessage>();
+            var invocationMessageChannel = Channel.CreateUnbounded<InvocationMessage>(_receiveLoopOptions);
             var invocationMessageReceiveTask = StartProcessingInvocationMessages(invocationMessageChannel.Reader);
 
             async Task StartProcessingInvocationMessages(ChannelReader<InvocationMessage> invocationMessageChannelReader)
@@ -986,6 +993,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 invocationMessageChannel.Writer.TryComplete();
                 await invocationMessageReceiveTask;
                 timer.Stop();
+                await timerTask;
                 uploadStreamSource.Cancel();
             }
 
