@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace PlatformBenchmarks
 {
-    internal interface IHttpConnection : IHttpHeadersHandler, IHttpRequestLineHandler
+    public interface IHttpConnection : IHttpHeadersHandler, IHttpRequestLineHandler
     {
         PipeReader Reader { get; set; }
         PipeWriter Writer { get; set; }
