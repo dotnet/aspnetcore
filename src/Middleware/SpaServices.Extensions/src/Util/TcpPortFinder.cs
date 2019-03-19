@@ -21,23 +21,5 @@ namespace Microsoft.AspNetCore.SpaServices.Util
                 listener.Stop();
             }
         }
-
-        public static bool PortAvailable(int portNumber)
-        {
-            var listener = new TcpListener(IPAddress.Loopback, portNumber);
-            try
-            {
-                listener.Start();
-                return true;
-            }
-            catch (SocketException)
-            {
-                return false;
-            }
-            finally
-            {
-                listener.Stop();
-            }
-        }
     }
 }

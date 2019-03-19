@@ -66,11 +66,6 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
         {
             if (portNumber == 0) {
                 portNumber = TcpPortFinder.FindAvailablePort();
-            } else {
-                if (!TcpPortFinder.PortAvailable(portNumber)) {
-                    logger.LogInformation($"Port not available, finding available port.");
-                    portNumber = TcpPortFinder.FindAvailablePort();
-                }
             }
 
             logger.LogInformation($"Starting @angular/cli on port {portNumber}...");
