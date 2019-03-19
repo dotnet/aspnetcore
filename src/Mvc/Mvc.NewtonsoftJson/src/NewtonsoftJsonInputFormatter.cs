@@ -247,6 +247,25 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// Called during deserialization to get the <see cref="JsonSerializer"/>. The formatter context
         /// that is passed gives an ability to create serializer specific to the context. 
         /// </summary>
+        /// <returns>The <see cref="JsonSerializer"/> used during deserialization.</returns>
+        /// <remarks>
+        /// This method works in tandem with <see cref="ReleaseJsonSerializer(JsonSerializer)"/> to
+        /// manage the lifetimes of <see cref="JsonSerializer"/> instances.
+        /// </remarks>
+        protected virtual JsonSerializer CreateJsonSerializer()
+        {
+            if (_jsonSerializerPool == null)
+            {
+                _jsonSerializerPool = _objectPoolProvider.Create(new JsonSerializerObjectPolicy(SerializerSettings));
+            }
+
+            return _jsonSerializerPool.Get();
+        }
+
+        /// <summary>
+        /// Called during deserialization to get the <see cref="JsonSerializer"/>. The formatter context
+        /// that is passed gives an ability to create serializer specific to the context. 
+        /// </summary>
         /// <param name="context">A context object used by an input formatter for deserializing the request body into an object.</param>
         /// <returns>The <see cref="JsonSerializer"/> used during deserialization.</returns>
         /// <remarks>
@@ -255,12 +274,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// </remarks>
         protected virtual JsonSerializer CreateJsonSerializer(InputFormatterContext context)
         {
-            if (_jsonSerializerPool == null)
-            {
-                _jsonSerializerPool = _objectPoolProvider.Create(new JsonSerializerObjectPolicy(SerializerSettings));
-            }
-
-            return _jsonSerializerPool.Get();
+            return CreateJsonSerializer();
         }
 
         /// <summary>
