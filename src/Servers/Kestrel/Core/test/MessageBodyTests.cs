@@ -790,7 +790,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 // Add some input and read it to start PumpAsync
                 input.Add("a");
-                Assert.Equal(1, (await body.ReadAsync()).Buffer.Length);
 
                 // Time out on the next read
                 input.Http1Connection.SendTimeoutResponse();
