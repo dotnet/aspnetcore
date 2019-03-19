@@ -54,6 +54,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         private long _nextActivationSendPing;
         private bool _disposed;
         private bool _hasInherentKeepAlive;
+        private string _connectionId;
 
         private CancellationToken _uploadStreamToken;
 
@@ -115,6 +116,19 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// Gets or sets the timeout for the initial handshake.
         /// </summary>
         public TimeSpan HandshakeTimeout { get; set; } = DefaultHandshakeTimeout;
+
+        /// <summary>
+        /// Get the connections current connection Id.
+        /// </summary>
+        /// <remarks>
+        /// This value will change if the connection is stopped and restarted.
+        /// </remarks>
+        public string ConnectionId {
+            get
+            {
+                return _connectionId;
+            }
+        }
 
         /// <summary>
         /// Indicates the state of the <see cref="HubConnection"/> to the server.
@@ -338,6 +352,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
                 // Start the connection
                 var connection = await _connectionFactory.ConnectAsync(_protocol.TransferFormat);
+                _connectionId = connection.ConnectionId;
                 var startingConnectionState = new ConnectionState(connection, this);
                 _hasInherentKeepAlive = connection.Features.Get<IConnectionInherentKeepAliveFeature>()?.HasInherentKeepAlive ?? false;
 
