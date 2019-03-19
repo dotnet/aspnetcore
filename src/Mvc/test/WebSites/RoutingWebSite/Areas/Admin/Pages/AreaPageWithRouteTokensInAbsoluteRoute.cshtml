@@ -1,2 +1,2 @@
-﻿@page "/[area]/{id?}"
-Transformed to: @($"/{ViewContext.RouteData.Values["area"]}/{ViewContext.RouteData.Values["id"]}")
+﻿@page "/path/[area]/{id?}"
+Transformed to: @($"/path/{ViewContext.RouteData.Values["area"]}/{ViewContext.RouteData.Values["id"]}")

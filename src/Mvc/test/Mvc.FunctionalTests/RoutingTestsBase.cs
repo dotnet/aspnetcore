@@ -1561,12 +1561,12 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task Area_Page_PageWithRouteTokensInAbsoluteRoute()
         {
             // Arrange & Act
-            var response = await Client.GetAsync("http://localhost/Admin/1");
+            var response = await Client.GetAsync("http://localhost/path/Admin/1");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var body = await response.Content.ReadAsStringAsync();
-            Assert.Equal("Transformed to: /Admin/1", body);
+            Assert.Equal("Transformed to: /path/Admin/1", body);
         }
 
         protected static LinkBuilder LinkFrom(string url)
