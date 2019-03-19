@@ -12,7 +12,8 @@ namespace Microsoft.AspNetCore.Razor.Language
             string rootNamespace,
             bool suppressChecksum,
             bool supressMetadataAttributes,
-            bool suppressPrimaryMethodBody)
+            bool suppressPrimaryMethodBody,
+            bool suppressNullabilityEnforcement)
         {
             IndentWithTabs = indentWithTabs;
             IndentSize = indentSize;
@@ -21,6 +22,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             SuppressChecksum = suppressChecksum;
             SuppressMetadataAttributes = supressMetadataAttributes;
             SuppressPrimaryMethodBody = suppressPrimaryMethodBody;
+            SuppressNullabilityEnforcement = suppressNullabilityEnforcement;
         }
 
         public override bool DesignTime { get; }
@@ -32,5 +34,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         public override string RootNamespace { get; }
 
         public override bool SuppressChecksum { get; }
+
+        public override bool SuppressNullabilityEnforcement { get; }
     }
 }

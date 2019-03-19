@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         {
             if (node.Source.HasValue)
             {
-                using (context.CodeWriter.BuildLinePragma(node.Source.Value))
+                using (context.CodeWriter.BuildLinePragma(node.Source.Value, context))
                 {
                     context.AddSourceMappingFor(node);
                     context.CodeWriter.WriteUsing(node.Content);
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
             if (node.Source != null)
             {
-                using (context.CodeWriter.BuildLinePragma(node.Source.Value))
+                using (context.CodeWriter.BuildLinePragma(node.Source.Value, context))
                 {
                     var offset = DesignTimeDirectivePass.DesignTimeVariable.Length + " = ".Length;
                     context.CodeWriter.WritePadding(offset, node.Source, context);
@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             IDisposable linePragmaScope = null;
             if (node.Source != null)
             {
-                linePragmaScope = context.CodeWriter.BuildLinePragma(node.Source.Value);
+                linePragmaScope = context.CodeWriter.BuildLinePragma(node.Source.Value, context);
 
                 context.CodeWriter.WritePadding(0, node.Source.Value, context);
             }
@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             var firstChild = node.Children[0];
             if (firstChild.Source != null)
             {
-                using (context.CodeWriter.BuildLinePragma(firstChild.Source.Value))
+                using (context.CodeWriter.BuildLinePragma(firstChild.Source.Value, context))
                 {
                     var offset = DesignTimeDirectivePass.DesignTimeVariable.Length + " = ".Length;
                     context.CodeWriter.WritePadding(offset, firstChild.Source, context);
@@ -210,7 +210,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                     {
                         if (!isWhitespaceStatement)
                         {
-                            linePragmaScope = context.CodeWriter.BuildLinePragma(token.Source.Value);
+                            linePragmaScope = context.CodeWriter.BuildLinePragma(token.Source.Value, context);
                         }
 
                         context.CodeWriter.WritePadding(0, token.Source.Value, context);

@@ -16,7 +16,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                 suppressChecksum: false,
                 rootNamespace: null,
                 supressMetadataAttributes: false,
-                suppressPrimaryMethodBody: false);
+                suppressPrimaryMethodBody: false,
+                suppressNullabilityEnforcement: false);
         }
 
         public static RazorCodeGenerationOptions CreateDesignTimeDefault()
@@ -28,7 +29,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                 rootNamespace: null,
                 suppressChecksum: false,
                 supressMetadataAttributes: true,
-                suppressPrimaryMethodBody: false);
+                suppressPrimaryMethodBody: false,
+                suppressNullabilityEnforcement: false);
         }
 
         public static RazorCodeGenerationOptions Create(Action<RazorCodeGenerationOptionsBuilder> configure)
@@ -107,5 +109,10 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// Gets or sets a value that determines if an empty body is generated for the primary method.
         /// </summary>
         public virtual bool SuppressPrimaryMethodBody { get; protected set; }
+
+        /// <summary>
+        /// Gets or sets a value that determines if nullability type enforcement is restored to project settings for user code.
+        /// </summary>
+        public virtual bool SuppressNullabilityEnforcement { get; }
     }
 }

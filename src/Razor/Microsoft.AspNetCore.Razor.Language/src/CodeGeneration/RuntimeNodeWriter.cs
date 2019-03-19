@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         {
             if (node.Source.HasValue)
             {
-                using (context.CodeWriter.BuildLinePragma(node.Source.Value))
+                using (context.CodeWriter.BuildLinePragma(node.Source.Value, context))
                 {
                     context.CodeWriter.WriteUsing(node.Content);
                 }
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             IDisposable linePragmaScope = null;
             if (node.Source != null)
             {
-                linePragmaScope = context.CodeWriter.BuildLinePragma(node.Source.Value);
+                linePragmaScope = context.CodeWriter.BuildLinePragma(node.Source.Value, context);
                 context.CodeWriter.WritePadding(WriteCSharpExpressionMethod.Length + 1, node.Source, context);
             }
 
@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             IDisposable linePragmaScope = null;
             if (node.Source != null)
             {
-                linePragmaScope = context.CodeWriter.BuildLinePragma(node.Source.Value);
+                linePragmaScope = context.CodeWriter.BuildLinePragma(node.Source.Value, context);
                 context.CodeWriter.WritePadding(0, node.Source.Value, context);
             }
 
@@ -200,7 +200,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
         public override void WriteCSharpExpressionAttributeValue(CodeRenderingContext context, CSharpExpressionAttributeValueIntermediateNode node)
         {
-            using (context.CodeWriter.BuildLinePragma(node.Source.Value))
+            using (context.CodeWriter.BuildLinePragma(node.Source.Value, context))
             {
                 var prefixLocation = node.Source.Value.AbsoluteIndex;
                 context.CodeWriter
@@ -266,7 +266,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                         {
                             if (!isWhitespaceStatement)
                             {
-                                linePragmaScope = context.CodeWriter.BuildLinePragma(token.Source.Value);
+                                linePragmaScope = context.CodeWriter.BuildLinePragma(token.Source.Value, context);
                             }
 
                             context.CodeWriter.WritePadding(0, token.Source.Value, context);

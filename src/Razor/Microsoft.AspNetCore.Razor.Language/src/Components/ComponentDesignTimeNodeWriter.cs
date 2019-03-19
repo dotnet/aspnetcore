@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
             if (node.Source.HasValue)
             {
-                using (context.CodeWriter.BuildLinePragma(node.Source.Value))
+                using (context.CodeWriter.BuildLinePragma(node.Source.Value, context))
                 {
                     context.AddSourceMappingFor(node);
                     context.CodeWriter.WriteUsing(node.Content);
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
             if (node.Source != null)
             {
-                using (context.CodeWriter.BuildLinePragma(node.Source.Value))
+                using (context.CodeWriter.BuildLinePragma(node.Source.Value, context))
                 {
                     var offset = DesignTimeVariable.Length + " = ".Length;
                     context.CodeWriter.WritePadding(offset, node.Source, context);
@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             {
                 if (!isWhitespaceStatement)
                 {
-                    linePragmaScope = context.CodeWriter.BuildLinePragma(node.Source.Value);
+                    linePragmaScope = context.CodeWriter.BuildLinePragma(node.Source.Value, context);
                 }
 
                 context.CodeWriter.WritePadding(0, node.Source.Value, context);
@@ -247,7 +247,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             var firstChild = node.Children[0];
             if (firstChild.Source != null)
             {
-                using (context.CodeWriter.BuildLinePragma(firstChild.Source.Value))
+                using (context.CodeWriter.BuildLinePragma(firstChild.Source.Value, context))
                 {
                     var offset = DesignTimeVariable.Length + " = ".Length;
                     context.CodeWriter.WritePadding(offset, firstChild.Source, context);
@@ -835,7 +835,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 return;
             }
 
-            using (context.CodeWriter.BuildLinePragma(token.Source))
+            using (context.CodeWriter.BuildLinePragma(token.Source, context))
             {
                 context.CodeWriter.WritePadding(0, token.Source.Value, context);
                 context.AddSourceMappingFor(token);

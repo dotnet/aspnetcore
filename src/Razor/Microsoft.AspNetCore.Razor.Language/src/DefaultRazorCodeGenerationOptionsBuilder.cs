@@ -37,6 +37,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public override bool SuppressChecksum { get; set; }
 
+        public override bool SuppressNullabilityEnforcement { get; set; }
+
         public override RazorCodeGenerationOptions Build()
         {
             return new DefaultRazorCodeGenerationOptions(
@@ -46,7 +48,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                 RootNamespace,
                 SuppressChecksum,
                 SuppressMetadataAttributes,
-                SuppressPrimaryMethodBody);
+                SuppressPrimaryMethodBody,
+                SuppressNullabilityEnforcement);
         }
 
         public override void SetDesignTime(bool designTime)

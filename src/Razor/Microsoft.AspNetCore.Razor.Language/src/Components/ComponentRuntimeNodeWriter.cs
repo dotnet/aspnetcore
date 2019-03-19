@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             IDisposable linePragmaScope = null;
             if (node.Source != null)
             {
-                linePragmaScope = context.CodeWriter.BuildLinePragma(node.Source.Value);
+                linePragmaScope = context.CodeWriter.BuildLinePragma(node.Source.Value, context);
                 context.CodeWriter.WritePadding(0, node.Source.Value, context);
             }
 

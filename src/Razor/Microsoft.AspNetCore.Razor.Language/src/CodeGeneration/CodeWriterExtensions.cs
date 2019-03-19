@@ -440,7 +440,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             return new CSharpCodeWritingScope(writer);
         }
 
-        public static IDisposable BuildLinePragma(this CodeWriter writer, SourceSpan? span)
+        public static IDisposable BuildLinePragma(this CodeWriter writer, SourceSpan? span, CodeRenderingContext context)
         {
             if (string.IsNullOrEmpty(span?.FilePath))
             {
@@ -448,7 +448,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 return NullDisposable.Default;
             }
 
-            return new LinePragmaWriter(writer, span.Value);
+            return new LinePragmaWriter(writer, span.Value, context.Options);
         }
 
         private static void WriteVerbatimStringLiteral(CodeWriter writer, string literal)
@@ -596,9 +596,13 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         private class LinePragmaWriter : IDisposable
         {
             private readonly CodeWriter _writer;
+            private readonly RazorCodeGenerationOptions _codeGenerationOptions;
             private readonly int _startIndent;
 
-            public LinePragmaWriter(CodeWriter writer, SourceSpan span)
+            public LinePragmaWriter(
+                CodeWriter writer, 
+                SourceSpan span,
+                RazorCodeGenerationOptions codeGenerationOptions)
             {
                 if (writer == null)
                 {
@@ -606,8 +610,15 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 }
 
                 _writer = writer;
+                _codeGenerationOptions = codeGenerationOptions;
                 _startIndent = _writer.CurrentIndent;
                 _writer.CurrentIndent = 0;
+
+                if (!_codeGenerationOptions.SuppressNullabilityEnforcement)
+                {
+                    _writer.WriteLine("#nullable restore");
+                }
+
                 WriteLineNumberDirective(writer, span);
             }
 
@@ -629,6 +640,11 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 _writer
                     .WriteLine("#line default")
                     .WriteLine("#line hidden");
+
+                if (!_codeGenerationOptions.SuppressNullabilityEnforcement)
+                {
+                    _writer.WriteLine("#nullable disable");
+                }
 
                 _writer.CurrentIndent = _startIndent;
             }

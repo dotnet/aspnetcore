@@ -26,6 +26,8 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
         public string RootNamespace { get; set; }
 
+        public string CSharpLanguageVersion { get; set; }
+
         [Required]
         public string Version { get; set; }
 
@@ -138,16 +140,24 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             builder.AppendLine(Configuration[0].GetMetadata(Identity));
 
             // Added in 3.0
-            if (parsedVersion.Major >= 3 && !string.IsNullOrEmpty(RootNamespace))
+            if (parsedVersion.Major >= 3)
             {
-                builder.AppendLine("--root-namespace");
-                builder.AppendLine(RootNamespace);
-            }
+                if (!string.IsNullOrEmpty(RootNamespace))
+                {
+                    builder.AppendLine("--root-namespace");
+                    builder.AppendLine(RootNamespace);
+                }
 
-            // Added in 3.0
-            if (parsedVersion.Major >= 3 && GenerateDeclaration)
-            {
-                builder.AppendLine("--generate-declaration");
+                if (!string.IsNullOrEmpty(CSharpLanguageVersion))
+                {
+                    builder.AppendLine("--csharp-language-version");
+                    builder.AppendLine(CSharpLanguageVersion);
+                }
+
+                if (GenerateDeclaration)
+                {
+                    builder.AppendLine("--generate-declaration");
+                }
             }
 
             for (var i = 0; i < Extensions.Length; i++)

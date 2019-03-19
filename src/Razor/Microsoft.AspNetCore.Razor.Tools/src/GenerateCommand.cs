@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.VisualStudio.LanguageServices.Razor.Serialization;
@@ -30,6 +31,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
             ExtensionNames = Option("-n", "extension name", CommandOptionType.MultipleValue);
             ExtensionFilePaths = Option("-e", "extension file path", CommandOptionType.MultipleValue);
             RootNamespace = Option("--root-namespace", "root namespace for generated code", CommandOptionType.SingleValue);
+            CSharpLanguageVersion = Option("--csharp-language-version", "csharp language version generated code", CommandOptionType.SingleValue);
             GenerateDeclaration = Option("--generate-declaration", "Generate declaration", CommandOptionType.NoValue);
         }
 
@@ -54,6 +56,8 @@ namespace Microsoft.AspNetCore.Razor.Tools
         public CommandOption ExtensionFilePaths { get; }
 
         public CommandOption RootNamespace { get; }
+
+        public CommandOption CSharpLanguageVersion { get; }
 
         public CommandOption GenerateDeclaration { get; }
 
@@ -170,6 +174,22 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 RazorProjectFileSystem.Create(projectDirectory),
             });
 
+            var success = true;
+            var csharpLanguageVersion = LanguageVersion.Default;
+            if (CSharpLanguageVersion.HasValue())
+            {
+                var rawLanguageVersion = CSharpLanguageVersion.Value();
+                if (!LanguageVersionFacts.TryParse(CSharpLanguageVersion.Value(), out var parsedLanguageVersion))
+                {
+                    success = false;
+                    Error.WriteLine($"Unknown C# language version {rawLanguageVersion}.");
+                }
+                else
+                {
+                    csharpLanguageVersion = parsedLanguageVersion;
+                }
+            }
+
             var engine = RazorProjectEngine.Create(configuration, compositeFileSystem, b =>
             {
                 b.Features.Add(new StaticTagHelperFeature() { TagHelpers = tagHelpers, });
@@ -184,11 +204,11 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 {
                     b.SetRootNamespace(RootNamespace.Value());
                 }
+
+                b.SetCSharpLanguageVersion(csharpLanguageVersion);
             });
 
             var results = GenerateCode(engine, sourceItems);
-
-            var success = true;
 
             foreach (var result in results)
             {

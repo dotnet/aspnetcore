@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             if (node.Source.HasValue)
             {
-                using (context.CodeWriter.BuildLinePragma(node.Source.Value))
+                using (context.CodeWriter.BuildLinePragma(node.Source.Value, context))
                 {
                     context.CodeWriter
                         .WriteLine(RazorInjectAttribute)

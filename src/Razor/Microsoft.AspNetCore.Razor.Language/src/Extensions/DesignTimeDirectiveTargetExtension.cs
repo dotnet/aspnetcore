@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                         }
 
                         // {node.Content} __typeHelper = default({node.Content});
-                        using (context.CodeWriter.BuildLinePragma(node.Source))
+                        using (context.CodeWriter.BuildLinePragma(node.Source, context))
                         {
                             context.AddSourceMappingFor(node);
                             context.CodeWriter
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                         }
 
                         // global::System.Object {node.content} = null;
-                        using (context.CodeWriter.BuildLinePragma(node.Source))
+                        using (context.CodeWriter.BuildLinePragma(node.Source, context))
                         {
                             context.CodeWriter
                             .Write("global::")
@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                         }
 
                         // global::System.Object __typeHelper = nameof({node.Content});
-                        using (context.CodeWriter.BuildLinePragma(node.Source))
+                        using (context.CodeWriter.BuildLinePragma(node.Source, context))
                         {
                             context.CodeWriter
                             .Write("global::")
@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                     case DirectiveTokenKind.String:
 
                         // global::System.Object __typeHelper = "{node.Content}";
-                        using (context.CodeWriter.BuildLinePragma(node.Source))
+                        using (context.CodeWriter.BuildLinePragma(node.Source, context))
                         {
                             context.CodeWriter
                             .Write("global::")
@@ -173,7 +173,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             // for consistency so when a C# completion session starts, filling user code doesn't result in
             // a previously non-existent line pragma from being added and destroying the context in which
             // the completion session was started.
-            using (context.CodeWriter.BuildLinePragma(node.Source))
+            using (context.CodeWriter.BuildLinePragma(node.Source, context))
             {
                 context.AddSourceMappingFor(node);
                 context.CodeWriter.Write(" ");

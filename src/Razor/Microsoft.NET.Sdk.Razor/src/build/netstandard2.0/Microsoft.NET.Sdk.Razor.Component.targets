@@ -107,6 +107,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       PipeName="$(_RazorBuildServerPipeName)"
       Version="$(RazorLangVersion)"
       RootNamespace="$(RootNamespace)"
+      CSharpLanguageVersion="$(LangVersion)"
       Configuration="@(ResolvedRazorConfiguration)"
       Extensions="@(ResolvedRazorExtension)"
       Sources="@(_RazorComponentDeclarationSources)"

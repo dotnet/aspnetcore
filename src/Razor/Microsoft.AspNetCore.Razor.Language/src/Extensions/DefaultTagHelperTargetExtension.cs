@@ -373,7 +373,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                     var firstMappedChild = node.Children.FirstOrDefault(child => child.Source != null) as IntermediateNode;
                     var valueStart = firstMappedChild?.Source;
 
-                    using (context.CodeWriter.BuildLinePragma(node.Source))
+                    using (context.CodeWriter.BuildLinePragma(node.Source, context))
                     {
                         var accessor = GetPropertyAccessor(node);
                         var assignmentPrefixLength = accessor.Length + " = ".Length;
@@ -422,7 +422,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 }
                 else
                 {
-                    using (context.CodeWriter.BuildLinePragma(node.Source))
+                    using (context.CodeWriter.BuildLinePragma(node.Source, context))
                     {
                         context.CodeWriter.WriteStartAssignment(GetPropertyAccessor(node));
 
