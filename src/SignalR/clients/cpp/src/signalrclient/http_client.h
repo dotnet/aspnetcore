@@ -10,7 +10,7 @@
 
 namespace signalr
 {
-    enum http_method
+    enum class http_method
     {
         GET,
         POST
