@@ -7,6 +7,7 @@
 #include "websocket_client.h"
 #include "web_request_factory.h"
 #include "http_client.h"
+#include <future>
 
 std::string remove_date_from_log_entry(const std::string &log_entry);
 
@@ -22,3 +23,78 @@ std::string create_uri();
 std::string create_uri(const std::string& query_string);
 std::vector<std::string> filter_vector(const std::vector<std::string>& source, const std::string& string);
 std::string dump_vector(const std::vector<std::string>& source);
+
+template <typename T>
+class manual_reset_event
+{
+public:
+    void set(T value)
+    {
+        m_promise.set_value(value);
+    }
+
+    void set_exception(std::exception exception)
+    {
+        m_promise.set_exception(std::make_exception_ptr(exception));
+    }
+
+    void set_exception(std::exception_ptr exception)
+    {
+        m_promise.set_exception(exception);
+    }
+
+    T get()
+    {
+        // TODO: timeout
+        try
+        {
+            auto ret = m_promise.get_future().get();
+            m_promise = std::promise<T>();
+            return ret;
+        }
+        catch (...)
+        {
+            m_promise = std::promise<T>();
+            std::rethrow_exception(std::current_exception());
+        }
+    }
+private:
+    std::promise<T> m_promise;
+};
+
+template <>
+class manual_reset_event<void>
+{
+public:
+    void set()
+    {
+        m_promise.set_value();
+    }
+
+    void set_exception(std::exception exception)
+    {
+        m_promise.set_exception(std::make_exception_ptr(exception));
+    }
+
+    void set_exception(std::exception_ptr exception)
+    {
+        m_promise.set_exception(exception);
+    }
+
+    void get()
+    {
+        try
+        {
+            m_promise.get_future().get();
+        }
+        catch (...)
+        {
+            m_promise = std::promise<void>();
+            std::rethrow_exception(std::current_exception());
+        }
+
+        m_promise = std::promise<void>();
+    }
+private:
+    std::promise<void> m_promise;
+};

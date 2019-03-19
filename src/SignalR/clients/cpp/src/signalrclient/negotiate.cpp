@@ -3,7 +3,6 @@
 
 #include "stdafx.h"
 #include "negotiate.h"
-#include "http_sender.h"
 #include "url_builder.h"
 #include "signalrclient/signalr_exception.h"
 

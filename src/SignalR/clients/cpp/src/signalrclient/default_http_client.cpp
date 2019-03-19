@@ -17,6 +17,11 @@ namespace signalr
         {
             method = U("POST");
         }
+        else
+        {
+            callback(http_response(), std::make_exception_ptr(std::runtime_error("unknown http method")));
+            return;
+        }
 
         web::http::http_request http_request;
         http_request.set_method(method);
@@ -61,7 +66,7 @@ namespace signalr
             }
             catch (...)
             {
-                callback(signalr::http_response(), std::current_exception());
+                callback(http_response(), std::current_exception());
             }
         });
     }
