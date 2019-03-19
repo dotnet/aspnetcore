@@ -10,10 +10,14 @@ include
 "${CPPREST_INCLUDE_DIR}")
 
 find_library(CPPREST_SO NAMES "cpprest" PATHS ${CPPREST_LIB_DIR} REQUIRED)
+if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+	find_package(Boost COMPONENTS chrono thread REQUIRED)
+endif()
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 
 add_subdirectory(src/signalrclient)
-add_subdirectory(test)
+#add_subdirectory(test)
+set_property(TARGET signalrclient PROPERTY MACOSX_RPATH ON)

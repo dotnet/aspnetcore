@@ -23,4 +23,8 @@ set (SOURCES
 
 add_library (signalrclient SHARED ${SOURCES})
 
-target_link_libraries(signalrclient ${CPPREST_SO})
+if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    target_link_libraries(signalrclient ${CPPREST_SO} ${Boost_LIBRARIES} libssl.dylib libcrypto.dylib)
+else()
+    target_link_libraries(signalrclient ${CPPREST_SO})
+endif()
