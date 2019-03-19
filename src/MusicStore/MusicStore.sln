@@ -5,8 +5,6 @@ VisualStudioVersion = 16.0.0.0
 MinimumVisualStudioVersion = 16.0.0.0
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MusicStore", "samples\MusicStore\MusicStore.csproj", "{3CFBED5D-2ED8-49DB-96FB-BDAA748DC5A0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MusicStore.Test", "test\MusicStore.Test\MusicStore.Test.csproj", "{CA663205-77DE-4E55-B300-85594181B5A9}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MusicStore.E2ETests", "test\MusicStore.E2ETests\MusicStore.E2ETests.csproj", "{72A5F455-121F-4954-BF28-D712C6BE88EA}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Antiforgery", "..\Antiforgery\src\Microsoft.AspNetCore.Antiforgery.csproj", "{DECBCA36-8E91-4A46-914D-832ECCE7D3F4}"
@@ -167,18 +165,6 @@ Global
 		{3CFBED5D-2ED8-49DB-96FB-BDAA748DC5A0}.Release|x64.Build.0 = Release|x64
 		{3CFBED5D-2ED8-49DB-96FB-BDAA748DC5A0}.Release|x86.ActiveCfg = Release|x86
 		{3CFBED5D-2ED8-49DB-96FB-BDAA748DC5A0}.Release|x86.Build.0 = Release|x86
-		{CA663205-77DE-4E55-B300-85594181B5A9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CA663205-77DE-4E55-B300-85594181B5A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CA663205-77DE-4E55-B300-85594181B5A9}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{CA663205-77DE-4E55-B300-85594181B5A9}.Debug|x64.Build.0 = Debug|Any CPU
-		{CA663205-77DE-4E55-B300-85594181B5A9}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{CA663205-77DE-4E55-B300-85594181B5A9}.Debug|x86.Build.0 = Debug|Any CPU
-		{CA663205-77DE-4E55-B300-85594181B5A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CA663205-77DE-4E55-B300-85594181B5A9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CA663205-77DE-4E55-B300-85594181B5A9}.Release|x64.ActiveCfg = Release|Any CPU
-		{CA663205-77DE-4E55-B300-85594181B5A9}.Release|x64.Build.0 = Release|Any CPU
-		{CA663205-77DE-4E55-B300-85594181B5A9}.Release|x86.ActiveCfg = Release|Any CPU
-		{CA663205-77DE-4E55-B300-85594181B5A9}.Release|x86.Build.0 = Release|Any CPU
 		{72A5F455-121F-4954-BF28-D712C6BE88EA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{72A5F455-121F-4954-BF28-D712C6BE88EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{72A5F455-121F-4954-BF28-D712C6BE88EA}.Debug|x64.ActiveCfg = Debug|Any CPU

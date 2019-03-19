@@ -11,16 +11,16 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
-    public class PublishedApplicationPublisher: ApplicationPublisher
+    public class IISPublishedApplicationPublisher: PublishedApplicationPublisher
     {
         private readonly string _applicationName;
 
-        public PublishedApplicationPublisher(string applicationName) : base(applicationName)
+        public IISPublishedApplicationPublisher(string applicationName) : base(applicationName)
         {
             _applicationName = applicationName;
         }
 
-        public override Task<PublishedApplication> Publish(DeploymentParameters deploymentParameters, ILogger logger)
+        protected override string ResolvePublishedApplicationPath(DeploymentParameters deploymentParameters, ILogger logger)
         {
             var path = Path.Combine(AppContext.BaseDirectory, GetProfileName(deploymentParameters));
 
@@ -31,13 +31,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 path = solutionPath;
             }
 
-            logger.LogInformation("Using prepublished application from {PublishDir}", path);
-
-            var target = CreateTempDirectory();
-
-            var source = new DirectoryInfo(path);
-            CachingApplicationPublisher.CopyFiles(source, target, logger);
-            return Task.FromResult(new PublishedApplication(target.FullName, logger));
+            return path;
         }
 
         private string GetProjectReferencePublishLocation(DeploymentParameters deploymentParameters)
