@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal
-
 {
     /// <summary>
     ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
@@ -52,7 +51,8 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal
             var result = await _userManager.ChangeEmailAsync(user, email, code);
             if (!result.Succeeded)
             {
-                throw new InvalidOperationException($"Error changing email for user with ID '{userId}':");
+                ModelState.AddModelError(string.Empty, "Change email failed.");
+                return Page();
             }
 
             // In our UI email and user name are one and the same, so when we update the email

@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Manage.Internal
                     "Confirm your email",
                     $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
 
-                StatusMessage = "Confirmation link to change email sent. Please check your email." + callbackUrl;
+                StatusMessage = "Confirmation link to change email sent. Please check your email.";
                 return RedirectToPage();
             }
 

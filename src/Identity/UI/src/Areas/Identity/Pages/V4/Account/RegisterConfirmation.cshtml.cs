@@ -5,6 +5,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Hosting;
@@ -30,7 +31,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        public bool IsDevelopment { get; set; }
+        public bool DisplayConfirmAccountLink { get; set; }
 
         /// <summary>
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
@@ -49,11 +50,13 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal
     {
         private readonly UserManager<TUser> _userManager;
         private readonly IWebHostEnvironment _hostingEnv;
+        private readonly IEmailSender _sender;
 
-        public RegisterConfirmationModel(UserManager<TUser> userManager, IWebHostEnvironment hostingEnv)
+        public RegisterConfirmationModel(UserManager<TUser> userManager, IWebHostEnvironment hostingEnv, IEmailSender sender)
         {
             _userManager = userManager;
             _hostingEnv = hostingEnv;
+            _sender = sender;
         }
 
         public override async Task<IActionResult> OnGetAsync(string email)
@@ -70,9 +73,9 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal
             }
 
             Email = email;
-            IsDevelopment = _hostingEnv.IsDevelopment();
-
-            if (IsDevelopment)
+            // This sender is a no-op, so we should auto confirm the account
+            DisplayConfirmAccountLink = _sender is EmailSender;
+            if (DisplayConfirmAccountLink)
             {
                 var userId = await _userManager.GetUserIdAsync(user);
                 var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);

@@ -49,8 +49,6 @@ namespace IdentitySample.DefaultUI
             services.AddDefaultIdentity<ApplicationUser>(o => o.SignIn.RequireConfirmedAccount = true)
                  .AddRoles<IdentityRole>()
                  .AddEntityFrameworkStores<ApplicationDbContext>();
-
-            //services.AddSingleton<IUserConfirmation<ApplicationUser>, BadDude>();
         }
 
 
