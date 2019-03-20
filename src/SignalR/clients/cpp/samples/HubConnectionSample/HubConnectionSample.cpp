@@ -23,7 +23,7 @@ void send_message(signalr::hub_connection& connection, const std::string& messag
     args[0] = web::json::value(utility::conversions::to_string_t(message));
 
     // if you get an internal compiler error uncomment the lambda below or install VS Update 4
-    connection.invoke("Send", args/*, [](const web::json::value&){}*/)
+    connection.invoke("Send", args)
         .then([](pplx::task<web::json::value> invoke_task)  // fire and forget but we need to observe exceptions
     {
         try

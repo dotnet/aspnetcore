@@ -242,6 +242,7 @@ namespace signalr
                 {
                     try
                     {
+                        // Rethrowing the exception so we can log it
                         std::rethrow_exception(exception);
                     }
                     catch (const std::exception & e)
@@ -265,10 +266,6 @@ namespace signalr
                 }
                 else
                 {
-                    // When a connection is stopped we don't wait for its transport to stop. As a result if the same connection
-                    // is immediately re-started the old transport can still invoke this callback. To prevent this we capture
-                    // the disconnect_cts by value which allows distinguishing if the message is for the running connection
-                    // or for the one that was already stopped. If this is the latter we just ignore it.
                     if (disconnect_cts.get_token().is_canceled())
                     {
                         logger.log(trace_level::info,

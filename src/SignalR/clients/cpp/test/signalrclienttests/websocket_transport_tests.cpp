@@ -303,7 +303,7 @@ TEST(websocket_transport_disconnect, disconnect_logs_exceptions)
         log_entries.end());
 }
 
-TEST(websocket_transport_disconnect, DISABLED_receive_not_called_after_disconnect)
+TEST(websocket_transport_disconnect, receive_not_called_after_disconnect)
 {
     auto client = std::make_shared<test_websocket_client>();
 
