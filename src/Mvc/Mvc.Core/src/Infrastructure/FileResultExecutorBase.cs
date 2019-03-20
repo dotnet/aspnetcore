@@ -52,10 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             {
                 throw new ArgumentNullException(nameof(result));
             }
-
-            SetContentType(context, result);
-            SetContentDispositionHeader(context, result);
-
+            
             var request = context.HttpContext.Request;
             var httpRequestHeaders = request.GetTypedHeaders();
 
@@ -74,8 +71,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             // Short circuit if the preconditional headers process to 304 (NotModified) or 412 (PreconditionFailed)
             if (preconditionState == PreconditionState.NotModified)
             {
-                response.StatusCode = StatusCodes.Status304NotModified;
-                response.Headers.Remove("Content-Type");
+                response.StatusCode = StatusCodes.Status304NotModified;                
                 return (range: null, rangeLength: 0, serveBody: false);
             }
             else if (preconditionState == PreconditionState.PreconditionFailed)
@@ -84,10 +80,14 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 return (range: null, rangeLength: 0, serveBody: false);
             }
 
+            SetContentType(context, result);
+            SetContentDispositionHeader(context, result);
+
             if (fileLength.HasValue)
             {
                 // Assuming the request is not a range request, and the response body is not empty, the Content-Length header is set to 
                 // the length of the entire file. 
+
                 // If the request is a valid range request, this header is overwritten with the length of the range as part of the 
                 // range processing (see method SetContentLength).
 
