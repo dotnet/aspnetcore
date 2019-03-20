@@ -1455,6 +1455,24 @@ class HubConnectionTest {
     }
 
     @Test
+    public void noConnectionIdWhenSkippingNegotiate() {
+        MockTransport transport = new MockTransport();
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example.com")
+                .withTransportImplementation(transport)
+                .shouldSkipNegotiate(true)
+                .build();
+
+        assertNull(hubConnection.getConnectionId());
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
+        assertNull(hubConnection.getConnectionId());
+        hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+        assertNull(hubConnection.getConnectionId());
+    }
+
+    @Test
     public void connectionIdIsAvailableAfterStart() {
         TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate",
                 (req) -> Single.just(new HttpResponse(200, "",
