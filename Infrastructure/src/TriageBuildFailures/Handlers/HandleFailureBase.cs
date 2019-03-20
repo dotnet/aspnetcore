@@ -23,6 +23,8 @@ namespace TriageBuildFailures.Handlers
         public IReporter Reporter { get; set; }
 
         protected const string _PRI0Label = "PRI: 0 - Critical";
+        protected const string _PRI1Label = "PRI: 1 - Required";
+        protected const string _ReadyLabel = "1 - Ready";
 
         public abstract Task<bool> CanHandleFailure(ICIBuild build);
         public abstract Task HandleFailure(ICIBuild build);

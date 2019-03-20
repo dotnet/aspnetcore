@@ -91,6 +91,8 @@ CC {GetOwnerMentions(failureArea)}";
                     {
                         GitHubClientWrapper.TestFailureTag,
                         GitHubUtils.GetBranchLabel(build.Branch),
+                        _ReadyLabel,
+                        _PRI1Label
                     };
                     if (!string.IsNullOrEmpty(failureArea))
                     {

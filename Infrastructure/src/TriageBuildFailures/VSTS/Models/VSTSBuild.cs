@@ -11,6 +11,7 @@ namespace TriageBuildFailures.VSTS.Models
     public class VSTSBuild : ICIBuild
     {
         private readonly Build _build;
+        private string _branch;
 
         public VSTSBuild(Build build)
         {
@@ -46,7 +47,14 @@ namespace TriageBuildFailures.VSTS.Models
 
         public string Project => _build.Project.Id;
 
-        public string Branch => _build.SourceBranch.Replace("refs/heads/", string.Empty);
+        public string Branch {
+            get {
+                return string.IsNullOrEmpty(_branch)? _build.SourceBranch.Replace("refs/heads/", string.Empty) : _branch;
+            }
+            set {
+                _branch = value;
+            }
+        }
 
         public DateTimeOffset StartDate => new DateTimeOffset(_build.StartTime.Value);
 

@@ -54,6 +54,7 @@ namespace TriageBuildFailures.Commands
         private static readonly IEnumerable<string> _watchedBranches = new List<string> {
             "master",
             "release/",
+            "internal/release",
             "2.2",
             "2.1",
             "2.0"

@@ -40,6 +40,7 @@ namespace TriageBuildFailures.GitHub
                 {
                     var url = request.Body.Replace(TriageRequestStart, "").Trim();
                     var build = await _vstsClient.GetBuild(url);
+                    build.Branch = "PR";
                     build.CIType = typeof(PullRequestClient);
                     build.PRSource = pr;
                     builds.Add(build);

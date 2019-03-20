@@ -74,6 +74,7 @@ CC {GitHubUtils.GetAtMentions(_Notifiers)}";
                 var issueLabels = new[]
                 {
                     _PRI0Label,
+                    _ReadyLabel,
                     _BrokenBuildLabel,
                     GitHubUtils.GetBranchLabel(build.Branch)
                 };
