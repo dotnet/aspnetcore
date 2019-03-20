@@ -4,8 +4,6 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <IsSampleProject>false</IsSampleProject>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <!-- https://github.com/aspnet/AspNetCore/issues/6549 -->
-    <BuildHelixPayload>false</BuildHelixPayload>
   </PropertyGroup>
 
   <Import Project="$(MvcTestingTargets)" Condition="'$(MvcTestingTargets)' != ''" />
@@ -28,4 +26,20 @@
     <Reference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <Reference Include="AngleSharp" />
   </ItemGroup>
+  
+  <Target Name="PublishAssets" AfterTargets="Publish">
+    <ItemGroup>
+      <_PublishFiles Include="$(MSBuildThisFileDirectory)..\..\samples\ClaimsTransformation\bin\$(Configuration)\netcoreapp3.0\ClaimsTransformation.deps.json" />
+      <_PublishFiles Include="$(MSBuildThisFileDirectory)..\..\samples\Cookies\bin\$(Configuration)\netcoreapp3.0\Cookies.deps.json" />
+      <_PublishFiles Include="$(MSBuildThisFileDirectory)..\..\samples\CustomPolicyProvider\bin\$(Configuration)\netcoreapp3.0\CustomPolicyProvider.deps.json" />
+      <_PublishFiles Include="$(MSBuildThisFileDirectory)..\..\samples\DynamicSchemes\bin\$(Configuration)\netcoreapp3.0\DynamicSchemes.deps.json" />
+      <_PublishFiles Include="$(MSBuildThisFileDirectory)..\..\samples\Identity.ExternalClaims\bin\$(Configuration)\netcoreapp3.0\Identity.ExternalClaims.deps.json" />
+      <_PublishFiles Include="$(MSBuildThisFileDirectory)..\..\samples\PathSchemeSelection\bin\$(Configuration)\netcoreapp3.0\PathSchemeSelection.deps.json" />
+      <_PublishFiles Include="$(MSBuildThisFileDirectory)..\..\samples\StaticFilesAuth\bin\$(Configuration)\netcoreapp3.0\StaticFilesAuth.deps.json" />
+    </ItemGroup>
+    <Copy
+      SourceFiles="@(_PublishFiles)"
+      DestinationFolder="$(PublishDir)" />
+  </Target>
+  
 </Project>
