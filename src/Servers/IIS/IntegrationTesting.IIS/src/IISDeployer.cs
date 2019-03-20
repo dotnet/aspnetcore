@@ -241,7 +241,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 var site = serverManager.Sites.Single();
                 var appPool = serverManager.ApplicationPools.Single();
 
-                var actualPath = site.Applications.Single().VirtualDirectories.Single().PhysicalPath;
+                var actualPath = site.Applications.FirstOrDefault().VirtualDirectories.Single().PhysicalPath;
                 if (actualPath != contentRoot)
                 {
                     throw new InvalidOperationException($"Wrong physical path. Expected: {contentRoot} Actual: {actualPath}");
