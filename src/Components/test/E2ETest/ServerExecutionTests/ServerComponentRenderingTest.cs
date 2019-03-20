@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
 
             appElement.FindElement(By.Id("run-without-dispatch")).Click();
 
-            WaitAssert.Contains(
+            Browser.Contains(
                 $"{typeof(InvalidOperationException).FullName}: The current thread is not associated with the renderer's synchronization context",
                 () => result.Text);
         }

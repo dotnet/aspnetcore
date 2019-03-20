@@ -8,6 +8,7 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -17,10 +18,14 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         : ServerTestBase<DevHostServerFixture<StandaloneApp.Program>>, IDisposable
     {
         public StandaloneAppTest(
-            BrowserFixture browserFixture, 
+            BrowserFixture browserFixture,
             DevHostServerFixture<StandaloneApp.Program> serverFixture,
             ITestOutputHelper output)
             : base(browserFixture, serverFixture, output)
+        {
+        }
+
+        protected override void InitializeAsyncCore()
         {
             Navigate("/", noReload: true);
             WaitUntilLoaded();

@@ -6,7 +6,7 @@ import { FetchData } from './components/FetchData';
 import { Counter } from './components/Counter';
 ////#if (IndividualLocalAuth)
 import AuthorizeRoute from './components/api-authorization/AuthorizeRoute';
-import ApiAuthorizationRoutes from './components/api-authorization/ApiAuthorizationRoutes'
+import ApiAuthorizationRoutes from './components/api-authorization/ApiAuthorizationRoutes';
 import { ApplicationPaths } from './components/api-authorization/ApiAuthorizationConstants';
 ////#endif
 
