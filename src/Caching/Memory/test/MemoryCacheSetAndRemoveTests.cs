@@ -213,6 +213,32 @@ namespace Microsoft.Extensions.Caching.Memory
             Assert.False(cache.TryGetValue(key, out string obj));
         }
 
+
+        [Fact]
+        public void TryGetValue_WillCreateDefaultValueAndSucceed_WhenValueNull()
+        {
+            var cache = CreateCache();
+            string key = "myKey";
+            string value = null;
+
+            cache.Set(key, value);
+
+            Assert.True(cache.TryGetValue(key, out string obj));
+        }
+
+        [Fact]
+        public void TryGetValue_WillCreateDefaultValueAndSucceed_WhenValueNullForValueType()
+        {
+            var cache = CreateCache();
+            string key = "myKey";
+            string value = null;
+
+            cache.Set(key, value);
+
+            Assert.True(cache.TryGetValue(key, out int obj));
+            Assert.Equal(default, obj);
+        }
+
         [Fact]
         public void SetOverwritesAndInvokesCallbacks()
         {

@@ -24,6 +24,12 @@ namespace Microsoft.Extensions.Caching.Memory
         {
             if (cache.TryGetValue(key, out object result))
             {
+                if (result == null)
+                {
+                    value = default;
+                    return true;
+                }
+
                 if (result is TItem item)
                 {
                     value = item;
