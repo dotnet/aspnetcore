@@ -50,10 +50,8 @@ namespace signalr
 
     void hub_connection_impl::initialize()
     {
-        auto this_hub_connection = shared_from_this();
-
         // weak_ptr prevents a circular dependency leading to memory leak and other problems
-        auto weak_hub_connection = std::weak_ptr<hub_connection_impl>(this_hub_connection);
+        std::weak_ptr<hub_connection_impl> weak_hub_connection = shared_from_this();
 
         m_connection->set_message_received([weak_hub_connection](const std::string& message)
         {
@@ -109,7 +107,7 @@ namespace signalr
         m_connection->set_client_config(m_signalr_client_config);
         m_handshakeTask = pplx::task_completion_event<void>();
         m_handshakeReceived = false;
-        auto weak_connection = weak_from_this();
+        std::weak_ptr<hub_connection_impl> weak_connection = shared_from_this();
         return m_connection->start()
             .then([weak_connection](pplx::task<void> startTask)
             {
@@ -310,7 +308,7 @@ namespace signalr
         const std::string& callback_id, std::function<void()> set_completion, std::function<void(const std::exception_ptr)> set_exception)
     {
         json::value request;
-        request[_XPLATSTR("type")] = json::value::value(1);
+        request[_XPLATSTR("type")] = json::value(1);
         if (!callback_id.empty())
         {
             request[_XPLATSTR("invocationId")] = json::value::string(utility::conversions::to_string_t(callback_id));
@@ -318,10 +316,8 @@ namespace signalr
         request[_XPLATSTR("target")] = json::value::string(utility::conversions::to_string_t(method_name));
         request[_XPLATSTR("arguments")] = arguments;
 
-        auto this_hub_connection = shared_from_this();
-
         // weak_ptr prevents a circular dependency leading to memory leak and other problems
-        auto weak_hub_connection = std::weak_ptr<hub_connection_impl>(this_hub_connection);
+        auto weak_hub_connection = std::weak_ptr<hub_connection_impl>(shared_from_this());
 
         m_connection->send(utility::conversions::to_utf8string(request.serialize() + _XPLATSTR('\x1e')))
             .then([set_completion, set_exception, weak_hub_connection, callback_id](pplx::task<void> send_task)

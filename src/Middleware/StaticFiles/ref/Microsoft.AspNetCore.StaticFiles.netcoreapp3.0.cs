@@ -61,10 +61,10 @@ namespace Microsoft.AspNetCore.Builder
     }
     public static partial class StaticFilesEndpointRouteBuilderExtensions
     {
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapFallbackToFile(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder builder, string filePath) { throw null; }
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapFallbackToFile(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder builder, string filePath, Microsoft.AspNetCore.Builder.StaticFileOptions options) { throw null; }
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapFallbackToFile(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder builder, string pattern, string filePath) { throw null; }
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapFallbackToFile(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder builder, string pattern, string filePath, Microsoft.AspNetCore.Builder.StaticFileOptions options) { throw null; }
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapFallbackToFile(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes, string filePath) { throw null; }
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapFallbackToFile(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes, string filePath, Microsoft.AspNetCore.Builder.StaticFileOptions options) { throw null; }
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapFallbackToFile(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes, string pattern, string filePath) { throw null; }
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapFallbackToFile(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes, string pattern, string filePath, Microsoft.AspNetCore.Builder.StaticFileOptions options) { throw null; }
     }
 }
 namespace Microsoft.AspNetCore.StaticFiles

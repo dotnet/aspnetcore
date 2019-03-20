@@ -13,6 +13,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Templates.Test.Helpers;
@@ -27,20 +28,33 @@ namespace Templates.Test
         private readonly HttpClient _httpClient;
         private static List<ScriptTag> _scriptTags;
         private static List<LinkTag> _linkTags;
+        private static readonly string[] _packages;
 
         static CdnScriptTagTests()
         {
-            var packages = MondoHelpers.GetNupkgFiles();
+            var searchPattern = "*.nupkg";
+            _packages = Directory.EnumerateFiles(
+                    ResolveFolder("ArtifactsShippingPackagesDir"),
+                    searchPattern)
+                .Concat(Directory.EnumerateFiles(
+                    ResolveFolder("ArtifactsNonShippingPackagesDir"),
+                    searchPattern))
+                .ToArray();
 
             _scriptTags = new List<ScriptTag>();
             _linkTags = new List<LinkTag>();
-            foreach (var packagePath in packages)
+            foreach (var packagePath in _packages)
             {
                 var tags = GetTags(packagePath);
                 _scriptTags.AddRange(tags.scripts);
                 _linkTags.AddRange(tags.links);
             }
         }
+
+        private static string ResolveFolder(string folder) =>
+            typeof(CdnScriptTagTests).Assembly
+                .GetCustomAttributes<AssemblyMetadataAttribute>()
+                .Single(a => a.Key == folder).Value;
 
         public CdnScriptTagTests(ITestOutputHelper output)
         {
@@ -162,7 +176,8 @@ namespace Templates.Test
         private async Task<HttpResponseMessage> GetFromCDN(string src)
         {
             var logger = NullLogger.Instance;
-            return await RetryHelper.RetryRequest(async () => {
+            return await RetryHelper.RetryRequest(async () =>
+            {
                 var request = new HttpRequestMessage(HttpMethod.Get, new Uri(src));
                 return await _httpClient.SendAsync(request);
             }, logger);
@@ -191,7 +206,7 @@ namespace Templates.Test
 
         private static string GetFileContentFromArchive(ScriptTag scriptTag, string relativeFilePath)
         {
-            var file = MondoHelpers.GetNupkgFiles().Single(f => f.EndsWith(scriptTag.FileName));
+            var file = _packages.Single(f => f.EndsWith(scriptTag.FileName));
             using (var zip = new ZipArchive(File.OpenRead(file), ZipArchiveMode.Read, leaveOpen: false))
             {
                 var entry = zip.Entries

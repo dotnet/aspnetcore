@@ -5,10 +5,10 @@ namespace Microsoft.AspNetCore.Builder
 {
     public static partial class ConnectionEndpointRouteBuilderExtensions
     {
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapConnectionHandler<TConnectionHandler>(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder builder, string pattern) where TConnectionHandler : Microsoft.AspNetCore.Connections.ConnectionHandler { throw null; }
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapConnectionHandler<TConnectionHandler>(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder builder, string pattern, System.Action<Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions> configureOptions) where TConnectionHandler : Microsoft.AspNetCore.Connections.ConnectionHandler { throw null; }
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapConnections(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder builder, string pattern, Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions options, System.Action<Microsoft.AspNetCore.Connections.IConnectionBuilder> configure) { throw null; }
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapConnections(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder builder, string pattern, System.Action<Microsoft.AspNetCore.Connections.IConnectionBuilder> configure) { throw null; }
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapConnectionHandler<TConnectionHandler>(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes, string pattern) where TConnectionHandler : Microsoft.AspNetCore.Connections.ConnectionHandler { throw null; }
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapConnectionHandler<TConnectionHandler>(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes, string pattern, System.Action<Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions> configureOptions) where TConnectionHandler : Microsoft.AspNetCore.Connections.ConnectionHandler { throw null; }
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapConnections(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes, string pattern, Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions options, System.Action<Microsoft.AspNetCore.Connections.IConnectionBuilder> configure) { throw null; }
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapConnections(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes, string pattern, System.Action<Microsoft.AspNetCore.Connections.IConnectionBuilder> configure) { throw null; }
     }
     public static partial class ConnectionsAppBuilderExtensions
     {
@@ -89,8 +89,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         public Microsoft.AspNetCore.Http.HttpContext HttpContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public override System.Collections.Generic.IDictionary<object, object> Items { get { throw null; } set { } }
         public System.DateTime LastSeenUtc { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.DateTime? LastSeenUtcIfInactive { get { throw null; } }
         public System.Threading.Tasks.Task PreviousPollTask { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Threading.SemaphoreSlim StateLock { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public Microsoft.AspNetCore.Http.Connections.Internal.HttpConnectionStatus Status { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.Connections.TransferFormat SupportedFormats { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public override System.IO.Pipelines.IDuplexPipe Transport { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
@@ -100,8 +100,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         public System.Threading.SemaphoreSlim WriteLock { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task DisposeAsync(bool closeGracefully = false) { throw null; }
+        public void MarkInactive() { }
         public void OnHeartbeat(System.Action<object> action, object state) { }
         public void TickHeartbeat() { }
+        public bool TryActivateLongPollingConnection(Microsoft.AspNetCore.Connections.ConnectionDelegate connectionDelegate, Microsoft.AspNetCore.Http.HttpContext nonClonedContext, System.TimeSpan pollTimeout, System.Threading.Tasks.Task currentRequestTask, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.Extensions.Logging.ILogger dispatcherLogger) { throw null; }
+        public bool TryActivatePersistentConnection(Microsoft.AspNetCore.Connections.ConnectionDelegate connectionDelegate, Microsoft.AspNetCore.Http.Connections.Internal.Transports.IHttpTransport transport, Microsoft.Extensions.Logging.ILogger dispatcherLogger) { throw null; }
     }
     public partial class HttpConnectionDispatcher
     {
@@ -121,8 +124,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task DisposeAndRemoveAsync(Microsoft.AspNetCore.Http.Connections.Internal.HttpConnectionContext connection, bool closeGracefully) { throw null; }
         public void RemoveConnection(string id) { }
-        [System.Diagnostics.DebuggerStepThroughAttribute]
-        public System.Threading.Tasks.Task ScanAsync() { throw null; }
+        public void Scan() { }
         public void Start() { }
         public bool TryGetConnection(string id, out Microsoft.AspNetCore.Http.Connections.Internal.HttpConnectionContext connection) { throw null; }
     }

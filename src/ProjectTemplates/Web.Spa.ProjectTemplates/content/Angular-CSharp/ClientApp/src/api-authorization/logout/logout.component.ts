@@ -14,7 +14,7 @@ import { LogoutActions, ApplicationPaths, ReturnUrlType } from '../api-authoriza
   styleUrls: ['./logout.component.css']
 })
 export class LogoutComponent implements OnInit {
-  private message = new BehaviorSubject<string>(null);
+  public message = new BehaviorSubject<string>(null);
 
   constructor(
     private authorizeService: AuthorizeService,

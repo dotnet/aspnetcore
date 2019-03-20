@@ -525,8 +525,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         [Theory]
         [MemberData(nameof(MethodNotAllowedTargetData))]
-        public async Task TakeStartLineThrowsWhenMethodNotAllowed(string requestLine, HttpMethod allowedMethod)
+        public async Task TakeStartLineThrowsWhenMethodNotAllowed(string requestLine, int intAllowedMethod)
         {
+            var allowedMethod = (HttpMethod)intAllowedMethod;
             await _application.Output.WriteAsync(Encoding.ASCII.GetBytes(requestLine));
             var readableBuffer = (await _transport.Input.ReadAsync()).Buffer;
 
@@ -978,7 +979,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public static TheoryData<string, string> TargetInvalidData
             => HttpParsingData.TargetInvalidData;
 
-        public static TheoryData<string, HttpMethod> MethodNotAllowedTargetData
+        public static TheoryData<string, int> MethodNotAllowedTargetData
             => HttpParsingData.MethodNotAllowedRequestLine;
 
         public static TheoryData<string> TargetWithNullCharData

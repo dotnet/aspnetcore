@@ -24,12 +24,13 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
         private const string DetailedErrorsEnvironmentVariable = "ASPNETCORE_DETAILEDERRORS";
 
         private static readonly TimeSpan _timeout = TimeSpan.FromSeconds(60);
-        private static readonly TimeSpan _retryDelay = TimeSpan.FromMilliseconds(200);
+        private static readonly TimeSpan _retryDelay = TimeSpan.FromMilliseconds(100);
 
         private CancellationTokenSource _hostShutdownToken = new CancellationTokenSource();
 
         private string _configPath;
         private string _debugLogFile;
+        private bool _disposed;
 
         public Process HostProcess { get; set; }
 
@@ -45,6 +46,12 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
         public override void Dispose()
         {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
             Dispose(gracefulShutdown: false);
         }
 
@@ -420,6 +427,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             List<Exception> exceptions = null;
             var sw = Stopwatch.StartNew();
             int retryCount = 0;
+            var delay = _retryDelay;
 
             while (sw.Elapsed < _timeout)
             {
@@ -443,7 +451,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 }
 
                 retryCount++;
-                Thread.Sleep(_retryDelay);
+                Thread.Sleep(delay);
+                delay *= 1.5;
             }
 
             throw new AggregateException($"Operation did not succeed after {retryCount} retries", exceptions.ToArray());

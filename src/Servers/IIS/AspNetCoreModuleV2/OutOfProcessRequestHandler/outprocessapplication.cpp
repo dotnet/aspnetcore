@@ -18,7 +18,7 @@ OUT_OF_PROCESS_APPLICATION::OUT_OF_PROCESS_APPLICATION(
 
 OUT_OF_PROCESS_APPLICATION::~OUT_OF_PROCESS_APPLICATION()
 {
-    SRWExclusiveLock lock(m_stateLock);
+    SRWExclusiveLock lock(m_stopLock);
     if (m_pProcessManager != NULL)
     {
         m_pProcessManager->Shutdown();

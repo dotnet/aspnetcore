@@ -15,30 +15,22 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
     public class EventLogHelpers
     {
-        public static void VerifyEventLogEvent(IISDeploymentResult deploymentResult, string expectedRegexMatchString, bool allowMultiple = false)
-        {
-            Assert.True(deploymentResult.HostProcess.HasExited);
-
-            var entries = GetEntries(deploymentResult);
-            AssertEntry(expectedRegexMatchString, entries, allowMultiple);
-        }
-
-        public static void VerifyEventLogEvent(IISDeploymentResult deploymentResult, string expectedRegexMatchString, ILogger logger)
+        public static void VerifyEventLogEvent(IISDeploymentResult deploymentResult, string expectedRegexMatchString, ILogger logger, bool allowMultiple = false)
         {
             Assert.True(deploymentResult.HostProcess.HasExited);
 
             var entries = GetEntries(deploymentResult);
             try
             {
-                AssertEntry(expectedRegexMatchString, entries);
+                AssertEntry(expectedRegexMatchString, entries, allowMultiple);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 foreach (var entry in entries)
                 {
-                    logger.LogInformation(entry.Message);
+                    logger.LogInformation("'{Message}', generated {Generated}, written {Written}", entry.Message, entry.TimeGenerated, entry.TimeWritten);
                 }
-                throw ex;
+                throw;
             }
         }
 
@@ -170,6 +162,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             {
                 return $"Application '/LM/W3SVC/1/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' failed to load clr and managed application. {reason}";
             }
+        }
+
+        public static string InProcessShutdown()
+        {
+            return "Application 'MACHINE/WEBROOT/APPHOST/.*?' has shutdown.";
         }
 
         public static string InProcessFailedToStop(IISDeploymentResult deploymentResult, string reason)

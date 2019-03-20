@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -20,18 +19,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
     [Collection(PublishedSitesCollection.Name)]
     public class ConfigurationChangeTests : IISFunctionalTestBase
     {
-        private static readonly TimeSpan RetryDelay = TimeSpan.FromMilliseconds(100);
-        private readonly PublishedSitesFixture _fixture;
-
-        public ConfigurationChangeTests(PublishedSitesFixture fixture)
+        public ConfigurationChangeTests(PublishedSitesFixture fixture) : base(fixture)
         {
-            _fixture = fixture;
         }
 
         [ConditionalFact]
         public async Task ConfigurationChangeStopsInProcess()
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(HostingModel.InProcess);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.InProcess);
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
@@ -46,7 +41,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task ConfigurationChangeForcesChildProcessRestart()
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
@@ -63,7 +58,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task OutOfProcessToInProcessHostingModelSwitchWorks()
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
 
             var deploymentResult = await DeployAsync(deploymentParameters);
 
@@ -88,7 +83,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [InlineData(HostingModel.OutOfProcess)]
         public async Task ConfigurationTouchedStress(HostingModel hostingModel)
         {
-            var deploymentResult = await DeployAsync(_fixture.GetBaseDeploymentParameters(hostingModel));
+            var deploymentResult = await DeployAsync(Fixture.GetBaseDeploymentParameters(hostingModel));
 
             await deploymentResult.AssertStarts();
             var load = Helpers.StressLoad(deploymentResult.HttpClient, "/HelloWorld", response => {

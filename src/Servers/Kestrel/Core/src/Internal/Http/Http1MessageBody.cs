@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    public abstract class Http1MessageBody : MessageBody
+    internal abstract class Http1MessageBody : MessageBody
     {
         protected readonly Http1Connection _context;
 

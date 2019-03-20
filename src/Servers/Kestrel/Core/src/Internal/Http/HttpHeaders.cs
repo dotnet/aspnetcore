@@ -14,7 +14,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    public abstract class HttpHeaders : IHeaderDictionary
+    internal abstract class HttpHeaders : IHeaderDictionary
     {
         protected long? _contentLength;
         protected bool _isReadOnly;

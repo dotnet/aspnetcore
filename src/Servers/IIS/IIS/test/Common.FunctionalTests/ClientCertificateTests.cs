@@ -20,12 +20,10 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
     [SkipIfNotAdmin]
     public class ClientCertificateTests : IISFunctionalTestBase
     {
-        private readonly PublishedSitesFixture _fixture;
         private readonly ClientCertificateFixture _certFixture;
 
-        public ClientCertificateTests(PublishedSitesFixture fixture, ClientCertificateFixture certFixture)
+        public ClientCertificateTests(PublishedSitesFixture fixture, ClientCertificateFixture certFixture) : base(fixture)
         {
-            _fixture = fixture;
             _certFixture = certFixture;
         }
 
@@ -52,7 +50,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         private async Task ClientCertTest(TestVariant variant, bool sendClientCert)
         {
             var port = TestPortHelper.GetNextSSLPort();
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
             deploymentParameters.ApplicationBaseUriHint = $"https://localhost:{port}/";
             deploymentParameters.AddHttpsToServerConfig();
 

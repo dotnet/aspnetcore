@@ -53,7 +53,7 @@
       "Kind": "Class",
       "Sealed": true,
       "ImplementedInterfaces": [
-        "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.ITransportFactory"
+        "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.ITransportFactory"
       ],
       "Members": [
         {
@@ -62,17 +62,17 @@
           "Parameters": [
             {
               "Name": "endPointInformation",
-              "Type": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.IEndPointInformation"
+              "Type": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.IEndPointInformation"
             },
             {
               "Name": "dispatcher",
-              "Type": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.IConnectionDispatcher"
+              "Type": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.IConnectionDispatcher"
             }
           ],
-          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.ITransport",
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.ITransport",
           "Sealed": true,
           "Virtual": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.ITransportFactory",
+          "ImplementedInterface": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.ITransportFactory",
           "Visibility": "Public",
           "GenericParameter": []
         },

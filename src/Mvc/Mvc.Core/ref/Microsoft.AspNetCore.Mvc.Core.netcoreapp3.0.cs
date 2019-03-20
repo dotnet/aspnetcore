@@ -5,8 +5,8 @@ namespace Microsoft.AspNetCore.Builder
 {
     public static partial class ControllerEndpointRouteBuilderExtensions
     {
-        public static void MapAreaControllerRoute(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes, string name, string areaName, string template, object defaults = null, object constraints = null, object dataTokens = null) { }
-        public static void MapControllerRoute(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes, string name, string template, object defaults = null, object constraints = null, object dataTokens = null) { }
+        public static void MapAreaControllerRoute(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes, string name, string areaName, string pattern, object defaults = null, object constraints = null, object dataTokens = null) { }
+        public static void MapControllerRoute(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes, string name, string pattern, object defaults = null, object constraints = null, object dataTokens = null) { }
         public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapControllers(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes) { throw null; }
         public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapDefaultControllerRoute(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes) { throw null; }
         public static void MapFallbackToAreaController(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes, string action, string controller, string area) { }
@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Mvc
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { throw null; }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Assembly | System.AttributeTargets.Class, AllowMultiple=false, Inherited=true)]
-    public partial class ApiControllerAttribute : Microsoft.AspNetCore.Mvc.ControllerAttribute, Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata
+    public partial class ApiControllerAttribute : Microsoft.AspNetCore.Mvc.ControllerAttribute, Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata, Microsoft.AspNetCore.Mvc.Infrastructure.IApiBehaviorMetadata
     {
         public ApiControllerAttribute() { }
     }
@@ -1979,6 +1979,9 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
     {
         Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor SelectBestCandidate(Microsoft.AspNetCore.Routing.RouteContext context, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor> candidates);
         System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor> SelectCandidates(Microsoft.AspNetCore.Routing.RouteContext context);
+    }
+    public partial interface IApiBehaviorMetadata : Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata
+    {
     }
     public partial interface IClientErrorActionResult : Microsoft.AspNetCore.Mvc.IActionResult, Microsoft.AspNetCore.Mvc.Infrastructure.IStatusCodeActionResult
     {

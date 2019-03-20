@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
-    public interface IHttp2StreamLifetimeHandler
+    internal interface IHttp2StreamLifetimeHandler
     {
         void OnStreamCompleted(Http2Stream stream);
     }
