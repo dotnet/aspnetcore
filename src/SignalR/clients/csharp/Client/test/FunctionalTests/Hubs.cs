@@ -219,7 +219,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         Task Echo(string message);
         Task Send(string message);
         Task NoClientHandler();
-        Task SendCallerConnectionId(string connectionId);
     }
 
     public class VersionHub : Hub
