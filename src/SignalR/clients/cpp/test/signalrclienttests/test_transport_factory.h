@@ -4,7 +4,7 @@
 #pragma once
 
 #include "transport_factory.h"
-#include "websocket_client.h"
+#include "signalrclient/websocket_client.h"
 
 using namespace signalr;
 

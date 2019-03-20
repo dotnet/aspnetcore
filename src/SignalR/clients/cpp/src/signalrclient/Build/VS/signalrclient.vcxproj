@@ -41,13 +41,16 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\..\include\signalrclient\connection.h" />
     <ClInclude Include="..\..\..\..\include\signalrclient\connection_state.h" />
+    <ClInclude Include="..\..\..\..\include\signalrclient\http_client.h" />
     <ClInclude Include="..\..\..\..\include\signalrclient\hub_connection.h" />
     <ClInclude Include="..\..\..\..\include\signalrclient\hub_exception.h" />
     <ClInclude Include="..\..\..\..\include\signalrclient\log_writer.h" />
     <ClInclude Include="..\..\..\..\include\signalrclient\signalr_client_config.h" />
     <ClInclude Include="..\..\..\..\include\signalrclient\signalr_exception.h" />
     <ClInclude Include="..\..\..\..\include\signalrclient\trace_level.h" />
+    <ClInclude Include="..\..\..\..\include\signalrclient\transfer_format.h" />
     <ClInclude Include="..\..\..\..\include\signalrclient\transport_type.h" />
+    <ClInclude Include="..\..\..\..\include\signalrclient\websocket_client.h" />
     <ClInclude Include="..\..\..\..\include\signalrclient\web_exception.h" />
     <ClInclude Include="..\..\..\..\include\signalrclient\_exports.h" />
     <ClInclude Include="..\..\case_insensitive_comparison_utils.h" />
@@ -56,7 +59,6 @@
     <ClInclude Include="..\..\default_http_client.h" />
     <ClInclude Include="..\..\default_websocket_client.h" />
     <ClInclude Include="..\..\event.h" />
-    <ClInclude Include="..\..\http_client.h" />
     <ClInclude Include="..\..\http_sender.h" />
     <ClInclude Include="..\..\hub_connection_impl.h" />
     <ClInclude Include="..\..\callback_manager.h" />
@@ -65,11 +67,9 @@
     <ClInclude Include="..\..\negotiate.h" />
     <ClInclude Include="..\..\stdafx.h" />
     <ClInclude Include="..\..\trace_log_writer.h" />
-    <ClInclude Include="..\..\transfer_format.h" />
     <ClInclude Include="..\..\transport.h" />
     <ClInclude Include="..\..\transport_factory.h" />
     <ClInclude Include="..\..\url_builder.h" />
-    <ClInclude Include="..\..\websocket_client.h" />
     <ClInclude Include="..\..\websocket_transport.h" />
     <ClInclude Include="..\..\web_request.h" />
     <ClInclude Include="..\..\web_request_factory.h" />

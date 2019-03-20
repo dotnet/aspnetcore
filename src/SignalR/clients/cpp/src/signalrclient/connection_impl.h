@@ -6,7 +6,7 @@
 #include <atomic>
 #include <mutex>
 #include "cpprest/http_client.h"
-#include "http_client.h"
+#include "signalrclient/http_client.h"
 #include "signalrclient/trace_level.h"
 #include "signalrclient/connection_state.h"
 #include "signalrclient/signalr_client_config.h"

@@ -4,9 +4,9 @@
 #pragma once
 
 #include "cpprest/details/basic_types.h"
-#include "websocket_client.h"
+#include "signalrclient/websocket_client.h"
 #include "web_request_factory.h"
-#include "http_client.h"
+#include "signalrclient/http_client.h"
 #include <future>
 
 std::string remove_date_from_log_entry(const std::string &log_entry);

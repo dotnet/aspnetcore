@@ -5,7 +5,7 @@
 
 #include "cpprest/ws_client.h"
 #include "signalrclient/signalr_client_config.h"
-#include "websocket_client.h"
+#include "signalrclient/websocket_client.h"
 
 namespace signalr
 {

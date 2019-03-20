@@ -5,7 +5,7 @@
 
 #include "pplx/pplxtasks.h"
 #include "signalrclient/transport_type.h"
-#include "transfer_format.h"
+#include "signalrclient/transfer_format.h"
 #include "logger.h"
 
 namespace signalr

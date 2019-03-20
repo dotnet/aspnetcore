@@ -7,7 +7,7 @@
 #include "signalrclient/transport_type.h"
 #include "web_request_factory.h"
 #include "negotiation_response.h"
-#include "http_client.h"
+#include "signalrclient/http_client.h"
 
 namespace signalr
 {

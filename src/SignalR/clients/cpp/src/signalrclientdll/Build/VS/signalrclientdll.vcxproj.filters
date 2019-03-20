@@ -57,9 +57,6 @@
     <ClInclude Include="..\..\..\signalrclient\web_response.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\signalrclient\websocket_client.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\signalrclient\websocket_transport.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -102,16 +99,19 @@
     <ClInclude Include="..\..\resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\signalrclient\http_client.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\signalrclient\default_http_client.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\signalrclient\negotiate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\signalrclient\transfer_format.h">
+    <ClInclude Include="..\..\..\..\include\signalrclient\http_client.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\signalrclient\transfer_format.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\signalrclient\websocket_client.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
