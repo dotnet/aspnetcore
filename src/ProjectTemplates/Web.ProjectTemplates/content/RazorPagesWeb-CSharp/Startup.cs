@@ -161,6 +161,9 @@ namespace Company.WebApplication1
             app.UseRouting(routes =>
             {
                 routes.MapRazorPages();
+#if (IndividualAuth || OrganizationalAuth || WindowsAuth)
+                routes.MapControllers();
+#endif
             });
 
             app.UseCookiePolicy();
