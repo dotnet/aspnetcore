@@ -212,15 +212,22 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             await AssertRunning(deploymentResult);
         }
 
-        [ConditionalTheory(Skip = "https://github.com/aspnet/AspNetCore/issues/7075")]
+        [ConditionalTheory]
         [InlineData(HostingModel.InProcess)]
         [InlineData(HostingModel.OutOfProcess)]
+        [Flaky("https://github.com/aspnet/AspNetCore/issues/7075")]
         public async Task AppOfflineAddedAndRemovedStress(HostingModel hostingModel)
         {
             var deploymentResult = await AssertStarts(hostingModel);
 
             var load = Helpers.StressLoad(deploymentResult.HttpClient, "/HelloWorld", response => {
                 var statusCode = (int)response.StatusCode;
+                // Test failure involves the stress load receiving a 400 Bad Request.
+                // We think it is due to IIS returning the 400 itself, but need to confirm the hypothesis.
+                if (statusCode == 400)
+                {
+                    Logger.LogError($"Status code was a bad request. Content: {response.Content.ReadAsStringAsync().GetAwaiter().GetResult()}");
+                }
                 Assert.True(statusCode == 200 || statusCode == 503, "Status code was " + statusCode);
             });
 

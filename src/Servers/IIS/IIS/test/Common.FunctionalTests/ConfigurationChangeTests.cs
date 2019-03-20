@@ -78,9 +78,10 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.CouldNotFindHandler(), Logger);
         }
 
-        [ConditionalTheory(Skip = "https://github.com/aspnet/AspNetCore-Internal/issues/1794")]
+        [ConditionalTheory]
         [InlineData(HostingModel.InProcess)]
         [InlineData(HostingModel.OutOfProcess)]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1794")]
         public async Task ConfigurationTouchedStress(HostingModel hostingModel)
         {
             var deploymentResult = await DeployAsync(Fixture.GetBaseDeploymentParameters(hostingModel));
