@@ -172,6 +172,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     var connectionIdFromServer = await connection.InvokeAsync<string>(nameof(TestHub.GetCallerConnectionId)).OrTimeout();
                     Assert.Equal(connection.ConnectionId, connectionIdFromServer);
                     await connection.StopAsync().OrTimeout();
+                    Assert.Null(connection.ConnectionId);
                     await connection.StartAsync().OrTimeout();
                     connectionIdFromServer = await connection.InvokeAsync<string>(nameof(TestHub.GetCallerConnectionId)).OrTimeout();
                     Assert.NotEqual(originalClientConnectionId, connectionIdFromServer);
@@ -484,7 +485,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 var connection = CreateHubConnection(server.Url, path, transportType, protocol, LoggerFactory);
                 try
                 {
-                 await connection.StartAsync().OrTimeout();
+                    await connection.StartAsync().OrTimeout();
 
                     var cts = new CancellationTokenSource();
 

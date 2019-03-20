@@ -420,6 +420,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
                     (_serviceProvider as IDisposable)?.Dispose();
                     _disposed = true;
                 }
+
+                _connectionId = null;
             }
             finally
             {
