@@ -84,7 +84,6 @@ namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Internal
                     pageHandler: null,
                     values: new { userId = userId, code = code },
                     protocol: Request.Scheme);
-
             }
 
             return Page();
