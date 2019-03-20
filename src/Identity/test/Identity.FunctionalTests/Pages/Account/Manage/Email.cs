@@ -63,6 +63,5 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account.Manage
         internal object GetEmail() => _emailInput.GetAttribute("value");
 
         internal object GetNewEmail() => _newEmailInput.GetAttribute("value");
-
     }
 }
