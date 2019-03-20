@@ -322,6 +322,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1772")]
         public async Task StartupTimeoutIsApplied()
         {
+            // From what I can tell, this failure is due to ungraceful shutdown.
+            // The error could be the same as https://github.com/dotnet/core-setup/issues/4646
+            // But can't be certain without another repro.
             using (AppVerifier.Disable(DeployerSelector.ServerType, 0x300))
             {
                 var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);

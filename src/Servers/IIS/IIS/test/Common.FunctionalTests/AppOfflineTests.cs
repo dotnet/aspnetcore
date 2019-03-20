@@ -222,6 +222,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
             var load = Helpers.StressLoad(deploymentResult.HttpClient, "/HelloWorld", response => {
                 var statusCode = (int)response.StatusCode;
+                // Test failure involves the stress load receiving a 400 Bad Request.
+                // We think it is due to IIS returning the 400 itself, but need to confirm the hypothesis.
                 if (statusCode == 400)
                 {
                     Logger.LogError($"Status code was a bad request. Content: {response.Content.ReadAsStringAsync().GetAwaiter().GetResult()}");

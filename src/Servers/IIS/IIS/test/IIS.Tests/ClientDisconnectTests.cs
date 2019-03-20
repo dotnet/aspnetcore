@@ -274,35 +274,40 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task ReadsAlwaysGoAsync()
         {
-            var requestStartedCompletionSource = CreateTaskCompletionSource();
-            var requestCompletedCompletionSource = CreateTaskCompletionSource();
+            // A hypothesis on why there are flaky tests is due to read async not going
+            // async. Adding a test that confirms ReadAsync is async.
+            for (var i = 0; i < 10; i++)
+            {
+                var requestStartedCompletionSource = CreateTaskCompletionSource();
+                var requestCompletedCompletionSource = CreateTaskCompletionSource();
 
-            var data = new byte[1024];
-            using (var testServer = await TestServer.Create(async ctx =>
-            {
-                var task = ctx.Request.Body.ReadAsync(data);
-                Assert.True(!task.IsCompleted);
-                requestStartedCompletionSource.SetResult(true);
-                await task;
-               
-                requestCompletedCompletionSource.SetResult(true);
-            }, LoggerFactory))
-            {
-                using (var connection = testServer.CreateConnection())
+                var data = new byte[1024];
+                using (var testServer = await TestServer.Create(async ctx =>
                 {
-                    await SendContentLength1Post(connection);
+                    var task = ctx.Request.Body.ReadAsync(data);
+                    Assert.True(!task.IsCompleted);
+                    requestStartedCompletionSource.SetResult(true);
+                    await task;
 
-                    await requestStartedCompletionSource.Task;
-                    await connection.Send(
-                        "a");
+                    requestCompletedCompletionSource.SetResult(true);
+                }, LoggerFactory))
+                {
+                    using (var connection = testServer.CreateConnection())
+                    {
+                        await SendContentLength1Post(connection);
 
-                    await connection.Receive(
-                        "HTTP/1.1 200 OK",
-                        ""
-                        );
+                        await requestStartedCompletionSource.Task;
+                        await connection.Send(
+                            "a");
 
+                        await connection.Receive(
+                            "HTTP/1.1 200 OK",
+                            ""
+                            );
+
+                    }
+                    await requestCompletedCompletionSource.Task.DefaultTimeout();
                 }
-                await requestCompletedCompletionSource.Task.DefaultTimeout();
             }
         }
 
