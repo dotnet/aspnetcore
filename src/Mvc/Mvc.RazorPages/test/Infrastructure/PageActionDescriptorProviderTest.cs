@@ -382,6 +382,44 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             Assert.Equal("MyFeature/{name}", descriptor.AttributeRouteInfo.Template);
         }
 
+        [Fact]
+        public void GetDescriptors_ReplacesTokensInSelectorTemplate_If_NoPageRouteMetadataIsPresent()
+        {
+            // Arrange
+            var selectorModel = new SelectorModel()
+            {
+                AttributeRouteModel = new AttributeRouteModel()
+                {
+                    Template = "[area]/{name}"
+                }
+            };
+
+            var pageRouteModel = new PageRouteModel("/Areas/MyFeature/Pages/Product.cshtml", "/Product", "MyFeature")
+            {
+                Selectors = { selectorModel },
+                RouteValues =
+                {
+                    { "area", "MyFeature" },
+                    { "page", "/Product" }
+                }
+            };
+
+            var applicationModelProvider = new TestPageRouteModelProvider(pageRouteModel);
+            var provider = new PageActionDescriptorProvider(
+                new[] { applicationModelProvider },
+                GetAccessor<MvcOptions>(),
+                GetRazorPagesOptions());
+            var context = new ActionDescriptorProviderContext();
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            var result = Assert.Single(context.Results);
+            var descriptor = Assert.IsType<PageActionDescriptor>(result);
+            Assert.Equal("MyFeature/{name}", descriptor.AttributeRouteInfo.Template);
+        }
+
         private static IOptions<TOptions> GetAccessor<TOptions>(TOptions options = null)
             where TOptions : class, new()
         {

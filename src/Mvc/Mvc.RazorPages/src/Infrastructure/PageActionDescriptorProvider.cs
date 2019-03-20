@@ -124,7 +124,16 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 // Selector does not have expected metadata
                 // This selector was likely configured by AddPageRouteModelConvention
                 // Use the existing explicitly configured template
-                return selectorModel.AttributeRouteModel.Template;
+                if (selectorModel.AttributeRouteModel.Template != null)
+                {
+                    return AttributeRouteModel.ReplaceTokens(
+                        selectorModel.AttributeRouteModel.Template,
+                        model.RouteValues);
+                }
+                else
+                {
+                    return selectorModel.AttributeRouteModel.Template;
+                }
             }
 
             var pageRoute = pageRouteMetadata.PageRoute;
