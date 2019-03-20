@@ -54,6 +54,7 @@ public class HubConnection {
     private long handshakeResponseTimeout = 15*1000;
     private Map<String, Observable> streamMap = new ConcurrentHashMap<>();
     private TransportEnum transportEnum = TransportEnum.ALL;
+    private String connectionId;
     private final Logger logger = LoggerFactory.getLogger(HubConnection.class);
 
     /**
@@ -90,6 +91,15 @@ public class HubConnection {
      */
     public long getKeepAliveInterval() {
         return this.keepAliveInterval;
+    }
+
+    /**
+     *  Gets the connections connectionId. This value will be cleared when the connection is stopped and
+     *  will have a new value every time the connection is successfully started.
+     * @return A string representing the the client's connectionId.
+     */
+    public String getConnectionId() {
+        return this.connectionId;
     }
 
     // For testing purposes
@@ -337,6 +347,7 @@ public class HubConnection {
                         hubConnectionStateLock.lock();
                         try {
                             hubConnectionState = HubConnectionState.CONNECTED;
+                            this.connectionId = negotiateResponse.getConnectionId();
                             logger.info("HubConnection started.");
                             resetServerTimeout();
                             //Don't send pings if we're using long polling.
@@ -479,6 +490,7 @@ public class HubConnection {
             hubConnectionState = HubConnectionState.DISCONNECTED;
             handshakeResponseSubject.onComplete();
             redirectAccessTokenProvider = null;
+            connectionId = null;
             transportEnum = TransportEnum.ALL;
             this.headers.remove("Authorization");
         } finally {
