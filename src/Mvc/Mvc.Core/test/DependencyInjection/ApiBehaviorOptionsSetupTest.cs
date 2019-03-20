@@ -90,6 +90,9 @@ namespace Microsoft.Extensions.DependencyInjection
             var badRequest = Assert.IsType<BadRequestObjectResult>(result);
             Assert.Equal(new[] { "application/problem+json", "application/problem+xml" }, badRequest.ContentTypes.OrderBy(c => c));
 
+            // Make sure the result status code is set on the problem details instance.
+            badRequest.OnFormatting(actionContext);
+            
             var problemDetails = Assert.IsType<ValidationProblemDetails>(badRequest.Value);
             Assert.Equal(400, problemDetails.Status);
         }

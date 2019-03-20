@@ -105,10 +105,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         internal static IActionResult ProblemDetailsInvalidModelStateResponse(ActionContext context)
         {
-            var problemDetails = new ValidationProblemDetails(context.ModelState)
-            {
-                Status = StatusCodes.Status400BadRequest,
-            };
+            var problemDetails = new ValidationProblemDetails(context.ModelState);
 
             ProblemDetailsClientErrorFactory.SetTraceId(context, problemDetails);
 
