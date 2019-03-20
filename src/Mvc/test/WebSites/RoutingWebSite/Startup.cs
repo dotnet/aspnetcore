@@ -27,6 +27,16 @@ namespace RoutingWebSite
                     {
                         pageRouteTransformerConvention.Apply(model);
                     });
+                    options.Conventions.AddPageRouteModelConvention("/PageRouteTokens/WithTokensInCustomConfiguredSelector", model =>
+                    {
+                        model.Selectors.Add(new SelectorModel()
+                        {
+                            AttributeRouteModel = new AttributeRouteModel
+                            {
+                                Template = "/segment/[page]/{id?}"
+                            }
+                        });
+                    });
                 })
                 .SetCompatibilityVersion(CompatibilityVersion.Latest);
 

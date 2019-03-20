@@ -1546,27 +1546,63 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task Page_PageWithRouteTokensInAbsoluteRoute()
+        public async Task Page_PageRouteTokens_WithRouteTokensInAbsoluteRoute()
         {
             // Arrange & Act
-            var response = await Client.GetAsync("http://localhost/path/PageWithRouteTokensInAbsoluteRoute/1");
+            var response = await Client.GetAsync("http://localhost/segment/PageRouteTokens/WithTokensInAbsoluteRoute/1");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var body = await response.Content.ReadAsStringAsync();
-            Assert.Equal("Transformed to: /path/PageWithRouteTokensInAbsoluteRoute/1", body);
+            Assert.Equal("1", body);
         }
 
         [Fact]
-        public async Task Area_Page_PageWithRouteTokensInAbsoluteRoute()
+        public async Task Page_PageRouteTokens_WithTokensInCustomConfiguredSelector()
         {
             // Arrange & Act
-            var response = await Client.GetAsync("http://localhost/path/Admin/1");
+            var response = await Client.GetAsync("http://localhost/segment/PageRouteTokens/WithTokensInCustomConfiguredSelector/1");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var body = await response.Content.ReadAsStringAsync();
-            Assert.Equal("Transformed to: /path/Admin/1", body);
+            Assert.Equal("1", body);
+        }
+
+        [Fact]
+        public async Task Page_PageRouteTokens_WithRouteTokensInRoute()
+        {
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/PageRouteTokens/WithTokensInRoute/again/PageRouteTokens/WithTokensInRoute/1");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var body = await response.Content.ReadAsStringAsync();
+            Assert.Equal("1", body);
+        }
+
+        [Fact]
+        public async Task Area_PageRouteTokensArea_WithAreaTokenInAbsoluteRoute()
+        {
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/PageRouteTokensArea/1");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var body = await response.Content.ReadAsStringAsync();
+            Assert.Equal("1", body);
+        }
+
+        [Fact]
+        public async Task Area_PageRouteTokensArea_WithAreaAndPageTokensInAbsoluteRoute()
+        {
+            // Arrange & Act
+            var response = await Client.GetAsync("http://localhost/WithAreaAndPageTokensInAbsoluteRoute/PageRouteTokensArea/1");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var body = await response.Content.ReadAsStringAsync();
+            Assert.Equal("1", body);
         }
 
         protected static LinkBuilder LinkFrom(string url)
