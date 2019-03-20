@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json
     internal sealed class TranscodingReadStream : Stream
     {
         internal const int MaxByteBufferSize = 4096;
-        internal const int MaxCharBufferSize = 4 * MaxByteBufferSize;
+        internal const int MaxCharBufferSize = 3 * MaxByteBufferSize;
         private static readonly int MaxByteCountForUTF8Char = Encoding.UTF8.GetMaxByteCount(charCount: 1);
 
         private readonly Stream _stream;
@@ -60,6 +60,10 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json
         public override bool CanWrite => false;
         public override long Length => throw new NotSupportedException();
         public override long Position { get; set; }
+
+        internal int ByteBufferCount => _byteBuffer.Count;
+        internal int CharBufferCount => _charBuffer.Count;
+        internal int OverflowCount => _overflowBuffer.Count;
 
         public override void Flush()
             => throw new NotSupportedException();
@@ -192,7 +196,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json
                 throw new ArgumentOutOfRangeException(nameof(count));
             }
 
-            if (offset <= 0)
+            if (offset < 0 || offset >= buffer.Length)
             {
                 throw new ArgumentOutOfRangeException(nameof(offset));
             }

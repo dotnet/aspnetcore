@@ -16,15 +16,13 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     /// </summary>
     public class SystemTextJsonInputFormatter : TextInputFormatter, IInputFormatterExceptionPolicy
     {
-        private readonly JsonSerializerOptions _serializerOptions;
-
         /// <summary>
         /// Initializes a new instance of <see cref="SystemTextJsonInputFormatter"/>.
         /// </summary>
         /// <param name="options">The <see cref="MvcOptions"/>.</param>
         public SystemTextJsonInputFormatter(MvcOptions options)
         {
-            _serializerOptions = options.SerializerOptions;
+            SerializerOptions = options.SerializerOptions;
 
             SupportedEncodings.Add(UTF8EncodingWithoutBOM);
             SupportedEncodings.Add(UTF16EncodingLittleEndian);
@@ -33,6 +31,15 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             SupportedMediaTypes.Add(MediaTypeHeaderValues.TextJson);
             SupportedMediaTypes.Add(MediaTypeHeaderValues.ApplicationAnyJsonSyntax);
         }
+
+        /// <summary>
+        /// Gets the <see cref="JsonSerializerOptions"/> used to configure the <see cref="JsonSerializer"/>.
+        /// </summary>
+        /// <remarks>
+        /// A single instance of <see cref="SystemTextJsonInputFormatter"/> is used for all JSON formatting. Any
+        /// changes to the options will affect all input formatting.
+        /// </remarks>
+        public JsonSerializerOptions SerializerOptions { get; }
 
         /// <inheritdoc />
         InputFormatterExceptionPolicy IInputFormatterExceptionPolicy.ExceptionPolicy => InputFormatterExceptionPolicy.MalformedInputExceptions;
@@ -58,7 +65,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             object model;
             try
             {
-                model = await JsonSerializer.ReadAsync(inputStream, context.ModelType, _serializerOptions);
+                model = await JsonSerializer.ReadAsync(inputStream, context.ModelType, SerializerOptions);
             }
             finally
             {

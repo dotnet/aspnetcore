@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -12,6 +13,104 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json
 {
     public class TranscodingReadStreamTest
     {
+        [Fact]
+        public async Task ReadAsync_SingleByte()
+        {
+            // Arrange
+            var input = "Hello world";
+            var encoding = Encoding.Unicode;
+            var stream = new TranscodingReadStream(new MemoryStream(encoding.GetBytes(input)), encoding);
+            var bytes = new byte[4];
+
+            // Act
+            var readBytes = await stream.ReadAsync(bytes, 0, 1);
+
+            // Assert
+            Assert.Equal(1, readBytes);
+            Assert.Equal((byte)'H', bytes[0]);
+            Assert.Equal(0, bytes[1]);
+
+            Assert.Equal(0, stream.ByteBufferCount);
+            Assert.Equal(10, stream.CharBufferCount);
+            Assert.Equal(0, stream.OverflowCount);
+        }
+
+        [Fact]
+        public async Task ReadAsync_FillsBuffer()
+        {
+            // Arrange
+            var input = "Hello world";
+            var encoding = Encoding.Unicode;
+            var stream = new TranscodingReadStream(new MemoryStream(encoding.GetBytes(input)), encoding);
+            var bytes = new byte[3];
+            var expected = Encoding.UTF8.GetBytes(input.Substring(0, bytes.Length));
+
+            // Act
+            var readBytes = await stream.ReadAsync(bytes, 0, bytes.Length);
+
+            // Assert
+            Assert.Equal(3, readBytes);
+            Assert.Equal(expected, bytes);
+            Assert.Equal(0, stream.ByteBufferCount);
+            Assert.Equal(8, stream.CharBufferCount);
+            Assert.Equal(0, stream.OverflowCount);
+        }
+
+        [Fact]
+        public async Task ReadAsync_CompletedInSecondIteration()
+        {
+            // Arrange
+            var input = new string('A', 1024 + 10);
+            var encoding = Encoding.Unicode;
+            var stream = new TranscodingReadStream(new MemoryStream(encoding.GetBytes(input)), encoding);
+            var bytes = new byte[1024];
+            var expected = Encoding.UTF8.GetBytes(input.Substring(0, bytes.Length));
+
+            // Act
+            var readBytes = await stream.ReadAsync(bytes, 0, bytes.Length);
+
+            // Assert
+            Assert.Equal(bytes.Length, readBytes);
+            Assert.Equal(expected, bytes);
+            Assert.Equal(0, stream.ByteBufferCount);
+            Assert.Equal(10, stream.CharBufferCount);
+            Assert.Equal(0, stream.OverflowCount);
+
+            readBytes = await stream.ReadAsync(bytes, 0, bytes.Length);
+            Assert.Equal(10, readBytes);
+            Assert.Equal(0, stream.ByteBufferCount);
+            Assert.Equal(0, stream.CharBufferCount);
+            Assert.Equal(0, stream.OverflowCount);
+        }
+
+        [Fact]
+        public async Task ReadAsync_WithOverflowBuffer()
+        {
+            // Arrange
+            // Test ensures that the overflow buffer works correctly
+            var input = new string('A', 4096 + 4);
+            var encoding = Encoding.Unicode;
+            var stream = new TranscodingReadStream(new MemoryStream(encoding.GetBytes(input)), encoding);
+            var bytes = new byte[4096];
+            var expected = Encoding.UTF8.GetBytes(input.Substring(0, bytes.Length));
+
+            // Act
+            var readBytes = await stream.ReadAsync(bytes, 0, bytes.Length);
+
+            // Assert
+            Assert.Equal(bytes.Length, readBytes);
+            Assert.Equal(expected, bytes);
+            Assert.Equal(0, stream.ByteBufferCount);
+            Assert.Equal(0, stream.CharBufferCount);
+            Assert.Equal(4, stream.OverflowCount);
+
+            readBytes = await stream.ReadAsync(bytes, 0, bytes.Length);
+            Assert.Equal(4, readBytes);
+            Assert.Equal(0, stream.ByteBufferCount);
+            Assert.Equal(0, stream.CharBufferCount);
+            Assert.Equal(0, stream.OverflowCount);
+        }
+
         public static TheoryData ReadAsyncInputLatin =>
             GetLatinTextInput(TranscodingReadStream.MaxCharBufferSize, TranscodingReadStream.MaxByteBufferSize);
 
@@ -40,7 +139,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json
                 "AbĀāĂăĄąĆŊŋŌōŎŏŐőŒœŔŕŖŗŘřŚşŠšŢţŤťŦŧŨũŪūŬŭŮůŰűŲųŴŵŶŷŸŹźŻżŽžſAbc",
                "Abcஐஒஓஔகஙசஜஞடணதநனபமயரறலளழவஷஸஹ",
                "☀☁☂☃☄★☆☇☈☉☊☋☌☍☎☏☐☑☒☓☚☛☜☝☞☟☠☡☢☣☤☥☦☧☨☩☪☫☬☭☮☯☰☱☲☳☴☵☶☷☸",
-               new string('Æ', count: 64 * 1024),
+                new string('Æ', count: 64 * 1024),
                 new string('Æ', count: 64 * 1024 + 1),
                "pingüino",
                 new string('ऄ', count: maxCharBufferSize + 1), // This uses 3 bytes to represent in UTF8

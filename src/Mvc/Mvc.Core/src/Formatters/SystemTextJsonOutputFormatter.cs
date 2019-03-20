@@ -16,7 +16,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     /// </summary>
     public class SystemTextJsonOutputFormatter : TextOutputFormatter
     {
-        private readonly JsonSerializerOptions _serializerOptions;
 
         /// <summary>
         /// Initializes a new <see cref="SystemTextJsonOutputFormatter"/> instance.
@@ -24,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// <param name="options">The <see cref="MvcOptions"/>.</param>
         public SystemTextJsonOutputFormatter(MvcOptions options)
         {
-            _serializerOptions = options.SerializerOptions;
+            SerializerOptions = options.SerializerOptions;
 
             SupportedEncodings.Add(Encoding.UTF8);
             SupportedEncodings.Add(Encoding.Unicode);
@@ -32,6 +31,15 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             SupportedMediaTypes.Add(MediaTypeHeaderValues.TextJson);
             SupportedMediaTypes.Add(MediaTypeHeaderValues.ApplicationAnyJsonSyntax);
         }
+
+        /// <summary>
+        /// Gets the <see cref="JsonSerializerOptions"/> used to configure the <see cref="JsonSerializer"/>.
+        /// </summary>
+        /// <remarks>
+        /// A single instance of <see cref="SystemTextJsonOutputFormatter"/> is used for all JSON formatting. Any
+        /// changes to the options will affect all output formatting.
+        /// </remarks>
+        public JsonSerializerOptions SerializerOptions { get; }
 
         /// <inheritdoc />
         public sealed override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding)
@@ -51,7 +59,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var writeStream = GetWriteStream(httpContext, selectedEncoding);
             try
             {
-                await JsonSerializer.WriteAsync(context.Object, context.ObjectType, writeStream, _serializerOptions);
+                await JsonSerializer.WriteAsync(context.Object, context.ObjectType, writeStream, SerializerOptions);
                 await writeStream.FlushAsync();
             }
             finally
