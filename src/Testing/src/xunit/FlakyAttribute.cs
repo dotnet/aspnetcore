@@ -64,12 +64,29 @@ namespace Microsoft.AspNetCore.Testing.xunit
         /// Initializes a new instance of the <see cref="FlakyAttribute"/> class with the specified <see cref="GitHubIssueUrl"/> and a list of <see cref="Filters"/>. If no
         /// filters are provided, the test is considered flaky in all environments.
         /// </summary>
+        /// <remarks>
+        /// At least one filter is required.
+        /// </remarks>
         /// <param name="gitHubIssueUrl">The URL to a GitHub issue tracking this flaky test.</param>
-        /// <param name="filters">A list of filters that define where this test is flaky. Use values in <see cref="AzurePipelines"/> and <see cref="HelixQueues"/>.</param>
-        public FlakyAttribute(string gitHubIssueUrl, params string[] filters)
+        /// <param name="firstFilter">The first filter that indicates where the test is flaky. Use a value from <see cref="FlakyOn"/>.</param>
+        /// <param name="additionalFilters">A list of additional filters that define where this test is flaky. Use values in <see cref="FlakyOn"/>.</param>
+        public FlakyAttribute(string gitHubIssueUrl, string firstFilter, params string[] additionalFilters)
         {
+            if(string.IsNullOrEmpty(gitHubIssueUrl))
+            {
+                throw new ArgumentNullException(nameof(gitHubIssueUrl));
+            }
+
+            if(string.IsNullOrEmpty(firstFilter))
+            {
+                throw new ArgumentNullException(nameof(firstFilter));
+            }
+
             GitHubIssueUrl = gitHubIssueUrl;
-            Filters = new List<string>(filters);
+            var filters = new List<string>();
+            filters.Add(firstFilter);
+            filters.AddRange(additionalFilters);
+            Filters = filters;
         }
     }
 }
