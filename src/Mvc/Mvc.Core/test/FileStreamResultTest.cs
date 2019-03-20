@@ -439,7 +439,7 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.False(httpResponse.Headers.ContainsKey(HeaderNames.ContentType));
             Assert.NotEmpty(httpResponse.Headers[HeaderNames.LastModified]);
             Assert.Empty(body);
-            Assert.False(readStream.CanSeek);            
+            Assert.False(readStream.CanSeek);
         }
 
         [Theory]
