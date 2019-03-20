@@ -16,14 +16,14 @@ namespace signalr
     // undefinded behavior since we are using an incomplete type. More details here:  http://herbsutter.com/gotw/_100/
     connection::~connection() = default;
 
-    pplx::task<void> connection::start()
+    void connection::start(std::function<void(std::exception_ptr)> callback)
     {
-        return m_pImpl->start();
+        m_pImpl->start(callback);
     }
 
-    pplx::task<void> connection::send(const std::string& data)
+    void connection::send(const std::string& data, std::function<void(std::exception_ptr)> callback)
     {
-        return m_pImpl->send(data);
+        m_pImpl->send(data, callback);
     }
 
     void connection::set_message_received(const message_received_handler& message_received_callback)
@@ -41,9 +41,9 @@ namespace signalr
         m_pImpl->set_client_config(config);
     }
 
-    pplx::task<void> connection::stop()
+    void connection::stop(std::function<void(std::exception_ptr)> callback)
     {
-        return m_pImpl->stop();
+        m_pImpl->stop(callback);
     }
 
     connection_state connection::get_connection_state() const noexcept

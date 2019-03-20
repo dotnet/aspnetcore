@@ -33,12 +33,12 @@ public:
         m_promise.set_value(value);
     }
 
-    void set_exception(std::exception exception)
+    void set(const std::exception& exception)
     {
         m_promise.set_exception(std::make_exception_ptr(exception));
     }
 
-    void set_exception(std::exception_ptr exception)
+    void set(std::exception_ptr exception)
     {
         m_promise.set_exception(exception);
     }
@@ -71,14 +71,21 @@ public:
         m_promise.set_value();
     }
 
-    void set_exception(std::exception exception)
+    void set(const std::exception& exception)
     {
         m_promise.set_exception(std::make_exception_ptr(exception));
     }
 
-    void set_exception(std::exception_ptr exception)
+    void set(std::exception_ptr exception)
     {
-        m_promise.set_exception(exception);
+        if (exception != nullptr)
+        {
+            m_promise.set_exception(exception);
+        }
+        else
+        {
+            m_promise.set_value();
+        }
     }
 
     void get()

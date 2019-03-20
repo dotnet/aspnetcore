@@ -74,14 +74,14 @@ namespace signalr
         change_state(connection_state::disconnected);
     }
 
-    pplx::task<void> connection_impl::start()
+    void connection_impl::start(std::function<void(std::exception_ptr)> callback)
     {
         {
             std::lock_guard<std::mutex> lock(m_stop_lock);
             if (!change_state(connection_state::disconnected, connection_state::connecting))
             {
-                return pplx::task_from_exception<void>(
-                    signalr_exception("cannot start a connection that is not in the disconnected state"));
+                callback(std::make_exception_ptr(signalr_exception("cannot start a connection that is not in the disconnected state")));
+                return;
             }
 
             // there should not be any active transport at this point
@@ -92,7 +92,19 @@ namespace signalr
             m_connection_id = "";
         }
 
-        return start_negotiate(m_base_url, 0);
+        start_negotiate(m_base_url, 0)
+            .then([callback](pplx::task<void> prev_task)
+        {
+            try
+            {
+                prev_task.get();
+                callback(nullptr);
+            }
+            catch (...)
+            {
+                callback(std::current_exception());
+            }
+        });
     }
 
     pplx::task<void> connection_impl::start_negotiate(const std::string& url, int redirect_count)
@@ -362,7 +374,7 @@ namespace signalr
         }
     }
 
-    pplx::task<void> connection_impl::send(const std::string& data)
+    void connection_impl::send(const std::string& data, std::function<void(std::exception_ptr)> callback)
     {
         // To prevent an (unlikely) condition where the transport is nulled out after we checked the connection_state
         // and before sending data we store the pointer in the local variable. In this case `send()` will throw but
@@ -372,17 +384,17 @@ namespace signalr
         const auto connection_state = get_connection_state();
         if (connection_state != signalr::connection_state::connected || !transport)
         {
-            return pplx::task_from_exception<void>(signalr_exception(
+            callback(std::make_exception_ptr(signalr_exception(
                 std::string("cannot send data when the connection is not in the connected state. current connection state: ")
-                    .append(translate_connection_state(connection_state))));
+                    .append(translate_connection_state(connection_state)))));
+            return;
         }
 
         auto logger = m_logger;
 
         logger.log(trace_level::info, std::string("sending data: ").append(data));
 
-        pplx::task_completion_event<void> event;
-        transport->send(data, [logger, event](std::exception_ptr exception)
+        transport->send(data, [logger, callback](std::exception_ptr exception)
             mutable {
                 try
                 {
@@ -390,7 +402,7 @@ namespace signalr
                     {
                         std::rethrow_exception(exception);
                     }
-                    event.set();
+                    callback(nullptr);
                 }
                 catch (const std::exception &e)
                 {
@@ -399,21 +411,29 @@ namespace signalr
                         std::string("error sending data: ")
                         .append(e.what()));
 
-                    event.set_exception(exception);
+                    callback(exception);
                 }
             });
-
-        return pplx::create_task(event);
     }
 
-    pplx::task<void> connection_impl::stop()
+    void connection_impl::stop(std::function<void(std::exception_ptr)> callback)
     {
         m_logger.log(trace_level::info, "stopping connection");
 
         auto connection = shared_from_this();
-        return shutdown()
-            .then([connection]()
+        shutdown()
+            .then([connection, callback](pplx::task<void> prev_task)
             {
+                try
+                {
+                    prev_task.get();
+                }
+                catch (...)
+                {
+                    callback(std::current_exception());
+                    return;
+                }
+
                 {
                     // the lock prevents a race where the user calls `stop` on a disconnected connection and calls `start`
                     // on a different thread at the same time. In this case we must not null out the transport if we are
@@ -429,6 +449,7 @@ namespace signalr
                 try
                 {
                     connection->m_disconnected();
+                    callback(nullptr);
                 }
                 catch (const std::exception &e)
                 {
@@ -436,12 +457,14 @@ namespace signalr
                         trace_level::errors,
                         std::string("disconnected callback threw an exception: ")
                         .append(e.what()));
+                    callback(std::make_exception_ptr(e));
                 }
                 catch (...)
                 {
                     connection->m_logger.log(
                         trace_level::errors,
                         std::string("disconnected callback threw an unknown exception"));
+                    callback(std::current_exception());
                 }
             });
     }

@@ -17,14 +17,14 @@ namespace signalr
     // undefinded behavior since we are using an incomplete type. More details here:  http://herbsutter.com/gotw/_100/
     hub_connection::~hub_connection() = default;
 
-    pplx::task<void> hub_connection::start()
+    void hub_connection::start(std::function<void(std::exception_ptr)> callback)
     {
-        return m_pImpl->start();
+        m_pImpl->start(callback);
     }
 
-    pplx::task<void> hub_connection::stop()
+    void hub_connection::stop(std::function<void(std::exception_ptr)> callback)
     {
-        return m_pImpl->stop();
+        m_pImpl->stop(callback);
     }
 
     void hub_connection::on(const std::string& event_name, const method_invoked_handler& handler)
@@ -37,24 +37,24 @@ namespace signalr
         return m_pImpl->on(event_name, handler);
     }
 
-    pplx::task<web::json::value> hub_connection::invoke(const std::string& method_name, const web::json::value& arguments)
+    void hub_connection::invoke(const std::string& method_name, const web::json::value& arguments, std::function<void(const web::json::value&, std::exception_ptr)> callback)
     {
         if (!m_pImpl)
         {
             throw signalr_exception("invoke() cannot be called on uninitialized hub_connection instance");
         }
 
-        return m_pImpl->invoke(method_name, arguments);
+        return m_pImpl->invoke(method_name, arguments, callback);
     }
 
-    pplx::task<void> hub_connection::send(const std::string& method_name, const web::json::value& arguments)
+    void hub_connection::send(const std::string& method_name, const web::json::value& arguments, std::function<void(std::exception_ptr)> callback)
     {
         if (!m_pImpl)
         {
             throw signalr_exception("send() cannot be called on uninitialized hub_connection instance");
         }
 
-        return m_pImpl->send(method_name, arguments);
+        m_pImpl->send(method_name, arguments, callback);
     }
 
     connection_state hub_connection::get_connection_state() const

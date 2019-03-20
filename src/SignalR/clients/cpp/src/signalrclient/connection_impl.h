@@ -5,7 +5,6 @@
 
 #include <atomic>
 #include <mutex>
-#include "cpprest/http_client.h"
 #include "signalrclient/http_client.h"
 #include "signalrclient/trace_level.h"
 #include "signalrclient/connection_state.h"
@@ -37,9 +36,9 @@ namespace signalr
 
         ~connection_impl();
 
-        pplx::task<void> start();
-        pplx::task<void> send(const std::string &data);
-        pplx::task<void> stop();
+        void start(std::function<void(std::exception_ptr)> callback);
+        void send(const std::string &data, std::function<void(std::exception_ptr)> callback);
+        void stop(std::function<void(std::exception_ptr)> callback);
 
         connection_state get_connection_state() const noexcept;
         std::string get_connection_id() const noexcept;
