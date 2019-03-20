@@ -24,4 +24,14 @@
     <Reference Include="AngleSharp" />
   </ItemGroup>
 
+  <Target Name="PublishAssets" AfterTargets="Publish">
+    <ItemGroup>
+      <_PublishFiles Include="$(MSBuildThisFileDirectory)..\..\UI\src\bin\$(Configuration)\netcoreapp3.0\Microsoft.AspNetCore.Identity.UI.Views.*.dll" />
+      <_PublishFiles Include="$(MSBuildThisFileDirectory)..\..\testassets\Identity.DefaultUI.WebSite\bin\$(Configuration)\netcoreapp3.0\Identity.DefaultUI.WebSite.deps.json" />
+    </ItemGroup>
+    <Copy
+      SourceFiles="@(_PublishFiles)"
+      DestinationFolder="$(PublishDir)" />
+  </Target>
+   
 </Project>
