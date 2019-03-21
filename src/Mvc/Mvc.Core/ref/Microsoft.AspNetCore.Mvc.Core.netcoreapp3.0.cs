@@ -1860,12 +1860,14 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     {
         public SystemTextJsonInputFormatter(Microsoft.AspNetCore.Mvc.MvcOptions options) { }
         Microsoft.AspNetCore.Mvc.Formatters.InputFormatterExceptionPolicy Microsoft.AspNetCore.Mvc.Formatters.IInputFormatterExceptionPolicy.ExceptionPolicy { get { throw null; } }
+        public System.Text.Json.Serialization.JsonSerializerOptions SerializerOptions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public sealed override System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult> ReadRequestBodyAsync(Microsoft.AspNetCore.Mvc.Formatters.InputFormatterContext context, System.Text.Encoding encoding) { throw null; }
     }
     public partial class SystemTextJsonOutputFormatter : Microsoft.AspNetCore.Mvc.Formatters.TextOutputFormatter
     {
         public SystemTextJsonOutputFormatter(Microsoft.AspNetCore.Mvc.MvcOptions options) { }
+        public System.Text.Json.Serialization.JsonSerializerOptions SerializerOptions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public sealed override System.Threading.Tasks.Task WriteResponseBodyAsync(Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterWriteContext context, System.Text.Encoding selectedEncoding) { throw null; }
     }
