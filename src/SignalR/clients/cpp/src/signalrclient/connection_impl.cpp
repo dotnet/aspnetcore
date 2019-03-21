@@ -449,7 +449,6 @@ namespace signalr
                 try
                 {
                     connection->m_disconnected();
-                    callback(nullptr);
                 }
                 catch (const std::exception &e)
                 {
@@ -457,15 +456,15 @@ namespace signalr
                         trace_level::errors,
                         std::string("disconnected callback threw an exception: ")
                         .append(e.what()));
-                    callback(std::make_exception_ptr(e));
                 }
                 catch (...)
                 {
                     connection->m_logger.log(
                         trace_level::errors,
                         std::string("disconnected callback threw an unknown exception"));
-                    callback(std::current_exception());
                 }
+
+                callback(nullptr);
             });
     }
 

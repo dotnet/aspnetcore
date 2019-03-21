@@ -34,9 +34,9 @@ TEST(websocket_transport_connect, connect_connects_and_starts_receive_loop)
     auto ws_transport = websocket_transport::create([&](){ return client; }, logger(writer, trace_level::info));
 
     auto mre = manual_reset_event<void>();
-    ws_transport->start("ws://fakeuri.org/connect?param=42", transfer_format::text, [&mre](std::exception_ptr)
+    ws_transport->start("ws://fakeuri.org/connect?param=42", transfer_format::text, [&mre](std::exception_ptr exception)
     {
-        mre.set();
+        mre.set(exception);
     });
 
     mre.get();
@@ -66,7 +66,7 @@ TEST(websocket_transport_connect, connect_propagates_exceptions)
         auto mre = manual_reset_event<void>();
         ws_transport->start("ws://fakeuri.org", transfer_format::text, [&mre](std::exception_ptr exception)
         {
-            mre.set_exception(exception);
+            mre.set(exception);
         });
         mre.get();
         ASSERT_TRUE(false);
@@ -91,7 +91,7 @@ TEST(websocket_transport_connect, connect_logs_exceptions)
     auto mre = manual_reset_event<void>();
     ws_transport->start("ws://fakeuri.org", transfer_format::text, [&mre](std::exception_ptr exception)
     {
-        mre.set_exception(exception);
+        mre.set(exception);
     });
     try
     {
@@ -116,9 +116,9 @@ TEST(websocket_transport_connect, cannot_call_connect_on_already_connected_trans
     auto ws_transport = websocket_transport::create([&](){ return client; }, logger(std::make_shared<trace_log_writer>(), trace_level::none));
 
     auto mre = manual_reset_event<void>();
-    ws_transport->start("ws://fakeuri.org", transfer_format::text, [&mre](std::exception_ptr)
+    ws_transport->start("ws://fakeuri.org", transfer_format::text, [&mre](std::exception_ptr exception)
     {
-        mre.set();
+        mre.set(exception);
     });
     mre.get();
 
@@ -126,7 +126,7 @@ TEST(websocket_transport_connect, cannot_call_connect_on_already_connected_trans
     {
         ws_transport->start("ws://fakeuri.org", transfer_format::text, [&mre](std::exception_ptr exception)
         {
-            mre.set_exception(exception);
+            mre.set(exception);
         });
         mre.get();
         ASSERT_TRUE(false);
@@ -143,21 +143,21 @@ TEST(websocket_transport_connect, can_connect_after_disconnecting)
     auto ws_transport = websocket_transport::create([&](){ return client; }, logger(std::make_shared<trace_log_writer>(), trace_level::none));
 
     auto mre = manual_reset_event<void>();
-    ws_transport->start("ws://fakeuri.org", transfer_format::text, [&mre](std::exception_ptr)
+    ws_transport->start("ws://fakeuri.org", transfer_format::text, [&mre](std::exception_ptr exception)
     {
-        mre.set();
+        mre.set(exception);
     });
     mre.get();
 
-    ws_transport->stop([&mre](std::exception_ptr)
+    ws_transport->stop([&mre](std::exception_ptr exception)
     {
-        mre.set();
+        mre.set(exception);
     });
     mre.get();
 
-    ws_transport->start("ws://fakeuri.org", transfer_format::text, [&mre](std::exception_ptr)
+    ws_transport->start("ws://fakeuri.org", transfer_format::text, [&mre](std::exception_ptr exception)
     {
-        mre.set();
+        mre.set(exception);
     });
     mre.get();
 }
@@ -177,15 +177,15 @@ TEST(websocket_transport_send, send_creates_and_sends_websocket_messages)
     auto ws_transport = websocket_transport::create([&](){ return client; }, logger(std::make_shared<trace_log_writer>(), trace_level::none));
 
     auto mre = manual_reset_event<void>();
-    ws_transport->start("ws://url", transfer_format::text, [&mre](std::exception_ptr)
+    ws_transport->start("ws://url", transfer_format::text, [&mre](std::exception_ptr exception)
     {
-        mre.set();
+        mre.set(exception);
     });
     mre.get();
 
-    ws_transport->send("ABC", [&mre](std::exception_ptr)
+    ws_transport->send("ABC", [&mre](std::exception_ptr exception)
     {
-        mre.set();
+        mre.set(exception);
     });
     mre.get();
 
@@ -207,15 +207,15 @@ TEST(websocket_transport_disconnect, disconnect_closes_websocket)
     auto ws_transport = websocket_transport::create([&](){ return client; }, logger(std::make_shared<trace_log_writer>(), trace_level::none));
 
     auto mre = manual_reset_event<void>();
-    ws_transport->start("ws://url", transfer_format::text, [&mre](std::exception_ptr)
+    ws_transport->start("ws://url", transfer_format::text, [&mre](std::exception_ptr exception)
     {
-        mre.set();
+        mre.set(exception);
     });
     mre.get();
 
-    ws_transport->stop([&mre](std::exception_ptr)
+    ws_transport->stop([&mre](std::exception_ptr exception)
     {
-        mre.set();
+        mre.set(exception);
     });
     mre.get();
 
@@ -236,22 +236,15 @@ TEST(websocket_transport_stop, propogates_exception_from_close)
     auto ws_transport = websocket_transport::create([&](){ return client; }, logger(std::make_shared<trace_log_writer>(), trace_level::none));
 
     auto mre = manual_reset_event<void>();
-    ws_transport->start("ws://url", transfer_format::text, [&mre](std::exception_ptr)
+    ws_transport->start("ws://url", transfer_format::text, [&mre](std::exception_ptr exception)
     {
-        mre.set();
+        mre.set(exception);
     });
     mre.get();
 
     ws_transport->stop([&mre](std::exception_ptr exception)
     {
-        if (exception)
-        {
-            mre.set_exception(exception);
-        }
-        else
-        {
-            mre.set();
-        }
+        mre.set(exception);
     });
     try
     {
@@ -276,17 +269,23 @@ TEST(websocket_transport_disconnect, disconnect_logs_exceptions)
     auto ws_transport = websocket_transport::create([&](){ return client; }, logger(writer, trace_level::errors));
 
     auto mre = manual_reset_event<void>();
-    ws_transport->start("ws://url", transfer_format::text, [&mre](std::exception_ptr)
+    ws_transport->start("ws://url", transfer_format::text, [&mre](std::exception_ptr exception)
     {
-        mre.set();
+        mre.set(exception);
     });
     mre.get();
 
-    ws_transport->stop([&mre](std::exception_ptr)
+    ws_transport->stop([&mre](std::exception_ptr exception)
     {
-        mre.set();
+        mre.set(exception);
     });
-    mre.get();
+
+    try
+    {
+        mre.get();
+        ASSERT_TRUE(false);
+    }
+    catch (...) {}
 
     auto log_entries = std::dynamic_pointer_cast<memory_log_writer>(writer)->get_log_entries();
 
@@ -344,26 +343,26 @@ TEST(websocket_transport_disconnect, receive_not_called_after_disconnect)
 
     pplx::create_task(receive_task_started_tce).get();
 
-    ws_transport->stop([&mre](std::exception_ptr)
+    ws_transport->stop([&mre](std::exception_ptr exception)
     {
-        mre.set();
+        mre.set(exception);
     });
     mre.get();
 
     receive_task_tce = pplx::task_completion_event<std::string>();
     receive_task_started_tce = pplx::task_completion_event<void>();
 
-    ws_transport->start("ws://fakeuri.org", transfer_format::text, [&mre](std::exception_ptr)
+    ws_transport->start("ws://fakeuri.org", transfer_format::text, [&mre](std::exception_ptr exception)
     {
-        mre.set();
+        mre.set(exception);
     });
     mre.get();
 
     pplx::create_task(receive_task_started_tce).get();
 
-    ws_transport->stop([&mre](std::exception_ptr)
+    ws_transport->stop([&mre](std::exception_ptr exception)
     {
-        mre.set();
+        mre.set(exception);
     });
     mre.get();
 
@@ -385,9 +384,9 @@ TEST(websocket_transport_disconnect, disconnect_is_no_op_if_transport_not_starte
     auto ws_transport = websocket_transport::create([&](){ return client; }, logger(std::make_shared<trace_log_writer>(), trace_level::none));
 
     auto mre = manual_reset_event<void>();
-    ws_transport->stop([&mre](std::exception_ptr)
+    ws_transport->stop([&mre](std::exception_ptr exception)
     {
-        mre.set();
+        mre.set(exception);
     });
     mre.get();
 
@@ -411,15 +410,15 @@ TEST(websocket_transport_disconnect, exceptions_from_outstanding_receive_task_ob
     auto ws_transport = websocket_transport::create([&](){ return client; }, logger(std::make_shared<trace_log_writer>(), trace_level::none));
 
     auto mre = manual_reset_event<void>();
-    ws_transport->start("ws://fakeuri.org", transfer_format::text, [&mre](std::exception_ptr)
+    ws_transport->start("ws://fakeuri.org", transfer_format::text, [&mre](std::exception_ptr exception)
     {
-        mre.set();
+        mre.set(exception);
     });
     mre.get();
 
-    ws_transport->stop([&mre](std::exception_ptr)
+    ws_transport->stop([&mre](std::exception_ptr exception)
     {
-        mre.set();
+        mre.set(exception);
     });
     mre.get();
 
@@ -472,9 +471,9 @@ void receive_loop_logs_exception_runner(const T& e, const std::string& expected_
     auto ws_transport = websocket_transport::create([&](){ return client; }, logger(writer, trace_level));
 
     auto mre = manual_reset_event<void>();
-    ws_transport->start("ws://url", transfer_format::text, [&mre](std::exception_ptr)
+    ws_transport->start("ws://url", transfer_format::text, [&mre](std::exception_ptr exception)
     {
-        mre.set();
+        mre.set(exception);
     });
     mre.get();
 
@@ -512,9 +511,9 @@ TEST(websocket_transport_receive_loop, process_response_callback_called_when_mes
     ws_transport->on_receive(process_response);
 
     auto mre = manual_reset_event<void>();
-    ws_transport->start("ws://fakeuri.org", transfer_format::text, [&mre](std::exception_ptr)
+    ws_transport->start("ws://fakeuri.org", transfer_format::text, [&mre](std::exception_ptr exception)
     {
-        mre.set();
+        mre.set(exception);
     });
     mre.get();
 
@@ -558,9 +557,9 @@ TEST(websocket_transport_receive_loop, error_callback_called_when_exception_thro
     ws_transport->on_close(error_callback);
 
     auto mre = manual_reset_event<void>();
-    ws_transport->start("ws://fakeuri.org", transfer_format::text, [&mre](std::exception_ptr)
+    ws_transport->start("ws://fakeuri.org", transfer_format::text, [&mre](std::exception_ptr exception)
     {
-        mre.set();
+        mre.set(exception);
     });
     mre.get();
 
