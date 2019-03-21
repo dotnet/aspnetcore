@@ -29,10 +29,18 @@
       <_PublishFiles Include="$(MSBuildThisFileDirectory)..\..\UI\src\bin\$(Configuration)\netcoreapp3.0\Microsoft.AspNetCore.Identity.UI.Views.*.dll" />
       <_PublishFiles Include="$(MSBuildThisFileDirectory)..\..\testassets\Identity.DefaultUI.WebSite\bin\$(Configuration)\netcoreapp3.0\Identity.DefaultUI.WebSite.deps.json" />
       <_PublishFiles Include="$(MSBuildThisFileDirectory)..\..\testassets\Identity.DefaultUI.WebSite\bin\$(Configuration)\netcoreapp3.0\Identity.DefaultUI.WebSite.deps.json" />
+      <_wwwrootFiles Include="$(MSBuildThisFileDirectory)..\..\testassets\Identity.DefaultUI.WebSite\wwwroot\**\*.*" />
+      <_PagesFiles Include="$(MSBuildThisFileDirectory)..\..\testassets\Identity.DefaultUI.WebSite\Pages\**\*.*" />
     </ItemGroup>
     <Copy
       SourceFiles="@(_PublishFiles)"
       DestinationFolder="$(PublishDir)" />
+    <Copy
+      SourceFiles="@(_PagesFiles)"
+      DestinationFolder="$(PublishDir)\Identity.DefaultUI.WebSite\Pages" />
+    <Copy
+      SourceFiles="@(_wwwrootFiles)"
+      DestinationFolder="$(PublishDir)\Identity.DefaultUI.WebSite\wwwroot" />
     <!-- Write a dummy sln so content root will be found correctly -->
     <WriteLinesToFile
         File="$(PublishDir)\contentroot.sln"
