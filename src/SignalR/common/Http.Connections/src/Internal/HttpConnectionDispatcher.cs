@@ -589,10 +589,13 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             // The response is a dud, you can't do anything with it anyways
             var responseFeature = new HttpResponseFeature();
 
+            var endpointFeature = context.Features.Get<IEndpointFeature>();
+
             var features = new FeatureCollection();
             features.Set<IHttpRequestFeature>(requestFeature);
             features.Set<IHttpResponseFeature>(responseFeature);
             features.Set<IHttpConnectionFeature>(connectionFeature);
+            features.Set<IEndpointFeature>(endpointFeature);
 
             // REVIEW: We could strategically look at adding other features but it might be better
             // if we expose a callback that would allow the user to preserve HttpContext properties.
