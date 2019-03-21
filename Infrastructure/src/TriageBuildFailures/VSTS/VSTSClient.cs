@@ -301,14 +301,7 @@ namespace TriageBuildFailures.VSTS
                     Query = query.ToString()
                 };
 
-                var response = await RetryHelpers.RetryAsync(
-                    async () =>
-                    {
-                        var request = new HttpRequestMessage(verb, uriBuilder.Uri);
-                        return await client.SendAsync(request);
-                    },
-                    _reporter);
-
+                var response = await RetryHelpers.RetryAsync(client, verb, uriBuilder.Uri, _reporter);
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
