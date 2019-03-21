@@ -44,6 +44,7 @@ public class HubConnection {
     private List<OnClosedCallback> onClosedCallbackList;
     private final boolean skipNegotiate;
     private Single<String> accessTokenProvider;
+    private Single<String> redirectAccessTokenProvider;
     private final Map<String, String> headers = new HashMap<>();
     private ConnectionState connectionState = null;
     private final HttpClient httpClient;
@@ -240,11 +241,11 @@ public class HubConnection {
             }
 
             if (negotiateResponse.getAccessToken() != null) {
-                this.accessTokenProvider = Single.just(negotiateResponse.getAccessToken());
+                this.redirectAccessTokenProvider = Single.just(negotiateResponse.getAccessToken());
                 String token = "";
                 // We know the Single is non blocking in this case
                 // It's fine to call blockingGet() on it.
-                token = this.accessTokenProvider.blockingGet();
+                token = this.redirectAccessTokenProvider.blockingGet();
                 this.headers.put("Authorization", "Bearer " + token);
             }
 
@@ -433,6 +434,8 @@ public class HubConnection {
             logger.info("HubConnection stopped.");
             hubConnectionState = HubConnectionState.DISCONNECTED;
             handshakeResponseSubject.onComplete();
+            redirectAccessTokenProvider = null;
+            this.headers.remove("Authorization");
         } finally {
             hubConnectionStateLock.unlock();
         }
