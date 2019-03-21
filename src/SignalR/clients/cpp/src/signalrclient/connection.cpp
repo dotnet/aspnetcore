@@ -16,12 +16,12 @@ namespace signalr
     // undefinded behavior since we are using an incomplete type. More details here:  http://herbsutter.com/gotw/_100/
     connection::~connection() = default;
 
-    void connection::start(std::function<void(std::exception_ptr)> callback)
+    void connection::start(std::function<void(std::exception_ptr)> callback) noexcept
     {
         m_pImpl->start(callback);
     }
 
-    void connection::send(const std::string& data, std::function<void(std::exception_ptr)> callback)
+    void connection::send(const std::string& data, std::function<void(std::exception_ptr)> callback) noexcept
     {
         m_pImpl->send(data, callback);
     }
@@ -41,7 +41,7 @@ namespace signalr
         m_pImpl->set_client_config(config);
     }
 
-    void connection::stop(std::function<void(std::exception_ptr)> callback)
+    void connection::stop(std::function<void(std::exception_ptr)> callback) noexcept
     {
         m_pImpl->stop(callback);
     }

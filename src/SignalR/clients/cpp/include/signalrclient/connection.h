@@ -28,16 +28,16 @@ namespace signalr
 
         connection& operator=(const connection&) = delete;
 
-        SIGNALRCLIENT_API void __cdecl start(std::function<void(std::exception_ptr)> callback);
+        SIGNALRCLIENT_API void __cdecl start(std::function<void(std::exception_ptr)> callback) noexcept;
 
-        SIGNALRCLIENT_API void __cdecl send(const std::string& data, std::function<void(std::exception_ptr)> callback);
+        SIGNALRCLIENT_API void __cdecl send(const std::string& data, std::function<void(std::exception_ptr)> callback) noexcept;
 
         SIGNALRCLIENT_API void __cdecl set_message_received(const message_received_handler& message_received_callback);
         SIGNALRCLIENT_API void __cdecl set_disconnected(const std::function<void __cdecl()>& disconnected_callback);
 
         SIGNALRCLIENT_API void __cdecl set_client_config(const signalr_client_config& config);
 
-        SIGNALRCLIENT_API void __cdecl stop(std::function<void(std::exception_ptr)> callback);
+        SIGNALRCLIENT_API void __cdecl stop(std::function<void(std::exception_ptr)> callback) noexcept;
 
         SIGNALRCLIENT_API connection_state __cdecl get_connection_state() const noexcept;
         SIGNALRCLIENT_API std::string __cdecl get_connection_id() const;

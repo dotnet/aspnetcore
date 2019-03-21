@@ -74,7 +74,7 @@ namespace signalr
         change_state(connection_state::disconnected);
     }
 
-    void connection_impl::start(std::function<void(std::exception_ptr)> callback)
+    void connection_impl::start(std::function<void(std::exception_ptr)> callback) noexcept
     {
         {
             std::lock_guard<std::mutex> lock(m_stop_lock);
@@ -374,7 +374,7 @@ namespace signalr
         }
     }
 
-    void connection_impl::send(const std::string& data, std::function<void(std::exception_ptr)> callback)
+    void connection_impl::send(const std::string& data, std::function<void(std::exception_ptr)> callback) noexcept
     {
         // To prevent an (unlikely) condition where the transport is nulled out after we checked the connection_state
         // and before sending data we store the pointer in the local variable. In this case `send()` will throw but
@@ -416,7 +416,7 @@ namespace signalr
             });
     }
 
-    void connection_impl::stop(std::function<void(std::exception_ptr)> callback)
+    void connection_impl::stop(std::function<void(std::exception_ptr)> callback) noexcept
     {
         m_logger.log(trace_level::info, "stopping connection");
 

@@ -17,12 +17,12 @@ namespace signalr
     // undefinded behavior since we are using an incomplete type. More details here:  http://herbsutter.com/gotw/_100/
     hub_connection::~hub_connection() = default;
 
-    void hub_connection::start(std::function<void(std::exception_ptr)> callback)
+    void hub_connection::start(std::function<void(std::exception_ptr)> callback) noexcept
     {
         m_pImpl->start(callback);
     }
 
-    void hub_connection::stop(std::function<void(std::exception_ptr)> callback)
+    void hub_connection::stop(std::function<void(std::exception_ptr)> callback) noexcept
     {
         m_pImpl->stop(callback);
     }
@@ -37,21 +37,23 @@ namespace signalr
         return m_pImpl->on(event_name, handler);
     }
 
-    void hub_connection::invoke(const std::string& method_name, const web::json::value& arguments, std::function<void(const web::json::value&, std::exception_ptr)> callback)
+    void hub_connection::invoke(const std::string& method_name, const web::json::value& arguments, std::function<void(const web::json::value&, std::exception_ptr)> callback) noexcept
     {
         if (!m_pImpl)
         {
-            throw signalr_exception("invoke() cannot be called on uninitialized hub_connection instance");
+            callback(web::json::value(), std::make_exception_ptr(signalr_exception("invoke() cannot be called on uninitialized hub_connection instance")));
+            return;
         }
 
         return m_pImpl->invoke(method_name, arguments, callback);
     }
 
-    void hub_connection::send(const std::string& method_name, const web::json::value& arguments, std::function<void(std::exception_ptr)> callback)
+    void hub_connection::send(const std::string& method_name, const web::json::value& arguments, std::function<void(std::exception_ptr)> callback) noexcept
     {
         if (!m_pImpl)
         {
-            throw signalr_exception("send() cannot be called on uninitialized hub_connection instance");
+            callback(std::make_exception_ptr(signalr_exception("send() cannot be called on uninitialized hub_connection instance")));
+            return;
         }
 
         m_pImpl->send(method_name, arguments, callback);

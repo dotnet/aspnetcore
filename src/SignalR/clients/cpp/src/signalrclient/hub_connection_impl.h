@@ -32,11 +32,11 @@ namespace signalr
 
         void on(const std::string& event_name, const std::function<void(const json::value &)>& handler);
 
-        void invoke(const std::string& method_name, const json::value& arguments, std::function<void(const json::value&, std::exception_ptr)> callback);
-        void send(const std::string& method_name, const json::value& arguments, std::function<void(std::exception_ptr)> callback);
+        void invoke(const std::string& method_name, const json::value& arguments, std::function<void(const json::value&, std::exception_ptr)> callback) noexcept;
+        void send(const std::string& method_name, const json::value& arguments, std::function<void(std::exception_ptr)> callback) noexcept;
 
-        void start(std::function<void(std::exception_ptr)> callback);
-        void stop(std::function<void(std::exception_ptr)> callback);
+        void start(std::function<void(std::exception_ptr)> callback) noexcept;
+        void stop(std::function<void(std::exception_ptr)> callback) noexcept;
 
         connection_state get_connection_state() const noexcept;
         std::string get_connection_id() const;
@@ -62,7 +62,7 @@ namespace signalr
         void process_message(const std::string& message);
 
         void invoke_hub_method(const std::string& method_name, const json::value& arguments, const std::string& callback_id,
-            std::function<void()> set_completion, std::function<void(const std::exception_ptr)> set_exception);
+            std::function<void()> set_completion, std::function<void(const std::exception_ptr)> set_exception) noexcept;
         bool invoke_callback(const web::json::value& message);
     };
 }

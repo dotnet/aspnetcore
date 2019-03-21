@@ -96,12 +96,13 @@ namespace signalr
         m_subscriptions.insert(std::pair<std::string, std::function<void(const json::value &)>> {event_name, handler});
     }
 
-    void hub_connection_impl::start(std::function<void(std::exception_ptr)> callback)
+    void hub_connection_impl::start(std::function<void(std::exception_ptr)> callback) noexcept
     {
         if (m_connection->get_connection_state() != connection_state::disconnected)
         {
-            throw signalr_exception(
-                "the connection can only be started if it is in the disconnected state");
+            callback(std::make_exception_ptr(signalr_exception(
+                "the connection can only be started if it is in the disconnected state")));
+            return;
         }
 
         m_connection->set_client_config(m_signalr_client_config);
@@ -177,7 +178,7 @@ namespace signalr
             });
     }
 
-    void hub_connection_impl::stop(std::function<void(std::exception_ptr)> callback)
+    void hub_connection_impl::stop(std::function<void(std::exception_ptr)> callback) noexcept
     {
         m_callback_manager.clear(json::value::parse(_XPLATSTR("{ \"error\" : \"connection was stopped before invocation result was received\"}")));
         m_connection->stop(callback);
@@ -299,7 +300,7 @@ namespace signalr
         return true;
     }
 
-    void hub_connection_impl::invoke(const std::string& method_name, const json::value& arguments, std::function<void(const web::json::value&, std::exception_ptr)> callback)
+    void hub_connection_impl::invoke(const std::string& method_name, const json::value& arguments, std::function<void(const web::json::value&, std::exception_ptr)> callback) noexcept
     {
         _ASSERTE(arguments.is_array());
 
@@ -311,7 +312,7 @@ namespace signalr
             [callback](const std::exception_ptr e){ callback(json::value(), e); });
     }
 
-    void hub_connection_impl::send(const std::string& method_name, const json::value& arguments, std::function<void(std::exception_ptr)> callback)
+    void hub_connection_impl::send(const std::string& method_name, const json::value& arguments, std::function<void(std::exception_ptr)> callback) noexcept
     {
         _ASSERTE(arguments.is_array());
 
@@ -321,7 +322,7 @@ namespace signalr
     }
 
     void hub_connection_impl::invoke_hub_method(const std::string& method_name, const json::value& arguments,
-        const std::string& callback_id, std::function<void()> set_completion, std::function<void(const std::exception_ptr)> set_exception)
+        const std::string& callback_id, std::function<void()> set_completion, std::function<void(const std::exception_ptr)> set_exception) noexcept
     {
         json::value request;
         request[_XPLATSTR("type")] = json::value(1);

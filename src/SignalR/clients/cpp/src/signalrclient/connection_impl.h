@@ -36,9 +36,9 @@ namespace signalr
 
         ~connection_impl();
 
-        void start(std::function<void(std::exception_ptr)> callback);
-        void send(const std::string &data, std::function<void(std::exception_ptr)> callback);
-        void stop(std::function<void(std::exception_ptr)> callback);
+        void start(std::function<void(std::exception_ptr)> callback) noexcept;
+        void send(const std::string &data, std::function<void(std::exception_ptr)> callback) noexcept;
+        void stop(std::function<void(std::exception_ptr)> callback) noexcept;
 
         connection_state get_connection_state() const noexcept;
         std::string get_connection_id() const noexcept;
