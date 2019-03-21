@@ -19,6 +19,10 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         // See https://stackoverflow.com/questions/3441452/msbuild-and-ignorestandarderrorwarningformat/5180353#5180353
         private static readonly Regex ErrorRegex = new Regex(@"^(?'location'.+): error (?'errorcode'[A-Z0-9]+): (?'message'.+) \[(?'project'.+)\]$");
         private static readonly Regex WarningRegex = new Regex(@"^(?'location'.+): warning (?'errorcode'[A-Z0-9]+): (?'message'.+) \[(?'project'.+)\]$");
+        private static readonly string[] AllowedBuildWarnings = new[]
+        {
+            "MSB3491" , // The process cannot access the file. As long as the build succeeds, we're ok.
+        };
 
         public static void BuildPassed(MSBuildResult result, bool allowWarnings = false)
         {
@@ -32,7 +36,10 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 throw new BuildFailedException(result);
             }
 
-            var buildWarnings = GetBuildWarnings(result).Select(m => m.line);
+            var buildWarnings = GetBuildWarnings(result)
+                .Where(m => !AllowedBuildWarnings.Contains(m.match.Groups["errorcode"].Value))
+                .Select(m => m.line);
+
             if (!allowWarnings && buildWarnings.Any())
             {
                 throw new BuildWarningsException(result, buildWarnings);
