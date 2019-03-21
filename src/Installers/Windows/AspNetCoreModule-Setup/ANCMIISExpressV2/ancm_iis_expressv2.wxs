@@ -377,7 +377,6 @@
                           Value="&quot;[IISEXPRESS_INSTALL_PATH]appcmd.exe&quot; set config -section:system.webServer/httpCompression /+&quot;dynamicTypes.[\[]mimeType='text/event-stream',enabled='FALSE'[\]]&quot; /apphostconfig:&quot;[IISEXPRESS_APPHOST_CONFIG_TMP]&quot;"/>
         <CustomAction Id="CA_UPDATE_DYNAMIC_COMPRESSION_TMP" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="deferred" Return="ignore" Impersonate="no"/>
 
-        <!-- CA to add config section to applicationhost.config -->
         <CustomAction Id="CA_ADD_CONFIGSECTION_PROPERTY"
                           Property="CA_ADD_CONFIGSECTION"
                           Value="[IISEXPRESS_APPHOST_CONFIG]"/>
@@ -388,8 +387,6 @@
                           Value="[IISEXPRESS_APPHOST_CONFIG_TMP]"/>
         <CustomAction BinaryKey="IISCustomActionDll" Id="CA_ADD_CONFIGSECTION_TMP" DllEntry="AddConfigSection" Execute="deferred" Return="check" Impersonate="no"/>
 
-        <!-- CA to remove config section to applicationhost.config -->
-                    <!-- CA to remove config section to applicationhost.config -->
         <CustomAction Id="CA_REMOVE_CONFIGSECTION_PROPERTY"
                             Property="CA_REMOVE_CONFIGSECTION"
                             Value="[IISEXPRESS_APPHOST_CONFIG]"/>
@@ -493,10 +490,6 @@
                               Value="&quot;[IISEXPRESS_INSTALL_PATH32]appcmd.exe&quot; set config -section:system.webServer/httpCompression /+&quot;dynamicTypes.[\[]mimeType='text/event-stream',enabled='FALSE'[\]]&quot; /apphostconfig:&quot;[IISEXPRESS_APPHOST_CONFIG32]&quot;"/>
             <CustomAction Id="CA_UPDATE_DYNAMIC_COMPRESSION_TMP32" BinaryKey="WixCA" DllEntry="CAQuietExec" Execute="deferred" Return="ignore" Impersonate="no"/>
 
-
-      <!-- CA to add config section to applicationhost.config -->
-
-            <!-- CA to add config section to applicationhost.config -->
             <CustomAction Id="CA_ADD_CONFIGSECTION32_PROPERTY"
                             Property="CA_ADD_CONFIGSECTION32"
                             Value="[IISEXPRESS_APPHOST_CONFIG32]"/>
@@ -507,7 +500,6 @@
                             Value="[IISEXPRESS_APPHOST_CONFIG_TMP32]"/>
             <CustomAction BinaryKey="IISCustomActionDll" Id="CA_ADD_CONFIGSECTION32_TMP" DllEntry="AddConfigSection" Execute="deferred" Return="check" Impersonate="no"/>
 
-            <!-- CA to remove config section to applicationhost.config -->
             <CustomAction Id="CA_REMOVE_CONFIGSECTION32_PROPERTY"
                               Property="CA_REMOVE_CONFIGSECTION32"
                               Value="[IISEXPRESS_APPHOST_CONFIG32]"/>
