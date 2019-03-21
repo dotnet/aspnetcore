@@ -466,7 +466,8 @@ namespace Test
                 frame => AssertFrame.Attribute(frame, "style", "background: #FFFFFF;", 2));
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6185")]
+        [Fact]
+        [Flaky("https://github.com/aspnet/AspNetCore/issues/6185")]
         public void Render_Component_HtmlEncoded()
         {
             // Arrange
@@ -497,7 +498,8 @@ namespace Test
         }
 
         // Integration test for HTML block rewriting
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/6183")]
+        [Fact]
+        [Flaky("https://github.com/aspnet/AspNetCore/issues/6183")]
         public void Render_HtmlBlock_Integration()
         {
             // Arrange

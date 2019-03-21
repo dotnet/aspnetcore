@@ -2081,7 +2081,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             }
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/8138")]
+        [Fact]
+        [Flaky("https://github.com/aspnet/AspNetCore/issues/8138")]
         public async Task ErrorDuringPollWillCloseConnection()
         {
             bool ExpectedErrors(WriteContext writeContext)

@@ -341,7 +341,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             Assert.True(requestAborted.Task.IsCompleted);
         }
 
-        [Theory(Skip = "https://github.com/aspnet/AspNetCore/issues/7342")]
+        [Theory]
+        [Flaky("https://github.com/aspnet/AspNetCore/issues/7342")]
         [MemberData(nameof(ConnectionAdapterData))]
         public async Task AppCanHandleClientAbortingConnectionMidResponse(ListenOptions listenOptions)
         {

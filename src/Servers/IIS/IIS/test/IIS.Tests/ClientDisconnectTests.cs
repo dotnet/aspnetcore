@@ -319,7 +319,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var requestAborted = CreateTaskCompletionSource();
 
             using (var testServer = await TestServer.Create(
-                async ctx => {
+                async ctx =>
+                {
                     ctx.RequestAborted.Register(() => requestAborted.SetResult(true));
                     requestStarted.SetResult(true);
                     await requestAborted.Task;

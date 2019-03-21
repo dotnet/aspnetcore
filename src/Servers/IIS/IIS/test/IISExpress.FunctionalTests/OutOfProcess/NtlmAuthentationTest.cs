@@ -29,7 +29,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             => TestMatrix.ForServers(DeployerSelector.ServerType)
                 .WithTfms(Tfm.NetCoreApp30);
 
-        [ConditionalTheory(Skip = "https://github.com/aspnet/AspNetCore/issues/8329")]
+        [ConditionalTheory]
+        [Flaky("https://github.com/aspnet/AspNetCore/issues/8329")]
         [RequiresIIS(IISCapability.WindowsAuthentication)]
         [MemberData(nameof(TestVariants))]
         public async Task NtlmAuthentication(TestVariant variant)

@@ -171,7 +171,8 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         /// Test.
         /// </summary>
         /// <returns>Task</returns>
-        [Theory(Skip = "https://github.com/aspnet/AspNetCore/issues/7925")]
+        [Theory]
+        [Flaky("https://github.com/aspnet/AspNetCore/issues/7925")]
         [InlineData(true)]
         [InlineData(false)]
         public async Task CustomPersonalDataPropertiesAreProtected(bool protect)

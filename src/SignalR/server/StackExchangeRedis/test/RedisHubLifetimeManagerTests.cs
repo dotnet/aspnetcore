@@ -37,7 +37,8 @@ namespace Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests
                 }, NullLogger<DefaultHubProtocolResolver>.Instance));
         }
 
-        [Fact(Skip = "https://github.com/aspnet/SignalR/issues/3088")]
+        [Fact]
+        [Flaky("https://github.com/aspnet/SignalR/issues/3088")]
         public async Task CamelCasedJsonIsPreservedAcrossRedisBoundary()
         {
             var server = new TestRedisServer();

@@ -37,7 +37,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                from s in new string[] { (_minPort - 1).ToString(), (_maxPort + 1).ToString(), "noninteger" }
                select new object[] { v, s };
 
-        [ConditionalTheory(Skip = "https://github.com/aspnet/AspNetCore/issues/8329")]
+        [ConditionalTheory]
+        [Flaky("https://github.com/aspnet/AspNetCore/issues/8329")]
         [MemberData(nameof(TestVariants))]
         public async Task EnvVarInWebConfig_Valid(TestVariant variant)
         {
@@ -53,7 +54,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.Equal(port, new Uri(responseText).Port);
         }
 
-        [ConditionalTheory(Skip = "https://github.com/aspnet/AspNetCore/issues/8329")]
+        [ConditionalTheory]
+        [Flaky("https://github.com/aspnet/AspNetCore/issues/8329")]
         [MemberData(nameof(TestVariants))]
         public async Task EnvVarInWebConfig_Empty(TestVariant variant)
         {
@@ -69,7 +71,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.InRange(new Uri(responseText).Port, _minPort, _maxPort);
         }
 
-        [ConditionalTheory(Skip = "https://github.com/aspnet/AspNetCore/issues/8329")]
+        [ConditionalTheory]
+        [Flaky("https://github.com/aspnet/AspNetCore/issues/8329")]
         [MemberData(nameof(InvalidTestVariants))]
         public async Task EnvVarInWebConfig_Invalid(TestVariant variant, string port)
         {
