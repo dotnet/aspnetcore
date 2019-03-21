@@ -1,14 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Linq;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -41,7 +40,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         [Fact]
         public void HasHeading()
         {
-            Assert.Equal("Hello, world!", Browser.FindElement(By.TagName("h1")).Text);
+            Browser.Equal("Hello, world!", () => Browser.FindElement(By.CssSelector("h1#index")).Text);
         }
 
         [Fact]
@@ -96,7 +95,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         {
             // Navigate to "Fetch Data"
             Browser.FindElement(By.LinkText("Fetch data")).Click();
-            Browser.Equal("Weather forecast", () => Browser.FindElement(By.TagName("h1")).Text);
+            Browser.Equal("Weather forecast", () => Browser.FindElement(By.CssSelector("h1#fetch-data")).Text);
 
             // Wait until loaded
             var tableSelector = By.CssSelector("table.table");

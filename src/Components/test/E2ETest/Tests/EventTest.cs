@@ -6,6 +6,7 @@ using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.Testing.xunit;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
 using Xunit;
@@ -133,6 +134,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1987")]
         public void InputEvent_RespondsOnKeystrokes()
         {
             MountTestComponent<InputEventComponent>();
