@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
   </Target>
 
-  <Target Name="RestoreTestProjects" BeforeTargets="Restore">
+  <Target Name="RestoreTestProjects" BeforeTargets="Restore;Build">
     <MSBuild Projects="..\testapps\RestoreTestProjects\RestoreTestProjects.csproj" Targets="Restore" />
   </Target>
 

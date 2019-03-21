@@ -296,7 +296,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, OutputPath, "ClassLibrary.Views.dll");
             Assert.FileExists(result, OutputPath, "ClassLibrary.Views.pdb");
 
-            result = await DotnetMSBuild(target: "Clean", "/p:BuildProjectReferences=false", suppressRestore: true);
+            result = await DotnetMSBuild(target: "Clean", "/p:BuildProjectReferences=false");
             Assert.BuildPassed(result);
 
             Assert.FileDoesNotExist(result, OutputPath, "AppWithP2PReference.dll");
@@ -306,7 +306,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileDoesNotExist(result, OutputPath, "ClassLibrary.Views.pdb");
 
             // dotnet msbuild /p:BuildProjectReferences=false
-            result = await DotnetMSBuild(target: default, "/p:BuildProjectReferences=false", suppressRestore: true);
+            result = await DotnetMSBuild(target: default, "/p:BuildProjectReferences=false");
 
             Assert.BuildPassed(result);
             Assert.FileExists(result, OutputPath, "AppWithP2PReference.dll");

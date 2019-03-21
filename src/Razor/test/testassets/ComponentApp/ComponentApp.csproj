@@ -20,12 +20,12 @@
     <UseRazorBuildServer>false</UseRazorBuildServer>
   </PropertyGroup>
 
-  <!-- DO NOT add addition references here. This is meant to simulate a non-MVC library -->
-  <ItemGroup Condition="'$(BinariesRoot)'==''">
+  <PropertyGroup Condition="'$(BinariesRoot)'==''">
     <!-- In test scenarios $(BinariesRoot) is defined in a generated Directory.Build.props file -->
-    <ProjectReference Include="..\..\Microsoft.AspNetCore.Razor.Test.ComponentShim\Microsoft.AspNetCore.Razor.Test.ComponentShim.csproj"/>
-  </ItemGroup>
+    <BinariesRoot>$(RepositoryRoot)artifacts\bin\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib\$(Configuration)\netstandard2.0\</BinariesRoot>
+  </PropertyGroup>
 
+  <!-- DO NOT add addition references here. This is meant to simulate a non-MVC library -->
   <ItemGroup Condition="'$(BinariesRoot)'!=''">
     <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.Test.ComponentShim.dll"/>
   </ItemGroup>

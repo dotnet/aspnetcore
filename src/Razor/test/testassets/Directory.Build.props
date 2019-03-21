@@ -4,6 +4,7 @@
   <PropertyGroup>
     <SolutionRoot Condition="'$(SolutionRoot)' == ''">$(MSBuildThisFileDirectory)..\..\</SolutionRoot>
     <SolutionRoot>$([MSBuild]::EnsureTrailingSlash('$(SolutionRoot)'))</SolutionRoot>
+    <RepositoryRoot>$(SolutionRoot)..\..\</RepositoryRoot>
 
     <!-- Retarget tests to use the copy of the Sdk from source -->
     <RazorSdkArtifactsDirectory>$(SolutionRoot)..\..\artifacts\bin\Microsoft.NET.Sdk.Razor\</RazorSdkArtifactsDirectory>

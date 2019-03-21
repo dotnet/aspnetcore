@@ -57,7 +57,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         internal Task<MSBuildResult> DotnetMSBuild(
             string target,
             string args = null,
-            bool suppressRestore = false,
             bool suppressTimeout = false,
             bool suppressBuildServer = false,
             string buildServerPipeName = null,
@@ -75,11 +74,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
                 $"/p:MicrosoftNETCoreApp30PackageVersion={BuildVariables.MicrosoftNETCoreApp30PackageVersion}",
             };
-
-            if (!suppressRestore)
-            {
-                buildArgumentList.Add("/restore");
-            }
 
             if (!suppressBuildServer)
             {

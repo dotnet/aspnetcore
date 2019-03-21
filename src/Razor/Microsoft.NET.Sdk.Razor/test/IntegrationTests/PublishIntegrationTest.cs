@@ -380,7 +380,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, OutputPath, "ClassLibrary2.Views.dll");
 
             // dotnet msbuild /t:Publish /p:BuildProjectReferences=false
-            result = await DotnetMSBuild(target: "Publish", "/p:BuildProjectReferences=false", suppressRestore: true);
+            result = await DotnetMSBuild(target: "Publish", "/p:BuildProjectReferences=false");
 
             Assert.BuildPassed(result);
 

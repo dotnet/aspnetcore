@@ -26,10 +26,10 @@
     <ProjectReference Include="..\ClassLibrary\ClassLibrary.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(BinariesRoot)'==''">
+  <PropertyGroup Condition="'$(BinariesRoot)'==''">
     <!-- In test scenarios $(BinariesRoot) is defined in a generated Directory.Build.props file -->
-    <ProjectReference Include="..\..\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib.csproj"/>
-  </ItemGroup>
+    <BinariesRoot>$(RepositoryRoot)artifacts\bin\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib\$(Configuration)\netstandard2.0\</BinariesRoot>
+  </PropertyGroup>
 
   <ItemGroup Condition="'$(BinariesRoot)'!=''">
     <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.Test.ComponentShim.dll"/>

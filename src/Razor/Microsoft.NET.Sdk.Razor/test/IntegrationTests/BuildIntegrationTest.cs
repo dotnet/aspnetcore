@@ -539,7 +539,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             File.AppendAllText(class2Path, Environment.NewLine + "// Some changes");
 
             // dotnet msbuild /p:BuildProjectReferences=false
-            result = await DotnetMSBuild(target: default, "/p:BuildProjectReferences=false", suppressRestore: true);
+            result = await DotnetMSBuild(target: default, "/p:BuildProjectReferences=false");
 
             Assert.BuildPassed(result);
         }

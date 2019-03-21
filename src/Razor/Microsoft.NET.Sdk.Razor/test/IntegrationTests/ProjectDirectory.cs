@@ -86,11 +86,21 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 throw;
             }
 
-            void CopyDirectory(DirectoryInfo source, DirectoryInfo destination)
+            void CopyDirectory(DirectoryInfo source, DirectoryInfo destination, bool recursive = true)
             {
+                foreach (var file in source.EnumerateFiles())
+                {
+                    file.CopyTo(Path.Combine(destination.FullName, file.Name));
+                }
+
+                if (!recursive)
+                {
+                    return;
+                }
+
                 foreach (var directory in source.EnumerateDirectories())
                 {
-                    if (directory.Name == "bin" || directory.Name == "obj")
+                    if (directory.Name == "bin")
                     {
                         // Just in case someone has opened the project in an IDE or built it. We don't want to copy
                         // these folders.
@@ -98,12 +108,15 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                     }
 
                     var created = destination.CreateSubdirectory(directory.Name);
-                    CopyDirectory(directory, created);
-                }
-
-                foreach (var file in source.EnumerateFiles())
-                {
-                    file.CopyTo(Path.Combine(destination.FullName, file.Name));
+                    if (directory.Name == "obj")
+                    {
+                        // Copy NuGet restore assets (viz all the files at the root of the obj directory, but stop there.)
+                        CopyDirectory(directory, created, recursive: false);
+                    }
+                    else
+                    {
+                        CopyDirectory(directory, created);
+                    }
                 }
             }
 
