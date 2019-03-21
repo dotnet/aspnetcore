@@ -28,10 +28,17 @@
     <ItemGroup>
       <_PublishFiles Include="$(MSBuildThisFileDirectory)..\..\UI\src\bin\$(Configuration)\netcoreapp3.0\Microsoft.AspNetCore.Identity.UI.Views.*.dll" />
       <_PublishFiles Include="$(MSBuildThisFileDirectory)..\..\testassets\Identity.DefaultUI.WebSite\bin\$(Configuration)\netcoreapp3.0\Identity.DefaultUI.WebSite.deps.json" />
+      <_PublishFiles Include="$(MSBuildThisFileDirectory)..\..\testassets\Identity.DefaultUI.WebSite\bin\$(Configuration)\netcoreapp3.0\Identity.DefaultUI.WebSite.deps.json" />
     </ItemGroup>
     <Copy
       SourceFiles="@(_PublishFiles)"
       DestinationFolder="$(PublishDir)" />
+    <!-- Write a dummy sln so content root will be found correctly -->
+    <WriteLinesToFile
+        File="$(PublishDir)\contentroot.sln"
+        Lines="Ignored"
+        Overwrite="true"
+        Encoding="Unicode"/>    
   </Target>
    
 </Project>
