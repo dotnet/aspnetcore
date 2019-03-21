@@ -1,3 +1,9 @@
+#!/usr/bin/env pwsh
+#requires -version 4
+
+Set-StrictMode -Version 2
+$ErrorActionPreference = 'Stop'
+
 function Test-Template($templateName, $templateArgs, $templateNupkg, $isSPA) {
     $tmpDir = "$PSScriptRoot/$templateName"
     Remove-Item -Path $tmpDir -Recurse -ErrorAction Ignore
@@ -23,7 +29,10 @@ function Test-Template($templateName, $templateArgs, $templateNupkg, $isSPA) {
   <Import Project=""$PSScriptRoot/../test/bin/Debug/netcoreapp3.0/TemplateTests.props"" />
   <ItemGroup>
     <PackageReference Include=""Microsoft.NET.Sdk.Razor"" Version=""`$(MicrosoftNETSdkRazorPackageVersion)"" />
-  </ItemGroup>")
+  </ItemGroup>
+  <PropertyGroup>
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+  </PropertyGroup>")
         $projContent | Set-Content $proj
         dotnet ef migrations add mvc
         dotnet publish --configuration Release

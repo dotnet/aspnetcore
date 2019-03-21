@@ -29,7 +29,7 @@ namespace Templates.Test.Helpers
             ITestOutputHelper output,
             string workingDirectory,
             string dllPath,
-            IDictionary<string,string> environmentVariables)
+            IDictionary<string, string> environmentVariables)
         {
             _output = output;
             _httpClient = new HttpClient(new HttpClientHandler()
