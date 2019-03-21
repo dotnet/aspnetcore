@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension"
      xmlns:dep="http://schemas.microsoft.com/wix/DependencyExtension" xmlns:bal="http://schemas.microsoft.com/wix/BalExtension">
-    <Bundle Name="$(var.BundleName)" Version="$(var.Version)" Manufacturer="Microsoft Corporation" UpgradeCode="$(var.BundleUpgradeCode)"
+    <Bundle Name="$(var.BundleName)" Version="$(var.BundleVersion)" Manufacturer="Microsoft Corporation" UpgradeCode="$(var.BundleUpgradeCode)"
             dep:ProviderKey="$(var.BundleProviderKey)">
         <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.HyperlinkLicense">
             <bal:WixStandardBootstrapperApplication LicenseUrl="https://go.microsoft.com/fwlink/?LinkId=320539"
@@ -10,6 +10,13 @@
                                                     ThemeFile="thm.xml"
                                                     LocalizationFile="thm.wxl"/>
         </BootstrapperApplicationRef>
+
+        <!-- Ensure upgrades from 3.0.0 preview 1 and 2 (Preview 3 was not shipped). Conditioned for the 3.0.0 family. Hosting bundle simships x86/x64 so there's
+             a single set of upgrade codes. -->
+        <?if $(var.Version)=3.0.0.0?>
+        <RelatedBundle Action="Upgrade" Id="{D8BFC3A1-72B1-36C1-9E5A-49FE36A5563B}"/>
+        <RelatedBundle Action="Upgrade" Id="{EA47395A-BC9B-3ECC-8229-229BC9528DF6}"/>
+        <?endif?>
 
         <!-- Customizations of the default BA -->
         <Log Prefix="dd_$(var.BundleLogPrefix)_" Extension=".log" />

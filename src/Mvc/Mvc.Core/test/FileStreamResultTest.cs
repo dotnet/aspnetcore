@@ -432,10 +432,11 @@ namespace Microsoft.AspNetCore.Mvc
             var httpResponse = actionContext.HttpContext.Response;
             httpResponse.Body.Seek(0, SeekOrigin.Begin);
             var streamReader = new StreamReader(httpResponse.Body);
-            var body = streamReader.ReadToEndAsync().Result;
+            var body = await streamReader.ReadToEndAsync();
             Assert.Equal(StatusCodes.Status304NotModified, httpResponse.StatusCode);
             Assert.Null(httpResponse.ContentLength);
-            Assert.Empty(httpResponse.Headers[HeaderNames.ContentRange]);
+            Assert.Empty(httpResponse.Headers[HeaderNames.ContentRange]);            
+            Assert.False(httpResponse.Headers.ContainsKey(HeaderNames.ContentType));
             Assert.NotEmpty(httpResponse.Headers[HeaderNames.LastModified]);
             Assert.Empty(body);
             Assert.False(readStream.CanSeek);

@@ -167,14 +167,14 @@ namespace Microsoft.AspNetCore.Builder
             // Act
             app.UseRouting(builder =>
             {
-                builder.Map("/1", "Test endpoint 1", d => null);
-                builder.Map("/2", "Test endpoint 2", d => null);
+                builder.Map("/1", d => null).WithDisplayName("Test endpoint 1");
+                builder.Map("/2", d => null).WithDisplayName("Test endpoint 2");
             });
 
             app.UseRouting(builder =>
             {
-                builder.Map("/3", "Test endpoint 3", d => null);
-                builder.Map("/4", "Test endpoint 4", d => null);
+                builder.Map("/3", d => null).WithDisplayName("Test endpoint 3");
+                builder.Map("/4", d => null).WithDisplayName("Test endpoint 4");
             });
 
             // This triggers the middleware to be created and the matcher factory to be called

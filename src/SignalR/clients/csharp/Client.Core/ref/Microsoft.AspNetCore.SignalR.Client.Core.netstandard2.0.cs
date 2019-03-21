@@ -37,8 +37,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
         public System.Threading.Tasks.Task<object> InvokeCoreAsync(string methodName, System.Type returnType, object[] args, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
         public System.IDisposable On(string methodName, System.Type[] parameterTypes, System.Func<object[], object, System.Threading.Tasks.Task> handler, object state) { throw null; }
         public void Remove(string methodName) { }
-        public void ResetSendPing() { }
-        public void ResetTimeout() { }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task SendCoreAsync(string methodName, object[] args, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]

@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             LineEnding = "\n";
             NormalizeSourceLineEndings = true;
 
-            DefaultBaseNamespace = "Test"; // Matches the default working directory
+            DefaultRootNamespace = "Test"; // Matches the default working directory
             DefaultFileName = "TestComponent.cshtml";
         }
 
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 
         internal virtual RazorConfiguration Configuration { get; }
 
-        internal virtual string DefaultBaseNamespace { get; }
+        internal virtual string DefaultRootNamespace { get; }
 
         internal virtual string DefaultFileName { get; }
 
@@ -119,6 +119,8 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         {
             return RazorProjectEngine.Create(Configuration, FileSystem, b =>
             {
+                b.SetRootNamespace(DefaultRootNamespace);
+
                 // Turn off checksums, we're testing code generation.
                 b.Features.Add(new SuppressChecksum());
 
@@ -344,7 +346,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         {
             var assemblyResult = CompileToAssembly(DefaultFileName, cshtmlSource);
 
-            var componentFullTypeName = $"{DefaultBaseNamespace}.{Path.GetFileNameWithoutExtension(DefaultFileName)}";
+            var componentFullTypeName = $"{DefaultRootNamespace}.{Path.GetFileNameWithoutExtension(DefaultFileName)}";
             return CompileToComponent(assemblyResult, componentFullTypeName);
         }
 

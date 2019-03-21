@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
@@ -18,6 +19,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             ToggleExecutionModeServerFixture<Program> serverFixture,
             ITestOutputHelper output)
             : base(browserFixture, serverFixture, output)
+        {
+        }
+
+        protected override void InitializeAsyncCore()
         {
             Navigate(ServerPathBase, noReload: true);
             MountTestComponent<InteropComponent>();
@@ -106,7 +111,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                     expectedValues.Add(kvp.Key, kvp.Value);
                 }
             }
-            
+
             var actualValues = new Dictionary<string, string>();
 
             // Act

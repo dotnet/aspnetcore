@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    public enum HttpMethod: byte
+    internal enum HttpMethod: byte
     {
         Get,
         Put,

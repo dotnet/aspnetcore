@@ -1793,7 +1793,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             public class TaskDerivedType : Task
             {
                 public TaskDerivedType()
-                    : base(() => Console.WriteLine("In The Constructor"))
+                    : base(() => { })
                 {
                 }
             }

@@ -15,23 +15,23 @@ namespace RoutingSandbox.Framework
 {
     public static class FrameworkEndpointRouteBuilderExtensions
     {
-        public static IEndpointConventionBuilder MapFramework(this IEndpointRouteBuilder builder, Action<FrameworkConfigurationBuilder> configure)
+        public static IEndpointConventionBuilder MapFramework(this IEndpointRouteBuilder routes, Action<FrameworkConfigurationBuilder> configure)
         {
-            if (builder == null)
+            if (routes == null)
             {
-                throw new ArgumentNullException(nameof(builder));
+                throw new ArgumentNullException(nameof(routes));
             }
             if (configure == null)
             {
                 throw new ArgumentNullException(nameof(configure));
             }
 
-            var dataSource = builder.ServiceProvider.GetRequiredService<FrameworkEndpointDataSource>();
+            var dataSource = routes.ServiceProvider.GetRequiredService<FrameworkEndpointDataSource>();
 
             var configurationBuilder = new FrameworkConfigurationBuilder(dataSource);
             configure(configurationBuilder);
 
-            builder.DataSources.Add(dataSource);
+            routes.DataSources.Add(dataSource);
 
             return dataSource;
         }

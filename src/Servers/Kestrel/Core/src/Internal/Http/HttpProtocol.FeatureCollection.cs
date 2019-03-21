@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
 using System.Net;
@@ -17,7 +16,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    public partial class HttpProtocol : IHttpRequestFeature,
+    internal partial class HttpProtocol : IHttpRequestFeature,
                                         IHttpResponseFeature,
                                         IResponseBodyPipeFeature,
                                         IRequestBodyPipeFeature,

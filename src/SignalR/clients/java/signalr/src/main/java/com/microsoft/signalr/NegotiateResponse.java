@@ -16,10 +16,10 @@ class NegotiateResponse {
     private String redirectUrl;
     private String accessToken;
     private String error;
+    private String finalUrl;
 
-    public NegotiateResponse(String negotiatePayload) {
+    public NegotiateResponse(JsonReader reader) {
         try {
-            JsonReader reader = new JsonReader(new StringReader(negotiatePayload));
             reader.beginObject();
 
             do {
@@ -79,6 +79,10 @@ class NegotiateResponse {
         }
     }
 
+    public NegotiateResponse(String url) {
+        this.finalUrl = url;
+    }
+
     public String getConnectionId() {
         return connectionId;
     }
@@ -97,5 +101,13 @@ class NegotiateResponse {
 
     public String getError() {
         return error;
+    }
+
+    public String getFinalUrl(){
+        return finalUrl;
+    }
+
+    public void setFinalUrl(String url) {
+        this.finalUrl = url;
     }
 }

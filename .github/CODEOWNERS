@@ -6,13 +6,13 @@
 /build/ @dougbu
 /eng/ @dougbu
 /src/Components/ @SteveSandersonMS
-/src/DefaultBuilder/ @tratcher
-/src/Hosting/ @tratcher
-/src/Http/ @tratcher @jkotalik
-/src/Middleware/ @tratcher
+/src/DefaultBuilder/ @tratcher @anurse
+/src/Hosting/ @tratcher @anurse
+/src/Http/ @tratcher @jkotalik @anurse
+/src/Middleware/ @tratcher @anurse
 /src/ProjectTemplates/ @ryanbrandenburg
-/src/Security/ @tratcher
-/src/Servers/ @tratcher @jkotalik
-/src/Middleware/Rewrite @jkotalik
-/src/Middleware/HttpsPolicy @jkotalik
-/src/SignalR/ @mikaelm12 @BrennanConroy @halter73
+/src/Security/ @tratcher @anurse
+/src/Servers/ @tratcher @jkotalik @anurse
+/src/Middleware/Rewrite @jkotalik @anurse
+/src/Middleware/HttpsPolicy @jkotalik @anurse
+/src/SignalR/ @mikaelm12 @BrennanConroy @halter73 @anurse

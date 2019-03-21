@@ -218,11 +218,11 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
                 AddTemporaryAppHostConfig(contentRoot, port);
 
-                WaitUntilSiteStarted();
+                WaitUntilSiteStarted(contentRoot);
             }
         }
 
-        private void WaitUntilSiteStarted()
+        private void WaitUntilSiteStarted(string contentRoot)
         {
             ServiceController serviceController = new ServiceController("w3svc");
             Logger.LogInformation("W3SVC status " + serviceController.Status);
@@ -240,6 +240,12 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
             {
                 var site = serverManager.Sites.Single();
                 var appPool = serverManager.ApplicationPools.Single();
+
+                var actualPath = site.Applications.FirstOrDefault().VirtualDirectories.Single().PhysicalPath;
+                if (actualPath != contentRoot)
+                {
+                    throw new InvalidOperationException($"Wrong physical path. Expected: {contentRoot} Actual: {actualPath}");
+                }
 
                 if (appPool.State != ObjectState.Started && appPool.State != ObjectState.Starting)
                 {

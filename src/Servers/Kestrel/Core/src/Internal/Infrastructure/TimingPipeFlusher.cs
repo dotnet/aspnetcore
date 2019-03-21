@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
     /// This wraps PipeWriter.FlushAsync() in a way that allows multiple awaiters making it safe to call from publicly
     /// exposed Stream implementations while also tracking response data rate.
     /// </summary>
-    public class TimingPipeFlusher
+    internal class TimingPipeFlusher
     {
         private readonly PipeWriter _writer;
         private readonly ITimeoutControl _timeoutControl;

@@ -872,11 +872,11 @@
           "Parameters": [
             {
               "Name": "reason",
-              "Type": "Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.RequestRejectionReason"
+              "Type": "Microsoft.AspNetCore.Server.Kestrel.Core.Http.RequestRejectionReason"
             },
             {
               "Name": "method",
-              "Type": "Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod"
+              "Type": "Microsoft.AspNetCore.Server.Kestrel.Core.Http.HttpMethod"
             }
           ],
           "ReturnType": "System.Void",
@@ -1015,7 +1015,7 @@
             },
             {
               "Name": "transportFactory",
-              "Type": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.ITransportFactory"
+              "Type": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.ITransportFactory"
             },
             {
               "Name": "loggerFactory",
@@ -1327,7 +1327,7 @@
           "Kind": "Method",
           "Name": "get_ApplicationSchedulingMode",
           "Parameters": [],
-          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.SchedulingMode",
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.SchedulingMode",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -1337,7 +1337,7 @@
           "Parameters": [
             {
               "Name": "value",
-              "Type": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.SchedulingMode"
+              "Type": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.SchedulingMode"
             }
           ],
           "ReturnType": "System.Void",
@@ -1665,7 +1665,7 @@
       "Visibility": "Public",
       "Kind": "Class",
       "ImplementedInterfaces": [
-        "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.IEndPointInformation",
+        "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.IEndPointInformation",
         "Microsoft.AspNetCore.Connections.IConnectionBuilder"
       ],
       "Members": [
@@ -1673,10 +1673,10 @@
           "Kind": "Method",
           "Name": "get_Type",
           "Parameters": [],
-          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.ListenType",
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.ListenType",
           "Sealed": true,
           "Virtual": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.IEndPointInformation",
+          "ImplementedInterface": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.IEndPointInformation",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -1684,10 +1684,10 @@
           "Kind": "Method",
           "Name": "get_HandleType",
           "Parameters": [],
-          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.FileHandleType",
+          "ReturnType": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.FileHandleType",
           "Sealed": true,
           "Virtual": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.IEndPointInformation",
+          "ImplementedInterface": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.IEndPointInformation",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -1697,13 +1697,13 @@
           "Parameters": [
             {
               "Name": "value",
-              "Type": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.FileHandleType"
+              "Type": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.FileHandleType"
             }
           ],
           "ReturnType": "System.Void",
           "Sealed": true,
           "Virtual": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.IEndPointInformation",
+          "ImplementedInterface": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.IEndPointInformation",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -1714,7 +1714,7 @@
           "ReturnType": "System.Net.IPEndPoint",
           "Sealed": true,
           "Virtual": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.IEndPointInformation",
+          "ImplementedInterface": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.IEndPointInformation",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -1730,7 +1730,7 @@
           "ReturnType": "System.Void",
           "Sealed": true,
           "Virtual": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.IEndPointInformation",
+          "ImplementedInterface": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.IEndPointInformation",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -1741,7 +1741,7 @@
           "ReturnType": "System.String",
           "Sealed": true,
           "Virtual": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.IEndPointInformation",
+          "ImplementedInterface": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.IEndPointInformation",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -1752,7 +1752,7 @@
           "ReturnType": "System.UInt64",
           "Sealed": true,
           "Virtual": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.IEndPointInformation",
+          "ImplementedInterface": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.IEndPointInformation",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -1771,7 +1771,7 @@
           "ReturnType": "System.Boolean",
           "Sealed": true,
           "Virtual": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.IEndPointInformation",
+          "ImplementedInterface": "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.IEndPointInformation",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -1792,7 +1792,7 @@
           "Kind": "Method",
           "Name": "get_ConnectionAdapters",
           "Parameters": [],
-          "ReturnType": "System.Collections.Generic.List<Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal.IConnectionAdapter>",
+          "ReturnType": "System.Collections.Generic.List<Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.IConnectionAdapter>",
           "Visibility": "Public",
           "GenericParameter": []
         },

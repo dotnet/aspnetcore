@@ -10,4 +10,9 @@
     <ProjectReference Include="..\..\shared\Mvc.Core.TestCommon\Microsoft.AspNetCore.Mvc.Core.TestCommon.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="..\..\Mvc.Core\test\Formatters\JsonInputFormatterTestBase.cs" />
+    <Compile Include="..\..\Mvc.Core\test\Formatters\JsonOutputFormatterTestBase.cs" />
+  </ItemGroup>
+
 </Project>

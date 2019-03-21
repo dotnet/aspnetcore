@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Buffers;
@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         private const int InnerLoopCount = 512;
 
         public ReadOnlySequence<byte> _buffer;
-        public Http1Connection _http1Connection;
+        private Http1Connection _http1Connection;
 
         [IterationSetup]
         public void Setup()

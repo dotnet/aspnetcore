@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
-    public partial class Http2Stream : IHttp2StreamIdFeature, IHttpResponseTrailersFeature
+    internal partial class Http2Stream : IHttp2StreamIdFeature, IHttpResponseTrailersFeature
     {
         internal HttpResponseTrailers Trailers { get; set; }
         private IHeaderDictionary _userTrailers;

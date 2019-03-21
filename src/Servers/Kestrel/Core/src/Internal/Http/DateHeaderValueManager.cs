@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     /// <summary>
     /// Manages the generation of the date header value.
     /// </summary>
-    public class DateHeaderValueManager : IHeartbeatHandler
+    internal class DateHeaderValueManager : IHeartbeatHandler
     {
         private static readonly byte[] _datePreambleBytes = Encoding.ASCII.GetBytes("\r\nDate: ");
 

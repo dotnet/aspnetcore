@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.E2ETesting
 
         public override void After(MethodInfo methodUnderTest)
         {
-            var browser = BrowserTestBase.Browser;
+            var browser = BrowserTestBase.BrowserAccessor;
             var logs = BrowserTestBase.Logs;
             var output = BrowserTestBase.Output;
 

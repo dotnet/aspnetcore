@@ -19,11 +19,8 @@ namespace IIS.FunctionalTests
     [Collection(PublishedSitesCollection.Name)]
     public class ApplicationInitializationTests : IISFunctionalTestBase
     {
-        private readonly PublishedSitesFixture _fixture;
-
-        public ApplicationInitializationTests(PublishedSitesFixture fixture)
+        public ApplicationInitializationTests(PublishedSitesFixture fixture) : base(fixture)
         {
-            _fixture = fixture;
         }
 
         [ConditionalTheory]
@@ -35,7 +32,7 @@ namespace IIS.FunctionalTests
             // This test often hits a memory leak in warmup.dll module, it has been reported to IIS team
             using (AppVerifier.Disable(DeployerSelector.ServerType, 0x900))
             {
-                var baseDeploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel);
+                var baseDeploymentParameters = Fixture.GetBaseDeploymentParameters(hostingModel);
                 baseDeploymentParameters.TransformArguments(
                     (args, contentRoot) => $"{args} CreateFile \"{Path.Combine(contentRoot, "Started.txt")}\"");
                 EnablePreload(baseDeploymentParameters);
@@ -44,7 +41,7 @@ namespace IIS.FunctionalTests
 
                 await Helpers.Retry(async () => await File.ReadAllTextAsync(Path.Combine(result.ContentRoot, "Started.txt")), TimeoutExtensions.DefaultTimeoutValue);
                 StopServer();
-                EventLogHelpers.VerifyEventLogEvent(result, EventLogHelpers.Started(result));
+                EventLogHelpers.VerifyEventLogEvent(result, EventLogHelpers.Started(result), Logger);
             }
         }
 
@@ -58,7 +55,7 @@ namespace IIS.FunctionalTests
             // This test often hits a memory leak in warmup.dll module, it has been reported to IIS team
             using (AppVerifier.Disable(DeployerSelector.ServerType, 0x900))
             {
-                var baseDeploymentParameters = _fixture.GetBaseDeploymentParameters(hostingModel);
+                var baseDeploymentParameters = Fixture.GetBaseDeploymentParameters(hostingModel);
                 EnablePreload(baseDeploymentParameters);
 
                 baseDeploymentParameters.ServerConfigActionList.Add(
@@ -73,7 +70,7 @@ namespace IIS.FunctionalTests
 
                 await Helpers.Retry(async () => await File.ReadAllTextAsync(Path.Combine(result.ContentRoot, "Started.txt")), TimeoutExtensions.DefaultTimeoutValue);
                 StopServer();
-                EventLogHelpers.VerifyEventLogEvent(result, EventLogHelpers.Started(result));
+                EventLogHelpers.VerifyEventLogEvent(result, EventLogHelpers.Started(result), Logger);
             }
         }
 

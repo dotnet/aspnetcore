@@ -94,6 +94,8 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
             {
                 Log.UnhandledExceptionRenderingComponent(_logger, exception);
             }
+
+            UnhandledException?.Invoke(this, exception);
         }
 
         /// <inheritdoc />

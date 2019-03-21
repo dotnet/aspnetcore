@@ -560,10 +560,11 @@ IN_PROCESS_APPLICATION::HandleRequestCompletion()
 
 void IN_PROCESS_APPLICATION::CallRequestsDrained()
 {
-    if (m_RequestsDrainedHandler != nullptr)
+    // Atomic swap these.
+    auto handler = m_RequestsDrainedHandler.exchange(nullptr);
+    if (handler != nullptr)
     {
         LOG_INFO(L"Drained all requests, notifying managed.");
-        m_RequestsDrainedHandler(m_ShutdownHandlerContext);
-        m_RequestsDrainedHandler = nullptr;
+        handler(m_ShutdownHandlerContext);
     }
 }

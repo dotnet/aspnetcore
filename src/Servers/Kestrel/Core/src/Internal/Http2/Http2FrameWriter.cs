@@ -18,7 +18,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
-    public class Http2FrameWriter
+    internal class Http2FrameWriter
     {
         // Literal Header Field without Indexing - Indexed Name (Index 8 - :status)
         private static ReadOnlySpan<byte> _continueBytes => new byte[] { 0x08, 0x03, (byte)'1', (byte)'0', (byte)'0' };

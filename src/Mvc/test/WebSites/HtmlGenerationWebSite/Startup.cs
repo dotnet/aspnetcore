@@ -34,15 +34,15 @@ namespace HtmlGenerationWebSite
             {
                 routes.MapControllerRoute(
                     name: "areaRoute",
-                    template: "{area:exists}/{controller}/{action}/{id?}",
+                    pattern: "{area:exists}/{controller}/{action}/{id?}",
                     defaults: new { action = "Index" });
                 routes.MapControllerRoute(
                     name: "productRoute",
-                    template: "Product/{action}",
+                    pattern: "Product/{action}",
                     defaults: new { controller = "Product" });
                 routes.MapControllerRoute(
                     name: "default",
-                    template: "{controller}/{action}/{id?}",
+                    pattern: "{controller}/{action}/{id?}",
                     defaults: new { controller = "HtmlGeneration_Home", action = "Index" });
 
                 routes.MapRazorPages();
