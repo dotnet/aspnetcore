@@ -2,13 +2,11 @@
 
   <PropertyGroup>
       <TargetFramework>netcoreapp3.0</TargetFramework>
+      <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.Server" />
     <Reference Include="Microsoft.AspNetCore.Mvc" />
     <ProjectReference Include="..\ComponentsApp.App\ComponentsApp.App.csproj" />

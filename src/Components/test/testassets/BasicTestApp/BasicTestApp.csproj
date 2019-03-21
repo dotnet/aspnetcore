@@ -2,6 +2,10 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <RazorLangVersion>3.0</RazorLangVersion>
+
+    <!-- Treat _ViewImports.cshtml as component files until we add support for imports.razor -->
+    <_RazorComponentInclude>**\_ViewImports.cshtml</_RazorComponentInclude>
 
     <ReferenceBlazorBuildLocally>true</ReferenceBlazorBuildLocally>
     <!-- Must be defined before ReferenceFromSource.props is imported -->

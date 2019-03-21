@@ -9,8 +9,6 @@
   This is only intended for use by other projects in this repo.
   -->
 
-  <Import Project="$(RepositoryRoot)src\Components\Build\src\ReferenceFromSource.props" />
-
   <PropertyGroup>
     <BlazorBuildReferenceFromSource>true</BlazorBuildReferenceFromSource>
     <BlazorJsPath>$(RepositoryRoot)src\Components\Browser.JS\src\dist\components.*.js</BlazorJsPath>

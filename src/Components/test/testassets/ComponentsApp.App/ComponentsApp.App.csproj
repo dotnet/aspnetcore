@@ -1,10 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
-  <!-- Reference targets and props from Components.Build package -->
-  <Import Project="..\..\..\Build\src\ReferenceFromSource.props" />
-
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <RazorLangVersion>3.0</RazorLangVersion>
+
+    <!-- Treat _ViewImports.cshtml as component files until we add support for imports.razor -->
+    <_RazorComponentInclude>**\_ViewImports.cshtml</_RazorComponentInclude>
   </PropertyGroup>
 
   <ItemGroup>
