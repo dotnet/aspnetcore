@@ -111,7 +111,6 @@ namespace signalr
         std::weak_ptr<hub_connection_impl> weak_connection = shared_from_this();
         return m_connection->start([weak_connection, callback](std::exception_ptr start_exception)
             {
-                //startTask.get();
                 auto connection = weak_connection.lock();
                 if (!connection)
                 {
@@ -122,25 +121,15 @@ namespace signalr
 
                 if (start_exception)
                 {
-                    connection->m_connection->stop([start_exception, callback, connection](std::exception_ptr exception)
+                    connection->m_connection->stop([start_exception, callback, connection](std::exception_ptr)
                     {
                         try
                         {
                             pplx::task<void>(connection->m_handshakeTask).get();
                         }
                         catch (...) {}
-                        if (start_exception)
-                        {
-                            callback(start_exception);
-                        }
-                        else if (exception)
-                        {
-                            callback(exception);
-                        }
-                        else
-                        {
-                            callback(nullptr);
-                        }
+
+                        callback(start_exception);
                     });
                     return;
                 }
