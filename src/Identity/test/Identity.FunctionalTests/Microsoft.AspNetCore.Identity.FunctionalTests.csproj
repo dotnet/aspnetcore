@@ -41,7 +41,7 @@
     <Copy
       SourceFiles="@(_wwwrootFiles)"
       DestinationFolder="$(PublishDir)\Identity.DefaultUI.WebSite\wwwroot" />
-    <!-- Write a dummy sln so content root will be found correctly -->
+    <!-- Drop a dummy sln to specify content root location -->
     <WriteLinesToFile
         File="$(PublishDir)\contentroot.sln"
         Lines="Ignored"
