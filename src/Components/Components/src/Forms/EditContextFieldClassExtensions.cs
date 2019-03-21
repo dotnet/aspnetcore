@@ -35,11 +35,13 @@ namespace Microsoft.AspNetCore.Components.Forms
             var isValid = !editContext.GetValidationMessages(fieldIdentifier).Any();
             if (editContext.IsModified(fieldIdentifier))
             {
-                return isValid ? "modified valid" : "modified invalid";
+                return isValid ?
+                    EditContext.ModifiedClass + " " + EditContext.ValidClass :
+                    EditContext.ModifiedClass + " " + EditContext.InvalidClass;
             }
             else
             {
-                return isValid ? "valid" : "invalid";
+                return isValid ? EditContext.ValidClass : EditContext.InvalidClass;
             }
         }
     }

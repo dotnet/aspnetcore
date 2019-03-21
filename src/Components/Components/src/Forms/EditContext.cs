@@ -13,6 +13,12 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// </summary>
     public sealed class EditContext
     {
+        public static string ModifiedClass = "modified";
+        public static string ValidClass = "valid";
+        public static string InvalidClass = "invalid";
+        public static string ValidationMessageClass = "validation-message";
+        public static string ValidationErrorsClass = "validation-errors";
+
         // Note that EditContext tracks state for any FieldIdentifier you give to it, plus
         // the underlying storage is sparse. As such, none of the APIs have a "field not found"
         // error state. If you give us an unrecognized FieldIdentifier, that just means we

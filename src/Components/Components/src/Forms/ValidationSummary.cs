@@ -57,12 +57,12 @@ namespace Microsoft.AspNetCore.Components.Forms
             if (messagesEnumerator.MoveNext())
             {
                 builder.OpenElement(0, "ul");
-                builder.AddAttribute(1, "class", "validation-errors");
+                builder.AddAttribute(1, "class", EditContext.ValidationErrorsClass);
 
                 do
                 {
                     builder.OpenElement(2, "li");
-                    builder.AddAttribute(3, "class", "validation-message");
+                    builder.AddAttribute(3, "class", EditContext.ValidationMessageClass);
                     builder.AddContent(4, messagesEnumerator.Current);
                     builder.CloseElement();
                 }
