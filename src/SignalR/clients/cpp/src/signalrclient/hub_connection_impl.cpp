@@ -108,7 +108,7 @@ namespace signalr
         m_handshakeTask = pplx::task_completion_event<void>();
         m_handshakeReceived = false;
         std::weak_ptr<hub_connection_impl> weak_connection = shared_from_this();
-        return m_connection->start([weak_connection, callback](std::exception_ptr exception)
+        return m_connection->start([weak_connection, callback](std::exception_ptr start_exception)
             {
                 //startTask.get();
                 auto connection = weak_connection.lock();
@@ -116,6 +116,31 @@ namespace signalr
                 {
                     // The connection has been destructed
                     callback(std::make_exception_ptr(signalr_exception("the hub connection has been deconstructed")));
+                    return;
+                }
+
+                if (start_exception)
+                {
+                    connection->m_connection->stop([start_exception, callback, connection](std::exception_ptr exception)
+                    {
+                        try
+                        {
+                            pplx::task<void>(connection->m_handshakeTask).get();
+                        }
+                        catch (...) {}
+                        if (start_exception)
+                        {
+                            callback(start_exception);
+                        }
+                        else if (exception)
+                        {
+                            callback(exception);
+                        }
+                        else
+                        {
+                            callback(nullptr);
+                        }
+                    });
                     return;
                 }
 
@@ -128,29 +153,27 @@ namespace signalr
                         callback(std::make_exception_ptr(signalr_exception("the hub connection has been deconstructed")));
                         return;
                     }
-                    //previous_task.get();
-                    //return pplx::task<void>(connection->m_handshakeTask);
-                });
-                /*    .then([weak_connection](pplx::task<void> previous_task)
+
+                    if (exception)
                     {
-                        try
+                        callback(exception);
+                        return;
+                    }
+
+                    try
+                    {
+                        pplx::task<void>(connection->m_handshakeTask).get();
+                        callback(nullptr);
+                    }
+                    catch (...)
+                    {
+                        auto handshake_exception = std::current_exception();
+                        connection->m_connection->stop([callback, handshake_exception](std::exception_ptr)
                         {
-                            previous_task.get();
-                            return previous_task;
-                        }
-                        catch (std::exception e)
-                        {
-                            auto connection = weak_connection.lock();
-                            if (connection)
-                            {
-                                return connection->m_connection->stop()
-                                    .then([e]() {
-                                        throw e;
-                                    });
-                            }
-                            throw e;
-                        }
-                    });*/
+                            callback(handshake_exception);
+                        });
+                    }
+                });
             });
     }
 
@@ -280,29 +303,21 @@ namespace signalr
     {
         _ASSERTE(arguments.is_array());
 
-        pplx::task_completion_event<json::value> tce;
-
         const auto callback_id = m_callback_manager.register_callback(
-            create_hub_invocation_callback(m_logger, [tce](const json::value& result) { tce.set(result); },
-                [tce](const std::exception_ptr e) { tce.set_exception(e); }));
+            create_hub_invocation_callback(m_logger, [callback](const json::value& result) { callback(result, nullptr); },
+                [callback](const std::exception_ptr e) { callback(json::value(), e); }));
 
         invoke_hub_method(method_name, arguments, callback_id, nullptr,
-            [tce](const std::exception_ptr e){ tce.set_exception(e); });
-
-        //return pplx::create_task(tce);
+            [callback](const std::exception_ptr e){ callback(json::value(), e); });
     }
 
     void hub_connection_impl::send(const std::string& method_name, const json::value& arguments, std::function<void(std::exception_ptr)> callback)
     {
         _ASSERTE(arguments.is_array());
 
-        pplx::task_completion_event<void> tce;
-
         invoke_hub_method(method_name, arguments, "",
-            [tce]() { tce.set(); },
-            [tce](const std::exception_ptr e){ tce.set_exception(e); });
-
-        //return pplx::create_task(tce);
+            [callback]() { callback(nullptr); },
+            [callback](const std::exception_ptr e){ callback(e); });
     }
 
     void hub_connection_impl::invoke_hub_method(const std::string& method_name, const json::value& arguments,
@@ -382,8 +397,10 @@ namespace signalr
                         std::make_exception_ptr(
                             hub_exception(utility::conversions::to_utf8string(message.at(_XPLATSTR("error")).serialize()))));
                 }
-
-                set_result(json::value::null());
+                else
+                {
+                    set_result(json::value::null());
+                }
             };
         }
     }
