@@ -8,6 +8,8 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using AngleSharp.Dom.Html;
+using AngleSharp.Parser.Html;
 using Microsoft.AspNetCore.Certificates.Generation;
 using Microsoft.Extensions.CommandLineUtils;
 using OpenQA.Selenium;
@@ -128,7 +130,7 @@ namespace Templates.Test.Helpers
             {
                 if(link.Protocol == "about:")
                 {
-                    AssertOk(link.PathName);
+                    await AssertOk(link.PathName);
                 }
                 else
                 {
@@ -143,7 +145,7 @@ namespace Templates.Test.Helpers
             return response.IsSuccessStatusCode || response.StatusCode == HttpStatusCode.Redirect;
         }
 
-        private void AssertOk(string requestUrl)
+        public Task AssertOk(string requestUrl)
             => AssertStatusCode(requestUrl, HttpStatusCode.OK);
 
         public Task AssertNotFound(string requestUrl)

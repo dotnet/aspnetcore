@@ -61,18 +61,18 @@ namespace Templates.Test
                     aspNetProcess.Process.HasExited,
                     ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", Project, aspNetProcess.Process));
 
-                await aspNetProcess.AssertOk("/");
-                await aspNetProcess.AssertOk("/Home/Privacy");
+                await aspNetProcess.AssertLinksWork("/");
+                await aspNetProcess.AssertLinksWork("/Home/Privacy");
             }
-
+            
             using (var aspNetProcess = Project.StartPublishedProjectAsync())
             {
                 Assert.False(
                     aspNetProcess.Process.HasExited,
                     ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", Project, aspNetProcess.Process));
 
-                await aspNetProcess.AssertOk("/");
-                await aspNetProcess.AssertOk("/Home/Privacy");
+                await aspNetProcess.AssertLinksWork("/");
+                await aspNetProcess.AssertLinksWork("/Home/Privacy");
             }
         }
 
@@ -112,16 +112,16 @@ namespace Templates.Test
 
             using (var aspNetProcess = Project.StartBuiltProjectAsync())
             {
-                await aspNetProcess.AssertOk("/");
-                await aspNetProcess.AssertOk("/Identity/Account/Login");
-                await aspNetProcess.AssertOk("/Home/Privacy");
+                await aspNetProcess.AssertLinksWork("/");
+                await aspNetProcess.AssertLinksWork("/Identity/Account/Login");
+                await aspNetProcess.AssertLinksWork("/Home/Privacy");
             }
 
             using (var aspNetProcess = Project.StartPublishedProjectAsync())
             {
-                await aspNetProcess.AssertOk("/");
-                await aspNetProcess.AssertOk("/Identity/Account/Login");
-                await aspNetProcess.AssertOk("/Home/Privacy");
+                await aspNetProcess.AssertLinksWork("/");
+                await aspNetProcess.AssertLinksWork("/Identity/Account/Login");
+                await aspNetProcess.AssertLinksWork("/Home/Privacy");
             }
         }
 
