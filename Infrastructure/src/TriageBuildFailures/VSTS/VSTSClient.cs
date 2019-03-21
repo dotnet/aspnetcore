@@ -141,7 +141,7 @@ namespace TriageBuildFailures.VSTS
                 throw new NotImplementedException("Unsupported url format");
             }
             var vstsUri = $"{project}/_apis/build/builds/{id}";
-            var build = await MakeVSTSRequest<Build>(HttpMethod.Get, vstsUri,apiVersion: ApiVersion.V5_0_Preview5);
+            var build = await MakeVSTSRequest<Build>(HttpMethod.Get, vstsUri, apiVersion: ApiVersion.V5_0_Preview5);
             return new VSTSBuild(build);
         }
 
@@ -316,9 +316,10 @@ namespace TriageBuildFailures.VSTS
                 else
                 {
                     var content = await response.Content.ReadAsStringAsync();
-                    if(response.StatusCode == HttpStatusCode.InternalServerError && content.Contains("TF400714"))
+                    if (response.StatusCode == HttpStatusCode.InternalServerError && content.Contains("TF400714"))
                     {
                         //The log is missing. This is VSTS's fault, nothing we can do.
+                        _reporter.Warn($"The log {uri} is missing! This is VSTS' fault.");
                         var stream = new MemoryStream();
                         var writer = new StreamWriter(stream);
                         writer.Write("");
