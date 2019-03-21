@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.AspNetCore.Razor.Language.Components;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
@@ -1137,13 +1138,34 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             public override void VisitMarkupElement(MarkupElementSyntax node)
             {
-                _builder.Push(new MarkupElementIntermediateNode()
+                var element = new MarkupElementIntermediateNode()
                 {
                     Source = BuildSourceSpanFromNode(node),
 
                     // Could be empty while the tag is being typed in.
-                    TagName = node.StartTag?.GetTagNameWithOptionalBang() ?? node.EndTag?.GetTagName() ?? string.Empty,
-                });
+                    TagName = node.StartTag?.GetTagNameWithOptionalBang() ?? node.EndTag?.GetTagNameWithOptionalBang() ?? string.Empty,
+                };
+
+                if (node.StartTag != null && node.EndTag != null && node.StartTag.IsVoidElement())
+                {
+                    element.Diagnostics.Add(
+                            ComponentDiagnosticFactory.Create_UnexpectedClosingTagForVoidElement(
+                                BuildSourceSpanFromNode(node.EndTag), node.EndTag.GetTagNameWithOptionalBang()));
+                }
+                else if (node.StartTag != null && node.EndTag == null && !node.StartTag.IsVoidElement() && !node.StartTag.IsSelfClosing())
+                {
+                    element.Diagnostics.Add(
+                        ComponentDiagnosticFactory.Create_UnclosedTag(
+                            BuildSourceSpanFromNode(node.StartTag), node.StartTag.GetTagNameWithOptionalBang()));
+                }
+                else if (node.StartTag == null && node.EndTag != null)
+                {
+                    element.Diagnostics.Add(
+                        ComponentDiagnosticFactory.Create_UnexpectedClosingTag(
+                            BuildSourceSpanFromNode(node.EndTag), node.EndTag.GetTagNameWithOptionalBang()));
+                }
+
+                _builder.Push(element);
 
                 base.VisitMarkupElement(node);
 

@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
 
         public SyntaxList<RazorSyntaxNode> Children => GetLegacyChildren();
 
-        public string GetTagName()
+        public string GetTagNameWithOptionalBang()
         {
             return Name.IsMissing ? string.Empty : Bang?.Content + Name.Content;
         }

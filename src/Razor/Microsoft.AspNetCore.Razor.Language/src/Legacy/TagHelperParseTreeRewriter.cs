@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 var endTag = (MarkupEndTagSyntax)Visit(node.EndTag);
                 if (endTag != null)
                 {
-                    var tagName = endTag.GetTagName();
+                    var tagName = endTag.GetTagNameWithOptionalBang();
                     if (TryRewriteTagHelperEnd(endTag, out tagHelperEnd))
                     {
                         // This is a tag helper
@@ -288,7 +288,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             private bool TryRewriteTagHelperEnd(MarkupEndTagSyntax tagBlock, out MarkupTagHelperEndTagSyntax rewritten)
             {
                 rewritten = null;
-                var tagName = tagBlock.GetTagName();
+                var tagName = tagBlock.GetTagNameWithOptionalBang();
                 // Could not determine tag name, it can't be a TagHelper, continue on and track the element.
                 if (string.IsNullOrEmpty(tagName) || tagName.StartsWith("!"))
                 {
@@ -599,7 +599,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             private void ValidateParentAllowsPlainEndTag(MarkupEndTagSyntax tagBlock)
             {
-                var tagName = tagBlock.GetTagName();
+                var tagName = tagBlock.GetTagNameWithOptionalBang();
 
                 // Treat partial tags such as '</' which have no tag names as content.
                 if (string.IsNullOrEmpty(tagName))

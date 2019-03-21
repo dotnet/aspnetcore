@@ -50,16 +50,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             return RazorDiagnostic.Create(UnexpectedClosingTag, span ?? SourceSpan.Undefined, tagName);
         }
 
-        public static readonly RazorDiagnosticDescriptor MismatchedClosingTag = new RazorDiagnosticDescriptor(
-            "BL9982",
-            () => "Mismatching closing tag. Found '{0}' but expected '{1}'.",
-            RazorDiagnosticSeverity.Error);
-
-        public static RazorDiagnostic Create_MismatchedClosingTag(SourceSpan? span, string expectedTagName, string tagName)
-        {
-            return RazorDiagnostic.Create(MismatchedClosingTag, span ?? SourceSpan.Undefined, expectedTagName, tagName);
-        }
-
         public static readonly RazorDiagnosticDescriptor UnexpectedClosingTagForVoidElement = new RazorDiagnosticDescriptor(
             "BL9983",
             () => "Unexpected closing tag '{0}'. The element '{0}' is a void element, and should be used without a closing tag.",
