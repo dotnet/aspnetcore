@@ -33,7 +33,7 @@ namespace TriageBuildFailures
                 reporter);
         }
 
-        public static async Task<HttpResponseMessage> RetryAsync(HttpClient client, HttpMethod verb, Uri uri, IReporter reporter)
+        public static async Task<HttpResponseMessage> RetryHttpRequesetAsync(HttpClient client, HttpMethod verb, Uri uri, IReporter reporter)
         {
             HttpResponseMessage firstResponse = null;
 
@@ -50,7 +50,7 @@ namespace TriageBuildFailures
                     return await client.SendAsync(request);
                 }, reporter);
 
-                if(result.IsSuccessStatusCode)
+                if (result.IsSuccessStatusCode)
                 {
                     return result;
                 }
