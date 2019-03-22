@@ -567,7 +567,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             requestFeature.PathBase = existingRequestFeature.PathBase;
             requestFeature.QueryString = existingRequestFeature.QueryString;
             requestFeature.RawTarget = existingRequestFeature.RawTarget;
-            var requestHeaders = new Dictionary<string, StringValues>(existingRequestFeature.Headers.Count, StringComparer.Ordinal);
+            var requestHeaders = new Dictionary<string, StringValues>(existingRequestFeature.Headers.Count, StringComparer.OrdinalIgnoreCase);
             foreach (var header in existingRequestFeature.Headers)
             {
                 requestHeaders[header.Key] = header.Value;
@@ -590,6 +590,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             var responseFeature = new HttpResponseFeature();
 
             var endpointFeature = context.Features.Get<IEndpointFeature>();
+
+            if (endpointFeature != null)
+            {
+                endpointFeature = new CopiedEndpointFeature(endpointFeature.Endpoint);
+            }
 
             var features = new FeatureCollection();
             features.Set<IHttpRequestFeature>(requestFeature);
@@ -674,6 +679,19 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         {
             public static EmptyServiceProvider Instance { get; } = new EmptyServiceProvider();
             public object GetService(Type serviceType) => null;
+        }
+
+        private class CopiedEndpointFeature : IEndpointFeature
+        {
+            public CopiedEndpointFeature(Endpoint endpoint)
+            {
+                _endpoint = endpoint;
+            }
+
+            private Endpoint _endpoint;
+
+            // REVIEW: Do we care if the user modifies the Endpoint?
+            public Endpoint Endpoint { get => _endpoint; set => throw new InvalidOperationException("The Endpoint is no longer modifiable."); }
         }
     }
 }

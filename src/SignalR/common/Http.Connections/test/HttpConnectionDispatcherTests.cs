@@ -588,6 +588,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             }
         }
 
+        private class CustomEndpointFeature : IEndpointFeature
+        {
+            public Endpoint Endpoint { get; set; }
+        }
+
         [Fact]
         public async Task HttpContextFeatureForLongpollingWorksBetweenPolls()
         {
@@ -627,6 +632,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     context.Connection.LocalPort = 4563;
                     context.Connection.RemoteIpAddress = IPAddress.IPv6Any;
                     context.Connection.RemotePort = 43456;
+                    IEndpointFeature endpointFeature = new CustomEndpointFeature();
+                    endpointFeature.Endpoint = new Endpoint(null, null, "TestName");
+                    context.Features.Set<IEndpointFeature>(endpointFeature);
 
                     var builder = new ConnectionBuilder(services.BuildServiceProvider());
                     builder.UseConnectionHandler<HttpContextConnectionHandler>();
@@ -679,6 +687,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     Assert.Equal(Stream.Null, connectionHttpContext.Response.Body);
                     Assert.NotNull(connectionHttpContext.Response.Headers);
                     Assert.Equal("application/xml", connectionHttpContext.Response.ContentType);
+                    endpointFeature = connectionHttpContext.Features.Get<IEndpointFeature>();
+                    Assert.NotNull(endpointFeature);
+                    Assert.Equal("TestName", endpointFeature.Endpoint.DisplayName);
                 }
             }
         }
