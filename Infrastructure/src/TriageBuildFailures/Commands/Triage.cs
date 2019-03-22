@@ -107,6 +107,7 @@ namespace TriageBuildFailures.Commands
 
                 if (await handler.CanHandleFailure(build))
                 {
+                    _reporter.Output($"{handler.GetType().Name} will handle {build.WebURL}");
                     await handler.HandleFailure(build);
                     await MarkTriaged(build);
                     return;
@@ -135,6 +136,10 @@ namespace TriageBuildFailures.Commands
                         {
                             result.Add(failedBuild);
                         }
+                    }
+                    else
+                    {
+                        _reporter.Output($"We won't triage {failedBuild.WebURL} because it's on the wrong branch.");
                     }
                 }
             }
@@ -166,7 +171,7 @@ namespace TriageBuildFailures.Commands
 
         private PullRequestClient GetPullRequestClient(GitHubClientWrapper gitHubClient, VSTSClient vstsClient)
         {
-            return new PullRequestClient(gitHubClient, vstsClient);
+            return new PullRequestClient(gitHubClient, vstsClient, _reporter);
         }
 
         private EmailClient GetEmailClient(Config config)

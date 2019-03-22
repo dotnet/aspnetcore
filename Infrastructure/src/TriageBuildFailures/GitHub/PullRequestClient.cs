@@ -1,3 +1,4 @@
+using McMaster.Extensions.CommandLineUtils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,11 +14,13 @@ namespace TriageBuildFailures.GitHub
     {
         private readonly GitHubClientWrapper _gitHubClient;
         private readonly VSTSClient _vstsClient;
+        private readonly IReporter _reporter;
 
-        public PullRequestClient(GitHubClientWrapper githubClient, VSTSClient vstsClient)
+        public PullRequestClient(GitHubClientWrapper githubClient, VSTSClient vstsClient, IReporter reporter)
         {
             _gitHubClient = githubClient;
             _vstsClient = vstsClient;
+            _reporter = reporter;
         }
 
         public Task<string> GetBuildLogAsync(ICIBuild build)
@@ -30,14 +33,18 @@ namespace TriageBuildFailures.GitHub
         public async Task<IEnumerable<ICIBuild>> GetFailedBuildsAsync(DateTime startDate)
         {
             var prs = await _gitHubClient.GetPullRequests("aspnet", "AspNetCore");
+
             prs = prs.Where(pr => pr.UpdatedAt >= startDate);
+
             var builds = new List<VSTSBuild>();
             foreach (var pr in prs)
             {
+                _reporter.Output($"     {pr.Url} is recent!");
                 var comments = await _gitHubClient.GetIssueComments(pr);
                 var triageRequests = comments.Where(comment => comment.CreatedAt >= startDate && comment.Body.StartsWith(TriageRequestStart));
                 foreach (var request in triageRequests)
                 {
+                    _reporter.Output($"     {pr.Url} wants triage!");
                     var url = request.Body.Replace(TriageRequestStart, "").Trim();
                     var build = await _vstsClient.GetBuild(url);
                     build.Branch = "PR";
