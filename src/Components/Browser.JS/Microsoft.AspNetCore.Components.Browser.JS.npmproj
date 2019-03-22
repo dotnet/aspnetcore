@@ -12,10 +12,18 @@
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
 
+  <!--
+    Invoking build[.cmd|.sh] does not restore npm projects by default. This is a performance optimization.
+    However, we do no want to ensure yarn's restored before a P2P build happens. We'll conservatively yarn install
+    if the node_modules directory is missing.
+  -->
+  <Target Name="FastRestore" DependsOnTargets="Restore" Condition="!Exists('node_modules')" />
+
   <!-- Override the default 'Build' target from eng/targets/Npm.Common.targets. -->
   <Target Name="Build"
+          DependsOnTargets="FastRestore"
           Inputs="@(WebpackInputs)"
-          Outputs="dist\components.webassembly.js;dist\components.server.js">
+          Outputs="src\dist\components.webassembly.js;src\dist\components.server.js">
     <RemoveDir Directories="dist" />
     <Yarn Command="run build:debug" Condition="'$(Configuration)' == 'Debug'" />
     <Yarn Command="run build:production" Condition="'$(Configuration)' != 'Debug'" />

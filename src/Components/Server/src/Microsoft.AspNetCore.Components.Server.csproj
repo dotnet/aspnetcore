@@ -33,10 +33,13 @@
     <Reference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(BuildNodeJS)' != 'false'">
+  <ItemGroup>
     <!-- We need .Browser.JS to build first so we can embed its .js output -->
-    <ProjectReference Include="..\..\Browser.JS\Microsoft.AspNetCore.Components.Browser.JS.npmproj" ReferenceOutputAssembly="false" />
     <EmbeddedResource Include="..\..\Browser.JS\src\dist\components.server.js" LogicalName="_framework\%(Filename)%(Extension)" />
   </ItemGroup>
+
+  <Target Name="_EnsureBrowserJS" BeforeTargets="CoreCompile">
+    <MSBuild Projects="..\..\Browser.JS\Microsoft.AspNetCore.Components.Browser.JS.npmproj" Targets="Build" />
+  </Target>
 
 </Project>
