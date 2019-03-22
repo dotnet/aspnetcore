@@ -161,7 +161,7 @@ namespace Company.WebApplication1
             app.UseRouting(routes =>
             {
                 routes.MapRazorPages();
-#if (IndividualAuth || OrganizationalAuth || WindowsAuth)
+#if (IndividualAuth || OrganizationalAuth)
                 routes.MapControllers();
 #endif
             });
