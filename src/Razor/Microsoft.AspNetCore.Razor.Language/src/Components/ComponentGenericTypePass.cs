@@ -275,7 +275,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
                     // Method name is generated and guaranteed not to collide, since it's unique for each
                     // component call site.
-                    MethodName = $"Create{node.TagName}_{_id++}",
+                    MethodName = $"Create{CSharpIdentifier.SanitizeIdentifier(node.TagName)}_{_id++}",
                     FullTypeName = @namespace + ".TypeInference",
                 };
 

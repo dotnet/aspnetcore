@@ -53,6 +53,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
 
         public static string SanitizeClassName(string inputName)
         {
+            if (string.IsNullOrEmpty(inputName))
+            {
+                return inputName;
+            }
+
             if (!IsIdentifierStart(inputName[0]) && IsIdentifierPart(inputName[0]))
             {
                 inputName = "_" + inputName;

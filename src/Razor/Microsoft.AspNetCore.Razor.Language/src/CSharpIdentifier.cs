@@ -35,6 +35,11 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public static string SanitizeIdentifier(string inputName)
         {
+            if (string.IsNullOrEmpty(inputName))
+            {
+                return inputName;
+            }
+
             if (!IsIdentifierStart(inputName[0]) && IsIdentifierPart(inputName[0]))
             {
                 inputName = "_" + inputName;
