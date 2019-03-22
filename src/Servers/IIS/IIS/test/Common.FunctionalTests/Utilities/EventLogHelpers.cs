@@ -79,8 +79,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             return string.Join(",", entries.Select(e => e.Message));
         }
 
-
-
         private static IEnumerable<EventLogEntry> GetEntries(IISDeploymentResult deploymentResult)
         {
             var eventLog = new EventLog("Application");
