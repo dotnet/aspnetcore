@@ -79,8 +79,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             return string.Join(",", entries.Select(e => e.Message));
         }
 
-
-
         private static IEnumerable<EventLogEntry> GetEntries(IISDeploymentResult deploymentResult)
         {
             var eventLog = new EventLog("Application");
@@ -89,8 +87,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             // Check results in reverse order.
             var processIdString = $"Process Id: {deploymentResult.HostProcess.Id}.";
 
-            // Event log messages round down to the nearest second, so subtract a second
-            var processStartTime = deploymentResult.HostProcess.StartTime.AddSeconds(-1);
+            // Event log messages round down to the nearest second, so subtract 5 seconds to make sure we get event logs
+            var processStartTime = deploymentResult.HostProcess.StartTime.AddSeconds(-5);
             for (var i = eventLog.Entries.Count - 1; i >= 0; i--)
             {
                 var eventLogEntry = eventLog.Entries[i];
