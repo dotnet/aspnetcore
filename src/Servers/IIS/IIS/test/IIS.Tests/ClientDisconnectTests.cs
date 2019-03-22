@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Xunit;
@@ -51,7 +52,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalFact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1831")]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1831", FlakyOn.All)]
         public async Task WritesCancelledWhenUsingAbortedToken()
         {
             var requestStartedCompletionSource = CreateTaskCompletionSource();
@@ -174,7 +175,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalFact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1831")]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1831", FlakyOn.All)]
         public async Task ReaderThrowsCancelledException()
         {
             var requestStartedCompletionSource = CreateTaskCompletionSource();
@@ -220,7 +221,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalFact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1817")]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1817", FlakyOn.All)]
         public async Task ReaderThrowsResetExceptionOnInvalidBody()
         {
             var requestStartedCompletionSource = CreateTaskCompletionSource();

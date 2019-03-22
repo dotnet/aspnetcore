@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Xunit;
@@ -81,7 +82,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalTheory]
         [InlineData(HostingModel.InProcess)]
         [InlineData(HostingModel.OutOfProcess)]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1794")]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1794", FlakyOn.All)]
         public async Task ConfigurationTouchedStress(HostingModel hostingModel)
         {
             var deploymentResult = await DeployAsync(Fixture.GetBaseDeploymentParameters(hostingModel));

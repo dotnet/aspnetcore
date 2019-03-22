@@ -12,6 +12,7 @@ using System.Xml.Linq;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Win32;
 using Xunit;
@@ -319,7 +320,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalFact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1772")]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1772", FlakyOn.All)]
         public async Task StartupTimeoutIsApplied()
         {
             // From what I can tell, this failure is due to ungraceful shutdown.
