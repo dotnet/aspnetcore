@@ -210,6 +210,80 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Features
         System.ReadOnlyMemory<byte> ApplicationProtocol { get; }
     }
 }
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
+{
+    public enum HttpMethod : byte
+    {
+        Connect = (byte)7,
+        Custom = (byte)9,
+        Delete = (byte)2,
+        Get = (byte)0,
+        Head = (byte)4,
+        None = (byte)255,
+        Options = (byte)8,
+        Patch = (byte)6,
+        Post = (byte)3,
+        Put = (byte)1,
+        Trace = (byte)5,
+    }
+    public partial class HttpParser<TRequestHandler> : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpParser<TRequestHandler> where TRequestHandler : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpHeadersHandler, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpRequestLineHandler
+    {
+        public HttpParser() { }
+        public HttpParser(bool showErrorDetails) { }
+        bool Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpParser<TRequestHandler>.ParseHeaders(TRequestHandler handler, in System.Buffers.ReadOnlySequence<byte> buffer, out System.SequencePosition consumed, out System.SequencePosition examined, out int consumedBytes) { throw null; }
+        bool Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpParser<TRequestHandler>.ParseRequestLine(TRequestHandler handler, in System.Buffers.ReadOnlySequence<byte> buffer, out System.SequencePosition consumed, out System.SequencePosition examined) { throw null; }
+        public bool ParseHeaders(TRequestHandler handler, in System.Buffers.ReadOnlySequence<byte> buffer, out System.SequencePosition consumed, out System.SequencePosition examined, out int consumedBytes) { throw null; }
+        public bool ParseRequestLine(TRequestHandler handler, in System.Buffers.ReadOnlySequence<byte> buffer, out System.SequencePosition consumed, out System.SequencePosition examined) { throw null; }
+    }
+    public enum HttpScheme
+    {
+        Http = 0,
+        Https = 1,
+        Unknown = -1,
+    }
+    public enum HttpVersion
+    {
+        Http10 = 0,
+        Http11 = 1,
+        Http2 = 2,
+        Unknown = -1,
+    }
+    public partial interface IHttpHeadersHandler
+    {
+        void OnHeader(System.Span<byte> name, System.Span<byte> value);
+    }
+    public partial interface IHttpParser<TRequestHandler> where TRequestHandler : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpHeadersHandler, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpRequestLineHandler
+    {
+        bool ParseHeaders(TRequestHandler handler, in System.Buffers.ReadOnlySequence<byte> buffer, out System.SequencePosition consumed, out System.SequencePosition examined, out int consumedBytes);
+        bool ParseRequestLine(TRequestHandler handler, in System.Buffers.ReadOnlySequence<byte> buffer, out System.SequencePosition consumed, out System.SequencePosition examined);
+    }
+    public partial interface IHttpRequestLineHandler
+    {
+        void OnStartLine(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod method, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersion version, System.Span<byte> target, System.Span<byte> path, System.Span<byte> query, System.Span<byte> customMethod, bool pathEncoded);
+    }
+}
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
+{
+    public static partial class HttpUtilities
+    {
+        public const string Http10Version = "HTTP/1.0";
+        public const string Http11Version = "HTTP/1.1";
+        public const string Http2Version = "HTTP/2";
+        public const string HttpsUriScheme = "https://";
+        public const string HttpUriScheme = "http://";
+        public static string GetAsciiOrUTF8StringNonNullCharacters(this System.Span<byte> span) { throw null; }
+        public static string GetAsciiStringEscaped(this System.Span<byte> span, int maxChars) { throw null; }
+        public static string GetAsciiStringNonNullCharacters(this System.Span<byte> span) { throw null; }
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public static bool GetKnownHttpScheme(this System.Span<byte> span, out Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpScheme knownScheme) { throw null; }
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public static bool GetKnownMethod(this System.Span<byte> span, out Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod method, out int length) { throw null; }
+        public static Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod GetKnownMethod(string value) { throw null; }
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public static bool GetKnownVersion(this System.Span<byte> span, out Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersion knownVersion, out byte length) { throw null; }
+        public static bool IsHostHeaderValid(string hostText) { throw null; }
+        public static string MethodToString(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod method) { throw null; }
+        public static string SchemeToString(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpScheme scheme) { throw null; }
+        public static string VersionToString(Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpVersion httpVersion) { throw null; }
+    }
+}
 namespace Microsoft.AspNetCore.Server.Kestrel.Https
 {
     public enum ClientCertificateMode
