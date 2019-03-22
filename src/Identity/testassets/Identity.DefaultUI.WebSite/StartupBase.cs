@@ -56,6 +56,9 @@ namespace Identity.DefaultUI.WebSite
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            // This prevents running out of file watchers on some linux machines
+            ((PhysicalFileWatcher)IWebHostEnvironment.WebRootFileProvider).UseActivePolling = false
+        
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
