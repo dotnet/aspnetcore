@@ -13,8 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         {
         }
 
-        [Theory]
-        [Flaky("https://github.com/dotnet/corefx/issues/36025")]
+        [Theory(Skip = "https://github.com/dotnet/corefx/issues/36025")]
         [InlineData("\"I'm a JSON string!\"")]
         [InlineData("true")]
         [InlineData("\"\"")] // Empty string

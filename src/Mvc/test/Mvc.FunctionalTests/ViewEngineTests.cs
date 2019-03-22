@@ -465,7 +465,6 @@ Partial";
         }
 
         [Fact]
-        [Flaky("https://github.com/aspnet/Mvc/issues/8754")]
         public async Task ViewEngine_ResolvesPathsWithSlashesThatDoNotHaveExtensions()
         {
             // Arrange

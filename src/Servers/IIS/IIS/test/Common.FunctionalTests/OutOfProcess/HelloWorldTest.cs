@@ -26,14 +26,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 .WithTfms(Tfm.NetCoreApp30)
                 .WithAllApplicationTypes();
 
-        [ConditionalTheory]
-        [Flaky("https://github.com/aspnet/AspNetCore/issues/8329")]
+        [ConditionalTheory(Skip = "https://github.com/aspnet/AspNetCore/issues/8329")]
         [MemberData(nameof(TestVariants))]
         public async Task HelloWorld(TestVariant variant)
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
             deploymentParameters.ServerConfigActionList.Add(
-                (element, _) => {
+                (element, _) =>
+                {
                     element
                         .RequiredElement("system.webServer")
                         .RequiredElement("security")
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.Equal(deploymentResult.ContentRoot, await deploymentResult.HttpClient.GetStringAsync("/ContentRootPath"));
             Assert.Equal(deploymentResult.ContentRoot + "\\wwwroot", await deploymentResult.HttpClient.GetStringAsync("/WebRootPath"));
             var expectedDll = "aspnetcorev2.dll";
-            Assert.Contains(deploymentResult.HostProcess.Modules.OfType<ProcessModule>(), m=> m.FileName.Contains(expectedDll));
+            Assert.Contains(deploymentResult.HostProcess.Modules.OfType<ProcessModule>(), m => m.FileName.Contains(expectedDll));
 
             if (DeployerSelector.HasNewHandler && variant.HostingModel == HostingModel.InProcess)
             {

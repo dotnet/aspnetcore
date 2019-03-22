@@ -8,57 +8,49 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 {
     public class SystemTextJsonInputFormatterTest : JsonInputFormatterTestBase
     {
-        [Fact]
-        [Flaky("https://github.com/aspnet/AspNetCore/issues/8489")]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/8489")]
         public override Task JsonFormatterReadsDateTimeValue()
         {
             return base.JsonFormatterReadsDateTimeValue();
         }
 
-        [Fact]
-        [Flaky("https://github.com/aspnet/AspNetCore/issues/8474")]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/8474")]
         public override Task ReadAsync_AddsModelValidationErrorsToModelState()
         {
             return base.ReadAsync_AddsModelValidationErrorsToModelState();
         }
 
-        [Fact]
-        [Flaky("https://github.com/aspnet/AspNetCore/issues/8474")]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/8474")]
         public override Task ReadAsync_InvalidArray_AddsOverflowErrorsToModelState()
         {
             return base.ReadAsync_InvalidArray_AddsOverflowErrorsToModelState();
         }
 
-        [Fact]
-        [Flaky("https://github.com/aspnet/AspNetCore/issues/8474")]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/8474")]
         public override Task ReadAsync_InvalidComplexArray_AddsOverflowErrorsToModelState()
         {
             return base.ReadAsync_InvalidComplexArray_AddsOverflowErrorsToModelState();
         }
 
-        [Fact]
-        [Flaky("https://github.com/aspnet/AspNetCore/issues/8474")]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/8474")]
         public override Task ReadAsync_UsesTryAddModelValidationErrorsToModelState()
         {
             return base.ReadAsync_UsesTryAddModelValidationErrorsToModelState();
         }
-        
-        [Fact]
-        [Flaky("https://github.com/dotnet/corefx/issues/36026")]
+
+        [Fact(Skip = "https://github.com/dotnet/corefx/issues/36026")]
         public override Task ReadAsync_ReadsValidArray_AsCollectionOfT()
         {
             return base.ReadAsync_ReadsValidArray_AsCollectionOfT();
         }
 
-        [Fact]
-        [Flaky("https://github.com/dotnet/corefx/issues/36026")]
+        [Fact(Skip = "https://github.com/dotnet/corefx/issues/36026")]
         public override Task ReadAsync_ReadsValidArray_AsEnumerableOfT()
         {
             return base.ReadAsync_ReadsValidArray_AsEnumerableOfT();
         }
 
-        [Fact]
-        [Flaky("https://github.com/dotnet/corefx/issues/36026")]
+        [Fact(Skip = "https://github.com/dotnet/corefx/issues/36026")]
         public override Task ReadAsync_ReadsValidArray_AsIListOfT()
         {
             return base.ReadAsync_ReadsValidArray_AsIListOfT();

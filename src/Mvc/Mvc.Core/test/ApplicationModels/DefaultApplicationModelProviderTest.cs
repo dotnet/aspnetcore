@@ -1004,8 +1004,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             Assert.Empty(action.Attributes);
         }
 
-        [Theory]
-        [Flaky("https://github.com/aspnet/AspNetCore/issues/4417")]
+        [Theory(Skip = "https://github.com/aspnet/AspNetCore/issues/4417")]
         [InlineData(typeof(SingleRouteAttributeController))]
         [InlineData(typeof(MultipleRouteAttributeController))]
         public void CreateActionModel_RouteOnController_CreatesOneActionInfoPerRouteTemplateOnAction(Type controller)
