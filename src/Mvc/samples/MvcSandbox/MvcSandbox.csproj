@@ -3,9 +3,6 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
-
-     <!-- Treat _ViewImports.cshtml in the components directory as component files until we add support for imports.razor -->
-    <_RazorComponentInclude>Components\**\_ViewImports.cshtml</_RazorComponentInclude>
   </PropertyGroup>
 
   <ItemGroup>
