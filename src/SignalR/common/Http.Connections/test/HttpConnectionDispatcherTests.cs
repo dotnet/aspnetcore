@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Connections.Internal;
 using Microsoft.AspNetCore.Http.Connections.Internal.Transports;
+using Microsoft.AspNetCore.Http.Endpoints;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.SignalR.Tests;
@@ -588,11 +589,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             }
         }
 
-        private class CustomEndpointFeature : IEndpointFeature
-        {
-            public Endpoint Endpoint { get; set; }
-        }
-
         [Fact]
         public async Task HttpContextFeatureForLongpollingWorksBetweenPolls()
         {
@@ -632,9 +628,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     context.Connection.LocalPort = 4563;
                     context.Connection.RemoteIpAddress = IPAddress.IPv6Any;
                     context.Connection.RemotePort = 43456;
-                    IEndpointFeature endpointFeature = new CustomEndpointFeature();
-                    endpointFeature.Endpoint = new Endpoint(null, null, "TestName");
-                    context.Features.Set<IEndpointFeature>(endpointFeature);
+                    context.SetEndpoint(new Endpoint(null, null, "TestName"));
 
                     var builder = new ConnectionBuilder(services.BuildServiceProvider());
                     builder.UseConnectionHandler<HttpContextConnectionHandler>();
@@ -687,7 +681,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     Assert.Equal(Stream.Null, connectionHttpContext.Response.Body);
                     Assert.NotNull(connectionHttpContext.Response.Headers);
                     Assert.Equal("application/xml", connectionHttpContext.Response.ContentType);
-                    endpointFeature = connectionHttpContext.Features.Get<IEndpointFeature>();
+                    var endpointFeature = connectionHttpContext.Features.Get<IEndpointFeature>();
                     Assert.NotNull(endpointFeature);
                     Assert.Equal("TestName", endpointFeature.Endpoint.DisplayName);
                 }

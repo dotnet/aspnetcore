@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections.Internal.Transports;
+using Microsoft.AspNetCore.Http.Endpoints;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.Logging;
@@ -589,24 +590,19 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             // The response is a dud, you can't do anything with it anyways
             var responseFeature = new HttpResponseFeature();
 
-            var endpointFeature = context.Features.Get<IEndpointFeature>();
-
-            if (endpointFeature != null)
-            {
-                endpointFeature = new CopiedEndpointFeature(endpointFeature.Endpoint);
-            }
-
             var features = new FeatureCollection();
             features.Set<IHttpRequestFeature>(requestFeature);
             features.Set<IHttpResponseFeature>(responseFeature);
             features.Set<IHttpConnectionFeature>(connectionFeature);
-            features.Set<IEndpointFeature>(endpointFeature);
 
             // REVIEW: We could strategically look at adding other features but it might be better
             // if we expose a callback that would allow the user to preserve HttpContext properties.
 
             var newHttpContext = new DefaultHttpContext(features);
             newHttpContext.TraceIdentifier = context.TraceIdentifier;
+
+            var endpointFeature = context.Features.Get<IEndpointFeature>();
+            newHttpContext.SetEndpoint(endpointFeature?.Endpoint);
 
             CloneUser(newHttpContext, context);
 
@@ -679,19 +675,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         {
             public static EmptyServiceProvider Instance { get; } = new EmptyServiceProvider();
             public object GetService(Type serviceType) => null;
-        }
-
-        private class CopiedEndpointFeature : IEndpointFeature
-        {
-            public CopiedEndpointFeature(Endpoint endpoint)
-            {
-                _endpoint = endpoint;
-            }
-
-            private Endpoint _endpoint;
-
-            // REVIEW: Do we care if the user modifies the Endpoint?
-            public Endpoint Endpoint { get => _endpoint; set => throw new InvalidOperationException("The Endpoint is no longer modifiable."); }
         }
     }
 }
