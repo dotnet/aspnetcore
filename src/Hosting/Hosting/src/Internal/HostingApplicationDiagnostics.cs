@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         private const string RequestIdHeaderName = "Request-Id";
         private const string CorrelationContextHeaderName = "Correlation-Context";
         private const string TraceParentHeaderName = "traceparent";
+        private const string TraceStateHeaderName = "tracestate";
 
         private readonly DiagnosticListener _diagnosticListener;
         private readonly ILogger _logger;
@@ -248,6 +249,8 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             if (!StringValues.IsNullOrEmpty(requestId))
             {
                 activity.SetParentId(requestId);
+                if (httpContext.Request.Headers.TryGetValue(TraceStateHeaderName, out var traceState))
+                    activity.TraceStateString = traceState;
 
                 // We expect baggage to be empty by default
                 // Only very advanced users will be using it in near future, we encourage them to keep baggage small (few items)
