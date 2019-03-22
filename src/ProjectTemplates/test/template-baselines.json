@@ -383,6 +383,20 @@
       "AuthOption": "None"
     }
   },
+  "worker": {
+    "None": {
+      "Template": "worker",
+      "Arguments": "new worker",
+      "Files": [
+        "appsettings.Development.json",
+        "appsettings.json",
+        "Program.cs",
+        "Worker.cs",
+        "Properties/launchSettings.json"
+      ],
+      "AuthOption": "None"
+    }
+  },
   "webapi": {
     "IndividualB2C": {
       "Template": "webapi",
