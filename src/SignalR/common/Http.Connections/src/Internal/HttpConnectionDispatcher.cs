@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections.Internal.Transports;
+using Microsoft.AspNetCore.Http.Endpoints;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.Logging;
@@ -567,7 +568,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             requestFeature.PathBase = existingRequestFeature.PathBase;
             requestFeature.QueryString = existingRequestFeature.QueryString;
             requestFeature.RawTarget = existingRequestFeature.RawTarget;
-            var requestHeaders = new Dictionary<string, StringValues>(existingRequestFeature.Headers.Count, StringComparer.Ordinal);
+            var requestHeaders = new Dictionary<string, StringValues>(existingRequestFeature.Headers.Count, StringComparer.OrdinalIgnoreCase);
             foreach (var header in existingRequestFeature.Headers)
             {
                 requestHeaders[header.Key] = header.Value;
@@ -599,6 +600,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
 
             var newHttpContext = new DefaultHttpContext(features);
             newHttpContext.TraceIdentifier = context.TraceIdentifier;
+
+            var endpointFeature = context.Features.Get<IEndpointFeature>();
+            newHttpContext.SetEndpoint(endpointFeature?.Endpoint);
 
             CloneUser(newHttpContext, context);
 
