@@ -40,6 +40,6 @@
 
     <!-- Special-case the JwtBearer package because assembly no longer ships in Microsoft.AspNetCore.App. -->
     <!-- Cannot use <Reference> because it's unsupported when building an isolated project. -->
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="$(BenchmarksAspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
   </ItemGroup>
 </Project>
