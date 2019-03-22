@@ -38,11 +38,11 @@
       <_PublishFiles Include="$(MSBuildThisFileDirectory)..\..\samples\StaticFilesAuth\bin\$(Configuration)\netcoreapp3.0\StaticFilesAuth.deps.json" />
       <_claimsWwwrootFiles Include="$(MSBuildThisFileDirectory)..\..\samples\ClaimsTransformation\wwwroot\**\*.*" />
       <_cookiesWwwrootFiles Include="$(MSBuildThisFileDirectory)..\..\samples\Cookies\wwwroot\**\*.*" />
-      <_policyWwwrootFiles Include="$(MSBuildThisFileDirectory)..\..\samples\CustomPolicyProvider\wwwroot\**\*.*" />
-      <_schemesWwwrootFiles Include="$(MSBuildThisFileDirectory)..\..\samples\DynamicSchemes\wwwroot\**\*.*" />
+      <_customProviderFiles Include="$(MSBuildThisFileDirectory)..\..\samples\CustomPolicyProvider\**\*.*" />
+      <_schemesFiles Include="$(MSBuildThisFileDirectory)..\..\samples\DynamicSchemes\wwwroot\**\*.*" />
       <_identityWwwrootFiles Include="$(MSBuildThisFileDirectory)..\..\samples\Identity.ExternalClaims\wwwroot\**\*.*" />
       <_pathWwwrootFiles Include="$(MSBuildThisFileDirectory)..\..\samples\PathSchemeSelection\wwwroot\**\*.*" />
-      <_staticWwwrootFiles Include="$(MSBuildThisFileDirectory)..\..\samples\StaticFilesAuth\wwwroot\**\*.*" />
+      <_staticFiles Include="$(MSBuildThisFileDirectory)..\..\samples\StaticFilesAuth\**\*.*" />
     </ItemGroup>
     <Copy
       SourceFiles="@(_PublishFiles)"
@@ -63,8 +63,8 @@
       SourceFiles="@(_cookiesWwwrootFiles)"
       DestinationFolder="$(PublishDir)\Cookies\wwwroot" />
     <Copy
-      SourceFiles="@(_policyWwwrootFiles)"
-      DestinationFolder="$(PublishDir)\CustomPolicyProvider\wwwroot" />
+      SourceFiles="@(_customProviderFiles)"
+      DestinationFolder="$(PublishDir)\CustomPolicyProvider" />
     <Copy
       SourceFiles="@(_schemesWwwrootFiles)"
       DestinationFolder="$(PublishDir)\DynamicSchemes\wwwroot" />
@@ -75,8 +75,8 @@
       SourceFiles="@(_schemesWwwrootFiles)"
       DestinationFolder="$(PublishDir)\PathSchemeSelection\wwwroot" />
     <Copy
-      SourceFiles="@(_staticWwwrootFiles)"
-      DestinationFolder="$(PublishDir)\StaticFilesAuth\wwwroot" />
+      SourceFiles="@(_staticFiles)"
+      DestinationFolder="$(PublishDir)\StaticFilesAuth" />
     <!-- Drop a dummy sln to specify content root location -->
     <WriteLinesToFile
         File="$(PublishDir)\contentroot.sln"
