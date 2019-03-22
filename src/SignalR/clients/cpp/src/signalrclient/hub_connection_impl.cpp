@@ -109,7 +109,7 @@ namespace signalr
         m_handshakeTask = pplx::task_completion_event<void>();
         m_handshakeReceived = false;
         std::weak_ptr<hub_connection_impl> weak_connection = shared_from_this();
-        return m_connection->start([weak_connection, callback](std::exception_ptr start_exception)
+        m_connection->start([weak_connection, callback](std::exception_ptr start_exception)
             {
                 auto connection = weak_connection.lock();
                 if (!connection)

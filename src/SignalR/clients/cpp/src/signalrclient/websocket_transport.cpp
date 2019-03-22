@@ -148,12 +148,10 @@ namespace signalr
         _ASSERTE(uri.scheme() == _XPLATSTR("ws") || uri.scheme() == _XPLATSTR("wss"));
 
         {
-            std::unique_lock<std::mutex> stop_lock(m_start_stop_lock);
+            std::lock_guard<std::mutex> stop_lock(m_start_stop_lock);
 
             if (!m_receive_loop_cts.get_token().is_canceled())
             {
-                // just in case the user tries to start again in the callback on error
-                stop_lock.unlock();
                 callback(std::make_exception_ptr(signalr_exception("transport already connected")));
                 return;
             }
