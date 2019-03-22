@@ -13,6 +13,7 @@ using TriageBuildFailures.GitHub;
 using TriageBuildFailures.Handlers;
 using TriageBuildFailures.TeamCity;
 using TriageBuildFailures.VSTS;
+using TriageBuildFailures.VSTS.Models;
 
 namespace TriageBuildFailures.Commands
 {
@@ -31,11 +32,12 @@ namespace TriageBuildFailures.Commands
             _config = config;
             _reporter = reporter;
 
-            var vstsClient = GetVSTSClient(_config);
+            var vstsBuildClient = GetVSTSBuildClient(_config);
             _ghClient = GetGitHubClient(_config);
-            _ciClients[typeof(PullRequestClient)] = GetPullRequestClient(_ghClient, vstsClient);
+            _ciClients[typeof(VSTSReleaseClient)] = GetVSTSReleaseClient(config, _ghClient);
+            _ciClients[typeof(PullRequestClient)] = GetPullRequestClient(_ghClient, vstsBuildClient);
             _ciClients[typeof(TeamCityClientWrapper)] = GetTeamCityClient(_config);
-            _ciClients[typeof(VSTSClient)] = vstsClient;
+            _ciClients[typeof(VSTSBuildClient)] = vstsBuildClient;
             _emailClient = GetEmailClient(_config);
         }
 
@@ -144,7 +146,12 @@ namespace TriageBuildFailures.Commands
 
         private bool IsWatchedBuild(ICIBuild build)
         {
-            if (_watchedBranches.Any(b => build.Branch.StartsWith(b, StringComparison.OrdinalIgnoreCase)) || build.Branch.StartsWith("refs/pull", StringComparison.OrdinalIgnoreCase))
+            // Always watch releases
+            if (build is VSTSRelease)
+            {
+                return true;
+            }
+            else if (_watchedBranches.Any(b => build.Branch.StartsWith(b, StringComparison.OrdinalIgnoreCase)) || build.Branch.StartsWith("refs/pull", StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
@@ -164,7 +171,7 @@ namespace TriageBuildFailures.Commands
             return new GitHubClientWrapper(config.GitHub, _reporter);
         }
 
-        private PullRequestClient GetPullRequestClient(GitHubClientWrapper gitHubClient, VSTSClient vstsClient)
+        private PullRequestClient GetPullRequestClient(GitHubClientWrapper gitHubClient, VSTSBuildClient vstsClient)
         {
             return new PullRequestClient(gitHubClient, vstsClient);
         }
@@ -179,9 +186,14 @@ namespace TriageBuildFailures.Commands
             return new TeamCityClientWrapper(config.TeamCity, _reporter);
         }
 
-        private VSTSClient GetVSTSClient(Config config)
+        private VSTSBuildClient GetVSTSBuildClient(Config config)
         {
-            return new VSTSClient(config.VSTS, _reporter);
+            return new VSTSBuildClient(config.VSTS, _reporter);
+        }
+
+        private VSTSReleaseClient GetVSTSReleaseClient(Config config, GitHubClientWrapper gitHubClient)
+        {
+            return new VSTSReleaseClient(config.VSTS, gitHubClient, _reporter);
         }
     }
 }
