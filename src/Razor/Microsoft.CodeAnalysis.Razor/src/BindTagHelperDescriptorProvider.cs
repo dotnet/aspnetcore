@@ -445,6 +445,11 @@ namespace Microsoft.CodeAnalysis.Razor
                         attribute.SetPropertyName(valueAttribute.GetPropertyName());
                     });
 
+                    if (tagHelper.IsComponentFullyQualifiedNameMatch())
+                    {
+                        builder.Metadata[ComponentMetadata.Component.NameMatchKey] = ComponentMetadata.Component.FullyQualifiedNameMatch;
+                    }
+
                     results.Add(builder.Build());
                 }
             }

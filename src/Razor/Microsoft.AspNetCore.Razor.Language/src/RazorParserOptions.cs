@@ -14,17 +14,23 @@ namespace Microsoft.AspNetCore.Razor.Language
                 Array.Empty<DirectiveDescriptor>(),
                 designTime: false,
                 parseLeadingDirectives: false,
-                version: RazorLanguageVersion.Latest);
+                version: RazorLanguageVersion.Latest,
+                fileKind: null);
         }
 
         public static RazorParserOptions Create(Action<RazorParserOptionsBuilder> configure)
+        {
+            return Create(configure, fileKind: null);
+        }
+
+        public static RazorParserOptions Create(Action<RazorParserOptionsBuilder> configure, string fileKind)
         {
             if (configure == null)
             {
                 throw new ArgumentNullException(nameof(configure));
             }
 
-            var builder = new DefaultRazorParserOptionsBuilder(designTime: false, version: RazorLanguageVersion.Latest);
+            var builder = new DefaultRazorParserOptionsBuilder(designTime: false, version: RazorLanguageVersion.Latest, fileKind);
             configure(builder);
             var options = builder.Build();
 
@@ -33,12 +39,17 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public static RazorParserOptions CreateDesignTime(Action<RazorParserOptionsBuilder> configure)
         {
+            return CreateDesignTime(configure, fileKind: null);
+        }
+
+        public static RazorParserOptions CreateDesignTime(Action<RazorParserOptionsBuilder> configure, string fileKind)
+        {
             if (configure == null)
             {
                 throw new ArgumentNullException(nameof(configure));
             }
 
-            var builder = new DefaultRazorParserOptionsBuilder(designTime: true, version: RazorLanguageVersion.Latest);
+            var builder = new DefaultRazorParserOptionsBuilder(designTime: true, version: RazorLanguageVersion.Latest, fileKind);
             configure(builder);
             var options = builder.Build();
 
@@ -60,6 +71,8 @@ namespace Microsoft.AspNetCore.Razor.Language
         public abstract bool ParseLeadingDirectives { get; }
 
         public virtual RazorLanguageVersion Version { get; } = RazorLanguageVersion.Latest;
+
+        internal virtual string FileKind { get; }
 
         internal virtual RazorParserFeatureFlags FeatureFlags { get; }
     }

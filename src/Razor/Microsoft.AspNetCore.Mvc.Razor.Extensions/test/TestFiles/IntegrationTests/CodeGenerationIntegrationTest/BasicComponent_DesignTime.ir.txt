@@ -8,7 +8,6 @@ Document -
         UsingDirective - (102:4,1 [37] ) - Microsoft.AspNetCore.Components
         ClassDeclaration -  - public - AspNetCore_d3c3d6059615673cb46fc4974164d61eabadb890 - Microsoft.AspNetCore.Components.ComponentBase - IDisposable
             DesignTimeDirective - 
-                DirectiveToken - (14:0,14 [36] ) - "*, Microsoft.AspNetCore.Components"
                 DirectiveToken - (12:0,12 [11] BasicComponent.cshtml) - IDisposable
             CSharpCode - 
                 IntermediateToken -  - CSharp - #pragma warning disable 0414

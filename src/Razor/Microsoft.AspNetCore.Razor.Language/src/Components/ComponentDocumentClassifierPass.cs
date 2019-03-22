@@ -14,8 +14,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
     {
         public static readonly string ComponentDocumentKind = "component.1.0";
         private static readonly object BuildRenderTreeBaseCallAnnotation = new object();
-        private static readonly char[] PathSeparators = new char[] { '/', '\\' };
-        private static readonly char[] NamespaceSeparators = new char[] { '.' };
 
         /// <summary>
         /// The fallback value of the root namespace. Only used if the fallback root namespace
@@ -57,13 +55,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             ClassDeclarationIntermediateNode @class,
             MethodDeclarationIntermediateNode method)
         {
-            var options = codeDocument.GetDocumentIntermediateNode().Options;
-            if (!TryComputeNamespaceAndClass(
-                options,
-                codeDocument.Source.FilePath,
-                codeDocument.Source.RelativePath,
-                out var computedNamespace,
-                out var computedClass))
+            if (!codeDocument.TryComputeNamespaceAndClass(out var computedNamespace, out var computedClass))
             {
                 // If we can't compute a nice namespace (no relative path) then just generate something
                 // mangled.
@@ -74,7 +66,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
             if (MangleClassNames)
             {
-                computedClass = "__" + computedClass;
+                computedClass = ComponentMetadata.MangleClassName(computedClass);
             }
 
             @namespace.Content = computedNamespace;
@@ -119,59 +111,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 Content = $"base.{ComponentsApi.ComponentBase.BuildRenderTree}(builder);"
             });
             method.Children.Insert(0, callBase);
-        }
-
-        // In general documents will have a relative path (relative to the project root).
-        // We can only really compute a nice class/namespace when we know a relative path.
-        //
-        // However all kinds of thing are possible in tools. We shouldn't barf here if the document isn't 
-        // set up correctly.
-        private bool TryComputeNamespaceAndClass(
-            RazorCodeGenerationOptions options, 
-            string filePath, 
-            string relativePath, 
-            out string @namespace, 
-            out string @class)
-        {
-            if (filePath == null || relativePath == null || filePath.Length <= relativePath.Length)
-            {
-                @namespace = null;
-                @class = null;
-                return false;
-            }
-
-            var rootNamespace = options.RootNamespace;
-            if (string.IsNullOrEmpty(rootNamespace))
-            {
-                @namespace = null;
-                @class = null;
-                return false;
-            }
-
-            var builder = new StringBuilder();
-
-            // Sanitize the base namespace, but leave the dots.
-            var segments = rootNamespace.Split(NamespaceSeparators, StringSplitOptions.RemoveEmptyEntries);
-            builder.Append(CSharpIdentifier.SanitizeIdentifier(segments[0]));
-            for (var i = 1; i < segments.Length; i++)
-            {
-                builder.Append('.');
-                builder.Append(CSharpIdentifier.SanitizeIdentifier(segments[i]));
-            }
-
-            segments = relativePath.Split(PathSeparators, StringSplitOptions.RemoveEmptyEntries);
-
-            // Skip the last segment because it's the FileName.
-            for (var i = 0; i < segments.Length - 1; i++)
-            {
-                builder.Append('.');
-                builder.Append(CSharpIdentifier.SanitizeIdentifier(segments[i]));
-            }
-
-            @namespace = builder.ToString();
-            @class = CSharpIdentifier.SanitizeIdentifier(Path.GetFileNameWithoutExtension(relativePath));
-
-            return true;
         }
 
         internal static bool IsBuildRenderTreeBaseCall(CSharpCodeIntermediateNode node)

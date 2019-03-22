@@ -457,6 +457,30 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 context.CodeWriter.Write(");");
                 context.CodeWriter.WriteLine();
             }
+
+            // We want to generate something that references the Component type to avoid
+            // the "usings directive is unnecessary" message.
+            // Looks like:
+            // __o = typeof(SomeNamespace.SomeComponent);
+            using (context.CodeWriter.BuildLinePragma(node.Source.Value))
+            {
+                context.CodeWriter.Write(DesignTimeVariable);
+                context.CodeWriter.Write(" = ");
+                context.CodeWriter.Write("typeof(");
+                context.CodeWriter.Write(node.TagName);
+                if (node.Component.IsGenericTypedComponent())
+                {
+                    context.CodeWriter.Write("<");
+                    var typeArgumentCount = node.Component.GetTypeParameters().Count();
+                    for (var i = 1; i < typeArgumentCount; i++)
+                    {
+                        context.CodeWriter.Write(",");
+                    }
+                    context.CodeWriter.Write(">");
+                }
+                context.CodeWriter.Write(");");
+                context.CodeWriter.WriteLine();
+            }
         }
 
         public override void WriteComponentAttribute(CodeRenderingContext context, ComponentAttributeIntermediateNode node)

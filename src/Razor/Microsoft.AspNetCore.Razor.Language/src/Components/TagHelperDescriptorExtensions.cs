@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Razor.Language;
 
 namespace Microsoft.AspNetCore.Razor.Language.Components
 {
@@ -150,6 +149,22 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             return
                 tagHelper.Metadata.TryGetValue(ComponentMetadata.SpecialKindKey, out var kind) &&
                 string.Equals(ComponentMetadata.Ref.TagHelperKind, kind);
+        }
+
+        /// <summary>
+        /// Gets whether the component matches a tag with a fully qualified name.
+        /// </summary>
+        /// <param name="tagHelper">The <see cref="TagHelperDescriptor"/>.</param>
+        public static bool IsComponentFullyQualifiedNameMatch(this TagHelperDescriptor tagHelper)
+        {
+            if (tagHelper == null)
+            {
+                throw new ArgumentNullException(nameof(tagHelper));
+            }
+
+            return
+                tagHelper.Metadata.TryGetValue(ComponentMetadata.Component.NameMatchKey, out var matchType) &&
+                string.Equals(ComponentMetadata.Component.FullyQualifiedNameMatch, matchType);
         }
 
         public static string GetEventArgsType(this TagHelperDescriptor tagHelper)

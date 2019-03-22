@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Microsoft.CodeAnalysis.Razor
 {
-    public class RefTagHelperDescriptorProviderTest : BaseTagHelperDescriptorProviderTest
+    public class RefTagHelperDescriptorProviderTest : TagHelperDescriptorProviderTestBase
     {
         [Fact]
         public void Execute_CreatesDescriptor()

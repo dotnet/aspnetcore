@@ -2066,11 +2066,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 var directiveBuilder = pooledResult.Builder;
                 Assert(CSharpKeyword.Using);
                 AcceptAndMoveNext();
+                var isStatic = false;
+                var nonNamespaceTokenCount = TokenBuilder.Count;
                 AcceptWhile(IsSpacingToken(includeNewLines: false, includeComments: true));
                 var start = CurrentStart;
                 if (At(SyntaxKind.Identifier))
                 {
                     // non-static using
+                    nonNamespaceTokenCount = TokenBuilder.Count;
                     TryParseNamespaceOrTypeName(directiveBuilder);
                     var whitespace = ReadWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
                     if (At(SyntaxKind.Assign))
@@ -2094,15 +2097,24 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 else if (At(CSharpKeyword.Static))
                 {
                     // static using
+                    isStatic = true;
                     AcceptAndMoveNext();
                     AcceptWhile(IsSpacingToken(includeNewLines: false, includeComments: true));
+                    nonNamespaceTokenCount = TokenBuilder.Count;
                     TryParseNamespaceOrTypeName(directiveBuilder);
                 }
 
+                var usingStatementTokens = TokenBuilder.ToList().Nodes;
+                var usingContentTokens = usingStatementTokens.Skip(1);
+                var parsedNamespaceTokens = usingStatementTokens
+                    .Skip(nonNamespaceTokenCount)
+                    .Where(s => s.Kind != SyntaxKind.CSharpComment && s.Kind != SyntaxKind.Whitespace && s.Kind != SyntaxKind.NewLine);
+
                 SpanContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.AnyExceptNewline;
-                SpanContext.ChunkGenerator = new AddImportChunkGenerator(new LocationTagged<string>(
-                    string.Concat(TokenBuilder.ToList().Nodes.Skip(1).Select(s => s.Content)),
-                    start));
+                SpanContext.ChunkGenerator = new AddImportChunkGenerator(
+                    string.Concat(usingContentTokens.Select(s => s.Content)),
+                    string.Concat(parsedNamespaceTokens.Select(s => s.Content)),
+                    isStatic);
 
                 // Optional ";"
                 if (EnsureCurrent())

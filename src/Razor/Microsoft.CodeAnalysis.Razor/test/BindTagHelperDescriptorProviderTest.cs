@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Microsoft.CodeAnalysis.Razor
 {
-    public class BindTagHelperDescriptorProviderTest : BaseTagHelperDescriptorProviderTest
+    public class BindTagHelperDescriptorProviderTest : TagHelperDescriptorProviderTestBase
     {
         [Fact]
         public void Execute_FindsBindTagHelperOnComponentType_Delegate_CreatesDescriptor()
@@ -55,6 +55,7 @@ namespace Test
 
             // Assert
             var matches = GetBindTagHelpers(context);
+            matches = AssertAndExcludeFullyQualifiedNameMatchComponents(matches, expectedCount: 1);
             var bind = Assert.Single(matches);
 
             // These are features Bind Tags Helpers don't use. Verifying them once here and
@@ -170,6 +171,7 @@ namespace Test
 
             // Assert
             var matches = GetBindTagHelpers(context);
+            matches = AssertAndExcludeFullyQualifiedNameMatchComponents(matches, expectedCount: 1);
             var bind = Assert.Single(matches);
 
             // These are features Bind Tags Helpers don't use. Verifying them once here and
@@ -283,6 +285,7 @@ namespace Test
 
             // Assert
             var matches = GetBindTagHelpers(context);
+            matches = AssertAndExcludeFullyQualifiedNameMatchComponents(matches, expectedCount: 0);
             Assert.Empty(matches);
         }
 
@@ -314,6 +317,7 @@ namespace Test
 
             // Assert
             var matches = GetBindTagHelpers(context);
+            matches = AssertAndExcludeFullyQualifiedNameMatchComponents(matches, expectedCount: 0);
             var bind = Assert.Single(matches);
 
             // These are features Bind Tags Helpers don't use. Verifying them once here and
@@ -448,6 +452,7 @@ namespace Test
 
             // Assert
             var matches = GetBindTagHelpers(context);
+            matches = AssertAndExcludeFullyQualifiedNameMatchComponents(matches, expectedCount: 0);
             var bind = Assert.Single(matches);
 
             Assert.Equal("myprop", bind.Metadata[ComponentMetadata.Bind.ValueAttribute]);
@@ -502,6 +507,7 @@ namespace Test
 
             // Assert
             var matches = GetBindTagHelpers(context);
+            matches = AssertAndExcludeFullyQualifiedNameMatchComponents(matches, expectedCount: 0);
             var bind = Assert.Single(matches);
 
             Assert.Equal("myprop", bind.Metadata[ComponentMetadata.Bind.ValueAttribute]);
@@ -557,6 +563,7 @@ namespace Test
 
             // Assert
             var matches = GetBindTagHelpers(context);
+            matches = AssertAndExcludeFullyQualifiedNameMatchComponents(matches, expectedCount: 0);
             var bind = Assert.Single(matches);
 
             Assert.Equal("myprop", bind.Metadata[ComponentMetadata.Bind.ValueAttribute]);
@@ -624,6 +631,7 @@ namespace Test
 
             // Assert
             var matches = GetBindTagHelpers(context);
+            matches = AssertAndExcludeFullyQualifiedNameMatchComponents(matches, expectedCount: 0);
             var bind = Assert.Single(matches);
 
             Assert.Equal("myprop", bind.Metadata[ComponentMetadata.Bind.ValueAttribute]);

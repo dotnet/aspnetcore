@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Microsoft.CodeAnalysis.Razor
 {
-    public class EventHandlerTagHelperDescriptorProviderTest : BaseTagHelperDescriptorProviderTest
+    public class EventHandlerTagHelperDescriptorProviderTest : TagHelperDescriptorProviderTestBase
     {
         [Fact]
         public void Execute_EventHandler_CreatesDescriptor()

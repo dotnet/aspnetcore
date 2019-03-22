@@ -7,12 +7,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     internal class AddImportChunkGenerator : SpanChunkGenerator
     {
-        public AddImportChunkGenerator(string ns)
+        public AddImportChunkGenerator(string usingContent, string parsedNamespace, bool isStatic)
         {
-            Namespace = ns;
+            Namespace = usingContent;
+            ParsedNamespace = parsedNamespace;
+            IsStatic = isStatic;
         }
 
         public string Namespace { get; }
+
+        public string ParsedNamespace { get; }
+
+        public bool IsStatic { get; }
 
         public override string ToString()
         {

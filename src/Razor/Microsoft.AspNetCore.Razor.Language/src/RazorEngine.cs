@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         private static void AddDefaultRuntimeFeatures(RazorConfiguration configuration, ICollection<IRazorEngineFeature> features)
         {
             // Configure options
-            features.Add(new DefaultRazorParserOptionsFeature(designTime: false, version: configuration.LanguageVersion));
+            features.Add(new DefaultRazorParserOptionsFeature(designTime: false, version: configuration.LanguageVersion, fileKind: null));
             features.Add(new DefaultRazorCodeGenerationOptionsFeature(designTime: false));
 
             // Intermediate Node Passes
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         private static void AddDefaultDesignTimeFeatures(RazorConfiguration configuration, ICollection<IRazorEngineFeature> features)
         {
             // Configure options
-            features.Add(new DefaultRazorParserOptionsFeature(designTime: true, version: configuration.LanguageVersion));
+            features.Add(new DefaultRazorParserOptionsFeature(designTime: true, version: configuration.LanguageVersion, fileKind: null));
             features.Add(new DefaultRazorCodeGenerationOptionsFeature(designTime: true));
             features.Add(new SuppressChecksumOptionsFeature());
 

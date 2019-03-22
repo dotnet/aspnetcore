@@ -1,18 +1,18 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.CodeAnalysis;
+using Microsoft.AspNetCore.Razor.Language.Components;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.Extensions.DependencyModel;
+using Xunit;
 
 namespace Microsoft.CodeAnalysis.Razor
 {
-    public abstract class BaseTagHelperDescriptorProviderTest
+    public abstract class TagHelperDescriptorProviderTestBase
     {
-        static BaseTagHelperDescriptorProviderTest()
+        static TagHelperDescriptorProviderTestBase()
         {
             BaseCompilation = TestCompilation.Create(typeof(ComponentTagHelperDescriptorProviderTest).Assembly);
             CSharpParseOptions = new CSharpParseOptions(LanguageVersion.CSharp7_3);
@@ -39,5 +39,28 @@ namespace Microsoft.CodeAnalysis.Razor
                 .ToArray();
         }
 
+        protected static TagHelperDescriptor[] AssertAndExcludeFullyQualifiedNameMatchComponents(
+            TagHelperDescriptor[] components,
+            int expectedCount)
+        {
+            var componentLookup = new Dictionary<string, List<TagHelperDescriptor>>();
+            var fullyQualifiedNameMatchComponents = components.Where(c => c.IsComponentFullyQualifiedNameMatch()).ToArray();
+            Assert.Equal(expectedCount, fullyQualifiedNameMatchComponents.Length);
+
+            var shortNameMatchComponents = components.Where(c => !c.IsComponentFullyQualifiedNameMatch()).ToArray();
+
+            // For every fully qualified name component, we want to make sure we have a corresponding short name component.
+            foreach (var fullNameComponent in fullyQualifiedNameMatchComponents)
+            {
+                Assert.Contains(shortNameMatchComponents, component =>
+                {
+                    return component.Name == fullNameComponent.Name &&
+                        component.Kind == fullNameComponent.Kind &&
+                        component.BoundAttributes.SequenceEqual(fullNameComponent.BoundAttributes, BoundAttributeDescriptorComparer.Default);
+                });
+            }
+
+            return shortNameMatchComponents;
+        }
     }
 }

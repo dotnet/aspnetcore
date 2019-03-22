@@ -63,13 +63,20 @@ namespace Microsoft.CodeAnalysis.Razor
             for (var i = 0; i < types.Count; i++)
             {
                 var type = types[i];
-                var descriptor = CreateDescriptor(symbols, type);
-                context.Results.Add(descriptor);
 
-                foreach (var childContent in descriptor.GetChildContentProperties())
+                // Components have very simple matching rules.
+                // 1. The type name (short) matches the tag name.
+                // 2. The fully qualified name matches the tag name.
+                var shortNameMatchingDescriptor = CreateShortNameMatchingDescriptor(symbols, type);
+                context.Results.Add(shortNameMatchingDescriptor);
+                var fullyQualifiedNameMatchingDescriptor = CreateFullyQualifiedNameMatchingDescriptor(symbols, type);
+                context.Results.Add(fullyQualifiedNameMatchingDescriptor);
+
+                foreach (var childContent in shortNameMatchingDescriptor.GetChildContentProperties())
                 {
                     // Synthesize a separate tag helper for each child content property that's declared.
-                    context.Results.Add(CreateChildContentDescriptor(symbols, descriptor, childContent));
+                    context.Results.Add(CreateChildContentDescriptor(symbols, shortNameMatchingDescriptor, childContent));
+                    context.Results.Add(CreateChildContentDescriptor(symbols, fullyQualifiedNameMatchingDescriptor, childContent));
                 }
             }
         }
@@ -81,7 +88,26 @@ namespace Microsoft.CodeAnalysis.Razor
             return compilation.WithOptions(newCompilationOptions);
         }
 
-        private TagHelperDescriptor CreateDescriptor(ComponentSymbols symbols, INamedTypeSymbol type)
+        private TagHelperDescriptor CreateShortNameMatchingDescriptor(ComponentSymbols symbols, INamedTypeSymbol type)
+        {
+            var builder = CreateDescriptorBuilder(symbols, type);
+            builder.TagMatchingRule(r => r.TagName = type.Name);
+
+            return builder.Build();
+        }
+
+        private TagHelperDescriptor CreateFullyQualifiedNameMatchingDescriptor(ComponentSymbols symbols, INamedTypeSymbol type)
+        {
+            var builder = CreateDescriptorBuilder(symbols, type);
+            var containingNamespace = type.ContainingNamespace.ToDisplayString();
+            var fullName = $"{containingNamespace}.{type.Name}";
+            builder.TagMatchingRule(r => r.TagName = fullName);
+            builder.Metadata[ComponentMetadata.Component.NameMatchKey] = ComponentMetadata.Component.FullyQualifiedNameMatch;
+
+            return builder.Build();
+        }
+
+        private TagHelperDescriptorBuilder CreateDescriptorBuilder(ComponentSymbols symbols, INamedTypeSymbol type)
         {
             var typeName = type.ToDisplayString(FullNameTypeDisplayFormat);
             var assemblyName = type.ContainingAssembly.Identity.Name;
@@ -113,9 +139,6 @@ namespace Microsoft.CodeAnalysis.Razor
                 builder.Documentation = xml;
             }
 
-            // Components have very simple matching rules. The type name (short) matches the tag name.
-            builder.TagMatchingRule(r => r.TagName = type.Name);
-
             foreach (var property in GetProperties(symbols, type))
             {
                 if (property.kind == PropertyKind.Ignored)
@@ -135,8 +158,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 CreateContextParameter(builder, childContentName: null);
             }
 
-            var descriptor = builder.Build();
-            return descriptor;
+            return builder;
         }
 
         private void CreateProperty(TagHelperDescriptorBuilder builder, IPropertySymbol property, PropertyKind kind)
@@ -268,6 +290,11 @@ namespace Microsoft.CodeAnalysis.Razor
                 // For child content attributes with a parameter, synthesize an attribute that allows you to name
                 // the parameter.
                 CreateContextParameter(builder, attribute.Name);
+            }
+
+            if (component.IsComponentFullyQualifiedNameMatch())
+            {
+                builder.Metadata[ComponentMetadata.Component.NameMatchKey] = ComponentMetadata.Component.FullyQualifiedNameMatch;
             }
 
             var descriptor = builder.Build();

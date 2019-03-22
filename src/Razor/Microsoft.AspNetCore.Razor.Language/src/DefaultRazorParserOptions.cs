@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     internal class DefaultRazorParserOptions : RazorParserOptions
     {
-        public DefaultRazorParserOptions(DirectiveDescriptor[] directives, bool designTime, bool parseLeadingDirectives, RazorLanguageVersion version)
+        public DefaultRazorParserOptions(DirectiveDescriptor[] directives, bool designTime, bool parseLeadingDirectives, RazorLanguageVersion version, string fileKind)
         {
             if (directives == null)
             {
@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             ParseLeadingDirectives = parseLeadingDirectives;
             Version = version;
             FeatureFlags = RazorParserFeatureFlags.Create(Version);
+            FileKind = fileKind;
         }
 
         public override bool DesignTime { get; }
@@ -29,6 +30,8 @@ namespace Microsoft.AspNetCore.Razor.Language
         public override bool ParseLeadingDirectives { get; }
 
         public override RazorLanguageVersion Version { get; }
+
+        internal override string FileKind { get; }
 
         internal override RazorParserFeatureFlags FeatureFlags { get; }
     }
