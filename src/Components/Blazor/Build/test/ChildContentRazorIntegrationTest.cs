@@ -97,7 +97,6 @@ namespace Test
             AdditionalSyntaxTrees.Add(RenderChildContentComponent);
 
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
 <RenderChildContent>
   <div></div>
 </RenderChildContent>");
@@ -120,7 +119,6 @@ namespace Test
             AdditionalSyntaxTrees.Add(RenderChildContentStringComponent);
 
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
 <RenderChildContentString Value=""HI"">
   <div>@context.ToLowerInvariant()</div>
 </RenderChildContentString>");
@@ -147,7 +145,6 @@ namespace Test
             AdditionalSyntaxTrees.Add(RenderChildContentComponent);
 
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
 <RenderChildContent>
   <ChildContent>
     <div></div>
@@ -172,7 +169,7 @@ namespace Test
             AdditionalSyntaxTrees.Add(RenderChildContentComponent);
 
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
+
 <RenderChildContent>
   <RenderChildContent>
     <div></div>
@@ -201,7 +198,6 @@ namespace Test
             AdditionalSyntaxTrees.Add(RenderChildContentComponent);
 
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
 @{ RenderFragment<string> template = (context) => @<div>@context.ToLowerInvariant()</div>; }
 <RenderChildContent ChildContent=""@template(""HI"")"" />");
 
@@ -224,7 +220,6 @@ namespace Test
             AdditionalSyntaxTrees.Add(RenderChildContentStringComponent);
 
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
 @{ RenderFragment<string> template = (context) => @<div>@context.ToLowerInvariant()</div>; }
 <RenderChildContentString ChildContent=""@template"" Value=""HI"" />");
 
@@ -248,7 +243,6 @@ namespace Test
             AdditionalSyntaxTrees.Add(RenderChildContentComponent);
 
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
 @{ RenderFragment template = @<div>@(""HI"".ToLowerInvariant())</div>; }
 <RenderChildContent ChildContent=""@template"" />");
 
@@ -271,7 +265,6 @@ namespace Test
             AdditionalSyntaxTrees.Add(RenderChildContentComponent);
 
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
 @{ RenderFragment<string> template = (context) => @<div>@context.ToLowerInvariant()</div>; }
 <RenderChildContent ChildContent=""@template(""HI"")""></RenderChildContent>");
 
@@ -294,7 +287,6 @@ namespace Test
             AdditionalSyntaxTrees.Add(RenderChildContentComponent);
 
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
 @{ RenderFragment<string> template = (context) => @<div>@context.ToLowerInvariant()</div>; }
 <RenderChildContent ChildContent=""@template(""HI"")"">
 
@@ -319,7 +311,6 @@ namespace Test
             AdditionalSyntaxTrees.Add(RenderMultipleChildContent);
 
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
 @{ RenderFragment<string> header = context => @<div>@context.ToLowerInvariant()</div>; }
 <RenderMultipleChildContent Name=""billg"" Header=@header Value=""HI"">
   <ChildContent>Some @context.ToLowerInvariant() Content</ChildContent>
@@ -353,7 +344,6 @@ namespace Test
             AdditionalSyntaxTrees.Add(RenderMultipleChildContent);
 
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
 <RenderMultipleChildContent Name=""billg"" Value=""HI"" Context=""item"">
   <Header><div>@item.ToLowerInvariant()</div></Header>
   <ChildContent Context=""Context"">Some @Context.ToLowerInvariant() Content</ChildContent>
@@ -388,7 +378,7 @@ namespace Test
             AdditionalSyntaxTrees.Add(RenderMultipleChildContent);
 
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
+
 <RenderMultipleChildContent Name=""billg"" Value=""HI"" Context=""item"">
   <Header><div>@item.ToLowerInvariant()</div></Header>
   <ChildContent Context=""item"">Some @item.ToLowerInvariant() Content</ChildContent>

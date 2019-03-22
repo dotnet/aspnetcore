@@ -36,7 +36,6 @@ namespace Test
 "));
 
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
 <MyComponent/>");
 
             // Act
@@ -72,7 +71,6 @@ namespace Test
 "));
 
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
 <MyComponent
     IntProperty=""123""
     BoolProperty=""true""
@@ -113,7 +111,6 @@ namespace Test
 "));
 
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
 <MyComponent  IntProperty=""123"" />");
 
             // Act
@@ -144,7 +141,6 @@ namespace Test
 "));
 
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
 <MyComponent StringProperty=""@(42.ToString())"" />");
 
             // Act
@@ -178,7 +174,6 @@ namespace Test
 "));
 
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
 <MyComponent some-attribute=""foo"" another-attribute=""@(42.ToString())"" />");
 
             // Act
@@ -219,7 +214,6 @@ namespace Test
 "));
 
             var component = CompileToComponent($@"
-@addTagHelper *, TestAssembly
 <MyComponent OnClick=""{expression}""/>
 
 @functions {{
@@ -265,7 +259,6 @@ namespace Test
 "));
 
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
 <MyComponent OnClick=""@Increment""/>
 
 @functions {
@@ -310,7 +303,6 @@ namespace Test
 }"));
 
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
 <MyComponent BoolProperty />");
 
             // Act
@@ -343,7 +335,6 @@ namespace Test
 "));
 
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
 <MyComponent MyAttr=""abc"">Some text<some-child a='1'>Nested text @(""Hello"")</some-child></MyComponent>");
 
             // Act
@@ -385,7 +376,6 @@ namespace Test
 "));
 
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
 <MyComponent><MyComponent>Some text</MyComponent></MyComponent>");
 
             // Act
@@ -432,7 +422,6 @@ namespace Test
 "));
 
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
 @page ""/""
 
 <SurveyPrompt Title=""<div>Test!</div>"" />
@@ -525,8 +514,6 @@ namespace Test
 "));
 
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
-
 <html>
   <head><meta><meta></head>
   <body>
@@ -601,7 +588,6 @@ namespace Test
 "));
 
             var component = CompileToComponent(@"
-@addTagHelper ""*, TestAssembly""
 @{ RenderFragment<string> template = (context) => @<div>@context.ToLower()</div>; }
 <Repeater Count=3 Value=""Hello, World!"" Template=""template"" />
 ");

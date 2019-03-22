@@ -95,7 +95,6 @@ namespace Test
             AdditionalSyntaxTrees.Add(GenericContextComponent);
 
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
 <GenericContext TItem=int Items=""@(new List<int>() { 1, 2, })"" />");
 
             // Act
@@ -122,7 +121,6 @@ namespace Test
             AdditionalSyntaxTrees.Add(GenericContextComponent);
 
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
 <GenericContext TItem=int Items=""@(new List<int>() { 1, 2, })"" ref=""_my"" />
 
 @functions {
@@ -155,7 +153,6 @@ namespace Test
             AdditionalSyntaxTrees.Add(GenericContextComponent);
 
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
 <GenericContext TItem=int Items=""@(new List<int>() { 1, 2, })"">
   <div>@(context.Item * context.Index)</div>
 </GenericContext>");
@@ -191,7 +188,6 @@ namespace Test
             AdditionalSyntaxTrees.Add(GenericContextComponent);
 
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
 <GenericContext Items=""@(new List<int>() { 1, 2, })"" ref=""_my"" />
 
 @functions {
@@ -224,7 +220,6 @@ namespace Test
             AdditionalSyntaxTrees.Add(GenericContextComponent);
 
             var assembly = CompileToAssembly("Test.cshtml", @"
-@addTagHelper *, TestAssembly
 @typeparam TItem
 <GenericContext Items=""@MyItems"" ref=""_my"" />
 
@@ -263,7 +258,6 @@ namespace Test
             AdditionalSyntaxTrees.Add(GenericContextComponent);
 
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
 <GenericContext Items=""@(new List<int>() { 1, 2, })"" />");
 
             // Act
@@ -290,7 +284,6 @@ namespace Test
             AdditionalSyntaxTrees.Add(MultipleGenericParameterComponent);
 
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
 <MultipleGenericParameter
   TItem1=""int""
   TItem2=""string""
