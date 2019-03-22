@@ -13,7 +13,6 @@ size_t index_of_non_numeric(const std::wstring& str, size_t i)
     return str.find_first_not_of(TEXT("0123456789"), i);
 }
 
-
 bool try_stou(const std::wstring& str, unsigned* num)
 {
     if (str.empty())
