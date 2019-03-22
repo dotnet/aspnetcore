@@ -14,7 +14,7 @@ namespace Microsoft.CodeAnalysis.Razor
     public static class RazorProjectEngineBuilderExtensions
     {
         /// <summary>
-        /// Sets the C# language version to respect when generating code. 
+        /// Sets the C# language version to target when generating code. 
         /// </summary>
         /// <param name="builder">The <see cref="RazorProjectEngineBuilder"/>.</param>
         /// <param name="csharpLanguageVersion">The C# <see cref="LanguageVersion"/>.</param>
@@ -24,12 +24,6 @@ namespace Microsoft.CodeAnalysis.Razor
             if (builder == null)
             {
                 throw new ArgumentNullException(nameof(builder));
-            }
-
-            if (builder.Configuration.LanguageVersion.Major < 3)
-            {
-                // Prior to 3.0 there were no C# version specific controlled features so there's no value in setting a CSharp language version, noop.
-                return builder;
             }
 
             var existingFeature = builder.Features.OfType<ConfigureParserForCSharpVersionFeature>().FirstOrDefault();
@@ -63,8 +57,16 @@ namespace Microsoft.CodeAnalysis.Razor
                     throw new ArgumentNullException(nameof(options));
                 }
 
+                if (options.Configuration.LanguageVersion.Major < 3)
+                {
+                    // Prior to 3.0 there were no C# version specific controlled features. Suppress nullability enforcement.
+                    options.SuppressNullabilityEnforcement = true;
+                    return;
+                }
+
                 if (CSharpLanguageVersion < LanguageVersion.CSharp8)
                 {
+                    // Having nullable flags < C# 8.0 would cause compile errors.
                     options.SuppressNullabilityEnforcement = true;
                 }
                 else
@@ -73,10 +75,11 @@ namespace Microsoft.CodeAnalysis.Razor
                     // cases in tooling when the project isn't fully configured yet at which point the CSharpLanguageVersion
                     // may be Default (value 0). In those cases that C# version is equivalently "unspecified" and is up to the consumer
                     // to act in a safe manner to not cause unneeded errors for older compilers. Therefore if the version isn't
-                    // >= 8.0 (or Latest) then nullability enforcement is suppressed.
+                    // >= 8.0 (Latest has a higher value) then nullability enforcement is suppressed.
                     //
                     // Once the project finishes configuration the C# language version will be updated to reflect the effective 
-                    // language version for the project.
+                    // language version for the project by our workspace change detectors. That mechanism extracts the correlated
+                    // Roslyn project and acquires the effective C# version at that point.
                     options.SuppressNullabilityEnforcement = false;
                 }
             }

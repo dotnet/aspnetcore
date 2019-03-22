@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             bool designTime,
             string rootNamespace,
             bool suppressChecksum,
-            bool supressMetadataAttributes,
+            bool suppressMetadataAttributes,
             bool suppressPrimaryMethodBody,
             bool suppressNullabilityEnforcement)
         {
@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             DesignTime = designTime;
             RootNamespace = rootNamespace;
             SuppressChecksum = suppressChecksum;
-            SuppressMetadataAttributes = supressMetadataAttributes;
+            SuppressMetadataAttributes = suppressMetadataAttributes;
             SuppressPrimaryMethodBody = suppressPrimaryMethodBody;
             SuppressNullabilityEnforcement = suppressNullabilityEnforcement;
         }

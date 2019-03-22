@@ -649,6 +649,37 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
         [Fact]
         [InitializeTestProject("SimpleMvc")]
+        public async Task Build_CSharp8_NullableEnforcement_WarningsDuringBuild_BuildServer()
+        {
+            var result = await DotnetMSBuild(
+                "Build",
+                "/p:LangVersion=8.0 /p:NullableContextOptions=enable");
+            var indexFilePath = Path.Combine(RazorIntermediateOutputPath, "Views", "Home", "Index.cshtml.g.cs");
+
+            Assert.BuildPassed(result, allowWarnings: true);
+            Assert.BuildWarning(result, "CS8618", "Models\\ErrorViewModel.cs(5,18)");
+            Assert.FileContainsLine(result, indexFilePath, "#nullable restore");
+            Assert.FileContainsLine(result, indexFilePath, "#nullable disable");
+        }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
+        public async Task Build_CSharp8_NullableEnforcement_WarningsDuringBuild_NoBuildServer()
+        {
+            var result = await DotnetMSBuild(
+                "Build",
+                "/p:LangVersion=8.0 /p:NullableContextOptions=enable",
+                suppressBuildServer: true);
+            var indexFilePath = Path.Combine(RazorIntermediateOutputPath, "Views", "Home", "Index.cshtml.g.cs");
+
+            Assert.BuildPassed(result, allowWarnings: true);
+            Assert.BuildWarning(result, "CS8618", "Models\\ErrorViewModel.cs(5,18)");
+            Assert.FileContainsLine(result, indexFilePath, "#nullable restore");
+            Assert.FileContainsLine(result, indexFilePath, "#nullable disable");
+        }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
         public async Task Build_Mvc_WithoutAddRazorSupportForMvc()
         {
             var result = await DotnetMSBuild(

@@ -462,7 +462,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             // the "usings directive is unnecessary" message.
             // Looks like:
             // __o = typeof(SomeNamespace.SomeComponent);
-            using (context.CodeWriter.BuildLinePragma(node.Source.Value))
+            using (context.CodeWriter.BuildLinePragma(node.Source.Value, context))
             {
                 context.CodeWriter.Write(DesignTimeVariable);
                 context.CodeWriter.Write(" = ");

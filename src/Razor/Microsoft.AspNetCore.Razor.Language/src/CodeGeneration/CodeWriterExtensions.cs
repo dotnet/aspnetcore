@@ -616,6 +616,11 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
                 if (!_codeGenerationOptions.SuppressNullabilityEnforcement)
                 {
+                    var endsWithNewline = _writer.Length > 0 && _writer[_writer.Length - 1] == '\n';
+                    if (!endsWithNewline)
+                    {
+                        _writer.WriteLine();
+                    }
                     _writer.WriteLine("#nullable restore");
                 }
 

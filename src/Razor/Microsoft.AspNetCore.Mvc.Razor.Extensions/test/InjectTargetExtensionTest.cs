@@ -56,12 +56,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             target.WriteInjectProperty(context, node);
 
             // Assert
-            Assert.Equal(
+            Assert.Equal(Environment.NewLine +
+                "#nullable restore" + Environment.NewLine +
                 "#line 2 \"test-path\"" + Environment.NewLine +
                 "[global::Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]" + Environment.NewLine +
                 "public PropertyType<ModelType> PropertyName { get; private set; }" + Environment.NewLine + Environment.NewLine +
                 "#line default" + Environment.NewLine +
-                "#line hidden" + Environment.NewLine,
+                "#line hidden" + Environment.NewLine +
+                "#nullable disable" + Environment.NewLine,
                 context.CodeWriter.GenerateCode());
         }
     }

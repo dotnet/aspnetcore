@@ -13,7 +13,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 <Project ToolsVersion="14.0">
   <!--
   What follows in this file is based on:
-     https://github.com/dotnet/roslyn/blob/4d92b18aee99ba8b1b4770ce65133e9ca65a94fe/src/Compilers/Core/MSBuildTask/Microsoft.CSharp.Core.targets
+     https://github.com/dotnet/roslyn/blob/db4f836b97db1e7ad261e51c67cc80c6f3c28791/src/Compilers/Core/MSBuildTask/Microsoft.CSharp.Core.targets
 
   We need to keep this basically up to date, as well as track the set of modifications we've made. Try to keep the formatting
   similar to the original to reduce noise. In general try to only deviate from the CoreCompile target when we need to for
@@ -25,32 +25,45 @@ Copyright (c) .NET Foundation. All rights reserved.
   Changes:
     Name="RazorCoreCompile"
 
+    Replace Name="CoreCompile" with Name="RazorCoreCompile"
     Replace @(Compile) with @(RazorCompile)
     Replace @(_DebugSymbolsIntermediatePath) with @(_RazorDebugSymbolsIntermediatePath)
     Replace @(IntermediateAssembly) with @(RazorIntermediateAssembly)
     Replace @(ReferencePathWithRefAssemblies) with @(RazorReferencePath)
-    Remove @(_CoreCompileResourceInputs) with @(_RazorCoreCompileResourceInputs)
+    Replace @(_CoreCompileResourceInputs) with @(_RazorCoreCompileResourceInputs)
+    Replace <Csc Condition="'%(_CoreCompileResourceInputs.WithCulture)' != 'true'" with <Csc
+    Remove comment above ^
 
     Set TargetType="$(OutputType)" to TargetType="Library" - Razor is always a .dll
-
+    
     Remove Returns="@(CscCommandLineArgs)"
-
+    Remove <Import Project="Microsoft.Managed.Core.targets"/>
+    Remove Returns="@(CscCommandLineArgs)"
     Remove @(EmbeddedFiles)
     Remove $(ApplicationIcon) $(Win32Resource) $(Win32Manifest)
     Remove @(EmbeddedDocumentation) and @(EmbeddedFiles)
     Remove @(CustomAdditionalCompileInputs) and @(CustomAdditionalCompileOutputs)
     Remove @(DocFileItem)
     Remove PdbFile="$(PdbFile)"
+    Remove $(IntermediateRefAssembly)
     Remove OutputRefAssembly="@(IntermediateRefAssembly)"
     Remove MainEntryPoint="$(StartupObject)"
+    Remove winmdobj <PdbFile  ....> and comment
+    Remove RefOnly="$(ProduceOnlyReferenceAssembly)"
+    Remove Win32Icon="$(ApplicationIcon)"
+    Remove Win32Manifest="$(Win32Manifest)"
+    Remove Win32Resource="$(Win32Resource)"
+    Remove DocumentationFile="@(DocFileItem)"
 
     Remove EmbedAllSources="$(EmbedAllSources)" - not supported by our supported version of MSBuild
 
     Remove additional steps after calling CSC
 
     Add our FileWrites after the call to CSC
+    
+    Add Condition="'@(RazorCompile)'!=''" as a condition to the RazorCoreCompile target.
   -->
- <Target Name="RazorCoreCompile"
+  <Target Name="RazorCoreCompile"
           Inputs="$(MSBuildAllProjects);
                   @(RazorCompile);
                   $(AssemblyOriginatorKeyFile);
@@ -76,12 +89,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       <NoWarn Condition="'$(BuildingInsideVisualStudio)' == 'true' AND '$(VisualStudioVersion)' != '' AND '$(VisualStudioVersion)' &gt; '10.0'">$(NoWarn);2008</NoWarn>
     </PropertyGroup>
 
-    <ItemGroup Condition="'$(TargetingClr2Framework)' == 'true'">
-      <ReferencePathWithRefAssemblies>
-        <EmbedInteropTypes />
-      </ReferencePathWithRefAssemblies>
-    </ItemGroup>
-
     <PropertyGroup>
       <!-- If the user has specified AppConfigForCompiler, we'll use it. If they have not, but they set UseAppConfigForCompiler,
                  then we'll use AppConfig -->
@@ -104,6 +111,12 @@ Copyright (c) .NET Foundation. All rights reserved.
       <UseSharedCompilation>true</UseSharedCompilation>
     </PropertyGroup>
 
+    <PropertyGroup>
+      <LangVersion Condition="'$(LangVersion)' == '' AND
+        (('$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(TargetFrameworkVersion)' == 'v3.0') OR
+         ('$(TargetFrameworkIdentifier)' == '.NETStandard' AND '$(TargetFrameworkVersion)' == 'v2.1'))">8.0</LangVersion>
+    </PropertyGroup>
+
     <Csc
          AdditionalLibPaths="$(AdditionalLibPaths)"
          AddModules="@(AddModules)"
@@ -120,6 +133,7 @@ Copyright (c) .NET Foundation. All rights reserved.
          DefineConstants="$(DefineConstants)"
          DelaySign="$(DelaySign)"
          DisabledWarnings="$(NoWarn)"
+         DisableSdkPath="$(DisableSdkPath)"
          EmitDebugInformation="$(DebugSymbols)"
          EnvironmentVariables="$(CscEnvironment)"
          ErrorEndLocation="$(ErrorEndLocation)"
@@ -139,6 +153,7 @@ Copyright (c) .NET Foundation. All rights reserved.
          NoLogo="$(NoLogo)"
          NoStandardLib="$(NoCompilerStandardLib)"
          NoWin32Manifest="$(NoWin32Manifest)"
+         NullableContextOptions="$(NullableContextOptions)"
          Optimize="$(Optimize)"
          Deterministic="$(Deterministic)"
          PublicSign="$(PublicSign)"

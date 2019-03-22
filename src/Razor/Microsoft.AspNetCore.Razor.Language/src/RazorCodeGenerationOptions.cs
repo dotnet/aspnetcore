@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 designTime: false,
                 suppressChecksum: false,
                 rootNamespace: null,
-                supressMetadataAttributes: false,
+                suppressMetadataAttributes: false,
                 suppressPrimaryMethodBody: false,
                 suppressNullabilityEnforcement: false);
         }
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 designTime: true,
                 rootNamespace: null,
                 suppressChecksum: false,
-                supressMetadataAttributes: true,
+                suppressMetadataAttributes: true,
                 suppressPrimaryMethodBody: false,
                 suppressNullabilityEnforcement: false);
         }
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         public virtual bool SuppressPrimaryMethodBody { get; protected set; }
 
         /// <summary>
-        /// Gets or sets a value that determines if nullability type enforcement is restored to project settings for user code.
+        /// Gets a value that determines if nullability type enforcement should be suppressed for user code.
         /// </summary>
         public virtual bool SuppressNullabilityEnforcement { get; }
     }

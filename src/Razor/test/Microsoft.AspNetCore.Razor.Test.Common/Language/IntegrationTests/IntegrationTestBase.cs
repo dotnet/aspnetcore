@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         /// <summary>
         /// Gets the parse options applied when using <see cref="AddCSharpSyntaxTree(string, string)"/>.
         /// </summary>
-        protected virtual CSharpParseOptions CSharpParseOptions { get; } = new CSharpParseOptions(LanguageVersion.Latest);
+        protected virtual CSharpParseOptions CSharpParseOptions { get; } = new CSharpParseOptions(LanguageVersion.Preview);
 
         /// <summary>
         /// Gets the compilation options applied when compiling assemblies.
@@ -323,6 +323,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 }
 
                 b.Features.Add(new DefaultTypeNameFeature());
+                b.SetCSharpLanguageVersion(CSharpParseOptions.LanguageVersion);
 
                 // Decorate each import feature so we can normalize line endings.
                 foreach (var feature in b.Features.OfType<IImportProjectFeature>().ToArray())

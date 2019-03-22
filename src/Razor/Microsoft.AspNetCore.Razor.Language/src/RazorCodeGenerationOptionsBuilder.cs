@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         public virtual bool SuppressPrimaryMethodBody { get; set; }
 
         /// <summary>
-        /// Gets or sets a value that determines if nullability type enforcement is restored to project settings for user code.
+        /// Gets or sets a value that determines if nullability type enforcement should be suppressed for user code.
         /// </summary>
         public virtual bool SuppressNullabilityEnforcement { get; set; }
 

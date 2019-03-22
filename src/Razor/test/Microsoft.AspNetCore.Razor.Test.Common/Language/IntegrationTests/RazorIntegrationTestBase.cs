@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 referenceAssemblies,
                 new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
-            CSharpParseOptions = new CSharpParseOptions(LanguageVersion.CSharp7_3);
+            CSharpParseOptions = new CSharpParseOptions(LanguageVersion.Preview);
         }
 
         public RazorIntegrationTestBase()
@@ -128,6 +128,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 {
                     References = references,
                 });
+
+                b.SetCSharpLanguageVersion(CSharpParseOptions.LanguageVersion);
 
                 CompilerFeatures.Register(b);
             });
