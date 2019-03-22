@@ -36,6 +36,13 @@
       <_PublishFiles Include="$(MSBuildThisFileDirectory)..\..\samples\Identity.ExternalClaims\bin\$(Configuration)\netcoreapp3.0\Identity.ExternalClaims.deps.json" />
       <_PublishFiles Include="$(MSBuildThisFileDirectory)..\..\samples\PathSchemeSelection\bin\$(Configuration)\netcoreapp3.0\PathSchemeSelection.deps.json" />
       <_PublishFiles Include="$(MSBuildThisFileDirectory)..\..\samples\StaticFilesAuth\bin\$(Configuration)\netcoreapp3.0\StaticFilesAuth.deps.json" />
+      <_claimsWwwrootFiles Include="$(MSBuildThisFileDirectory)..\..\samples\ClaimsTransformation\wwwroot\**\*.*" />
+      <_cookiesWwwrootFiles Include="$(MSBuildThisFileDirectory)..\..\samples\Cookies\wwwroot\**\*.*" />
+      <_policyWwwrootFiles Include="$(MSBuildThisFileDirectory)..\..\samples\CustomPolicyProvider\wwwroot\**\*.*" />
+      <_schemesWwwrootFiles Include="$(MSBuildThisFileDirectory)..\..\samples\DynamicSchemes\wwwroot\**\*.*" />
+      <_identityWwwrootFiles Include="$(MSBuildThisFileDirectory)..\..\samples\Identity.ExternalClaims\wwwroot\**\*.*" />
+      <_pathWwwrootFiles Include="$(MSBuildThisFileDirectory)..\..\samples\PathSchemeSelection\wwwroot\**\*.*" />
+      <_staticWwwrootFiles Include="$(MSBuildThisFileDirectory)..\..\samples\StaticFilesAuth\wwwroot\**\*.*" />
     </ItemGroup>
     <Copy
       SourceFiles="@(_PublishFiles)"
@@ -45,7 +52,38 @@
         File="$(PublishDir)\contentroot.sln"
         Lines="Ignored"
         Overwrite="true"
-        Encoding="Unicode"/>        
+        Encoding="Unicode"/>
+    </ItemGroup>
+    <Copy
+      SourceFiles="@(_PublishFiles)"
+      DestinationFolder="$(PublishDir)" />
+    <Copy
+      SourceFiles="@(_claimsWwwrootFiles)"
+      DestinationFolder="$(PublishDir)\ClaimsTransformation\wwwroot" />
+    <Copy
+      SourceFiles="@(_cookiesWwwrootFiles)"
+      DestinationFolder="$(PublishDir)\Cookies\wwwroot" />
+    <Copy
+      SourceFiles="@(_policyWwwrootFiles)"
+      DestinationFolder="$(PublishDir)\CustomPolicyProvider\wwwroot" />
+    <Copy
+      SourceFiles="@(_schemesWwwrootFiles)"
+      DestinationFolder="$(PublishDir)\DynamicSchemes\wwwroot" />
+    <Copy
+      SourceFiles="@(_pathWwwrootFiles)"
+      DestinationFolder="$(PublishDir)\Identity.ExternalClaims\wwwroot" />
+    <Copy
+      SourceFiles="@(_schemesWwwrootFiles)"
+      DestinationFolder="$(PublishDir)\PathSchemeSelection\wwwroot" />
+    <Copy
+      SourceFiles="@(_staticWwwrootFiles)"
+      DestinationFolder="$(PublishDir)\StaticFilesAuth\wwwroot" />
+    <!-- Drop a dummy sln to specify content root location -->
+    <WriteLinesToFile
+        File="$(PublishDir)\contentroot.sln"
+        Lines="Ignored"
+        Overwrite="true"
+        Encoding="Unicode"/>      
   </Target>
   
 </Project>
