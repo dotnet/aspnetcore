@@ -11,8 +11,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 {
     internal class ComponentImportProjectFeature : IImportProjectFeature
     {
-        private const string ImportsFileName = "_ViewImports.cshtml";
-
         private static readonly char[] PathSeparators = new char[]{ '/', '\\' };
 
         // Using explicit newlines here to avoid fooling our baseline tests
@@ -74,7 +72,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         public IEnumerable<RazorProjectItem> GetHierarchicalImports(RazorProject project, RazorProjectItem projectItem)
         {
             // We want items in descending order. FindHierarchicalItems returns items in ascending order.
-            return project.FindHierarchicalItems(projectItem.FilePath, ImportsFileName).Reverse();
+            return project.FindHierarchicalItems(projectItem.FilePath, ComponentMetadata.ImportsFileName).Reverse();
         }
 
         private class VirtualProjectItem : RazorProjectItem
@@ -98,6 +96,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             public override string PhysicalPath => null;
 
             public override bool Exists => true;
+
+            public override string FileKind => FileKinds.ComponentImport;
 
             public override Stream Read() => new MemoryStream(_bytes);
         }

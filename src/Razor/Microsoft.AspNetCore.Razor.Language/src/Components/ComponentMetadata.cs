@@ -11,6 +11,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         // use our own metadata entry to denote non-Component tag helpers.
         public static readonly string SpecialKindKey = "Components.IsSpecialKind";
 
+        public static readonly string ImportsFileName = "_Imports.razor";
+
         public static class Bind
         {
             public static readonly string RuntimeName = "Components.None";
