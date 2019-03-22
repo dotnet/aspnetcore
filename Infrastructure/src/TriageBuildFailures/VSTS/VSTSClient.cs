@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -19,12 +18,11 @@ using TriageBuildFailures.VSTS.Models;
 
 namespace TriageBuildFailures.VSTS
 {
-    public abstract class VSTSClientBase
+    public class VSTSClient : ICIClient
     {
-        protected enum ApiVersion
+        private enum ApiVersion
         {
             V4_1_Preview2,
-            V5_0_Preview,
             V5_0_Preview2,
             V5_0_Preview3,
             V5_0_Preview4,
@@ -35,10 +33,93 @@ namespace TriageBuildFailures.VSTS
         private readonly VSTSConfig Config;
         private readonly IReporter _reporter;
 
-        public VSTSClientBase(VSTSConfig vstsConfig, IReporter reporter)
+        public VSTSClient(VSTSConfig vstsConfig, IReporter reporter)
         {
             Config = vstsConfig;
             _reporter = reporter;
+        }
+
+        public async Task<IEnumerable<ICIBuild>> GetFailedBuildsAsync(DateTime startDate)
+        {
+            var projects = await GetProjects();
+
+            var results = new List<ICIBuild>();
+            foreach (var project in projects)
+            {
+                var builds = await GetBuildsForProject(project, VSTSBuildResult.Failed, VSTSBuildStatus.Completed, startDate);
+                results.AddRange(builds.Select(b => new VSTSBuild(b)));
+            }
+
+            return results;
+        }
+
+        public async Task<IEnumerable<string>> GetTagsAsync(ICIBuild build)
+        {
+            var vstsBuild = (VSTSBuild)build;
+            var result = await MakeVSTSRequest<VSTSArray<string>>(HttpMethod.Get, $"{vstsBuild.Project}/_apis/build/builds/{build.Id}/tags");
+
+            return result.Value;
+        }
+
+        public async Task SetTagAsync(ICIBuild build, string tag)
+        {
+            var vstsBuild = (VSTSBuild)build;
+            await MakeVSTSRequest<VSTSArray<string>>(HttpMethod.Put, $"{vstsBuild.Project}/_apis/build/builds/{build.Id}/tags/{tag}", apiVersion: ApiVersion.V5_0_Preview2);
+        }
+
+        public async Task<string> GetBuildLogAsync(ICIBuild build)
+        {
+            var vstsBuild = (VSTSBuild)build;
+            var logs = await MakeVSTSRequest<VSTSArray<VSTSBuildLog>>(HttpMethod.Get, $"{vstsBuild.Project}/_apis/build/builds/{build.Id}/logs");
+            var validationResults = GetBuildLogFromValidationResult(vstsBuild);
+            if (logs == null)
+            {
+                return validationResults;
+            }
+            else
+            {
+                StringBuilder builder = new StringBuilder();
+                foreach (var log in logs.Value)
+                {
+                    using (var stream = await MakeVSTSRequest(HttpMethod.Get, $"{vstsBuild.Project}/_apis/build/builds/{build.Id}/logs/{log.Id}", "text/plain"))
+                    using (var streamReader = new StreamReader(stream))
+                    {
+                        builder.Append(await streamReader.ReadToEndAsync());
+                    }
+                }
+
+                var result = builder.ToString();
+
+                if (string.IsNullOrEmpty(result))
+                {
+                    return validationResults;
+                }
+                else
+                {
+                    return result;
+                }
+            }
+        }
+
+        public async Task<IEnumerable<ICITestOccurrence>> GetTestsAsync(ICIBuild build, BuildStatus? buildStatus = null)
+        {
+            var runs = await GetTestRuns(build);
+
+            var result = new List<ICITestOccurrence>();
+            foreach (var run in runs)
+            {
+                var results = await GetTestResults(run, buildStatus);
+                result.AddRange(results.Select(r => new VSTSTestOccurrence(r)));
+            }
+
+            return result;
+        }
+
+        public Task<string> GetTestFailureTextAsync(ICITestOccurrence failure)
+        {
+            var vstsTest = failure as VSTSTestOccurrence;
+
+            return Task.FromResult(vstsTest.TestCaseResult.ErrorMessage);
         }
 
         public async Task<VSTSBuild> GetBuild(string url)
@@ -64,7 +145,65 @@ namespace TriageBuildFailures.VSTS
             return new VSTSBuild(build);
         }
 
-        protected async Task<IEnumerable<Build>> GetBuildsForProject(VSTSProject project, VSTSBuildResult? result = null, VSTSBuildStatus? status = null, DateTime? minTime = null)
+        private string GetBuildLogFromValidationResult(VSTSBuild vstsBuild)
+        {
+            if (vstsBuild.ValidationResults != null && vstsBuild.ValidationResults.Any(v => v.Result.Equals("error", StringComparison.OrdinalIgnoreCase)))
+            {
+                var logStr = "";
+                foreach (var validationResult in vstsBuild.ValidationResults.Where(v => v.Result.Equals("error", StringComparison.OrdinalIgnoreCase)))
+                {
+                    logStr += validationResult.Message + Environment.NewLine;
+                }
+                return logStr;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        private async Task<IEnumerable<VSTSTestCaseResult>> GetTestResults(VSTSTestRun run, BuildStatus? buildResult = null)
+        {
+            var queryItems = new Dictionary<string, string>();
+
+            if (buildResult != null)
+            {
+                queryItems.Add("outcomes", GetStatusString(buildResult.Value));
+            }
+
+            var results = await MakeVSTSRequest<VSTSArray<VSTSTestCaseResult>>(HttpMethod.Get, $"{run.Project.Id}/_apis/test/runs/{run.Id}/results", queryItems, ApiVersion.V5_0_Preview5);
+
+            return results.Value;
+        }
+
+        private string GetStatusString(BuildStatus status)
+        {
+            switch (status)
+            {
+                case BuildStatus.FAILURE:
+                    return "Failed";
+                case BuildStatus.SUCCESS:
+                    return "Passed";
+                default:
+                    throw new NotImplementedException($"We don't know what to do with {Enum.GetName(typeof(BuildStatus), status)}");
+
+            }
+        }
+
+        private async Task<IEnumerable<VSTSTestRun>> GetTestRuns(ICIBuild build)
+        {
+            var vstsBuild = (VSTSBuild)build;
+            var queryItems = new Dictionary<string, string>
+            {
+                { "buildUri", vstsBuild.Uri.ToString() },
+                { "includeRunDetails", "true" }
+            };
+
+            var runs = await MakeVSTSRequest<VSTSArray<VSTSTestRun>>(HttpMethod.Get, $"{vstsBuild.Project}/_apis/test/runs", queryItems);
+            return runs.Value;
+        }
+
+        private async Task<IEnumerable<Build>> GetBuildsForProject(VSTSProject project, VSTSBuildResult? result = null, VSTSBuildStatus? status = null, DateTime? minTime = null)
         {
             var queryItems = new Dictionary<string, string>();
             if (result != null)
@@ -79,7 +218,7 @@ namespace TriageBuildFailures.VSTS
 
             if (minTime != null)
             {
-                queryItems["minTime"] = ToVSTSString(minTime.Value);
+                queryItems["minTime"] = minTime.Value.ToString("yyyy'-'MM'-'ddTHH':'mm':'ss'Z'");
             }
             var builds = (await MakeVSTSRequest<VSTSArray<Build>>(HttpMethod.Get, $"{project.Id}/_apis/build/builds", queryItems, ApiVersion.V5_0_Preview4)).Value;
 
@@ -88,20 +227,15 @@ namespace TriageBuildFailures.VSTS
                build.Definition.Path.StartsWith(Config.BuildPath, StringComparison.OrdinalIgnoreCase) && !build.TriggerInfo.ContainsKey("pr.sourceBranch"));
         }
 
-        protected string ToVSTSString(DateTime dateTime)
-        {
-            return dateTime.ToString("yyyy'-'MM'-'ddTHH':'mm':'ss'Z'");
-        }
-
-        protected async Task<IEnumerable<VSTSProject>> GetProjects()
+        private async Task<IEnumerable<VSTSProject>> GetProjects()
         {
             var projectsObj = await MakeVSTSRequest<VSTSArray<VSTSProject>>(HttpMethod.Get, "_apis/projects");
             return projectsObj.Value;
         }
 
-        protected async Task<T> MakeVSTSRequest<T>(HttpMethod verb, string uri, IDictionary<string, string> queryItems = null, ApiVersion apiVersion = ApiVersion.Default, ApiType apiType = ApiType.Basic) where T : class
+        private async Task<T> MakeVSTSRequest<T>(HttpMethod verb, string uri, IDictionary<string, string> queryItems = null, ApiVersion apiVersion = ApiVersion.Default) where T : class
         {
-            using (var stream = await MakeVSTSRequest(verb, uri, "application/json", queryItems, apiVersion, apiType))
+            using (var stream = await MakeVSTSRequest(verb, uri, "application/json", queryItems, apiVersion))
             using (var sr = new StreamReader(stream))
             using (var reader = new JsonTextReader(sr))
             {
@@ -121,9 +255,6 @@ namespace TriageBuildFailures.VSTS
                 case ApiVersion.V4_1_Preview2:
                     result = "4.1-preview.2";
                     break;
-                case ApiVersion.V5_0_Preview:
-                    result = "5.0-preview";
-                    break;
                 case ApiVersion.V5_0_Preview2:
                     result = "5.0-preview.2";
                     break;
@@ -140,31 +271,12 @@ namespace TriageBuildFailures.VSTS
             return result;
         }
 
-        protected async Task<Stream> MakeVSTSRequest(
+        private async Task<Stream> MakeVSTSRequest(
             HttpMethod verb,
             string uri,
             string accept,
             IDictionary<string, string> queryItems = null,
-            ApiVersion apiVersion = ApiVersion.Default,
-            ApiType apiType = ApiType.Basic)
-        {
-            var query = HttpUtility.ParseQueryString(string.Empty);
-            query["api-version"] = GetVersionString(apiVersion);
-
-            if (queryItems != null)
-            {
-                foreach (var kvp in queryItems)
-                {
-                    query[kvp.Key] = kvp.Value;
-                }
-            }
-
-            var url = GetUri(apiType, uri, query);
-
-            return await HitVSTSUrlAsync(verb, url, accept);
-        }
-
-        protected async Task<Stream> HitVSTSUrlAsync(HttpMethod verb, Uri uri, string accept)
+            ApiVersion apiVersion = ApiVersion.Default)
         {
             var credentials = GetCredentials();
             using (var client = new HttpClient())
@@ -224,40 +336,9 @@ namespace TriageBuildFailures.VSTS
             }
         }
 
-        private Uri GetUri(ApiType apiType, string uri, NameValueCollection query)
-        {
-            string host;
-            switch (apiType)
-            {
-                case ApiType.Basic:
-                    host = $"{Config.Account}.visualstudio.com";
-                    break;
-                case ApiType.VSRM:
-                    host = $"vsrm.dev.azure.com";
-                    uri = $"{Config.Account}/{uri}";
-                    break;
-                default:
-                    throw new NotImplementedException();
-            };
-
-            var uriBuilder = new UriBuilder("https", host)
-            {
-                Path = uri,
-                Query = query.ToString()
-            };
-
-            return uriBuilder.Uri;
-        }
-
         private string GetCredentials()
         {
             return Convert.ToBase64String(Encoding.ASCII.GetBytes(string.Format("{0}:{1}", "", Config.PersonalAccessToken)));
-        }
-
-        protected enum ApiType
-        {
-            Basic,
-            VSRM
         }
     }
 }
