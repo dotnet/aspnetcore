@@ -57,7 +57,7 @@ namespace Identity.DefaultUI.WebSite
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             // This prevents running out of file watchers on some linux machines
-            ((PhysicalFileProvider)IWebHostEnvironment.WebRootFileProvider).UseActivePolling = false;
+            ((PhysicalFileProvider)env.WebRootFileProvider).UseActivePolling = false;
         
             if (env.IsDevelopment())
             {
