@@ -27,7 +27,7 @@ public:
 
     HRESULT CreateHandler(IHttpContext *pHttpContext, IREQUEST_HANDLER ** pRequestHandler) override
     {
-        auto handler = std::make_unique<ServerErrorHandler>(*pHttpContext, 500ui16, 0ui16, "Internal Server Error", m_HR, m_moduleInstance, m_disableStartupPage, m_page);
+        auto handler = std::make_unique<ServerErrorHandler>(*pHttpContext, 500ui16, 0ui16, "Internal Server Error", m_HR, m_moduleInstance, m_disableStartupPage, m_page, "");
         *pRequestHandler = handler.release();
         return S_OK;
     }

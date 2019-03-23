@@ -31,11 +31,11 @@ public:
     {
         if (m_errorPageContent.length() > 0)
         {
-            *pRequestHandler = new ServerErrorHandler(*pHttpContext, 500, 30, "Internal Server Error", m_HR, to_multi_byte_string(m_errorPageContent, CP_UTF8), m_disableLogs);
+            *pRequestHandler = new ServerErrorHandler(*pHttpContext, 500, 30, "Internal Server Error", m_HR, m_moduleInstance, m_disableLogs, IN_PROCESS_RH_EXCEPTION_PAGE_HTML, to_multi_byte_string(m_errorPageContent, CP_UTF8));
         }
         else
         {
-            *pRequestHandler = new ServerErrorHandler(*pHttpContext, 500, 30, "Internal Server Error", m_HR, m_moduleInstance, m_disableLogs, IN_PROCESS_RH_STATIC_HTML);
+            *pRequestHandler = new ServerErrorHandler(*pHttpContext, 500, 30, "Internal Server Error", m_HR, m_moduleInstance, m_disableLogs, IN_PROCESS_RH_STATIC_HTML, "");
         }
 
         return S_OK;

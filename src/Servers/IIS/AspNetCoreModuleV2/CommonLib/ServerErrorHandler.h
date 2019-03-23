@@ -10,27 +10,25 @@
 class ServerErrorHandler : public REQUEST_HANDLER
 {
 public:
-    ServerErrorHandler(IHttpContext &pContext, USHORT statusCode, USHORT subStatusCode, std::string statusText, HRESULT hr, HINSTANCE moduleInstance, bool disableStartupPage, int page) noexcept
-        : ServerErrorHandler(pContext, statusCode, subStatusCode, statusText, hr, GetHtml(moduleInstance, page), disableStartupPage)
-    {
-
-    }
-
-    ServerErrorHandler(IHttpContext &pContext, USHORT statusCode, USHORT subStatusCode, std::string statusText, HRESULT hr, std::string errorPageContent, bool disableStartupPage) noexcept
+    ServerErrorHandler(IHttpContext& pContext, USHORT statusCode, USHORT subStatusCode, std::string statusText, HRESULT hr, HINSTANCE module, bool disableStartupPage, int page, std::string errorPageContent) noexcept
         : REQUEST_HANDLER(pContext),
-          m_pContext(pContext),
-          m_HR(hr),
-          m_disableStartupPage(disableStartupPage),
-          m_statusCode(statusCode),
-          m_subStatusCode(subStatusCode),
-          m_statusText(std::move(statusText)),
-          m_content(std::move(errorPageContent))
+            m_pContext(pContext),
+            m_HR(hr),
+            m_disableStartupPage(disableStartupPage),
+            m_statusCode(statusCode),
+            m_subStatusCode(subStatusCode),
+            m_statusText(std::move(statusText)),
+            m_ExceptionInfoContent(std::move(errorPageContent)),
+            m_page(page),
+            m_moduleInstance(module)
     {
     }
 
     REQUEST_NOTIFICATION_STATUS ExecuteRequestHandler() override
     {
-        WriteStaticResponse(m_pContext, m_content, m_HR, m_disableStartupPage);
+        static std::string s_html500Page = GetHtml(m_moduleInstance, m_page);
+
+        WriteStaticResponse(m_pContext, s_html500Page, m_HR, m_disableStartupPage);
 
         return RQ_NOTIFICATION_FINISH_REQUEST;
     }
@@ -59,7 +57,6 @@ private:
         pResponse->WriteEntityChunkByReference(&dataChunk);
     }
 
-    static
     std::string
     GetHtml(HMODULE module, int page)
     {
@@ -77,15 +74,22 @@ private:
             THROW_LAST_ERROR_IF_NULL(pTempData = static_cast<const char*>(LockResource(rcData)));
             data = std::string(pTempData, size);
 
-            auto additionalErrorLink = Environment::GetEnvironmentVariableValue(L"ANCM_ADDITIONAL_ERROR_PAGE_LINK");
-            std::string additionalHtml;
-
-            if (additionalErrorLink.has_value())
+            if (page == 101) // TODO
             {
-                additionalHtml = format("<a href=\"%S\"> <cite> %S </cite></a> and ", additionalErrorLink->c_str(), additionalErrorLink->c_str());
-            }
+                auto additionalErrorLink = Environment::GetEnvironmentVariableValue(L"ANCM_ADDITIONAL_ERROR_PAGE_LINK");
+                std::string additionalHtml;
 
-            return format(data, additionalHtml.c_str());
+                if (additionalErrorLink.has_value())
+                {
+                    additionalHtml = format("<a href=\"%S\"> <cite> %S </cite></a> and ", additionalErrorLink->c_str(), additionalErrorLink->c_str());
+                }
+
+                return format(data, additionalHtml.c_str());
+            }
+            else
+            {
+                return format(data, m_ExceptionInfoContent.c_str());
+            }
         }
         catch (...)
         {
@@ -102,5 +106,5 @@ private:
     USHORT m_statusCode;
     USHORT m_subStatusCode;
     std::string m_statusText;
-    std::string m_content;
+    std::string m_ExceptionInfoContent;
 };

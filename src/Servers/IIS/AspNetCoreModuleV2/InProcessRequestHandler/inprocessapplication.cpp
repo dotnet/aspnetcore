@@ -462,6 +462,9 @@ IN_PROCESS_APPLICATION::SetEnvironmentVariablesOnWorkerProcess()
         SetEnvironmentVariable(variable.first.c_str(), variable.second.c_str());
     }
 
+    auto startupHookDll = Environment::GetCurrentDirectoryValue() + std::wstring(L"\\Microsoft.AspNetCore.Server.IIS.dll");
+    SetEnvironmentVariable(L"DOTNET_STARTUP_HOOKS", startupHookDll.c_str());
+
     return S_OK;
 }
 

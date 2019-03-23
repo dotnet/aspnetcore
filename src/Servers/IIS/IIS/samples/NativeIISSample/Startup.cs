@@ -118,12 +118,6 @@ namespace NativeIISSample
 
         public static void Main(string[] args)
         {
-            AppDomain.CurrentDomain.FirstChanceException += (sender, eventArgs) => {
-                Console.WriteLine("1");
-                NativeMethods.HttpSetStartupErrorPageContent("<pre>" + HtmlEncoder.Default.Encode(eventArgs.Exception.ToString()) + "</pre>");
-            };
-
-            Console.WriteLine("0");
             throw new InvalidOperationException("ex!");
 
             //var host = new WebHostBuilder()

@@ -267,6 +267,9 @@
     <ResourceCompile Include="inprocessrequesthandler.rc" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="InProcessRhExceptionPage.htm">
+      <DeploymentContent>true</DeploymentContent>
+    </None>
     <None Include="InProcessRhStaticHtml.htm">
       <DeploymentContent>true</DeploymentContent>
     </None>
