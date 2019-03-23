@@ -16,11 +16,13 @@ namespace Test.Namespace
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
+#nullable restore
 #line 2 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/PageWithNamespace.cshtml"
 global::System.Object __typeHelper = nameof(Test.Namespace);
 
 #line default
 #line hidden
+#nullable disable
         }
         ))();
         }

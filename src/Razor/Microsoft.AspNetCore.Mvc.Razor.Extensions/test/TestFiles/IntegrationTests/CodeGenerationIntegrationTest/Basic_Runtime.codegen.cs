@@ -20,44 +20,56 @@ namespace AspNetCore
         {
             WriteLiteral("<div");
             BeginWriteAttribute("class", " class=\"", 4, "\"", 28, 1);
+#nullable restore
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml"
 WriteAttributeValue("", 12, this.ToString(), 12, 16, false);
 
 #line default
 #line hidden
+#nullable disable
             EndWriteAttribute();
             WriteLiteral(">\r\n    Hello world\r\n    ");
+#nullable restore
 #line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml"
 Write(string.Format("{0}", "Hello"));
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("\r\n</div>\r\n");
+#nullable restore
 #line 5 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml"
    
     var cls = "foo";
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("<p");
             BeginWriteAttribute("class", " class=\"", 125, "\"", 158, 1);
             WriteAttributeValue("", 133, new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_attribute_value_writer) => {
                 PushWriter(__razor_attribute_value_writer);
+#nullable restore
 #line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml"
            if(cls != null) { 
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml"
                         Write(cls);
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml"
                                   }
 
 #line default
 #line hidden
+#nullable disable
                 PopWriter();
             }
             ), 133, 25, false);

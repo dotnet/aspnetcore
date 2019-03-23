@@ -39,12 +39,14 @@ namespace AspNetCore
         #pragma warning disable 1998
         public async override global::System.Threading.Tasks.Task ExecuteAsync()
         {
+#nullable restore
 #line 2 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ViewComponentTagHelper.cshtml"
   
     var foo = "Hello";
 
 #line default
 #line hidden
+#nullable disable
             WriteLiteral("\r\n");
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("vc:test", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "test", async() => {
             }
@@ -54,11 +56,13 @@ namespace AspNetCore
             __TestViewComponentTagHelper = CreateTagHelper<global::AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ViewComponentTagHelper.__Generated__TestViewComponentTagHelper>();
             __tagHelperExecutionContext.Add(__TestViewComponentTagHelper);
             BeginWriteTagHelperAttribute();
+#nullable restore
 #line 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ViewComponentTagHelper.cshtml"
          WriteLiteral(foo);
 
 #line default
 #line hidden
+#nullable disable
             __tagHelperStringValueBuffer = EndWriteTagHelperAttribute();
             __TestViewComponentTagHelper.firstName = __tagHelperStringValueBuffer;
             __tagHelperExecutionContext.AddTagHelperAttribute("first-name", __TestViewComponentTagHelper.firstName, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);

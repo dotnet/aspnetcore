@@ -14,11 +14,13 @@ namespace __GeneratedComponent
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
+#nullable restore
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/BasicComponent.cshtml"
 IDisposable __typeHelper = default(IDisposable);
 
 #line default
 #line hidden
+#nullable disable
         }
         ))();
         }
@@ -30,24 +32,30 @@ IDisposable __typeHelper = default(IDisposable);
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
             base.BuildRenderTree(builder);
+#nullable restore
 #line 2 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/BasicComponent.cshtml"
        __o = this.ToString();
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 4 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/BasicComponent.cshtml"
 __o = string.Format("{0}", "Hello");
 
 #line default
 #line hidden
+#nullable disable
         }
         #pragma warning restore 1998
+#nullable restore
 #line 7 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/BasicComponent.cshtml"
             
     void IDisposable.Dispose(){ }
 
 #line default
 #line hidden
+#nullable disable
     }
 }
 #pragma warning restore 1591

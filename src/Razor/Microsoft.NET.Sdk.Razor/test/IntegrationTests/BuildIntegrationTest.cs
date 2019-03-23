@@ -657,7 +657,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var indexFilePath = Path.Combine(RazorIntermediateOutputPath, "Views", "Home", "Index.cshtml.g.cs");
 
             Assert.BuildPassed(result, allowWarnings: true);
-            Assert.BuildWarning(result, "CS8618", "Models\\ErrorViewModel.cs(5,18)");
+            Assert.BuildWarning(result, "CS8618");
             Assert.FileContainsLine(result, indexFilePath, "#nullable restore");
             Assert.FileContainsLine(result, indexFilePath, "#nullable disable");
         }
@@ -673,7 +673,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var indexFilePath = Path.Combine(RazorIntermediateOutputPath, "Views", "Home", "Index.cshtml.g.cs");
 
             Assert.BuildPassed(result, allowWarnings: true);
-            Assert.BuildWarning(result, "CS8618", "Models\\ErrorViewModel.cs(5,18)");
+            Assert.BuildWarning(result, "CS8618");
             Assert.FileContainsLine(result, indexFilePath, "#nullable restore");
             Assert.FileContainsLine(result, indexFilePath, "#nullable disable");
         }

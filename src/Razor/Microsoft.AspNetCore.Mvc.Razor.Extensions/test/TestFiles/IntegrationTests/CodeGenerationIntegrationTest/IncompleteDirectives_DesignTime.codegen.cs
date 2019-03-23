@@ -16,67 +16,83 @@ namespace AspNetCore
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
+#nullable restore
 #line 7 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml"
  
 
 #line default
 #line hidden
+#nullable disable
         }
         ))();
         ((System.Action)(() => {
+#nullable restore
 #line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml"
  
 
 #line default
 #line hidden
+#nullable disable
         }
         ))();
         ((System.Action)(() => {
+#nullable restore
 #line 10 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml"
  
 
 #line default
 #line hidden
+#nullable disable
         }
         ))();
         ((System.Action)(() => {
+#nullable restore
 #line 11 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml"
  
 
 #line default
 #line hidden
+#nullable disable
         }
         ))();
         ((System.Action)(() => {
+#nullable restore
 #line 12 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml"
 MyService<TModel> __typeHelper = default(MyService<TModel>);
 
 #line default
 #line hidden
+#nullable disable
         }
         ))();
         ((System.Action)(() => {
+#nullable restore
 #line 12 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml"
  
 
 #line default
 #line hidden
+#nullable disable
         }
         ))();
         ((System.Action)(() => {
+#nullable restore
 #line 14 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml"
  
 
 #line default
 #line hidden
+#nullable disable
         }
         ))();
         ((System.Action)(() => {
+#nullable restore
 #line 15 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml"
  
 
 #line default
 #line hidden
+#nullable disable
         }
         ))();
         }

@@ -11,30 +11,36 @@ namespace AspNetCore
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.AspNetCore.Mvc.Rendering;
     using Microsoft.AspNetCore.Mvc.ViewFeatures;
+#nullable restore
 #line 5 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPages.cshtml"
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 #line default
 #line hidden
+#nullable disable
     public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPages : global::Microsoft.AspNetCore.Mvc.RazorPages.Page
     {
         private global::DivTagHelper __DivTagHelper;
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
+#nullable restore
 #line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPages.cshtml"
 NewModel __typeHelper = default(NewModel);
 
 #line default
 #line hidden
+#nullable disable
         }
         ))();
         ((System.Action)(() => {
+#nullable restore
 #line 4 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPages.cshtml"
 global::System.Object __typeHelper = "*, AppCode";
 
 #line default
 #line hidden
+#nullable disable
         }
         ))();
         }
@@ -46,17 +52,20 @@ global::System.Object __typeHelper = "*, AppCode";
         public async override global::System.Threading.Tasks.Task ExecuteAsync()
         {
             __DivTagHelper = CreateTagHelper<global::DivTagHelper>();
+#nullable restore
 #line 29 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPages.cshtml"
                                          __o = Model.Name;
 
 #line default
 #line hidden
+#nullable disable
             __DivTagHelper = CreateTagHelper<global::DivTagHelper>();
             __DivTagHelper = CreateTagHelper<global::DivTagHelper>();
             __DivTagHelper = CreateTagHelper<global::DivTagHelper>();
             __DivTagHelper = CreateTagHelper<global::DivTagHelper>();
         }
         #pragma warning restore 1998
+#nullable restore
 #line 7 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPages.cshtml"
             
     public class NewModel : PageModel
@@ -77,6 +86,7 @@ global::System.Object __typeHelper = "*, AppCode";
 
 #line default
 #line hidden
+#nullable disable
         [global::Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
         public global::Microsoft.AspNetCore.Mvc.ViewFeatures.IModelExpressionProvider ModelExpressionProvider { get; private set; }
         [global::Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]

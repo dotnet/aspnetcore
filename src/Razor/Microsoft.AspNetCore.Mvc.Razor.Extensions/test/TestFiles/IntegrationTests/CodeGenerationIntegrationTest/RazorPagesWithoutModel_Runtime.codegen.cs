@@ -12,11 +12,13 @@ namespace AspNetCore
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.AspNetCore.Mvc.Rendering;
     using Microsoft.AspNetCore.Mvc.ViewFeatures;
+#nullable restore
 #line 4 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPagesWithoutModel.cshtml"
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 #line default
 #line hidden
+#nullable disable
     [global::Microsoft.AspNetCore.Razor.Hosting.RazorSourceChecksumAttribute(@"SHA1", @"8bf3954ad78688478de155359db8af32627ee2b8", @"/TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPagesWithoutModel.cshtml")]
     public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPagesWithoutModel : global::Microsoft.AspNetCore.Mvc.RazorPages.Page
     {
@@ -65,11 +67,13 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
             WriteLiteral("\r\n    ");
             __tagHelperExecutionContext = __tagHelperScopeManager.Begin("div", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "test", async() => {
                 WriteLiteral("\r\n        <label class=\"col-md-2 control-label\">");
+#nullable restore
 #line 25 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPagesWithoutModel.cshtml"
                                          Write(Name);
 
 #line default
 #line hidden
+#nullable disable
                 WriteLiteral("</label>\r\n        ");
                 __tagHelperExecutionContext = __tagHelperScopeManager.Begin("div", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "test", async() => {
                     WriteLiteral("\r\n            <input class=\"form-control\" />\r\n            <span class=\"text-danger\"></span>\r\n        ");
@@ -131,6 +135,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
             WriteLiteral("\r\n</form>\r\n");
         }
         #pragma warning restore 1998
+#nullable restore
 #line 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPagesWithoutModel.cshtml"
             
     public IActionResult OnPost(Customer customer)
@@ -148,6 +153,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 #line default
 #line hidden
+#nullable disable
         [global::Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
         public global::Microsoft.AspNetCore.Mvc.ViewFeatures.IModelExpressionProvider ModelExpressionProvider { get; private set; }
         [global::Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]

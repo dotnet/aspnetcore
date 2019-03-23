@@ -18,11 +18,13 @@ namespace AspNetCore
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
+#nullable restore
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ViewComponentTagHelper.cshtml"
 global::System.Object __typeHelper = "*, AppCode";
 
 #line default
 #line hidden
+#nullable disable
         }
         ))();
         }
@@ -33,19 +35,23 @@ global::System.Object __typeHelper = "*, AppCode";
         #pragma warning disable 1998
         public async override global::System.Threading.Tasks.Task ExecuteAsync()
         {
+#nullable restore
 #line 2 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ViewComponentTagHelper.cshtml"
   
     var foo = "Hello";
 
 #line default
 #line hidden
+#nullable disable
             __AllTagHelper = CreateTagHelper<global::AllTagHelper>();
             __TestViewComponentTagHelper = CreateTagHelper<global::AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ViewComponentTagHelper.__Generated__TestViewComponentTagHelper>();
+#nullable restore
 #line 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ViewComponentTagHelper.cshtml"
                 __o = foo;
 
 #line default
 #line hidden
+#nullable disable
             __TestViewComponentTagHelper.firstName = string.Empty;
             __AllTagHelper.Bar = " World";
         }

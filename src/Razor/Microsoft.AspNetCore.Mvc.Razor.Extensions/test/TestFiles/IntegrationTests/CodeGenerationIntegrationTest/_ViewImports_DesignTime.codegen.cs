@@ -16,19 +16,23 @@ namespace AspNetCore
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
+#nullable restore
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/_ViewImports.cshtml"
 IHtmlHelper<TModel> __typeHelper = default(IHtmlHelper<TModel>);
 
 #line default
 #line hidden
+#nullable disable
         }
         ))();
         ((System.Action)(() => {
+#nullable restore
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/_ViewImports.cshtml"
 global::System.Object Helper = null;
 
 #line default
 #line hidden
+#nullable disable
         }
         ))();
         }

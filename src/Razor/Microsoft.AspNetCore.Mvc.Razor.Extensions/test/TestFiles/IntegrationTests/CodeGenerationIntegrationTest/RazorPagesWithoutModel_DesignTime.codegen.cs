@@ -11,22 +11,26 @@ namespace AspNetCore
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.AspNetCore.Mvc.Rendering;
     using Microsoft.AspNetCore.Mvc.ViewFeatures;
+#nullable restore
 #line 4 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPagesWithoutModel.cshtml"
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 #line default
 #line hidden
+#nullable disable
     public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPagesWithoutModel : global::Microsoft.AspNetCore.Mvc.RazorPages.Page
     {
         private global::DivTagHelper __DivTagHelper;
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
+#nullable restore
 #line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPagesWithoutModel.cshtml"
 global::System.Object __typeHelper = "*, AppCode";
 
 #line default
 #line hidden
+#nullable disable
         }
         ))();
         }
@@ -38,17 +42,20 @@ global::System.Object __typeHelper = "*, AppCode";
         public async override global::System.Threading.Tasks.Task ExecuteAsync()
         {
             __DivTagHelper = CreateTagHelper<global::DivTagHelper>();
+#nullable restore
 #line 25 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPagesWithoutModel.cshtml"
                                          __o = Name;
 
 #line default
 #line hidden
+#nullable disable
             __DivTagHelper = CreateTagHelper<global::DivTagHelper>();
             __DivTagHelper = CreateTagHelper<global::DivTagHelper>();
             __DivTagHelper = CreateTagHelper<global::DivTagHelper>();
             __DivTagHelper = CreateTagHelper<global::DivTagHelper>();
         }
         #pragma warning restore 1998
+#nullable restore
 #line 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPagesWithoutModel.cshtml"
             
     public IActionResult OnPost(Customer customer)
@@ -66,6 +73,7 @@ global::System.Object __typeHelper = "*, AppCode";
 
 #line default
 #line hidden
+#nullable disable
         [global::Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
         public global::Microsoft.AspNetCore.Mvc.ViewFeatures.IModelExpressionProvider ModelExpressionProvider { get; private set; }
         [global::Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]

@@ -10,26 +10,34 @@ namespace AspNetCore
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.AspNetCore.Mvc.Rendering;
     using Microsoft.AspNetCore.Mvc.ViewFeatures;
+#nullable restore
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/UsingDirectives.cshtml"
 using System.ComponentModel;
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 2 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/UsingDirectives.cshtml"
 using System.Collections;
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/UsingDirectives.cshtml"
 using System;
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 4 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/UsingDirectives.cshtml"
 using System;
 
 #line default
 #line hidden
+#nullable disable
     public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_UsingDirectives : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic>
     {
         #pragma warning disable 219

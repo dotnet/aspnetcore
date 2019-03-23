@@ -17,19 +17,23 @@ namespace AspNetCore
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
+#nullable restore
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ModelExpressionTagHelper.cshtml"
 DateTime __typeHelper = default(DateTime);
 
 #line default
 #line hidden
+#nullable disable
         }
         ))();
         ((System.Action)(() => {
+#nullable restore
 #line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ModelExpressionTagHelper.cshtml"
 global::System.Object __typeHelper = "InputTestTagHelper, AppCode";
 
 #line default
 #line hidden
+#nullable disable
         }
         ))();
         }
@@ -41,17 +45,21 @@ global::System.Object __typeHelper = "InputTestTagHelper, AppCode";
         public async override global::System.Threading.Tasks.Task ExecuteAsync()
         {
             __InputTestTagHelper = CreateTagHelper<global::InputTestTagHelper>();
+#nullable restore
 #line 5 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ModelExpressionTagHelper.cshtml"
 __InputTestTagHelper.For = ModelExpressionProvider.CreateModelExpression(ViewData, __model => __model.Date);
 
 #line default
 #line hidden
+#nullable disable
             __InputTestTagHelper = CreateTagHelper<global::InputTestTagHelper>();
+#nullable restore
 #line 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ModelExpressionTagHelper.cshtml"
 __InputTestTagHelper.For = ModelExpressionProvider.CreateModelExpression(ViewData, __model => Model);
 
 #line default
 #line hidden
+#nullable disable
         }
         #pragma warning restore 1998
         [global::Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]

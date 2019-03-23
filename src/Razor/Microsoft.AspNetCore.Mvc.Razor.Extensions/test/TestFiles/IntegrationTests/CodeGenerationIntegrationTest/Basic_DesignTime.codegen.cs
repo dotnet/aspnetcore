@@ -23,37 +23,49 @@ namespace AspNetCore
         #pragma warning disable 1998
         public async override global::System.Threading.Tasks.Task ExecuteAsync()
         {
+#nullable restore
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml"
        __o = this.ToString();
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml"
 __o = string.Format("{0}", "Hello");
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 5 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml"
    
     var cls = "foo";
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml"
            if(cls != null) { 
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml"
                         __o = cls;
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Basic.cshtml"
                                   }
 
 #line default
 #line hidden
+#nullable disable
         }
         #pragma warning restore 1998
         [global::Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]

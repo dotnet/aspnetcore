@@ -44,11 +44,13 @@ namespace AspNetCore
             );
             __InputTestTagHelper = CreateTagHelper<global::InputTestTagHelper>();
             __tagHelperExecutionContext.Add(__InputTestTagHelper);
+#nullable restore
 #line 5 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ModelExpressionTagHelper.cshtml"
 __InputTestTagHelper.For = ModelExpressionProvider.CreateModelExpression(ViewData, __model => __model.Date);
 
 #line default
 #line hidden
+#nullable disable
             __tagHelperExecutionContext.AddTagHelperAttribute("for", __InputTestTagHelper.For, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             if (!__tagHelperExecutionContext.Output.IsContentModified)
@@ -63,11 +65,13 @@ __InputTestTagHelper.For = ModelExpressionProvider.CreateModelExpression(ViewDat
             );
             __InputTestTagHelper = CreateTagHelper<global::InputTestTagHelper>();
             __tagHelperExecutionContext.Add(__InputTestTagHelper);
+#nullable restore
 #line 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ModelExpressionTagHelper.cshtml"
 __InputTestTagHelper.For = ModelExpressionProvider.CreateModelExpression(ViewData, __model => Model);
 
 #line default
 #line hidden
+#nullable disable
             __tagHelperExecutionContext.AddTagHelperAttribute("for", __InputTestTagHelper.For, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
             await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             if (!__tagHelperExecutionContext.Output.IsContentModified)

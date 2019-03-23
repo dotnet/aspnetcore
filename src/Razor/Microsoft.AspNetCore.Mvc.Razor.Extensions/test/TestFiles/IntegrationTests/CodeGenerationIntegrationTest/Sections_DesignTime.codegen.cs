@@ -17,27 +17,33 @@ namespace AspNetCore
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
+#nullable restore
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
 DateTime __typeHelper = default(DateTime);
 
 #line default
 #line hidden
+#nullable disable
         }
         ))();
         ((System.Action)(() => {
+#nullable restore
 #line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
 global::System.Object __typeHelper = "InputTestTagHelper, AppCode";
 
 #line default
 #line hidden
+#nullable disable
         }
         ))();
         ((System.Action)(() => {
+#nullable restore
 #line 11 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
 global::System.Object Section1 = null;
 
 #line default
 #line hidden
+#nullable disable
         }
         ))();
         }
@@ -48,19 +54,23 @@ global::System.Object Section1 = null;
         #pragma warning disable 1998
         public async override global::System.Threading.Tasks.Task ExecuteAsync()
         {
+#nullable restore
 #line 5 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
    
     Layout = "_SectionTestLayout.cshtml";
 
 #line default
 #line hidden
+#nullable disable
             DefineSection("Section1", async(__razor_section_writer) => {
                 __InputTestTagHelper = CreateTagHelper<global::InputTestTagHelper>();
+#nullable restore
 #line 13 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
 __InputTestTagHelper.For = ModelExpressionProvider.CreateModelExpression(ViewData, __model => __model.Date);
 
 #line default
 #line hidden
+#nullable disable
             }
             );
         }

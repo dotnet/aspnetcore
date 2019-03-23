@@ -23,12 +23,14 @@ namespace __GeneratedComponent
             builder.CloseElement();
         }
         #pragma warning restore 1998
+#nullable restore
 #line 7 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/BasicComponent.cshtml"
             
     void IDisposable.Dispose(){ }
 
 #line default
 #line hidden
+#nullable disable
     }
 }
 #pragma warning restore 1591

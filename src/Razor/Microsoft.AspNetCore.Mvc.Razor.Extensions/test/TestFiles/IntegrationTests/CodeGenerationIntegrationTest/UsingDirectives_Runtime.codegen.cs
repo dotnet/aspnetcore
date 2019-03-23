@@ -11,26 +11,34 @@ namespace AspNetCore
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.AspNetCore.Mvc.Rendering;
     using Microsoft.AspNetCore.Mvc.ViewFeatures;
+#nullable restore
 #line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/UsingDirectives.cshtml"
 using System.ComponentModel;
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 2 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/UsingDirectives.cshtml"
 using System.Collections;
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/UsingDirectives.cshtml"
 using System;
 
 #line default
 #line hidden
+#nullable disable
+#nullable restore
 #line 4 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/UsingDirectives.cshtml"
 using System;
 
 #line default
 #line hidden
+#nullable disable
     [global::Microsoft.AspNetCore.Razor.Hosting.RazorSourceChecksumAttribute(@"SHA1", @"452979e8e4dd77a84a4c50425dd3a162e265990d", @"/TestFiles/IntegrationTests/CodeGenerationIntegrationTest/UsingDirectives.cshtml")]
     public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_UsingDirectives : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic>
     {
