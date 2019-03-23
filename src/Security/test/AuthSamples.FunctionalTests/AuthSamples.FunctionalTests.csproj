@@ -39,7 +39,7 @@
       <_claimsWwwrootFiles Include="$(MSBuildThisFileDirectory)..\..\samples\ClaimsTransformation\wwwroot\**\*.*" />
       <_cookiesWwwrootFiles Include="$(MSBuildThisFileDirectory)..\..\samples\Cookies\wwwroot\**\*.*" />
       <_customProviderFiles Include="$(MSBuildThisFileDirectory)..\..\samples\CustomPolicyProvider\**\*.*" />
-      <_schemesFiles Include="$(MSBuildThisFileDirectory)..\..\samples\DynamicSchemes\wwwroot\**\*.*" />
+      <_schemesWwwrootFiles Include="$(MSBuildThisFileDirectory)..\..\samples\DynamicSchemes\wwwroot\**\*.*" />
       <_identityWwwrootFiles Include="$(MSBuildThisFileDirectory)..\..\samples\Identity.ExternalClaims\wwwroot\**\*.*" />
       <_pathWwwrootFiles Include="$(MSBuildThisFileDirectory)..\..\samples\PathSchemeSelection\wwwroot\**\*.*" />
       <_staticFiles Include="$(MSBuildThisFileDirectory)..\..\samples\StaticFilesAuth\**\*.*" />
@@ -64,7 +64,7 @@
       DestinationFolder="$(PublishDir)\Cookies\wwwroot" />
     <Copy
       SourceFiles="@(_customProviderFiles)"
-      DestinationFolder="$(PublishDir)\CustomPolicyProvider" />
+      DestinationFolder="$(PublishDir)\CustomPolicyProvider\\%(RecursiveDir)" />
     <Copy
       SourceFiles="@(_schemesWwwrootFiles)"
       DestinationFolder="$(PublishDir)\DynamicSchemes\wwwroot" />
@@ -76,7 +76,7 @@
       DestinationFolder="$(PublishDir)\PathSchemeSelection\wwwroot" />
     <Copy
       SourceFiles="@(_staticFiles)"
-      DestinationFolder="$(PublishDir)\StaticFilesAuth" />
+      DestinationFolder="$(PublishDir)\StaticFilesAuth\\%(RecursiveDir)" />
     <!-- Drop a dummy sln to specify content root location -->
     <WriteLinesToFile
         File="$(PublishDir)\contentroot.sln"
