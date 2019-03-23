@@ -300,6 +300,12 @@ Copyright (c) .NET Foundation. All rights reserved.
     <UpToDateCheckInput Condition="'$(RazorCompileOnBuild)'=='true'" Include="@(Content->WithMetadataValue('Extension', '.cshtml'))" />
 
     <!--
+      Add all .razor files to UpToDateCheckInput. Component compilation is not controlled by RazorCompileOnBuild,
+      which is why this itemgroup is unconditional.
+    -->
+    <UpToDateCheckInput Include="@(Content->WithMetadataValue('Extension', '.razor'))" />
+
+    <!--
       Add Razor output files to UpToDateCheckBuilt - a collection of files used by FastUpToDateCheck to determine
       if any of the project's outputs have changed.
     -->
