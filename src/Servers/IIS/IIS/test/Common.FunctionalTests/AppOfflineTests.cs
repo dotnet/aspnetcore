@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Xunit;
@@ -99,7 +100,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         {
             // The goal of this test is to have multiple requests currently in progress
             // and for app offline to be dropped. We expect that all requests are eventually drained
-            // and graceful shutdown occurs. 
+            // and graceful shutdown occurs.
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
             deploymentParameters.TransformArguments((a, _) => $"{a} IncreaseShutdownLimit");
 
@@ -215,7 +216,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         [ConditionalTheory]
         [InlineData(HostingModel.InProcess)]
         [InlineData(HostingModel.OutOfProcess)]
-        [Flaky("https://github.com/aspnet/AspNetCore/issues/7075")]
+        [Flaky("https://github.com/aspnet/AspNetCore/issues/7075", FlakyOn.All)]
         public async Task AppOfflineAddedAndRemovedStress(HostingModel hostingModel)
         {
             var deploymentResult = await AssertStarts(hostingModel);

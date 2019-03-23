@@ -31,7 +31,6 @@
     <PackageVersionVariableReference Include="$(RepositoryRoot)src\Azure\AzureAD\Authentication.AzureADB2C.UI\src\Microsoft.AspNetCore.Authentication.AzureADB2C.UI.csproj" />
     <PackageVersionVariableReference Include="$(RepositoryRoot)src\Components\Components\src\Microsoft.AspNetCore.Components.csproj" />
     <PackageVersionVariableReference Include="$(RepositoryRoot)src\Components\Browser\src\Microsoft.AspNetCore.Components.Browser.csproj" />
-    <PackageVersionVariableReference Include="$(RepositoryRoot)src\Components\Build\src\Microsoft.AspNetCore.Components.Build.csproj" />
     <PackageVersionVariableReference Include="$(RepositoryRoot)src\Components\Server\src\Microsoft.AspNetCore.Components.Server.csproj" />
     <PackageVersionVariableReference Include="$(RepositoryRoot)src\Identity\EntityFrameworkCore\src\Microsoft.AspNetCore.Identity.EntityFrameworkCore.csproj" />
     <PackageVersionVariableReference Include="$(RepositoryRoot)src\Identity\UI\src\Microsoft.AspNetCore.Identity.UI.csproj" />

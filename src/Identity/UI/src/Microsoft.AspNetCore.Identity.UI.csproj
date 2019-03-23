@@ -14,9 +14,7 @@
     <EnableDefaultRazorGenerateItems>false</EnableDefaultRazorGenerateItems>
     <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
 
-    <_EnableAllInclusiveRazorSdk>true</_EnableAllInclusiveRazorSdk>
-    <RazorLangVersion>3.0</RazorLangVersion>
-    <RazorDefaultConfiguration>MVC-3.0</RazorDefaultConfiguration>
+    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
   </PropertyGroup>
 
   <ItemGroup>

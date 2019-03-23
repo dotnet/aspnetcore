@@ -5,6 +5,7 @@
     <IsPackable>false</IsPackable>
     <BlazorLinkOnBuild>false</BlazorLinkOnBuild>
     <OutputType>exe</OutputType>
+    <RazorLangVersion>3.0</RazorLangVersion>
 
     <ReferenceBlazorBuildLocally>true</ReferenceBlazorBuildLocally>
     <!-- loader.js is hard-coded to assume it can load .pdbs regardless of Debug/Release configuration -->
