@@ -4,7 +4,6 @@
 using System;
 using System.Threading.Tasks;
 using IdentityServer4.EntityFramework.Entities;
-using IdentityServer4.EntityFramework.Extensions;
 using IdentityServer4.EntityFramework.Interfaces;
 using IdentityServer4.EntityFramework.Options;
 using Microsoft.AspNetCore.Identity;
@@ -17,13 +16,66 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
     /// <summary>
     /// Database abstraction for a combined <see cref="DbContext"/> using ASP.NET Identity and Identity Server.
     /// </summary>
-    /// <typeparam name="TUser"></typeparam>
-    public class ApiAuthorizationDbContext<TUser> : IdentityDbContext<TUser>, IPersistedGrantDbContext where TUser : IdentityUser
+    /// <typeparam name="TUser">The type of user objects.</typeparam>
+    public class ApiAuthorizationDbContext<TUser> : ApiAuthorizationDbContext<TUser, IdentityRole, string> where TUser : IdentityUser
+    {
+        /// <summary>
+        /// Initializes a new instance of <see cref="ApiAuthorizationDbContext{TUser}"/>.
+        /// </summary>
+        /// <param name="options">The <see cref="DbContextOptions"/>.</param>
+        /// <param name="operationalStoreOptions">The <see cref="IOptions{OperationalStoreOptions}"/>.</param>
+        public ApiAuthorizationDbContext(
+            DbContextOptions options,
+            IOptions<OperationalStoreOptions> operationalStoreOptions) : base(options, operationalStoreOptions) { }
+    }
+
+    /// <summary>
+    /// Database abstraction for a combined <see cref="DbContext"/> using ASP.NET Identity and Identity Server.
+    /// </summary>
+    /// <typeparam name="TUser">The type of user objects.</typeparam>
+    /// <typeparam name="TRole">The type of role objects.</typeparam>
+    /// <typeparam name="TKey">The type of the primary key for users and roles.</typeparam>
+    public class ApiAuthorizationDbContext<TUser, TRole, TKey> : ApiAuthorizationDbContext<TUser, TRole, TKey, IdentityUserClaim<TKey>, IdentityUserRole<TKey>, IdentityUserLogin<TKey>, IdentityRoleClaim<TKey>, IdentityUserToken<TKey>>
+        where TUser : IdentityUser<TKey>
+        where TRole : IdentityRole<TKey>
+        where TKey : IEquatable<TKey>
+    {
+        /// <summary>
+        /// Initializes a new instance of <see cref="ApiAuthorizationDbContext{TUser,TRole,TKey}"/>.
+        /// </summary>
+        /// <param name="options">The <see cref="DbContextOptions"/>.</param>
+        /// <param name="operationalStoreOptions">The <see cref="IOptions{OperationalStoreOptions}"/>.</param>
+        public ApiAuthorizationDbContext(
+            DbContextOptions options,
+            IOptions<OperationalStoreOptions> operationalStoreOptions) : base(options, operationalStoreOptions) { }
+    }
+
+
+    /// <summary>
+    /// Database abstraction for a combined <see cref="DbContext"/> using ASP.NET Identity and Identity Server.
+    /// </summary>
+    /// <typeparam name="TUser">The type of user objects.</typeparam>
+    /// <typeparam name="TRole">The type of role objects.</typeparam>
+    /// <typeparam name="TKey">The type of the primary key for users and roles.</typeparam>
+    /// <typeparam name="TUserClaim">The type of the user claim object.</typeparam>
+    /// <typeparam name="TUserRole">The type of the user role object.</typeparam>
+    /// <typeparam name="TUserLogin">The type of the user login object.</typeparam>
+    /// <typeparam name="TRoleClaim">The type of the role claim object.</typeparam>
+    /// <typeparam name="TUserToken">The type of the user token object.</typeparam>
+    public class ApiAuthorizationDbContext<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TRoleClaim, TUserToken> : IdentityDbContext<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TRoleClaim, TUserToken>, IPersistedGrantDbContext
+        where TUser : IdentityUser<TKey>
+        where TRole : IdentityRole<TKey>
+        where TKey : IEquatable<TKey>
+        where TUserClaim : IdentityUserClaim<TKey>
+        where TUserRole : IdentityUserRole<TKey>
+        where TUserLogin : IdentityUserLogin<TKey>
+        where TRoleClaim : IdentityRoleClaim<TKey>
+        where TUserToken : IdentityUserToken<TKey>
     {
         private readonly IOptions<OperationalStoreOptions> _operationalStoreOptions;
 
         /// <summary>
-        /// Initializes a new instance of <see cref="ApiAuthorizationDbContext{TUser}"/>.
+        /// Initializes a new instance of <see cref="ApiAuthorizationDbContext{TUser,TRole,TKey,TUserClaim,TUserRole,TUserLogin,TRoleClaim,TUserToken}"/>.
         /// </summary>
         /// <param name="options">The <see cref="DbContextOptions"/>.</param>
         /// <param name="operationalStoreOptions">The <see cref="IOptions{OperationalStoreOptions}"/>.</param>
