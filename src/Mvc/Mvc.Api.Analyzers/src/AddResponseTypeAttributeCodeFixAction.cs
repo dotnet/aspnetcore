@@ -205,7 +205,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
                 SyntaxFactory.ParseName(ApiSymbolNames.ProducesResponseTypeAttribute)
                     .WithAdditionalAnnotations(Simplifier.Annotation),
                 SyntaxFactory.AttributeArgumentList().AddArguments(
-                    
+
                     SyntaxFactory.AttributeArgument(statusCodeSyntax)));
         }
 
