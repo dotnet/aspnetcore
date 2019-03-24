@@ -1,41 +1,42 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Concurrent;
-using System.Linq;
+using System.Diagnostics;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.AspNetCore.Analyzers
 {
-    internal class BuildServiceProviderValidator : StartupDiagnosticValidator
+    internal class BuildServiceProviderValidator
     {
-        public static BuildServiceProviderValidator CreateAndInitialize(CompilationAnalysisContext context, ConcurrentBag<StartupComputedAnalysis> analyses)
+        private readonly StartupAnalysis _context;
+
+        public BuildServiceProviderValidator(StartupAnalysis context)
         {
-            if (analyses == null)
-            {
-                throw new ArgumentNullException(nameof(analyses));
-            }
+            _context = context;
+        }
 
-            var validator = new BuildServiceProviderValidator();
+        public void AnalyzeSymbol(SymbolAnalysisContext context)
+        {
+            Debug.Assert(context.Symbol.Kind == SymbolKind.NamedType);
+            Debug.Assert(StartupFacts.IsStartupClass(_context.StartupSymbols, (INamedTypeSymbol)context.Symbol));
 
-            foreach (var serviceAnalysis in analyses.OfType<ServicesAnalysis>())
+            var type = (INamedTypeSymbol)context.Symbol;
+
+            foreach (var serviceAnalysis in _context.GetRelatedAnalyses<ServicesAnalysis>(type))
             {
                 foreach (var serviceItem in serviceAnalysis.Services)
                 {
                     if (serviceItem.UseMethod.Name == "BuildServiceProvider")
                     {
                         context.ReportDiagnostic(Diagnostic.Create(
-                            StartupAnalzyer.BuildServiceProviderShouldNotCalledInConfigureServicesMethod,
+                            StartupAnalzyer.Diagnostics.BuildServiceProviderShouldNotCalledInConfigureServicesMethod,
                             serviceItem.Operation.Syntax.GetLocation(),
                             serviceItem.UseMethod.Name,
                             serviceAnalysis.ConfigureServicesMethod.Name));
                     }
                 }
             }
-
-            return validator;
         }
     }
 }
