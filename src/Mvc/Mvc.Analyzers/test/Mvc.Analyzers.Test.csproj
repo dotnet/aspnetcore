@@ -15,6 +15,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Remove="TestFiles\StartupAnalyzerTest\MvcOptions_UseMvcAndEndpointRoutingEnabled.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\Mvc.Analyzers\src\Microsoft.AspNetCore.Mvc.Analyzers.csproj" />
     <Reference Include="Microsoft.AspNetCore.Mvc" />
     <Reference Include="Microsoft.AspNetCore.Analyzer.Testing" />
